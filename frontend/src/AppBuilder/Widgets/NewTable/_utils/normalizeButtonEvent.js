@@ -43,10 +43,10 @@ export function normalizeButtonEvent(evt, buttonId) {
   // Map action label → actionId
   const actionId = actionLabel ? ACTION_LABEL_TO_ID[actionLabel.toLowerCase()] : undefined;
   if (actionLabel && !actionId) {
-    const available = Object.keys(ACTION_LABEL_TO_ID).map((k) => `"${k}"`).join(', ');
-    console.warn(
-      `[Table] Unknown action "${actionLabel}" in button "${buttonId}". Available actions: ${available}`
-    );
+    const available = Object.keys(ACTION_LABEL_TO_ID)
+      .map((k) => `"${k}"`)
+      .join(', ');
+    console.warn(`[Table] Unknown action "${actionLabel}" in button "${buttonId}". Available actions: ${available}`);
     return null;
   }
 

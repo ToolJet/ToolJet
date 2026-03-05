@@ -37,9 +37,7 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
       const columnKey = column.key || column.name;
       const ref = `${columnKey}::${buttonId}`;
       const { getModuleEvents, deleteAppVersionEventHandler } = useStore.getState().eventsSlice;
-      const events = getModuleEvents('canvas').filter(
-        (e) => e.target === 'table_column' && e.event?.ref === ref
-      );
+      const events = getModuleEvents('canvas').filter((e) => e.target === 'table_column' && e.event?.ref === ref);
       events.forEach((e) => deleteAppVersionEventHandler(e.id));
     },
     [column, index, onColumnItemChange]
@@ -47,9 +45,7 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
 
   const updateButtonProperty = useCallback(
     (buttonId, property, value) => {
-      const updatedButtons = (column.buttons || []).map((b) =>
-        b.id === buttonId ? { ...b, [property]: value } : b
-      );
+      const updatedButtons = (column.buttons || []).map((b) => (b.id === buttonId ? { ...b, [property]: value } : b));
       onColumnItemChange(index, 'buttons', updatedButtons);
     },
     [column, index, onColumnItemChange]

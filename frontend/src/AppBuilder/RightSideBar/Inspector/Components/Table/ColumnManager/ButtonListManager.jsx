@@ -55,9 +55,7 @@ export const ButtonListManager = ({ buttons = [], onAddButton, onReorderButtons,
     onReorderButtons(reordered);
   };
 
-  const renderItem = (item) => (
-    <ButtonListItem item={item} onSelect={onSelectButton} />
-  );
+  const renderItem = (item) => <ButtonListItem item={item} onSelect={onSelectButton} />;
 
   const renderGhost = (item, { darkMode } = {}) => <ButtonListItemGhost item={item} darkMode={darkMode} />;
 
@@ -71,34 +69,31 @@ export const ButtonListManager = ({ buttons = [], onAddButton, onReorderButtons,
         <span>Buttons</span>
         <span style={{ flex: 1, borderTop: '1px dashed var(--border-weak)' }} />
       </div>
-      {
-        items.length === 0 && ( 
-          <div className='d-flex justify-content-center align-items-center gap-[8px] flex-column'>
-            <div style={{
+      {items.length === 0 && (
+        <div className="d-flex justify-content-center align-items-center gap-[8px] flex-column">
+          <div
+            style={{
               background: 'var(--cc-surface2-surface)',
               height: '32px',
               width: '32px',
               borderRadius: '8px',
-              padding:'6px',
+              padding: '6px',
               display: 'inline-flex',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '6px',
-            }}>
-              <Button
-                variant="ghost"
-                size="default"
-                iconOnly={true}
-                isLucid={true}
-                trailingIcon="mouse"
-              />          
-
-            </div>
-            <span className='flex tj-header-h8' style={{color:'var(--cc-text-default)'}}>No action button added</span>
-            <span className='flex tj-text-xsm text-center' style={{color: 'var(--cc-text-placeholder)'}}>Add action buttons to table rows and configure events like you would with any button component</span>
+            }}
+          >
+            <Button variant="ghost" size="default" iconOnly={true} isLucid={true} trailingIcon="mouse" />
           </div>
-        )
-      }
+          <span className="flex tj-header-h8" style={{ color: 'var(--cc-text-default)' }}>
+            No action button added
+          </span>
+          <span className="flex tj-text-xsm text-center" style={{ color: 'var(--cc-text-placeholder)' }}>
+            Add action buttons to table rows and configure events like you would with any button component
+          </span>
+        </div>
+      )}
 
       {items.length > 0 && (
         <SortableTree

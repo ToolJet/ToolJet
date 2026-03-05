@@ -112,50 +112,48 @@ export const ColumnPopoverContent = ({
   }
   return (
     <TableColumnContext.Provider value={component?.id}>
-      <Popover.Header style={{padding : "8px 16px 0 16px"}}>
-        
-          <div
-            className="d-flex align-items-center justify-content-between"
-          >
-            <div className='d-flex gap-6 flex-row items-center justify-start'>
-              {isButtonDetailView && <Button
+      <Popover.Header style={{ padding: '8px 16px 0 16px' }}>
+        <div className="d-flex align-items-center justify-content-between">
+          <div className="d-flex gap-6 flex-row items-center justify-start">
+            {isButtonDetailView && (
+              <Button
                 variant="ghost"
                 size="medium"
                 iconOnly={true}
                 isLucid={true}
                 trailingIcon="arrow-left"
-                onClick={() => { 
+                onClick={() => {
                   setSelectedButtonId(null);
                   setActiveTab('propertiesTab');
                 }}
-                 
-              />}
-              {!isButtonDetailView && <span className='tj-text tj-header-h8 d-flex align-items-center'>Edit Column</span>}
-              {isButtonDetailView && <span className='tj-text tj-header-h8 d-flex align-items-center'>Edit Button</span>}
-            </div>
-            
-            <div className='d-flex flex-row'>
-              <Button
-                variant="ghost"
-                size="medium"
-                iconOnly={true}
-                isLucid={true}
-                trailingIcon="copy"
-                onClick={handleDuplicate}
-                title={isButtonDetailView ? 'Duplicate button' : 'Duplicate column'}
               />
-              <Button
-                variant="ghost"
-                size="medium"
-                iconOnly={true}
-                isLucid={true}
-                trailingIcon="trash"
-                onClick={handleDelete}
-                title={isButtonDetailView ? 'Delete button' : 'Delete column'}
-              />
-            </div>
+            )}
+            {!isButtonDetailView && <span className="tj-text tj-header-h8 d-flex align-items-center">Edit Column</span>}
+            {isButtonDetailView && <span className="tj-text tj-header-h8 d-flex align-items-center">Edit Button</span>}
           </div>
-      
+
+          <div className="d-flex flex-row">
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly={true}
+              isLucid={true}
+              trailingIcon="copy"
+              onClick={handleDuplicate}
+              title={isButtonDetailView ? 'Duplicate button' : 'Duplicate column'}
+            />
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly={true}
+              isLucid={true}
+              trailingIcon="trash"
+              onClick={handleDelete}
+              title={isButtonDetailView ? 'Delete button' : 'Delete column'}
+            />
+          </div>
+        </div>
+
         <div className="d-flex custom-gap-4 align-self-stretch tj-text tj-text-xsm font-weight-500 text-secondary cursor-pointer">
           <div
             className={`${activeTab === 'propertiesTab' && 'active-column-tab'} column-header-tab`}

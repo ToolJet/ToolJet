@@ -6,14 +6,7 @@ import { Icon as IconPicker } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import AlignLeftinspector from '@/_ui/Icon/solidIcons/AlignLeftinspector';
 import AlignRightinspector from '@/_ui/Icon/solidIcons/AlignRightinspector';
 
-export const ButtonStylesTab = ({
-  button,
-  index,
-  darkMode,
-  currentState,
-  onButtonPropertyChange,
-  component,
-}) => {
+export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButtonPropertyChange, component }) => {
   if (!button) return null;
 
   return (

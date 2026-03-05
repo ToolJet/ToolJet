@@ -33,7 +33,9 @@ export const ButtonColumn = ({
 
   let iconElement = null;
   if (iconName && iconVisibility) {
-    iconElement = <TablerIcon iconName={iconName} size={14} stroke={1.5} style={iconColor ? { color: iconColor } : undefined} />;
+    iconElement = (
+      <TablerIcon iconName={iconName} size={14} stroke={1.5} style={iconColor ? { color: iconColor } : undefined} />
+    );
   }
 
   const buttonStyle = {
@@ -80,11 +82,7 @@ export const ButtonColumn = ({
 
   if (hasTooltip) {
     return (
-      <OverlayTrigger
-        placement="auto"
-        delay={{ show: 500, hide: 0 }}
-        overlay={<Tooltip>{tooltip}</Tooltip>}
-      >
+      <OverlayTrigger placement="auto" delay={{ show: 500, hide: 0 }} overlay={<Tooltip>{tooltip}</Tooltip>}>
         <div style={{ display: 'flex' }}>{buttonElement}</div>
       </OverlayTrigger>
     );

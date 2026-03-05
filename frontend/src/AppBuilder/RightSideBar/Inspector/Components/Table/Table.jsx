@@ -564,23 +564,24 @@ export const Table = (props) => {
       // Action buttons section (deprecated — replaced by button column type)
       {
         title: (
-            <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
-              <span>Action buttons</span>
-                <ToolTip
-                  message={
-                    <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
-                      These Action buttons are deprecated and will be removed in a future update. Use the new Button column instead by adding a new column and selecting type as a button.
-                    </div>
-                  }
-                  show={true}
-                  placement="bottom"
-                >
-                  <span>
-                    <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
-                  </span>
-                </ToolTip>
-            </div>
-          ),
+          <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+            <span>Action buttons</span>
+            <ToolTip
+              message={
+                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                  These Action buttons are deprecated and will be removed in a future update. Use the new Button column
+                  instead by adding a new column and selecting type as a button.
+                </div>
+              }
+              show={true}
+              placement="bottom"
+            >
+              <span>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            </ToolTip>
+          </div>
+        ),
         children: (
           <div className="field">
             <div className="row g-2">
