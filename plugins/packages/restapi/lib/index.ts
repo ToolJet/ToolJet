@@ -18,12 +18,15 @@ import {
   cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
-
+import { SignatureV4 } from '@smithy/signature-v4';
+import { Sha256 } from '@aws-crypto/sha256-js';
 function isFileObject(value) {
   const keys = Object.keys(value);
 
@@ -53,6 +56,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url);
+
     const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,
@@ -64,8 +71,12 @@ export default class RestapiQueryService implements QueryService {
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {
@@ -102,8 +113,14 @@ export default class RestapiQueryService implements QueryService {
 
     const body = this.constructRequestBody(sourceOptions, queryOptions, hasDataSource);
     this.addBodyToRequest(_requestOptions, body);
+    let authValidatedRequestOptions;
 
-    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
+    if (sourceOptions['auth_type'] === 'aws_v4') {
+      authValidatedRequestOptions = await this.handleAwsSigV4Authentication(sourceOptions, _requestOptions, { url });
+      return authValidatedRequestOptions;
+    }
+
+    authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions
@@ -364,6 +381,59 @@ export default class RestapiQueryService implements QueryService {
     }
 
     return httpsParams;
+  }
+
+  async handleAwsSigV4Authentication(
+    sourceOptions: any,
+    requestOptions: any,
+    additionalOptions?: any
+  ): Promise<QueryResult> {
+    let credentials;
+
+    if (sourceOptions['use_credential_provider_chain']) {
+      const { defaultProvider } = await import('@aws-sdk/credential-provider-node');
+      credentials = defaultProvider();
+    } else {
+      credentials = {
+        accessKeyId: sourceOptions['aws_access_key_id'],
+        secretAccessKey: sourceOptions['aws_secret_access_key'],
+      };
+    }
+
+    const url = new URL(additionalOptions.url);
+
+    const signer = new SignatureV4({
+      credentials,
+      region: sourceOptions['aws_region'],
+      service: sourceOptions['aws_service'],
+      sha256: Sha256,
+    });
+    const getBodyForSigning = (requestOptions: any): string | undefined => {
+      if (requestOptions.body) return requestOptions.body;
+      if (requestOptions.json) return JSON.stringify(requestOptions.json);
+      if (requestOptions.form) return new URLSearchParams(requestOptions.form).toString();
+      return undefined;
+    };
+
+    const signedRequest = await signer.sign({
+      method: requestOptions.method.toUpperCase(),
+      hostname: url.hostname,
+      protocol: url.protocol,
+      path: url.pathname,
+      headers: {
+        ...requestOptions.headers,
+        host: url.hostname,
+      },
+      body: getBodyForSigning(requestOptions),
+    });
+
+    return {
+      status: 'ok',
+      data: {
+        ...requestOptions,
+        headers: signedRequest.headers,
+      },
+    };
   }
 
   private getResponse(response) {

@@ -83,6 +83,7 @@ const useAppData = (
   const setCurrentMode = useStore((state) => state.setCurrentMode);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -103,7 +104,7 @@ const useAppData = (
   const setEnvironmentLoadingState = useStore((state) => state.setEnvironmentLoadingState);
   const updateReleasedVersionId = useStore((state) => state.updateReleasedVersionId);
   const resetUndoRedoStack = useStore((state) => state.resetUndoRedoStack);
-  const checkAndSetTrueBuildSuggestionsFlag = useStore((state) => state.checkAndSetTrueBuildSuggestionsFlag);
+  const initSuggestions = useStore((state) => state.initSuggestions);
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
@@ -121,7 +122,6 @@ const useAppData = (
   const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
-  const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
@@ -140,9 +140,6 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
-    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
-  );
 
   // Used to trigger app refresh flow after restoring app history
   const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
@@ -151,6 +148,7 @@ const useAppData = (
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+  const promptSentRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -189,10 +187,11 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
-        checkAndSetTrueBuildSuggestionsFlag();
+        // Rebuild all suggestion segments for the new page's components/queries/variables
+        mode === 'edit' && initSuggestions(moduleId);
       }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode]);
+  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -255,10 +254,6 @@ const useAppData = (
           ? appVersionService.getAppVersionData(appId, versionId, mode)
           : appService.fetchApp(appId);
       }
-    }
-
-    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
-      setEditorLoading(true, moduleId);
     }
 
     // const appDataPromise = appService.fetchApp(appId);
@@ -328,7 +323,7 @@ const useAppData = (
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
         if (setConversation && setDocsConversation) {
-          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
+          setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
@@ -369,16 +364,27 @@ const useAppData = (
           moduleId
         );
 
+        if (
+          !moduleMode &&
+          state?.prompt &&
+          !promptSentRef.current &&
+          (conversation?.aiConversationMessages || []).length === 0
+        ) {
+          promptSentRef.current = true;
+          setSelectedSidebarItem('tooljetai');
+          toggleLeftSidebar(true);
+          sendMessage(state.prompt);
+          setIsQueryPaneExpanded(false);
+        }
+
+        if (initialLoadRef.current) {
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+        }
+
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
-
-          // If the app builder mode is AI
-          // - Do not show zero state - if there is some conversation already done or if route state has prompt
-          setConversationZeroState(
-            state?.prompt ? true : Boolean(appData.ai_conversation?.aiConversationMessages?.length)
-          );
+          setIsQueryPaneExpanded(false);
         }
 
         if (!moduleMode) {
@@ -518,14 +524,6 @@ const useAppData = (
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
-        if (
-          !moduleMode &&
-          state?.prompt &&
-          initialLoadRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
-        ) {
-          sendMessage(state.prompt);
-        }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
@@ -542,7 +540,6 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
-        !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
         };
@@ -553,16 +550,17 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
+  }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
+      mode === 'edit' && initSuggestions(moduleId);
       runOnLoadQueries(moduleId).then(() => {
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady, moduleId]);
+  }, [isComponentLayoutReady, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;

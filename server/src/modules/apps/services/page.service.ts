@@ -13,7 +13,7 @@ import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
 import { AppVersion } from '@entities/app_version.entity';
-import { IPageService } from '../interfaces/services/IPageService';
+import { IPageService, DeletePageOptions } from '../interfaces/services/IPageService';
 import { ACTION_TYPE } from '@modules/app-history/constants';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 
@@ -71,7 +71,13 @@ export class PageService implements IPageService {
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
-    let clonedPageData: { id: string; name: string; handle: string; type: string; url: string } | null = null;
+    let clonedPageData: {
+      id: string;
+      name: string;
+      handle: string;
+      type: string;
+      url: string;
+    } | null = null;
 
     await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
@@ -193,7 +199,9 @@ export class PageService implements IPageService {
     };
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { where: { pageId } });
+      const pageComponents = await manager.find(Component, {
+        where: { pageId },
+      });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
@@ -237,7 +245,9 @@ export class PageService implements IPageService {
             });
           }
 
-          const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
+          const componentLayouts = await manager.find(Layout, {
+            where: { componentId: component.id },
+          });
           // CORRECTED: Use manager.create(Layout, ...) to ensure entity instances are created
           const clonedLayouts = componentLayouts.map((layout) =>
             manager.create(Layout, {
@@ -460,6 +470,91 @@ export class PageService implements IPageService {
     }
 
     return result;
+  }
+
+  /**
+   * Delete a page using an existing EntityManager (for use within transactions).
+   * This method performs the core deletion logic without creating a new transaction.
+   * @param pageId - The ID of the page to delete
+   * @param manager - The EntityManager to use for the deletion
+   * @param organizationId - The organization ID for license validation
+   * @param options - Optional deletion options
+   */
+  async deletePageWithManager(
+    pageId: string,
+    manager: EntityManager,
+    organizationId: string,
+    options: DeletePageOptions = {}
+  ): Promise<void> {
+    const { skipHistoryCapture = false, skipReorder = false, deleteAssociatedPages = false } = options;
+
+    const pageExists = await manager.findOne(Page, {
+      where: { id: pageId },
+    });
+
+    if (!pageExists) {
+      throw new Error('Page not found');
+    }
+
+    // Handle page group deletion (EE feature - will be overridden in EE service)
+    if (pageExists.isPageGroup) {
+      await this.deletePageGroupWithManager(pageExists, manager, organizationId, {
+        deleteAssociatedPages,
+        skipReorder,
+      });
+      return;
+    }
+
+    // Cascade delete events for the page
+    await this.cascadeDeleteEventsWithManager(pageExists.id, manager);
+
+    // Delete the page
+    const deleteResult = await manager.delete(Page, pageId);
+
+    if (deleteResult.affected === 0) {
+      throw new Error('Page not deleted');
+    }
+
+    // Rearrange page order after deletion (unless skipped for bulk operations)
+    if (!skipReorder) {
+      await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
+    }
+
+    // Queue history capture (unless skipped)
+    if (!skipHistoryCapture) {
+      try {
+        await this.appHistoryUtilService.queueHistoryCapture(pageExists.appVersionId, ACTION_TYPE.PAGE_DELETE, {
+          operation: 'delete',
+          pageId: pageId,
+          deleteAssociatedPages,
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for page deletion:', error);
+      }
+    }
+  }
+
+  /**
+   * Delete a page group with an existing EntityManager.
+   * Base implementation throws error - EE service will override this.
+   */
+  protected async deletePageGroupWithManager(
+    page: Page,
+    manager: EntityManager,
+    organizationId: string,
+    options: { deleteAssociatedPages?: boolean; skipReorder?: boolean }
+  ): Promise<void> {
+    throw new Error('Page groups are an enterprise feature');
+  }
+
+  /**
+   * Cascade delete events for a source ID using an existing EntityManager.
+   */
+  protected async cascadeDeleteEventsWithManager(sourceId: string, manager: EntityManager): Promise<void> {
+    const allEvents = await manager.find(EventHandler, {
+      where: { sourceId },
+    });
+    await manager.remove(allEvents);
   }
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {

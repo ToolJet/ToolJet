@@ -15,7 +15,7 @@ import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -128,8 +128,8 @@ export const PhoneInput = (props) => {
   const loaderStyle = {
     right:
       direction === 'right' &&
-      defaultAlignment === 'side' &&
-      hasLabel
+        defaultAlignment === 'side' &&
+        hasLabel
         ? `${labelWidth + 11}px`
         : '11px',
     top:
@@ -158,26 +158,26 @@ export const PhoneInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
     paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
@@ -190,13 +190,11 @@ export const PhoneInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex phone-input-widget ${
-          defaultAlignment === 'top' &&
+        className={`text-input d-flex phone-input-widget ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : 'align-items-center'
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : 'align-items-center'
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -221,8 +219,10 @@ export const PhoneInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -246,6 +246,7 @@ export const PhoneInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <Input
             ref={inputRef}
@@ -262,13 +263,13 @@ export const PhoneInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-            className={`tj-text-input-widget ${
-              !isValid && showValidationError ? 'is-invalid' : ''
-            } validation-without-icon`}
+            className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
+              } validation-without-icon`}
             data-ignore-hover={true}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
         {shouldShowClearBtn && (
