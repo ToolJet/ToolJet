@@ -171,7 +171,7 @@ const DynamicForm = ({
             const field = fields[key];
             return field?.dependsOn || field?.depends_on;
           });
-          
+
           if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
             const clearedOptions = { ...options };
             fieldsWithDependencies.forEach((fieldKey) => {
@@ -424,6 +424,7 @@ const DynamicForm = ({
           options,
           optionsChanged,
           selectedDataSource,
+          isRestApi: source === 'restapi',
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -625,11 +626,15 @@ const DynamicForm = ({
       const labelElement = (
         <label
           className="form-label"
-          data-cy={fieldType === 'dropdown' ? `${generateCypressDataCy(label)}-dropdown-label` : `label-${generateCypressDataCy(label)}`}
+          data-cy={
+            fieldType === 'dropdown'
+              ? `${generateCypressDataCy(label)}-dropdown-label`
+              : `label-${generateCypressDataCy(label)}`
+          }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
             textDecorationColor: 'var(--slate8)',
-            marginBottom: '2px'
+            marginBottom: '2px',
           }}
         >
           {label}
@@ -709,7 +714,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel')}`}
+                          data-cy={`button-${generateCypressDataCy(
+                            computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
+                          )}`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
@@ -736,11 +743,14 @@ const DynamicForm = ({
                       'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                       'w-100': isHorizontalLayout && type !== 'codehinter',
                     },
-                    'dynamic-form-element',
-
+                    'dynamic-form-element'
                   )}
                   style={{ width: '100%' }}
-                  data-cy={type === 'dropdown' || type === 'dropdown-component-flip' ? `${generateCypressDataCy(label ?? key)}-select-dropdown` : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`}
+                  data-cy={
+                    type === 'dropdown' || type === 'dropdown-component-flip'
+                      ? `${generateCypressDataCy(label ?? key)}-select-dropdown`
+                      : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`
+                  }
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
@@ -755,7 +765,7 @@ const DynamicForm = ({
             )
           );
         })}
-      </div >
+      </div>
     );
   };
 
@@ -767,7 +777,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'} >
+          <div className={isHorizontalLayout ? '' : 'row'}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div
