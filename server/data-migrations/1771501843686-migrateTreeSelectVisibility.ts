@@ -57,6 +57,9 @@ export class MigrateTreeSelectVisibility1771501843686 implements MigrationInterf
                 styles.labelColor = { value: styles?.textColor };
             }
 
+            if (styles.labelStyle === undefined) {
+                styles.labelStyle = { value: 'old' };
+            }
 
             if (!styles.alignment) {
                 styles.alignment = { value: 'top' };

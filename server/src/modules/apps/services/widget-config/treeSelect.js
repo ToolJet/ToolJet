@@ -115,6 +115,16 @@ export const treeSelectConfig = {
       validation: { schema: { type: 'string' } },
       accordian: 'label',
     },
+    labelStyle: {
+      type: 'select',
+      displayName: 'Style',
+      options: [
+        { name: 'New', value: 'new' },
+        { name: 'Old', value: 'old' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -124,6 +134,10 @@ export const treeSelectConfig = {
         { displayName: 'Top', value: 'top' },
       ],
       accordian: 'label',
+      conditionallyRender: {
+        key: 'labelStyle',
+        value: 'new',
+      },
     },
     direction: {
       type: 'switch',
@@ -137,16 +151,26 @@ export const treeSelectConfig = {
       ],
       accordian: 'label',
       isFxNotRequired: true,
+      conditionallyRender: {
+        key: 'labelStyle',
+        value: 'new',
+      },
     },
     autoLabelWidth: {
       type: 'checkbox',
       displayName: 'Width',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'labelStyle',
+          value: 'new',
+        },
+      ],
       isFxNotRequired: true,
     },
     labelWidth: {
@@ -161,6 +185,10 @@ export const treeSelectConfig = {
         {
           key: 'autoLabelWidth',
           value: false,
+        },
+        {
+          key: 'labelStyle',
+          value: 'new',
         },
       ],
       isFxNotRequired: true,
@@ -334,6 +362,7 @@ export const treeSelectConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelStyle: { value: 'new' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
       autoLabelWidth: { value: '{{true}}' },

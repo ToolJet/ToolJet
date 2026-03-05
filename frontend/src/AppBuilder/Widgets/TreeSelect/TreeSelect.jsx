@@ -59,6 +59,7 @@ const TreeSelect = ({
     direction,
     autoLabelWidth,
     labelWidth,
+    labelStyle = 'new',
   } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
@@ -327,6 +328,97 @@ const TreeSelect = ({
       </div>
     );
   }
+  const renderCheckboxTree = () => (
+    <CheckboxTree
+      key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
+      nodes={data}
+      checked={checked}
+      expanded={expanded}
+      showNodeIcon={false}
+      onCheck={onCheck}
+      onExpand={onExpand}
+      checkModel="all"
+      noCascade={true}
+      disabled={isDisabled}
+      id={`component-${id}`}
+      icons={{
+        check: (
+          <TreeSelectCheckbox
+            checked={true}
+            checkboxColor={checkedBackground}
+            uncheckedColor={uncheckedBackground}
+            borderColor={borderColor}
+            handleColor={checkmarkColor}
+          />
+        ),
+        uncheck: <TreeSelectCheckbox checked={false} uncheckedColor={uncheckedBackground} borderColor={borderColor} />,
+        halfCheck: (
+          <TreeSelectCheckbox
+            indeterminate={true}
+            checked={false}
+            checkboxColor={checkedBackground}
+            uncheckedColor={uncheckedBackground}
+            borderColor={borderColor}
+            handleColor={checkmarkColor}
+          />
+        ),
+        expandOpen: (
+          <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
+            <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+          </span>
+        ),
+        expandClose: (
+          <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
+            <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+          </span>
+        ),
+      }}
+    />
+  );
+
+  const renderValidationError = () =>
+    showValidationError &&
+    visibility && (
+      <div
+        style={{
+          color: 'var(--status-error-strong)',
+          fontSize: '11px',
+          fontWeight: '400',
+          lineHeight: '16px',
+        }}
+      >
+        {validationError}
+      </div>
+    );
+
+  if (labelStyle === 'old') {
+    return (
+      <div
+        ref={containerRef}
+        className={cx('custom-checkbox-tree', {
+          [`dynamic-${id}`]: isDynamicHeightEnabled,
+        })}
+        data-disabled={isDisabled}
+        style={{
+          maxHeight: isDynamicHeightEnabled ? undefined : height,
+          height: isDynamicHeightEnabled ? 'auto' : '100%',
+          display: isVisible ? '' : 'none',
+          color: textColor,
+          boxShadow,
+        }}
+        data-cy={dataCy}
+        aria-hidden={!isVisible}
+        aria-disabled={isDisabled}
+      >
+        <div className="card-title" style={{ marginBottom: '0.5rem' }}>
+          <label htmlFor={`component-${id}`}>{label}</label>
+        </div>
+        {renderCheckboxTree()}
+        {renderValidationError()}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -371,65 +463,8 @@ const TreeSelect = ({
             ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment),
           }}
         >
-          <CheckboxTree
-            key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
-            nodes={data}
-            checked={checked}
-            expanded={expanded}
-            showNodeIcon={false}
-            onCheck={onCheck}
-            onExpand={onExpand}
-            checkModel="all"
-            noCascade={true}
-            disabled={isDisabled}
-            id={`component-${id}`}
-            icons={{
-              check: (
-                <TreeSelectCheckbox
-                  checked={true}
-                  checkboxColor={checkedBackground}
-                  uncheckedColor={uncheckedBackground}
-                  borderColor={borderColor}
-                  handleColor={checkmarkColor}
-                />
-              ),
-              uncheck: (
-                <TreeSelectCheckbox checked={false} uncheckedColor={uncheckedBackground} borderColor={borderColor} />
-              ),
-              halfCheck: (
-                <TreeSelectCheckbox
-                  indeterminate={true}
-                  checked={false}
-                  checkboxColor={checkedBackground}
-                  uncheckedColor={uncheckedBackground}
-                  borderColor={borderColor}
-                  handleColor={checkmarkColor}
-                />
-              ),
-              expandOpen: (
-                <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
-                  <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
-                </span>
-              ),
-              expandClose: (
-                <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
-                  <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
-                </span>
-              ),
-            }}
-          />
-          {showValidationError && visibility && (
-            <div
-              style={{
-                color: 'var(--status-error-strong)',
-                fontSize: '11px',
-                fontWeight: '400',
-                lineHeight: '16px',
-              }}
-            >
-              {validationError}
-            </div>
-          )}
+          {renderCheckboxTree()}
+          {renderValidationError()}
         </div>
       </div>
     </div>

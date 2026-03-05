@@ -2871,6 +2871,9 @@ function migrateProperties(
       if (!styles.labelColor) {
         styles.labelColor = { value: styles?.textColor };
       }
+      if (styles.labelStyle === undefined) {
+        styles.labelStyle = { value: 'old' };
+      }
       if (!styles.alignment) {
         styles.alignment = { value: 'top' };
         styles.direction = { value: 'left' };
