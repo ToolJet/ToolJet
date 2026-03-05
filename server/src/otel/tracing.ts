@@ -67,12 +67,44 @@ const sanitizeObject = (obj: any) => {
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
 
+// Span names that are always noise and should never be exported.
+// These are TypeORM/pg-pool background operations that fire continuously
+// even when the server is idle (keep-alives, NOTIFY pub-sub, connection pool management).
+const FILTERED_SPAN_NAMES = new Set(['pg-pool.connect']);
+const FILTERED_SPAN_PREFIXES = ['pg.query:NOTIFY', 'pg.query:LISTEN'];
+
+function isSpanFiltered(name: string): boolean {
+  return FILTERED_SPAN_NAMES.has(name) || FILTERED_SPAN_PREFIXES.some((prefix) => name.startsWith(prefix));
+}
+
+/**
+ * Wraps a BatchSpanProcessor and silently drops spans that match known
+ * background-noise patterns before they reach the OTLP exporter.
+ */
+function createFilteringSpanProcessor(delegate: BatchSpanProcessor): any {
+  return {
+    onStart(span: any, parentContext: any): void {
+      if (isSpanFiltered(span.name || '')) return;
+      delegate.onStart(span, parentContext);
+    },
+    onEnd(span: any): void {
+      if (isSpanFiltered(span.name || '')) return;
+      delegate.onEnd(span);
+    },
+    shutdown(): Promise<void> {
+      return delegate.shutdown();
+    },
+    forceFlush(): Promise<void> {
+      return delegate.forceFlush();
+    },
+  };
+}
+
 // Function to create the SDK (called only when startOpenTelemetry is invoked)
 function createSDK(): NodeSDK {
   return new NodeSDK({
     resource: resource,
-    traceExporter: traceExporter,
-    spanProcessor: new BatchSpanProcessor(traceExporter),
+    spanProcessors: [createFilteringSpanProcessor(new BatchSpanProcessor(traceExporter))],
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
       exportIntervalMillis: 300_000, // 5 minutes (default is 60s)
