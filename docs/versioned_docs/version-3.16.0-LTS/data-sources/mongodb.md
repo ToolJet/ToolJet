@@ -77,7 +77,6 @@ ToolJet now supports SSH tunnelling for the MongoDB data source, allowing secure
 To securely connect to a private MongoDB database using SSH tunnelling:
 
 1. Enable the **SSH tunnel** toggle in the MongoDB data source configuration.
-
 2. Provide the following details:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
