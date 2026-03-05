@@ -5,7 +5,6 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
-  ArrayNotEmpty,
   ValidateNested,
   MinLength,
   MaxLength,
@@ -303,7 +302,6 @@ export class UserDetailKeyValueDto {
 
 export class UpdateUserMetadataDto {
   @IsArray()
-  @ArrayNotEmpty({ message: 'userDetails must be a non-empty array' })
   @ValidateNested({ each: true })
   @Type(() => UserDetailKeyValueDto)
   userDetails: UserDetailKeyValueDto[];

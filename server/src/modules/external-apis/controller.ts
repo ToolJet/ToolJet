@@ -55,7 +55,7 @@ export class ExternalApisController implements IExternalApisController {
   }
 
   @UseGuards(ExternalApiSecurityGuard)
-  @Patch('workspace/:workspaceId/user/:userId')
+  @Put('workspace/:workspaceId/user/:userId')
   async updateUserMetadata(
     @Param('workspaceId') workspaceId: string,
     @Param('userId') userId: string,
