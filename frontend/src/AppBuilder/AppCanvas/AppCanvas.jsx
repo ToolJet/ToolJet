@@ -66,6 +66,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const pageKey = useStore((state) => state.pageKey);
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
+  const isMobileLayout = currentLayout === 'mobile';
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -91,6 +92,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isModuleMode,
   });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
+  console.log('currentLayout', currentLayout, isMobileLayout, showCanvasHeader);
 
   // This is added to notify when all Suspense components have resolved
   // If everything is ready, we set the isComponentLayoutReady to true which runs the onLoadQueries
@@ -153,6 +155,134 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isCurrentVersionLocked,
   ]);
 
+  // === Shared canvas header JSX (used in both mobile and desktop layouts) ===
+  const _renderCanvasHeaderSlot = () => {
+    if (!showCanvasHeader) return null;
+    return (
+      <div
+        className={cx('canvas-header-slot', {
+          '!tw-w-[450px] tw-mx-auto': isMobileLayout && (currentMode === 'edit' || isMobilePreviewMode),
+        })}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          flexShrink: 0,
+          padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+          height: `${CANVAS_HEADER_HEIGHT}px`,
+          borderBottom: '1px solid var(--cc-default-border)',
+          backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
+          width: '100%',
+        }}
+      >
+        <Container
+          id={`${moduleId}-header`}
+          canvasHeight={CANVAS_HEADER_HEIGHT / 10}
+          canvasWidth={window.innerWidth}
+          darkMode={isAppDarkMode}
+          allowContainerSelect={false}
+          styles={{
+            margin: 0,
+            backgroundColor: 'transparent',
+            overflow: 'hidden',
+          }}
+          componentType="AppCanvas"
+          hasNoScroll={true}
+        />
+      </div>
+    );
+  };
+
+  // === Shared main canvas Container JSX ===
+  const mainCanvasContainer = (
+    <Container
+      id={moduleId}
+      gridWidth={gridWidth}
+      canvasWidth={canvasWidth}
+      canvasHeight={canvasHeight}
+      darkMode={isAppDarkMode}
+      canvasMaxWidth={canvasMaxWidth}
+      isViewerSidebarPinned={isViewerSidebarPinned}
+      pageSidebarStyle={pageSidebarStyle}
+      pagePositionType={position}
+      appType={appType}
+    />
+  );
+
+  // === MOBILE LAYOUT: header + nav + canvas, all inside scroll for Moveable alignment ===
+  const _renderMobileLayout = () => (
+    <div key={pageKey} style={{ position: 'relative' }}>
+      {/* Canvas header — sticky at top of scroll */}
+      {_renderCanvasHeaderSlot()}
+      {/* Mobile nav — sticky below header */}
+      {appType !== 'module' && (
+        <div style={{ position: 'sticky', top: showCanvasHeader ? CANVAS_HEADER_HEIGHT : 0, zIndex: 9, flexShrink: 0 }}>
+          <MobileNavigationHeader
+            isMobileDevice={true}
+            currentPageId={currentPageId ?? homePageId}
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+            canvasMaxWidth={canvasMaxWidth}
+          />
+        </div>
+      )}
+      {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
+      {mainCanvasContainer}
+      {currentMode === 'edit' && <DragResizeGhostWidget />}
+      <div id="component-portal" />
+      {appType !== 'module' && <div id="component-portal" />}
+    </div>
+  );
+
+  // === DESKTOP LAYOUT: flex-column with header + sidebar wrapper for Moveable alignment ===
+  const _renderDesktopLayout = () => (
+    <div
+      key={pageKey}
+      className={cx({ 'h-100': isModuleMode })}
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+    >
+      {_renderCanvasHeaderSlot()}
+      <div
+        className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
+          'tw-flex-col': position === 'top' || isPagesSidebarHidden,
+        })}
+      >
+        {appType !== 'module' && (
+          <>
+            {/* === SIDEBAR STICKY WRAPPER === */}
+            <div
+              style={{
+                position: 'sticky',
+                top: showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0,
+                flexShrink: 0,
+                zIndex: 5,
+                height: `calc(${sideBarVisibleHeight} - ${
+                  showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0
+                }px)`,
+              }}
+            >
+              <PagesSidebarNavigation
+                isMobileDevice={isMobileLayout}
+                currentPageId={currentPageId ?? homePageId}
+                switchDarkMode={switchDarkMode}
+                isSidebarPinned={isViewerSidebarPinned}
+                setIsSidebarPinned={setIsSidebarPinned}
+                darkMode={darkMode}
+                canvasMaxWidth={canvasMaxWidth}
+                canvasContentRef={canvasContentRef}
+              />
+            </div>
+          </>
+        )}
+        {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
+        {mainCanvasContainer}
+      </div>
+      {currentMode === 'edit' && <DragResizeGhostWidget />}
+      <div id="component-portal" />
+      {appType !== 'module' && <div id="component-portal" />}
+    </div>
+  );
+
   return (
     <div>
       <div
@@ -190,156 +320,86 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             )}
             <div
               id="app-canvas-container"
-              className="tw-h-full tw-flex tw-flex-col tw-relative"
+              className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
+                '!tw-w-[450px] tw-mx-auto': isMobileLayout,
+              })}
               style={{ minWidth: minCanvasWidth }}
             >
-              {/* === MAIN WORKSPACE: everything inside scroll area for Moveable coordinate alignment === */}
-              <div
-                ref={canvasContentRef}
-                style={{
-                  overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
-                  width: '100%',
-                  ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
-                }}
-                className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
-              >
-                <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-                <HotkeyProvider
-                  mode={currentMode}
-                  canvasMaxWidth={canvasMaxWidth}
-                  currentLayout={currentLayout}
-                  isModuleMode={isModuleMode}
+              {/* === MOBILE: canvas-wrapper encompasses nav + scroll so drawer covers full area === */}
+              {isMobileLayout ? (
+                <div
+                  ref={canvasContentRef}
+                  className={cx(
+                    `app-${appId} _tooljet-page-${getPageId()} canvas-content canvas-wrapper`,
+                    'tw-relative tw-overflow-x-hidden'
+                  )}
+                  style={{
+                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                    width: '100%',
+                    flex: 1,
+                    minHeight: 0,
+                  }}
                 >
-                  {environmentLoadingState !== 'loading' && (
-                    <SuspenseCountProvider
-                      onAllResolved={handleAllSuspenseResolved}
-                      deferCheck={isModuleMode || appType === 'module'}
-                    >
-                      <div
-                        key={pageKey}
-                        className={cx({ 'h-100': isModuleMode })}
-                        style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                  <HotkeyProvider
+                    mode={currentMode}
+                    canvasMaxWidth={canvasMaxWidth}
+                    currentLayout={currentLayout}
+                    isModuleMode={isModuleMode}
+                  >
+                    {environmentLoadingState !== 'loading' && (
+                      <SuspenseCountProvider
+                        onAllResolved={handleAllSuspenseResolved}
+                        deferCheck={isModuleMode || appType === 'module'}
                       >
-                        {/* === STICKY HEADER: full width, inside positioned div for Moveable alignment === */}
-                        {showCanvasHeader && appType !== 'module' && (
-                          <div
-                            className={cx('canvas-header-slot', {
-                              '!tw-w-[450px] tw-mx-auto':
-                                currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
-                            })}
-                            style={{
-                              position: 'sticky',
-                              top: 0,
-                              zIndex: 10,
-                              flexShrink: 0,
-                              padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-                              height: `${CANVAS_HEADER_HEIGHT}px`,
-                              borderBottom: '1px solid var(--cc-default-border)',
-                              backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
-                              width: '100%',
-                            }}
-                          >
-                            <Container
-                              id={`${moduleId}-header`}
-                              canvasHeight={CANVAS_HEADER_HEIGHT / 10}
-                              canvasWidth={window.innerWidth}
-                              darkMode={isAppDarkMode}
-                              allowContainerSelect={false}
-                              styles={{
-                                margin: 0,
-                                backgroundColor: 'transparent',
-                                overflow: 'hidden',
-                              }}
-                              componentType="AppCanvas"
-                              hasNoScroll={true}
-                            />
-                          </div>
-                        )}
-                        {/* === CONTENT AREA: sidebar + main canvas in flex row === */}
-                        <div
-                          className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
-                            'tw-flex-col': position === 'top' || isPagesSidebarHidden || currentLayout === 'mobile',
-                            '!tw-w-[450px] tw-mx-auto':
-                              currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
-                            'tw-relative tw-overflow-x-hidden': currentLayout === 'mobile',
-                          })}
-                        >
-                          {appType !== 'module' && (
-                            <>
-                              {/* === SIDEBAR STICKY WRAPPER ===
-                                  position:sticky here (not on navigation-area inside) so the sticking zone is
-                                  the full canvas-wrapper height instead of the bounded SidebarProvider height.
-                                  align-self:flex-start prevents flex-row stretching; without it the flex item
-                                  height equals the canvas height and there is no room for sticky to activate. */}
-                              <div
-                                style={{
-                                  position: 'sticky',
-                                  top: showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0,
-                                  flexShrink: 0,
-                                  zIndex: 5,
-                                  // Use the dynamically measured visible canvas height!
-                                  height:
-                                    currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode)
-                                      ? undefined
-                                      : `calc(${sideBarVisibleHeight} - ${
-                                          showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0
-                                        }px)`,
-                                }}
-                              >
-                                <PagesSidebarNavigation
-                                  isMobileDevice={currentLayout === 'mobile'}
-                                  currentPageId={currentPageId ?? homePageId}
-                                  switchDarkMode={switchDarkMode}
-                                  isSidebarPinned={isViewerSidebarPinned}
-                                  setIsSidebarPinned={setIsSidebarPinned}
-                                  darkMode={darkMode}
-                                  canvasMaxWidth={canvasMaxWidth}
-                                  canvasContentRef={canvasContentRef}
-                                />
-                              </div>
-                              <MobileNavigationHeader
-                                isMobileDevice={currentLayout === 'mobile'}
-                                currentPageId={currentPageId ?? homePageId}
-                                switchDarkMode={switchDarkMode}
-                                darkMode={darkMode}
-                                canvasMaxWidth={canvasMaxWidth}
-                              />
-                            </>
-                          )}
-                          {currentMode === 'view' && appType !== 'module' && (
-                            <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
-                          )}
-                          <Container
-                            id={moduleId}
-                            gridWidth={gridWidth}
-                            canvasWidth={canvasWidth}
-                            canvasHeight={canvasHeight}
-                            darkMode={isAppDarkMode}
-                            canvasMaxWidth={canvasMaxWidth}
-                            isViewerSidebarPinned={isViewerSidebarPinned}
-                            pageSidebarStyle={pageSidebarStyle}
-                            pagePositionType={position}
-                            appType={appType}
-                          />
-                        </div>
-                        {currentMode === 'edit' && (
-                          <>
-                            <DragResizeGhostWidget />
-                          </>
-                        )}
-                        <div id="component-portal" />
-                        {appType !== 'module' && <div id="component-portal" />}
-                      </div>
-                    </SuspenseCountProvider>
-                  )}
+                        {_renderMobileLayout()}
+                      </SuspenseCountProvider>
+                    )}
 
-                  {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                    <Suspense fallback={null}>
-                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                    </Suspense>
-                  )}
-                </HotkeyProvider>
-              </div>
+                    {currentMode === 'view' || isAutoMobileLayout ? null : (
+                      <Suspense fallback={null}>
+                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                      </Suspense>
+                    )}
+                  </HotkeyProvider>
+                </div>
+              ) : (
+                /* === DESKTOP: scroll container with sidebar + header inside === */
+                <div
+                  ref={canvasContentRef}
+                  style={{
+                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                    width: '100%',
+                    flex: 1,
+                    minHeight: 0,
+                    ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
+                  }}
+                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
+                >
+                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                  <HotkeyProvider
+                    mode={currentMode}
+                    canvasMaxWidth={canvasMaxWidth}
+                    currentLayout={currentLayout}
+                    isModuleMode={isModuleMode}
+                  >
+                    {environmentLoadingState !== 'loading' && (
+                      <SuspenseCountProvider
+                        onAllResolved={handleAllSuspenseResolved}
+                        deferCheck={isModuleMode || appType === 'module'}
+                      >
+                        {_renderDesktopLayout()}
+                      </SuspenseCountProvider>
+                    )}
+
+                    {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                      <Suspense fallback={null}>
+                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                      </Suspense>
+                    )}
+                  </HotkeyProvider>
+                </div>
+              )}
             </div>
           </div>
         </div>
