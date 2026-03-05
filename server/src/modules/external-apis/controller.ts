@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards, Body, Patch, Post, Put, NotFoundException } from '@nestjs/common';
-import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from './dto';
+import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto, UpdateUserMetadataDto } from './dto';
 import { IExternalApisController } from './Interfaces/IController';
 import { EditUserRoleDto } from '@modules/roles/dto';
 import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-security.guard';
@@ -51,6 +51,25 @@ export class ExternalApisController implements IExternalApisController {
   @UseGuards(ExternalApiSecurityGuard)
   @Put('update-user-role/workspace/:workspaceId')
   async updateUserRole(@Param('workspaceId') workspaceId: string, @Body() editRoleDto: EditUserRoleDto) {
+    throw new NotFoundException();
+  }
+
+  @UseGuards(ExternalApiSecurityGuard)
+  @Patch('workspace/:workspace_identifier/user/:user_identifier')
+  async updateUserMetadata(
+    @Param('workspace_identifier') workspaceIdentifier: string,
+    @Param('user_identifier') userIdentifier: string,
+    @Body() updateUserMetadataDto: UpdateUserMetadataDto
+  ) {
+    throw new NotFoundException();
+  }
+
+  @UseGuards(ExternalApiSecurityGuard)
+  @Get('workspace/:workspace_identifier/user/:user_identifier')
+  async getUserMetadata(
+    @Param('workspace_identifier') workspaceIdentifier: string,
+    @Param('user_identifier') userIdentifier: string
+  ) {
     throw new NotFoundException();
   }
 }
