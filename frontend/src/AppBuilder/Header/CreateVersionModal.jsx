@@ -42,6 +42,7 @@ const CreateVersionModal = ({
     currentEnvironment,
     environments,
     setIsEditorFreezed,
+    appGit,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -58,6 +59,7 @@ const CreateVersionModal = ({
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
+      appGit: state.appGit,
     }),
     shallow
   );
@@ -149,6 +151,32 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      if (isGitSyncEnabled && isBranchingEnabled) {
+        if (!appGit?.git_app_name || !appGit?.id) {
+          toast.error(
+            "Empty apps can't be versioned. Build your app first and then save your work through version control."
+          );
+          setIsCreatingVersion(false);
+          return;
+        }
+
+        try {
+          const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
+          if (tagCheck.exists) {
+            toast.error(
+              `Cannot save: Tag '${tagCheck.tagName}' already exists. ` +
+                `Please rename your version to a unique name before saving.`
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
+        } catch (error) {
+          // If check fails, log warning but allow save to proceed
+          // (tag creation will fail separately if there's an issue)
+          console.warn('Tag existence check failed, proceeding with save', error);
+        }
+      }
+
       // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
@@ -156,29 +184,41 @@ const CreateVersionModal = ({
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
-      if (isGitSyncEnabled) {
-        // The backend's version-rename-commit event is suppressed when the status is
-        // also changing to PUBLISHED (save-version flow), so there's no competing push.
-        // We always handle the commit here with the correct "Version Created" message.
-        const updatedVersionData = {
-          ...selectedVersionForCreation,
-          name: versionName,
-          description: versionDescription,
-        };
-        handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
-          .then((commitDone) => {
-            if (!commitDone) return;
-            if (isBranchingEnabled) {
-              return gitSyncService.createGitTag(
-                appId,
-                selectedVersionForCreation.id,
-                versionDescription || `Version ${versionName.trim()} created`
-              );
-            }
-          })
+      // if (isGitSyncEnabled) {
+      //   // The backend's version-rename-commit event is suppressed when the status is
+      //   // also changing to PUBLISHED (save-version flow), so there's no competing push.
+      //   // We always handle the commit here with the correct "Version Created" message.
+      //   const updatedVersionData = {
+      //     ...selectedVersionForCreation,
+      //     name: versionName,
+      //     description: versionDescription,
+      //   };
+      //   handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
+      //     .then((commitDone) => {
+      //       if (!commitDone) return;
+      //       if (isBranchingEnabled) {
+      //         return gitSyncService.createGitTag(
+      //           appId,
+      //           selectedVersionForCreation.id,
+      //           versionDescription || `Version ${versionName.trim()} created`
+      //         );
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.error('Commit or tag failed:', error);
+      //       toast.error(error?.data?.message || 'Commit or tag failed');
+      //     });
+      // }
+
+      if (isGitSyncEnabled && isBranchingEnabled) {
+        gitSyncService
+          .createGitTag(
+            appId,
+            selectedVersionForCreation.id,
+            versionDescription || `Version ${versionName.trim()} created`
+          )
           .catch((error) => {
-            console.error('Commit or tag failed:', error);
-            toast.error(error?.data?.message || 'Commit or tag failed');
+            toast.error(error?.data?.message || 'Tag creation failed');
           });
       }
 
@@ -349,7 +389,8 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {isGitSyncEnabled && (
+            {/* Disabling autoCommit */}
+            {/* {isGitSyncEnabled && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
@@ -370,7 +411,8 @@ const CreateVersionModal = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
+
             <div className="mt-3">
               <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
                 <div

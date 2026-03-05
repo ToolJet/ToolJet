@@ -1327,31 +1327,19 @@ class HomePageComponent extends React.Component {
     const { latestCommitData, tags } = this.state;
     const options = [];
 
-    // Add latest commit as first option
     if (latestCommitData?.latestCommit?.[0]) {
-      const gitVersionName = latestCommitData?.gitVersionName;
-      // Check if the latest commit's version exists in tags (to determine if it's a draft)
-      const tagVersionNames = (tags || []).map((tag) => {
-        const [, version] = tag.name.split('/');
-        return version;
-      });
-      const isInTags = tagVersionNames.includes(gitVersionName);
-
       options.push({
-        label: isInTags ? gitVersionName : 'Draft version',
+        label: 'Latest commit',
         value: 'latest',
         isLatest: true,
-        isDraft: !isInTags,
+        isDraft: true,
         sha: latestCommitData?.latestCommit?.[0]?.commitId,
       });
     }
 
     // Add tags - filter out tags that have the same SHA as the latest commit
     if (tags && tags.length > 0) {
-      const latestCommitSha = latestCommitData?.latestCommit?.[0]?.commitId;
-      const filteredTags = latestCommitSha ? tags.filter((tag) => tag.commit?.sha !== latestCommitSha) : tags;
-
-      filteredTags.forEach((tag) => {
+      tags.forEach((tag) => {
         const [, version] = tag.name.split('/');
         options.push({
           label: version,
@@ -1365,32 +1353,32 @@ class HomePageComponent extends React.Component {
     return options;
   };
 
+  getSelectedVersionCommitInfo = () => {
+    const { selectedVersionOption, latestCommitData, tags } = this.state;
+    const isLatest = !selectedVersionOption || selectedVersionOption === 'latest';
+
+    if (isLatest) {
+      return {
+        message: latestCommitData?.latestCommit[0]?.message,
+        author: latestCommitData?.latestCommit[0]?.author,
+        date: latestCommitData?.latestCommit[0]?.date,
+        versionName: latestCommitData?.gitVersionName,
+      };
+    }
+
+    const selectedTag = tags?.find((t) => t.name === selectedVersionOption);
+    return {
+      message: selectedTag?.message,
+      author: selectedTag?.tagger?.name,
+      date: selectedTag?.tagger?.date,
+      versionName: selectedVersionOption?.split('/')?.pop(),
+    };
+  };
+
   renderVersionOption = (option) => {
     return (
       <div className="version-option-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span className="version-option-name">{option.label}</span>
-        <div className="version-option-tags" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {option.isLatest && (
-            <span
-              className="version-tag version-tag-latest"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '10px',
-                fontWeight: 500,
-                lineHeight: '14px',
-                whiteSpace: 'nowrap',
-                backgroundColor: '#E6EDFE',
-                color: '#3451B2',
-              }}
-            >
-              Latest
-            </span>
-          )}
-        </div>
       </div>
     );
   };
@@ -1815,14 +1803,16 @@ class HomePageComponent extends React.Component {
                           <>
                             <div className="message-info">
                               <div data-cy="last-commit-message">
-                                {latestCommitData?.latestCommit[0]?.message || 'No commits yet'}
+                                {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
                               </div>
-                              <div data-cy="last-commit-version">{latestCommitData?.gitVersionName}</div>
+                              <div data-cy="last-commit-version">
+                                {this.getSelectedVersionCommitInfo().gitVersionName}
+                              </div>
                             </div>
-                            {latestCommitData?.latestCommit[0]?.author && latestCommitData?.latestCommit[0]?.date && (
+                            {this.getSelectedVersionCommitInfo().author && this.getSelectedVersionCommitInfo().date && (
                               <div className="author-info" data-cy="auther-info">
-                                {`Done by ${latestCommitData?.latestCommit[0]?.author} at ${moment(
-                                  new Date(latestCommitData?.latestCommit[0]?.date)
+                                {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
+                                  new Date(this.getSelectedVersionCommitInfo().date)
                                 ).format('DD MMM YYYY, h:mm a')}`}
                               </div>
                             )}
