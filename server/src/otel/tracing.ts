@@ -1,6 +1,6 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
+import { BatchSpanProcessor, ParentBasedSampler, AlwaysOnSampler, SamplingDecision } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
 import { resourceFromAttributes } from '@opentelemetry/resources';
@@ -67,9 +67,9 @@ const sanitizeObject = (obj: any) => {
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
 
-// Span names that are always noise and should never be exported.
-// These are TypeORM/pg-pool background operations that fire continuously
-// even when the server is idle (keep-alives, NOTIFY pub-sub, connection pool management).
+// ── Span-level noise filter (SpanProcessor) ────────────────────────────────
+// Used for standalone leaf spans (no children) that should never be exported.
+// TypeORM/pg-pool background operations that fire continuously when idle.
 const FILTERED_SPAN_NAMES = new Set(['pg-pool.connect']);
 const FILTERED_SPAN_PREFIXES = ['pg.query:NOTIFY', 'pg.query:LISTEN'];
 
@@ -100,10 +100,35 @@ function createFilteringSpanProcessor(delegate: BatchSpanProcessor): any {
   };
 }
 
+// ── Trace-level noise filter (Sampler) ─────────────────────────────────────
+// Used for root spans whose entire trace (including all child spans) is noise.
+// Sampler DROP propagates to all children automatically — no orphaned child
+// spans reach the exporter, unlike the SpanProcessor approach.
+//
+// "GET /api/{*path}" is the Express wildcard catch-all for the SPA HTML5-history
+// fallback (ServeStaticModule). Each such request spawns ~10 child spans from
+// the license-check guard chain — all suppressed here with a single decision.
+const SAMPLER_DROPPED_ROOT_SPANS = new Set(['GET /api/{*path}']);
+
+const noiseFilterSampler = new ParentBasedSampler({
+  root: {
+    shouldSample(_ctx: any, _traceId: any, name: string) {
+      if (SAMPLER_DROPPED_ROOT_SPANS.has(name)) {
+        return { decision: SamplingDecision.NOT_RECORD };
+      }
+      return { decision: SamplingDecision.RECORD_AND_SAMPLED };
+    },
+  },
+  // Remote parent spans are always trusted (distributed tracing across services)
+  remoteParentSampled: new AlwaysOnSampler(),
+  remoteParentNotSampled: new AlwaysOnSampler(),
+});
+
 // Function to create the SDK (called only when startOpenTelemetry is invoked)
 function createSDK(): NodeSDK {
   return new NodeSDK({
     resource: resource,
+    sampler: noiseFilterSampler,
     spanProcessors: [createFilteringSpanProcessor(new BatchSpanProcessor(traceExporter))],
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
