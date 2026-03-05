@@ -130,13 +130,12 @@ export class FolderAppsService implements IFolderAppsService {
         ...(folderPermissions.viewableFoldersId || []),
       ]);
 
-      if (accessibleFolderIds.size > 0) {
-        // Show folders with explicit granular access OR folders created by this user
-        return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id);
-      }
+      // Show folders with explicit granular access OR folders created by this user.
+      // When accessibleFolderIds is empty (no granular access), only show user-created folders.
+      return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id);
     }
 
-    // No specific folder permissions → show all folders (including ones they created)
+    // No folder permissions object at all (CE / unconfigured EE) → show all folders
     return folders;
   }
 }
