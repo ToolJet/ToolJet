@@ -56,6 +56,12 @@ export const customToggles = {
     label: 'Show notification on success',
     translatedLabel: 'editor.queryManager.notificationOnSuccess',
   },
+  runOnDependencyChange: {
+    dataCy: 'run-on-dependency-change',
+    action: 'runOnDependencyChange',
+    label: 'Run this query on dependency change',
+    translatedLabel: 'editor.queryManager.runOnDependencyChange',
+  },
 };
 
 export const RestAPIToggles = {

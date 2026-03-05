@@ -65,6 +65,55 @@ export function getQueryVariables(options, state, mappings) {
   return queryVariables;
 }
 
+/**
+ * Extracts all {{...}} reference expressions from a query's options,
+ * filtering to only the active mode for dual-mode queries (e.g., TJDB GUI/SQL).
+ */
+export function extractQueryReferences(kind, options) {
+  const effectiveOptions = getEffectiveOptions(kind, options);
+  return extractRefsFromValue(effectiveOptions);
+}
+
+function getEffectiveOptions(kind, options) {
+  if (kind === 'tooljetdb') {
+    const operation = options?.operation;
+    if (operation === 'sql_execution') {
+      return { sql_execution: options?.sql_execution };
+    }
+    // GUI mode — scan only the active operation's data
+    return operation ? { [operation]: options?.[operation] } : {};
+  }
+
+  // For all other query types: shallow copy and strip non-expression metadata
+  const filtered = { ...options };
+  if (!options?.enableTransformation) {
+    delete filtered.transformations;
+  }
+  delete filtered.runOnPageLoad;
+  delete filtered.runOnDependencyChange;
+  delete filtered.requestConfirmation;
+  delete filtered.showSuccessNotification;
+  delete filtered.notificationDuration;
+  delete filtered.successMessage;
+  return filtered;
+}
+
+function extractRefsFromValue(obj) {
+  const refs = new Set();
+  const walk = (value) => {
+    if (typeof value === 'string') {
+      const matches = value.match(/\{\{(.*?)\}\}/g);
+      if (matches) matches.forEach((m) => refs.add(m));
+    } else if (Array.isArray(value)) {
+      value.forEach(walk);
+    } else if (value && typeof value === 'object') {
+      Object.values(value).forEach(walk);
+    }
+  };
+  walk(obj);
+  return [...refs];
+}
+
 export const convertMapSet = (obj) => {
   if (obj instanceof Map) {
     return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));

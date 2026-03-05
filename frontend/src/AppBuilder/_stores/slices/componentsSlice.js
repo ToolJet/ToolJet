@@ -25,6 +25,36 @@ import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+
+// Debounce timers for query re-runs triggered by dependency changes
+const queryRerunTimers = new Map();
+
+// Script queries (RunJS/RunPy) debounce at 300ms since they execute locally in-browser.
+// Network queries (REST, DB, etc.) debounce at 500ms to avoid excess API calls.
+function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+  }
+  const delay = kind === 'runjs' || kind === 'runpy' ? 300 : 500;
+  const timerId = setTimeout(() => {
+    queryRerunTimers.delete(queryId);
+    const store = getStore();
+    const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
+    if (query?.options?.runOnDependencyChange) {
+      store.queryPanel.runQuery(queryId, queryName, undefined, undefined, {}, false, false, moduleId);
+    }
+  }, delay);
+  queryRerunTimers.set(queryId, timerId);
+}
+
+/** Clear any pending rerun timer for a query (e.g., on deletion). */
+export function clearQueryRerunTimer(queryId) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+    queryRerunTimers.delete(queryId);
+  }
+}
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -911,7 +941,7 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
+    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers, registerQueryDependencies } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
@@ -922,6 +952,54 @@ export const createComponentsSlice = (set, get) => ({
     });
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled
+    const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
+    queries.forEach((query) => {
+      if (query.options?.runOnDependencyChange) {
+        registerQueryDependencies(query.id, query.name, query.kind, query.options, moduleId);
+      }
+    });
+  },
+
+  registerQueryDependencies: (queryId, queryName, kind, options, moduleId = 'canvas') => {
+    const { addDependency } = get();
+    const optionsPath = `queries.${queryId}.__options__`;
+
+    // Clean up existing __options__ node and all its edges.
+    // We use the raw DepGraph API (graph.graph) because:
+    // - DependencyGraph.removeNode(path) only removes CHILDREN (nodes starting with path.)
+    //   which is a no-op for leaf nodes like __options__
+    // - DependencyGraph.removeDependency(toPath) only removes ONE edge at a time
+    // - DepGraph.removeNode() removes the node AND disconnects all edges in one call
+    // Orphan cleanup is unnecessary — source paths (components.{id}.value) have other edges
+    const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+    if (depGraph && depGraph.hasNode(optionsPath)) {
+      set((state) => {
+        const graph = state.dependencyGraph.modules[moduleId].graph;
+        if (graph.hasNode(optionsPath)) {
+          graph.graph.removeNode(optionsPath);
+        }
+        return { ...state };
+      }, false, 'clearQueryOptionsDeps');
+    }
+
+    // Extract all {{}} refs from the query's active options
+    const refs = extractQueryReferences(kind, options);
+    if (!refs.length) return;
+
+    const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+    const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+
+    refs.forEach((ref) => {
+      const { allRefs } = extractAndReplaceReferencesFromString(ref, componentNameIdMapping, queryNameIdMapping);
+      allRefs.forEach(({ entityType, entityNameOrId, entityKey }) => {
+        const sourcePath = entityNameOrId
+          ? `${entityType}.${entityNameOrId}.${entityKey}`
+          : `${entityType}.${entityKey}`;
+        addDependency(sourcePath, optionsPath, { queryId, queryName }, moduleId);
+      });
+    });
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components
@@ -2119,6 +2197,17 @@ export const createComponentsSlice = (set, get) => ({
     const dependecies = getDependencies(path, moduleId);
     if (dependecies?.length) {
       dependecies.forEach((dependency) => {
+        // Handle query options sentinel — trigger re-run instead of resolution
+        if (dependency.endsWith('.__options__')) {
+          const nodeData = getNodeData(dependency, moduleId);
+          if (nodeData?.queryId) {
+            const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
+            if (query?.options?.runOnDependencyChange) {
+              scheduleQueryRerun(nodeData.queryId, nodeData.queryName || query.name, query.kind, moduleId, get);
+            }
+          }
+          return;
+        }
         const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
         if (itemsLength) {
