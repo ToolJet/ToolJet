@@ -276,10 +276,10 @@ const DynamicSelector = ({
     if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
       const cacheKey = `${propertyKey}_cache`;
       const existingCache = get(options, cacheKey) || {};
-      
+
       const isMultiAuth = selectedDataSource?.options?.multiple_auth_enabled;
       const userId = currentUser?.id;
-      
+
       let cachedData = null;
       if (isMultiAuth) {
         if (userId && existingCache[userId]) {
@@ -294,7 +294,6 @@ const DynamicSelector = ({
       }
     }
   }, [autoFetch, selectedDataSource?.id, invokeMethod, isFxMode]);
-
   // Watch for changes in dependency state
   useEffect(() => {
     if (isDependentField && compositeDependencyKey && depsReady) {

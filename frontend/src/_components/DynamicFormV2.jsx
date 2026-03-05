@@ -736,6 +736,9 @@ const DynamicFormV2 = ({
     // Add dropdown components with their order
     flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+      const scopedChildren = flipComponentDropdown[selector];
+      const parentChildren = uiProperties[selector];
+      const childrenToRender = scopedChildren !== undefined ? scopedChildren : parentChildren;
 
       allComponents.push({
         order: flipComponentDropdown.order, // Keep undefined if not set
@@ -776,6 +779,7 @@ const DynamicFormV2 = ({
                       {...getElementProps(flipComponentDropdown)}
                       styles={{}}
                       useCustomStyles={false}
+                      isSearchable={false}
                       dataCy={generateCypressDataCy(flipComponentDropdown.label)}
                     />
                   )}
@@ -786,7 +790,7 @@ const DynamicFormV2 = ({
               </div>
             </div>
 
-            {getLayout(uiProperties[selector])}
+            {getLayout(childrenToRender)}
           </div>
         ),
       });
