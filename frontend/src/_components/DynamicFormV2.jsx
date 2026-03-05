@@ -381,6 +381,9 @@ const DynamicFormV2 = ({
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
+      // TODO: Move dropdown component flip logic to be handled here
+      // case 'dropdown-component-flip':
+      //   return Select;
       default:
         return null;
     }
@@ -516,28 +519,25 @@ const DynamicFormV2 = ({
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
+      case 'toggle-flip':
+        const isEnabled = currentValue === 'enabled' || currentValue === true;
+        return {
+          defaultChecked: isEnabled,
+          checked: isEnabled,
+          label: label,
+          helpText: helpText,
+          onChange: (e) => {
+            const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
+            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+          },
+        };
       case 'toggle-v2':
         return {
           checked: currentValue,
-          label: label,
+          label:label,
           helpText: helpText,
           disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
-        };
-      case 'toggle-flip':
-        return {
-          checked: currentValue === 'enabled',
-          label: label,
-          helpText: helpText,
-          disabled:
-            !canUpdateDataSource(selectedDataSource?.id) &&
-            !canDeleteDataSource(),
-          onChange: (e) =>
-            handleOptionChange(
-              key,
-              e.target.checked ? 'enabled' : 'disabled',
-              true
-            ),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -733,7 +733,7 @@ const DynamicFormV2 = ({
     const allComponents = [];
     let insertIndex = 0;
 
-    // Add dropdown/toggle-flip components with their order
+    // Add dropdown components with their order
     flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
       const scopedChildren = flipComponentDropdown[selector];
@@ -741,7 +741,7 @@ const DynamicFormV2 = ({
       const childrenToRender = scopedChildren !== undefined ? scopedChildren : parentChildren;
 
       allComponents.push({
-        order: flipComponentDropdown.order,
+        order: flipComponentDropdown.order, // Keep undefined if not set
         insertIndex: insertIndex++,
         key: `dropdown-${flipComponentDropdown.key}`,
         element: (
