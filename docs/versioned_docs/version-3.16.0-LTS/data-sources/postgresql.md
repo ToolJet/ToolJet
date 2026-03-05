@@ -51,6 +51,40 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 <div style={{paddingTop:'24px'}}>
 
+### SSH Tunnelling 
+
+ToolJet now supports SSH tunnelling for the PostgreSQL data source, allowing secure connections to databases hosted inside private networks. This can be used to :
+
+- Access private databases
+- Improve security
+- Enable encrytped communication
+- Avoid firewall rule changes
+
+#### SSH Configuration
+
+To securely connect to a private PostgreSQL database using SSH tunnelling:
+
+1. Enable the **SSH tunnel** toggle in the PostgreSQL data source configuration.
+2. Provide the following details:
+   - **SSH host** – Server hostname or IP address.
+   - **SSH port** – Port number (default: `22`).
+   - **SSH username** – Username for the SSH server.
+   - **Authentication method** – Choose either:
+     - **Private key**
+     - **Password**
+
+Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL queries are routed through this encrypted tunnel.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
+
+## Querying MongoDB
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
+2. Select the operation that you want to perform and click **Save** to save the query.
+3. Click on the **Run** button to run the query.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongoDB-operations.png" alt="ToolJet - Mongo query"/>
+
 ## Querying in SQL Mode
 
 1. Create a new query and select the PostgreSQL data source.

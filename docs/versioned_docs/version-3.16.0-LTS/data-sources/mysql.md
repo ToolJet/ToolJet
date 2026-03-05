@@ -25,26 +25,50 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 **ToolJet requires the following to connect to your MySQL database:**
 
-- **Username**
-- **Password**
-- **Database Name**
-- **Connection Type**
+- Username
+- Password
+- Database Name
+- Connection Type
 
 If you are using **Hostname** as the connection type, you will need to provide the following information:
 
-- **Host/IP**
-- **Port**
-- **SSL**
-- **SSL Certificate**:
-  - **CA Certificate**
-  - **Self-signed Certificate**
-  - **None**
+- Host/IP
+- Port
+- SSL
+- SSL Certificate:
+  - CA Certificate
+  - Self-signed Certificate
+  - None
 
 If you are using **Socket** as the connection type, you will need to provide the following information:
-
 - **Socket Path**
 
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
+
+### SSH Tunnelling 
+
+ToolJet now supports SSH tunnelling for the MySQL data source, allowing secure connections to databases hosted inside private networks.This can be used to:
+- Access private databases
+- Improve security
+- Enable encrypted communication
+- Avoid firewall rule changes
+
+#### SSH Configuration
+
+To securely connect to a private MySQL database using SSH tunnelling:
+
+1. Enable the **SSH tunnel** toggle in the MySQL data source configuration.
+2. Provide the following details:
+   - **SSH host** – Server hostname or IP address.
+   - **SSH port** – Port number (default: `22`).
+   - **SSH username** – Username for the SSH server.
+   - **Authentication method** – Choose either:
+     - **Private key**
+     - **Password**
+
+Once configured, ToolJet establishes a secure SSH connection. All MSSQL queries are routed through this encrypted tunnel.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="Mysql SSH tunnelling connection" />
 
 ## Querying in SQL Mode
 
