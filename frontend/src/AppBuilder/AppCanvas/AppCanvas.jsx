@@ -211,7 +211,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   // === MOBILE LAYOUT: header + nav + canvas, all inside scroll for Moveable alignment ===
   const _renderMobileLayout = () => (
-    <div key={pageKey} style={{ position: 'relative' }}>
+    <div key={pageKey} style={{ position: 'relative' }} className={cx('!tw-w-[450px] tw-mx-auto')}>
       {/* Canvas header — sticky at top of scroll */}
       {_renderCanvasHeaderSlot()}
       {/* Mobile nav — sticky below header */}
@@ -325,81 +325,44 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               })}
               style={{ minWidth: minCanvasWidth }}
             >
-              {/* === MOBILE: canvas-wrapper encompasses nav + scroll so drawer covers full area === */}
-              {isMobileLayout ? (
-                <div
-                  ref={canvasContentRef}
-                  className={cx(
-                    `app-${appId} _tooljet-page-${getPageId()} canvas-content canvas-wrapper`,
-                    'tw-relative tw-overflow-x-hidden'
+              <div
+                ref={canvasContentRef}
+                className={cx(
+                  `app-${appId} _tooljet-page-${getPageId()} canvas-content`,
+                  isMobileLayout && 'canvas-wrapper',
+                  isMobileLayout && 'tw-relative tw-overflow-x-hidden'
+                )}
+                style={{
+                  overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  width: '100%',
+                  flex: 1,
+                  minHeight: 0,
+                  ...(!isMobileLayout && appType === 'module' && isModuleMode ? { height: 'inherit' } : {}),
+                }}
+              >
+                <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                <HotkeyProvider
+                  mode={currentMode}
+                  canvasMaxWidth={canvasMaxWidth}
+                  currentLayout={currentLayout}
+                  isModuleMode={isModuleMode}
+                >
+                  {environmentLoadingState !== 'loading' && (
+                    <SuspenseCountProvider
+                      onAllResolved={handleAllSuspenseResolved}
+                      deferCheck={isModuleMode || appType === 'module'}
+                    >
+                      {isMobileLayout ? _renderMobileLayout() : _renderDesktopLayout()}
+                    </SuspenseCountProvider>
                   )}
-                  style={{
-                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
-                    width: '100%',
-                    flex: 1,
-                    minHeight: 0,
-                  }}
-                >
-                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-                  <HotkeyProvider
-                    mode={currentMode}
-                    canvasMaxWidth={canvasMaxWidth}
-                    currentLayout={currentLayout}
-                    isModuleMode={isModuleMode}
-                  >
-                    {environmentLoadingState !== 'loading' && (
-                      <SuspenseCountProvider
-                        onAllResolved={handleAllSuspenseResolved}
-                        deferCheck={isModuleMode || appType === 'module'}
-                      >
-                        {_renderMobileLayout()}
-                      </SuspenseCountProvider>
-                    )}
 
-                    {currentMode === 'view' || isAutoMobileLayout ? null : (
-                      <Suspense fallback={null}>
-                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                      </Suspense>
-                    )}
-                  </HotkeyProvider>
-                </div>
-              ) : (
-                /* === DESKTOP: scroll container with sidebar + header inside === */
-                <div
-                  ref={canvasContentRef}
-                  style={{
-                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
-                    width: '100%',
-                    flex: 1,
-                    minHeight: 0,
-                    ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
-                  }}
-                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
-                >
-                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-                  <HotkeyProvider
-                    mode={currentMode}
-                    canvasMaxWidth={canvasMaxWidth}
-                    currentLayout={currentLayout}
-                    isModuleMode={isModuleMode}
-                  >
-                    {environmentLoadingState !== 'loading' && (
-                      <SuspenseCountProvider
-                        onAllResolved={handleAllSuspenseResolved}
-                        deferCheck={isModuleMode || appType === 'module'}
-                      >
-                        {_renderDesktopLayout()}
-                      </SuspenseCountProvider>
-                    )}
-
-                    {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                      <Suspense fallback={null}>
-                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                      </Suspense>
-                    )}
-                  </HotkeyProvider>
-                </div>
-              )}
+                  {currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
+                    <Suspense fallback={null}>
+                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                    </Suspense>
+                  )}
+                </HotkeyProvider>
+              </div>
             </div>
           </div>
         </div>
