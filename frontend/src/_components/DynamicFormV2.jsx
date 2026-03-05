@@ -759,7 +759,7 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
                 {flipComponentDropdown.widget !== 'toggle-flip' &&
- (flipComponentDropdown.label || isHorizontalLayout) && (
+                (flipComponentDropdown.label || isHorizontalLayout) && (
                   <label
                     className={cx('form-label')}
                     data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
