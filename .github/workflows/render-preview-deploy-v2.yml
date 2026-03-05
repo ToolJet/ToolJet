@@ -2,9 +2,7 @@ name: Render Preview Deploy (DockerHub-based)
 
 on:
   pull_request:
-    types: [closed, synchronize]       
-  pull_request_target:
-    types: [labeled, unlabeled]        
+    types: [labeled, unlabeled, closed, synchronize]
 
 env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -23,28 +21,12 @@ jobs:
 
   build-and-deploy-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'create-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        id: check-permission
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            console.log(`Actor: ${context.actor}, Permission: ${data.permission}, Allowed: ${allowed}`);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can trigger deployments.`);
-            }
-
       - name: Free up disk space
         run: |
           echo "=== Disk space before cleanup ==="
@@ -358,26 +340,12 @@ jobs:
 
   suspend-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can suspend deployments.`);
-            }
-
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -417,26 +385,12 @@ jobs:
 
   resume-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
       github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can resume deployments.`);
-            }
-
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -474,27 +428,13 @@ jobs:
 
   destroy-ce:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app') ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ce-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions (label-triggered only)
-        if: github.event.action == 'labeled'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can destroy deployments.`);
-            }
-
       - name: Check if CE exists
         id: check-exists
         run: |
@@ -550,28 +490,12 @@ jobs:
 
   build-and-deploy-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'create-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        id: check-permission
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            console.log(`Actor: ${context.actor}, Permission: ${data.permission}, Allowed: ${allowed}`);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can trigger deployments.`);
-            }
-
       - name: Free up disk space
         run: |
           echo "=== Disk space before cleanup ==="
@@ -899,26 +823,12 @@ jobs:
 
   suspend-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can suspend deployments.`);
-            }
-
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -958,26 +868,12 @@ jobs:
 
   resume-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
       github.event.label.name == 'suspend-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can resume deployments.`);
-            }
-
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -1015,27 +911,13 @@ jobs:
 
   destroy-ee-lts:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-lts-review-app') ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-lts-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions (label-triggered only)
-        if: github.event.action == 'labeled'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can destroy deployments.`);
-            }
-
       - name: Check if EE LTS exists
         id: check-exists
         run: |
@@ -1091,28 +973,12 @@ jobs:
 
   build-and-deploy-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'create-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        id: check-permission
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            console.log(`Actor: ${context.actor}, Permission: ${data.permission}, Allowed: ${allowed}`);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can trigger deployments.`);
-            }
-
       - name: Free up disk space
         run: |
           echo "=== Disk space before cleanup ==="
@@ -1440,26 +1306,12 @@ jobs:
 
   suspend-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can suspend deployments.`);
-            }
-
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -1499,26 +1351,12 @@ jobs:
 
   resume-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
       github.event.label.name == 'suspend-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can resume deployments.`);
-            }
-
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
@@ -1556,27 +1394,13 @@ jobs:
 
   destroy-ee-pre-release:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-pre-release-review-app') ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-pre-release-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check actor permissions (label-triggered only)
-        if: github.event.action == 'labeled'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor
-            });
-            const allowed = ['admin', 'write'].includes(data.permission);
-            if (!allowed) {
-              core.setFailed(`🚫 ${context.actor} has '${data.permission}' access. Only admin/write collaborators can destroy deployments.`);
-            }
-
       - name: Check if EE Pre-release exists
         id: check-exists
         run: |
