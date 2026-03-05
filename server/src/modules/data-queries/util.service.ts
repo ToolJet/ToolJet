@@ -361,7 +361,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string): Promise<object> {
+  async listTables(user: User, dataSource: DataSource, environmentId: string, schema?: string, search?: string, page?: number, limit?: number): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -387,7 +387,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     return await service.listTables(
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
-      dataSourceOptions.updatedAt
+      dataSourceOptions.updatedAt,
+      { schema, search, page, limit }
     );
   }
 

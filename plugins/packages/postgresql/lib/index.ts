@@ -259,19 +259,42 @@ export default class PostgresqlQueryService implements QueryService {
     if (methodName === 'getTables') {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
-      const result = await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+      const isPaginated = !!args?.limit;
+      const result = await this.listTables(
+        sourceOptions,
+        dataSourceId,
+        dataSourceUpdatedAt,
+        {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        }
+      );
 
-      // safely unwrap possible structures
-      const tables = (result as any)?.data?.data ?? (result as any)?.data ?? [];
+      const payload = (result as any)?.data ?? [];
 
-      const formattedTables = tables.map((row: any) => ({
+      if (isPaginated) {
+        const rows       = (payload as any)?.rows ?? [];
+        const totalCount = (payload as any)?.totalCount ?? 0;
+        const formattedTables = rows.map((row: any) => ({
+          label: String(row.table_name),
+          value: String(row.table_name),
+        }));
+        return {
+          items:      formattedTables,
+          totalCount: totalCount,
+        };
+      }
+
+      const rows = Array.isArray(payload) ? payload : [];
+      const formattedTables = rows.map((row: any) => ({
         label: String(row.table_name),
         value: String(row.table_name),
       }));
 
       return {
         status: 'ok',
-        data: formattedTables,
+        data:   formattedTables,
       };
     }
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the PostgreSQL plugin`, {});
@@ -280,7 +303,8 @@ export default class PostgresqlQueryService implements QueryService {
   async listSchemas(
     sourceOptions: SourceOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    queryOptions?: { schema?: string; search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     const data = await this._fetchSchemas(sourceOptions, dataSourceId, dataSourceUpdatedAt);
     return { status: 'ok', data };
@@ -290,10 +314,81 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    schema = 'public'
+    queryOptions?: { schema?: string; search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
-    const data = await this._fetchTables(sourceOptions, schema, dataSourceId, dataSourceUpdatedAt);
-    return { status: 'ok', data };
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        true,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+
+      const schema = queryOptions?.schema;
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search}%`;
+
+      const allSchemas = !schema || schema === 'all';
+
+      let query = `
+        SELECT table_name, table_schema
+        FROM information_schema.tables
+        WHERE table_type = 'BASE TABLE'
+        AND table_schema NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+        ${allSchemas ? '' : 'AND table_schema = ?'}
+        AND table_name ILIKE ?
+        ORDER BY table_schema, table_name
+      `;
+
+      const params: any[] = allSchemas ? [searchPattern] : [schema, searchPattern];
+
+      let page = 1;
+      let limit = 0;
+      let offset = 0;
+
+      if (queryOptions?.limit) {
+        limit = queryOptions.limit;
+        page = queryOptions.page || 1;
+        offset = (page - 1) * limit;
+
+        query += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        // Count query — same WHERE clause without LIMIT/OFFSET
+        const countQuery = `
+          SELECT COUNT(*) AS total
+          FROM information_schema.tables
+          WHERE table_type = 'BASE TABLE'
+          AND table_schema NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+          ${allSchemas ? '' : 'AND table_schema = ?'}
+          AND table_name ILIKE ?
+        `;
+        const countParams: any[] = allSchemas ? [searchPattern] : [schema, searchPattern];
+
+        const [{ rows }, { rows: countRows }] = await Promise.all([
+          knexInstance.raw(query, params),
+          knexInstance.raw(countQuery, countParams),
+        ]);
+
+        const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
+
+        return {
+          status: 'ok',
+          data: { rows, totalCount },
+        };
+      }
+
+      const { rows } = await knexInstance.raw(query, params);
+      return {
+        status: 'ok',
+        data: rows
+      };
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
   }
 
   async listColumns(
