@@ -96,7 +96,7 @@ jobs:
             | 🟠 High     | ${{ steps.parse-grype.outputs.high }} |
             | 📊 Total    | ${{ steps.parse-grype.outputs.total }} |
 
-            > `only-fixed: true` — only CVEs that have a patch available are shown. No noise.
+            > `only-fixed: true` — only CVEs that have a patch availables are shown. No noise.
 
             ---
 
