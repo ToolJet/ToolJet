@@ -28,8 +28,9 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **Password**
 - **Connection Options**
 - **SSL Certificate**
+- **SSH Tunnelling**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-connection-v4.png" alt="PG connection-manual"/>
 
 ### Connection String
 
@@ -37,7 +38,7 @@ To connect to PostgreSQL using a connection string, select **Connection String**
 
 - **Connection String**
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/postgresql/connection-string-v4.png" alt="PG connection string"/>
 
 <br/><br/>
 
@@ -75,15 +76,13 @@ To securely connect to a private PostgreSQL database using SSH tunnelling:
 
 Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL queries are routed through this encrypted tunnel.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
 
-## Querying MongoDB
+## Querying PostgreSQL
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
 2. Select the operation that you want to perform and click **Save** to save the query.
 3. Click on the **Run** button to run the query.
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongoDB-operations.png" alt="ToolJet - Mongo query"/>
 
 ## Querying in SQL Mode
 
@@ -91,7 +90,7 @@ Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL que
 2. Select the SQL query mode from the dropdown and enter the query.
 3. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/sql1-v4.png" alt="PG connection"/>
 
 ### Parameterized Queries
 
@@ -102,18 +101,18 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
-
 #### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
 
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/sql2-v4.png" alt="Postgresql parameterized SQL queries"/>
+
 SQL Parameters: <br/>
 
 - Key: username <br/>
-- Value: oliver or `{{ components.username.value }}`
+- Value: `{{ components.username.value }}`
 
 ### Row Level Security
 
@@ -150,8 +149,6 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 5. Then, in the editor, input the **records** as an array of objects.
 6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/gui-v2.png" alt="PG connection"/>
-
 ```json
 [
   {
@@ -164,6 +161,8 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
   }
 ]
 ```
+
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/gui-query-v4.png" alt="PG connection"/>
 
 :::tip
 
