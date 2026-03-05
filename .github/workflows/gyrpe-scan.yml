@@ -2,6 +2,9 @@ name: Grype POC - Docker Image Scan
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - trivy-integration-poc
 
 jobs:
   grype-poc-scan:
