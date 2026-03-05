@@ -459,7 +459,7 @@ class BaseManageGranularAccess extends React.Component {
             permissions={permissions}
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
-            isBasicPlan={isBasicPlan}
+            isEditable={isEditable}
             key={index}
           />
         );
