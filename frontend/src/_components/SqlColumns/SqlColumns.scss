@@ -4,6 +4,23 @@
 
 .sql-column-row {
   margin-bottom: 8px;
+
+  .codehinter-input {
+    .cm-editor {
+      // height: 30px !important;
+      min-height: 30px !important;
+      max-height: 100px !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  .sql-column-end {
+    .codehinter-input {
+      .cm-editor {
+        border-right: 0;
+      }
+    }
+  }
 }
 
 .sql-column-value-wrapper {
@@ -17,6 +34,8 @@
 
 .sql-column-delete-button {
   flex-shrink: 0;
+  min-height: 30px !important;
+  max-height: 100px !important;
 }
 
 .sql-column-add-button {

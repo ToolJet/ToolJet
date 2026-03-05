@@ -310,7 +310,6 @@ export class QueryBuilder {
   }
 
   // ── Operations ──────────────────────────────────────────────────────────────
-  // ✅
   createRow(tableName: string, createRow: Record<string, CreateRowEntry> | undefined | null): QueryResult {
     this._reset();
     this._assertTableName(tableName, 'create_row');
@@ -482,12 +481,12 @@ export class QueryBuilder {
 
     const { rows_insert } = bulkInsert;
     if (!rows_insert || rows_insert.length === 0) {
-      throw new QueryBuilderError('bulk_insert.rows_insert must have at least one row', { operation: 'bulk_insert' });
+      throw new QueryBuilderError('Bulk insert requires at least one row', { operation: 'bulk_insert' });
     }
 
     const allCols = [...new Set(rows_insert.flatMap((row) => Object.keys(row)))];
     if (allCols.length === 0) {
-      throw new QueryBuilderError('bulk_insert rows must have at least one column', { operation: 'bulk_insert' });
+      throw new QueryBuilderError('Bulk insert rows must have at least one column', { operation: 'bulk_insert' });
     }
 
     const quotedCols = allCols.map((c) => this._dialect.quote(c));
@@ -507,12 +506,12 @@ export class QueryBuilder {
 
     const { primary_key, rows_update } = bulkUpdate;
     if (!primary_key || primary_key.length === 0) {
-      throw new QueryBuilderError('bulk_update_with_primary_key.primary_key must have at least one column', {
+      throw new QueryBuilderError('Bulk update requires at least one primary key column', {
         operation: 'bulk_update_with_primary_key',
       });
     }
     if (!rows_update || rows_update.length === 0) {
-      throw new QueryBuilderError('bulk_update_with_primary_key.rows_update must have at least one row', {
+      throw new QueryBuilderError('Bulk update requires at least one row', {
         operation: 'bulk_update_with_primary_key',
       });
     }
@@ -525,19 +524,17 @@ export class QueryBuilder {
 
       for (const primaryKey of primary_key) {
         if (!(primaryKey in row)) {
-          throw new QueryBuilderError(
-            `bulk_update_with_primary_key rows_update[${rowIndex}] is missing primary key column "${primaryKey}"`,
-            { operation: 'bulk_update_with_primary_key' }
-          );
+          throw new QueryBuilderError(`Row ${rowIndex + 1} is missing primary key column "${primaryKey}"`, {
+            operation: 'bulk_update_with_primary_key',
+          });
         }
       }
 
       const updateCols = Object.keys(row).filter((col) => !primaryKeySet.has(col));
       if (updateCols.length === 0) {
-        throw new QueryBuilderError(
-          `bulk_update_with_primary_key rows_update[${rowIndex}] has no columns to update (only primary key columns present)`,
-          { operation: 'bulk_update_with_primary_key' }
-        );
+        throw new QueryBuilderError(`Row ${rowIndex + 1} has no columns to update (only primary key columns present)`, {
+          operation: 'bulk_update_with_primary_key',
+        });
       }
 
       const setClauses = updateCols.map((col) => `${this._dialect.quote(col)} = ${this._addParam(row[col])}`);
@@ -555,12 +552,12 @@ export class QueryBuilder {
 
     const { primary_key, row_upsert } = bulkUpsert;
     if (!primary_key || primary_key.length === 0) {
-      throw new QueryBuilderError('bulk_upsert_with_primary_key.primary_key must have at least one column', {
+      throw new QueryBuilderError('Bulk upsert requires at least one primary key column', {
         operation: 'bulk_upsert_with_primary_key',
       });
     }
     if (!row_upsert || row_upsert.length === 0) {
-      throw new QueryBuilderError('bulk_upsert_with_primary_key.row_upsert must have at least one row', {
+      throw new QueryBuilderError('Bulk upsert requires at least one row', {
         operation: 'bulk_upsert_with_primary_key',
       });
     }
@@ -573,10 +570,9 @@ export class QueryBuilder {
 
       for (const primaryKey of primary_key) {
         if (!(primaryKey in row)) {
-          throw new QueryBuilderError(
-            `bulk_upsert_with_primary_key row_upsert[${rowIndex}] is missing primary key column "${primaryKey}"`,
-            { operation: 'bulk_upsert_with_primary_key' }
-          );
+          throw new QueryBuilderError(`Row ${rowIndex + 1} is missing primary key column "${primaryKey}"`, {
+            operation: 'bulk_upsert_with_primary_key',
+          });
         }
       }
 

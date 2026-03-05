@@ -8,7 +8,7 @@ import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDataba
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_SORT_ORDER_OPTIONS } from './sortOrderConstants';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
-import './SqlSort.css';
+import './SqlSort.scss';
 
 // ---------------------------------------------------------------------------
 // SqlSortRow – a single sort condition row (column / direction)
@@ -41,7 +41,7 @@ const SqlSortRow = React.memo(function SqlSortRow({
   return (
     <div className="sql-sort-row d-flex align-items-start">
       {/* Column – CodeHinter so the user can type the column name */}
-      <div className="col p-0 pe-1">
+      <div className="col p-0">
         <CodeHinter
           type="basic"
           initialValue={typeof columnValue === 'string' ? columnValue : ''}

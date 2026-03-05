@@ -8,7 +8,7 @@ import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDataba
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_AGGREGATE_FUNCTION_OPTIONS } from './aggregateFunctionConstants';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
-import './SqlAggregate.css';
+import './SqlAggregate.scss';
 
 // ---------------------------------------------------------------------------
 // SqlAggregateRow – a single aggregate row (function / column)
@@ -45,7 +45,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
   return (
     <div className="sql-aggregate-row d-flex align-items-start">
       {/* Aggregate function – dropdown (Sum, Count, Avg, Min, Max, Count distinct) */}
-      <div className="col p-0 pe-1">
+      <div className="col p-0">
         <DropDownSelect
           useMenuPortal={true}
           placeholder="Function"

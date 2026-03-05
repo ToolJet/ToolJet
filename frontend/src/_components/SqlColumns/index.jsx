@@ -6,7 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
-import './SqlColumns.css';
+import './SqlColumns.scss';
 
 // ---------------------------------------------------------------------------
 // SqlColumnRow – a single column-name / value row
@@ -36,7 +36,7 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
   return (
     <div className="sql-column-row d-flex align-items-start">
       {/* Column name – CodeHinter so the user can type the column name */}
-      <div className="col p-0 pe-1">
+      <div className="col p-0">
         <CodeHinter
           type="basic"
           initialValue={typeof columnName === 'string' ? columnName : ''}
@@ -50,7 +50,7 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
 
       {/* Value – CodeHinter for the column value */}
       <div className="col p-0 sql-column-value-wrapper">
-        <div className="sql-column-value-input">
+        <div className="sql-column-value-input sql-column-end">
           <CodeHinter
             type="basic"
             initialValue={

@@ -155,7 +155,7 @@ export default class PostgresqlQueryService implements QueryService {
       case 'create_row': {
         const { columns } = queryOptions.create_row || {};
         const { query, params } = queryBuilder.createRow(table, columns) as { query: string; params: unknown[] };
-        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
         return { status: 'ok', data: rows };
       }
 
@@ -169,6 +169,7 @@ export default class PostgresqlQueryService implements QueryService {
         const rows = await this.executeWriteQuery(knexInstance, query, params, {
           allow_multiple_updates,
           zero_records_as_success,
+          operationLabel: 'updated',
         });
         return { status: 'ok', data: rows };
       }
@@ -183,19 +184,26 @@ export default class PostgresqlQueryService implements QueryService {
         const rows = await this.executeWriteQuery(knexInstance, query, params, {
           allow_multiple_updates,
           zero_records_as_success,
+          operationLabel: 'upserted',
         });
         return { status: 'ok', data: rows };
       }
 
       case 'delete_rows': {
-        const { limit } = queryOptions;
-        const { where_filters } = (queryOptions as any).delete_rows || {};
+        const { limit, zero_records_as_success } = queryOptions;
+        const { where_filters } = queryOptions.delete_rows || {};
         const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
           query: string;
           params: unknown[];
         };
-        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
-        return { status: 'ok', data: rows };
+        const deletedRows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
+        const deletedRecords = deletedRows.length;
+
+        if (zero_records_as_success === false && deletedRecords === 0) {
+          throw new Error('No rows were deleted.');
+        }
+
+        return { status: 'ok', deletedRecords } as unknown as QueryResult;
       }
 
       case 'bulk_insert': {
@@ -204,7 +212,7 @@ export default class PostgresqlQueryService implements QueryService {
           query: string;
           params: unknown[];
         };
-        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
         return { status: 'ok', data: rows };
       }
 
@@ -214,8 +222,8 @@ export default class PostgresqlQueryService implements QueryService {
           primary_key: [primary_key_column],
           rows_update: records,
         }) as { queries: { query: string; params: unknown[] }[] };
-        await this.executeBulkQueriesInTransaction(knexInstance, queries);
-        return { status: 'ok', data: [] };
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data, bulk_update_status: 'success' } as unknown as QueryResult;
       }
 
       case 'bulk_upsert_pkey': {
@@ -224,8 +232,8 @@ export default class PostgresqlQueryService implements QueryService {
           primary_key: [primary_key_column],
           row_upsert: records,
         }) as { queries: { query: string; params: unknown[] }[] };
-        await this.executeBulkQueriesInTransaction(knexInstance, queries);
-        return { status: 'ok', data: [] };
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
       }
 
       default:
@@ -242,15 +250,18 @@ export default class PostgresqlQueryService implements QueryService {
     knexInstance: Knex,
     query: string,
     params: unknown[],
-    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean }
+    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
   ): Promise<unknown[]> {
-    const { allow_multiple_updates, zero_records_as_success } = options;
-    const needsCheck = allow_multiple_updates === false || zero_records_as_success === false;
+    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+    const hasConstraints = allow_multiple_updates === false || zero_records_as_success === false;
 
-    if (!needsCheck) {
-      return this.executeParameterizedQuery(knexInstance, query, params);
+    if (!hasConstraints) {
+      // No constraint checks — run directly, RETURNING * surfaces the affected rows
+      const { rows: affectedRows } = await knexInstance.raw(`${query} RETURNING *`, params as any[]);
+      return affectedRows;
     }
 
+    // Wrap in a transaction so any thrown error automatically rolls back the write
     return knexInstance.transaction(async (trx) => {
       const { rows: affectedRows } = await trx.raw(`${query} RETURNING *`, params as any[]);
 
@@ -261,7 +272,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       if (zero_records_as_success === false && affectedRows.length === 0) {
-        throw new Error('Query did not affect any records.');
+        throw new Error(`No rows were ${operationLabel}.`);
       }
 
       return affectedRows;
@@ -271,12 +282,15 @@ export default class PostgresqlQueryService implements QueryService {
   private async executeBulkQueriesInTransaction(
     knexInstance: Knex,
     queries: { query: string; params: unknown[] }[]
-  ): Promise<void> {
+  ): Promise<unknown[]> {
+    const allRows: unknown[] = [];
     await knexInstance.transaction(async (transaction) => {
       for (const { query, params } of queries) {
-        await transaction.raw(query, params as any[]);
+        const { rows } = await transaction.raw(`${query} RETURNING *`, params as any[]);
+        allRows.push(...rows);
       }
     });
+    return allRows;
   }
 
   private isSqlParametersUsed(queryOptions: QueryOptions): boolean {

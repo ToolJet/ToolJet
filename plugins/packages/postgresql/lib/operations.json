@@ -266,6 +266,12 @@
           "height": "36px",
           "className": "codehinter-plugins",
           "placeholder": "Enter limit"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that deletes zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
         }
       },
       "bulk_insert": {

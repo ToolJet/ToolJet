@@ -7,7 +7,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_FILTER_OPERATORS, SQL_FILTER_IS_OPERATOR_OPTIONS } from './filterOperatorConstants';
-import './SqlFilters.css';
+import './SqlFilters.scss';
 
 /**
  * Reads the filter map from the options object.
@@ -121,8 +121,9 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
           initialValue={typeof columnValue === 'string' ? columnValue : ''}
           placeholder="Enter column"
           onChange={handleColumnChange}
-          height="30"
+          height="28"
           enablePreview={false}
+          className="rounded-start overflow-hidden"
         />
       </div>
 
@@ -142,7 +143,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
 
       {/* Value – DropDownSelect for 'is' operator, CodeHinter otherwise */}
       <div className="col p-0 sql-filter-value-wrapper">
-        <div className="sql-filter-value-input">
+        <div className="sql-filter-value-input sql-filter-end">
           {isIsOperatorSelected ? (
             <DropDownSelect
               useMenuPortal={true}
@@ -164,7 +165,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
                     : JSON.stringify(filterValue)
                   : filterValue
               }
-              className="codehinter-plugins"
+              className="codehinter-plugins codehinter-end"
               placeholder="value"
               onChange={handleValueChange}
               height="28"
