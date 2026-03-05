@@ -6,10 +6,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { createHash } from 'crypto';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { trackPublicAppViewer } from '@otel/tracing';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   // This guard will allow access for unauthenticated user if the app is public
@@ -49,7 +51,21 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     request.headers['tj-workspace-id'] = app.organizationId;
 
     if (app.isPublic === true) {
-      // No need to do user validation
+      // Track anonymous public app viewers: synthetic hashed ID (IP + UA) per app + workspace.
+      try {
+        const ip = request.ip || '';
+        const ua = (request.headers['user-agent'] || '').slice(0, 64);
+        const viewerId = 'anon_' + createHash('sha256').update(`${ip}:${ua}`).digest('hex').slice(0, 16);
+        trackPublicAppViewer({
+          workspaceId: app.organizationId,
+          workspaceName: organization?.name || '',
+          appId: app.id,
+          appName: app.name,
+          viewerId,
+        });
+      } catch {
+        // Never block the request due to metrics tracking failure
+      }
       return true;
     }
 

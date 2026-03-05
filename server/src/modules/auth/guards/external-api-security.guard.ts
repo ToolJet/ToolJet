@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { AppsRepository } from '@modules/apps/repository';
+import { trackUserActivity } from '@otel/tracing';
 @Injectable()
 export class ExternalApiSecurityGuard implements CanActivate {
   constructor(
@@ -28,6 +29,15 @@ export class ExternalApiSecurityGuard implements CanActivate {
 
     if (!authHeader || authHeader !== `Basic ${externalApiAccessToken}`) {
       throw new ForbiddenException('Unauthorized');
+    }
+
+    // Track external API activity as a synthetic system-level identity.
+    // All external API calls share one credential, so this acts as a binary
+    // presence indicator under workspace_id="system" in OTEL metrics.
+    try {
+      trackUserActivity({ workspaceId: 'system', userId: 'external_api' });
+    } catch {
+      // Never block a valid request due to metrics tracking failure
     }
 
     return true;
