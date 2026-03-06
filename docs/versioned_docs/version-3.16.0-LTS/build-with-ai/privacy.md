@@ -13,7 +13,7 @@ Your sensitive business data, customer information, and proprietary datasets rem
 
 We utilize multiple AI models from Anthropic and OpenAI to power our generation features.
 
-When you explicitly use our schema-aware AI features, we share your prompts, application metadata (such as UI components), database schemas (e.g., table and column names), and strictly limited sample data necessary for the AI to understand your data structure.
+When you explicitly use our schema-aware AI features, we share your prompts, application metadata (such as UI components), and database schemas (e.g., table and column names) necessary for the AI to understand your data structure.
 
 This data is transmitted securely and exclusively for the purpose of fulfilling your immediate application generation request. It is not shared outside your deployment for any other reason.
 
@@ -23,7 +23,7 @@ You can meet your organization's specific security, compliance, and data residen
 
 While we currently utilize cloud-based LLMs (such as Anthropic and OpenAI) for AI features, these integrations can be managed or disabled by workspace administrators.
 
-If you require a strictly air-gapped environment, you can set up a separate instance of ToolJet for development, or choose to disable the AI schema-reading capabilities to ensure no structural or sample data leaves your internal network.
+If you require a strictly air-gapped environment, you can set up a separate instance of ToolJet for development, or choose to disable the AI schema-reading capabilities to ensure no structural data leaves your internal network.
 
 Self-hosted enterprise plan of ToolJet has an option to deploy our AI gateway on-premise with your own LLM keys. Reach out to hello@tooljet.com for details.
 
