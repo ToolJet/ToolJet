@@ -15,6 +15,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
@@ -324,18 +325,6 @@ export const DropdownV2 = ({
 
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
-  const toCssWidth = (val) => {
-    if (val === undefined || val === null) return null;
-    if (typeof val === 'number') return `${val}px`;
-    if (typeof val === 'string') {
-      const trimmed = val.trim();
-      if (!trimmed) return null;
-      if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return `${trimmed}px`;
-      return trimmed;
-    }
-    return null;
-  };
-
   const menuContentWidth = useMemo(() => {
     if (menuWidthMode !== 'matchContent') return null;
     if (!Array.isArray(selectOptions) || selectOptions.length === 0) return null;
@@ -363,33 +352,7 @@ export const DropdownV2 = ({
     }
   }, [menuWidthMode, selectOptions, ref]);
 
-  const menuWidthStyle = useMemo(() => {
-    const viewportClamp = 'calc(100vw - 24px)';
-    const customWidth = toCssWidth(menuCustomWidth);
-
-    if (menuWidthMode === 'matchField' && triggerWidth) {
-      const widthPx = `${triggerWidth}px`;
-      return { width: widthPx, minWidth: widthPx, maxWidth: viewportClamp };
-    }
-
-    if (menuWidthMode === 'matchContent' && menuContentWidth) {
-      const contentPx = Number.parseFloat(menuContentWidth) || 0;
-      const triggerPx = triggerWidth != null && Number.isFinite(triggerWidth) ? triggerWidth : 0;
-      const effectivePx = Math.max(contentPx, triggerPx);
-      const widthStr = effectivePx > 0 ? `${effectivePx}px` : menuContentWidth;
-      return {
-        width: widthStr,
-        minWidth: widthStr,
-        maxWidth: 'min(520px, calc(100vw - 24px))',
-      };
-    }
-
-    if (menuWidthMode === 'custom' && customWidth) {
-      return { width: customWidth, maxWidth: viewportClamp };
-    }
-
-    return { maxWidth: viewportClamp };
-  }, [menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth]);
+  const menuWidthStyle = useMenuWidth(menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth);
 
   const customStyles = {
     container: (base) => ({
@@ -439,8 +402,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -528,8 +491,8 @@ export const DropdownV2 = ({
         ref={dropdownRef}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) ||
-              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',

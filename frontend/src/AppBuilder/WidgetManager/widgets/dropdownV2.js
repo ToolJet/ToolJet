@@ -410,7 +410,7 @@ export const dropdownV2Config = {
       accentColor: { value: 'var(--cc-primary-brand)' },
       widthType: { value: 'ofComponent' },
       menuWidthMode: { value: 'matchField' },
-      menuCustomWidth: { value: '' },
+      menuCustomWidth: { value: '256px' },
     },
   },
 };

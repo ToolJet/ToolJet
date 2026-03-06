@@ -21,8 +21,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     showSearchInput,
     menuBackgroundColor,
     menuWidthStyle,
-  } =
-    selectProps;
+  } = selectProps;
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);

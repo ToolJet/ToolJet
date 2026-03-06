@@ -62,7 +62,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'DropdownV2';
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
 
 type NewRevampedComponent =
   | 'Text'
@@ -97,7 +97,8 @@ type NewRevampedComponent =
   | 'Chat'
   | 'CurrencyInput'
   | 'PhoneInput'
-  | 'IFrame';
+  | 'IFrame'
+  | 'DropdownV2';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -140,15 +141,10 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'CurrencyInput',
   'PhoneInput',
   'IFrame',
-];
-
-const PartialRevampedComponents: PartialRevampedComponent[] = [
-  'CodeEditor',
-  'PDF',
-  'Calendar',
-  'CustomComponent',
   'DropdownV2',
 ];
+
+const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
 
 const INPUT_WIDGET_TYPES = [
   'TextInput',
@@ -169,16 +165,16 @@ const INPUT_WIDGET_TYPES = [
 ];
 
 const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
-      'TextInput',
-      'NumberInput',
-      'EmailInput',
-      'CurrencyInput',
-      'PhoneInput',
-      'Datepicker',
-      'DatePickerV2',
-      'DatetimePickerV2',
-      'TimePicker',
-      'DaterangePicker',
+  'TextInput',
+  'NumberInput',
+  'EmailInput',
+  'CurrencyInput',
+  'PhoneInput',
+  'Datepicker',
+  'DatePickerV2',
+  'DatetimePickerV2',
+  'TimePicker',
+  'DaterangePicker',
 ];
 
 @Injectable()
@@ -2604,6 +2600,7 @@ function migrateProperties(
       },
       DropdownV2: {
         menuWidthMode: { value: 'matchField' },
+        menuCustomWidth: { value: '256px' },
       },
     };
 
@@ -2881,6 +2878,9 @@ function migrateProperties(
     if (componentType === 'DropdownV2') {
       if (!styles.menuWidthMode) {
         styles.menuWidthMode = { value: 'matchField' };
+      }
+      if (!styles.menuCustomWidth) {
+        styles.menuCustomWidth = { value: '256px' };
       }
     }
   }

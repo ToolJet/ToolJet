@@ -4,6 +4,7 @@ import { MigrationProgress } from '@helpers/migration.helper';
 const DEFAULT_STYLES: Record<string, Record<string, { value: string | number }>> = {
   DropdownV2: {
     menuWidthMode: { value: 'matchField' },
+    menuCustomWidth: { value: '256px' },
   },
 };
 
