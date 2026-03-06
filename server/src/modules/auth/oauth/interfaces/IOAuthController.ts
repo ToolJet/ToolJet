@@ -6,7 +6,7 @@ export interface IOAuthController {
 
   getOpenIDRedirect(req: Request, response: Response, configId: string): Promise<any>;
 
-  getSAMLRedirect(configId: string): Promise<any>;
+  getSAMLRedirect(req: any, configId: string): Promise<any>;
 
   commonSignIn(req: Request, ssoType: string, body: any, user: User, response: Response): Promise<any>;
 
