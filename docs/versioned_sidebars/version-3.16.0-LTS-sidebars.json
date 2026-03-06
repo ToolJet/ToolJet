@@ -340,6 +340,7 @@
               "label": "Component Catalog",
               "items": [
                 "widgets/audio-recorder",
+                "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
@@ -412,6 +413,7 @@
                 "widgets/qr-scanner",
                 "widgets/radio-button-v2",
                 "widgets/range-slider",
+                "widgets/reorderable-list",
                 "widgets/spinner",
                 "widgets/star-rating",
                 "widgets/statistics",
