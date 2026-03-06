@@ -20,14 +20,17 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
+      fail-fast: false
       matrix:
-        edition: >-
-          ${{ 
+        edition:
+          - ${{
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce')) && 'ce' ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && 'ee' || ''
-          }}
+            }}
+        exclude:
+          - edition: ""
 
     steps:
       - name: Debug labels and matrix edition
