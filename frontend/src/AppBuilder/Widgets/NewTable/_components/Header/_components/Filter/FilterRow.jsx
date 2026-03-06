@@ -28,9 +28,9 @@ export const FilterRow = memo(
     return (
       <div className="row mb-2">
         <div className="col p-2" style={{ maxWidth: '70px' }}>
-          <small data-cy={`label-filter-column`}>{index > 0 ? 'and' : 'column'}</small>
+          <small data-cy={`filter-${index > 0 ? 'and' : 'column'}-label`}>{index > 0 ? 'and' : 'column'}</small>
         </div>
-        <div data-cy={`select-coloumn-dropdown-${index}`} className="col">
+        <div data-cy={`select-column-dropdown-${index}`} className="col">
           <Select
             options={columns}
             value={filter.id}
@@ -63,7 +63,7 @@ export const FilterRow = memo(
         <div className="col">
           {!['isEmpty', 'isNotEmpty'].includes(filter.value.condition) && (
             <input
-              data-cy={`data-filtervalue-input-${index}`}
+              data-cy={`filter-value-input-${index}`}
               type="text"
               value={filter.value.value}
               placeholder="value"
@@ -74,7 +74,7 @@ export const FilterRow = memo(
         </div>
         <div className="col-auto">
           <button
-            data-cy={`button-close-filter-${index}`}
+            data-cy={`close-filter-button-${index}`}
             onClick={() => onRemove(index)}
             className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
           >

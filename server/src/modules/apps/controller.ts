@@ -115,7 +115,23 @@ export class AppsController implements IAppsController {
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
     };
-    return this.appsService.getAllApps(user, AppListDto);
+    return this.appsService.getAllApps(user, AppListDto, false);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('/addable')
+  indexAddable(@User() user: UserEntity) {
+    return this.appsService.getAllApps(
+      user,
+      {
+        page: '1',
+        folderId: null,
+        searchKey: '',
+        type: 'front-end',
+      },
+      true
+    );
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ICON)

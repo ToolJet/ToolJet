@@ -294,7 +294,7 @@ export class AppsService implements IAppsService {
     });
   }
 
-  async getAllApps(user: User, appListDto: AppListDto): Promise<any> {
+  async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
     let apps = [];
     let totalFolderCount = 0;
 
@@ -313,14 +313,23 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+      }
+
+      if (isGetAll) {
+        const response = {
+          apps,
+        };
+        return decamelizeKeys(response);
       }
 
       if (type === 'module') {
-        for (const app of apps) {
-          const appVersionId = app?.appVersions?.[0]?.id;
-          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
-        }
+        await Promise.all(
+          apps.map(async (app) => {
+            const appVersionId = app?.appVersions?.[0]?.id;
+            app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
+          })
+        );
       }
 
       const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);

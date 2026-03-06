@@ -91,7 +91,7 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
-const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps }) => {
+const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...restProps }) => {
   const { t } = useTranslation();
   const {
     layoutPropertyChanged,

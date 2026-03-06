@@ -76,7 +76,7 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='empty-editor-text']"
+    componentSelector = "[data-cy='drag-and-drop-a-component-label']"
   ) => {
     cy.intercept("GET", "/api/apps/*").as("getAppData");
 
