@@ -86,7 +86,7 @@ export const TableRow = ({
             )}-row-${virtualRow.index}`}
             style={cellStyles}
             className={cx('table-cell td', {
-              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions' || cell.column.columnDef?.meta?.columnType === 'button',
               'has-left-actions': cell.column.id === 'leftActions',
               'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
