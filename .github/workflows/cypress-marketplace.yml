@@ -30,6 +30,34 @@ jobs:
           }}
 
     steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -46,10 +74,6 @@ jobs:
 
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
-
-      - name: Log the matrix edition
-        run: |
-          echo "Matrix edition: ${{ matrix.edition }}"
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -108,20 +132,36 @@ jobs:
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
-          echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -141,9 +181,12 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
 
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
       - name: Install Docker Compose
         run: |
-          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
 
       - name: Run docker-compose file
@@ -160,10 +203,167 @@ jobs:
 
       - name: Wait for the server to be ready
         run: |
-          timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:3000; do
-            sleep 5
-          done'
+          echo "Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82|Ready to use at http://localhost:80"; then
+              echo "Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "Timeout reached without finding success logs"
+            echo "Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "delete_users procedure created successfully"
 
       - name: Seeding (Setup Super Admin)
         run: |
