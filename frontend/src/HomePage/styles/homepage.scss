@@ -15,12 +15,12 @@
   width: 100%;
   margin-top: 32px;
 }
+
 .homepage-app-card-list-item-wrap {
   column-gap: 24px;
   row-gap: 24px;
   flex-wrap: wrap;
   display: flex;
-  padding-bottom: 24px;
 }
 
 .homepage-app-card-list-item {
@@ -146,7 +146,7 @@
 }
 
 .home-page-content-container {
-  max-width: 1180px;
+  max-width: 880px;
 
   @media only screen and (max-width: 768px) {
     margin-bottom: 0rem !important;
@@ -217,7 +217,7 @@
   }
 
   .home-page-content-container {
-    max-width: 1180px;
+    max-width: 976px;
   }
 
   .liner {
@@ -250,7 +250,7 @@
 
 @media only screen and (min-width: 993px) and (max-width: 1311px) {
   .home-page-content-container {
-    max-width: 880px;
+    max-width: 568px;
   }
 
   .homepage-app-card-list-item-wrap {
@@ -279,23 +279,38 @@
   .homepage-app-card-list-item-wrap {
     display: flex;
     justify-content: center;
-    flex-direction: column;
     width: 100%;
     gap: 24px;
-    margin: 22px auto 0 auto;
-    padding: 0 10px;
-    width: 100%;
   }
 
   .homepage-app-card-list-item {
-    max-width: 320px !important;
+    // max-width: 304px !important;
+    max-width: calc(50% - 12px);
     flex-basis: 100%;
-    flex-shrink: 0;
-    flex-grow: 0;
 
     .edit-button,
     .launch-button {
-      width: 115px !important;
+      width: 129px !important;
+    }
+  }
+}
+
+.workflow-dashboard {
+  .home-page-content-container {
+    max-width: 880px;
+  }
+
+  .homepage-app-card-list-item-wrap {
+    padding-bottom: 24px;
+  }
+
+  .apps-modules-navigation {
+    margin-top: 16px;
+  }
+
+  @media only screen and (min-width: 1312px) and (max-width: 1727px) {
+    .home-page-content-container {
+      max-width: 976px;
     }
   }
 }

@@ -287,7 +287,8 @@ class HomePageComponent extends React.Component {
       appSearchKey: appSearchKey,
     });
 
-    folderService.getAll(appSearchKey, this.props.appType).then((data) => {
+    const folderAppType = this.props.appType === 'executions' ? 'workflow' : this.props.appType;
+    folderService.getAll(appSearchKey, folderAppType).then((data) => {
       const folder_slug = new URL(window.location.href)?.searchParams?.get('folder');
       const folder = data?.folders?.find((folder) => folder.name === folder_slug);
       const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
@@ -317,7 +318,7 @@ class HomePageComponent extends React.Component {
   getAppType = () => {
     const { appType } = this.props;
     if (appType === 'front-end') return 'App';
-    if (appType === 'workflow') return 'Workflow';
+    if (appType === 'workflow' || appType === 'executions') return 'Workflow';
     if (appType === 'module') return 'Module';
     return 'app';
   };
@@ -330,7 +331,7 @@ class HomePageComponent extends React.Component {
       const data = await appsService.createApp({
         icon: sample(iconList),
         name: appName,
-        type: this.props.appType,
+        type: this.props.appType === 'executions' ? 'workflow' : this.props.appType,
         prompt,
       });
       /* Posthog Event */
@@ -1354,7 +1355,7 @@ class HomePageComponent extends React.Component {
 
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
-        <div className="wrapper home-page">
+        <div className={`wrapper home-page${(this.props.appType === 'workflow' || this.props.appType === 'executions') ? ' workflow-dashboard' : ''}`}>
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
             <PermissionDeniedModal
@@ -1724,7 +1725,7 @@ class HomePageComponent extends React.Component {
                   <LicenseTooltip
                     limits={appsLimit}
                     feature={
-                      this.props.appType === 'workflow'
+                      this.props.appType === 'workflow' || this.props.appType === 'executions'
                         ? 'workflows'
                         : this.props.appType === 'module'
                         ? 'modules'
@@ -1744,7 +1745,7 @@ class HomePageComponent extends React.Component {
                             })
                           }
                           data-cy={`create-new-${
-                            this.props.appType === 'workflow'
+                            this.props.appType === 'workflow' || this.props.appType === 'executions'
                               ? 'workflows'
                               : this.props.appType === 'module'
                               ? 'modules'
@@ -1759,7 +1760,7 @@ class HomePageComponent extends React.Component {
                               ? 'Create new module'
                               : this.props.t(
                                   `${
-                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                    this.props.appType === 'workflow' || this.props.appType === 'executions' ? 'workflowsDashboard' : 'homePage'
                                   }.header.createNewApplication`,
                                   'Create new app'
                                 )}
@@ -1805,7 +1806,7 @@ class HomePageComponent extends React.Component {
                   canUpdateFolder={this.canUpdateFolder()}
                   darkMode={this.props.darkMode}
                   canCreateApp={this.canCreateApp()}
-                  appType={this.props.appType}
+                  appType={this.props.appType === 'executions' ? 'workflow' : this.props.appType}
                 />
               )}
               {this.props.appType === 'front-end' && (
@@ -1844,9 +1845,9 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              <div className="mb-5 container home-page-content-container">
-                {featuresLoaded && !isLoading ? (
-                  <>
+              {(this.props.appType === 'workflow' || this.props.appType === 'executions') && (
+                <div className="apps-modules-navigation px-4">
+                  {featuresLoaded && !isLoading ? (
                     <AppTypeTab
                       appType={this.props.appType === 'executions' ? 'workflow' : this.props.appType}
                       navigate={this.props.navigate}
@@ -1854,19 +1855,27 @@ class HomePageComponent extends React.Component {
                       hasModuleAccess={this.props.hasModuleAccess}
                       activeTab={this.props.appType === 'executions' ? 'executions' : undefined}
                     />
-                  </>
-                ) : (
-                  !appSearchKey && <HeaderSkeleton />
+                  ) : (
+                    !appSearchKey && <HeaderSkeleton />
+                  )}
+                </div>
+              )}
+              {this.props.appType !== 'executions' && (<div className="mb-5 container home-page-content-container">
+                {this.props.appType !== 'workflow' && this.props.appType !== 'executions' && (
+                  featuresLoaded && !isLoading ? (
+                    <AppTypeTab
+                      appType={this.props.appType}
+                      navigate={this.props.navigate}
+                      darkMode={this.props.darkMode}
+                      hasModuleAccess={this.props.hasModuleAccess}
+                    />
+                  ) : (
+                    !appSearchKey && <HeaderSkeleton />
+                  )
                 )}
 
                 {this.props.appType !== 'workflow' && this.props.appType !== 'executions' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
-                )}
-
-                {this.props.appType === 'executions' && (
-                  <div className="container-fluid mt-4 px-4">
-                     {this.props.executionsComponent}
-                  </div>
                 )}
 
                 {this.props.appType !== 'executions' && (meta?.total_count > 0 || appSearchKey) && (
@@ -2001,7 +2010,14 @@ class HomePageComponent extends React.Component {
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}
-              </div>
+              </div>)}
+
+              {this.props.appType === 'executions' && (
+                <div className="container-fluid px-0">
+                  {this.props.executionsComponent}
+                </div>
+              )}
+
               <div className="footer-container">
                 {this.props.appType !== 'executions' && this.pageCount() > MAX_APPS_PER_PAGE && (
                   <Footer

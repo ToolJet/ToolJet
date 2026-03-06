@@ -62,7 +62,7 @@ export const Folders = function Folders({
   useEffect(() => {
     const noFolder = !currentFolder || _.isEmpty(currentFolder);
     const label = noFolder
-      ? `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`
+      ? `All ${appType === 'executions' ? 'executions' : appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`
       : currentFolder.name;
 
     updateSidebarNAV(label);
@@ -107,7 +107,7 @@ export const Folders = function Folders({
   }
 
   const getDefaultLabel = () => {
-    return `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`;
+    return `All ${appType === 'executions' ? 'executions' : appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`;
   };
 
   function handleFolderChange(folder) {

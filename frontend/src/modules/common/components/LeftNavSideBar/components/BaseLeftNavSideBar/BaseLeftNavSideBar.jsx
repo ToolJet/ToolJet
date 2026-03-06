@@ -70,7 +70,7 @@ const BaseLeftNavSideBar = ({
                 to={getPrivateRoute('workflows')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
                 className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                  router.pathname.startsWith(getPrivateRoute('workflows')) && `current-seleted-route`
                 }`}
                 style={{
                   display: 'flex',
@@ -83,7 +83,7 @@ const BaseLeftNavSideBar = ({
                 <SolidIcon
                   name="workflows"
                   fill={
-                    router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                    router.pathname.startsWith(getPrivateRoute('workflows')) && `current-seleted-route`
                       ? '#3E63DD'
                       : darkMode
                       ? '#4C5155'

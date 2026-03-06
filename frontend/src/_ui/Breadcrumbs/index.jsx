@@ -24,6 +24,7 @@ const routes = [
   { path: '/settings/smtp', breadcrumb: 'Settings' },
   { path: '/settings/instance-login', breadcrumb: 'Settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
+  { path: '/:worspace_id/workflows/executions', breadcrumb: 'Workflows' },
   { path: '/integrations/installed', breadcrumb: 'Integrations' },
   { path: '/integrations/marketplace', breadcrumb: 'Integrations' },
 ];
