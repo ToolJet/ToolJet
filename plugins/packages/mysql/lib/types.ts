@@ -23,4 +23,27 @@ export type QueryOptions = {
   primary_key_column: string;
   records: Record<string, unknown>[];
   query_params: string[][];
+  allow_multiple_updates?: boolean;
+  zero_records_as_success?: boolean;
+  limit?: string | number;
+  offset?: string | number;
+  list_rows?: {
+    where_filters?: Record<string, any>;
+    order_filters?: Record<string, any>;
+    aggregates?: Record<string, any>;
+    group_by?: Record<string, any>;
+  };
+  create_row?: {
+    columns?: Record<string, any>;
+  };
+  update_rows?: {
+    columns?: Record<string, any>;
+    where_filters?: Record<string, any>;
+  };
+  upsert_rows?: {
+    columns?: Record<string, any>;
+  };
+  delete_rows?: {
+    where_filters?: Record<string, any>;
+  };
 };
