@@ -56,8 +56,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           setTimeout(() => {
             const newPath = appendWorkspaceId(slugValue, location.pathname, true);
             if (isCustomDomain()) {
-              const mainHost = window.public_config?.TOOLJET_HOST;
-              redirectWithSessionTransfer(mainHost?.replace(/\/+$/, ''), newPath, data?.organization_id || data?.current_organization_id);
+              redirectWithSessionTransfer(getBaseHostURL(), newPath, data?.organization_id || data?.current_organization_id);
             } else {
               window.history.replaceState(null, null, newPath);
               window.location.reload();
