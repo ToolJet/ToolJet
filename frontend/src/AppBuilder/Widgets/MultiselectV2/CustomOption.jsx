@@ -6,7 +6,7 @@ import './multiselectV2.scss';
 import { highlightText } from '../DropdownV2/utils';
 
 const CustomOption = (props) => {
-  const labelText = props.label?.toString();
+  const labelText = String(props.label ?? '');
 
   return (
     <Option
