@@ -340,6 +340,7 @@
               "label": "Component Catalog",
               "items": [
                 "widgets/audio-recorder",
+                "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
