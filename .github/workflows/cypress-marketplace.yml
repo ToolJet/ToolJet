@@ -1,4 +1,4 @@
-name: Cypress Marketplace
+name: Cypress Marketplace-
 
 on:
   pull_request_target:
