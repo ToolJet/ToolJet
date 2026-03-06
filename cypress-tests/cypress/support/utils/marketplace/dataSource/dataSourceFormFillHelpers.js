@@ -188,4 +188,3 @@ export function fillDSConnectionForm (formConfig, invalidFields = []) {
     processFields(invalidFields);
   }
 }
-
