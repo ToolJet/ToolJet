@@ -43,6 +43,29 @@ export class AiConversationRepository extends Repository<AiConversation> {
     }, manager || this.manager);
   }
 
+  async findAllByAppAndUser(
+    appId: string,
+    userId: string,
+    conversationType: 'generate' | 'learn'
+  ): Promise<AiConversation[]> {
+    return await this.find({
+      where: {
+        appId,
+        userId,
+        conversationType,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  async findById(conversationId: string): Promise<AiConversation> {
+    return await this.findOne({
+      where: { id: conversationId },
+    });
+  }
+
   async createOne(conversation: Partial<AiConversation>, manager?: EntityManager): Promise<AiConversation> {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.save(manager.create(AiConversation, conversation));

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Res, NotFoundException, Query } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { Response } from 'express';
 import { IAiController } from './interfaces/IController';
@@ -64,6 +64,28 @@ export class AiController implements IAiController {
   @InitFeature(FEATURE_KEY.GET_CREDITS_BALANCE)
   @Get('/get-credits-balance')
   async getCreditsBalance(@User() user) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_CONVERSATIONS)
+  @Get('conversations')
+  async listConversations(
+    @User() user,
+    @Query('appId') appId: string,
+    @Query('conversationType') conversationType: string
+  ) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_CONVERSATION)
+  @Post('conversation/new')
+  async createConversation(@User() user, @Body() body) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_CONVERSATIONS)
+  @Get('conversation/:conversationId')
+  async getConversationById(@User() user, @Param('conversationId') conversationId: string) {
     throw new NotFoundException();
   }
 }

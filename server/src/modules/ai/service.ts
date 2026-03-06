@@ -32,4 +32,16 @@ export class AiService implements IAiService {
   async getCreditsBalance(organizationId) {
     throw new Error('Method not implemented.');
   }
+
+  async listConversations(appId: string, userId: string, conversationType: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async createConversation(userId: string, appId: string, conversationType: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getConversationById(conversationId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

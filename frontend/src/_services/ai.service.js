@@ -9,6 +9,9 @@ export const aiService = {
   getCreditBalance,
   fixWithAI,
   updateMessageData,
+  listConversations,
+  createConversation,
+  getConversation,
 };
 
 async function voteMessage(messageId, voteType) {
@@ -82,4 +85,27 @@ async function updateMessageData(messageId, body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
 
   return fetch(`${config.apiUrl}/ai/conversation/message/${messageId}`, requestOptions).then(handleResponse);
+}
+
+async function listConversations(appId, conversationType = 'generate') {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/ai/conversations?appId=${appId}&conversationType=${conversationType}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+async function createConversation(appId, conversationType = 'generate') {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ appId, conversationType }),
+  };
+  return fetch(`${config.apiUrl}/ai/conversation/new`, requestOptions).then(handleResponse);
+}
+
+async function getConversation(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
 }
