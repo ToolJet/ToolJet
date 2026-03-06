@@ -6,14 +6,26 @@ import { Icon as IconPicker } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import AlignLeftinspector from '@/_ui/Icon/solidIcons/AlignLeftinspector';
 import AlignRightinspector from '@/_ui/Icon/solidIcons/AlignRightinspector';
 
-export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButtonPropertyChange, onButtonPropertiesChange, component }) => {
-  if (!button) return null;
-
+export const ButtonStylesTab = ({
+  button,
+  index,
+  darkMode,
+  currentState,
+  onButtonPropertyChange,
+  onButtonPropertiesChange,
+  component,
+}) => {
   const [buttonType, setButtonType] = useState(button?.buttonType || 'solid');
   const isSolid = buttonType === 'solid';
 
   // Label colors considered "default" that should be swapped on mode change
-  const DEFAULT_LABEL = ['#FFFFFF', '#ffffff', 'var(--cc-surface1-surface)', 'var(--text-on-solid)', 'var(--cc-primary-text)'];
+  const DEFAULT_LABEL = [
+    '#FFFFFF',
+    '#ffffff',
+    'var(--cc-surface1-surface)',
+    'var(--text-on-solid)',
+    'var(--cc-primary-text)',
+  ];
 
   const handleTypeChange = (value) => {
     setButtonType(value);
@@ -26,18 +38,14 @@ export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButto
     onButtonPropertiesChange(updates);
   };
 
+  if (!button) return null;
+
   return (
     <div className="d-flex flex-column custom-gap-16">
       {/* Button type - Solid/Outline */}
-      <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-        <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          Button type
-        </label>
-        <ToggleGroup
-          onValueChange={handleTypeChange}
-          defaultValue={buttonType}
-          style={{ flex: '1 1 0' }}
-        >
+      <div className="field d-flex align-items-center justify-content-between px-3">
+        <label className="tj-text-xsm color-slate12">Button type</label>
+        <ToggleGroup onValueChange={handleTypeChange} defaultValue={buttonType}>
           <ToggleGroupItem value="solid">Solid</ToggleGroupItem>
           <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
         </ToggleGroup>
@@ -77,57 +85,20 @@ export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButto
         />
       </div>
 
-      {/* Icon - picker with visibility toggle */}
-      <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-        <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          Icon
-        </label>
-        <div style={{ flex: '1 1 0' }}>
-          <IconPicker
-            value={button?.buttonIconName || 'IconHome2'}
-            onChange={(value) => onButtonPropertyChange('buttonIconName', value)}
-            onVisibilityChange={(value) => onButtonPropertyChange('buttonIconVisibility', value)}
-            styleDefinition={{ iconVisibility: { value: button?.buttonIconVisibility ?? false } }}
-            component={component}
-            isVisibilityEnabled={true}
-          />
-        </div>
-      </div>
-
-      {/* Icon color */}
-      <div className="field d-flex justify-content-end px-3">
-        <div style={{ flex: '1 1 0' }} />
-        <div style={{ flex: '1 1 0' }}>
-          <ProgramaticallyHandleProperties
-            label="Icon color"
-            currentState={currentState}
-            index={index}
-            darkMode={darkMode}
-            callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
-            property="buttonIconColor"
-            props={button}
-            component={component}
-            paramMeta={{ type: 'colorSwatches', displayName: ' ', showLabel: false }}
-            paramType="properties"
-          />
-        </div>
-      </div>
-
-      {/* Icon alignment */}
-      <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-        <div style={{ flex: '1 1 0' }} />
-        <ToggleGroup
-          onValueChange={(_value) => onButtonPropertyChange('buttonIconAlignment', _value)}
-          defaultValue={button?.buttonIconAlignment || 'left'}
-          style={{ flex: '1 1 0' }}
-        >
-          <ToggleGroupItem value="left">
-            <AlignLeftinspector width={14} fill="#C1C8CD" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="right">
-            <AlignRightinspector width={14} fill="#C1C8CD" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+      {/* Border color */}
+      <div className="field px-3">
+        <ProgramaticallyHandleProperties
+          label="Border color"
+          currentState={currentState}
+          index={index}
+          darkMode={darkMode}
+          callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          property="buttonBorderColor"
+          props={button}
+          component={component}
+          paramMeta={{ type: 'colorSwatches', displayName: 'Border color' }}
+          paramType="properties"
+        />
       </div>
 
       {/* Loader color */}
@@ -146,20 +117,49 @@ export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButto
         />
       </div>
 
-      {/* Border color */}
+      {/* Icon - picker with visibility toggle */}
+      <div className="field d-flex align-items-center justify-content-between px-3">
+        <label className="tj-text-xsm color-slate12">Icon</label>
+        <IconPicker
+          value={button?.buttonIconName || 'IconHome2'}
+          onChange={(value) => onButtonPropertyChange('buttonIconName', value)}
+          onVisibilityChange={(value) => onButtonPropertyChange('buttonIconVisibility', value)}
+          styleDefinition={{ iconVisibility: { value: button?.buttonIconVisibility ?? false } }}
+          component={component}
+          isVisibilityEnabled={true}
+        />
+      </div>
+
+      {/* Icon color */}
       <div className="field px-3">
         <ProgramaticallyHandleProperties
-          label="Border color"
+          label="Icon color"
           currentState={currentState}
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
-          property="buttonBorderColor"
+          property="buttonIconColor"
           props={button}
           component={component}
-          paramMeta={{ type: 'colorSwatches', displayName: 'Border color' }}
+          paramMeta={{ type: 'colorSwatches', displayName: '', showLabel: false }}
           paramType="properties"
         />
+      </div>
+
+      {/* Icon alignment */}
+      <div className="field d-flex align-items-center justify-content-between px-3">
+        <label className="tj-text-xsm color-slate12"></label>
+        <ToggleGroup
+          onValueChange={(_value) => onButtonPropertyChange('buttonIconAlignment', _value)}
+          defaultValue={button?.buttonIconAlignment || 'left'}
+        >
+          <ToggleGroupItem value="left">
+            <AlignLeftinspector width={14} fill="#C1C8CD" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right">
+            <AlignRightinspector width={14} fill="#C1C8CD" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Border radius */}
