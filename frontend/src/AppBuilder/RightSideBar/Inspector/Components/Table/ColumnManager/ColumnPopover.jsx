@@ -114,7 +114,7 @@ export const ColumnPopoverContent = ({
     <TableColumnContext.Provider value={component?.id}>
       <Popover.Header style={{ padding: '8px 16px 0 16px' }}>
         <div className="d-flex align-items-center justify-content-between">
-          <div className="d-flex gap-6 flex-row items-center justify-start">
+          <div className="d-flex custom-gap-6 flex-row items-center justify-start">
             {isButtonDetailView && (
               <Button
                 variant="ghost"
