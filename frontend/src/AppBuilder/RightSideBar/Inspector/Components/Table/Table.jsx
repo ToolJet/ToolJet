@@ -495,6 +495,7 @@ export const Table = (props) => {
                                   <OverlayTrigger
                                     trigger="click"
                                     placement="left"
+                                    flip={true}
                                     rootClose={isRootCloseEnabled}
                                     overlay={renderColumnPopover(item, index)}
                                     onToggle={(show) => handleToggleColumnPopover(index, show)}

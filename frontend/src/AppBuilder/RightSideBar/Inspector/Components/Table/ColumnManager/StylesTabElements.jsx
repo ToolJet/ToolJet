@@ -22,7 +22,7 @@ export const StylesTabElements = ({
   selectedButtonId,
   buttonManager,
 }) => {
-  const { updateButtonProperty, getButton } = buttonManager;
+  const { updateButtonProperty, updateButtonProperties, getButton } = buttonManager;
   const { t } = useTranslation();
   return (
     <>
@@ -306,6 +306,7 @@ export const StylesTabElements = ({
           darkMode={darkMode}
           currentState={currentState}
           onButtonPropertyChange={(property, value) => updateButtonProperty(selectedButtonId, property, value)}
+          onButtonPropertiesChange={(updates) => updateButtonProperties(selectedButtonId, updates)}
           component={component}
         />
       )}

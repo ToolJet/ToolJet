@@ -9,13 +9,13 @@ export const DEFAULT_BUTTON = {
   buttonVisibility: true,
   buttonType: 'solid',
   buttonBackgroundColor: 'var(--cc-primary-brand)',
-  buttonLabelColor: 'var(--cc-surface1-surface)',
-  buttonBorderColor: 'var(--cc-weak-border)',
+  buttonLabelColor: '#FFFFFF',
+  buttonBorderColor: 'var(--cc-primary-brand)',
   buttonBorderRadius: '6',
   buttonLoaderColor: 'var(--cc-surface1-surface)',
   buttonIconName: 'IconHome2',
   buttonIconVisibility: false,
-  buttonIconColor: 'var(--cc-surface1-surface)',
+  buttonIconColor: 'var(--cc-default-icon)',
   buttonIconAlignment: 'left',
 };
 
@@ -46,6 +46,11 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
     onColumnItemChange(index, 'buttons', updatedButtons);
   };
 
+  const updateButtonProperties = (buttonId, updates) => {
+    const updatedButtons = (column.buttons || []).map((b) => (b.id === buttonId ? { ...b, ...updates } : b));
+    onColumnItemChange(index, 'buttons', updatedButtons);
+  };
+
   const reorderButtons = (reorderedButtons) => {
     onColumnItemChange(index, 'buttons', reorderedButtons);
   };
@@ -63,5 +68,5 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
     return (column.buttons || []).find((b) => b.id === buttonId);
   };
 
-  return { addButton, removeButton, duplicateButton, updateButtonProperty, reorderButtons, getButton };
+  return { addButton, removeButton, duplicateButton, updateButtonProperty, updateButtonProperties, reorderButtons, getButton };
 };

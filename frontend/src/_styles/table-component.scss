@@ -1215,8 +1215,10 @@
     padding: 16px 0px 16px !important;
     gap: 16px !important;
     align-self: stretch;
-    // background-color: var(--slate1) !important;   
+    // background-color: var(--slate1) !important;
     border-radius: 0;
+    overflow-y: auto;
+    max-height: calc(85vh - 40px);
 
     .optional-properties-when-editable-true {
       // background-color: var(--slate3);

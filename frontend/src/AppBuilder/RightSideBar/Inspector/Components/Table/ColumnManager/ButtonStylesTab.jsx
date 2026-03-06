@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
@@ -6,8 +6,25 @@ import { Icon as IconPicker } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import AlignLeftinspector from '@/_ui/Icon/solidIcons/AlignLeftinspector';
 import AlignRightinspector from '@/_ui/Icon/solidIcons/AlignRightinspector';
 
-export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButtonPropertyChange, component }) => {
+export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButtonPropertyChange, onButtonPropertiesChange, component }) => {
   if (!button) return null;
+
+  const [buttonType, setButtonType] = useState(button?.buttonType || 'solid');
+  const isSolid = buttonType === 'solid';
+
+  // Label colors considered "default" that should be swapped on mode change
+  const DEFAULT_LABEL = ['#FFFFFF', '#ffffff', 'var(--cc-surface1-surface)', 'var(--text-on-solid)', 'var(--cc-primary-text)'];
+
+  const handleTypeChange = (value) => {
+    setButtonType(value);
+
+    // Batch buttonType + label color change in a single update to avoid stale closure
+    const updates = { buttonType: value };
+    if (!button?.buttonLabelColor || DEFAULT_LABEL.includes(button.buttonLabelColor)) {
+      updates.buttonLabelColor = value === 'outline' ? 'var(--cc-primary-text)' : '#FFFFFF';
+    }
+    onButtonPropertiesChange(updates);
+  };
 
   return (
     <div className="d-flex flex-column custom-gap-16">
@@ -17,8 +34,8 @@ export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButto
           Button type
         </label>
         <ToggleGroup
-          onValueChange={(_value) => onButtonPropertyChange('buttonType', _value)}
-          defaultValue={button?.buttonType || 'solid'}
+          onValueChange={handleTypeChange}
+          defaultValue={buttonType}
           style={{ flex: '1 1 0' }}
         >
           <ToggleGroupItem value="solid">Solid</ToggleGroupItem>
@@ -26,21 +43,23 @@ export const ButtonStylesTab = ({ button, index, darkMode, currentState, onButto
         </ToggleGroup>
       </div>
 
-      {/* Background color */}
-      <div className="field px-3">
-        <ProgramaticallyHandleProperties
-          label="Background"
-          currentState={currentState}
-          index={index}
-          darkMode={darkMode}
-          callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
-          property="buttonBackgroundColor"
-          props={button}
-          component={component}
-          paramMeta={{ type: 'colorSwatches', displayName: 'Background' }}
-          paramType="properties"
-        />
-      </div>
+      {/* Background color - only shown in Solid mode (matches Button widget behavior) */}
+      {isSolid && (
+        <div className="field px-3">
+          <ProgramaticallyHandleProperties
+            label="Background"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+            property="buttonBackgroundColor"
+            props={button}
+            component={component}
+            paramMeta={{ type: 'colorSwatches', displayName: 'Background' }}
+            paramType="properties"
+          />
+        </div>
+      )}
 
       {/* Label color */}
       <div className="field px-3">

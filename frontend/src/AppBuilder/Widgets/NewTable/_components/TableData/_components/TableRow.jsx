@@ -57,6 +57,7 @@ export const TableRow = ({
       data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
     >
       {row.getVisibleCells().map((cell) => {
+        const isButtonColumn = cell.column.columnDef?.meta?.columnType === 'button';
         const cellStyles = {
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
@@ -67,6 +68,7 @@ export const TableRow = ({
           alignItems: 'center',
           textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
+          ...(isButtonColumn ? { flex: '1 1 auto', minWidth: cell.column.getSize() } : {}),
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -97,7 +99,6 @@ export const TableRow = ({
               'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
               [cellHeight]: true,
               'overflow-hidden':
-                cell.column.columnDef?.meta?.columnType === 'button' ||
                 (['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
                   !contentWrap),
               'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
