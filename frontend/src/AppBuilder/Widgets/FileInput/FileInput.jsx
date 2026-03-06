@@ -68,6 +68,7 @@ export const FileInput = (props) => {
   const isMandatory = validation?.enableValidation ?? false;
 
   const wrapperRef = useRef(null);
+  const browseButtonRef = useRef(null);
 
   const _height = useMemo(() => {
     const baseHeight = height || 60;
@@ -85,14 +86,14 @@ export const FileInput = (props) => {
   }, [_height, alignment, height, padding]);
 
   const focusFn = useCallback(() => {
-    if (wrapperRef.current) {
-      wrapperRef.current.focus();
+    if (browseButtonRef.current && !browseButtonRef.current.disabled) {
+      browseButtonRef.current.focus();
     }
   }, []);
 
   const blurFn = useCallback(() => {
-    if (wrapperRef.current) {
-      wrapperRef.current.blur();
+    if (browseButtonRef.current && document.activeElement === browseButtonRef.current) {
+      browseButtonRef.current.blur();
     }
   }, []);
 
@@ -276,10 +277,14 @@ export const FileInput = (props) => {
                   <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
                 </div>
               ) : (
+                // TODO: Remove inline focus classes when Button.focusMode or similar API is added
+                // Issue: Currently programmatic focus (CSA setFocus) doesn't show visual cue for ghost buttons
+                // These focus: classes are a workaround until Button component redesigns focus handling
                 <Button
+                  ref={browseButtonRef}
                   variant="ghost"
                   size="default"
-                  className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none"
+                  className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background focus:tw-bg-button-outline"
                   style={{ height: '100%' }}
                   disabled={disabledState || disablePicker}
                 >
