@@ -374,7 +374,7 @@ export const createPageMenuSlice = (set, get) => {
 
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
-        // update currentPageIndex in state incase index of current page was changed
+        // update currentPageIndex in state in case index of current page was changed
         if (page?.id === currentPageId && index !== currentPageIndex) {
           newCurrentPageIndex = index;
         }
