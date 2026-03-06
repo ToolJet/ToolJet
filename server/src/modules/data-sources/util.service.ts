@@ -4,7 +4,7 @@ import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, ILike } from 'typeorm';
+import { EntityManager, ILike, Like } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -36,8 +36,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   ) {}
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const uniqueName = await this.generateUniqueName(
+        createArgumentsDto.name,
+        createArgumentsDto.kind,
+        user.organizationId,
+        manager
+      );
       const newDataSource = manager.create(DataSource, {
-        name: createArgumentsDto.name,
+        name: uniqueName,
         kind: createArgumentsDto.kind,
         pluginId: createArgumentsDto.pluginId,
         organizationId: user.organizationId,
@@ -251,6 +257,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         // Remove keys with undefined values
         cleanObject(updatableParams);
+        if (name) {
+          const existing = await manager.findOne(DataSource, {
+            where: {
+              organizationId,
+              name,
+              kind: dataSource.kind
+            },
+          });
+          if (existing && existing.id !== dataSourceId) {
+            throw new BadRequestException('Data source name must be unique for this kind');
+          }
+        }
 
         await manager.save(DataSource, updatableParams);
       });
@@ -961,5 +979,47 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         })
       );
     }, manager);
+  }
+
+  private escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  async generateUniqueName(
+    baseName: string,
+    kind: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<string> {
+    const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
+
+    const existing = await manager.find(DataSource, {
+      where: {
+        organizationId,
+        kind,
+        name: Like(`${escapedBase}%`),
+      },
+    });
+
+    if (!existing.length) return baseName;
+
+    const exactMatch = existing.some((ds) => ds.name === baseName);
+    if (!exactMatch) return baseName;
+
+    const usedNumbers = new Set(
+      existing
+        .map((ds) => {
+          const match = ds.name.match(new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`));
+          return match ? parseInt(match[1], 10) : null;
+        })
+        .filter((n): n is number => n !== null)
+    );
+
+    let counter = 2;
+    while (usedNumbers.has(counter)) {
+      counter++;
+    }
+
+    return `${baseName}_${counter}`;
   }
 }
