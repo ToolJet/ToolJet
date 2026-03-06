@@ -236,7 +236,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       };
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
-    const { where_filters: whereFilters, limit = 1 } = deleteRows;
+    const { where_filters: whereFilters, limit = 1, order_column: orderColumn } = deleteRows;
     const { organization_id: organizationId } = context.app;
 
     const query = [];
@@ -257,14 +257,8 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     if (limit && limit !== '') {
       query.push(`limit=${limit}`);
-
-      const tableInfo = await this.tableOperationsService.perform(organizationId, 'view_table', { id: tableId });
-      const primaryKeyColumns = tableInfo?.columns
-        ?.filter((col) => col.keytype === 'PRIMARY KEY')
-        ?.map((col) => col.column_name);
-
-      if (primaryKeyColumns && primaryKeyColumns.length > 0) {
-        query.push(`order=${primaryKeyColumns[0]}`);
+      if (orderColumn) {
+        query.push(`order=${orderColumn}`);
       }
     }
 
