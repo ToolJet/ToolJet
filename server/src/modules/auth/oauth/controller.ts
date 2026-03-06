@@ -43,7 +43,7 @@ export class OauthController implements IOAuthController {
 
   @InitFeature(FEATURE_KEY.OAUTH_SAML_CONFIGS)
   @Get(['saml/configs/:configId'])
-  async getSAMLRedirect(@Param('configId') configId) {
+  async getSAMLRedirect(@Req() req, @Param('configId') configId) {
     throw new NotFoundException();
   }
 

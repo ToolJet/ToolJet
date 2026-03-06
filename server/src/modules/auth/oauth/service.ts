@@ -363,7 +363,7 @@ export class OauthService implements IOAuthService {
     throw new Error('Method not implemented');
   }
 
-  async getSAMLAuthorizationURL(configId: string) {
+  async getSAMLAuthorizationURL(configId: string, requestHost?: string) {
     throw new Error('Method not implemented');
   }
 
