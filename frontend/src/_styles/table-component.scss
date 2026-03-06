@@ -1265,8 +1265,8 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    background-color: var(--cc-surface1-surface);
-    border-bottom: 1px solid var(--cc-weak-border) !important;
+    background-color: var(--surfaces-surface-01);
+    border-bottom: 1px solid var(--borders-weak-disabled) !important;
 
     .active-column-tab {
       border-bottom: 1px solid var(--indigo9);
