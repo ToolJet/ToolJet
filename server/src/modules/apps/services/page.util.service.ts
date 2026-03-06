@@ -90,6 +90,12 @@ export class PageHelperService implements IPageHelperService {
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
+    page.pageHeader = {
+      showOnDesktop: false,
+      showOnMobile: false,
+      headerbackgroundColor: 'var(--cc-surface1-surface)',
+      border: 'var(--cc-default-border)',
+    };
     return page;
   }
 

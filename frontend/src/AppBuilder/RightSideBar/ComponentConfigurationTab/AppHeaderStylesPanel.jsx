@@ -1,7 +1,6 @@
 import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import Accordion from '@/_ui/Accordion';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -32,11 +31,16 @@ const AppHeaderStylesPanel = () => {
     }
   };
 
-  const stylesItems = [
-    {
-      title: 'Styles',
-      children: [
-        <div key="background" className="d-flex align-items-center justify-content-between mb-3">
+  return (
+    <>
+      <div className="tw-flex tw-px-[18px] tw-py-[7.5px] tw-items-center tw-justify-between tw-border-b tw-border-t-0 tw-border-l-0 tw-border-r-0 tw-border-solid tw-border-[color:var(--border-weak)]">
+        <div className="tw-font-medium tw-leading-[18px]">App header</div>
+        <div className="cursor-pointer" onClick={handleClose}>
+          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="14" height="14" viewBox="0 0 14 14" />
+        </div>
+      </div>
+      <div className="tw-p-[16px] tj-text-xsm color-slate12">
+        <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="field">
             <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
               Background
@@ -46,8 +50,8 @@ const AppHeaderStylesPanel = () => {
             value={headerBackgroundColor}
             onChange={(value) => updatePageHeaderStyle(currentPageId, 'backgroundColor', value)}
           />
-        </div>,
-        <div key="border" className="d-flex align-items-center justify-content-between mb-3">
+        </div>
+        <div className="d-flex align-items-center justify-content-between mb-2">
           <div className="field">
             <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
               Border
@@ -57,21 +61,7 @@ const AppHeaderStylesPanel = () => {
             value={headerBorderColor}
             onChange={(value) => updatePageHeaderStyle(currentPageId, 'borderColor', value)}
           />
-        </div>,
-      ],
-    },
-  ];
-
-  return (
-    <>
-      <div className="empty-configuration-header">
-        <div className="header">App header</div>
-        <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleClose}>
-          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
         </div>
-      </div>
-      <div className="tj-text-xsm color-slate12">
-        <Accordion items={stylesItems} />
       </div>
     </>
   );

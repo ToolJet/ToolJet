@@ -820,7 +820,12 @@ export class AppImportExportService {
               index: pagePostionIntheList,
               disabled: page.disabled || false,
               hidden: page.hidden || false,
-              pageHeader: page.pageHeader || null,
+              pageHeader: page.pageHeader || {
+                showOnDesktop: false,
+                showOnMobile: false,
+                headerbackgroundColor: 'var(--cc-surface1-surface)',
+                border: 'var(--cc-default-border)',
+              },
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,

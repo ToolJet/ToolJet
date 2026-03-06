@@ -17,6 +17,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { shallow } from 'zustand/shallow';
 
 const POPOVER_TITLES = {
   add: {
@@ -68,15 +69,19 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const updatePageAppId = useStore((state) => state.updatePageAppId);
-  const currentPageId = useStore((state) => state.currentPageId);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-  const showPageCanvasHeader = useStore(
-    (state) =>
-      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader[
-        state?.currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
-      ]
+
+  const showPageHeaderOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.showOnDesktop,
+    shallow
+  );
+
+  const showPageHeaderOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.showOnMobile,
+    shallow
   );
 
   const [page, setPage] = useState(editingPage || props?.page);
@@ -376,16 +381,31 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   />
                 </label>
               </div>
+              <div className="section-header pb-2 pt-2">Page header</div>
               <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Page header</label>
+                <label className="form-label font-weight-400 mb-0">Show page header on desktop</label>
                 <label className={`form-switch`}>
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    checked={showPageCanvasHeader ?? false}
+                    checked={showPageHeaderOnDesktop ?? false}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      togglePageHeader(page?.id, checked);
+                      togglePageHeader(page?.id, checked, 'desktop');
+                    }}
+                  />
+                </label>
+              </div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label className="form-label font-weight-400 mb-0">Show page header on mobile</label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageHeaderOnMobile ?? false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageHeader(page?.id, checked, 'mobile');
                     }}
                   />
                 </label>
