@@ -387,11 +387,10 @@ export const createPageMenuSlice = (set, get) => {
 
       // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
       set((state) => {
-        state.modules.canvas = {
-          ...state.modules.canvas,
-          ...(newCurrentPageIndex !== null && { currentPageIndex: newCurrentPageIndex }),
-          pages: reorderdPages,
-        };
+        state.modules.canvas.pages = reorderdPages;
+        if (newCurrentPageIndex !== null) {
+          state.modules.canvas.currentPageIndex = newCurrentPageIndex;
+        }
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
