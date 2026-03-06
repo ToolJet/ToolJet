@@ -64,7 +64,7 @@ export const radiobuttonV2Config = {
       ],
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'wrap',
+        defaultValue: 'row',
       },
       accordian: 'Options',
     },
@@ -312,7 +312,7 @@ export const radiobuttonV2Config = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
-      layout: { value: 'wrap' },
+      layout: { value: 'row' },
       optionsLoadingState: { value: '{{false}}' },
       optionVisibility: { value: '{{[true, true, true]}}' },
       optionDisable: { value: '{{[false, false, false]}}' },
