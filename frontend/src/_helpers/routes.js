@@ -78,6 +78,14 @@ export const getHostURL = () => {
   return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
 };
 
+/** Always returns the base TOOLJET_HOST URL (never the custom domain).
+ *  Use this when generating links that should point to the platform host,
+ *  e.g. workspace link previews for newly created workspaces. */
+export const getBaseHostURL = () => {
+  const base = window.public_config?.TOOLJET_HOST || window.location.origin;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
+};
+
 export const dashboardUrl = (data, redirectTo, relativePath) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
