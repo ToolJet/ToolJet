@@ -369,16 +369,29 @@ export const createPageMenuSlice = (set, get) => {
     reorderPages: async (reorderdPages) => {
       const diff = {};
       const currentPageId = get().getCurrentPageId('canvas');
+      const currentPageIndex = get().getCurrentPageIndex('canvas');
+      let newCurrentPageIndex = null;
+
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
+        // update currentPageIndex in state incase index of current page was changed
+        if (page?.id === currentPageId && index !== currentPageIndex) {
+          newCurrentPageIndex = index;
+        }
+
         diff[page.id] = {
           index,
           pageGroupId: page.pageGroupId,
         };
       });
+
       // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
       set((state) => {
-        state.modules.canvas.pages = reorderdPages;
+        state.modules.canvas = {
+          ...state.modules.canvas,
+          ...(newCurrentPageIndex !== null && { currentPageIndex: newCurrentPageIndex }),
+          pages: reorderdPages,
+        };
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
