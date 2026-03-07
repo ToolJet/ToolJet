@@ -20,7 +20,6 @@ export class AiConversationRepository extends Repository<AiConversation> {
         userId,
         conversationType,
       },
-      relations: ['aiConversationMessages'],
       order: {
         createdAt: 'DESC',
       },

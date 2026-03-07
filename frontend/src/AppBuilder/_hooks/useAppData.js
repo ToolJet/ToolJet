@@ -376,6 +376,9 @@ const useAppData = (
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
           setIsQueryPaneExpanded(false);
+          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
+          const { prompt: _, ...restState } = state || {};
+          window.history.replaceState({ ...window.history.state, usr: restState }, '');
         }
 
         if (initialLoadRef.current) {
