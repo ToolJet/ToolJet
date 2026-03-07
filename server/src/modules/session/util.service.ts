@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
+import { DeepPartial, EntityManager, LessThan, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
 import { ConfigService } from '@nestjs/config';
@@ -30,6 +30,8 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
+
+const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 @Injectable()
 export class SessionUtilService {
@@ -100,7 +102,11 @@ export class SessionUtilService {
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
-      if (organization) user.organizationId = organization.id;
+      if (organization) {
+        user.organizationId = organization.id;
+        // Unconditional update on login — low frequency event
+        await manager.update(Organization, { id: organization.id }, { lastAccessedAt: new Date() });
+      }
 
       const cookieOptions: CookieOptions = {
         secure: isHttpsEnabled(),
@@ -478,7 +484,7 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string): Promise<void> {
+  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -529,6 +535,16 @@ export class SessionUtilService {
       manager.save(session).catch((err) => {
         console.error('error while extending session expiry', err);
       });
+
+      // Fire-and-forget: update workspace last_accessed_at at most once per interval
+      if (organizationId) {
+        const threshold = new Date(Date.now() - LAST_ACCESSED_AT_UPDATE_INTERVAL_MS);
+        manager
+          .update(Organization, { id: organizationId, lastAccessedAt: LessThan(threshold) }, { lastAccessedAt: now })
+          .catch((err) => {
+            console.error('error while updating organization last_accessed_at', err);
+          });
+      }
     });
   }
 
