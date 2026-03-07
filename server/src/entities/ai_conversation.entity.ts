@@ -20,6 +20,9 @@ export class AiConversation {
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  archived: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
