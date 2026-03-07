@@ -6317,6 +6317,26 @@ input.hide-input-arrows {
   overflow-y: auto;
   color: #3e525b;
 
+  &.theme-dark {
+    color: #e4e4e7;
+
+    .react-checkbox-tree {
+      .rct-node {
+        .rct-text {
+          color: #e4e4e7;
+        }
+        .rct-checkbox {
+          input[type="checkbox"] {
+            filter: invert(1);
+          }
+        }
+        .rct-title {
+          color: #e4e4e7;
+        }
+      }
+    }
+  }
+
   .react-checkbox-tree label:hover {
     background: none !important;
   }
