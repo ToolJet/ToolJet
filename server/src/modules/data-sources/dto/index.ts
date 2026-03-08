@@ -50,6 +50,10 @@ export class GetDataSourceOauthUrlDto {
 
   @IsOptional()
   plugin_id: string;
+
+  @IsOptional()
+  @IsString()
+  environment_id?: string;
 }
 
 export class AuthorizeDataSourceOauthDto {

@@ -126,8 +126,8 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
   @UseGuards(FeatureAbilityGuard)
   @Post('fetch-oauth2-base-url')
-  getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
-    return this.dataSourcesService.getAuthUrl(getDataSourceOauthUrlDto);
+  getAuthUrl(@User() user: UserEntity, @Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
+    return this.dataSourcesService.getAuthUrl(getDataSourceOauthUrlDto, user);
   }
 
   @InitFeature(FEATURE_KEY.AUTHORIZE)

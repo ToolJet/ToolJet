@@ -71,7 +71,10 @@ const OAuthWrapper = ({
     const source_options = options;
     setAuthStatus('waiting_for_url');
 
-    const fetchArgs = plugin_id ? [provider, plugin_id, source_options] : [provider, null, source_options];
+    // Pass environment_id to resolve workspace constants on the backend
+    const fetchArgs = plugin_id 
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId] 
+      : [provider, null, source_options, currentAppEnvironmentId];
 
     datasourceService
       .fetchOauth2BaseUrl(...fetchArgs)

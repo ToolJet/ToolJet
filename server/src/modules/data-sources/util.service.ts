@@ -135,7 +135,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
-  async parseOptionsForOauthDataSource(options: Array<object>, resetSecureData = false, userId?: string) {
+  async parseOptionsForOauthDataSource(
+    options: Array<object>,
+    resetSecureData = false,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string
+  ) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
@@ -146,6 +152,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
 
       // const queryService = new allPlugins[provider]();
+
+      // Resolve workspace constants in options before calling accessDetailsFrom
+      let resolvedOptions = options;
+      if (organizationId && environmentId) {
+        resolvedOptions = await this.resolveOptionsArrayForOAuth(options, organizationId, environmentId);
+      }
+
       let accessDetailsPromise: Promise<any>;
 
       const cacheKey = `${provider}_${authCode}`;
@@ -153,7 +166,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (this.inMemoryCacheService.has(cacheKey)) {
         accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
       } else {
-        accessDetailsPromise = queryService.accessDetailsFrom(authCode, options, resetSecureData);
+        accessDetailsPromise = queryService.accessDetailsFrom(authCode, resolvedOptions, resetSecureData);
         this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
       }
       const accessDetails = await accessDetailsPromise;
@@ -192,6 +205,35 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return options;
   }
 
+  /**
+   * Resolves workspace constants in an options array for OAuth token exchange.
+   */
+  protected async resolveOptionsArrayForOAuth(
+    options: Array<object>,
+    organizationId: string,
+    environmentId: string
+  ): Promise<Array<object>> {
+    const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+    const resolvedOptions: Array<object> = [];
+
+    for (const option of options) {
+      const value = option['value'];
+      if (typeof value === 'string') {
+        constantMatcher.lastIndex = 0;
+        if (constantMatcher.test(value)) {
+          const resolved = await this.resolveConstants(value, organizationId, environmentId);
+          resolvedOptions.push({ ...option, value: resolved });
+        } else {
+          resolvedOptions.push(option);
+        }
+      } else {
+        resolvedOptions.push(option);
+      }
+    }
+
+    return resolvedOptions;
+  }
+
   async update(
     dataSourceId: string,
     organizationId: string,
@@ -226,7 +268,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
           ).options;
 
-          const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
+          const newOptions = await this.parseOptionsForUpdate(
+            dataSource,
+            options,
+            manager,
+            userId,
+            organizationId,
+            envToUpdate.id
+          );
           await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
         } else {
           const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
@@ -239,7 +288,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             dataSource.options = (
               await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
             ).options;
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
+            const newOptions = await this.parseOptionsForUpdate(
+              dataSource,
+              options,
+              manager,
+              userId,
+              organizationId,
+              env.id
+            );
             await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
           }
         }
@@ -274,7 +330,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return decryptedOptions;
   }
 
-  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager, userId?: string) {
+  async parseOptionsForUpdate(
+    dataSource: DataSource,
+    options: Array<object>,
+    manager: EntityManager,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string
+  ) {
     if (!options) return {};
 
     const resolvedOptions = [];
@@ -292,7 +355,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    const optionsWithOauth = await this.parseOptionsForOauthDataSource(resolvedOptions, false, userId);
+    const optionsWithOauth = await this.parseOptionsForOauthDataSource(
+      resolvedOptions,
+      false,
+      userId,
+      organizationId,
+      environmentId
+    );
     const parsedOptions = {};
 
     if (dataSource?.options) {
@@ -936,10 +1005,71 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user?: User): Promise<{ url: string }> {
+    const { provider, source_options = {}, plugin_id = null, environment_id } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
+
+    if (user?.organizationId) {
+      const resolvedSourceOptions = await this.resolveSourceOptionsForOAuth(
+        source_options,
+        user.organizationId,
+        environment_id
+      );
+      return { url: service.authUrl(resolvedSourceOptions) };
+    }
+
     return { url: service.authUrl(source_options) };
+  }
+
+  /**
+   * Resolves workspace constants in source options for OAuth flows generating auth URLs.
+   */
+  protected async resolveSourceOptionsForOAuth(
+    sourceOptions: any,
+    organizationId: string,
+    environmentId?: string
+  ): Promise<any> {
+    if (!sourceOptions || typeof sourceOptions !== 'object') {
+      return sourceOptions;
+    }
+
+    let envId = environmentId;
+    if (!envId) {
+      const defaultEnv = await this.appEnvironmentUtilService.get(organizationId, null, true);
+      envId = defaultEnv?.id;
+    }
+    if (!envId) {
+      return sourceOptions;
+    }
+
+    const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+    const resolvedOptions = { ...sourceOptions };
+
+    for (const key of Object.keys(resolvedOptions)) {
+      const option = resolvedOptions[key];
+
+      // Handle options in { value: '...' } format (from frontend)
+      if (option && typeof option === 'object' && 'value' in option) {
+        const value = option.value;
+        if (typeof value === 'string') {
+          constantMatcher.lastIndex = 0;
+          if (constantMatcher.test(value)) {
+            const resolved = await this.resolveConstants(value, organizationId, envId);
+            resolvedOptions[key] = { ...option, value: resolved };
+          }
+        }
+      }
+      // Handle direct string values
+      else if (typeof option === 'string') {
+        constantMatcher.lastIndex = 0;
+        if (constantMatcher.test(option)) {
+          const resolved = await this.resolveConstants(option, organizationId, envId);
+          resolvedOptions[key] = resolved;
+        }
+      }
+    }
+
+    return resolvedOptions;
   }
 
   async createDataSourceInAllEnvironments(
