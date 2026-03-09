@@ -99,9 +99,9 @@ const OpenApi = ({
   const resolveSecurities = (spec) => {
     const authArray = [];
     const ApiKeys = [];
-    const securities = spec['security'];
-    if (securities) {
-      const scheme = spec?.components?.securitySchemes;
+    const scheme = spec?.components?.securitySchemes || {};
+    const securities = spec['security'] || Object.keys(scheme).map((k) => ({ [k]: [] }));
+    if (Array.isArray(securities) && securities.length > 0) {
       securities.map((security) => {
         const authNames = Object.keys(security);
         if (authNames.length > 1) {
