@@ -274,7 +274,9 @@ export default class PostgresqlQueryService implements QueryService {
         const { columns, where_filters } = queryOptions.update_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         if (!hasWhereFilters) {
-          throw new Error('update_rows requires at least one filter condition to prevent accidental mass updates.');
+          throw new Error(
+            'Update rows requires at least one filter condition when multiple row updates are not allowed.'
+          );
         }
         const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
           query: string;
@@ -324,7 +326,7 @@ export default class PostgresqlQueryService implements QueryService {
           throw new Error('No rows were deleted.');
         }
 
-        return { status: 'ok', deletedRecords } as unknown as QueryResult;
+        return { status: 'ok', data: deletedRows };
       }
 
       case 'bulk_insert': {

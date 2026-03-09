@@ -180,7 +180,7 @@ interface UpdateRowsInput {
 
 interface UpsertRowsInput {
   schema?: string;
-  primary_key_columns: string[];
+  primary_key_columns: string | string[];
   columns: Record<string, UpdateRowEntry>;
 }
 
@@ -191,13 +191,13 @@ interface BulkInsertInput {
 
 interface BulkUpdateWithPrimaryKeyInput {
   schema?: string;
-  primary_key: string[];
+  primary_key: string | string[];
   rows_update: Record<string, unknown>[];
 }
 
 interface BulkUpsertWithPrimaryKeyInput {
   schema?: string;
-  primary_key: string[];
+  primary_key: string | string[];
   row_upsert: Record<string, unknown>[];
 }
 
@@ -225,6 +225,12 @@ export class QueryBuilder {
 
   private _reset(): void {
     this._params = [];
+  }
+
+  private _normalizePrimaryKey(primaryKey: string | string[] | undefined | null): string[] {
+    if (Array.isArray(primaryKey)) return primaryKey.filter(Boolean);
+    if (typeof primaryKey === 'string' && primaryKey.trim()) return [primaryKey.trim()];
+    return [];
   }
 
   private _addParam(value: unknown): string {
@@ -402,9 +408,10 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'upsert_rows');
 
-    const { schema, primary_key_columns, columns } = upsertRowsData;
+    const { schema, primary_key_columns: rawPrimaryKeyColumns, columns } = upsertRowsData;
+    const primary_key_columns = this._normalizePrimaryKey(rawPrimaryKeyColumns);
 
-    if (!primary_key_columns || primary_key_columns.length === 0) {
+    if (primary_key_columns.length === 0) {
       throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
@@ -564,8 +571,9 @@ export class QueryBuilder {
   bulkUpdateWithPrimaryKey(tableName: string, bulkUpdate: BulkUpdateWithPrimaryKeyInput): BulkQueryResult {
     this._assertTableName(tableName, 'bulk_update_with_primary_key');
 
-    const { schema, primary_key, rows_update } = bulkUpdate;
-    if (!primary_key || primary_key.length === 0) {
+    const { schema, primary_key: rawPrimaryKey, rows_update } = bulkUpdate;
+    const primary_key = this._normalizePrimaryKey(rawPrimaryKey);
+    if (primary_key.length === 0) {
       throw new QueryBuilderError('Bulk update requires at least one primary key column', {
         operation: 'bulk_update_with_primary_key',
       });
@@ -610,8 +618,9 @@ export class QueryBuilder {
   bulkUpsertWithPrimaryKey(tableName: string, bulkUpsert: BulkUpsertWithPrimaryKeyInput): BulkQueryResult {
     this._assertTableName(tableName, 'bulk_upsert_with_primary_key');
 
-    const { schema, primary_key, row_upsert } = bulkUpsert;
-    if (!primary_key || primary_key.length === 0) {
+    const { schema, primary_key: rawPrimaryKey, row_upsert } = bulkUpsert;
+    const primary_key = this._normalizePrimaryKey(rawPrimaryKey);
+    if (primary_key.length === 0) {
       throw new QueryBuilderError('Bulk upsert requires at least one primary key column', {
         operation: 'bulk_upsert_with_primary_key',
       });
