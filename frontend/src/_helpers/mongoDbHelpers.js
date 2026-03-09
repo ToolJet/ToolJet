@@ -143,7 +143,7 @@ export const parseMongoDBConnectionString = (connectionString) => {
     }
   }
 
-  let useSsl = false;
+  let useSsl = 'disabled';
 
   if (querySection) {
     const params = new URLSearchParams(querySection.substring(1));
@@ -152,9 +152,9 @@ export const parseMongoDBConnectionString = (connectionString) => {
     const tlsParam = params.get('tls');
 
     if (sslParam !== null) {
-      useSsl = sslParam.toLowerCase() === 'true';
+      useSsl = sslParam.toLowerCase() === 'true' ? 'enabled' : 'disabled';
     } else if (tlsParam !== null) {
-      useSsl = tlsParam.toLowerCase() === 'true';
+      useSsl = tlsParam.toLowerCase() === 'true' ? 'enabled' : 'disabled';
     }
   }
 
