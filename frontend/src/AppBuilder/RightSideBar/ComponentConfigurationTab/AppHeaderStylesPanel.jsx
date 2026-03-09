@@ -15,11 +15,15 @@ const AppHeaderStylesPanel = () => {
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const updatePageHeaderStyle = useStore((state) => state.updatePageHeaderStyle, shallow);
   const headerBackgroundColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor,
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor ||
+      'var(--cc-surface1-surface)',
     shallow
   );
   const headerBorderColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.borderColor,
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.borderColor ||
+      'var(--cc-default-border)',
     shallow
   );
 
