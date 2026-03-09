@@ -54,6 +54,9 @@ export class AppBase extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'is_stub', default: false })
+  isStub: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

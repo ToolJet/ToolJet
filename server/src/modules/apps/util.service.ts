@@ -38,6 +38,7 @@ import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { APP_TYPES } from './constants';
 import { Component } from 'src/entities/component.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
@@ -57,7 +58,8 @@ export class AppsUtilService implements IAppsUtilService {
     user: User,
     type: APP_TYPES,
     isInitialisedFromPrompt: boolean = false,
-    manager: EntityManager
+    manager: EntityManager,
+    branchId?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
@@ -81,7 +83,7 @@ export class AppsUtilService implements IAppsUtilService {
 
       //create default app version
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
-      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
+      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager, branchId);
 
       const defaultHomePage = await manager.save(
         manager.create(Page, {
@@ -151,6 +153,52 @@ export class AppsUtilService implements IAppsUtilService {
         appMode: 'light',
       };
       await manager.save(appVersion);
+
+      // Auto-create branch version when app is created on a workspace feature branch.
+      // This ensures switchBranch() in the frontend can find a versionType='branch' version.
+      if (branchId) {
+        try {
+          const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+          if (workspaceBranch && !workspaceBranch.isDefault) {
+            const branchVersion = await manager.save(
+              AppVersion,
+              manager.create(AppVersion, {
+                name: workspaceBranch.name,
+                appId: app.id,
+                definition: appVersion.definition,
+                currentEnvironmentId: firstPriorityEnv.id,
+                status: AppVersionStatus.DRAFT,
+                versionType: AppVersionType.BRANCH,
+                parentVersionId: appVersion.id,
+                branchId: branchId,
+                globalSettings: appVersion.globalSettings,
+                showViewerNavigation: appVersion.showViewerNavigation,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              })
+            );
+
+            // Create default page for branch version (same as v1's default page)
+            const branchHomePage = await manager.save(
+              manager.create(Page, {
+                name: 'Home',
+                handle: 'home',
+                appVersionId: branchVersion.id,
+                index: 1,
+                autoComputeLayout: true,
+                appId: app.id,
+              })
+            );
+
+            branchVersion.homePageId = branchHomePage.id;
+            await manager.save(branchVersion);
+          }
+        } catch (error) {
+          // Non-fatal: app still works on default branch if branch version creation fails
+          console.warn('Auto-create branch version failed:', error?.message);
+        }
+      }
+
       return app;
     }, manager);
   }
@@ -160,11 +208,12 @@ export class AppsUtilService implements IAppsUtilService {
     try {
       app = await this.appRepository.findById(slug, organizationId);
     } catch (error) {
-      /* means: UUID error. so the slug isn't not the id of the app */
-      if (error?.code === `22P02`) {
-        /* Search against slug */
-        app = await this.appRepository.findBySlug(slug, organizationId);
-      }
+      /* UUID parse error — slug is not a valid UUID, skip id lookup */
+    }
+
+    // Fallback to slug lookup if id lookup returned null or failed
+    if (!app) {
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {

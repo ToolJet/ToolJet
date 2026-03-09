@@ -69,7 +69,11 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
+      // Get active workspace branch if git sync configured
+      const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+      const branchId = orgGit?.activeBranchId || undefined;
+
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;

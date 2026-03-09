@@ -322,7 +322,28 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module') && (
+            {app.is_stub ? (
+              <div>
+                <ToolTip message="Sync app from git">
+                  <Link
+                    to={getPrivateRoute('editor', {
+                      slug: isValidSlug(app.slug) ? app.slug : app.id,
+                    })}
+                    reloadDocument
+                  >
+                    <button
+                      type="button"
+                      className="tj-primary-btn tj-text-xsm edit-button"
+                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                      data-cy="sync-button"
+                    >
+                      <SolidIcon name="gitsync" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                      &nbsp;Sync
+                    </button>
+                  </Link>
+                </ToolTip>
+              </div>
+            ) : (canUpdate || appType === 'module') ? (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -352,9 +373,9 @@ export default function AppCard({
                   </Link>
                 </ToolTip>
               </div>
-            )}
+            ) : null}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedAccess && ViewButton}
-            {appType !== 'module' && LaunchButton}
+            {!app.is_stub && appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>

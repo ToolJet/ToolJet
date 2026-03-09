@@ -29,6 +29,8 @@ export class AppsSubscriber implements EntitySubscriberInterface<App> {
 
     (app as any).__loaded = true; // mark entity as processed
 
+    if (app.isStub) return; // Stubs have placeholder versions, skip loading
+
     app.editingVersion = await this.appVersionRepository.findOne({
       where: { appId: app.id },
       order: { updatedAt: 'DESC' },
