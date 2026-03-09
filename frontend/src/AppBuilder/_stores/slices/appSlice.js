@@ -169,10 +169,8 @@ export const createAppSlice = (set, get) => ({
     const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
-    // TODO: Replace CANVAS_HEADER_HEIGHT (80) with dynamic value from page settings when ready
-    const canvasHeaderHeight = 80;
     const frameHeight =
-      currentMode === 'view' ? pageMenuHeight + canvasHeaderHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + canvasHeaderHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
+      currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight;
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
@@ -289,8 +287,9 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
-        }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,

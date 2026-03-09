@@ -6,10 +6,9 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING } from './appCanvasConstants';
+import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
-const CANVAS_HEADER_HEIGHT = 80;
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -37,7 +36,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-  const sideBarVisibleHeight = useAppPageSidebarHeight(canvasContentRef);
 
   useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -88,6 +86,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       ] ?? false,
     shallow
   );
+  const sideBarVisibleHeight = useAppPageSidebarHeight(
+    canvasContentRef,
+    showCanvasHeader,
+    appType,
+    PAGE_CANVAS_HEADER_HEIGHT,
+    position
+  );
   const headerBackgroundColor = useStore(
     (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor,
     shallow
@@ -106,7 +111,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isModuleMode,
   });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
-  console.log('currentLayout', currentLayout, isMobileLayout, showCanvasHeader);
 
   // This is added to notify when all Suspense components have resolved
   // If everything is ready, we set the isComponentLayoutReady to true which runs the onLoadQueries
@@ -181,7 +185,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           if (currentMode === 'edit') {
             e.stopPropagation();
             clearSelectedComponents();
-            console.log('kingSize');
             setCanvasHeaderSelected(true);
           }
         }}
@@ -191,7 +194,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           zIndex: 10,
           flexShrink: 0,
           padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-          height: `${CANVAS_HEADER_HEIGHT}px`,
+          height: `${PAGE_CANVAS_HEADER_HEIGHT}px`,
           borderBottom: `1px solid ${headerBorderColor ?? 'var(--cc-default-border)'}`,
           backgroundColor: headerBackgroundColor ?? (isAppDarkMode ? '#232E3C' : '#fff'),
           width: '100%',
@@ -199,7 +202,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       >
         <Container
           id={`${moduleId}-header`}
-          canvasHeight={CANVAS_HEADER_HEIGHT / 10}
+          canvasHeight={PAGE_CANVAS_HEADER_HEIGHT / 10}
           canvasWidth={window.innerWidth}
           darkMode={isAppDarkMode}
           allowContainerSelect={false}
@@ -238,7 +241,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       {_renderCanvasHeaderSlot()}
       {/* Mobile nav — sticky below header */}
       {appType !== 'module' && (
-        <div style={{ position: 'sticky', top: showCanvasHeader ? CANVAS_HEADER_HEIGHT : 0, zIndex: 9, flexShrink: 0 }}>
+        <div
+          style={{
+            position: 'sticky',
+            top: showCanvasHeader ? PAGE_CANVAS_HEADER_HEIGHT : 0,
+            zIndex: 9,
+            flexShrink: 0,
+          }}
+        >
           <MobileNavigationHeader
             isMobileDevice={true}
             currentPageId={currentPageId ?? homePageId}
@@ -275,12 +285,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             <div
               style={{
                 position: 'sticky',
-                top: showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0,
+                top: showCanvasHeader && appType !== 'module' ? PAGE_CANVAS_HEADER_HEIGHT : 0,
                 flexShrink: 0,
                 zIndex: 5,
-                height: `calc(${sideBarVisibleHeight} - ${
-                  showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0
-                }px)`,
+                height: sideBarVisibleHeight,
               }}
             >
               <PagesSidebarNavigation

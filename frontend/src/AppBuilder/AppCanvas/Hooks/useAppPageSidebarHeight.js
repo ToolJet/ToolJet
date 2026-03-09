@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 
-export default function useAppPageSidebarHeight(canvasContentRef) {
+export default function useAppPageSidebarHeight(
+  canvasContentRef,
+  showCanvasHeader,
+  appType,
+  pageCanvasHeight,
+  navigationType
+) {
   const [height, setHeight] = useState('100dvh');
 
   useEffect(() => {
@@ -14,6 +20,10 @@ export default function useAppPageSidebarHeight(canvasContentRef) {
     observer.observe(canvasContentRef.current);
     return () => observer.disconnect();
   }, [canvasContentRef]);
+
+  if (navigationType === 'top') return undefined;
+
+  if (showCanvasHeader && appType !== 'module') return `calc(${height} - ${pageCanvasHeight}px)`;
 
   return height;
 }
