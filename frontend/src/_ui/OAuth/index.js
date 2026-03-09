@@ -32,9 +32,10 @@ const OAuth = ({
   optionsChanged,
   selectedDataSource,
   oauth_configs,
+  isRestApi = false,
 }) => {
   const { allowed_auth_types } = oauth_configs || {};
-  const authOptions = (isGrpc = false) => {
+  const authOptions = (isGrpc = false, isRestApi = false) => {
     const options = [
       { name: 'None', value: 'none' },
       { name: 'Basic', value: 'basic' },
@@ -47,6 +48,10 @@ const OAuth = ({
 
     if (isGrpc) {
       options.push({ name: 'API Key', value: 'api_key' });
+    }
+
+    if (isRestApi) {
+      options.push({ name: 'AWS v4', value: 'aws_v4' });
     }
 
     if (allowed_auth_types && allowed_auth_types.length > 0) {
@@ -63,7 +68,7 @@ const OAuth = ({
         <>
           <label className="form-label" data-cy="authentication-type-dropdown-label">Authentication type</label>
           <Select
-            options={authOptions(isGrpc)}
+            options={authOptions(isGrpc, isRestApi)}
             value={auth_type}
             onChange={(value) => optionchanged('auth_type', value)}
             width={'100%'}
