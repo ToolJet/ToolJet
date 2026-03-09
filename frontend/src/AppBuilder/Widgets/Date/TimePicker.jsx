@@ -23,7 +23,7 @@ export const TimePicker = ({
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const { label, defaultValue, timeFormat, placeholder: placeholderProp, showClearBtn } = properties;
-  const placeholder = placeholderProp || 'Select time';
+  const placeholder = placeholderProp ?? 'Select time';
   const inputProps = {
     properties,
     setExposedVariable,

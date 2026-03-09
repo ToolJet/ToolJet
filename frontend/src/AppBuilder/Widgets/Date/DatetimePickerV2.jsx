@@ -86,7 +86,7 @@ export const DatetimePickerV2 = ({
     isTimezoneEnabled,
     showClearBtn,
   } = properties;
-  const placeholder = placeholderProp || 'Select date and time';
+  const placeholder = placeholderProp ?? 'Select date and time';
   const inputProps = {
     properties,
     setExposedVariable,

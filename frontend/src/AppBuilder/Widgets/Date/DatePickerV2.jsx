@@ -31,7 +31,7 @@ export const DatePickerV2 = ({
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
-  const placeholder = placeholderProp || 'Select date';
+  const placeholder = placeholderProp ?? 'Select date';
   const inputProps = {
     properties,
     setExposedVariable,

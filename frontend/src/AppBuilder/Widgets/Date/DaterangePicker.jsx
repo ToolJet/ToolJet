@@ -24,7 +24,7 @@ export const DaterangePicker = ({
   const datePickerRef = useRef(null);
   const [datepickerMode, setDatePickerMode] = useState('date');
   const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
-  const placeholder = placeholderProp || 'Select Date Range';
+  const placeholder = placeholderProp ?? 'Select Date Range';
   const inputProps = {
     properties,
     setExposedVariable,
