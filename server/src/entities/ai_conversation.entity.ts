@@ -26,6 +26,9 @@ export class AiConversation {
   @Column({ type: 'timestamptz', nullable: true, name: 'last_opened_at' })
   lastOpenedAt: Date;
 
+  @Column({ type: 'text', nullable: true })
+  preview: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
