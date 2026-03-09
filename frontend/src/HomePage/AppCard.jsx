@@ -29,6 +29,7 @@ export default function AppCard({
   canViewApp,
   currentFolder,
   appType,
+  ownedFolders,
   ...props
 }) {
   const canUpdate = canUpdateApp(app);
@@ -133,16 +134,37 @@ export default function AppCard({
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
 
-  // Check if user has access to any non-released environment (dev, staging, or production)
-  const hasNonReleasedAccess =
-    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
-
   // Check if user is a builder based on role, not just editable apps
   const isBuilder = hasBuilderRole(session?.role ?? {});
 
-  // Check if user can access released apps
-  // End-users (non-builders) always have released app access
-  // Builders need explicit canAccessReleased permission
+  const appFolderIds = app?.folder_ids || [];
+  const isAppInFolder = appFolderIds.length > 0;
+  const hasAppFolderPreviewAccess =
+    isAppInFolder &&
+    (folderGroupPermissions?.is_all_viewable ||
+      folderGroupPermissions?.is_all_edit_apps ||
+      appFolderIds.some(
+        (folderId) =>
+          folderGroupPermissions?.viewable_folders_id?.includes(folderId) ||
+          folderGroupPermissions?.edit_apps_in_folders_id?.includes(folderId)
+      ));
+
+  const effectivePreviewEnvironmentAccess =
+    !isBuilder && hasAppFolderPreviewAccess
+      ? {
+          ...environmentAccess,
+          development: true,
+          staging: true,
+          production: true,
+        }
+      : environmentAccess;
+
+  const hasNonReleasedPreviewAccess =
+    effectivePreviewEnvironmentAccess.development ||
+    effectivePreviewEnvironmentAccess.staging ||
+    effectivePreviewEnvironmentAccess.production;
+
+  // Builders need explicit released access. End users can launch if the app is released.
   const canAccessReleased = !isBuilder || environmentAccess.released;
 
   const LaunchButton =
@@ -227,14 +249,9 @@ export default function AppCard({
           const pageHandle = app.home_page_handle || 'home';
           const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
 
-          const session = authenticationService.currentSessionValue;
-          const appPerms = session?.app_group_permissions;
-          const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-
-          // Check if user is a builder
-          const isBuilder = appPerms?.is_all_editable || appPerms?.editable_apps_id?.includes(app.id) || false;
-          // For preview, use first available environment from user's actual permissions
-          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+          // For preview, use first available environment from user's actual permissions.
+          // End users with folder access can preview from any non-released environment.
+          const defaultEnv = getDefaultEnvironment(effectivePreviewEnvironmentAccess, isBuilder, true);
           // Don't add env param if license is invalid or multi-environment feature is not available
           const queryParams = props.basicPlan ? {} : { env: defaultEnv };
           const previewQuery = queryString.stringify(queryParams);
@@ -295,6 +312,8 @@ export default function AppCard({
               <div visible={focused ? true : undefined}>
                 {(canDeleteApp(app) || canUpdateApp(app) || canEditAnyFolder || appType === 'module') && (
                   <AppMenu
+                    appId={app?.id}
+                    appUserId={app?.user_id}
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
                     canCreateApp={canCreateApp()}
@@ -309,6 +328,7 @@ export default function AppCard({
                     currentFolder={currentFolder}
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
+                    ownedFolders={ownedFolders}
                   />
                 )}
               </div>
@@ -358,7 +378,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && hasNonReleasedAccess && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

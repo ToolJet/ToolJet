@@ -1,4 +1,4 @@
-import { ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { FeatureAbilityFactory } from '.';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { Folder } from '@entities/folder.entity';
@@ -6,7 +6,6 @@ import { DataSource } from 'typeorm';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TransactionLogger } from '@modules/logging/service';
-import { MODULES } from '@modules/app/constants/modules';
 import { cloneDeep } from 'lodash';
 import { FEATURE_KEY } from '../constants';
 
@@ -34,43 +33,24 @@ export class FeatureAbilityGuard extends AbilityGuard {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const folderId = request.params?.id;
-    const features = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
+    const rawFeatures = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
+    const features = Array.isArray(rawFeatures) ? rawFeatures : rawFeatures ? [rawFeatures] : [];
 
-    // For DELETE_FOLDER with a specific folder ID, we need to check conditional ability
-    if (folderId && features?.includes(FEATURE_KEY.DELETE_FOLDER)) {
-      // First run the base guard for license checks etc.
-      const baseResult = await super.canActivate(context);
-      if (!baseResult) return false;
+    if (
+      user &&
+      folderId &&
+      (features.includes(FEATURE_KEY.UPDATE_FOLDER) || features.includes(FEATURE_KEY.DELETE_FOLDER))
+    ) {
+      request.tj_resource_id = folderId;
 
-      // Fetch the folder to check ownership
       const folder = await this.dataSource.manager.findOne(Folder, {
         where: { id: folderId, organizationId: user.organizationId },
+        select: ['id', 'createdBy'],
       });
 
-      if (!folder) {
-        throw new ForbiddenException('Folder not found');
-      }
-
-      const abilityFactory = await this.moduleRef.resolve(this.getAbilityFactory());
-      const module = cloneDeep(this.reflector.get<MODULES>('tjModuleId', context.getClass()));
-      const ability = await abilityFactory.createAbility(
-        user,
-        { moduleName: module, features: Array.isArray(features) ? features : [features] },
-        [],
-        request
-      );
-
-      if (!ability.can(FEATURE_KEY.DELETE_FOLDER, folder)) {
-        throw new ForbiddenException({
-          message: 'You do not have permission to delete this folder',
-          organizationId: user.organizationId,
-        });
-      }
-
-      return true;
+      request.tj_allow_owner_folder_manage = !!folder && folder.createdBy === user.id;
     }
 
-    // For other operations, use the base guard
     return super.canActivate(context);
   }
 }

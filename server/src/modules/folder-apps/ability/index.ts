@@ -23,17 +23,27 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
     const folderCreate = userPermission.folderCreate;
     const folderPermissions = userPermission[MODULES.FOLDER];
+    const ownerCanCreateFolderApp =
+      request?.tj_allow_owner_folder_app_create && extractedMetadata.features?.includes(FEATURE_KEY.CREATE_FOLDER_APP);
 
-    if (superAdmin || isAdmin || folderCreate) {
-      // Full access — no folder restriction needed
+    if (superAdmin || isAdmin) {
       can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
-    } else if (folderPermissions?.isAllEditable) {
-      // Granular: user can edit ALL folders
-      can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
-    } else if (folderPermissions?.editableFoldersId?.length > 0) {
-      // Granular: user can only edit specific folders — scope by folderId
-      const folderId = request?.tj_resource_id;
-      if (folderId && folderPermissions.editableFoldersId.includes(folderId)) {
+    } else {
+      if (ownerCanCreateFolderApp) {
+        can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp);
+      }
+
+      if (folderPermissions) {
+        if (folderPermissions.isAllEditable) {
+          // User can edit ALL folders
+          can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+        } else if (folderPermissions.editableFoldersId?.length > 0) {
+          const folderId = request?.tj_resource_id;
+          if (folderId && folderPermissions.editableFoldersId.includes(folderId)) {
+            can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+          }
+        }
+      } else if (folderCreate) {
         can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
       }
     }

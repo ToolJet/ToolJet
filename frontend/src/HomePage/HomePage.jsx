@@ -1846,9 +1846,15 @@ class HomePageComponent extends React.Component {
                       .filter((folder) => {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
+
+                        // Check if user has edit permissions for the folder
                         const folderPermissions = currentSession?.user_permissions?.folder;
                         if (folderPermissions?.is_all_editable) return true;
-                        return folderPermissions?.editable_folders_id?.includes(folder.id);
+                        if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
+
+                        // Allow folder owners to add apps to their own folders
+                        const currentUserId = currentSession?.current_user?.id;
+                        return !!(currentUserId && folder.created_by === currentUserId);
                       })
                       .map((folder) => ({ name: folder.name, value: folder.id }))}
                     disabled={!!appOperations?.isAdding}
@@ -2199,6 +2205,9 @@ class HomePageComponent extends React.Component {
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
+                    ownedFolders={this.state.folders.filter(
+                      (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
+                    )}
                   />
                 )}
               </div>

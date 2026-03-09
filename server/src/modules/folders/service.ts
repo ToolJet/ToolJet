@@ -1,24 +1,25 @@
 import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Folder } from '@entities/folder.entity';
-import { FolderApp } from '../../entities/folder_app.entity';
-import { AppGitSync } from '../../entities/app_git_sync.entity';
+import { FolderApp } from '@entities/folder_app.entity';
+import { AppGitSync } from '@entities/app_git_sync.entity';
 import { decamelizeKeys } from 'humps';
 import { CreateFolderDto, UpdateFolderDto } from '@modules/folders/dto';
 import { IFoldersService } from './interfaces/IService';
 import { catchDbException } from '@helpers/utils.helper';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, EntityManager } from 'typeorm';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
 import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
+
 @Injectable()
 export class FoldersService implements IFoldersService {
   constructor(
     protected foldersUtilService: FoldersUtilService,
     protected abilityService: AbilityService
   ) {}
+
   async createFolder(user, createFolderDto: CreateFolderDto) {
     const folderName = createFolderDto.name;
     const type = createFolderDto.type;
@@ -53,8 +54,7 @@ export class FoldersService implements IFoldersService {
         where: { id: folderId, organizationId: user.organizationId },
       });
 
-      // Check if user has permission to rename this folder
-      await this.checkFolderUpdatePermission(user, folder, manager);
+      await this.checkFolderManagePermission(user, folder, manager, 'update');
 
       const gitSyncedAppInFolder = await manager
         .createQueryBuilder(AppGitSync, 'ags')
@@ -79,11 +79,12 @@ export class FoldersService implements IFoldersService {
     });
   }
 
-  /**
-   * Check if the user has permission to rename/update this folder.
-   * Requires: admin, OR granular canEditFolder for this folder, OR folder ownership with folderCreate.
-   */
-  protected async checkFolderUpdatePermission(user, folder: Folder, manager: EntityManager): Promise<void> {
+  protected async checkFolderManagePermission(
+    user,
+    folder: Folder,
+    manager: EntityManager,
+    action: 'update' | 'delete'
+  ): Promise<void> {
     const userPermissions = await this.abilityService.resourceActionsPermission(
       user,
       {
@@ -93,19 +94,20 @@ export class FoldersService implements IFoldersService {
       manager
     );
 
-    // Admins/SuperAdmins can always rename
     if (userPermissions.isAdmin || userPermissions.isSuperAdmin) {
       return;
     }
 
-    // Folder owner can rename their own folders (if they have folderCreate)
-    if (folder.createdBy === user.id && userPermissions.folderCreate) {
+    if (folder.createdBy === user.id) {
       return;
     }
 
-    // Check granular canEditFolder permission
+    if (action === 'delete' && userPermissions.folderDelete) {
+      return;
+    }
+
     const folderPerms = userPermissions[MODULES.FOLDER];
-    if (folderPerms) {
+    if (action === 'update' && folderPerms) {
       if (folderPerms.isAllEditable) {
         return;
       }
@@ -114,13 +116,20 @@ export class FoldersService implements IFoldersService {
       }
     }
 
-    throw new ForbiddenException('You do not have permission to update this folder');
+    throw new ForbiddenException(
+      action === 'delete'
+        ? 'You do not have permission to delete this folder'
+        : 'You do not have permission to update this folder'
+    );
   }
+
   async deleteFolder(user, id): Promise<DeleteResult> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const folder = await manager.findOneOrFail(Folder, {
         where: { id, organizationId: user.organizationId },
       });
+
+      await this.checkFolderManagePermission(user, folder, manager, 'delete');
 
       const gitSyncedAppInFolder = await manager
         .createQueryBuilder(AppGitSync, 'ags')
