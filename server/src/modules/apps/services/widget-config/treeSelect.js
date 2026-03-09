@@ -120,7 +120,7 @@ export const treeSelectConfig = {
       displayName: 'Style',
       options: [
         { name: 'New', value: 'new' },
-        { name: 'Old', value: 'old' },
+        { name: 'Legacy', value: 'legacy' },
       ],
       accordian: 'label',
       isFxNotRequired: true,

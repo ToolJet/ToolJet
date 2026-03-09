@@ -364,12 +364,12 @@ const TreeSelect = ({
         ),
         expandOpen: (
           <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
-            <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+            <Triangle width={10} height={10} fill={'var(--icon-strong)'} color={'var(--icon-strong)'} />
           </span>
         ),
         expandClose: (
           <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
-            <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+            <Triangle width={10} height={10} fill={'var(--icon-strong)'} color={'var(--icon-strong)'} />
           </span>
         ),
       }}
@@ -391,7 +391,7 @@ const TreeSelect = ({
       </div>
     );
 
-  if (labelStyle === 'old') {
+  if (labelStyle === 'legacy') {
     return (
       <div
         ref={containerRef}

@@ -2872,7 +2872,7 @@ function migrateProperties(
         styles.labelColor = { value: styles?.textColor };
       }
       if (styles.labelStyle === undefined) {
-        styles.labelStyle = { value: 'old' };
+        styles.labelStyle = { value: 'legacy' };
       }
       if (!styles.alignment) {
         styles.alignment = { value: 'top' };
