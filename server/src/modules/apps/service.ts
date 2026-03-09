@@ -223,30 +223,54 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    const { name } = appUpdateDto;
+    const { name, editingVersionId } = appUpdateDto;
+    const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
+    const isGitSyncEnabled = Boolean(
+      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
+    );
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
+      // Block rename if git sync is enabled and app has been pushed
+      if (isGitSyncEnabled) {
+        const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
+        if (appGitSync) {
+          // Check if on default branch (not a feature branch)
+          const editingVersion = editingVersionId
+            ? await this.versionRepository.findById(editingVersionId, app.id)
+            : app.editingVersion;
+
+          const isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+
+          if (isOnDefaultBranch) {
+            throw new BadRequestException(
+              "Renaming isn't allowed on master. Switch branch in app builder to update name."
+            );
+          }
+        }
+      }
+
       const draftVersion = await this.versionRepository.findOne({
         where: {
           appId: app.id,
-          versionType: AppVersionType.VERSION,
+          // versionType: AppVersionType.VERSION,
           status: AppVersionStatus.DRAFT,
         },
       });
 
-      if (!draftVersion) {
+      if (!draftVersion && isGitSyncEnabled) {
         throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
       }
     }
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
-    if (name && app.creationMode != 'GIT' && name != app.name) {
+    if (name && name != app.name) {
       const appRenameDto = {
         user: user,
         organizationId: organizationId,
         app: app,
         appUpdateDto: appUpdateDto,
+        editingVersionId: editingVersionId,
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }

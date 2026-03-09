@@ -336,7 +336,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
               id="branch-name-input"
               type="text"
               className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
-              placeholder="Enter version name"
+              placeholder="Enter branch name"
               value={branchName}
               onChange={handleBranchNameChange}
               onKeyDown={handleKeyDown}
@@ -344,7 +344,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
               autoFocus
             />
             {validationError && <div className="form-error-message">{validationError}</div>}
-            <div className="form-helper-text">Version name must be unique and max 50 characters</div>
+            <div className="form-helper-text">Branch name must be unique and max 50 characters</div>
           </div>
 
           {/* Auto-commit checkbox */}

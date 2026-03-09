@@ -22,9 +22,11 @@ import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
+  const { isModuleEditor } = useModuleContext();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
@@ -32,7 +34,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const paramListContainerRef = useRef(null);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
-  const creatingQueryInProcessId = useStore((state) => state.dataQuery.creatingQueryInProcessId);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
@@ -51,7 +52,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
-  const isFreezed = useStore((state) => state.getShouldFreeze());
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setDataSourceMeta(
@@ -224,7 +225,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         <ElementToRender
           renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={creatingQueryInProcessId || selectedQuery?.id}
+          key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}

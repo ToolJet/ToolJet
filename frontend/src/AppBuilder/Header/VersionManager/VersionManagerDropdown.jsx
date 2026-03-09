@@ -275,6 +275,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     );
   };
 
+  // Count only actual versions, not sub-branches
+  const versionOnlyCount = versions.filter((v) => v.versionType === 'version').length;
+
   const renderPopover = (overlayProps) => (
     <Popover
       id="version-manager-popover"
@@ -302,7 +305,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         </div>
 
         {/* Search Field - Only show if more than 5 versions */}
-        {versions.length > 5 && (
+        {versionOnlyCount > 5 && (
           <div>
             <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
           </div>
