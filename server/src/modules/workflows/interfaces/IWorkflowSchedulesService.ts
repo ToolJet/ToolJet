@@ -12,13 +12,14 @@ export interface IWorkflowSchedulesService {
 
   findOne(id: string): Promise<WorkflowSchedule>;
 
-  findAll(appVersionId: string): Promise<WorkflowSchedule[]>;
+  findAll(appId: string): Promise<WorkflowSchedule[]>;
 
   update(
     id: string,
     updateWorkflowScheduleDto: Partial<{
       active: boolean;
       environmentId: string;
+      workflowId: string;
       type: string;
       timezone: string;
       details: any;

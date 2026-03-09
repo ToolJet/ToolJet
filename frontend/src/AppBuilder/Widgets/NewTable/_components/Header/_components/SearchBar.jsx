@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { IconSearch } from '@tabler/icons-react';
 
 // Table Search
-export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
+export const SearchBar = memo(({ globalFilter = '', setGlobalFilter, componentName }) => {
   const [value, setValue] = useState(globalFilter);
 
   const onChange = (filterValue) => {
@@ -16,11 +16,11 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
 
   return (
     <div
-      className="d-flex align-items-center table-global-search"
+      className="d-flex align-items-center table-global-search" data-cy={`${componentName}-search-bar`}
       style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}
     >
       <div className="d-flex align-items-center">
-        <IconSearch size="16" color={'var(--cc-weak-icon, var(--cc-default-icon))'} />
+        <IconSearch size="16" color={'var(--cc-weak-icon, var(--cc-default-icon))'} data-cy={`${componentName}-search-input-icon`} />
         <input
           type="text"
           className={`tw-w-full align-self-center bg-transparent tj-text tj-text-sm tw-mx-[4px] tw-rounded-none`}
@@ -30,13 +30,14 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
             debouncedChange(e.target.value);
           }}
           placeholder="Search"
-          data-cy="search-input-field"
+          data-cy={`${componentName}-search-input-field`}
           style={{
             border: '0',
           }}
         />
         <div
           className={`d-flex table-clear-icon align-items-center ${value ? 'visible' : 'invisible'}`}
+          data-cy={`${componentName}-search-clear-icon`}
           style={{ cursor: 'pointer' }}
           onClick={() => {
             // setGlobalFilter(undefined);

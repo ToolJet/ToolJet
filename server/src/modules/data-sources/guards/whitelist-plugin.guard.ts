@@ -3,7 +3,15 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 @Injectable()
 export class WhitelistPluginGuard implements CanActivate {
   // Configurable whitelist of allowed dataSource kinds for method invocation
-  private readonly allowedKinds = new Set(['grpcv2', 'xero', 'googlesheetsv2']); // Start with grpcv2, easily expandable
+  private readonly allowedKinds = new Set([
+    'grpcv2',
+    'xero',
+    'googlesheetsv2',
+    'mssql',
+    'mysql',
+    'postgresql',
+    'mongodb',
+  ]); // Start with grpcv2, easily expandable
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
