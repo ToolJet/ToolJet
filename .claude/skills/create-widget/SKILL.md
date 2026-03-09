@@ -350,6 +350,115 @@ If non-empty: for each parent container in `{RESTRICTED_PARENTS}`, append `'{Nam
 **Edit 13 — `server/src/modules/apps/services/app-import-export.service.ts` (NewRevampedComponents)**
 Append `'{Name}',` before the closing `];` of the `NewRevampedComponents` array (around line 143).
 
+**Edit 14 — Inspector stub (ONLY if INSPECTOR_TYPE = C)**
+SKIP THIS EDIT if `{INSPECTOR_TYPE}` is `A` or `B`.
+
+If INSPECTOR_TYPE = C, create the stub Inspector file:
+`frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/{Name}.jsx`
+
+Contents:
+```jsx
+import React from 'react';
+import { renderElement } from '../../Utils';
+import Accordion from '@/_ui/Accordion';
+import { EventManager } from '../../EventManager';
+
+export const {Name} = ({ componentMeta, darkMode, ...restProps }) => {
+  const {
+    layoutPropertyChanged,
+    component,
+    dataQueries,
+    paramUpdated,
+    currentState,
+    eventsChanged,
+    apps,
+    allComponents,
+    pages,
+  } = restProps;
+
+  // Separate properties by section
+  let properties = [];
+  let additionalActions = [];
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
+
+  const createRenderElement = (property, type = 'properties', extraProps = {}) => {
+    return renderElement(
+      component,
+      componentMeta,
+      extraProps.paramUpdated || paramUpdated,
+      dataQueries,
+      property,
+      type,
+      currentState,
+      allComponents,
+      extraProps.darkMode || darkMode,
+      extraProps.placeholder || ''
+    );
+  };
+
+  const createAccordionItem = (title, children, isOpen = true) => ({ title, isOpen, children });
+
+  // TODO: Customize sections for {Name} widget
+  const sections = [
+    {
+      title: 'Properties',
+      type: 'properties',
+      properties: properties,
+    },
+    {
+      title: 'Events',
+      custom: () => (
+        <EventManager
+          sourceId={component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
+          dataQueries={dataQueries}
+          components={allComponents}
+          eventsChanged={eventsChanged}
+          apps={apps}
+          darkMode={darkMode}
+          pages={pages}
+        />
+      ),
+    },
+    {
+      title: 'Additional Actions',
+      type: 'properties',
+      properties: additionalActions,
+      extraProps: (property) => ({
+        placeholder: componentMeta.properties?.[property]?.placeholder,
+      }),
+    },
+    {
+      title: 'Devices',
+      type: 'others',
+      properties: ['showOnDesktop', 'showOnMobile'],
+      extraProps: () => ({ paramUpdated: layoutPropertyChanged }),
+    },
+  ];
+
+  const items = sections.map((section) => {
+    if (section.custom) {
+      return createAccordionItem(section.title, section.custom());
+    }
+    const children = section.properties.map((property) => {
+      const extraProps = section.extraProps ? section.extraProps(property) : {};
+      return createRenderElement(property, section.type, extraProps);
+    });
+    return createAccordionItem(section.title, children);
+  });
+
+  return <Accordion items={items} />;
+};
+```
+
 After all edits, report back listing every file you modified or created.
 
 ---
@@ -406,13 +515,15 @@ Announce completion:
 Phase 6: Complete ✅
 ```
 
-Print the files created list:
+Print the files created list (include the Inspector stub line only if INSPECTOR_TYPE = C):
 
 ```
 Files created:
   frontend/src/AppBuilder/WidgetManager/widgets/{camelName}.js
   server/src/modules/apps/services/widget-config/{camelName}.js
   frontend/assets/images/icons/widgets/{camelName}.jsx  (stub icon)
+  [if INSPECTOR_TYPE = C]
+  frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/{Name}.jsx  (stub Inspector)
 ```
 
 Print the files edited list. Include `restrictedWidgetsConfig.js` only if `RESTRICTED_PARENTS` was non-empty (i.e. Phase 2 collected at least one restricted parent):
@@ -444,9 +555,11 @@ Print the manual TODOs checklist:
 [ ] Replace stub icon with final SVG:
     frontend/assets/images/icons/widgets/{camelName}.jsx
 
-[ ] (Only if INSPECTOR_TYPE = C) Create custom Inspector component:
-    frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/
-    Follow the sections[] pattern — see PopoverMenu as reference:
+[ ] (Only if INSPECTOR_TYPE = C) Fill in the stub Inspector component:
+    frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/{Name}.jsx
+    The stub is created with a generic 'Properties' section. Customize the sections[]
+    array to match your widget's Inspector panels (rename/split sections, add custom
+    option editors, etc). See PopoverMenu as reference:
     frontend/src/AppBuilder/RightSideBar/Inspector/Components/PopoverMenu/PopoverMenu.jsx
 
 [ ] Commit all changes before running the next skill:
