@@ -10,9 +10,20 @@ export type SourceOptions = {
   client_key: string;
   tls_certificate: string;
   connection_format: string;
-  use_ssl: boolean,
+  use_ssl: 'enabled' | 'disabled';
   query_params: string
   connection_string: string;
+  ssh_enabled: 'enabled' | 'disabled';
+  ssh_host: string;
+  ssh_port: number;
+  ssh_username: string;
+  ssh_auth_type: 'password' | 'private_key';
+  ssh_password: string;
+  ssh_private_key: string;
+  ssh_passphrase: string;
+  ssh_dst_host?: string;
+  ssh_dst_port?: number;
+  ssh_local_port?: number;
 };
 export type QueryOptions = {
   operation: string;

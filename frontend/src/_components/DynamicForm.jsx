@@ -424,6 +424,7 @@ const DynamicForm = ({
           options,
           optionsChanged,
           selectedDataSource,
+          isRestApi: source === 'restapi',
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
