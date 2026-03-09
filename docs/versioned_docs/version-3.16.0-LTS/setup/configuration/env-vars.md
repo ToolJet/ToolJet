@@ -193,11 +193,11 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 
 You can control workflow execution behavior using the following environment variables:
 
-| Variable                   | Description                                                                     | Default | Unit         |
-| -------------------------- | ------------------------------------------------------------------------------- | ------- | ------------ |
-| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out.                | 60      | seconds      |
-| `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20      | MB           |
-| `WORKFLOW_JS_TIMEOUT`      | Maximum time allowed for each `runjs` or `loop` node execution.                 | 100     | milliseconds |
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
+| `WORKFLOW_JS_MEMORY_LIMIT_MB` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
+| `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
 
 #### Configuring Non Email Identifier for ToolJet OIDC
 

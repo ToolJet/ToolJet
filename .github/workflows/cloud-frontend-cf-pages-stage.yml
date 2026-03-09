@@ -1,29 +1,11 @@
-name: Deploy to Vercel
-
-# This workflow deploys the ToolJet frontend to Vercel
-# Pattern based on cloud-frontend.yml and cloud-frontend-gcp.yml
-#
-# Required GitHub Secrets:
-# - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
-# - VERCEL_ORG_ID: team_SsaGMOGYsC8KFX3InHcUiy3T
-# - VERCEL_PROJECT_ID: prj_iX5rpyQy7hq8upcHijcED3jkRQn4
-# - CUSTOM_GITHUB_TOKEN: For submodule checkout
-# - ALLOWED_USER1_USERNAME, ALLOWED_USER2_USERNAME, ALLOWED_USER3_USERNAME: Authorized users
-# - CLOUD_GOOGLE_MAPS_API_KEY, CLOUD_NODE_ENV, CLOUD_SENTRY_*, etc.: Build environment variables
+name: Deploy to Cloudflare Pages stage (Cloud Frontend)
 
 on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Git branch to deploy (must start with "lts-", e.g., lts-3.16)'
+        description: 'Git branch to deploy (must start with "lts-", e.g., lts-3.6)'
         required: true
-      environment:
-        description: 'Deployment environment'
-        required: true
-        type: choice
-        options:
-          - preview
-          - production
 
 jobs:
   deploy:
@@ -88,10 +70,10 @@ jobs:
                 exit 1
               }
 
-              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo '\''unknown'\'')"
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ $name: branch '\''$BRANCH'\'' not found on origin. Falling back to '\''lts-3.16'\''"
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
               PREV=$(git rev-parse --short HEAD || echo "unknown")
               git fetch origin lts-3.16:lts-3.16 || {
                 echo "❌ $name: fetch failed for lts-3.16"
@@ -101,14 +83,14 @@ jobs:
                 echo "❌ $name: fallback to lts-3.16 failed"
                 exit 1
               }
-              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo '\''unknown'\'')"
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: now on branch lts-3.16"
             fi
 
             CURRENT=$(git rev-parse --abbrev-ref HEAD)
             echo "🔎 $name: current branch = $CURRENT"
             if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
-              echo "❌ $name: unexpected branch state — wanted '\''$BRANCH'\'' or fallback '\''lts-3.16'\'', got '\''$CURRENT'\''"
+              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
               exit 1
             fi
           '
@@ -123,7 +105,7 @@ jobs:
         working-directory: repo
 
       - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
+        run: npm run build:plugins:prod && npm run build:frontend:cloud
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -139,23 +121,83 @@ jobs:
           TOOLJET_EDITION: cloud
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
 
-      - name: 🚀 Deploy to Vercel
-        run: |
-          npm install -g vercel@latest
+      - name: 📝 Add SPA routing redirect rule
+        run: echo "/* /index.html 200" > repo/frontend/build/_redirects
 
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            echo "🚀 Deploying to production..."
-            vercel deploy --prod \
-              --token=$VERCEL_TOKEN \
-              --cwd=frontend/build
+      - name: 🔧 Set CF Pages production branch to input branch
+        run: |
+          echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
+          response=$(curl -s -w "\n%{http_code}" -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
+
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Production branch updated to: ${{ github.event.inputs.branch }}"
           else
-            echo "🔍 Deploying to preview..."
-            vercel deploy \
-              --token=$VERCEL_TOKEN \
-              --cwd=frontend/build
+            echo "❌ Failed to update production branch (HTTP $http_code)"
+            echo "$response"
+            exit 1
           fi
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        run: |
+          echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
+          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+          npx wrangler pages deploy frontend/build \
+            --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} \
+            --branch=${{ github.event.inputs.branch }} \
+            --commit-dirty=true
         working-directory: repo
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID }}
+
+  purge_cache:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ✅ Check user authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
+
+      - name: 🧹 Purge Cloudflare Cache
+        continue-on-error: true
+        run: |
+          echo "🔄 Purging Cloudflare cache for specific URLs..."
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID_PROD }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "files": [
+                "${{ secrets.CLOUDFLARE_CONFIG_URL_STAGE }}",
+                "${{ secrets.CLOUDFLARE_METADATA_URL_STAGE }}"
+              ]
+            }')
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Cloudflare cache purged successfully for specified URLs"
+            echo "$body"
+          else
+            echo "⚠️ Cloudflare cache purge failed with status code: $http_code"
+            echo "$body"
+            exit 1
+          fi
