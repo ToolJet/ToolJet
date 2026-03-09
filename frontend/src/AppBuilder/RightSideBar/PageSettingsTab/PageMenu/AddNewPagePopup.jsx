@@ -445,7 +445,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             darkMode={darkMode}
             isHomePage={isHomePage}
           />
-          {['default', 'custom'].includes(type) && (
+          {type === 'default' && (
             <div className=" d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Disable page</label>
               <label className={`form-switch`}>
