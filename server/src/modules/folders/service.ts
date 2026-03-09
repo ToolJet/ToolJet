@@ -11,13 +11,10 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { FoldersUtilService } from './util.service';
-import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
+
 @Injectable()
 export class FoldersService implements IFoldersService {
-  constructor(
-    protected foldersUtilService: FoldersUtilService,
-    protected readonly branchContextService: BranchContextService
-  ) {}
+  constructor(protected foldersUtilService: FoldersUtilService) {}
   async createFolder(user, createFolderDto: CreateFolderDto) {
     return this.foldersUtilService.createFolder(user, createFolderDto);
   }

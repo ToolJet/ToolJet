@@ -12,16 +12,13 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
-import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
-import { FolderBranchEntry } from '@entities/folder_branch_entry.entity';
-import { FolderAppBranchEntry } from '@entities/folder_app_branch_entry.entity';
+
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
     protected abilityService: AbilityService,
     protected foldersUtilService: FoldersUtilService,
-    protected folderAppsUtilService: FolderAppsUtilService,
-    protected readonly branchContextService: BranchContextService
+    protected folderAppsUtilService: FolderAppsUtilService
   ) {}
 
   async create(folderId: string, appId: string): Promise<FolderApp> {
