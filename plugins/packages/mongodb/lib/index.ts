@@ -272,7 +272,7 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async listCollections(
+  async listTables(
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
@@ -323,7 +323,7 @@ export default class MongodbService implements QueryService {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
 
-      const response = await this.listCollections(
+      const response = await this.listTables(
         sourceOptions,
         dataSourceId,
         dataSourceUpdatedAt
