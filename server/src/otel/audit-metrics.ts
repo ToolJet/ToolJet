@@ -1,6 +1,5 @@
 import { metrics } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
-import { recordQueryEventInternal } from './metrics-store';
 
 /**
  * OTEL Metrics for Audit Logs
@@ -298,13 +297,7 @@ export const initializeAuditLogMetrics = () => {
  * @param auditLogData - The audit log data to record
  */
 export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?: boolean) => {
-  // Always write to the internal metrics store, regardless of OTEL being enabled.
-  // This powers the built-in observability dashboard.
-  if (auditLogData.actionType === 'DATA_QUERY_RUN') {
-    writeToInternalStore(auditLogData);
-  }
-
-   if (!isOtelEnabled) {
+  if (!isOtelEnabled) {
    return;
  }
   if (!auditLogCounter) {
@@ -669,49 +662,6 @@ function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
   }
 }
 
-/**
- * Write a DATA_QUERY_RUN audit log event to the internal metrics store.
- * Called unconditionally, before the OTEL guard, so data is captured even
- * when ENABLE_OTEL is not set.
- */
-function writeToInternalStore(auditLogData: AuditLogFields): void {
-  try {
-    const { metadata = {}, resourceData = {}, resourceId, resourceName, organizationId, userId } = auditLogData;
-
-    const appId = metadata['appId'] || resourceData['appId'] || 'unknown';
-    const appName = metadata['appName'] || resourceData['appName'] || 'unknown';
-    const dataSourceType = resourceData['dataSourceType'] || metadata['dataSourceType'] || 'unknown';
-    const status = (metadata['status'] || 'success') as 'success' | 'failure';
-    const duration = typeof metadata['duration'] === 'number' ? (metadata['duration'] as number) : undefined;
-    const error = metadata['error'];
-    const errorType = metadata['errorType'] || categorizeError(error);
-    const mode = metadata['mode'] || resourceData['mode'] || 'unknown';
-    const environment = metadata['environment'] || resourceData['environment'] || 'unknown';
-
-    const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
-    const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
-    const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : undefined;
-
-    recordQueryEventInternal({
-      timestamp: Date.now(),
-      appId,
-      appName,
-      queryId: resourceId || 'unknown',
-      queryName: resourceName || 'unknown',
-      dataSourceType,
-      mode,
-      environment,
-      status,
-      duration,
-      errorMessage: status === 'failure' ? errorType : undefined,
-      queryText,
-      organizationId,
-    });
-  } catch (err) {
-    // Never let internal store errors surface to callers
-    console.error('[ObservabilityStore] Error writing to internal metrics store:', err);
-  }
-}
 
 /**
  * Categorize error type from error message

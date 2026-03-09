@@ -17,7 +17,6 @@ import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { recordQueryEventInternal } from '@otel/metrics-store';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
@@ -359,30 +358,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         };
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
 
-        // Always write to the internal metrics store (powers in-built observability dashboard)
-        // This runs on ALL editions regardless of ENABLE_OTEL or audit-log configuration.
-        try {
-          const qm = queryStatus.getMetaData();
-          const isFailure = qm.status !== 'success' && qm.status !== 'needs_oauth';
-          const qErr = qm.queryError as any;
-          recordQueryEventInternal({
-            timestamp: Date.now(),
-            appId: appToUse?.id || 'unknown',
-            appName: appToUse?.name || 'unknown',
-            queryId: dataQuery?.id || 'unknown',
-            queryName: dataQuery?.name || 'unknown',
-            dataSourceType: dataSource?.kind || 'unknown',
-            mode: mode || 'unknown',
-            environment: envId || 'unknown',
-            status: isFailure ? 'failure' : 'success',
-            duration: typeof qm.duration === 'number' ? qm.duration : undefined,
-            errorMessage: isFailure && qErr ? String(qErr?.message || 'Unknown error').slice(0, 300) : undefined,
-            errorDescription: isFailure && qErr ? String(qErr?.description || '').slice(0, 500) : undefined,
-            organizationId: user?.organizationId || 'unknown',
-          });
-        } catch (_e) {
-          // Never let metrics errors surface
-        }
       }
     }
   }
