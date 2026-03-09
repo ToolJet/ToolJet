@@ -29,6 +29,7 @@ const DynamicSelector = ({
   fxEnabled = false,
   isMulti = false,
   autoFetch = false,
+  sizeStyles = {},
 }) => {
   const isDependentField = dependsOn?.length > 0;
 
@@ -89,7 +90,7 @@ const DynamicSelector = ({
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
 
       const payload = response?.data ?? response;
-      const items = Array.isArray(payload) ? payload : (payload?.data || []);
+      const items = Array.isArray(payload) ? payload : payload?.data || [];
       setFetchedData(items);
       // Skip access validation for autoFetch fields (e.g. gRPC services discovered from proto files)
       // — "no access" warnings only apply to OAuth-scoped resources like Google Sheets.
@@ -270,6 +271,7 @@ const DynamicSelector = ({
 
   // Watch for changes in dependency state
   useEffect(() => {
+    if (isFxMode) return; // do not fetch while in expression mode
     if (isDependentField && compositeDependencyKey && depsReady) {
       const cacheKey = `${propertyKey}_cache`;
       const existingCache = get(options, cacheKey) || {};
@@ -298,7 +300,7 @@ const DynamicSelector = ({
         handleFetch();
       }
     }
-  }, [compositeDependencyKey]);
+  }, [compositeDependencyKey, isFxMode]);
 
   const handleSelectionChange = (selectedOption) => {
     // Clear no access error since user is making a new valid selection
@@ -337,6 +339,9 @@ const DynamicSelector = ({
   const handleFxChange = () => {
     const newFxMode = !isFxMode;
     setIsFxMode(newFxMode);
+
+    // Clear any stale error when switching back to dropdown mode
+    if (!newFxMode) setError(null);
 
     const updatedOptions = {
       ...options,
@@ -389,9 +394,7 @@ const DynamicSelector = ({
         setNoAccessError(true);
         return;
       }
-      const allHaveAccess = values.every((v) =>
-        cachedData.some((option) => String(option.value) === String(v))
-      );
+      const allHaveAccess = values.every((v) => cachedData.some((option) => String(option.value) === String(v)));
       setNoAccessError(!allHaveAccess);
       return;
     }
@@ -425,9 +428,14 @@ const DynamicSelector = ({
         border: '1px solid var(--slate7)',
         boxShadow: 'none',
         backgroundColor: state.isDisabled
-          ? darkMode ? '#1f2936' : '#f4f6fa'
-          : darkMode ? '#2b3547'
-          : state.menuIsOpen ? '#F1F3F5' : '#fff',
+          ? darkMode
+            ? '#1f2936'
+            : '#f4f6fa'
+          : darkMode
+          ? '#2b3547'
+          : state.menuIsOpen
+          ? '#F1F3F5'
+          : '#fff',
         cursor: 'pointer',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
@@ -493,7 +501,10 @@ const DynamicSelector = ({
   );
 
   return (
-    <div className="dynamic-selector-container" onKeyDown={isMulti ? (e) => e.key === 'Escape' && e.stopPropagation() : undefined}>
+    <div
+      className="dynamic-selector-container"
+      onKeyDown={isMulti ? (e) => e.key === 'Escape' && e.stopPropagation() : undefined}
+    >
       <div className="d-flex align-items-center gap-2 mb-1">
         <div className="flex-grow-1">
           {isFxMode ? (
@@ -517,15 +528,18 @@ const DynamicSelector = ({
                 options={fetchedData}
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
-                placeholder={isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`}
+                placeholder={
+                  isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`
+                }
                 isDisabled={disabled || (isDependentField && !depsReady)}
-                isLoading={isMulti ? (isLoading && getCurrentValue().length === 0) : isLoading}
+                isLoading={isMulti ? isLoading && getCurrentValue().length === 0 : isLoading}
                 useMenuPortal={disableMenuPortal ? false : !!queryName}
-                styles={isMulti ? multiSelectStyles : (computeSelectStyles ? computeSelectStyles('100%') : {})}
+                styles={isMulti ? multiSelectStyles : computeSelectStyles ? computeSelectStyles('100%') : {}}
                 useCustomStyles={isMulti || !!computeSelectStyles}
                 isMulti={isMulti}
                 closeMenuOnSelect={isMulti ? false : undefined}
                 components={isMulti ? { DropdownIndicator: null, ClearIndicator: null } : undefined}
+                {...sizeStyles}
               />
             </div>
           )}

@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_AGGREGATE_FUNCTION_OPTIONS } from './aggregateFunctionConstants';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
+import DynamicSelector from '@/_ui/DynamicSelector';
 import './SqlAggregate.scss';
 
 // ---------------------------------------------------------------------------
@@ -25,7 +25,13 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
   onColumnChange,
   onRemove,
   darkMode,
-  workspaceConstants,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  schema,
+  table,
+  queryName,
 }) {
   const selectedAggregateFunction =
     SQL_AGGREGATE_FUNCTION_OPTIONS.find((option) => option.value === aggregateFunctionValue) ?? null;
@@ -58,17 +64,27 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
         />
       </div>
 
-      {/* Column – CodeHinter so the user can type the column name */}
+      {/* Column – DynamicSelector fetching columns from the connected data source */}
       <div className="col p-0 sql-aggregate-column-wrapper">
         <div className="sql-aggregate-column-input">
-          <CodeHinter
-            type="basic"
-            initialValue={typeof columnValue === 'string' ? columnValue : ''}
-            className="codehinter-plugins"
-            placeholder="Enter column"
-            onChange={handleColumnChange}
-            height="28"
-            workspaceConstants={workspaceConstants}
+          <DynamicSelector
+            operation={columnSelectorOperation}
+            dependsOn={columnSelectorDependsOn}
+            selectedDataSource={selectedDataSource}
+            currentAppEnvironmentId={currentAppEnvironmentId}
+            options={{ schema, table }}
+            value={typeof columnValue === 'string' ? columnValue : ''}
+            propertyKey={aggregateEntryKey}
+            optionsChanged={(updatedOptions) => {
+              const newColumnValue = updatedOptions[aggregateEntryKey];
+              if (newColumnValue !== undefined) {
+                handleColumnChange(newColumnValue);
+              }
+            }}
+            queryName={queryName}
+            label="Column"
+            darkMode={darkMode}
+            sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
           />
         </div>
 
@@ -95,8 +111,16 @@ const SqlAggregate = React.memo(function SqlAggregate({
   options,
   handleOptionChange,
   darkMode,
-  workspaceConstants,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  queryName,
 }) {
+  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
+
   const currentAggregates = readValueMapFromOptions(options, getter, parseKey);
   const aggregateEntries = isEmpty(currentAggregates) ? [] : Object.entries(currentAggregates);
 
@@ -160,7 +184,13 @@ const SqlAggregate = React.memo(function SqlAggregate({
           onColumnChange={handleColumnChange}
           onRemove={handleRemoveAggregate}
           darkMode={darkMode}
-          workspaceConstants={workspaceConstants}
+          columnSelectorOperation={columnSelectorOperation}
+          columnSelectorDependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          schema={schema}
+          table={table}
+          queryName={queryName}
         />
       ))}
 

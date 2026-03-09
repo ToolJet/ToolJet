@@ -105,35 +105,141 @@ export default class PostgresqlQueryService implements QueryService {
     return { status: 'ok' };
   }
 
-  async listTables(
+  async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
+    if (methodName === 'listSchemas') {
+      return await this._fetchSchemas(sourceOptions);
+    }
+    if (methodName === 'listTables') {
+      const schema = args?.values?.schema || 'public';
+      return await this._fetchTables(sourceOptions, schema);
+    }
+    if (methodName === 'listColumns') {
+      const schema = args?.values?.schema || 'public';
+      const table = args?.values?.table || '';
+      return await this._fetchColumns(sourceOptions, schema, table);
+    }
+    throw new QueryError('Method not found', `Method '${methodName}' is not supported by the PostgreSQL plugin`, {});
+  }
+
+  async listSchemas(
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    let knexInstance;
+    const data = await this._fetchSchemas(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    schema = 'public'
+  ): Promise<QueryResult> {
+    const data = await this._fetchTables(sourceOptions, schema, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  async listColumns(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    schema = 'public',
+    table: string
+  ): Promise<QueryResult> {
+    const data = await this._fetchColumns(sourceOptions, schema, table, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  private async _fetchSchemas(
+    sourceOptions: SourceOptions,
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
     try {
-      knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
-
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
       const { rows } = await knexInstance.raw(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_type = 'BASE TABLE'
-      ORDER BY table_name;
-    `);
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+          AND schema_name NOT LIKE 'pg_temp_%'
+          AND schema_name NOT LIKE 'pg_toast_temp_%'
+        ORDER BY schema_name;
+      `);
+      return rows.map((r: any) => ({ value: r.schema_name, label: r.schema_name }));
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch schemas', errorMessage, {});
+    }
+  }
 
-      return {
-        status: 'ok',
-        data: rows,
-      };
+  private async _fetchTables(
+    sourceOptions: SourceOptions,
+    schema = 'public',
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+      const { rows } = await knexInstance.raw(
+        `SELECT table_name
+         FROM information_schema.tables
+         WHERE table_schema = ?
+           AND table_type = 'BASE TABLE'
+         ORDER BY table_name;`,
+        [schema]
+      );
+      return rows.map((r: any) => ({ value: r.table_name, label: r.table_name }));
     } catch (err) {
       const errorMessage = err.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
     }
   }
 
+  private async _fetchColumns(
+    sourceOptions: SourceOptions,
+    schema = 'public',
+    table: string,
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+      const { rows } = await knexInstance.raw(
+        `SELECT column_name, data_type, is_nullable, column_default
+         FROM information_schema.columns
+         WHERE table_schema = ?
+           AND table_name = ?
+         ORDER BY ordinal_position;`,
+        [schema, table]
+      );
+      return rows.map((r: any) => ({ value: r.column_name, label: r.column_name }));
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch columns', errorMessage, {});
+    }
+  }
+
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
-    const { operation, table } = queryOptions;
+    const { operation, table, schema } = queryOptions;
     const queryBuilder = createQueryBuilder('postgresql');
 
     switch (operation) {
@@ -141,6 +247,7 @@ export default class PostgresqlQueryService implements QueryService {
         const { list_rows, limit, offset } = queryOptions;
         const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
         const { query, params } = queryBuilder.listRows(table, {
+          schema,
           where_filters,
           order_filters,
           aggregates,
@@ -154,7 +261,10 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'create_row': {
         const { columns } = queryOptions.create_row || {};
-        const { query, params } = queryBuilder.createRow(table, columns) as { query: string; params: unknown[] };
+        const { query, params } = queryBuilder.createRow(table, schema, columns) as {
+          query: string;
+          params: unknown[];
+        };
         const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
         return { status: 'ok', data: rows };
       }
@@ -162,7 +272,11 @@ export default class PostgresqlQueryService implements QueryService {
       case 'update_rows': {
         const { allow_multiple_updates, zero_records_as_success } = queryOptions;
         const { columns, where_filters } = queryOptions.update_rows || {};
-        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        if (!hasWhereFilters) {
+          throw new Error('update_rows requires at least one filter condition to prevent accidental mass updates.');
+        }
+        const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
           query: string;
           params: unknown[];
         };
@@ -175,9 +289,9 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       case 'upsert_rows': {
-        const { primary_key_column, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
-        const { query, params } = queryBuilder.upsertRows(table, { primary_key_column, columns }) as {
+        const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
           query: string;
           params: unknown[];
         };
@@ -192,7 +306,14 @@ export default class PostgresqlQueryService implements QueryService {
       case 'delete_rows': {
         const { limit, zero_records_as_success } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
-        const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        const hasLimit = limit != null && limit !== '';
+        if (!hasWhereFilters && !hasLimit) {
+          throw new Error(
+            'delete_rows requires at least one filter condition or a limit to prevent accidental mass deletions.'
+          );
+        }
+        const { query, params } = queryBuilder.deleteRows(table, { schema, where_filters, limit }) as {
           query: string;
           params: unknown[];
         };
@@ -208,7 +329,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
+        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
           query: string;
           params: unknown[];
         };
@@ -217,9 +338,10 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       case 'bulk_update_pkey': {
-        const { primary_key_column, records } = queryOptions;
+        const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          primary_key: [primary_key_column],
+          schema,
+          primary_key: primary_key_columns,
           rows_update: records,
         }) as { queries: { query: string; params: unknown[] }[] };
         const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
@@ -227,9 +349,10 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       case 'bulk_upsert_pkey': {
-        const { primary_key_column, records } = queryOptions;
+        const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          primary_key: [primary_key_column],
+          schema,
+          primary_key: primary_key_columns,
           row_upsert: records,
         }) as { queries: { query: string; params: unknown[] }[] };
         const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);

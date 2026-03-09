@@ -20,7 +20,9 @@ export type QueryOptions = {
   query: string;
   mode: string;
   table: string;
+  schema?: string;
   primary_key_column: string;
+  primary_key_columns?: string[];
   records: Record<string, unknown>[];
   query_params: string[][];
   // GUI mode – list_rows (nested under list_rows key)

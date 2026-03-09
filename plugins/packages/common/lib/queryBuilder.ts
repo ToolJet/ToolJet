@@ -61,8 +61,8 @@ class PostgreSQLDialect extends BaseDialect {
   }
   limitOffset(limit: number | string | null | undefined, offset: number | string | null | undefined): string {
     let s = '';
-    if (limit != null || limit !== undefined) s += ` LIMIT ${toPositiveInt(limit)}`;
-    if (offset != null || offset !== undefined) s += ` OFFSET ${toPositiveInt(offset)}`;
+    if (limit != null) s += ` LIMIT ${toPositiveInt(limit)}`;
+    if (offset != null) s += ` OFFSET ${toPositiveInt(offset)}`;
     return s;
   }
 }
@@ -156,6 +156,7 @@ interface UpdateRowEntry {
 }
 
 interface ListRowsInput {
+  schema?: string;
   aggregates?: Record<string, AggregateEntry>;
   group_by?: Record<string, string[]>;
   where_filters?: Record<string, WhereFilter>;
@@ -166,30 +167,36 @@ interface ListRowsInput {
 }
 
 interface DeleteRowsInput {
+  schema?: string;
   limit?: string | number;
   where_filters?: Record<string, WhereFilter>;
 }
 
 interface UpdateRowsInput {
+  schema?: string;
   columns: Record<string, UpdateRowEntry>;
   where_filters?: Record<string, WhereFilter>;
 }
 
 interface UpsertRowsInput {
-  primary_key_column: string;
+  schema?: string;
+  primary_key_columns: string[];
   columns: Record<string, UpdateRowEntry>;
 }
 
 interface BulkInsertInput {
+  schema?: string;
   rows_insert: Record<string, unknown>[];
 }
 
 interface BulkUpdateWithPrimaryKeyInput {
+  schema?: string;
   primary_key: string[];
   rows_update: Record<string, unknown>[];
 }
 
 interface BulkUpsertWithPrimaryKeyInput {
+  schema?: string;
   primary_key: string[];
   row_upsert: Record<string, unknown>[];
 }
@@ -225,17 +232,36 @@ export class QueryBuilder {
     return '?';
   }
 
+  // Builds a fully-qualified table reference: "schema"."table" or just "table"
+  private _buildTableRef(tableName: string, schema?: string | null): string {
+    const trimmedSchema = schema && String(schema).trim();
+    if (trimmedSchema) {
+      return `${this._dialect.quote(trimmedSchema)}.${this._dialect.quote(tableName)}`;
+    }
+    return this._dialect.quote(tableName);
+  }
+
   // ── WHERE builder ───────────────────────────────────────────────────────────
 
   private _whereClause(whereFilters: Record<string, WhereFilter> | null | undefined): string {
     if (!whereFilters || Object.keys(whereFilters).length === 0) return '';
-    const conditions = Object.values(whereFilters).map((f) => this._condition(f));
+    const conditions = Object.values(whereFilters)
+      .map((f) => this._condition(f))
+      .filter((c): c is string => c !== null);
+    if (conditions.length === 0) return '';
     return ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  private _condition({ column, operator, value }: WhereFilter): string {
-    if (!column) throw new QueryBuilderError('Filter is missing "column"');
-    if (!operator) throw new QueryBuilderError('Filter is missing "operator"');
+  private _condition({ column, operator, value }: WhereFilter): string | null {
+    const hasColumn = !!(column && String(column).trim());
+    const hasOperator = !!(operator && String(operator).trim());
+    const isValueEmpty = value === undefined || value === null || value === '';
+
+    // Fully empty row — silently skip
+    if (!hasColumn && !hasOperator && isValueEmpty) return null;
+
+    if (!hasColumn) throw new QueryBuilderError('A filter condition has a value or operator but no column specified');
+    if (!hasOperator) throw new QueryBuilderError(`Filter on column "${column}" is missing an operator`);
 
     const col = this._dialect.quote(column);
 
@@ -295,8 +321,11 @@ export class QueryBuilder {
 
     if (aggregates && Object.keys(aggregates).length > 0) {
       for (const agg of Object.values(aggregates)) {
-        if (!agg.aggFx) throw new QueryBuilderError('Aggregate entry is missing "aggFx"');
-        if (!agg.column) throw new QueryBuilderError('Aggregate entry is missing "column"');
+        const hasAggFx = !!(agg.aggFx && String(agg.aggFx).trim());
+        const hasColumn = !!(agg.column && String(agg.column).trim());
+        if (!hasAggFx && !hasColumn) continue; // skip fully empty aggregate entry
+        if (!hasAggFx) throw new QueryBuilderError(`Aggregate on column "${agg.column}" is missing a function`);
+        if (!hasColumn) throw new QueryBuilderError(`Aggregate function "${agg.aggFx}" is missing a column`);
         const fn = String(agg.aggFx).toLowerCase();
         if (!AGGREGATE_FNS.has(fn)) {
           throw new QueryBuilderError(`Unknown aggregate function: "${agg.aggFx}"`);
@@ -310,27 +339,33 @@ export class QueryBuilder {
   }
 
   // ── Operations ──────────────────────────────────────────────────────────────
-  createRow(tableName: string, createRow: Record<string, CreateRowEntry> | undefined | null): QueryResult {
+  createRow(
+    tableName: string,
+    schema: string | undefined | null,
+    columns: Record<string, CreateRowEntry> | undefined | null
+  ): QueryResult {
     this._reset();
     this._assertTableName(tableName, 'create_row');
 
-    const entries = Object.values(createRow || {});
+    const table = this._buildTableRef(tableName, schema);
+
+    const entries = Object.values(columns || {}).filter((entry) => {
+      const hasColumn = !!(entry.column && String(entry.column).trim());
+      const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
+      if (!hasColumn && isValueEmpty) return false; // skip fully empty
+      if (!hasColumn) throw new QueryBuilderError('A column entry has a value but no column name specified');
+      return true;
+    });
 
     if (entries.length === 0) {
-      const query = `INSERT INTO ${this._dialect.quote(tableName)} DEFAULT VALUES`;
+      const query = `INSERT INTO ${table} DEFAULT VALUES`;
       return { query, params: [] };
-    }
-
-    for (const e of entries) {
-      if (!e.column) throw new QueryBuilderError('create_row entry is missing "column"', { operation: 'create_row' });
     }
 
     const cols = entries.map((e) => this._dialect.quote(e.column));
     const placeholders = entries.map((e) => this._addParam(e.value));
 
-    const query = `INSERT INTO ${this._dialect.quote(tableName)} (${cols.join(', ')}) VALUES (${placeholders.join(
-      ', '
-    )})`;
+    const query = `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders.join(', ')})`;
     return { query, params: [...this._params] };
   }
 
@@ -338,18 +373,26 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'update_rows');
 
-    const { columns, where_filters } = updateRows;
-    if (!columns || Object.keys(columns).length === 0) {
-      throw new QueryBuilderError('update_rows.columns must have at least one entry', { operation: 'update_rows' });
-    }
+    const { schema, columns, where_filters } = updateRows;
 
-    const setClauses = Object.values(columns).map((col) => {
-      if (!col.column)
-        throw new QueryBuilderError('update_rows column entry is missing "column"', { operation: 'update_rows' });
-      return `${this._dialect.quote(col.column)} = ${this._addParam(col.value)}`;
+    const validColumnEntries = Object.values(columns || {}).filter((col) => {
+      const hasColumn = !!(col.column && String(col.column).trim());
+      const isValueEmpty = col.value === undefined || col.value === null || col.value === '';
+      if (!hasColumn && isValueEmpty) return false; // skip fully empty
+      if (!hasColumn) throw new QueryBuilderError('An update entry has a value but no column name specified');
+      return true;
     });
 
-    let query = `UPDATE ${this._dialect.quote(tableName)} SET ${setClauses.join(', ')}`;
+    if (validColumnEntries.length === 0) {
+      throw new QueryBuilderError('At least one column to update is required');
+    }
+
+    const setClauses = validColumnEntries.map(
+      (col) => `${this._dialect.quote(col.column)} = ${this._addParam(col.value)}`
+    );
+
+    const table = this._buildTableRef(tableName, schema);
+    let query = `UPDATE ${table} SET ${setClauses.join(', ')}`;
     query += this._whereClause(where_filters);
 
     return { query, params: [...this._params] };
@@ -359,33 +402,36 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'upsert_rows');
 
-    const { primary_key_column, columns } = upsertRowsData;
+    const { schema, primary_key_columns, columns } = upsertRowsData;
 
-    if (!primary_key_column || !String(primary_key_column).trim()) {
-      throw new QueryBuilderError('upsert_rows.primary_key_column is required', { operation: 'upsert_rows' });
-    }
-    if (!columns || Object.keys(columns).length === 0) {
-      throw new QueryBuilderError('upsert_rows.columns must have at least one entry', { operation: 'upsert_rows' });
+    if (!primary_key_columns || primary_key_columns.length === 0) {
+      throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
-    const columnEntries = Object.values(columns);
-    for (const entry of columnEntries) {
-      if (!entry.column) {
-        throw new QueryBuilderError('upsert_rows column entry is missing "column"', { operation: 'upsert_rows' });
-      }
+    const columnEntries = Object.values(columns || {}).filter((entry) => {
+      const hasColumn = !!(entry.column && String(entry.column).trim());
+      const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
+      if (!hasColumn && isValueEmpty) return false; // skip fully empty
+      if (!hasColumn) throw new QueryBuilderError('An upsert entry has a value but no column name specified');
+      return true;
+    });
+
+    if (columnEntries.length === 0) {
+      throw new QueryBuilderError('At least one column is required for upsert');
     }
 
+    const primaryKeySet = new Set(primary_key_columns);
     const allColumnNames = columnEntries.map((entry) => entry.column);
-    const updateColumnNames = allColumnNames.filter((col) => col !== primary_key_column);
+    const updateColumnNames = allColumnNames.filter((col) => !primaryKeySet.has(col));
     const row = Object.fromEntries(columnEntries.map((entry) => [entry.column, entry.value]));
-    const table = this._dialect.quote(tableName);
+    const table = this._buildTableRef(tableName, schema);
 
     if (this._dialect instanceof PostgreSQLDialect) {
-      return this._pgUpsert(table, [primary_key_column], allColumnNames, updateColumnNames, row);
+      return this._pgUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else if (this._dialect instanceof MySQLDialect) {
-      return this._mysqlUpsert(table, [primary_key_column], allColumnNames, updateColumnNames, row);
+      return this._mysqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else {
-      return this._mssqlUpsert(table, [primary_key_column], allColumnNames, updateColumnNames, row);
+      return this._mssqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     }
   }
 
@@ -393,9 +439,10 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'delete_rows');
 
-    const { limit: rawLimit, where_filters } = deleteRows;
-    const limit = rawLimit === '' ? undefined : rawLimit;
-    const table = this._dialect.quote(tableName);
+    const { schema, limit: rawLimit, where_filters } = deleteRows;
+    const limitStr = rawLimit == null ? '' : String(rawLimit).trim();
+    const limit = limitStr === '' ? undefined : limitStr;
+    const table = this._buildTableRef(tableName, schema);
     let query: string;
 
     if (this._dialect instanceof MySQLDialect) {
@@ -426,10 +473,21 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'list_rows');
 
-    const { aggregates, group_by, where_filters, order_filters, limit: rawLimit, offset: rawOffset, fields } = listRows;
-    const limit = rawLimit === '' ? undefined : rawLimit;
-    const offset = rawOffset === '' ? undefined : rawOffset;
-    const table = this._dialect.quote(tableName);
+    const {
+      schema,
+      aggregates,
+      group_by,
+      where_filters,
+      order_filters,
+      limit: rawLimit,
+      offset: rawOffset,
+      fields,
+    } = listRows;
+    const limitStr = rawLimit == null ? '' : String(rawLimit).trim();
+    const limit = limitStr === '' ? undefined : limitStr;
+    const offsetStr = rawOffset == null ? '' : String(rawOffset).trim();
+    const offset = offsetStr === '' ? undefined : offsetStr;
+    const table = this._buildTableRef(tableName, schema);
 
     const selectExpr = this._selectClause(fields, aggregates);
 
@@ -451,16 +509,19 @@ export class QueryBuilder {
 
     let hasOrderBy = false;
     if (order_filters && Object.keys(order_filters).length > 0) {
-      const orders = Object.values(order_filters).map((of) => {
-        if (!of.column) throw new QueryBuilderError('order_filters entry is missing "column"');
-        const dir = String(of.order || 'ASC').toUpperCase();
-        if (!VALID_ORDER_DIRECTIONS.has(dir)) {
-          throw new QueryBuilderError(`Invalid order direction: "${of.order}". Use "asc" or "desc".`);
-        }
-        return `${this._dialect.quote(of.column)} ${dir}`;
-      });
-      query += ` ORDER BY ${orders.join(', ')}`;
-      hasOrderBy = true;
+      const orders = Object.values(order_filters)
+        .filter((of) => !!(of.column && String(of.column).trim())) // skip empty column entries
+        .map((of) => {
+          const dir = String(of.order || 'ASC').toUpperCase();
+          if (!VALID_ORDER_DIRECTIONS.has(dir)) {
+            throw new QueryBuilderError(`Invalid sort direction: "${of.order}". Use "asc" or "desc".`);
+          }
+          return `${this._dialect.quote(of.column)} ${dir}`;
+        });
+      if (orders.length > 0) {
+        query += ` ORDER BY ${orders.join(', ')}`;
+        hasOrderBy = true;
+      }
     }
 
     if (this._dialect instanceof MSSQLDialect) {
@@ -479,7 +540,7 @@ export class QueryBuilder {
     this._reset();
     this._assertTableName(tableName, 'bulk_insert');
 
-    const { rows_insert } = bulkInsert;
+    const { schema, rows_insert } = bulkInsert;
     if (!rows_insert || rows_insert.length === 0) {
       throw new QueryBuilderError('Bulk insert requires at least one row', { operation: 'bulk_insert' });
     }
@@ -495,16 +556,15 @@ export class QueryBuilder {
       return `(${placeholders.join(', ')})`;
     });
 
-    const query = `INSERT INTO ${this._dialect.quote(tableName)} (${quotedCols.join(', ')}) VALUES ${valueGroups.join(
-      ', '
-    )}`;
+    const table = this._buildTableRef(tableName, schema);
+    const query = `INSERT INTO ${table} (${quotedCols.join(', ')}) VALUES ${valueGroups.join(', ')}`;
     return { query, params: [...this._params] };
   }
 
   bulkUpdateWithPrimaryKey(tableName: string, bulkUpdate: BulkUpdateWithPrimaryKeyInput): BulkQueryResult {
     this._assertTableName(tableName, 'bulk_update_with_primary_key');
 
-    const { primary_key, rows_update } = bulkUpdate;
+    const { schema, primary_key, rows_update } = bulkUpdate;
     if (!primary_key || primary_key.length === 0) {
       throw new QueryBuilderError('Bulk update requires at least one primary key column', {
         operation: 'bulk_update_with_primary_key',
@@ -517,7 +577,7 @@ export class QueryBuilder {
     }
 
     const primaryKeySet = new Set(primary_key);
-    const table = this._dialect.quote(tableName);
+    const table = this._buildTableRef(tableName, schema);
 
     const queries = rows_update.map((row, rowIndex) => {
       this._reset();
@@ -550,7 +610,7 @@ export class QueryBuilder {
   bulkUpsertWithPrimaryKey(tableName: string, bulkUpsert: BulkUpsertWithPrimaryKeyInput): BulkQueryResult {
     this._assertTableName(tableName, 'bulk_upsert_with_primary_key');
 
-    const { primary_key, row_upsert } = bulkUpsert;
+    const { schema, primary_key, row_upsert } = bulkUpsert;
     if (!primary_key || primary_key.length === 0) {
       throw new QueryBuilderError('Bulk upsert requires at least one primary key column', {
         operation: 'bulk_upsert_with_primary_key',
@@ -563,7 +623,7 @@ export class QueryBuilder {
     }
 
     const primaryKeySet = new Set(primary_key);
-    const table = this._dialect.quote(tableName);
+    const table = this._buildTableRef(tableName, schema);
 
     const queries = row_upsert.map((row, rowIndex) => {
       this._reset();
@@ -670,7 +730,7 @@ export class QueryBuilder {
   build(operation: string, tableName: string, data: Record<string, unknown>): QueryResult | BulkQueryResult {
     switch (String(operation).toLowerCase()) {
       case 'create_row':
-        return this.createRow(tableName, data as Record<string, CreateRowEntry>);
+        return this.createRow(tableName, data.schema as string | undefined, data as Record<string, CreateRowEntry>);
       case 'update_rows':
         return this.updateRows(tableName, data as unknown as UpdateRowsInput);
       case 'upsert_rows':
