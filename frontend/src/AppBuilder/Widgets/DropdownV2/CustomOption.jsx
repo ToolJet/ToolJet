@@ -18,7 +18,7 @@ const CustomOption = (props) => {
             <CheckMark width={'20'} fill={'var(--cc-primary-brand)'} />
           </span>
         )}
-        <span className="tw-min-w-0 tw-flex-1 tw-truncate" style={{ color: 'unset' }}>
+        <span className="tw-min-w-0 tw-flex-1 tw-truncate" style={{ color: 'unset' }} title={props.label?.toString()}>
           {highlightText(props.label?.toString(), props.selectProps.inputValue)}
         </span>
       </div>
