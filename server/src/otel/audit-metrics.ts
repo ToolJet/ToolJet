@@ -703,7 +703,7 @@ function writeToInternalStore(auditLogData: AuditLogFields): void {
       environment,
       status,
       duration,
-      errorType: status === 'failure' ? errorType : undefined,
+      errorMessage: status === 'failure' ? errorType : undefined,
       queryText,
       organizationId,
     });

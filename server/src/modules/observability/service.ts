@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getFilteredEvents, getFilterValues, QueryEvent } from '@otel/metrics-store';
+import { getFilteredEvents, getFilterValues, getRecentFailures, QueryEvent } from '@otel/metrics-store';
 
 @Injectable()
 export class ObservabilityService {
@@ -27,6 +27,7 @@ export class ObservabilityService {
       overview: this.computeOverview(events),
       timeSeries: this.computeTimeSeries(events, from, to, bucketSizeMs),
       topQueries: this.computeTopQueries(events),
+      recentFailures: this.computeRecentFailures(events),
       filterValues: getFilterValues(),
     };
   }
@@ -136,7 +137,7 @@ export class ObservabilityService {
     // Group by queryName
     const byQuery = new Map<
       string,
-      { count: number; durations: number[]; failures: number; queryText?: string; errorTypes: string[] }
+      { count: number; durations: number[]; failures: number; lastError?: string; lastErrorDescription?: string; lastFailedAt?: number }
     >();
 
     const windowSeconds = events.length > 0
@@ -145,23 +146,20 @@ export class ObservabilityService {
 
     for (const event of events) {
       if (!byQuery.has(event.queryName)) {
-        byQuery.set(event.queryName, {
-          count: 0,
-          durations: [],
-          failures: 0,
-          queryText: event.queryText,
-          errorTypes: [],
-        });
+        byQuery.set(event.queryName, { count: 0, durations: [], failures: 0 });
       }
       const q = byQuery.get(event.queryName)!;
       q.count++;
       if (event.duration != null) q.durations.push(event.duration);
       if (event.status === 'failure') {
         q.failures++;
-        if (event.errorType) q.errorTypes.push(event.errorType);
+        // Keep the most recent failure details
+        if (!q.lastFailedAt || event.timestamp > q.lastFailedAt) {
+          q.lastFailedAt = event.timestamp;
+          q.lastError = event.errorMessage;
+          q.lastErrorDescription = event.errorDescription;
+        }
       }
-      // Prefer a non-empty queryText
-      if (event.queryText && !q.queryText) q.queryText = event.queryText;
     }
 
     const entries = Array.from(byQuery.entries());
@@ -194,11 +192,30 @@ export class ObservabilityService {
       .map(([queryName, data]) => ({
         queryName,
         count: data.failures,
-        queryText: data.queryText || '',
-        errorType: data.errorTypes[0] || 'unknown',
+        lastError: data.lastError || '',
+        lastErrorDescription: data.lastErrorDescription || '',
+        lastFailedAt: data.lastFailedAt,
       }));
 
     return { mostExecuted, slowest, failed };
+  }
+
+  private computeRecentFailures(events: QueryEvent[]) {
+    return events
+      .filter((e) => e.status === 'failure')
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 50)
+      .map((e) => ({
+        timestamp: e.timestamp,
+        appName: e.appName,
+        queryName: e.queryName,
+        dataSourceType: e.dataSourceType,
+        environment: e.environment,
+        mode: e.mode,
+        duration: e.duration,
+        errorMessage: e.errorMessage || 'Unknown error',
+        errorDescription: e.errorDescription || '',
+      }));
   }
 
   private percentile(values: number[], p: number): number {

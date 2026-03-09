@@ -75,6 +75,7 @@ export default function ObservabilityPage({ darkMode }) {
   const overview = metrics?.overview || {};
   const timeSeries = metrics?.timeSeries || {};
   const topQueries = metrics?.topQueries || {};
+  const recentFailures = metrics?.recentFailures || [];
 
   const bg = darkMode ? '#0d1117' : '#f8f9fa';
   const cardBg = darkMode ? '#1a202c' : '#fff';
@@ -398,6 +399,14 @@ export default function ObservabilityPage({ darkMode }) {
             </ChartCard>
           </div>
 
+          {/* ── Recent Query Failures ── */}
+          {recentFailures.length > 0 && (
+            <>
+              <SectionHeader title="Recent Query Failures" darkMode={darkMode} textPrimary={textPrimary} />
+              <FailureLog failures={recentFailures} cardBg={cardBg} cardBorder={cardBorder} textPrimary={textPrimary} darkMode={darkMode} />
+            </>
+          )}
+
           {/* ── Top Queries ── */}
           <SectionHeader title="Top Queries" darkMode={darkMode} textPrimary={textPrimary} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
@@ -447,7 +456,7 @@ export default function ObservabilityPage({ darkMode }) {
               textPrimary={textPrimary}
               columns={[
                 { key: 'queryName', label: 'Query Name' },
-                { key: 'queryText', label: 'Query Text', truncate: true },
+                { key: 'lastError', label: 'Last Error', truncate: true },
                 { key: 'count', label: 'Failures', align: 'right', badge: true },
               ]}
               rows={topQueries.failed || []}
@@ -456,6 +465,127 @@ export default function ObservabilityPage({ darkMode }) {
         </>
       )}
       </div>{/* end padding wrapper */}
+    </div>
+  );
+}
+
+function FailureLog({ failures, cardBg, cardBorder, textPrimary, darkMode }) {
+  const [expanded, setExpanded] = React.useState(null);
+  const mutedColor = '#718096';
+  const errorBg = darkMode ? '#2d1a1a' : '#fff5f5';
+
+  return (
+    <div
+      style={{
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
+        borderRadius: '8px',
+        marginBottom: '24px',
+        overflow: 'hidden',
+      }}
+    >
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+        <thead>
+          <tr style={{ borderBottom: `1px solid ${cardBorder}` }}>
+            {['Time', 'App', 'Query', 'Source', 'Env', 'Mode', 'Duration', 'Error'].map((h) => (
+              <th
+                key={h}
+                style={{ padding: '8px 10px', textAlign: 'left', color: mutedColor, fontWeight: 500, whiteSpace: 'nowrap' }}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {failures.map((f, i) => {
+            const isOpen = expanded === i;
+            const ts = new Date(f.timestamp);
+            const timeStr = ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = ts.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            return (
+              <React.Fragment key={i}>
+                <tr
+                  onClick={() => setExpanded(isOpen ? null : i)}
+                  style={{
+                    borderBottom: isOpen ? 'none' : `1px solid ${cardBorder}`,
+                    cursor: 'pointer',
+                    background: isOpen ? errorBg : 'transparent',
+                  }}
+                >
+                  <td style={{ padding: '7px 10px', color: mutedColor, whiteSpace: 'nowrap' }}>
+                    <div>{timeStr}</div>
+                    <div style={{ fontSize: '10px' }}>{dateStr}</div>
+                  </td>
+                  <td style={{ padding: '7px 10px', color: textPrimary, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {f.appName}
+                  </td>
+                  <td style={{ padding: '7px 10px', color: textPrimary, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: 500 }}>{f.queryName}</span>
+                  </td>
+                  <td style={{ padding: '7px 10px', color: mutedColor }}>
+                    <span style={{ background: cardBorder, borderRadius: '3px', padding: '1px 5px', fontSize: '10px' }}>
+                      {f.dataSourceType}
+                    </span>
+                  </td>
+                  <td style={{ padding: '7px 10px', color: mutedColor }}>{f.environment}</td>
+                  <td style={{ padding: '7px 10px', color: mutedColor }}>{f.mode}</td>
+                  <td style={{ padding: '7px 10px', color: mutedColor, whiteSpace: 'nowrap' }}>
+                    {f.duration != null ? `${f.duration} ms` : '—'}
+                  </td>
+                  <td style={{ padding: '7px 10px', color: '#E54D2E', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{f.errorMessage}</span>
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        style={{ flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+                {isOpen && (
+                  <tr style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                    <td colSpan={8} style={{ padding: '0 10px 10px 10px', background: errorBg }}>
+                      <div
+                        style={{
+                          background: darkMode ? '#1a0a0a' : '#fff',
+                          border: `1px solid #E54D2E40`,
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          fontFamily: 'monospace',
+                          fontSize: '11px',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <div style={{ marginBottom: f.errorDescription ? '8px' : 0 }}>
+                          <span style={{ color: mutedColor, fontFamily: 'inherit' }}>Message: </span>
+                          <span style={{ color: '#E54D2E' }}>{f.errorMessage}</span>
+                        </div>
+                        {f.errorDescription && (
+                          <div>
+                            <span style={{ color: mutedColor, fontFamily: 'inherit' }}>Details: </span>
+                            <span style={{ color: textPrimary }}>{f.errorDescription}</span>
+                          </div>
+                        )}
+                        <div style={{ marginTop: '8px', color: mutedColor, fontSize: '10px', fontFamily: 'inherit' }}>
+                          {f.appName} › {f.queryName} · {f.dataSourceType} · {f.environment} · {new Date(f.timestamp).toISOString()}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

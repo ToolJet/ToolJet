@@ -17,7 +17,8 @@ export interface QueryEvent {
   environment: string;
   status: 'success' | 'failure';
   duration?: number;
-  errorType?: string;
+  errorMessage?: string;    // Short error message (up to 300 chars)
+  errorDescription?: string; // Detailed description / HTTP response body (up to 500 chars)
   queryText?: string;
   organizationId: string;
 }
@@ -79,6 +80,19 @@ export const getFilterValues = (): { apps: string[]; environments: string[]; mod
     environments: ['All', ...Array.from(seenEnvironments).sort()],
     modes: ['All', ...Array.from(seenModes).sort()],
   };
+};
+
+/**
+ * Return the most recent N failure events (newest first).
+ */
+export const getRecentFailures = (limit = 50): QueryEvent[] => {
+  const failures: QueryEvent[] = [];
+  for (let i = queryEventBuffer.length - 1; i >= 0 && failures.length < limit; i--) {
+    if (queryEventBuffer[i].status === 'failure') {
+      failures.push(queryEventBuffer[i]);
+    }
+  }
+  return failures;
 };
 
 /**

@@ -363,6 +363,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // This runs on ALL editions regardless of ENABLE_OTEL or audit-log configuration.
         try {
           const qm = queryStatus.getMetaData();
+          const isFailure = qm.status !== 'success' && qm.status !== 'needs_oauth';
+          const qErr = qm.queryError as any;
           recordQueryEventInternal({
             timestamp: Date.now(),
             appId: appToUse?.id || 'unknown',
@@ -372,9 +374,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSourceType: dataSource?.kind || 'unknown',
             mode: mode || 'unknown',
             environment: envId || 'unknown',
-            status: (qm.status === 'success' || qm.status === 'needs_oauth') ? 'success' : 'failure',
+            status: isFailure ? 'failure' : 'success',
             duration: typeof qm.duration === 'number' ? qm.duration : undefined,
-            errorType: qm.status !== 'success' && qm.queryError ? String((qm.queryError as any)?.message || 'unknown_error').slice(0, 100) : undefined,
+            errorMessage: isFailure && qErr ? String(qErr?.message || 'Unknown error').slice(0, 300) : undefined,
+            errorDescription: isFailure && qErr ? String(qErr?.description || '').slice(0, 500) : undefined,
             organizationId: user?.organizationId || 'unknown',
           });
         } catch (_e) {
