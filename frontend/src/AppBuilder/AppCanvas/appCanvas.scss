@@ -12,6 +12,25 @@
         height: 100% !important;
         min-height: unset !important;
     }
+
+    &.canvas-header-slot--edit {
+        &:hover,
+        &.canvas-header-slot--selected {
+            .canvas-header-tooltip {
+                display: flex !important;
+            }
+        }
+    }
+
+    .canvas-header-tooltip {
+        display: none;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
+    }
 }
 
 .modal-backdrop {

@@ -23,6 +23,7 @@ import { DragResizeGhostWidget } from './GhostWidgets';
 
 import { Container } from './Container';
 import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
+import ConfigHandleButton from '@/_components/ConfigHandleButton';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
@@ -103,6 +104,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   );
 
   const setCanvasHeaderSelected = useStore((state) => state.setCanvasHeaderSelected, shallow);
+  const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
 
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
@@ -180,6 +182,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       <div
         className={cx('canvas-header-slot', {
           '!tw-w-[450px] tw-mx-auto': isMobileLayout && (currentMode === 'edit' || isMobilePreviewMode),
+          'canvas-header-slot--edit': currentMode === 'edit',
+          'canvas-header-slot--selected': isCanvasHeaderSelected,
         })}
         onClick={(e) => {
           if (currentMode === 'edit') {
@@ -195,11 +199,29 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           flexShrink: 0,
           padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
           height: `${PAGE_CANVAS_HEADER_HEIGHT}px`,
-          borderBottom: `1px solid ${headerBorderColor ?? 'var(--cc-default-border)'}`,
+          border: `1px solid ${
+            isCanvasHeaderSelected ? 'var(--border-accent-strong)' : headerBorderColor ?? 'var(--cc-default-border)'
+          }`,
           backgroundColor: headerBackgroundColor ?? (isAppDarkMode ? '#232E3C' : '#fff'),
           width: '100%',
         }}
       >
+        {currentMode === 'edit' && (
+          <div className="canvas-header-tooltip">
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ cursor: 'default' }}>App header</span>
+            </ConfigHandleButton>
+          </div>
+        )}
         <Container
           id={`${moduleId}-header`}
           canvasHeight={PAGE_CANVAS_HEADER_HEIGHT / 10}
@@ -255,6 +277,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             switchDarkMode={switchDarkMode}
             darkMode={darkMode}
             canvasMaxWidth={canvasMaxWidth}
+            canvasContainerRef={canvasContentRef}
           />
         </div>
       )}
