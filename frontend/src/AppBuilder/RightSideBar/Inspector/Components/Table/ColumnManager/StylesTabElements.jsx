@@ -262,26 +262,6 @@ export const StylesTabElements = ({
 
       {column.columnType === 'button' && !selectedButtonId && (
         <div className="d-flex flex-column custom-gap-16">
-          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-              Button alignment
-            </label>
-            <ToggleGroup
-              onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
-              defaultValue={column?.horizontalAlignment || 'left'}
-              style={{ width: '58%' }}
-            >
-              <ToggleGroupItem value="left">
-                <AlignLeft width={14} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="center">
-                <AlignCenter width={14} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="right">
-                <AlignRight width={14} />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
           <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
               label="Cell color"

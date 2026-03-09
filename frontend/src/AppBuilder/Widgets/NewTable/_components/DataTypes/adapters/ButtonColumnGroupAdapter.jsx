@@ -4,29 +4,15 @@ import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonColumn } from './ButtonColumnAdapter';
 
-export const ButtonColumnGroup = ({
-  id,
-  buttons = [],
-  horizontalAlignment = 'left',
-  cellBackgroundColor,
-  cellValue,
-  rowData,
-  onClick,
-}) => {
+export const ButtonColumnGroup = ({ id, buttons = [], cellBackgroundColor, cellValue, rowData, onClick }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
   const getTableColumnEvents = useTableStore((state) => state.getTableColumnEvents, shallow);
-
-  const justifyContent =
-    horizontalAlignment === 'center' ? 'center' : horizontalAlignment === 'right' ? 'flex-end' : 'flex-start';
 
   return (
     <div
       className="h-100 d-flex align-items-center"
       style={{
-        padding: '0 6px',
         gap: '6px',
-        justifyContent,
-        backgroundColor: undefined,
       }}
     >
       {buttons.map((button) => {

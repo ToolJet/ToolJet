@@ -27,6 +27,54 @@ import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
 import SelectSearch from 'react-select-search';
 
+// Module-level singleton for text measurement (avoids creating canvas on every call)
+let _measureCanvas = null;
+const getMeasureContext = () => {
+  if (!_measureCanvas) {
+    _measureCanvas = document.createElement('canvas');
+  }
+  const ctx = _measureCanvas.getContext('2d');
+  ctx.font = '500 12px "IBM Plex Sans"';
+  return ctx;
+};
+
+// Calculate width needed for button column based on button labels/icons
+const calculateButtonColumnWidth = (buttons, getResolvedValue) => {
+  if (!buttons || buttons.length === 0) return 90;
+
+  const context = getMeasureContext();
+
+  let totalWidth = 0;
+  const cellPadding = 24; // .has-actions: padding 0 12px (12px each side)
+  const buttonGap = 6; // ButtonColumnGroup: gap 6px
+
+  let visibleCount = 0;
+  buttons.forEach((button) => {
+    // Only skip when explicitly false (matching ButtonColumnGroupAdapter behavior)
+    const isVisible = getResolvedValue(button.buttonVisibility);
+    if (isVisible === false) return;
+
+    const label = getResolvedValue(button.buttonLabel) || 'Button';
+    const textWidth = context.measureText(label).width;
+
+    // Button style: padding 4px 10px = 20px horizontal, border 1px each side = 2px (conservative upper bound)
+    const buttonPadding = 20;
+    const buttonBorder = 2;
+    // Icon: 14px icon + 6px gap (button internal gap) when visible
+    const iconVisible = getResolvedValue(button.buttonIconVisibility);
+    const iconWidth = iconVisible ? 20 : 0;
+
+    totalWidth += textWidth + buttonPadding + buttonBorder + iconWidth;
+    visibleCount++;
+  });
+
+  // Add gaps between buttons
+  if (visibleCount > 1) totalWidth += buttonGap * (visibleCount - 1);
+
+  totalWidth += cellPadding;
+  return Math.max(90, Math.ceil(totalWidth));
+};
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -424,7 +472,6 @@ export default function generateColumnsData({
                 <ButtonColumnGroup
                   id={id}
                   buttons={buttons}
-                  horizontalAlignment={column?.horizontalAlignment}
                   cellBackgroundColor={getResolvedValue(column.cellBackgroundColor, { cellValue, rowData })}
                   cellValue={cellValue}
                   rowData={rowData}
@@ -464,10 +511,13 @@ export default function generateColumnsData({
         },
       };
 
-      // Disable sorting and filtering for button columns
+      // Disable sorting, filtering, and resizing for button columns; auto-size to content
       if (columnType === 'button') {
         columnDef.enableSorting = false;
         columnDef.enableColumnFilter = false;
+        columnDef.enableResizing = false;
+        const buttons = column.buttons || [];
+        columnDef.size = calculateButtonColumnWidth(buttons, getResolvedValue);
       }
 
       // Add sorting configuration for specific column types

@@ -63,12 +63,13 @@ export const TableRow = ({
             rowData: row.original,
             cellValue: cell.getValue(),
           }),
-          justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
+          justifyContent: isButtonColumn
+            ? undefined
+            : determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
           display: 'flex',
           alignItems: 'center',
-          textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          textAlign: isButtonColumn ? undefined : cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
-          ...(isButtonColumn ? { flex: '1 1 auto', minWidth: cell.column.getSize() } : {}),
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -86,7 +87,10 @@ export const TableRow = ({
             )}-row-${virtualRow.index}`}
             style={cellStyles}
             className={cx('table-cell td', {
-              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions' || cell.column.columnDef?.meta?.columnType === 'button',
+              'has-actions':
+                cell.column.id === 'rightActions' ||
+                cell.column.id === 'leftActions' ||
+                cell.column.columnDef?.meta?.columnType === 'button',
               'has-left-actions': cell.column.id === 'leftActions',
               'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
@@ -99,8 +103,8 @@ export const TableRow = ({
               'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
               [cellHeight]: true,
               'overflow-hidden':
-                (['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
-                  !contentWrap),
+                ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
+                !contentWrap,
               'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
               'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
               'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
