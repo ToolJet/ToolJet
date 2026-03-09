@@ -275,22 +275,37 @@ export default class MongodbService implements QueryService {
   async listCollections(
     sourceOptions: SourceOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
 
     try {
-      const collections = await db.listCollections().toArray();
+      const search = queryOptions?.search;
+      const limit = queryOptions?.limit || 0;
+      const page = queryOptions?.page || 1;
+
+      const filter = search ? { name: { $regex: search, $options: 'i' } } : {};
+
+      // ListCollectionsCursor does not support .skip()/.limit(), fetch all matching then slice
+      const allCollections = await db.listCollections(filter).toArray();
+
+      let collections = allCollections;
+      if (limit > 0) {
+        const offset = (page - 1) * limit;
+        collections = allCollections.slice(offset, offset + limit);
+      }
 
       const result = collections.map((col) => ({
         collection_name: col.name,
         type: col.type || 'collection',
       }));
 
+
       return {
         status: 'ok',
-        data: result,
-      };
+        data: result
+      } as any;
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch collections', errorMessage, {});
