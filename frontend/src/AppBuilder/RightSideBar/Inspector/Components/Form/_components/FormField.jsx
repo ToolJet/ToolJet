@@ -33,6 +33,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave })
 
   const isCurrentlyMandatory = isTrueValue(fieldData.mandatory?.value);
 
+  // eslint-disable-next-line no-constant-binary-expression
   const darkMode = localStorage.getItem('darkMode') === 'true' ?? false;
 
   const mainPopover = (

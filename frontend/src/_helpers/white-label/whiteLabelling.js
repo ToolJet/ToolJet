@@ -112,6 +112,7 @@ export async function fetchAndSetWindowTitle(pageDetails, organizationId = null)
       if (mode == 'edit') {
         pageTitle = `${appName}`;
       } else {
+        // eslint-disable-next-line no-constant-binary-expression
         pageTitle = `Preview - ${appName}` || 'My App';
       }
       break;

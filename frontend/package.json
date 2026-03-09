@@ -279,6 +279,7 @@
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
     "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
     "lint": "eslint 'src/**/*.{js,jsx}'",
+    "lint-quiet": "eslint --quiet 'src/**/*.{js,jsx}'",
     "format": "eslint --fix 'src/**/*.{js,jsx}'",
     "test": "jest",
     "storybook": "storybook dev -p 6006",

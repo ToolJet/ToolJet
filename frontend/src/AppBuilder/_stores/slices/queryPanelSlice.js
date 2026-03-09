@@ -15,6 +15,7 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
+  // eslint-disable-next-line no-constant-binary-expression
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
   previewPanelHeight: 0,
