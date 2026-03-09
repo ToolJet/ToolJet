@@ -15,7 +15,7 @@ Components can be added to the canvas by dragging and dropping them onto the can
 |:----------|:------------|
 | **Buttons**  | [Button](/docs/widgets/button/), [Button Group](/docs/widgets/button-group/), [Popover Menu](/docs/widgets/popover-menu/) |
 | **Data** | [Table](/docs/widgets/table/), [Chart](/docs/widgets/chart/)|
-| **Layouts** | [Form](/docs/widgets/form/), [Modal](/docs/widgets/modal-v2/), [Container](/docs/widgets/container/), [Tabs](/docs/widgets/tabs/), [ListView](/docs/widgets/listview/), [Kanban](/docs/widgets/kanban/), [Calendar](/docs/widgets/calenda/) |
+| **Layouts** | [Form](/docs/widgets/form/), [Modal](/docs/widgets/modal-v2/), [Container](/docs/widgets/container/), [Tabs](/docs/widgets/tabs/), [ListView](/docs/widgets/listview/), [Kanban](/docs/widgets/kanban/), [Calendar](/docs/widgets/calendar/) |
 | **Text Inputs** | [Text Input](/docs/widgets/text-input/), [Text Area](/docs/widgets/text-area/), [Email Input](/docs/widgets/email-input/), [Password Input](/docs/widgets/password-input/), [Rich Text Editor](/docs/widgets/rich-text-editor/) |
 | **Number Inputs** | [Number Input](/docs/widgets/number-input/), [Phone Input](/docs/widgets/phone-input/), [Currency Input](/docs/widgets/currency-input/), [Range Slider](/docs/widgets/range-slider/), [Star Rating](/docs/widgets/star-rating/) |
 | **Select Inputs** | [Dropdown](/docs/widgets/dropdown/), [Multi-Select](/docs/widgets/multiselect/), [Toggle Switch](/docs/widgets/toggle-switch-v2/), [Radio Button](/docs/widgets/radio-button-v2/), [Checkbox](/docs/widgets/checkbox/), [Tree Select](/docs/widgets/tree-select/) |
