@@ -14,16 +14,14 @@ export class AiConversationRepository extends Repository<AiConversation> {
     userId: string,
     conversationType: 'generate' | 'learn'
   ): Promise<AiConversation> {
-    return await this.findOne({
-      where: {
-        appId,
-        userId,
-        conversationType,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    // Order by lastOpenedAt first (nulls last), then fall back to createdAt
+    return await this.createQueryBuilder('conversation')
+      .where('conversation.appId = :appId', { appId })
+      .andWhere('conversation.userId = :userId', { userId })
+      .andWhere('conversation.conversationType = :conversationType', { conversationType })
+      .orderBy('conversation.last_opened_at', 'DESC', 'NULLS LAST')
+      .addOrderBy('conversation.created_at', 'DESC')
+      .getOne();
   }
 
   async createNewConversation(
