@@ -126,6 +126,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'FileInput',
   'Tags',
   'Chat',
   'PopoverMenu',
@@ -876,6 +877,7 @@ const GetAccordion = React.memo(
         return <Chart {...restProps} />;
 
       case 'FilePicker':
+      case 'FileInput':
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':

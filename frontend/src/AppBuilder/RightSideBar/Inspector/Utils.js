@@ -59,7 +59,6 @@ export function renderCustomStyles(
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
-    componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'DatetimePickerV2' ||
     componentConfig.component == 'RangeSliderV2' ||
     componentConfig.component == 'DatePickerV2' ||
@@ -73,7 +72,9 @@ export function renderCustomStyles(
     componentConfig.component == 'ReorderableList' ||
     componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar' ||
-    componentConfig.component == 'TreeSelect'
+    componentConfig.component == 'TreeSelect' ||
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'FileInput'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -175,18 +176,43 @@ export function renderElement(
     componentConfig.component == 'Table' ||
     componentConfig.component == 'CircularProgressBar' ||
     componentConfig.component == 'KeyValuePair' ||
-    componentConfig.component == 'ProgressBar'
+    componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'FileInput'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
-    if (conditionallyRender) {
-      const { key, value } = conditionallyRender;
-      if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+    const getResolvedValue = (key, parentObjectKey = paramType) => {
+      const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
+      return value && resolveReferences(value);
+    };
 
-        if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) return;
+    const utilFuncForMultipleChecks = (conditionallyRender) => {
+      return conditionallyRender.reduce((acc, condition) => {
+        const { key, value, parentObjectKey } = condition;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
+          acc.push(resolvedValue?.value !== value);
+        }
+        return acc;
+      }, []);
+    };
+
+    if (conditionallyRender) {
+      const isConditionallyRenderArray = Array.isArray(conditionallyRender);
+
+      if (isConditionallyRenderArray && utilFuncForMultipleChecks(conditionallyRender).includes(true)) {
+        return;
+      } else if (!isConditionallyRenderArray) {
+        const { key, value, parentObjectKey } = conditionallyRender;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
+          if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) {
+            return;
+          }
+        }
       }
     }
   }
