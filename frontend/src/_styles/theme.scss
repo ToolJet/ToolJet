@@ -6339,9 +6339,20 @@ input.hide-input-arrows {
 
 .theme-dark .custom-checkbox-tree {
   color: #e0e0e0;
+  background: #1f2936;
+  border-radius: 4px;
+  padding: 8px;
 
   .rct-title {
     color: #e0e0e0 !important;
+  }
+
+  .rct-node {
+    background: transparent;
+  }
+
+  .rct-node-selected {
+    background: rgba(99, 102, 241, 0.2);
   }
 
   .rct-icon-expand-open::before,
