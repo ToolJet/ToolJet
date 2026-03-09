@@ -72,6 +72,7 @@ export function renderCustomStyles(
     componentConfig.component == 'ReorderableList' ||
     componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'TreeSelect' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput'
   ) {
