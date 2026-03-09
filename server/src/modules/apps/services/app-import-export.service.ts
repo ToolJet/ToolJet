@@ -2600,7 +2600,7 @@ function migrateProperties(
       },
       DropdownV2: {
         menuWidthMode: { value: 'matchField' },
-        menuCustomWidth: { value: '256px' },
+        menuCustomWidth: { value: '256' },
       },
     };
 
@@ -2880,7 +2880,7 @@ function migrateProperties(
         styles.menuWidthMode = { value: 'matchField' };
       }
       if (!styles.menuCustomWidth) {
-        styles.menuCustomWidth = { value: '256px' };
+        styles.menuCustomWidth = { value: '256' };
       }
     }
   }
