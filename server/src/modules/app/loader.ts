@@ -170,6 +170,17 @@ export class AppModuleLoader {
       } catch (error) {
         console.error('Error loading dynamic modules:', error);
       }
+
+      // Load the built-in observability module (always on, no edition gate, separate try-catch)
+      // Uses join(cwd, 'dist', 'src/modules') — the same resolution strategy as getImportPath() for CE
+      // This avoids @modules/* alias which is not resolved at runtime in compiled dist.
+      try {
+        const observabilityPath = join(process.cwd(), 'dist', 'src/modules', 'observability', 'module');
+        const { ObservabilityModule } = await import(observabilityPath);
+        dynamicModules.push(ObservabilityModule.register());
+      } catch (error) {
+        console.error('Error loading ObservabilityModule:', error);
+      }
     }
 
     return [...staticModules, ...dynamicModules];

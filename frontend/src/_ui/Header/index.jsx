@@ -45,6 +45,8 @@ function Header({
         return 'Settings';
       case 'audit-logs':
         return 'Audit logs';
+      case 'observability':
+        return 'Observability';
       case 'workflows':
         return 'Workflows';
       case 'workspace-constants':
