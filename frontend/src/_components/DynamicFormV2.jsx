@@ -522,19 +522,23 @@ const DynamicFormV2 = ({
       case 'toggle-flip':
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
-          defaultChecked: isEnabled,
           checked: isEnabled,
           label: label,
           helpText: helpText,
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
-            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+            handleOptionChange(
+              key,
+              e.target.checked ? (booleanMode ? true : 'enabled') : booleanMode ? false : 'disabled',
+              true
+            );
           },
         };
       case 'toggle-v2':
         return {
           checked: currentValue,
-          label:label,
+          label: label,
           helpText: helpText,
           disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
@@ -684,7 +688,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
-                    widget !== 'toggle-v2' && 
+                    widget !== 'toggle-v2' &&
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -722,12 +726,12 @@ const DynamicFormV2 = ({
 
   const FlipComponentDropdown = (uiProperties) => {
     const flipComponentDropdowns = Object.values(uiProperties || {})
-    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
-    .sort((a, b) => {
-      const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
+      .filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      .sort((a, b) => {
+        const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
 
     // Build all components with their order for sorting
     const allComponents = [];
@@ -736,6 +740,9 @@ const DynamicFormV2 = ({
     // Add dropdown components with their order
     flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+      const scopedChildren = flipComponentDropdown[selector];
+      const parentChildren = uiProperties[selector];
+      const childrenToRender = scopedChildren !== undefined ? scopedChildren : parentChildren;
 
       allComponents.push({
         order: flipComponentDropdown.order, // Keep undefined if not set
@@ -756,14 +763,14 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
                 {flipComponentDropdown.widget !== 'toggle-flip' &&
-                (flipComponentDropdown.label || isHorizontalLayout) && (
-                  <label
-                    className={cx('form-label')}
-                    data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                  >
-                    {flipComponentDropdown.label}
-                  </label>
-                )}
+                  (flipComponentDropdown.label || isHorizontalLayout) && (
+                    <label
+                      className={cx('form-label')}
+                      data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                    >
+                      {flipComponentDropdown.label}
+                    </label>
+                  )}
 
                 <div
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
@@ -776,6 +783,7 @@ const DynamicFormV2 = ({
                       {...getElementProps(flipComponentDropdown)}
                       styles={{}}
                       useCustomStyles={false}
+                      isSearchable={false}
                       dataCy={generateCypressDataCy(flipComponentDropdown.label)}
                     />
                   )}
@@ -786,7 +794,7 @@ const DynamicFormV2 = ({
               </div>
             </div>
 
-            {getLayout(uiProperties[selector])}
+            {getLayout(childrenToRender)}
           </div>
         ),
       });
@@ -831,7 +839,7 @@ const DynamicFormV2 = ({
 
   const isFlipComponentDropdown = (uiProperties) => {
     const checkFlipComponents = uiProperties
-      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      ? Object.values(uiProperties).filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
       : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);
