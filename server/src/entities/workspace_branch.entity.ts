@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
-@Entity({ name: 'workspace_branches' })
+@Entity({ name: 'organization_git_sync_branches' })
 @Unique(['organizationId', 'name'])
 export class WorkspaceBranch extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -20,7 +20,7 @@ export class WorkspaceBranch extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
-  @Column()
+  @Column({ name: 'branch_name' })
   name: string;
 
   @Column({ name: 'is_default', default: false })
@@ -28,6 +28,12 @@ export class WorkspaceBranch extends BaseEntity {
 
   @Column({ name: 'source_branch_id', nullable: true })
   sourceBranchId: string;
+
+  @Column({ name: 'app_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
+  appMetaHash: string;
+
+  @Column({ name: 'data_source_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
+  dataSourceMetaHash: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

@@ -11,7 +11,6 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { FoldersUtilService } from './util.service';
-
 @Injectable()
 export class FoldersService implements IFoldersService {
   constructor(protected foldersUtilService: FoldersUtilService) {}

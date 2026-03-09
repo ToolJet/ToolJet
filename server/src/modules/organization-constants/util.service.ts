@@ -7,17 +7,13 @@ import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { Injectable } from '@nestjs/common';
-import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
-import { OrganizationConstantVersion } from '@entities/organization_constant_version.entity';
-import { OrganizationConstantVersionValue } from '@entities/organization_constant_version_values.entity';
 
 @Injectable()
 export class OrganizationConstantsUtilService implements IOrganizationConstantsUtilService {
   constructor(
     protected readonly encryptionService: EncryptionService,
     protected readonly organizationConstantRepository: OrganizationConstantRepository,
-    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
-    protected readonly branchContextService: BranchContextService
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
   ) {}
 
   async encryptSecret(workspaceId: string, value: string) {
@@ -50,12 +46,6 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
           return manager.save(constantValue);
         })
       );
-
-      // Branch-aware: also create version entries
-      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
-      if (branchId) {
-        await this.createConstantVersionForBranch(orgConstantId, branchId, allEnvs, manager);
-      }
     }, manager);
   }
 
@@ -71,29 +61,6 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         { environmentId, organizationConstantId: orgConstantId },
         { value: constantValue, updatedAt: new Date() }
       );
-
-      // Branch-aware: also update version values
-      // Use the transaction manager (not the repository) so we can see
-      // the just-saved constant within the same uncommitted transaction.
-      const constant = await manager.findOne(OrganizationConstant, {
-        where: { id: orgConstantId },
-        select: ['organizationId'],
-      });
-      if (constant) {
-        const branchId = await this.branchContextService.getActiveBranchId(constant.organizationId);
-        if (branchId) {
-          const cv = await manager.findOne(OrganizationConstantVersion, {
-            where: { organizationConstantId: orgConstantId, branchId, isActive: true },
-          });
-          if (cv) {
-            await manager.update(
-              OrganizationConstantVersionValue,
-              { constantVersionId: cv.id, environmentId },
-              { value: constantValue, updatedAt: new Date() }
-            );
-          }
-        }
-      }
     }, manager);
   }
 
@@ -110,30 +77,6 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         organizationId
       );
 
-      // Branch-aware: try version tables first
-      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
-      if (branchId) {
-        const cv = await manager.findOne(OrganizationConstantVersion, {
-          where: { organizationConstantId: constant.id, branchId, isActive: true },
-        });
-        if (cv) {
-          const versionValue = await manager.findOne(OrganizationConstantVersionValue, {
-            where: { constantVersionId: cv.id, environmentId },
-          });
-          if (versionValue) {
-            // Return as OrgEnvironmentConstantValue-compatible shape
-            return {
-              id: versionValue.id,
-              value: versionValue.value,
-              environmentId,
-              organizationConstantId: constant.id,
-              createdAt: versionValue.createdAt,
-              updatedAt: versionValue.updatedAt,
-            } as any;
-          }
-        }
-      }
-
       return manager.findOneOrFail(OrgEnvironmentConstantValue, {
         where: { organizationConstantId: constant.id, environmentId },
       });
@@ -146,17 +89,6 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
     environmentId?: string
   ): Promise<DeleteResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Branch-aware: soft-delete via OrganizationConstantVersion.isActive = false
-      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
-      if (branchId) {
-        await manager.update(
-          OrganizationConstantVersion,
-          { organizationConstantId: constantId, branchId },
-          { isActive: false, updatedAt: new Date() }
-        );
-        return { raw: [], affected: 1 } as DeleteResult;
-      }
-
       const constantToDelete = await this.organizationConstantRepository.findOneByIdAndOrganizationId(
         constantId,
         organizationId
@@ -196,38 +128,5 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         });
       }
     });
-  }
-
-  /**
-   * Creates an OrganizationConstantVersion + OrganizationConstantVersionValue entries
-   * for the given branch, copying values from org_environment_constant_values.
-   */
-  protected async createConstantVersionForBranch(
-    orgConstantId: string,
-    branchId: string,
-    allEnvs: any[],
-    manager: EntityManager
-  ): Promise<OrganizationConstantVersion> {
-    const cv = manager.create(OrganizationConstantVersion, {
-      organizationConstantId: orgConstantId,
-      branchId,
-      isActive: true,
-    });
-    const savedCv = await manager.save(OrganizationConstantVersion, cv);
-
-    // Copy values from org_environment_constant_values to version values
-    for (const env of allEnvs) {
-      const existingValue = await manager.findOne(OrgEnvironmentConstantValue, {
-        where: { organizationConstantId: orgConstantId, environmentId: env.id },
-      });
-      const vv = manager.create(OrganizationConstantVersionValue, {
-        constantVersionId: savedCv.id,
-        environmentId: env.id,
-        value: existingValue?.value || '',
-      });
-      await manager.save(OrganizationConstantVersionValue, vv);
-    }
-
-    return savedCv;
   }
 }

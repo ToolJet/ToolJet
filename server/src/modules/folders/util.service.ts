@@ -8,7 +8,6 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { catchDbException } from '@helpers/utils.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { decamelizeKeys } from 'humps';
-
 @Injectable()
 export class FoldersUtilService implements IFoldersUtilService {
   constructor() {}

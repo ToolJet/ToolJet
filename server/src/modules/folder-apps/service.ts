@@ -12,7 +12,6 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
-
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
