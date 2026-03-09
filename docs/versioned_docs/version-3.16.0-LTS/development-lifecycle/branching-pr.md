@@ -53,6 +53,10 @@ For example:
 
 This lets you enforce environment separation at the infrastructure level while keeping all instances in sync through a single Git repository.
 
+:::info
+To decide whether a single or multi-instance setup is right for your organization, refer to [Choosing Your Instance Setup](/docs/tj-setup/instances#choosing-your-instance-setup).
+:::
+
 ## Creating and Managing Branches
 
 ### Create a New Branch
