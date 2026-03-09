@@ -689,6 +689,14 @@
             "workflows/external-libraries/js",
             "workflows/external-libraries/py"
           ]
+        },
+        {
+          "type": "category",
+          "label": "Environment & Versions",
+          "items": [
+            "workflows/versions-env/version-control",
+            "workflows/versions-env/environments"
+          ]
         }
       ]
     },

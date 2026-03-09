@@ -44,6 +44,7 @@ Packages are available to all JavaScript nodes in the workflow — you don't nee
 1. Open the package manager panel.
 2. Click the **Remove** icon next to the package you want to remove.
 3. The bundle regenerates automatically without the removed package.
+
 <!-- 
 ## Limitations
 
