@@ -1537,6 +1537,10 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
     - **Response:** `201 Created`
 
 ### Update User Metadata
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
 
     - **Description:** Replaces the entire `userDetails` (metadata) object for a specific user in a workspace. The provided `userDetails` array fully replaces the existing metadata. Any keys not included in the request will be removed.
     - **URL:** `/api/ext/workspace/:workspace_identifier/user/:user_identifier`
@@ -1606,6 +1610,9 @@ This is a **replace** operation, not a merge. The provided `userDetails` array f
     | `401 Unauthorized` | Unauthorized |
 
 ### Get User Metadata
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
 
     - **Description:** Returns metadata for a specific user within a workspace.
     - **URL:** `/api/ext/workspace/:workspace_identifier/user/:user_identifier`
@@ -1648,6 +1655,9 @@ This is a **replace** operation, not a merge. The provided `userDetails` array f
     - **Error Responses:** Same as [Update User Metadata](#update-user-metadata).
 
 ### Create Group
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
 
     - **Description:** Creates a new user group in a workspace with workspace-level permissions and optional granular permissions for applications and datasources.
     - **URL:** `/ext/workspace/:workspaceId/groups`
