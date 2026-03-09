@@ -34,6 +34,9 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
+- [Update User Metadata](#update-user-metadata)
+- [Get User Metadata](#get-user-metadata)
+- [Create Group](#create-group)
 
 ## Enabling ToolJet API
 
@@ -1532,3 +1535,205 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 </details>
 
     - **Response:** `201 Created`
+
+### Update User Metadata
+
+    - **Description:** Replaces the entire `userDetails` (metadata) object for a specific user in a workspace. The provided `userDetails` array fully replaces the existing metadata. Any keys not included in the request will be removed.
+    - **URL:** `/api/ext/workspace/:workspace_identifier/user/:user_identifier`
+    - **Method:** PUT
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Path Parameters:**
+
+    | Parameter | Type | Required | Description |
+    |:----------|:-----|:---------|:------------|
+    | `workspace_identifier` | string | Yes | Workspace UUID or slug |
+    | `user_identifier` | string | Yes | User UUID or email |
+
+    - **Body:**
+
+    | Field | Type | Required | Description |
+    |:------|:-----|:---------|:------------|
+    | `userDetails` | array | Yes | Array of key-value pairs representing the complete metadata set |
+    | `userDetails[].key` | string | Yes | Free-form key (no schema enforced) |
+    | `userDetails[].value` | string | Yes | Value for the key |
+
+    ```bash title="cURL Request"
+    curl -X PUT "https://{your-domain}/api/ext/workspace/:workspace_identifier/user/:user_identifier" \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "userDetails": [
+          { "key": "department", "value": "Platform" },
+          { "key": "title", "value": "Senior Engineer" },
+          { "key": "location", "value": "San Francisco" }
+        ]
+      }'
+    ```
+
+:::warning
+This is a **replace** operation, not a merge. The provided `userDetails` array fully replaces the existing metadata. Any keys not present in the request will be removed. Sending an empty array removes all metadata.
+:::
+
+  <details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+{
+  "id": "a1b2c3d4-...",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "status": "active",
+  "userDetails": [
+    { "key": "department", "value": "Platform" },
+    { "key": "title", "value": "Senior Engineer" },
+    { "key": "location", "value": "San Francisco" }
+  ]
+}
+```
+
+  </details>
+
+    - **Response:** `200 OK` : Returns the full user object including the updated metadata.
+    - **Error Responses:**
+
+    | Status Code | Message |
+    |:------------|:--------|
+    | `404 Not Found` | Workspace not found |
+    | `404 Not Found` | User not found |
+    | `404 Not Found` | User is not a member of the specified workspace |
+    | `400 Bad Request` | userDetails must be an array |
+    | `401 Unauthorized` | Unauthorized |
+
+### Get User Metadata
+
+    - **Description:** Returns metadata for a specific user within a workspace.
+    - **URL:** `/api/ext/workspace/:workspace_identifier/user/:user_identifier`
+    - **Method:** GET
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Path Parameters:**
+
+    | Parameter | Type | Required | Description |
+    |:----------|:-----|:---------|:------------|
+    | `workspace_identifier` | string | Yes | Workspace UUID or slug |
+    | `user_identifier` | string | Yes | User UUID or email |
+
+    ```bash title="cURL Request"
+    curl -X GET "https://{your-domain}/api/ext/workspace/:workspace_identifier/user/:user_identifier" \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
+
+  <details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+{
+  "id": "a1b2c3d4-...",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "status": "active",
+  "userDetails": [
+    { "key": "department", "value": "Platform" },
+    { "key": "title", "value": "Senior Engineer" },
+    { "key": "location", "value": "San Francisco" }
+  ]
+}
+```
+
+  </details>
+
+    - **Response:** `200 OK` : Returns the full user object including the complete `userDetails`.
+    - **Error Responses:** Same as [Update User Metadata](#update-user-metadata).
+
+### Create Group
+
+    - **Description:** Creates a new user group in a workspace with workspace-level permissions and optional granular permissions for applications and datasources.
+    - **URL:** `/ext/workspace/:workspaceId/groups`
+    - **Method:** POST
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Path Parameters:**
+
+    | Parameter | Type | Required | Description |
+    |:----------|:-----|:---------|:------------|
+    | `workspaceId` | string | Yes | Workspace UUID |
+
+    - **Body:**
+
+    | Field | Type | Required | Description |
+    |:------|:-----|:---------|:------------|
+    | `name` | string | Yes | Name of the group |
+    | `permissions` | object | No | Workspace-level permissions (`appCreate`, `appDelete`, etc.) |
+    | `granularPermissions` | array | No | Array of granular permission objects for apps or datasources |
+
+    **Granular Permission Object:**
+
+    | Field | Type | Required | Description |
+    |:------|:-----|:---------|:------------|
+    | `type` | string | Yes | `"app"` or `"data_source"` |
+    | `applyToAll` | boolean | Yes | Apply permissions to all resources of this type |
+    | `resources` | array | Yes | Array of resource UUIDs. Must be empty if `applyToAll` is `true` |
+    | `permissions` | object | Yes | Type-specific permissions (see below) |
+
+    **Permissions for `type: "app"`:**
+
+    | Field | Type | Description |
+    |:------|:-----|:------------|
+    | `canView` | boolean | Allow viewing the application |
+    | `canEdit` | boolean | Allow editing the application |
+    | `hideFromDashboard` | boolean | Hide the application from the dashboard |
+    | `environments` | array | Accessible environments: `"development"`, `"staging"`, `"production"`, `"released"` |
+
+    **Permissions for `type: "data_source"`:**
+
+    | Field | Type | Description |
+    |:------|:-----|:------------|
+    | `canUse` | boolean | Allow using the datasource in queries |
+    | `canConfigure` | boolean | Allow configuring the datasource |
+
+    ```bash title="cURL Request"
+    curl -X POST "https://{your-domain}/ext/workspace/:workspaceId/groups" \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Platform Engineers",
+        "permissions": {
+          "appCreate": true,
+          "appDelete": false
+        },
+        "granularPermissions": [
+          {
+            "type": "app",
+            "applyToAll": false,
+            "resources": ["app-uuid-1", "app-uuid-2"],
+            "permissions": {
+              "canView": true,
+              "canEdit": false,
+              "hideFromDashboard": false,
+              "environments": ["production", "released"]
+            }
+          },
+          {
+            "type": "data_source",
+            "applyToAll": true,
+            "resources": [],
+            "permissions": {
+              "canUse": true,
+              "canConfigure": false
+            }
+          }
+        ]
+      }'
+    ```
+
+    - **Response:** `201 Created` : No response body.
+
+    **Validation Rules:**
+    - If `applyToAll` is `false`, `resources` must not be empty.
+    - If `applyToAll` is `true`, `resources` must be empty (or will be ignored).
+    - `environments` values must be one of: `"development"`, `"staging"`, `"production"`, `"released"`. The array may be empty (indicating no environment access).
+    - All IDs in `resources` must be valid UUIDs, exist within the workspace, and match the specified `type` (app IDs for `"app"`, datasource IDs for `"data_source"`).
+
+
