@@ -124,7 +124,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
-      getExposedValueOfComponent,
+      getExposedPropertyForAdditionalActions,
     } = get();
 
     try {
@@ -157,9 +157,14 @@ export const createGridSlice = (set, get) => ({
       }
 
       // Priority: exposed visibility > component properties > component styles
-      const exposedValues = getExposedValueOfComponent(componentId);
-      const componentExposedVisibility = exposedValues?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        componentId,
+        subContainerIndex,
+        'isVisible'
+      );
       let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
+      const isAccordionExpanded =
+        getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
 
       // Override visibility if component is set to not display on current layout
       if (componentDisplay === false) {
@@ -172,11 +177,10 @@ export const createGridSlice = (set, get) => ({
 
         // Special handling for Accordion: check if it's collapsed first
         if (componentType === 'Accordion') {
-          const isExpanded = exposedValues?.isExpanded ?? true;
           const { properties = {} } = component || {};
           const { showHeader, headerHeight } = properties;
 
-          if (!isExpanded) {
+          if (!isAccordionExpanded) {
             // Accordion is collapsed - height should be just header height (or minimal if no header)
             if (visibility) {
               if (showHeader && isProperNumber(headerHeight)) {
@@ -195,7 +199,7 @@ export const createGridSlice = (set, get) => ({
         }
 
         // Only proceed with normal calculation if component is not an accordion or accordion is expanded
-        if (componentType !== 'Accordion' || (componentType === 'Accordion' && (exposedValues?.isExpanded ?? true))) {
+        if (componentType !== 'Accordion' || isAccordionExpanded) {
           const element = document.querySelector(`.dynamic-${componentId}`);
           // If the component is not a dynamic component, we use the height of the component from the layouts
           if (!element) {
