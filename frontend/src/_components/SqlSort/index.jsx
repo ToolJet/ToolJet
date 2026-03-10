@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_SORT_ORDER_OPTIONS } from './sortOrderConstants';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
+import DynamicSelector from '@/_ui/DynamicSelector';
 import './SqlSort.scss';
 
 // ---------------------------------------------------------------------------
@@ -22,7 +22,13 @@ const SqlSortRow = React.memo(function SqlSortRow({
   onOrderChange,
   onRemove,
   darkMode,
-  workspaceConstants,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  schema,
+  table,
+  queryName,
 }) {
   const selectedOrder = SQL_SORT_ORDER_OPTIONS.find((option) => option.value === orderValue) ?? null;
 
@@ -40,16 +46,26 @@ const SqlSortRow = React.memo(function SqlSortRow({
 
   return (
     <div className="sql-sort-row d-flex align-items-start">
-      {/* Column – CodeHinter so the user can type the column name */}
+      {/* Column – DynamicSelector fetching columns from the connected data source */}
       <div className="col p-0">
-        <CodeHinter
-          type="basic"
-          initialValue={typeof columnValue === 'string' ? columnValue : ''}
-          placeholder="Enter column"
-          onChange={handleColumnChange}
-          height="30"
-          enablePreview={false}
-          workspaceConstants={workspaceConstants}
+        <DynamicSelector
+          operation={columnSelectorOperation}
+          dependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          options={{ schema, table }}
+          value={typeof columnValue === 'string' ? columnValue : ''}
+          propertyKey={sortEntryId}
+          optionsChanged={(updatedOptions) => {
+            const newColumnValue = updatedOptions[sortEntryId];
+            if (newColumnValue !== undefined) {
+              handleColumnChange(newColumnValue);
+            }
+          }}
+          queryName={queryName}
+          label="Column"
+          darkMode={darkMode}
+          sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
         />
       </div>
 
@@ -91,8 +107,16 @@ const SqlSort = React.memo(function SqlSort({
   options,
   handleOptionChange,
   darkMode,
-  workspaceConstants,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  queryName,
 }) {
+  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
+
   const currentSortEntries = readValueMapFromOptions(options, getter, parseKey);
   const sortList = isEmpty(currentSortEntries) ? [] : Object.values(currentSortEntries);
 
@@ -160,7 +184,13 @@ const SqlSort = React.memo(function SqlSort({
           onOrderChange={handleOrderChange}
           onRemove={handleRemoveSortEntry}
           darkMode={darkMode}
-          workspaceConstants={workspaceConstants}
+          columnSelectorOperation={columnSelectorOperation}
+          columnSelectorDependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          schema={schema}
+          table={table}
+          queryName={queryName}
         />
       ))}
 

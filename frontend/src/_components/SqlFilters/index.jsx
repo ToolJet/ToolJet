@@ -7,6 +7,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { SQL_FILTER_OPERATORS, SQL_FILTER_IS_OPERATOR_OPTIONS } from './filterOperatorConstants';
+import DynamicSelector from '@/_ui/DynamicSelector';
 import './SqlFilters.scss';
 
 /**
@@ -73,6 +74,13 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
   onValueChange,
   onRemove,
   darkMode,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  schema,
+  table,
+  queryName,
 }) {
   const selectedOperator = SQL_FILTER_OPERATORS.find((operator) => operator.value === operatorValue) ?? null;
   const isIsOperatorSelected = operatorValue === 'is';
@@ -114,16 +122,26 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
 
   return (
     <div className="sql-filter-row d-flex align-items-start">
-      {/* Column – CodeHinter so the user can type or use dynamic expressions */}
+      {/* Column – DynamicSelector fetching columns from the connected data source */}
       <div className="col p-0 ">
-        <CodeHinter
-          type="basic"
-          initialValue={typeof columnValue === 'string' ? columnValue : ''}
-          placeholder="Enter column"
-          onChange={handleColumnChange}
-          height="28"
-          enablePreview={false}
-          className="rounded-start overflow-hidden"
+        <DynamicSelector
+          operation={columnSelectorOperation}
+          dependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          options={{ schema, table }}
+          value={typeof columnValue === 'string' ? columnValue : ''}
+          propertyKey={filterId}
+          optionsChanged={(updatedOptions) => {
+            const newColumnValue = updatedOptions[filterId];
+            if (newColumnValue !== undefined) {
+              handleColumnChange(newColumnValue);
+            }
+          }}
+          queryName={queryName}
+          label="Column"
+          darkMode={darkMode}
+          sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
         />
       </div>
 
@@ -190,7 +208,22 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
 // SqlFilters – public component registered as react-component-sql-filters
 // ---------------------------------------------------------------------------
 
-const SqlFilters = React.memo(function SqlFilters({ getter, parseKey, options, handleOptionChange, darkMode }) {
+const SqlFilters = React.memo(function SqlFilters({
+  getter,
+  parseKey,
+  options,
+  handleOptionChange,
+  darkMode,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  queryName,
+}) {
+  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
+
   const currentFilters = readFiltersFromOptions(options, getter, parseKey);
   const filterList = isEmpty(currentFilters) ? [] : Object.values(currentFilters);
 
@@ -271,6 +304,13 @@ const SqlFilters = React.memo(function SqlFilters({ getter, parseKey, options, h
           onValueChange={handleValueChange}
           onRemove={handleRemoveFilter}
           darkMode={darkMode}
+          columnSelectorOperation={columnSelectorOperation}
+          columnSelectorDependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          schema={schema}
+          table={table}
+          queryName={queryName}
         />
       ))}
 
