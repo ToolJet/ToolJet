@@ -3,27 +3,92 @@ id: ai-credits
 title: Understanding AI Credits
 ---
 
-A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to creating custom code or modifying layouts, consumes a varied amount of credits based on the complexity and type of task. This approach provides transparent cost visibility while enabling you to scale your AI usage on-demand.
+A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to modifying layouts or writing custom code, consumes a variable number of credits based on the complexity of the task.
 
-In this guide you will learn about types of credits, credit usage, getting more credits, and more.
+In this guide you will learn how credit consumption works, types of credits, credit usage, getting more credits, and more.
+
+## How Credits Are Consumed
+
+Credits are consumed based on the complexity of each operation and the context of your conversation. The AI uses the conversation history to stay aligned with your intent, the more focused and specific your session, the more efficiently it works.
+
+Credit consumption is variable by design: a simple layout tweak costs far fewer credits than generating a full application with complex logic. This means you have a lot of control over how efficiently you build, focused sessions with clear, specific prompts get more done per credit.
+
+For tips on structuring your prompts and sessions for the best results, see [Prompting 101 — Best Practices](/docs/build-with-ai/prompting101#best-practices).
 
 ## Credit Usage
 
-Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. The table below provides an average range of credits utilized for different operations to help you estimate usage.
+Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. The cards below provide an average range of credits utilized for different operations to help you estimate usage.
 
-| Operation                                                         | Avg. Credits Utilised |
-| :---------------------------------------------------------------- | :-------------------: |
-| [App Generation](/docs/build-with-ai/generate-applications)       |          100          |
-| Adding New Feature in the Application                             |          100          |
-| Modifying Layout/UI                                               |          50           |
-| Modifying Queries/Database                                        |          30           |
-| [Debug Components Auto Fix](/docs/build-with-ai/debug-components) |          10           |
-| [AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant)        |           6           |
-| SQL Query Generation                                              |           5           |
-| Custom Code Generation                                            |           2           |
+<div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', margin: '16px 0'}}>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>[App Generation](/docs/build-with-ai/generate-applications)</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>100 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>New Feature in the App</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>100 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>Modifying Layout/UI</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>50 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>Modifying Queries/Database</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>30 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>[Debug Components Auto Fix](/docs/build-with-ai/debug-components)</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>10 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>[AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant)</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>6 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>SQL Query Generation</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>5 credits</span>
+    </span>
+  </div>
+
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
+    <span>Custom Code Generation</span>
+    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
+      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>2 credits</span>
+    </span>
+  </div>
+
+</div>
 
 :::warning
-These values are only average estimates to help plan your operations. **Actual credit consumption will vary depending on the complexity of the operation**.
+These values are only average estimates to help plan your operations. **Actual credit consumption will vary depending on the complexity of the operation.**
 :::
 
 ## Types of Credits
@@ -48,7 +113,7 @@ Follow these steps to buy add-on credits on your self-hosted deployment of ToolJ
    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-button.png" alt="AI Credits" />
 3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the **Get AI credits** button at the bottom. <br/>
    <img className="screenshot-full img-s" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-modal.png" alt="AI Credits" />
-4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your instance.
+4. You'll then be redirected to the payment gateway. On successful payment, the credits will be added to your instance.
 
 ### Cloud Deployment
 
@@ -60,7 +125,7 @@ Follow these steps to buy add-on credits on ToolJet Cloud:
    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-button.jpg" alt="AI Credits" />
 3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the Get AI credits button at the bottom. <br/>
    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-modal.png" alt="AI Credits" />
-4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your workspace.
+4. You'll then be redirected to the payment gateway. On successful payment, the credits will be added to your workspace.
 
 ## Credit Allocation
 
@@ -90,14 +155,14 @@ You will also find an option to purchase additional add-on credits.
 
 ## Impact on Existing Users
 
-Starting September 22, 2025, we’re updating the AI credits system to introduce add-on credits and pay-as-you-go flexibility.
+Starting September 22, 2025, we're updating the AI credits system to introduce add-on credits and pay-as-you-go flexibility.
 
 ### What's Changing
 
 |              | Before                                                                             | After                                                                                                                                   |
 | ------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Denomination | Minimum credit = 0.1                                                               | Minimum credit = 1                                                                                                                      |
-| Credit Usage | Fixed credits per operation. <br/> Eg. Every app generation would cost 10 credits. | Variable credits based on complexity of operation. <br/> Eg. A small app could take 70 credits, and a large app could take 120 credits. |
+| Credit Usage | Fixed credits per operation. <br/> e.g. Every app generation would cost 10 credits. | Variable credits based on complexity of operation. <br/> e.g. A small app could take 70 credits, and a large app could take 120 credits. |
 | Credit Types | Monthly recurring credits included in your plan.                                   | - Monthly recurring credits included in your plan. <br/> - Optional purchase of additional credits which are valid for 1 year.          |
 
 ### Updated Credit Allocation

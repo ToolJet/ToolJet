@@ -132,14 +132,16 @@ Describe how users will interact with the tool through specific workflows.
 ## Best Practices
 
 ### Do This
-- **Be Specific** <br/>
-    Instead of "customer management," say "client project tracking for our design agency"
-- **Include Real Pain Points** <br/>
-    Mention actual problems like "version control issues" or "missed deadlines"
-- **Think Workflows** <br/>
-    Describe the step-by-step process users will follow
-- **Focus on Manual Processes** <br/>
-    Describe forms, data entry, and user interactions
+- **Write Specific Prompts with Detailed Context** <br/>
+    Include your business context, the problem you're solving, and what the output should look like. For example: "Build me a dashboard to track new users every day" is far more actionable than "Build a dashboard."
+- **Keep Prompts Concise** <br/>
+    Aim for ~500 words or less. Avoid pasting full PRDs or specification documents, extract only the relevant details for the task at hand.
+- **Keep the Number of Tasks Per Prompt Minimal** <br/>
+    Send one task at a time. Bundling multiple requirements into a single prompt reduces output quality and makes it harder to iterate.
+- **Split Operations into Smaller Tasks** <br/>
+    Break your work into focused steps rather than trying to accomplish everything in one go. Smaller, well-defined tasks produce better results and are easier to review.
+- **Start a New Conversation for Different Tasks** <br/>
+    Each conversation carries its full history, and the AI processes all of it on every request. Once you're done building one thing, start fresh for the next. For example, build your app in one conversation, then handle database setup in a separate one.
 
 ### Avoid This
 
@@ -148,6 +150,7 @@ Describe how users will interact with the tool through specific workflows.
 - Technical jargon that doesn't match your business needs
 - Overly complex requirements that try to solve everything at once
 - UI layout details - let the AI handle design decisions
+- Very long prompts such as full PRDs or specification documents with thousands of words
 
 ## How Long Should My Prompt Be?
 
