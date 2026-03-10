@@ -176,12 +176,12 @@ export abstract class AbilityGuard implements CanActivate {
     }
   }
 
-  protected getForbiddenMessage(feature: string, subjectType: any): string {
-    const subjectName = typeof subjectType === 'string' ? subjectType : subjectType?.name;
+  protected getForbiddenMessage(feature: string, resourceId): string {
     const messageMap: Record<string, string> = {
-      FolderApp: 'You do not have permission to perform this action',
+      CREATE_FOLDER_APP: 'You do not have permission to perform this action',
+      DELETE_FOLDER_APP: 'You do not have permission to perform this action',
       // Add more subject-specific messages here
     };
-    return messageMap?.[subjectName]?.[feature] ?? 'You do not have permission to access this resource';
+    return messageMap?.[feature] ?? 'You do not have permission to access this resource';
   }
 }

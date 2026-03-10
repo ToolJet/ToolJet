@@ -25,12 +25,18 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const folderPermissions = userPermission[MODULES.FOLDER];
     const ownerCanCreateFolderApp =
       request?.tj_allow_owner_folder_app_create && extractedMetadata.features?.includes(FEATURE_KEY.CREATE_FOLDER_APP);
+    const ownerCanDeleteFolderApp =
+      request?.tj_allow_owner_folder_app_delete && extractedMetadata.features?.includes(FEATURE_KEY.DELETE_FOLDER_APP);
 
     if (superAdmin || isAdmin) {
       can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
     } else {
       if (ownerCanCreateFolderApp) {
         can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp);
+      }
+
+      if (ownerCanDeleteFolderApp) {
+        can(FEATURE_KEY.DELETE_FOLDER_APP, FolderApp);
       }
 
       if (folderPermissions) {

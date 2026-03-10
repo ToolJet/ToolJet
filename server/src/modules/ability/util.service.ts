@@ -334,6 +334,29 @@ export class AbilityUtilService {
           new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
         );
       }
+
+      // if an app is in a folder, it should get all environment access permissions.
+      const allFolderApps = await manager
+        .createQueryBuilder(FolderApp, 'folderApp')
+        .select('folderApp.appId')
+        .getMany();
+
+      const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
+      for (const folderAppId of allFolderAppIds) {
+        if (!userAppsPermissions.appSpecificEnvironmentAccess![folderAppId]) {
+          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId] = {
+            development: true,
+            staging: true,
+            production: true,
+            released: true,
+          };
+        } else {
+          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].development = true;
+          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].staging = true;
+          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].production = true;
+          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].released = true;
+        }
+      }
     }, manager);
 
     return userAppsPermissions;

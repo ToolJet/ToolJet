@@ -120,7 +120,7 @@ class BaseManageGroupPermissions extends React.Component {
       this.showDuplicateDiologBox(id);
     };
 
-    const isDefaultGroup = groupName == 'end-user' || groupName == 'admin' || groupName == 'builder';
+    const isDefaultGroup = groupName === 'end-user' || groupName === 'admin' || groupName === 'builder';
 
     return (
       <div
@@ -410,7 +410,14 @@ class BaseManageGroupPermissions extends React.Component {
 
     const grounNameErrorStyle =
       this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
-    const { addPermission, addApps, addUsers, addDataSource = null, addWorkflows = null } = groupDuplicateOption;
+    const {
+      addPermission,
+      addApps,
+      addUsers,
+      addDataSource = null,
+      addWorkflows = null,
+      addFolders = null,
+    } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
     const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
 
@@ -556,6 +563,31 @@ class BaseManageGroupPermissions extends React.Component {
                     <div className="col-11">
                       <div className="tj-text " data-cy="workflows-label">
                         Workflows
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addFolders !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addFolders}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addFolders: !prevState.groupDuplicateOption.addFolders,
+                            },
+                          }));
+                        }}
+                        data-cy="workflows-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="workflows-label">
+                        Folders
                       </div>
                     </div>
                   </div>

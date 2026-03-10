@@ -8,16 +8,19 @@ import { defineWorkflowVersionAbility } from './workflow-version.ability';
 export function createVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string
+  resourceId?: string,
+  request?: any
 ): void {
-  const resourceType = UserAllPermissions?.resource?.[0]?.resourceType ? UserAllPermissions?.resource?.[0]?.resourceType : null;
+  const resourceType = UserAllPermissions?.resource?.[0]?.resourceType
+    ? UserAllPermissions?.resource?.[0]?.resourceType
+    : null;
 
   switch (resourceType) {
     case MODULES.APP:
-      defineAppVersionAbility(can, UserAllPermissions, resourceId);
+      defineAppVersionAbility(can, UserAllPermissions, resourceId, request);
       break;
     case MODULES.MODULES:
-      defineAppVersionAbility(can, UserAllPermissions, resourceId);
+      defineAppVersionAbility(can, UserAllPermissions, resourceId, request);
       break;
     case MODULES.WORKFLOWS:
       defineWorkflowVersionAbility(can, UserAllPermissions, resourceId);

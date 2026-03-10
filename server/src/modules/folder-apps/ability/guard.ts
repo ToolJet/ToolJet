@@ -49,7 +49,12 @@ export class FeatureAbilityGuard extends AbilityGuard {
     const rawFeatures = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
     const features = Array.isArray(rawFeatures) ? rawFeatures : rawFeatures ? [rawFeatures] : [];
 
-    if (request.user && folderId && request.body?.app_id && features.includes(FEATURE_KEY.CREATE_FOLDER_APP)) {
+    if (
+      request.user &&
+      folderId &&
+      request.body?.app_id &&
+      (features.includes(FEATURE_KEY.CREATE_FOLDER_APP) || features.includes(FEATURE_KEY.DELETE_FOLDER_APP))
+    ) {
       const [folder, app] = await Promise.all([
         this.dataSource.manager.findOne(Folder, {
           where: { id: folderId, organizationId: request.user.organizationId },
@@ -63,6 +68,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
 
       request.tj_allow_owner_folder_app_create =
         !!folder && !!app && folder.createdBy === request.user.id && app.userId === request.user.id;
+
+      request.tj_allow_owner_folder_app_delete = !!folder && !!app && folder.createdBy === request.user.id;
     }
 
     return super.canActivate(context);

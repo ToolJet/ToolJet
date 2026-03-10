@@ -1,15 +1,15 @@
-import {Folder} from '@entities/folder.entity';
-import {User} from '@entities/user.entity';
-import {Injectable} from '@nestjs/common';
-import {EntityManager, SelectQueryBuilder} from 'typeorm';
-import {IFolderAppsUtilService} from './interfaces/IUtilService';
-import {AppBase} from '@entities/app_base.entity';
-import {dbTransactionWrap} from '@helpers/database.helper';
-import {FolderApp} from '@entities/folder_app.entity';
-import {MODULES} from '@modules/app/constants/modules';
-import {UserAppsPermissions, UserWorkflowPermissions} from '@modules/ability/types';
-import {AbilityService} from '@modules/ability/interfaces/IService';
-import {APP_TYPES} from '@modules/apps/constants';
+import { Folder } from '@entities/folder.entity';
+import { User } from '@entities/user.entity';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { EntityManager, SelectQueryBuilder } from 'typeorm';
+import { IFolderAppsUtilService } from './interfaces/IUtilService';
+import { AppBase } from '@entities/app_base.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { FolderApp } from '@entities/folder_app.entity';
+import { MODULES } from '@modules/app/constants/modules';
+import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
@@ -180,6 +180,9 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       // If app is already in a folder, remove it first (apps can only be in one folder)
       if (existingFolderApp) {
+        if (existingFolderApp.folderId === folderId) {
+          throw new BadRequestException('App has already been added to the folder');
+        }
         await manager.delete(FolderApp, { id: existingFolderApp.id });
       }
 

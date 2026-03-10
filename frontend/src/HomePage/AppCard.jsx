@@ -130,9 +130,14 @@ export default function AppCard({
 
   // Determine folder-level edit permissions (decide if AppMenu should be shown)
   const folderGroupPermissions = session?.folder_group_permissions;
-  const canEditAnyFolder =
-    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+
+  // True if this app belongs to at least one folder created by the current user.
+  // Applies everywhere — both in the all-apps view and inside a specific folder.
+  const isInOwnedFolder =
+    Array.isArray(ownedFolders) &&
+    ownedFolders.length > 0 &&
+    (app?.folder_ids || []).some((fid) => ownedFolders.some((f) => f.id === fid));
 
   // Check if user is a builder based on role, not just editable apps
   const isBuilder = hasBuilderRole(session?.role ?? {});
@@ -148,6 +153,11 @@ export default function AppCard({
           folderGroupPermissions?.viewable_folders_id?.includes(folderId) ||
           folderGroupPermissions?.edit_apps_in_folders_id?.includes(folderId)
       ));
+
+  const canEditAnyFolder =
+    isAppInFolder && // app must actually be in a folder
+    (folderGroupPermissions?.is_all_editable ||
+      appFolderIds.some((fid) => folderGroupPermissions?.editable_folders_id?.includes(fid)));
 
   const effectivePreviewEnvironmentAccess =
     !isBuilder && hasAppFolderPreviewAccess
@@ -310,7 +320,11 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canDeleteApp(app) || canUpdateApp(app) || canEditAnyFolder || appType === 'module') && (
+                {(canDeleteApp(app) ||
+                  canUpdateApp(app) ||
+                  canEditAnyFolder ||
+                  isInOwnedFolder ||
+                  appType === 'module') && (
                   <AppMenu
                     appId={app?.id}
                     appUserId={app?.user_id}
@@ -329,6 +343,7 @@ export default function AppCard({
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
                     ownedFolders={ownedFolders}
+                    isInOwnedFolder={isInOwnedFolder}
                   />
                 )}
               </div>
@@ -338,7 +353,7 @@ export default function AppCard({
             <AppNameDisplay tooltipRef={tooltipRef} />
           </div>
           <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
-            {canUpdate && (
+            {(canUpdate || isInOwnedFolder) && (
               <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
                 <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                   <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
@@ -347,7 +362,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module') && (
+            {(canUpdate || isInOwnedFolder || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -378,7 +393,12 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
+            {!canUpdate &&
+              !isInOwnedFolder &&
+              canView &&
+              appType !== 'module' &&
+              hasNonReleasedPreviewAccess &&
+              ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

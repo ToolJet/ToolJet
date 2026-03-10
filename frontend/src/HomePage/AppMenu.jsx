@@ -20,6 +20,7 @@ export const AppMenu = function AppMenu({
   setMenuOpen,
   appType,
   ownedFolders,
+  isInOwnedFolder,
 }) {
   const { t } = useTranslation();
 
@@ -37,7 +38,8 @@ export const AppMenu = function AppMenu({
     currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
   // App owners always retain full edit/delete rights, regardless of group permissions.
-  const canModifyApp = canEditApp || isAppOwner;
+  // Folder owners also get modify rights for apps inside their folders.
+  const canModifyApp = canEditApp || isAppOwner || isInOwnedFolder;
 
   const folderGroupPermissions = currentSession?.folder_group_permissions;
 
@@ -45,20 +47,19 @@ export const AppMenu = function AppMenu({
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
 
   // Requires BOTH:
-  //   1. The user can modify the app (group grant OR app owner).
+  //   1. The user can modify the app (group grant OR app owner OR folder owner).
   //   2. At least one folder is available in the dropdown:
   //        a. Admin/super_admin → all folders
   //        b. Group folder permissions (is_all_editable or editable_folders_id entries)
-  //        c. User owns folders (ownedFolders) — but ONLY app owners can use this path.
-  //           Non-owners cannot add apps to owned folders even if ownedFolders is non-empty.
-  const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
+  //        c. User owns folders — available to app owners AND folder owners (isInOwnedFolder).
+  const hasOwnedFolders = (isAppOwner || isInOwnedFolder) && Array.isArray(ownedFolders) && ownedFolders.length > 0;
 
   const canAddAppToFolder =
     canModifyApp &&
-    (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders); // only reachable for app owners (hasOwnedFolders is false for non-owners)
+    (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders);
 
   // Only show when browsing inside a specific folder AND the user has explicit folder-level
-  // edit permission. canModifyApp (app ownership/group) alone is NOT sufficient.
+  // edit permission. canModifyApp covers folder-owner case via isInOwnedFolder.
   const canRemoveFromFolder =
     !!currentFolder?.id &&
     canModifyApp &&
@@ -66,8 +67,8 @@ export const AppMenu = function AppMenu({
       currentSession?.super_admin ||
       folderGroupPermissions?.is_all_editable ||
       folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
-      currentFolder?.created_by === currentUserId); // folder owner can remove apps from their own folder
-  // TODO: confirm this once
+      currentFolder?.created_by === currentUserId ||
+      isInOwnedFolder);
 
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
@@ -89,6 +90,8 @@ export const AppMenu = function AppMenu({
     );
   };
 
+  console.log('AppMenu render', { appId, canCreateApp, canDeleteApp, canUpdateApp });
+
   return (
     <OverlayTrigger
       trigger="click"
@@ -103,7 +106,7 @@ export const AppMenu = function AppMenu({
           <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
             <Popover.Body bsPrefix="popover-body">
               <div data-cy="card-options">
-                {canUpdateApp && (
+                {(canUpdateApp || isInOwnedFolder) && (
                   <Field
                     text={t(
                       'homePage.appCard.renameApp',
@@ -112,7 +115,7 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('rename-app')}
                   />
                 )}
-                {canUpdateApp && (
+                {(canUpdateApp || isInOwnedFolder) && (
                   <Field
                     text={t('homePage.appCard.changeIcon', 'Change Icon')}
                     onClick={() => openAppActionModal('change-icon')}
