@@ -99,6 +99,7 @@ type NewRevampedComponent =
   | 'PhoneInput'
   | 'IFrame'
   | 'DropdownV2';
+  | 'TreeSelect'
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -142,6 +143,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PhoneInput',
   'IFrame',
   'DropdownV2',
+  'TreeSelect',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
@@ -2867,6 +2869,23 @@ function migrateProperties(
       }
       if (properties.numberFormat == undefined) {
         properties.numberFormat = { value: 'us' };
+      }
+    }
+
+    // TreeSelect
+    if (componentType === 'TreeSelect') {
+      if (!styles.labelColor) {
+        styles.labelColor = { value: styles?.textColor };
+      }
+      if (styles.labelStyle === undefined) {
+        styles.labelStyle = { value: 'legacy' };
+      }
+      if (!styles.alignment) {
+        styles.alignment = { value: 'top' };
+        styles.direction = { value: 'left' };
+      }
+      if (properties.advanced === undefined) {
+        properties.advanced = { value: true };
       }
     }
 
