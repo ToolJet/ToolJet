@@ -52,6 +52,28 @@ export class AiConversationMessageRepository extends Repository<AiConversationMe
     }, manager || this.manager);
   }
 
+  async findFirstUserMessageByConversationId(conversationId: string): Promise<AiConversationMessage | null> {
+    return await this.findOne({
+      where: {
+        aiConversationId: conversationId,
+        messageType: 'user',
+        isLatest: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  async countByConversationId(conversationId: string): Promise<number> {
+    return await this.count({
+      where: {
+        aiConversationId: conversationId,
+        isLatest: true,
+      },
+    });
+  }
+
   async findConversationMessages(conversationId: string, limit: number = 5): Promise<AiConversationMessage[]> {
     return await this.find({
       where: {
