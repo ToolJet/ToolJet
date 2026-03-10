@@ -508,6 +508,15 @@ export class PageService implements IPageService {
         throw new Error('Cannot delete home page');
       }
       if (pageExists.isPageGroup) {
+        // Capture child page IDs before group deletion for history tracking
+        if (deleteAssociatedPages && context) {
+          const childPages = await manager.find(Page, {
+            where: { appVersionId, pageGroupId: pageId },
+            select: ['id'],
+          });
+          context.childPageIds = childPages.map((p) => p.id);
+        }
+
         return await this.pageHelperService.deletePageGroup(
           pageExists,
           appVersionId,
