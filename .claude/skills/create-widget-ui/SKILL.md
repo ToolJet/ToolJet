@@ -185,7 +185,7 @@ Files created:
 📋 Manual TODOs:
   [ ] Implement widget JSX in {Name}.jsx (search for "TODO: implement")
   [ ] Add styles in {Name}.scss
-  [ ] Register component export — add to frontend/src/AppBuilder/Widgets/index.js:
-      export { {Name} } from './{Name}/{Name}';
+  [ ] Register component — add an import to frontend/src/AppBuilder/_helpers/editorHelpers.js:
+      import { {Name} } from '@/AppBuilder/Widgets/{Name}/{Name}';
   [ ] Commit: git add -A && git commit -m "feat: add {Name} widget UI stub"
 ```
