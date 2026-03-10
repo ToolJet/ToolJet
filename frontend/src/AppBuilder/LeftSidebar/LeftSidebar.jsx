@@ -238,7 +238,7 @@ export const BaseLeftSidebar = ({
           {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
           {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
-          <SupportButton />
+          <SupportButton darkMode={darkMode} />
         </div>
       </div>
     </div>
