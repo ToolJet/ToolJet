@@ -8,7 +8,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/rocket/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 import { Button } from '@/components/ui/Button/Button';
 
 const moreActionOptions = [

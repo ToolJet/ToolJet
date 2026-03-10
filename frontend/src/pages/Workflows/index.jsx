@@ -13,7 +13,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/rocket/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 
 import { canUserPerformWorkflowAction } from './workflowPermissions';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
