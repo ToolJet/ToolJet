@@ -108,6 +108,17 @@
     }
 }
 
+#main-editor-canvas.disable-moveable-line #real-canvas {
+    transform: none !important;
+    position: relative;
+    overflow: visible !important;
+}
+
+#main-editor-canvas.disable-moveable-line .canvas-header-slot + .canvas-wrapper {
+    position: relative;
+    z-index: 11;
+}
+
 
 // This is required to maintain the height of the subcontainer when dragging a widget inside it
 .real-canvas.is-child-being-dragged:before {
