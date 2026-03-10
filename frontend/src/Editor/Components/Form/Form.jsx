@@ -72,7 +72,7 @@ export const Form = function Form(props) {
     });
     setExposedVariable('submitForm', async function () {
       if (isValid) {
-        onEvent('onSubmit', formEvents).then(() => resetComponent());
+        onEvent('onSubmit', formEvents);
       } else {
         fireEvent('onInvalid');
       }
@@ -189,9 +189,7 @@ export const Form = function Form(props) {
   };
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', formEvents).then(() => {
-        debounce(() => resetComponent(), 100)();
-      });
+      onEvent('onSubmit', formEvents);
     } else {
       fireEvent('onInvalid');
     }
