@@ -117,7 +117,7 @@ export const createDataQuerySlice = (set, get) => ({
         .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
         .then((data) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
               if (query.id === tempId) {
                 return {
@@ -169,7 +169,7 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .catch((error) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
               (query) => query.id !== tempId
             );
@@ -599,7 +599,7 @@ export const createDataQuerySlice = (set, get) => ({
 
       queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
 
-      get().checkAndSetTrueBuildSuggestionsFlag();
+      get().rebuildQueryHints(moduleId);
     },
   },
 });

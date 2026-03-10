@@ -108,6 +108,7 @@ export const Datepicker = function Datepicker({
 
   const clearButton = shouldShowClearBtn ? (
     <button
+      data-cy={`${dataCy}-clear-button`}
       type="button"
       className="tj-input-clear-btn datepicker-clear-btn"
       aria-label="Clear"
@@ -135,7 +136,6 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className={`legacy-datepicker-widget datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={dataCy}
       style={{
         height,
         display: visibility ? '' : 'none',
@@ -147,11 +147,9 @@ export const Datepicker = function Datepicker({
     >
       <DatePickerComponent
         open={isCalendarOpen}
-        className={`input-field form-control ${
-          !isValid && showValidationError ? 'is-invalid' : ''
-        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${
-          shouldShowClearBtn ? 'has-clear-btn' : ''
-        }`}
+        className={`input-field form-control ${!isValid && showValidationError ? 'is-invalid' : ''
+          } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${shouldShowClearBtn ? 'has-clear-btn' : ''
+          }`}
         popperClassName={cx('legacy-datepicker-poppper tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}

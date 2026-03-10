@@ -96,7 +96,7 @@ Cypress.Commands.add(
     const dataTransfer = new DataTransfer();
 
     // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -272,7 +272,7 @@ Cypress.Commands.add("scrollToElement", (selector) => {
 });
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });
+  cy.get(selector).parent().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -597,7 +597,7 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
       .is(":visible");
 
     if (!isSearchVisible) {
-      cy.get('[data-cy="right-sidebar-plus-button"]').click();
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
     }
   });
 });

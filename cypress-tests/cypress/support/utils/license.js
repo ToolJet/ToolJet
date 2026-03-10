@@ -28,7 +28,7 @@ export const getLicenseExpiryDate = () => {
 };
 
 export const switchTabs = (tabTitle) => {
-  cy.get(licenseSelectors.listOfItems(tabTitle)).should("be.visible").click();
+  cy.get(licenseSelectors.listOfItems(tabTitle)).scrollIntoView().should("be.visible").click();
   cy.get(licenseSelectors.tabTitle(tabTitle)).should("have.text", tabTitle);
 };
 
@@ -109,7 +109,7 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
     );
 
     const toggleIcon =
-      label === "Workflows"
+      label === "Workflows" || label === "Google" || label === "GitHub"
         ? licenseSelectors.circularToggleEnabledIcon
         : isPlanEnabled
           ? licenseSelectors.circularToggleEnabledIcon
