@@ -171,14 +171,14 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const renderPullSection = () => (
     <div className="pull-section">
       {/* <form noValidate className="d-flex align-items-center justify-content-center w-100"> */}
-      <form                                                                                                                                                                                           
-         noValidate                                                                                                                                                                                    
-          className={`d-flex w-100 ${                                                                                                                                                                   
-           checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE                                                                                                                                       
-           ? 'align-items-start justify-content-start'                                                                                                                                               
-           : 'align-items-center justify-content-center'                                                                                                                                             
-       }`}                                                                                                                                                                                               
-       >  
+      <form
+        noValidate
+        className={`d-flex w-100 h-100 ${
+          checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE
+            ? 'align-items-start justify-content-start'
+            : 'align-items-center justify-content-center'
+        }`}
+      >  
         {/* Check for updates button */}
         {checkingForUpdate?.visible && (
           <div className="form-group mb-3">
@@ -360,7 +360,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
               )}
 
               {!pushLatestCommitLoading && pushLatestCommitData && (
-                <div className="w-100 mt-2">
+                <div className="w-100">
                   <div className="selected-commit-header">LATEST COMMIT</div>
                   <div className="d-flex w-100">
                     <div className="selected-commit-info">
