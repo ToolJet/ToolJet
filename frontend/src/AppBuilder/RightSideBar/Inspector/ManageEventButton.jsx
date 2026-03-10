@@ -14,10 +14,11 @@ const ManageEventButton = ({
   actionsUpdatedLoader,
   eventsUpdatedLoader,
   eventsDeletedLoader,
+  isDisabled,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   return (
-    <div style={{ marginBottom: '4px' }}>
+    <div style={{ marginBottom: '4px', opacity: isDisabled ? 0.5 : 1 }}>
       <div
         className="manage-event-btn border-0"
         onMouseEnter={() => setIsHovered(true)}

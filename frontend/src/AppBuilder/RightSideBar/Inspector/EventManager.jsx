@@ -589,6 +589,21 @@ export const EventManager = ({
             </div>
           </div>
 
+          <div className="row mt-3">
+            <div className="col-3 p-2">{t('editor.inspector.eventManager.disabled', 'Disabled')}</div>
+            <div className="col-9 d-flex align-items-center">
+              <label className="form-check form-switch my-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={!!event.disabled}
+                  onChange={(e) => handlerChanged(index, 'disabled', e.target.checked)}
+                  data-cy="event-disabled-toggle"
+                />
+              </label>
+            </div>
+          </div>
+
           {actionLookup[event.actionId]?.options?.length > 0 && (
             <div className="hr-text" data-cy="action-option">
               {t('editor.inspector.eventManager.actionOptions', 'Action options')}
@@ -1277,6 +1292,7 @@ export const EventManager = ({
                               removeHandler={removeHandler}
                               index={index}
                               darkMode={darkMode}
+                              isDisabled={!!event.event.disabled}
                               actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
                               eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
                               eventsDeletedLoader={
