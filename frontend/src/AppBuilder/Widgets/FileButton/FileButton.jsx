@@ -1,26 +1,14 @@
 import React, { useMemo, useCallback, useRef } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
 import { Button } from '@/components/ui/Button/Button';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePicker';
 import clsx from 'clsx';
 
-const { ClearIndicator } = components;
-
-export const CustomClearIndicator = (props) => {
-  return (
-    <ClearIndicator {...props}>
-      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
-    </ClearIndicator>
-  );
-};
-
 export const FileButton = (props) => {
   const {
     height,
-    width,
     properties,
     styles,
     fireEvent,
@@ -43,7 +31,6 @@ export const FileButton = (props) => {
     iconDirection = 'left',
     loaderColor = 'var(--cc-surface1-surface)',
     contentAlignment = 'left',
-
     buttonType = 'solid',
     backgroundColor = 'var(--cc-primary-brand)',
     hoverBackgroundColor = 'auto',
@@ -91,34 +78,29 @@ export const FileButton = (props) => {
     isVisible,
     isLoading,
     disabledState,
-    disablePicker,
     clearFiles,
     uiErrorMessage,
   } = useFilePicker({
-      ...props,
-      properties: mergedProperties,
-      styles,
-      validation,
-      fireEvent,
-      setExposedVariable,
-      setExposedVariables: wrappedSetExposedVariables,
-      focusFn,
-      blurFn,
-    });
+    ...props,
+    properties: mergedProperties,
+    styles,
+    validation,
+    fireEvent,
+    setExposedVariable,
+    setExposedVariables: wrappedSetExposedVariables,
+    focusFn,
+    blurFn,
+  });
 
   const { onClick: openFilePicker } = getRootProps();
   const inputProps = getInputProps();
 
   const buttonVariant = buttonType === 'outline' ? 'outline' : 'primary';
-  const contentJustify = { left: 'flex-start', center: 'center', right: 'flex-end' }[contentAlignment] ?? 'flex-start';
 
+  // Dynamic values that cannot be expressed as static Tailwind classes
   const buttonStyle = {
-    height: '100%',
     borderRadius: `${borderRadius}px`,
     boxShadow,
-    justifyContent: contentJustify,
-    ...(padding === 'none' && { padding: 0 }),
-    // Override CSS vars so Tailwind hover classes work correctly
     ...(buttonType === 'solid' && {
       '--button-primary': backgroundColor,
       ...(hoverBackgroundColor !== 'auto' && { '--button-primary-hover': hoverBackgroundColor }),
@@ -127,15 +109,6 @@ export const FileButton = (props) => {
       ...(hoverBackgroundColor !== 'auto' && { '--button-outline-hover': hoverBackgroundColor }),
     }),
   };
-  const labelStyle = { fontSize: `${labelSize}px`, fontWeight: labelWeight, color: labelColor };
-  const iconWrapStyle = {
-    display: 'flex',
-    flexDirection: iconDirection === 'right' ? 'row-reverse' : 'row',
-    alignItems: 'center',
-    gap: '6px',
-    flex: 1,
-    overflow: 'hidden',
-  };
 
   const selectedSummary = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`;
 
@@ -143,7 +116,7 @@ export const FileButton = (props) => {
 
   return (
     <div className="fileButton-widget tw-flex tw-flex-col tw-w-full" data-cy={dataCy}>
-      <div className="tw-flex tw-items-center tw-gap-2" style={{ height, width: '100%' }}>
+      <div className="tw-flex tw-items-center" style={{ height, width: '100%' }}>
         {isLoading ? (
           <Loader color={loaderColor} />
         ) : (
@@ -153,14 +126,37 @@ export const FileButton = (props) => {
               ref={browseButtonRef}
               variant={buttonVariant}
               size="default"
-              className="tw-flex tw-group tw-w-full tw-items-center tw-gap-1.5 focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background "
+              className={clsx(
+                'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
+                'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
+                {
+                  'tw-justify-start': contentAlignment === 'left',
+                  'tw-justify-center': contentAlignment === 'center',
+                  'tw-justify-end': contentAlignment === 'right',
+                  'tw-p-0': padding === 'none',
+                }
+              )}
               style={buttonStyle}
               disabled={disabledState}
               onClick={openFilePicker}
             >
-              <span style={iconWrapStyle}>
+              <span
+                className={clsx('tw-flex tw-items-center tw-gap-1.5 tw-flex-1 tw-min-w-0 tw-overflow-hidden', {
+                  'tw-flex-row-reverse': iconDirection === 'right',
+                })}
+              >
                 {iconVisibility && <TablerIcon iconName={icon} size={16} color={iconColor} />}
-                <span style={labelStyle} className="tw-text-lg tw-truncate">
+                <span
+                  style={{ fontSize: `${labelSize}px`, color: labelColor }}
+                  className={clsx('tw-truncate tw-flex-1', {
+                    'tw-font-normal': labelWeight === 'normal',
+                    'tw-font-medium': labelWeight === 'medium',
+                    'tw-font-bold': labelWeight === 'bold',
+                    'tw-text-left': contentAlignment === 'left',
+                    'tw-text-center': contentAlignment === 'center',
+                    'tw-text-right': contentAlignment === 'right',
+                  })}
+                >
                   {selectedFiles.length === 0 ? buttonText : selectedSummary}
                 </span>
               </span>
@@ -170,14 +166,14 @@ export const FileButton = (props) => {
                   iconOnly
                   size="small"
                   disabled={disabledState}
+                  className="tw-shrink-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     clearFiles();
                   }}
-                  style={{ flexShrink: 0 }}
                 >
-                  <IconX width={16} className="cursor-pointer" color="var(--icon-default)" />
+                  <IconX width={16} className="tw-cursor-pointer" color="var(--icon-default)" />
                 </Button>
               )}
             </Button>
@@ -185,15 +181,7 @@ export const FileButton = (props) => {
         )}
       </div>
       {uiErrorMessage && (
-        <div
-          style={{
-            color: 'var(--cc-error-systemStatus)',
-            fontSize: '11px',
-            fontWeight: 400,
-            lineHeight: '16px',
-            marginTop: '2px',
-          }}
-        >
+        <div className="tw-text-[11px] tw-font-normal tw-leading-4 tw-mt-0.5 tw-text-[color:var(--cc-error-systemStatus)]">
           {uiErrorMessage}
         </div>
       )}

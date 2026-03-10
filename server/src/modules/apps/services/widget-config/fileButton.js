@@ -156,7 +156,6 @@ export const fileButtonConfig = {
       options: [
         { name: 'Normal', value: 'normal' },
         { name: 'Medium', value: 'medium' },
-        { name: 'SemiBold', value: 'semibold' },
         { name: 'Bold', value: 'bold' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'medium' },
