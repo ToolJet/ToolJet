@@ -1062,7 +1062,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                           data-cy="folder-create-helper-text"
                                         >
-                                          Create new folders
+                                          Create new folders in this workspace
                                         </span>
                                       </label>
                                       <label className="form-check form-check-inline">
@@ -1091,7 +1091,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                           data-cy="folder-delete-helper-text"
                                         >
-                                          Delete existing folders
+                                          Delete existing folders in this workspace
                                         </span>
                                       </label>
                                     </div>
