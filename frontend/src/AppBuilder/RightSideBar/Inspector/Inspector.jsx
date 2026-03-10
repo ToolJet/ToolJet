@@ -148,6 +148,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'TreeSelect',
   'Accordion',
   'ReorderableList',
+  'FileButton',
+
 ];
 
 export const Inspector = ({
@@ -876,6 +878,7 @@ const GetAccordion = React.memo(
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton':   // fall-through to FilePicker
       case 'FilePicker':
       case 'FileInput':
         return <FilePicker {...restProps} />;

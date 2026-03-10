@@ -77,6 +77,7 @@ import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { fileinputConfig } from './fileinput';
 import { navigationConfig } from './navigation';
+import { fileButtonConfig } from './fileButton';
 
 const widgets = {
   buttonConfig,
@@ -158,6 +159,7 @@ const widgets = {
   jsonExplorerConfig,
   jsonEditorConfig,
   navigationConfig,
+  fileButtonConfig,
 };
 
 const universalProps = {

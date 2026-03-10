@@ -77,6 +77,7 @@ import { jsonEditorConfig } from './jsonEditor';
 import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
+import { fileButtonConfig } from './fileButton';
 
 export {
   buttonConfig,
@@ -158,4 +159,5 @@ export {
   keyValuePairConfig,
   progressbarConfig,
   navigationConfig,
+  fileButtonConfig,
 };
