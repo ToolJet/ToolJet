@@ -1,14 +1,10 @@
 import React, { forwardRef } from 'react';
 import classNames from 'classnames';
-
 import styles from './TreeItem.module.css';
-import { PageMenuItem } from '../../../PageMenuItem';
-import { PageGroupItem } from '../../../PageGroupItem';
 
-export const TreeItem = forwardRef(
+export const TreeItemWrapper = forwardRef(
   (
     {
-      childCount,
       clone,
       depth,
       disableSelection,
@@ -22,13 +18,18 @@ export const TreeItem = forwardRef(
       style,
       value,
       wrapperRef,
-      pageGroupToHighlight,
+      groupToHighlight,
       darkMode,
+      renderItem,
+      handlerClassName,
+      isNested,
+      nestedStyle,
       ...props
     },
     ref
   ) => {
-    const shouldHightlight = pageGroupToHighlight === value?.id;
+    const shouldHighlight = groupToHighlight === value?.id;
+    const nested = isNested !== undefined ? isNested : depth > 0;
 
     return (
       <li
@@ -41,17 +42,13 @@ export const TreeItem = forwardRef(
           indicator && styles.indicator,
           disableSelection && styles.disableSelection,
           disableInteraction && styles.disableInteraction,
-          pageGroupToHighlight && styles.removeBorder,
-          'page-handler'
+          groupToHighlight && styles.removeBorder,
+          handlerClassName
         )}
         ref={wrapperRef}
         style={{
           '--spacing': `${indentationWidth * depth}px`,
-          ...(pageGroupToHighlight?.id === value?.id && {
-            border: '1px solid orange',
-          }),
         }}
-        {...props}
       >
         <div
           className={styles.TreeItem}
@@ -59,26 +56,25 @@ export const TreeItem = forwardRef(
           style={{
             ...style,
             width: '100%',
-            ...(value?.pageGroupId && {
+            ...(nested && (nestedStyle || {
               borderLeft: '1px dashed var(--icon-weak)',
-              padding: '0 0 0 15px',
-            }),
+              padding: '0 0 0 16px',
+            })),
           }}
         >
-          {!value?.isPageGroup ? (
-            <PageMenuItem darkMode={darkMode} page={value} treeRef={props?.treeRef} />
-          ) : (
-            <PageGroupItem
-              darkMode={darkMode}
-              highlight={shouldHightlight}
-              collapsed={collapsed}
-              onCollapse={onCollapse}
-              page={value}
-              treeRef={props?.treeRef}
-            />
-          )}
+          {renderItem(value, {
+            collapsed,
+            onCollapse,
+            depth,
+            isHighlighted: shouldHighlight,
+            ghost,
+            darkMode,
+            ...props,
+          })}
         </div>
       </li>
     );
   }
 );
+
+TreeItemWrapper.displayName = 'TreeItemWrapper';
