@@ -102,7 +102,7 @@ async function createConversation(appId, conversationType = 'generate') {
     credentials: 'include',
     body: JSON.stringify({ appId, conversationType }),
   };
-  return fetch(`${config.apiUrl}/ai/conversation/new`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/conversation`, requestOptions).then(handleResponse);
 }
 
 async function getConversation(conversationId) {

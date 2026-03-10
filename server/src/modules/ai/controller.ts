@@ -78,7 +78,7 @@ export class AiController implements IAiController {
   }
 
   @InitFeature(FEATURE_KEY.CREATE_CONVERSATION)
-  @Post('conversation/new')
+  @Post('conversation')
   async createConversation(@User() user, @Body() body) {
     throw new NotFoundException();
   }
