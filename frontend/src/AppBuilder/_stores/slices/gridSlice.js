@@ -468,16 +468,27 @@ export const createGridSlice = (set, get) => ({
       setTemporaryLayouts(updatedLayouts);
 
       incrementCanvasUpdater();
+
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        adjustComponentPositions(
-          isContainer && isTruthyOrZero(subContainerIndex)
+        // Bubble the height change up to the parent container.
+        // For a Listview row instance, the next container to adjust is the Listview widget itself.
+        const parentComponentId =
+          componentType === 'Listview' && doesSubContainerIndexExist
             ? componentId
-            : changedComponent.component?.parent?.slice(0, 36),
-          currentLayout,
-          true,
-          componentType === 'Listview' ? null : subContainerIndex
-        );
+            : changedComponent.component?.parent?.slice(0, 36);
+
+        // Once the Listview widget is reached, continue upward outside the row scope.
+        const parentSubContainerIndex = componentType === 'Listview' ? null : subContainerIndex;
+
+        // Prevent no-progress recursion on the same target.
+        if (
+          parentComponentId &&
+          !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
+        ) {
+          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+        }
       }
+
       return updatedLayouts;
     } catch (error) {
       console.error('Error adjusting component positions:', error);
