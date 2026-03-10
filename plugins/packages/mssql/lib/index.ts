@@ -118,9 +118,22 @@ export default class MssqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    try {
-      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    let knexInstance: Knex | undefined;
+    let checkCache: boolean;
 
+    // Dynamic connection parameters
+    if (sourceOptions.allow_dynamic_connection_parameters) {
+      if (sourceOptions.connection_type === 'manual') {
+        sourceOptions.host = queryOptions['host'] ? queryOptions['host'] : sourceOptions.host;
+        sourceOptions.database = queryOptions['database'] ? queryOptions['database'] : sourceOptions.database;
+      } else if (sourceOptions.connection_type === 'string') {
+        if (queryOptions['host']) sourceOptions.host = queryOptions['host'];
+        if (queryOptions['database']) sourceOptions.database = queryOptions['database'];
+      }
+    }
+    checkCache = sourceOptions.allow_dynamic_connection_parameters ? false : true;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       switch (queryOptions.mode) {
         case 'sql':
           return await this.handleRawQuery(knexInstance, queryOptions);
@@ -294,6 +307,30 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
       finalOptions = sourceOptions;
     }
 
+   // SSL config 
+    const shouldUseSSL = finalOptions.ssl_enabled === 'enabled';
+    let sslObject: any = null;
+
+    if (shouldUseSSL) {
+      if (finalOptions.ssl_certificate === 'ca_certificate') {
+        sslObject = {
+          rejectUnauthorized: true,
+          ca: finalOptions.ca_cert,
+          key: finalOptions.client_key,
+          cert: finalOptions.client_cert,
+        };
+      } else if (finalOptions.ssl_certificate === 'self_signed') {
+        sslObject = {
+          rejectUnauthorized: false,
+          ca: finalOptions.root_cert,
+          key: finalOptions.client_key,
+          cert: finalOptions.client_cert,
+        };
+      } else {
+        sslObject = { rejectUnauthorized: false };
+      }
+    } 
+
     let tunnel: SSHTunnel | null = null;
 
     let host: string;
@@ -317,8 +354,10 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
         database: finalOptions.database,
         port: port,
         options: {
-          encrypt: finalOptions.azure ?? false,
+          encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
           instanceName: finalOptions.instanceName,
+          trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
       },

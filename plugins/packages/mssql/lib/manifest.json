@@ -59,11 +59,51 @@
       "title": "Connection options",
       "description": "Connection options"
     },
+    "allow_dynamic_connection_parameters": {
+      "type": "boolean",
+      "title": "Allow dynamic connection parameters",
+      "description": "Turning this on will allow dynamically setting host name and database from application",
+      "default": false
+    },
     "azure": {
       "type": "boolean",
       "title": "Azure (encrypt connection)",
       "description": "Toggle for azure",
       "default": false
+    },
+    "ssl_enabled": {
+      "type": "string",
+      "title": "SSL/TLS",
+      "description": "Connect using SSL",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "ssl_certificate": {
+      "type": "string",
+      "title": "SSL certificate",
+      "description": "Single select dropdown for choosing certificates",
+      "enum": ["none", "ca_certificate", "self_signed"],
+      "default": "none"
+    },
+    "ca_cert": {
+      "type": "string",
+      "title": "CA cert",
+      "description": "Enter ca certificate"
+    },
+    "client_key": {
+      "type": "string",
+      "title": "Client key",
+      "description": "Enter client key"
+    },
+    "client_cert": {
+      "type": "string",
+      "title": "Client cert",
+      "description": "Enter client certificate"
+    },
+    "root_cert": {
+      "type": "string",
+      "title": "Root cert",
+      "description": "Enter root certificate"
     },
     "ssh_enabled": {
       "type": "string",
@@ -120,6 +160,30 @@
     {
       "if": {
         "properties": {
+          "ssl_certificate": {
+            "const": "ca_certificate"
+          }
+        }
+      },
+      "then": {
+        "required": ["ca_cert"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssl_certificate": {
+            "const": "self_signed"
+          }
+        }
+      },
+      "then": {
+        "required": ["client_key", "client_cert", "root_cert"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
           "ssh_enabled": {
             "const": "enabled"
           }
@@ -132,6 +196,10 @@
   ],
   "tj:encrypted": [
     "password",
+    "ca_cert",
+    "client_key",
+    "client_cert",
+    "root_cert",
     "ssh_private_key",
     "ssh_password",
     "ssh_passphrase",
@@ -218,6 +286,70 @@
         "label": "Connection options",
         "widget": "react-component-headers"
       },
+      "ssl_enabled": {
+        "order": 75,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL/TLS",
+        "description": "Enable SSL connection",
+        "widget": "toggle-flip",
+        "help_text": "Enable encrypted connections to SQL Server.",
+        "default": "disabled",
+        "enabled": {
+          "ssl_certificate": {
+            "order": 76,
+            "$ref": "#/properties/ssl_certificate",
+            "key": "ssl_certificate",
+            "label": "SSL certificate",
+            "description": "SSL certificate type",
+            "widget": "dropdown-component-flip",
+            "default": "none",
+            "list": [
+              { "value": "none", "name": "None" },
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "self_signed", "name": "Self-signed certificate" }
+            ]
+          },
+          "ca_certificate": {
+            "ca_cert": {
+              "order": 77,
+              "$ref": "#/properties/ca_cert",
+              "key": "ca_cert",
+              "label": "CA certificate",
+              "description": "Enter CA certificate",
+              "widget": "password-v3-textarea"
+            }
+          },
+          "self_signed": {
+            "client_key": {
+              "order": 77,
+              "$ref": "#/properties/client_key",
+              "key": "client_key",
+              "label": "Client key",
+              "description": "Enter client key",
+              "widget": "password-v3-textarea"
+            },
+            "client_cert": {
+              "order": 78,
+              "$ref": "#/properties/client_cert",
+              "key": "client_cert",
+              "label": "Client certificate",
+              "description": "Enter client certificate",
+              "widget": "password-v3-textarea"
+            },
+            "root_cert": {
+              "order": 79,
+              "$ref": "#/properties/root_cert",
+              "key": "root_cert",
+              "label": "Root certificate",
+              "description": "Enter root certificate",
+              "widget": "password-v3-textarea"
+            }
+          },
+          "none": {}
+        },
+        "disabled": {}
+      },
       "ssh_enabled": {
         "order": 80,
         "$ref": "#/properties/ssh_enabled",
@@ -295,8 +427,17 @@
         }
       },
       "disabled": {},
-      "azure": {
+      "allow_dynamic_connection_parameters": {
         "order": 140,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting host name and database from application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default host and database at query runtime"
+      },
+      "azure": {
+        "order": 150,
         "$ref": "#/properties/azure",
         "key": "azure",
         "label": "Azure encrypt connection",
@@ -372,6 +513,70 @@
         "key": "connection_options",
         "label": "Connection options",
         "widget": "react-component-headers"
+      },
+      "ssl_enabled": {
+        "order": 75,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL/TLS",
+        "description": "Enable SSL connection",
+        "widget": "toggle-flip",
+        "help_text": "Enable encrypted connections to SQL Server.",
+        "default": "disabled",
+        "enabled": {
+          "ssl_certificate": {
+            "order": 76,
+            "$ref": "#/properties/ssl_certificate",
+            "key": "ssl_certificate",
+            "label": "SSL certificate",
+            "description": "SSL certificate type",
+            "widget": "dropdown-component-flip",
+            "default": "none",
+            "list": [
+              { "value": "none", "name": "None" },
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "self_signed", "name": "Self-signed certificate" }
+            ]
+          },
+          "ca_certificate": {
+            "ca_cert": {
+              "order": 77,
+              "$ref": "#/properties/ca_cert",
+              "key": "ca_cert",
+              "label": "CA certificate",
+              "description": "Enter CA certificate",
+              "widget": "password-v3-textarea"
+            }
+          },
+          "self_signed": {
+            "client_key": {
+              "order": 77,
+              "$ref": "#/properties/client_key",
+              "key": "client_key",
+              "label": "Client key",
+              "description": "Enter client key",
+              "widget": "password-v3-textarea"
+            },
+            "client_cert": {
+              "order": 78,
+              "$ref": "#/properties/client_cert",
+              "key": "client_cert",
+              "label": "Client certificate",
+              "description": "Enter client certificate",
+              "widget": "password-v3-textarea"
+            },
+            "root_cert": {
+              "order": 79,
+              "$ref": "#/properties/root_cert",
+              "key": "root_cert",
+              "label": "Root certificate",
+              "description": "Enter root certificate",
+              "widget": "password-v3-textarea"
+            }
+          },
+          "none": {}
+        },
+        "disabled": {}
       },
       "ssh_enabled": {
         "order": 80,
@@ -450,8 +655,17 @@
         }
       },
       "disabled": {},
-      "azure": {
+      "allow_dynamic_connection_parameters": {
         "order": 130,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting host name and database from application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default host and database at query runtime"
+      },
+      "azure": {
+        "order": 140,
         "$ref": "#/properties/azure",
         "key": "azure",
         "label": "Azure encrypt connection",
