@@ -1,4 +1,4 @@
-name: Cypress Marketplace-
+name: Cypress Marketplace
 
 on:
   pull_request_target:
@@ -6,28 +6,34 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress"') ||
-      contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-marketplace-ce"') ||
-      contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-marketplace-ee"') ||
-      contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-ce"')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       fail-fast: false
       matrix:
         edition:
           - ${{
-            (contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress"') ||
-            contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-ce"') ||
-            contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-marketplace-ce"')) && 'ce' ||
-            contains(toJSON(github.event.pull_request.labels.*.name), '"run-cypress-marketplace-ee"') && 'ee' || ''
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && 'ee' || ''
             }}
         exclude:
           - edition: ""
