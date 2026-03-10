@@ -982,19 +982,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const { provider, source_options = {}, plugin_id = null, environment_id, organization_id } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
 
-    if (organization_id) {
-      let envId = environment_id;
-      if (!envId) {
-        const defaultEnv = await this.appEnvironmentUtilService.get(organization_id, null, true);
-        envId = defaultEnv?.id;
-      }
-
-      if (envId) {
-        const resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
-          this.resolveConstants(value, organization_id, envId)
-        );
-        return { url: service.authUrl(resolvedSourceOptions) };
-      }
+    if (organization_id && environment_id) {
+      const resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
+        this.resolveConstants(value, organization_id, environment_id)
+      );
+      return { url: service.authUrl(resolvedSourceOptions) };
     }
 
     return { url: service.authUrl(source_options) };
