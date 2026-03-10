@@ -46,5 +46,5 @@ export interface IAiUtilService {
 
   getConversationsList(appId: string, userId: string, conversationType: string): Promise<any[]>;
 
-  getConversationById(conversationId: string): Promise<any>;
+  getConversationById(conversationId: string, userId: string): Promise<any>;
 }
