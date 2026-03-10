@@ -14,6 +14,7 @@ interface Features {
   [FEATURE_KEY.GET_CREDITS_BALANCE]: FeatureConfig;
   [FEATURE_KEY.LIST_CONVERSATIONS]: FeatureConfig;
   [FEATURE_KEY.CREATE_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.GET_CONVERSATION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -33,10 +33,10 @@ export class AiConversationRepository extends Repository<AiConversation> {
     conversationType: 'generate' | 'learn',
     manager?: EntityManager
   ): Promise<AiConversation> {
-    // Deactivate all existing conversations for this app/user/type
-    await this.update({ appId, userId, conversationType }, { active: false });
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Deactivate all existing conversations for this app/user/type
+      await manager.update(AiConversation, { appId, userId, conversationType }, { active: false });
 
-    return dbTransactionWrap((manager: EntityManager) => {
       const conversation = manager.create(AiConversation, {
         userId,
         appId,
@@ -87,10 +87,12 @@ export class AiConversationRepository extends Repository<AiConversation> {
     userId: string,
     conversationType: 'generate' | 'learn'
   ): Promise<void> {
-    // Deactivate all conversations of same app/user/type
-    await this.update({ appId, userId, conversationType }, { active: false });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // Deactivate all conversations of same app/user/type
+      await manager.update(AiConversation, { appId, userId, conversationType }, { active: false });
 
-    // Activate the target conversation
-    await this.update(conversationId, { active: true });
+      // Activate the target conversation
+      await manager.update(AiConversation, conversationId, { active: true });
+    }, this.manager);
   }
 }

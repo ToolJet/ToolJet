@@ -38,5 +38,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_CONVERSATION]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.GET_CONVERSATION]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };

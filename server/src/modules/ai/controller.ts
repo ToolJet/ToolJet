@@ -83,7 +83,7 @@ export class AiController implements IAiController {
     throw new NotFoundException();
   }
 
-  @InitFeature(FEATURE_KEY.LIST_CONVERSATIONS)
+  @InitFeature(FEATURE_KEY.GET_CONVERSATION)
   @Get('conversation/:conversationId')
   async getConversationById(@User() user, @Param('conversationId') conversationId: string) {
     throw new NotFoundException();

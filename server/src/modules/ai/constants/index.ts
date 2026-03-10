@@ -10,4 +10,5 @@ export enum FEATURE_KEY {
   GET_CREDITS_BALANCE = 'getCreditsBalance',
   LIST_CONVERSATIONS = 'listConversations',
   CREATE_CONVERSATION = 'createConversation',
+  GET_CONVERSATION = 'getConversation',
 }
