@@ -8,4 +8,4 @@ export const LEGACY_ITEMS = [
   'TextArea',
 ];
 
-export const IGNORED_ITEMS = ['ModuleContainer', 'ModuleViewer'];
+export const IGNORED_ITEMS = ['ModuleContainer', 'ModuleViewer', 'Navigation'];

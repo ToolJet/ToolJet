@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
 import { hexToRgba, hexToRgb } from '@/_helpers/appUtils';
+// eslint-disable-next-line import/no-unresolved
+import * as Popover from '@radix-ui/react-popover';
 
 const ColorPicker = function ({
   width,
@@ -132,34 +134,49 @@ const ColorPicker = function ({
 
   return (
     <div className="h-100">
-      <div
-        style={{
-          ...baseStyle,
-          boxShadow,
-          height: '100%',
-          border: `1px solid ${showColorPicker ? 'var(--cc-primary-brand)' : 'var(--cc-default-border)'}`,
-        }}
-        className="form-control"
-        data-cy={dataCy}
-      >
-        <div
-          className="d-flex h-100 justify-content-between align-items-center"
-          onClick={() => setShowColorPicker(true)}
-        >
-          <span>{color}</span>
-          {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
-        </div>
-      </div>
-      {showColorPicker && (
-        <div className="position-relative top-0 mt-1" ref={colorPickerRef} width={width}>
-          <SketchPicker
-            color={color}
-            onChangeComplete={handleColorChange}
-            id={`component-${id}`}
-            aria-hidden={!visibility}
-          />
-        </div>
-      )}
+      <Popover.Root open={showColorPicker} onOpenChange={() => setShowColorPicker(true)}>
+        <Popover.Trigger asChild>
+          <div
+            style={{
+              ...baseStyle,
+              boxShadow,
+              height: '100%',
+              border: `1px solid ${showColorPicker ? 'var(--cc-primary-brand)' : 'var(--cc-default-border)'}`,
+            }}
+            className="form-control"
+            data-cy={dataCy}
+          >
+            <div className="d-flex h-100 justify-content-between align-items-center">
+              <span>{color}</span>
+              {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
+            </div>
+          </div>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            asChild
+            id={`popover-color-picker-${id}`}
+            data-cy={`${dataCy}-popover`}
+            sideOffset={4}
+            align="start"
+            side="bottom"
+            avoidCollisions={true}
+            collisionBoundary={document.getElementById('real-canvas')}
+            role="dialog"
+            aria-label="Color picker"
+            aria-modal="false"
+          >
+            <div ref={colorPickerRef} width={width}>
+              <SketchPicker
+                color={color}
+                onChangeComplete={handleColorChange}
+                id={`component-${id}`}
+                aria-hidden={!visibility}
+              />
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
     </div>
   );
 };

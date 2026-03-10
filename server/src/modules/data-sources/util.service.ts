@@ -4,7 +4,7 @@ import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, ILike } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -364,6 +364,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
+  async findOneWithName(name: string, organizationId: string): Promise<DataSource> {
+    return this.dataSourceRepository.findOneOrFail({
+      where: { name: ILike(name), organizationId },
+      relations: [
+        'apps',
+        'dataSourceOptions',
+        'appVersion',
+        'appVersion.app',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
+    });
+  }
+
   async findOneByEnvironment(
     dataSourceId: string,
     environmentId: string,
@@ -531,7 +547,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     } catch (error) {
       result = {
         status: 'failed',
-        message: error.message,
+        message: `${error.message}${error?.description ? `: ${error.description}` : ''}
+        ${error?.data ? ` - ${JSON.stringify(error.data)}` : ''}`,
       };
     }
 
