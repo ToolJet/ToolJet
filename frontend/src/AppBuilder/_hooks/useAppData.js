@@ -124,7 +124,6 @@ const useAppData = (
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
-  const fetchConversations = useStore((state) => state.ai?.fetchConversations);
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
@@ -327,7 +326,6 @@ const useAppData = (
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
-          fetchConversations?.();
         }
 
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
