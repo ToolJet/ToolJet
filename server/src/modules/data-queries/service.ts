@@ -222,7 +222,7 @@ export class DataQueriesService implements IDataQueriesService {
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
-    return this.runAndGetResult(user, dataQuery, options, response, environmentId, undefined, app);
+    return this.runAndGetResult(user, dataQuery, options, response, environmentId, 'preview', app);
   }
 
   protected async runAndGetResult(
