@@ -1,24 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
+import DynamicSelector from '@/_ui/DynamicSelector';
 import './SqlGroupBy.css';
-
-// ---------------------------------------------------------------------------
-// GroupByChip – a single column name chip with a remove button
-// ---------------------------------------------------------------------------
-
-const GroupByChip = React.memo(function GroupByChip({ columnName, onRemove }) {
-  const handleRemove = useCallback(() => onRemove(columnName), [columnName, onRemove]);
-
-  return (
-    <span className="group-by-chip">
-      <span className="group-by-chip-label">{columnName}</span>
-      <button type="button" className="group-by-chip-remove" onClick={handleRemove} aria-label={`Remove ${columnName}`}>
-        ×
-      </button>
-    </span>
-  );
-});
 
 // ---------------------------------------------------------------------------
 // SqlGroupBy – public component registered as react-component-sql-groupby
@@ -28,9 +12,21 @@ const GroupByChip = React.memo(function GroupByChip({ columnName, onRemove }) {
 // a new UUID key is generated on the first column addition.
 // ---------------------------------------------------------------------------
 
-const SqlGroupBy = React.memo(function SqlGroupBy({ getter, parseKey, options, handleOptionChange }) {
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef(null);
+const SqlGroupBy = React.memo(function SqlGroupBy({
+  getter,
+  parseKey,
+  options,
+  handleOptionChange,
+  darkMode,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  queryName,
+}) {
+  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
 
   // group_by is stored as { [uuid]: string[] }
   const groupByMap = readValueMapFromOptions(options, getter, parseKey);
@@ -53,59 +49,30 @@ const SqlGroupBy = React.memo(function SqlGroupBy({ getter, parseKey, options, h
     [options, getter, parseKey, handleOptionChange, groupByEntryKey]
   );
 
-  const handleAddColumn = useCallback(() => {
-    const trimmedInput = inputValue.trim();
-    if (!trimmedInput) return;
-    if (selectedColumns.includes(trimmedInput)) {
-      setInputValue('');
-      return;
-    }
-    commitGroupBy([...selectedColumns, trimmedInput]);
-    setInputValue('');
-  }, [inputValue, selectedColumns, commitGroupBy]);
-
-  const handleRemoveColumn = useCallback(
-    (columnNameToRemove) => {
-      const updatedColumns = selectedColumns.filter((columnName) => columnName !== columnNameToRemove);
-      commitGroupBy(updatedColumns);
+  const handleMultiSelectChange = useCallback(
+    (_propertyKey, newColumns) => {
+      commitGroupBy(Array.isArray(newColumns) ? newColumns : []);
     },
-    [selectedColumns, commitGroupBy]
+    [commitGroupBy]
   );
-
-  const handleInputKeyDown = useCallback(
-    (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        handleAddColumn();
-      } else if (event.key === 'Backspace' && inputValue === '' && selectedColumns.length > 0) {
-        handleRemoveColumn(selectedColumns[selectedColumns.length - 1]);
-      }
-    },
-    [handleAddColumn, inputValue, selectedColumns, handleRemoveColumn]
-  );
-
-  const handleInputChange = useCallback((event) => {
-    setInputValue(event.target.value);
-  }, []);
-
-  const handleContainerClick = useCallback(() => {
-    inputRef.current?.focus();
-  }, []);
 
   return (
-    <div className="sql-group-by-container" onClick={handleContainerClick}>
-      {selectedColumns.map((columnName) => (
-        <GroupByChip key={columnName} columnName={columnName} onRemove={handleRemoveColumn} />
-      ))}
-      <input
-        ref={inputRef}
-        className="group-by-input"
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleInputKeyDown}
-        placeholder={selectedColumns.length === 0 ? 'Type column name and press Enter' : ''}
-      />
-    </div>
+    <DynamicSelector
+      operation={columnSelectorOperation}
+      dependsOn={columnSelectorDependsOn}
+      selectedDataSource={selectedDataSource}
+      currentAppEnvironmentId={currentAppEnvironmentId}
+      options={{ schema, table }}
+      value={selectedColumns}
+      propertyKey="group_by_columns"
+      optionchanged={handleMultiSelectChange}
+      optionsChanged={() => {}}
+      queryName={queryName}
+      label="Columns"
+      darkMode={darkMode}
+      isMulti={true}
+      sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
+    />
   );
 });
 

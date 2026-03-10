@@ -19,9 +19,9 @@ export const workflowExecutionsService = {
   getExecutionStates,
 };
 
-function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
+function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state };
+  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state, appEnvId: environmentId };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }
@@ -97,7 +97,7 @@ function getPaginatedNodes(executionId, page = 1, perPage = 20) {
   ).then(handleResponse);
 }
 
-function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true) {
+function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true, workflowVersionId = null) {
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     appId: workflowAppId,
@@ -109,6 +109,7 @@ function trigger(workflowAppId, params, environmentId, queryId, syncExecution = 
     environmentId,
     queryId,
     syncExecution,
+    ...(workflowVersionId ? { appVersionId: workflowVersionId } : {}),
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);

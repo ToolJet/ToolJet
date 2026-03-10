@@ -32,6 +32,9 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    google?: boolean;
+    github?: boolean;
+    observability?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -44,6 +47,7 @@ export interface Terms {
   app?: {
     pages: {
       enabled: boolean;
+      count: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
@@ -54,12 +58,19 @@ export interface Terms {
       query: boolean;
       pages: boolean;
     };
+    features? :{
+      promote: boolean;
+      release: boolean;
+    }
   };
   modules?: {
     enabled: boolean;
   };
   permissions?: {
     customGroups: boolean;
+  };
+  observability?: {
+    enabled: boolean;
   };
   meta?: {
     customerName?: string;

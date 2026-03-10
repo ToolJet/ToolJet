@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { NoCondition } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/NoConditionUI';
 import { readValueMapFromOptions, buildOptionChangeArgs } from '@/_helpers/sqlQuerySharedUtils';
+import DynamicSelector from '@/_ui/DynamicSelector';
 import './SqlColumns.scss';
 
 // ---------------------------------------------------------------------------
@@ -20,6 +21,14 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
   onColumnValueChange,
   onRemove,
   workspaceConstants,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  schema,
+  table,
+  darkMode,
+  queryName,
 }) {
   const handleColumnNameChange = useCallback(
     (newName) => onColumnNameChange(columnEntryId, newName),
@@ -35,16 +44,26 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
 
   return (
     <div className="sql-column-row d-flex align-items-start">
-      {/* Column name – CodeHinter so the user can type the column name */}
+      {/* Column name – DynamicSelector fetching columns from the connected data source */}
       <div className="col p-0">
-        <CodeHinter
-          type="basic"
-          initialValue={typeof columnName === 'string' ? columnName : ''}
-          placeholder="Enter column"
-          onChange={handleColumnNameChange}
-          height="30"
-          enablePreview={false}
-          workspaceConstants={workspaceConstants}
+        <DynamicSelector
+          operation={columnSelectorOperation}
+          dependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          options={{ schema, table }}
+          value={typeof columnName === 'string' ? columnName : ''}
+          propertyKey={columnEntryId}
+          optionsChanged={(updatedOptions) => {
+            const newColumnName = updatedOptions[columnEntryId];
+            if (newColumnName !== undefined) {
+              handleColumnNameChange(newColumnName);
+            }
+          }}
+          queryName={queryName}
+          label="Column"
+          darkMode={darkMode}
+          sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
         />
       </div>
 
@@ -87,7 +106,17 @@ const SqlColumns = React.memo(function SqlColumns({
   options,
   handleOptionChange,
   workspaceConstants,
+  darkMode,
+  columnSelectorOperation,
+  columnSelectorDependsOn,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  queryName,
 }) {
+  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
+
   const currentColumns = readValueMapFromOptions(options, getter, parseKey);
   const columnList = isEmpty(currentColumns) ? [] : Object.values(currentColumns);
 
@@ -155,6 +184,14 @@ const SqlColumns = React.memo(function SqlColumns({
           onColumnValueChange={handleColumnValueChange}
           onRemove={handleRemoveColumn}
           workspaceConstants={workspaceConstants}
+          darkMode={darkMode}
+          columnSelectorOperation={columnSelectorOperation}
+          columnSelectorDependsOn={columnSelectorDependsOn}
+          selectedDataSource={selectedDataSource}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          schema={schema}
+          table={table}
+          queryName={queryName}
         />
       ))}
 

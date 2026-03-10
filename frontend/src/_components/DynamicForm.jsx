@@ -301,6 +301,8 @@ const DynamicForm = ({
     isMulti,
     autoFetch,
     parse_key,
+    columnSelectorOperation,
+    columnSelectorDependsOn,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -440,6 +442,7 @@ const DynamicForm = ({
           options,
           optionsChanged,
           selectedDataSource,
+          isRestApi: source === 'restapi',
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -598,6 +601,11 @@ const DynamicForm = ({
           options: options,
           handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
           workspaceConstants: currentOrgEnvironmentConstants,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
         };
       case 'react-component-sql-columns':
       case 'react-component-sql-sort':
@@ -610,6 +618,11 @@ const DynamicForm = ({
           handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
           workspaceConstants: currentOrgEnvironmentConstants,
           darkMode,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
         };
       default:
         return {};

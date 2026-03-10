@@ -22,6 +22,7 @@ const NEW_WIDGETS = [
   'JSONExplorer',
   'JSONEditor',
   'KeyValuePair',
+  'Navigation',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {
