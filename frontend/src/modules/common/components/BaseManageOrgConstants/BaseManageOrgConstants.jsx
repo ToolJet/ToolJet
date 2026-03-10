@@ -18,6 +18,7 @@ import { OrganizationList } from '@/modules/dashboard/components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Constants, redirectToWorkspace } from '@/_helpers/utils';
 import { SearchBox } from '@/_components/SearchBox';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { ConstantsEnvironmentsTabs } from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/components';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
@@ -484,8 +485,9 @@ const BaseManageOrgConstants = ({
           </div>
           <OrganizationList />
         </div>
-        <div className="page-wrapper mt-4">
-          <div className="container-xl" style={{ width: '880px' }}>
+        <div className="page-wrapper" style={{ marginTop: 0 }}>
+          <WorkspaceLockedBanner pageContext="workspace constants" />
+          <div className="container-xl mt-4" style={{ width: '880px' }}>
             <div className="align-items-center d-flex justify-content-between">
               <div className="tj-text-sm font-weight-500" data-cy="env-name">
                 {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})

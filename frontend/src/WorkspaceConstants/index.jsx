@@ -6,7 +6,6 @@ import { authenticationService } from '@/_services';
 import { ManageOrgConstantsSettings } from '@/modules/WorkspaceSettings/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { getWorkspaceId } from '@/_helpers/utils';
-import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 
 export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   const navigate = useNavigate();
@@ -25,7 +24,6 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   }, [canCreateVariableOrConstant]);
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
-      <WorkspaceLockedBanner />
       <div>
         <ManageOrgConstantsSettings darkMode={darkMode} />
       </div>

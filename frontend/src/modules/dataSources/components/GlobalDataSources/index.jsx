@@ -22,6 +22,7 @@ import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -490,6 +491,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
+        <WorkspaceLockedBanner pageContext="data sources" />
         {containerRef && containerRef?.current && selectedDataSource && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}

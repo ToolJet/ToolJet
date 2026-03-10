@@ -12,6 +12,7 @@ const RESERVED_NAMES = ['main', 'master', 'head', 'origin'];
 
 export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [branchName, setBranchName] = useState('');
+  const [autoCommit, setAutoCommit] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -110,7 +111,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
     >
       <div className="create-branch-modal-body">
         {/* Create from dropdown */}
-        <div className="form-group">
+        {/* <div className="form-group">
           <label htmlFor="create-from-select" className="form-label">
             Create from branch
           </label>
@@ -168,7 +169,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Branch name input */}
         <div className="form-group">
@@ -188,13 +189,32 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
           />
           {validationError && <div className="form-error-message">{validationError}</div>}
           <div className="form-helper-text">
-            Branch name must be unique and contain only letters, numbers, hyphens, and underscores
+            {/* Branch name must be unique and contain only letters, numbers, hyphens, and underscores */}
+            Branch name must be unique and max 50 characters
           </div>
         </div>
-
+        {/* Auto-commit checkbox */}                                                                                                                                                                  
+         <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                className="form-checkbox"
+                checked={autoCommit}
+                onChange={(e) => setAutoCommit(e.target.checked)}
+                disabled={true}
+              />
+              <span className="checkbox-text">
+                Commit changes
+                <span className="checkbox-helper">
+                  Branch will always be created in git to ensure sync with ToolJet
+                </span>
+              </span>
+            </label>
+          </div>
         {/* Info message */}
         <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
-          Branch can only be created from the default branch
+          {/* Branch can only be created from the default branch */}
+          Branch can only be created from the master
         </Alert>
 
         {/* Footer buttons */}

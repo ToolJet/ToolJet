@@ -2,7 +2,7 @@ import React from 'react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import LockedBranchBanner from '@/AppBuilder/Header/LockedBranchBanner';
 
-export function WorkspaceLockedBanner() {
+export function WorkspaceLockedBanner({ pageContext = '' }) {
   const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore((state) => ({
     currentBranch: state.currentBranch,
     orgGitConfig: state.orgGitConfig,
@@ -20,6 +20,7 @@ export function WorkspaceLockedBanner() {
       isVisible={isVisible}
       branchName={currentBranch?.name || ''}
       reason="main_config_branch"
+      pageContext={pageContext}
     />
   );
 }

@@ -4,6 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
+import { Alert } from '@/_ui/Alert';
 import '@/_styles/switch-branch-modal.scss';
 
 export function WorkspaceSwitchBranchModal({ show, onClose }) {
@@ -11,12 +12,17 @@ export function WorkspaceSwitchBranchModal({ show, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
+  const { branches, activeBranchId, orgGitConfig, currentBranch } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
     activeBranchId: state.activeBranchId,
     orgGitConfig: state.orgGitConfig,
+    currentBranch: state.currentBranch,
   }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
+
+  const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
+  const isOnDefaultBranch =
+    currentBranch?.is_default || currentBranch?.isDefault || currentBranch?.name === defaultGitBranch;
 
   useEffect(() => {
     if (show) {
@@ -112,6 +118,13 @@ export function WorkspaceSwitchBranchModal({ show, onClose }) {
       customClassName="switch-branch-modal"
     >
       <div className="switch-branch-modal-content">
+        {/* Info message - only shown on default branch */}
+        {isOnDefaultBranch && (
+          <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
+            Default branch is locked. Switch branches to make changes.
+          </Alert>
+        )}
+
         {/* Search Section */}
         <div className="search-section">
           <label className="section-label">ALL OPEN BRANCHES</label>
