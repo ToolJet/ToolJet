@@ -87,20 +87,36 @@ export async function initializeLibraries(jsLibraries = []) {
 }
 
 /**
- * Executes the setup script with all loaded libraries in scope.
- * Only library names are available — no access to components, queries, globals, etc.
+ * Executes preloaded JavaScript and captures exported functions/variables.
+ * The code must return an object — each property becomes a top-level variable
+ * available in RunJS queries, transformations, and {{}} expressions.
+ *
+ * Libraries (both built-in and user-added) are available in scope.
+ * No access to components, queries, globals, etc.
+ *
+ * Example user code:
+ *   function formatCurrency(amount) { return '$' + amount.toFixed(2); }
+ *   const TAX_RATE = 0.08;
+ *   return { formatCurrency, TAX_RATE };
  */
-export async function executeSetupScript(code, libraryRegistry = {}) {
-  if (!code?.trim()) return;
+export async function executePreloadedJS(code, libraryRegistry = {}) {
+  if (!code?.trim()) return {};
 
   try {
     const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
     const fnParams = ['moment', '_', 'axios', ...Object.keys(libraryRegistry)];
     const fnArgs = [moment, _, axios, ...Object.values(libraryRegistry)];
     const fn = new AsyncFunction(...fnParams, code);
-    await fn(...fnArgs);
+    const result = await fn(...fnArgs);
+
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+      return result;
+    }
+
+    return {};
   } catch (error) {
-    console.error('Setup script execution failed:', error);
-    toast.error('JS Libraries setup script failed: ' + error.message);
+    console.error('Preloaded JS execution failed:', error);
+    toast.error('Preloaded JavaScript failed: ' + error.message);
+    return {};
   }
 }

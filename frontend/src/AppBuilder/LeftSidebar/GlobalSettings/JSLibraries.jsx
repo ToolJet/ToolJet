@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import toast from 'react-hot-toast';
-import { loadLibraryFromURL, initializeLibraries, executeSetupScript } from '@/AppBuilder/_helpers/libraryLoader';
+import { loadLibraryFromURL, initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
 const JSLibraries = ({ darkMode }) => {
   const { globalSettings, globalSettingsChanged, jsLibraryRegistry, setJsLibraryRegistry } = useStore(
@@ -16,12 +16,12 @@ const JSLibraries = ({ darkMode }) => {
   );
 
   const jsLibraries = globalSettings?.jsLibraries || [];
-  const setupScript = globalSettings?.setupScript || '';
+  const preloadedJS = globalSettings?.preloadedJS || '';
 
   const [newUrl, setNewUrl] = useState('');
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
-  const [showSetupScript, setShowSetupScript] = useState(false);
+  const [showPreloadedJS, setShowPreloadedJS] = useState(false);
 
   const handleAddLibrary = async () => {
     if (!newUrl.trim() || !newName.trim()) {
@@ -73,26 +73,42 @@ const JSLibraries = ({ darkMode }) => {
     setJsLibraryRegistry(newRegistry);
   };
 
-  const handleSetupScriptChange = async (value) => {
-    await globalSettingsChanged({ setupScript: value });
+  const handlePreloadedJSChange = async (value) => {
+    await globalSettingsChanged({ preloadedJS: value });
   };
 
-  const handleRunSetupScript = async () => {
+  const handleRunPreloadedJS = async () => {
     try {
-      await executeSetupScript(setupScript, jsLibraryRegistry);
-      toast.success('Setup script executed successfully');
+      const preloadedExports = await executePreloadedJS(preloadedJS, jsLibraryRegistry);
+      const fullRegistry = { ...jsLibraryRegistry };
+
+      // Remove previous preloaded exports (keep only library entries)
+      const libraryNames = new Set(jsLibraries.map((lib) => lib.name));
+      for (const key of Object.keys(fullRegistry)) {
+        if (!libraryNames.has(key)) delete fullRegistry[key];
+      }
+
+      // Merge new preloaded exports
+      Object.assign(fullRegistry, preloadedExports);
+      setJsLibraryRegistry(fullRegistry);
+
+      const exportCount = Object.keys(preloadedExports).length;
+      toast.success(
+        exportCount > 0
+          ? `Preloaded JS executed — ${exportCount} export${exportCount > 1 ? 's' : ''} available`
+          : 'Preloaded JS executed (no exports returned)'
+      );
     } catch (error) {
-      toast.error('Setup script failed: ' + error.message);
+      toast.error('Preloaded JS failed: ' + error.message);
     }
   };
 
   const handleReloadLibraries = async () => {
     try {
       const registry = await initializeLibraries(jsLibraries);
-      setJsLibraryRegistry(registry);
-      if (setupScript) {
-        await executeSetupScript(setupScript, registry);
-      }
+      const preloadedExports = await executePreloadedJS(preloadedJS, registry);
+      const fullRegistry = { ...registry, ...preloadedExports };
+      setJsLibraryRegistry(fullRegistry);
       toast.success('Libraries reloaded successfully');
     } catch (error) {
       toast.error('Failed to reload libraries: ' + error.message);
@@ -154,10 +170,10 @@ const JSLibraries = ({ darkMode }) => {
         </button>
       </div>
 
-      {/* Setup script section */}
-      <div className="js-setup-script-section">
-        <button className="js-setup-script-toggle" onClick={() => setShowSetupScript(!showSetupScript)}>
-          <span>Setup script</span>
+      {/* Preloaded JavaScript section */}
+      <div className="js-preloaded-section">
+        <button className="js-preloaded-toggle" onClick={() => setShowPreloadedJS(!showPreloadedJS)}>
+          <span>Preloaded JavaScript</span>
           <svg
             width="12"
             height="12"
@@ -165,27 +181,34 @@ const JSLibraries = ({ darkMode }) => {
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
-            style={{ transform: showSetupScript ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+            style={{ transform: showPreloadedJS ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
           >
             <path d="M3 4.5L6 7.5L9 4.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        {showSetupScript && (
-          <div className="js-setup-script-editor">
+        {showPreloadedJS && (
+          <div className="js-preloaded-editor">
             <textarea
-              className="js-setup-script-textarea"
-              placeholder="// Runs once after libraries load, before queries&#10;// e.g. dayjs.extend(dayjs_utc);"
-              value={setupScript}
-              onChange={(e) => handleSetupScriptChange(e.target.value)}
-              rows={5}
-              data-cy="js-setup-script-textarea"
+              className="js-preloaded-textarea"
+              placeholder={
+                '// Define functions and variables, then return them.\n' +
+                '// They become available in RunJS, transformations, and {{}} expressions.\n\n' +
+                'function formatCurrency(amount) {\n' +
+                "  return '$' + amount.toFixed(2);\n" +
+                '}\n\n' +
+                'return { formatCurrency };'
+              }
+              value={preloadedJS}
+              onChange={(e) => handlePreloadedJSChange(e.target.value)}
+              rows={8}
+              data-cy="js-preloaded-textarea"
             />
             <button
-              className="js-setup-script-run-btn"
-              onClick={handleRunSetupScript}
-              data-cy="js-setup-script-run-btn"
+              className="js-preloaded-run-btn"
+              onClick={handleRunPreloadedJS}
+              data-cy="js-preloaded-run-btn"
             >
-              Run script
+              Run
             </button>
           </div>
         )}

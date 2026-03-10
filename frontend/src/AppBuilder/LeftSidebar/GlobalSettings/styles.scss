@@ -368,7 +368,7 @@
 
   .js-library-add-btn,
   .js-library-reload-btn,
-  .js-setup-script-run-btn {
+  .js-preloaded-run-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -394,13 +394,13 @@
     }
   }
 
-  .js-setup-script-section {
+  .js-preloaded-section {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
-  .js-setup-script-toggle {
+  .js-preloaded-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -416,15 +416,15 @@
     cursor: pointer;
   }
 
-  .js-setup-script-editor {
+  .js-preloaded-editor {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
-  .js-setup-script-textarea {
+  .js-preloaded-textarea {
     width: 100%;
-    min-height: 80px;
+    min-height: 120px;
     padding: 8px;
     border: 1px solid var(--border-default, #ccd1d5);
     border-radius: 6px;
