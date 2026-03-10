@@ -1,7 +1,7 @@
 import OAuth from '@/_ui/OAuth';
 import React, { useState, useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
-import { datasourceService } from '@/_services';
+import { datasourceService, authenticationService } from '@/_services';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
@@ -69,12 +69,13 @@ const OAuthWrapper = ({
     const provider = selectedDataSource?.kind;
     const plugin_id = selectedDataSource?.plugin?.id;
     const source_options = options;
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
-    // Pass environment_id to resolve workspace constants on the backend
+    // Pass envId, orgId to resolve workspace constants on the backend
     const fetchArgs = plugin_id 
-      ? [provider, plugin_id, source_options, currentAppEnvironmentId] 
-      : [provider, null, source_options, currentAppEnvironmentId];
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId] 
+      : [provider, null, source_options, currentAppEnvironmentId, organizationId];
 
     datasourceService
       .fetchOauth2BaseUrl(...fetchArgs)

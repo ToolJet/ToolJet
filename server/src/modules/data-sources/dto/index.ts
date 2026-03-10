@@ -54,6 +54,10 @@ export class GetDataSourceOauthUrlDto {
   @IsOptional()
   @IsString()
   environment_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  organization_id?: string;
 }
 
 export class AuthorizeDataSourceOauthDto {

@@ -12,7 +12,7 @@ import { CredentialsService } from '@modules/encryption/services/credentials.ser
 import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { cleanObject } from '@helpers/utils.helper';
+import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -156,7 +156,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       // Resolve workspace constants in options before calling accessDetailsFrom
       let resolvedOptions = options;
       if (organizationId && environmentId) {
-        resolvedOptions = await this.resolveOptionsArrayForOAuth(options, organizationId, environmentId);
+        resolvedOptions = await resolveOptionsArrayForOAuth(options, (value) =>
+          this.resolveConstants(value, organizationId, environmentId)
+        );
       }
 
       let accessDetailsPromise: Promise<any>;
@@ -203,35 +205,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return options;
-  }
-
-  /**
-   * Resolves workspace constants in an options array for OAuth token exchange.
-   */
-  protected async resolveOptionsArrayForOAuth(
-    options: Array<object>,
-    organizationId: string,
-    environmentId: string
-  ): Promise<Array<object>> {
-    const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
-    const resolvedOptions: Array<object> = [];
-
-    for (const option of options) {
-      const value = option['value'];
-      if (typeof value === 'string') {
-        constantMatcher.lastIndex = 0;
-        if (constantMatcher.test(value)) {
-          const resolved = await this.resolveConstants(value, organizationId, environmentId);
-          resolvedOptions.push({ ...option, value: resolved });
-        } else {
-          resolvedOptions.push(option);
-        }
-      } else {
-        resolvedOptions.push(option);
-      }
-    }
-
-    return resolvedOptions;
   }
 
   async update(
@@ -1005,71 +978,26 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user?: User): Promise<{ url: string }> {
-    const { provider, source_options = {}, plugin_id = null, environment_id } = getDataSourceOauthUrlDto;
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
+    const { provider, source_options = {}, plugin_id = null, environment_id, organization_id } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
 
-    if (user?.organizationId) {
-      const resolvedSourceOptions = await this.resolveSourceOptionsForOAuth(
-        source_options,
-        user.organizationId,
-        environment_id
-      );
-      return { url: service.authUrl(resolvedSourceOptions) };
+    if (organization_id) {
+      let envId = environment_id;
+      if (!envId) {
+        const defaultEnv = await this.appEnvironmentUtilService.get(organization_id, null, true);
+        envId = defaultEnv?.id;
+      }
+
+      if (envId) {
+        const resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
+          this.resolveConstants(value, organization_id, envId)
+        );
+        return { url: service.authUrl(resolvedSourceOptions) };
+      }
     }
 
     return { url: service.authUrl(source_options) };
-  }
-
-  /**
-   * Resolves workspace constants in source options for OAuth flows generating auth URLs.
-   */
-  protected async resolveSourceOptionsForOAuth(
-    sourceOptions: any,
-    organizationId: string,
-    environmentId?: string
-  ): Promise<any> {
-    if (!sourceOptions || typeof sourceOptions !== 'object') {
-      return sourceOptions;
-    }
-
-    let envId = environmentId;
-    if (!envId) {
-      const defaultEnv = await this.appEnvironmentUtilService.get(organizationId, null, true);
-      envId = defaultEnv?.id;
-    }
-    if (!envId) {
-      return sourceOptions;
-    }
-
-    const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
-    const resolvedOptions = { ...sourceOptions };
-
-    for (const key of Object.keys(resolvedOptions)) {
-      const option = resolvedOptions[key];
-
-      // Handle options in { value: '...' } format (from frontend)
-      if (option && typeof option === 'object' && 'value' in option) {
-        const value = option.value;
-        if (typeof value === 'string') {
-          constantMatcher.lastIndex = 0;
-          if (constantMatcher.test(value)) {
-            const resolved = await this.resolveConstants(value, organizationId, envId);
-            resolvedOptions[key] = { ...option, value: resolved };
-          }
-        }
-      }
-      // Handle direct string values
-      else if (typeof option === 'string') {
-        constantMatcher.lastIndex = 0;
-        if (constantMatcher.test(option)) {
-          const resolved = await this.resolveConstants(option, organizationId, envId);
-          resolvedOptions[key] = resolved;
-        }
-      }
-    }
-
-    return resolvedOptions;
   }
 
   async createDataSourceInAllEnvironments(

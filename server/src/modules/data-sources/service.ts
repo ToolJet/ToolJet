@@ -254,8 +254,8 @@ export class DataSourcesService implements IDataSourcesService {
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user: User): Promise<{ url: string }> {
-    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto, user);
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
+    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
   }
 
   async authorizeOauth2(

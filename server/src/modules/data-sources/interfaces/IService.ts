@@ -35,7 +35,7 @@ export interface IDataSourcesService {
 
   testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User): Promise<object>;
 
-  getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user?: User): Promise<{ url: string }>;
+  getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }>;
 
   authorizeOauth2(
     dataSourceId: string,
