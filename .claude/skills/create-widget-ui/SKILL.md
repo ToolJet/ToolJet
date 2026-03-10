@@ -90,4 +90,88 @@ After the Explore agent returns, print a clean summary of the 6 sections. Then p
 
 ## Phase 2 — GENERATE
 
-(to be filled in)
+Announce: "Phase 2: Generating UI stub for {Name}..."
+
+Spawn a **general-purpose** agent with the prompt below. Before dispatching, substitute:
+- `{Name}` → PascalCase name from ARGUMENTS
+- `{camelName}` → camelCase derived in Phase 1
+- Replace `{PHASE_1_DATA}` with the full Phase 1 extracted data (all 6 sections)
+
+---
+You are generating the UI stub files for a new ToolJet widget.
+
+**Widget name:** {Name}
+**camelName:** {camelName}
+
+**Reference files to read first:**
+- `.claude/skills/create-widget-ui/ui-stub-template.md` — template + token substitution rules
+- `frontend/src/AppBuilder/Widgets/Button.jsx` — simple widget reference for state wiring pattern
+
+**Extracted schema data (from Phase 1):**
+{PHASE_1_DATA}
+
+**Task A — Generate `{Name}/{Name}.jsx`**
+
+Using the template in `ui-stub-template.md`:
+1. Substitute all tokens with the Phase 1 data
+2. `{exposedVarEntries}`: one line per exposed variable — skip isVisible, isLoading, isDisabled (they are in the state block)
+3. `{extraCsaEntries}`: one block per CSA that is NOT setDisable/setLoading/setVisibility
+4. `{eventHandlerEntries}`: one `const handle{PascalEventName}` per event
+5. Run the 6-item self-consistency checklist from `ui-stub-template.md` before writing
+6. Write the complete file to: `frontend/src/AppBuilder/Widgets/{Name}/{Name}.jsx`
+
+**Task B — Generate `{Name}/{Name}.scss`**
+
+Write this content to `frontend/src/AppBuilder/Widgets/{Name}/{Name}.scss`:
+```
+.{camelName}-widget {
+  // TODO: styles for {Name} widget
+}
+```
+
+**Task C — Update Inspector stub** *(only if Phase 1 reported "Inspector stub exists: true")*
+
+Read the existing file:
+`frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/{Name}.jsx`
+
+Replace the generic `'Properties'` section in the `sections[]` array with one section per accordion group from Phase 1 data:
+```js
+{
+  title: '{AccordionGroupName}',
+  type: 'properties',
+  properties: ['{key1}', '{key2}'],
+},
+```
+- Properties with no `accordian:` key → place in a catch-all `'Properties'` section
+- Leave Events, Additional Actions, and Devices sections unchanged
+
+After all tasks, report every file written or modified.
+---
+
+After the agent completes, verify:
+```bash
+ls frontend/src/AppBuilder/Widgets/{Name}/
+grep "setExposedVariables" frontend/src/AppBuilder/Widgets/{Name}/{Name}.jsx
+grep "fireEvent" frontend/src/AppBuilder/Widgets/{Name}/{Name}.jsx
+```
+Expected: directory lists `{Name}.jsx` and `{Name}.scss`; both greps return at least one match.
+
+## Summary
+
+Print this on completion (substitute variables):
+
+```
+✅ create-widget-ui complete
+
+Files created:
+  frontend/src/AppBuilder/Widgets/{Name}/{Name}.jsx
+  frontend/src/AppBuilder/Widgets/{Name}/{Name}.scss
+  [if Type C] Inspector/Components/{Name}/{Name}.jsx — sections[] updated
+
+📋 Manual TODOs:
+  [ ] Implement widget JSX in {Name}.jsx (search for "TODO: implement")
+  [ ] Add styles in {Name}.scss
+  [ ] Register component export — add to frontend/src/AppBuilder/Widgets/index.js:
+      export { {Name} } from './{Name}/{Name}';
+  [ ] Commit: git add -A && git commit -m "feat: add {Name} widget UI stub"
+```
