@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Label from '@/_ui/Label';
@@ -17,7 +18,7 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 import './fileInput.scss';
-
+const { ClearIndicator } = components;
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>

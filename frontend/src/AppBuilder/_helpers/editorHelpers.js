@@ -24,6 +24,7 @@ import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2'
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/AppBuilder/Widgets/Divider';
 import { FileInput } from '@/AppBuilder/Widgets/FileInput';
+import { FileButton } from '@/AppBuilder/Widgets/FileButton/FileButton';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
@@ -136,6 +137,7 @@ export const AllComponents = {
   Divider,
   FilePicker,
   FileInput,
+  FileButton,
   PasswordInput,
   EmailInput,
   PhoneInput,
