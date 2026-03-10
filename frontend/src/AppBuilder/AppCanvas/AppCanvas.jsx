@@ -37,6 +37,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
+  const mobileCanvasFrameRef = useRef(null);
+  const mobileNavSheetContainerRef = useRef(null);
 
   useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -258,7 +260,18 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   // === MOBILE LAYOUT: header + nav + canvas, all inside scroll for Moveable alignment ===
   const _renderMobileLayout = () => (
-    <div key={pageKey} style={{ position: 'relative' }} className={cx('!tw-w-[450px] tw-mx-auto')}>
+    <div
+      key={pageKey}
+      ref={mobileCanvasFrameRef}
+      data-cy="mobile-canvas-frame"
+      style={{ position: 'relative' }}
+      className={cx('!tw-w-[450px] tw-mx-auto')}
+    >
+      <div
+        ref={mobileNavSheetContainerRef}
+        data-cy="mobile-nav-sheet-container"
+        className={cx('tw-absolute tw-inset-0 tw-overflow-hidden tw-pointer-events-none')}
+      />
       {/* Canvas header — sticky at top of scroll */}
       {_renderCanvasHeaderSlot()}
       {/* Mobile nav — sticky below header */}
@@ -277,7 +290,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             switchDarkMode={switchDarkMode}
             darkMode={darkMode}
             canvasMaxWidth={canvasMaxWidth}
-            canvasContainerRef={canvasContentRef}
+            canvasContainerRef={mobileNavSheetContainerRef}
           />
         </div>
       )}
@@ -298,7 +311,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     >
       {_renderCanvasHeaderSlot()}
       <div
-        className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
+        className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
           'tw-flex-col': position === 'top' || isPagesSidebarHidden,
         })}
       >

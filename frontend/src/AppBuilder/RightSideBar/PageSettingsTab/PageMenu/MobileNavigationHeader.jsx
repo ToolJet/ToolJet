@@ -14,7 +14,7 @@ import PageMenuConfigHandle from './PageMenuConfigHandle';
 // Lazy load MobileNavigationMenu to reduce initial bundle size
 const MobileNavigationMenu = React.lazy(() => import('./MobileNavigationMenu'));
 
-const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switchDarkMode }) => {
+const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switchDarkMode, canvasContainerRef }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { moduleId } = useModuleContext();
@@ -132,6 +132,7 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switc
             bgStyles={bgStyles}
             headerHidden={headerHidden}
             logoHidden={logoHidden}
+            canvasContainerRef={canvasContainerRef}
           />
         </Suspense>
       )}
