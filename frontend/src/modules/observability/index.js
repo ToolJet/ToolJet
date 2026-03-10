@@ -16,7 +16,7 @@ const getObservabilityRoutes = (props) => {
       element={
         <DesktopOnlyRoute darkMode={props.darkMode}>
           <SuperAdminRoute {...props}>
-            <EEObservabilityPage darkMode={props.darkMode} />
+            <EEObservabilityPage darkMode={props.darkMode} switchDarkMode={props.switchDarkMode} />
           </SuperAdminRoute>
         </DesktopOnlyRoute>
       }
