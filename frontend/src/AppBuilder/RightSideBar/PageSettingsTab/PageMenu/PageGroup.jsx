@@ -2,8 +2,6 @@
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { IconDotsVertical } from '@tabler/icons-react';
-// eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
@@ -15,6 +13,7 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 const RenderPage = ({
   page,
@@ -60,7 +59,7 @@ const RenderPage = ({
         aria-label={page.name}
       >
         {!labelStyle?.icon?.hidden && (
-          <div className="custom-icon" data-cy={`pages-icon-${String(page?.name).toLowerCase()}`}>
+          <div className="custom-icon" data-cy={`pages-icon-${generateCypressDataCy(page?.name)}`}>
             <IconElement
               color={iconColor}
               style={{
@@ -73,7 +72,7 @@ const RenderPage = ({
           </div>
         )}
         {!labelStyle?.label?.hidden && (
-          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
             <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
           </div>
         )}
@@ -154,15 +153,16 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
-                }`}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
+                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+              }`}
             />
           </div>
         )}
         {!labelStyle?.label?.hidden && (
           <div
             style={{ width: '100%', overflow: 'hidden' }}
-            data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
+            data-cy={`pages-name-${generateCypressDataCy(pageGroup?.name)}`}
           >
             <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
           </div>
@@ -229,7 +229,8 @@ const RenderPageGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <TablerIcon iconName='IconChevronUp'
+        <TablerIcon
+          iconName="IconChevronUp"
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}

@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
+import { shallow } from 'zustand/shallow';
 
 const ydoc = new Y.Doc();
 
@@ -41,6 +42,7 @@ export const RealtimeEditor = (props) => {
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
     if (multiPlayerEdit) {
+      //Enable multi-player editing only if the feature is enabled in license
       setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
 
       const ymap = ydoc.getMap('updates');

@@ -1,5 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
+import { Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -18,6 +18,8 @@ import {
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
+import { getTooljetEdition } from '../helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '../modules/app/constants';
 
 const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
 const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
@@ -30,13 +32,13 @@ if (process.env.OTEL_LOG_LEVEL === 'debug') {
 // Define the trace exporter
 const traceExporter = new OTLPTraceExporter({
   url: OTEL_EXPORTER_OTLP_TRACES,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the metric exporter
 const metricExporter = new OTLPMetricExporter({
   url: OTEL_EXPORTER_OTLP_METRICS,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the log exporter
@@ -278,7 +280,7 @@ const initializeCustomMetrics = () => {
         // Report workspace-level aggregate
         observableResult.observe(users.size, {
           'workspace.id': workspaceId,
-          'metric_type': 'workspace_total',
+          metric_type: 'workspace_total',
         });
 
         // Report individual user metrics
@@ -286,7 +288,7 @@ const initializeCustomMetrics = () => {
           observableResult.observe(1, {
             'workspace.id': workspaceId,
             'user.id': userId,
-            'metric_type': 'per_user',
+            metric_type: 'per_user',
           });
         }
       }
@@ -299,7 +301,7 @@ const initializeCustomMetrics = () => {
       }
       observableResult.observe(totalUniqueUsers.size, {
         'workspace.id': 'all',
-        'metric_type': 'workspace_total',
+        metric_type: 'workspace_total',
       });
     } catch (error) {
       console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
@@ -362,49 +364,19 @@ const initializeCustomMetrics = () => {
   });
 };
 
-// Custom Express middleware for tracing and metrics
-export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
-  const span = trace.getSpan(context.active());
-  const route = req.route?.path || req.path || 'unknown_route';
-  const method = req.method || 'UNKNOWN_METHOD';
-  const startTime = Date.now();
-
-  if (span && route.startsWith('/api/') && route !== '/api/health') {
-    span.updateName(`${method} ${route}`);
-    span.setAttribute('http.route', route);
-    span.setAttribute('http.method', method);
-
-    // Track API hits
-    if (apiHitCounter) {
-      apiHitCounter.add(1, {
-        route: route,
-        method: method,
-      });
-    }
-
-    const originalJson = res.json;
-    res.json = function (body: any) {
-      const statusCode = res.statusCode;
-      const duration = Date.now() - startTime;
-
-      span.setAttribute('http.status_code', statusCode);
-
-      // Record API duration
-      if (apiDurationHistogram) {
-        apiDurationHistogram.record(duration, {
-          route: route,
-          method: method,
-          status_code: statusCode,
-        });
-      }
-
-      // eslint-disable-next-line prefer-rest-params
-      return originalJson.apply(this, arguments);
-    };
+export function recordApiHit(attrs: { route: string; method: string }) {
+  apiHitCounter.add(1, attrs);
+}
+export function recordApiDuration(
+  duration: number,
+  attrs: {
+    route: string;
+    method: string;
+    status_code: number | string;
   }
-
-  next();
-};
+) {
+  apiDurationHistogram.record(duration, attrs);
+}
 
 process.on('SIGTERM', () => {
   // Clear cleanup interval
@@ -532,11 +504,7 @@ export const trackUserActivity = (attributes: {
 };
 
 // Helper functions for user metrics tracking
-export const incrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const incrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -546,11 +514,7 @@ export const incrementConcurrentUsers = (attributes: {
   }
 };
 
-export const decrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const decrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -629,10 +593,6 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
 
   try {
     // Check edition - EE and Cloud support OTEL
-    // Use relative paths instead of TypeScript aliases for runtime compatibility
-    const { getTooljetEdition } = require('../helpers/utils.helper');
-    const { TOOLJET_EDITIONS } = require('../modules/app/constants');
-
     const tooljetEdition = getTooljetEdition();
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {

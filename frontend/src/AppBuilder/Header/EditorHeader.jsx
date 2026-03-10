@@ -7,7 +7,7 @@ import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
-import BuildSuggestions from './BuildSuggestions';
+
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './styles/style.scss';
@@ -28,7 +28,7 @@ export const EditorHeader = ({ darkMode }) => {
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
-        <div className="container-xl header-container">
+        <div className="container-xl header-container" data-cy="editor-header-section">
           <div className="d-flex w-100 tw-h-9  tw-justify-between">
             <div
               className="header-inner-wrapper d-flex"
@@ -86,8 +86,6 @@ export const EditorHeader = ({ darkMode }) => {
                   )}
                 </div>
               </div>
-
-              <BuildSuggestions />
             </div>
           </div>
         </div>

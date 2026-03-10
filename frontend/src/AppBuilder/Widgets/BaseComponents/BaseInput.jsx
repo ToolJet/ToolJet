@@ -145,7 +145,6 @@ export const BaseInput = ({
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
           ? 'flex-column'
@@ -181,9 +180,11 @@ export const BaseInput = ({
               'tw-flex-shrink-0': defaultAlignment === 'top',
             }),
           }}
+          dataCy={`${String(dataCy).toLowerCase()}`}
         />
 
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className={cn(
             'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
             classes?.inputContainer
@@ -215,16 +216,16 @@ export const BaseInput = ({
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
               label?.length != 0 && {
-                height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
-                flex: 1,
-              }),
+              height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
+              flex: 1,
+            }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
         >
           {showLeftIcon && (
             <TablerIcon
               iconName={icon}
-              data-cy={'text-input-icon'}
+              data-cy={`${String(dataCy).toLowerCase()}-icon`}
               className={cn('tw-shrink-0', classes?.leftIcon)}
               style={{
                 width: '16px',
@@ -239,7 +240,7 @@ export const BaseInput = ({
 
           <RenderInput
             inputType={inputType}
-            data-cy={dataCy}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
             ref={inputRef}
             type={inputType}
             className={cn(

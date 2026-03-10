@@ -23,6 +23,10 @@ export class SSOGuard implements CanActivate {
         return this.featureGuard.setFeatureId(LICENSE_FIELD.LDAP).canActivate(context);
       case 'saml':
         return this.featureGuard.setFeatureId(LICENSE_FIELD.SAML).canActivate(context);
+      case 'google':
+        return this.featureGuard.setFeatureId(LICENSE_FIELD.GOOGLE).canActivate(context);
+      case 'git':
+        return this.featureGuard.setFeatureId(LICENSE_FIELD.GITHUB).canActivate(context);
       default:
         return true;
     }
