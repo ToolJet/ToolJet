@@ -14,14 +14,17 @@ export class AiConversationRepository extends Repository<AiConversation> {
     userId: string,
     conversationType: 'generate' | 'learn'
   ): Promise<AiConversation> {
-    // Order by lastOpenedAt first (nulls last), then fall back to createdAt
-    return await this.createQueryBuilder('conversation')
-      .where('conversation.appId = :appId', { appId })
-      .andWhere('conversation.userId = :userId', { userId })
-      .andWhere('conversation.conversationType = :conversationType', { conversationType })
-      .orderBy('conversation.last_opened_at', 'DESC', 'NULLS LAST')
-      .addOrderBy('conversation.created_at', 'DESC')
-      .getOne();
+    // First try to find the active conversation
+    const activeConversation = await this.findOne({
+      where: { appId, userId, conversationType, active: true },
+    });
+    if (activeConversation) return activeConversation;
+
+    // Fallback: most recently created
+    return await this.findOne({
+      where: { appId, userId, conversationType },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async createNewConversation(
@@ -30,6 +33,9 @@ export class AiConversationRepository extends Repository<AiConversation> {
     conversationType: 'generate' | 'learn',
     manager?: EntityManager
   ): Promise<AiConversation> {
+    // Deactivate all existing conversations for this app/user/type
+    await this.update({ appId, userId, conversationType }, { active: false });
+
     return dbTransactionWrap((manager: EntityManager) => {
       const conversation = manager.create(AiConversation, {
         userId,
@@ -73,5 +79,18 @@ export class AiConversationRepository extends Repository<AiConversation> {
     await dbTransactionWrap((manager: EntityManager) => {
       return manager.update(AiConversation, id, updatableData);
     }, manager || this.manager);
+  }
+
+  async setActive(
+    conversationId: string,
+    appId: string,
+    userId: string,
+    conversationType: 'generate' | 'learn'
+  ): Promise<void> {
+    // Deactivate all conversations of same app/user/type
+    await this.update({ appId, userId, conversationType }, { active: false });
+
+    // Activate the target conversation
+    await this.update(conversationId, { active: true });
   }
 }

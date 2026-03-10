@@ -23,9 +23,6 @@ export class AiConversation {
   @Column({ type: 'boolean', default: false })
   archived: boolean;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'last_opened_at' })
-  lastOpenedAt: Date;
-
   @Column({ type: 'text', nullable: true })
   preview: string;
 
