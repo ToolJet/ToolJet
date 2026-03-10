@@ -30,6 +30,10 @@ export interface PageUpdateContext {
 export interface PageDeleteContext {
   pageId: string;
   pageName: string;
+  childPageIds?: string[];
+  /** Pre-captured entity changes for components/layouts/events that will be deleted with the page(s) */
+  deletedEntityChanges?: any[];
+  deletedEntityIds?: string[];
 }
 
 export interface PageReorderContext {
