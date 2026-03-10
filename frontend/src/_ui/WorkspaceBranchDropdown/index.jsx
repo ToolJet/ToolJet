@@ -229,19 +229,17 @@ export function WorkspaceBranchDropdown() {
                     <span>Create new branch</span>
                   </button>
                 )}
-                {branches.length > 1 && (
-                  <button
-                    className="switch-branch-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowSwitchModal(true);
-                    }}
-                    data-cy="workspace-switch-branch-btn"
-                  >
-                    <SolidIcon name="refresh" width="14" />
-                    <span>Switch branch</span>
-                  </button>
-                )}
+                                <button
+                  className="switch-branch-btn"
+                  onClick={() => {
+                    setShowDropdown(false);
+                    setShowSwitchModal(true);
+                  }}
+                  data-cy="workspace-switch-branch-btn"
+                >
+                  <SolidIcon name="refresh" width="14" />
+                  <span>Switch branch</span>
+                </button>
               </>
             ) : (
               <>
@@ -250,19 +248,17 @@ export function WorkspaceBranchDropdown() {
                   <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
                   <span>Create pull request</span>
                 </button>
-                {branches.length > 1 && (
-                  <button
-                    className="switch-branch-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowSwitchModal(true);
-                    }}
-                    data-cy="workspace-switch-branch-btn"
-                  >
-                    <SolidIcon name="refresh" width="14" />
-                    <span>Switch branch</span>
-                  </button>
-                )}
+                                <button
+                  className="switch-branch-btn"
+                  onClick={() => {
+                    setShowDropdown(false);
+                    setShowSwitchModal(true);
+                  }}
+                  data-cy="workspace-switch-branch-btn"
+                >
+                  <SolidIcon name="refresh" width="14" />
+                  <span>Switch branch</span>
+                </button>
               </>
             )}
           </div>
