@@ -19,7 +19,7 @@ import { ExternalApiSecurityGuard } from '@ee/auth/guards/external-api-security.
 
 @Controller('ext')
 export class ExternalApisGroupsController {
-  constructor() {}
+  constructor() { }
 
   @InitFeature(FEATURE_KEY.CREATE_GROUP)
   @UseGuards(ExternalApiSecurityGuard)
@@ -49,6 +49,14 @@ export class ExternalApisGroupsController {
   @Get('workspace/:workspaceId/groups')
   @HttpCode(HttpStatus.OK)
   async listGroups(@Param('workspaceId') workspaceId: string, @Query() query: ListGroupsQueryDto): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.GET_GROUP)
+  @UseGuards(ExternalApiSecurityGuard)
+  @Get('workspace/:workspaceId/groups/:groupId')
+  @HttpCode(HttpStatus.OK)
+  async getGroup(@Param('workspaceId') workspaceId: string, @Param('groupId') groupId: string): Promise<any> {
     throw new NotFoundException();
   }
 

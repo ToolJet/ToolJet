@@ -31,6 +31,9 @@ export interface IExternalApisService {
   // Lists custom groups in a workspace with optional search and pagination
   listGroups(workspaceId: string, query: ListGroupsQueryDto): Promise<any>;
 
+  // Gets details of a custom group by id
+  getGroup(workspaceId: string, groupId: string): Promise<any>;
+
   // Deletes a custom group by id
   deleteGroup(workspaceId: string, groupId: string): Promise<void>;
 }

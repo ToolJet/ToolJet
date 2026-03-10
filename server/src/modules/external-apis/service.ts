@@ -6,7 +6,7 @@ import { IExternalApisService } from './Interfaces/IService';
 
 @Injectable()
 export class ExternalApisService implements IExternalApisService {
-  constructor() {}
+  constructor() { }
   async getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager) {
     throw new Error('Method not implemented.');
   }
@@ -29,6 +29,9 @@ export class ExternalApisService implements IExternalApisService {
     throw new Error('Method not implemented.');
   }
   async listGroups(_workspaceId: string, _query: ListGroupsQueryDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async getGroup(_workspaceId: string, _groupId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
   async deleteGroup(_workspaceId: string, _groupId: string): Promise<void> {
