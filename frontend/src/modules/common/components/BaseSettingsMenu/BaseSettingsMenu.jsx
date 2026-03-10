@@ -20,6 +20,7 @@ function BaseSettingsMenu({
   options = {
     hideMarketPlaceMenuItem: false,
   },
+  renderMenuItem = null,
 }) {
   const edition = fetchEdition();
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
@@ -161,11 +162,13 @@ function BaseSettingsMenu({
 
   return (
     <OverlayTrigger onToggle={setShowOverlay} rootClose={true} trigger="click" placement="top" overlay={getOverlay()}>
-      <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
-        <div className="d-xl-block">
-          <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
+      {renderMenuItem?.() ?? (
+        <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
+          <div className="d-xl-block">
+            <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
+          </div>
         </div>
-      </div>
+      )}
     </OverlayTrigger>
   );
 }

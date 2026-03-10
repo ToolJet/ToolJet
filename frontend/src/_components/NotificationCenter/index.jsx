@@ -8,7 +8,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const NotificationCenter = ({ darkMode }) => {
+export const NotificationCenter = ({ darkMode, renderMenuItem = null }) => {
   const [loading, setLoading] = React.useState(false);
   const [isRead, setIsRead] = React.useState(false);
   const [commentNotifications, setCommentNotifications] = React.useState([]);
@@ -109,14 +109,16 @@ export const NotificationCenter = ({ darkMode }) => {
 
   return (
     <OverlayTrigger onEntering={fetchData} rootClose trigger="click" placement="right" overlay={overlay}>
-      <div>
-        <ToolTip message="Comment notifications" placement="right">
-          <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
-            <SolidIcon data-cy="notifications-icon" name="notification" fill="var(--slate8)" />
-            {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
-          </div>
-        </ToolTip>
-      </div>
+      {renderMenuItem?.(commentNotifications?.length ?? 0) ?? (
+        <div>
+          <ToolTip message="Comment notifications" placement="right">
+            <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
+              <SolidIcon data-cy="notifications-icon" name="notification" fill="var(--slate8)" />
+              {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
+            </div>
+          </ToolTip>
+        </div>
+      )}
     </OverlayTrigger>
   );
 };
