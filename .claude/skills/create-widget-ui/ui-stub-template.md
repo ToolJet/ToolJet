@@ -25,6 +25,8 @@ For each key in `exposedVariables` in the schema:
 
 **Do NOT include `isVisible`, `isLoading`, `isDisabled` here** — they are handled by the standard state block.
 
+If ALL exposed variables are the standard trio (isVisible / isLoading / isDisabled), `{exposedVarEntries}` is empty — leave the `// exposed variables from schema` comment in place with no entries beneath it. This is valid.
+
 ## Extra CSA Entries
 
 For each action in `actions[]` that is NOT `setDisable`, `setLoading`, or `setVisibility`:

@@ -69,7 +69,7 @@ Format: `{ searchText: '', label: 'Select', isLoading: false, ... }`
 Note the JS type of each default value (string, boolean, number, array, null).
 
 **4. Accordion groups**
-List all unique `accordian:` values found in the `properties:` block.
+List all unique `accordian:` values found in the `properties:` block **only** (ignore `styles:` — style accordion groups are rendered separately and not needed here).
 For each group, list the property keys that belong to it.
 Format: `{ 'Data': ['label', 'placeholder'], 'Options': ['advanced', 'schema', 'sort'] }`
 Also list any properties with NO `accordian:` key separately.
@@ -134,7 +134,19 @@ Write this content to `frontend/src/AppBuilder/Widgets/{Name}/{Name}.scss`:
 Read the existing file:
 `frontend/src/AppBuilder/RightSideBar/Inspector/Components/{Name}/{Name}.jsx`
 
-Replace the generic `'Properties'` section in the `sections[]` array with one section per accordion group from Phase 1 data:
+**Guard — check before modifying:**
+Scan the existing `sections[]` array (or accordion `items` array) in that file.
+
+- If the file contains **only a single generic `'Properties'` section** (i.e. the `create-widget` stub with no custom sections) → proceed to replace it.
+- If the file already has **named sections** (e.g. `title: 'Menu'`, `title: 'Options'`) OR any section with a **`custom:` render function** → the Inspector has been hand-authored. **DO NOT modify the file.** Instead output this TODO:
+
+  ```
+  ⚠️  Inspector/Components/{Name}/{Name}.jsx already has custom sections.
+      Task C skipped — update sections[] manually.
+  ```
+
+**When proceeding (plain stub only):**
+Replace the generic `'Properties'` section with one section per accordion group from Phase 1 data:
 ```js
 {
   title: '{AccordionGroupName}',
@@ -142,8 +154,10 @@ Replace the generic `'Properties'` section in the `sections[]` array with one se
   properties: ['{key1}', '{key2}'],
 },
 ```
+- Only include keys from the `properties:` block of the schema (not `styles:`)
 - Properties with no `accordian:` key → place in a catch-all `'Properties'` section
 - Leave Events, Additional Actions, and Devices sections unchanged
+- Never replace a `custom:` section with a `type: 'properties'` section
 
 After all tasks, report every file written or modified.
 ---
