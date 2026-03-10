@@ -1,0 +1,586 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@angular-devkit/core": {
+      "name": "@angular-devkit/core",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ajv"
+      ],
+      "effects": [
+        "@angular-devkit/schematics",
+        "@angular-devkit/schematics-cli",
+        "@nestjs/cli",
+        "@nestjs/schematics"
+      ],
+      "range": "12.0.0-next.0 - 19.2.21 || 20.0.0-next.0 - 20.3.17 || 21.0.0-next.0 - 21.1.4 || 21.2.0-next.0 - 21.2.0-rc.2",
+      "nodes": [
+        "node_modules/@angular-devkit/core",
+        "node_modules/@nestjs/schematics/node_modules/@angular-devkit/core"
+      ],
+      "fixAvailable": {
+        "name": "@nestjs/schematics",
+        "version": "7.3.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@angular-devkit/schematics": {
+      "name": "@angular-devkit/schematics",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@angular-devkit/core"
+      ],
+      "effects": [],
+      "range": "12.0.0-next.0 - 19.2.21 || 20.0.0-next.0 - 20.3.17 || 21.0.0-next.0 - 21.1.4 || 21.2.0-next.0 - 21.2.0-rc.2",
+      "nodes": [
+        "node_modules/@angular-devkit/schematics",
+        "node_modules/@nestjs/schematics/node_modules/@angular-devkit/schematics"
+      ],
+      "fixAvailable": true
+    },
+    "@angular-devkit/schematics-cli": {
+      "name": "@angular-devkit/schematics-cli",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@angular-devkit/core",
+        "@angular-devkit/schematics"
+      ],
+      "effects": [],
+      "range": "0.1200.0-next.0 - 19.2.21 || 20.0.0-next.0 - 20.3.17 || 21.0.0-next.0 - 21.1.4 || 21.2.0-next.0 - 21.2.0-rc.2",
+      "nodes": [
+        "node_modules/@angular-devkit/schematics-cli"
+      ],
+      "fixAvailable": true
+    },
+    "@google-cloud/common": {
+      "name": "@google-cloud/common",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "retry-request",
+        "teeny-request"
+      ],
+      "effects": [
+        "@google-cloud/spanner"
+      ],
+      "range": ">=4.0.0",
+      "nodes": [
+        "node_modules/@google-cloud/common"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "@google-cloud/spanner": {
+      "name": "@google-cloud/spanner",
+      "severity": "low",
+      "isDirect": true,
+      "via": [
+        "@google-cloud/common",
+        "google-gax",
+        "retry-request",
+        "teeny-request"
+      ],
+      "effects": [],
+      "range": ">=6.1.3",
+      "nodes": [
+        "node_modules/@google-cloud/spanner"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "@nestjs/cli": {
+      "name": "@nestjs/cli",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@angular-devkit/core",
+        "@angular-devkit/schematics",
+        "@angular-devkit/schematics-cli",
+        "@nestjs/schematics"
+      ],
+      "effects": [],
+      "range": "8.0.0 - 11.0.16",
+      "nodes": [
+        "node_modules/@nestjs/cli"
+      ],
+      "fixAvailable": {
+        "name": "@nestjs/cli",
+        "version": "7.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@nestjs/schematics": {
+      "name": "@nestjs/schematics",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@angular-devkit/core",
+        "@angular-devkit/schematics"
+      ],
+      "effects": [],
+      "range": "8.0.0 - 11.0.9",
+      "nodes": [
+        "node_modules/@nestjs/schematics"
+      ],
+      "fixAvailable": {
+        "name": "@nestjs/schematics",
+        "version": "7.3.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@opentelemetry/host-metrics": {
+      "name": "@opentelemetry/host-metrics",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "systeminformation"
+      ],
+      "effects": [
+        "nestjs-otel"
+      ],
+      "range": "<=0.15.0 || 0.35.2 - 0.38.2",
+      "nodes": [
+        "node_modules/@opentelemetry/host-metrics"
+      ],
+      "fixAvailable": {
+        "name": "nestjs-otel",
+        "version": "6.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@tootallnate/once": {
+      "name": "@tootallnate/once",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113977,
+          "name": "@tootallnate/once",
+          "dependency": "@tootallnate/once",
+          "title": "@tootallnate/once vulnerable to Incorrect Control Flow Scoping",
+          "url": "https://github.com/advisories/GHSA-vpq2-c234-7xj6",
+          "severity": "low",
+          "cwe": [
+            "CWE-705"
+          ],
+          "cvss": {
+            "score": 3.3,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<3.0.1"
+        }
+      ],
+      "effects": [
+        "http-proxy-agent"
+      ],
+      "range": "<3.0.1",
+      "nodes": [
+        "node_modules/@tootallnate/once"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "ai": {
+      "name": "ai",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1111095,
+          "name": "ai",
+          "dependency": "ai",
+          "title": "Vercel’s AI SDK's filetype whitelists can be bypassed when uploading files",
+          "url": "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+          "severity": "low",
+          "cwe": [
+            "CWE-20",
+            "CWE-682"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<5.0.52"
+        },
+        "jsondiffpatch"
+      ],
+      "effects": [],
+      "range": "<=5.0.51",
+      "nodes": [
+        "node_modules/ai"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "6.0.116",
+        "isSemVerMajor": true
+      }
+    },
+    "ajv": {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113715,
+          "name": "ajv",
+          "dependency": "ajv",
+          "title": "ajv has ReDoS when using `$data` option",
+          "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=7.0.0-alpha.0 <8.18.0"
+        }
+      ],
+      "effects": [
+        "@angular-devkit/core"
+      ],
+      "range": "7.0.0-alpha.0 - 8.17.1",
+      "nodes": [
+        "node_modules/@angular-devkit/core/node_modules/ajv",
+        "node_modules/@nestjs/schematics/node_modules/ajv"
+      ],
+      "fixAvailable": {
+        "name": "@nestjs/schematics",
+        "version": "7.3.1",
+        "isSemVerMajor": true
+      }
+    },
+    "google-gax": {
+      "name": "google-gax",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "retry-request"
+      ],
+      "effects": [
+        "@google-cloud/spanner"
+      ],
+      "range": ">=4.0.5-experimental",
+      "nodes": [
+        "node_modules/google-gax"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "http-proxy-agent": {
+      "name": "http-proxy-agent",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@tootallnate/once"
+      ],
+      "effects": [
+        "teeny-request"
+      ],
+      "range": "4.0.1 - 5.0.0",
+      "nodes": [
+        "node_modules/http-proxy-agent"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "jsondiffpatch": {
+      "name": "jsondiffpatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1108189,
+          "name": "jsondiffpatch",
+          "dependency": "jsondiffpatch",
+          "title": "jsondiffpatch is vulnerable to Cross-site Scripting (XSS) via HtmlFormatter::nodeBegin",
+          "url": "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<0.7.2"
+        }
+      ],
+      "effects": [
+        "ai"
+      ],
+      "range": "<0.7.2",
+      "nodes": [
+        "node_modules/jsondiffpatch"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "6.0.116",
+        "isSemVerMajor": true
+      }
+    },
+    "nestjs-otel": {
+      "name": "nestjs-otel",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@opentelemetry/host-metrics"
+      ],
+      "effects": [],
+      "range": ">=6.1.2",
+      "nodes": [
+        "node_modules/nestjs-otel"
+      ],
+      "fixAvailable": {
+        "name": "nestjs-otel",
+        "version": "6.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "nodemailer": {
+      "name": "nodemailer",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1109804,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer: Email to an unintended domain can occur due to Interpretation Conflict",
+          "url": "https://github.com/advisories/GHSA-mm7p-fcc7-pg87",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-436"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<7.0.7"
+        },
+        {
+          "source": 1113165,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer’s addressparser is vulnerable to DoS caused by recursive calls",
+          "url": "https://github.com/advisories/GHSA-rcmh-qjqh-p98v",
+          "severity": "high",
+          "cwe": [
+            "CWE-703"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=7.0.10"
+        }
+      ],
+      "effects": [],
+      "range": "<=7.0.10",
+      "nodes": [
+        "node_modules/nodemailer"
+      ],
+      "fixAvailable": {
+        "name": "nodemailer",
+        "version": "8.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss": {
+      "name": "postcss",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1093539,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "Regular Expression Denial of Service in postcss",
+          "url": "https://github.com/advisories/GHSA-566m-qj78-rww5",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<7.0.36"
+        },
+        {
+          "source": 1109574,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS line return parsing error",
+          "url": "https://github.com/advisories/GHSA-7fh5-64p2-3v2j",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-74",
+            "CWE-144"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<8.4.31"
+        }
+      ],
+      "effects": [
+        "postcss-parent-selector"
+      ],
+      "range": "<=8.4.30",
+      "nodes": [
+        "node_modules/postcss-parent-selector/node_modules/postcss"
+      ],
+      "fixAvailable": false
+    },
+    "postcss-parent-selector": {
+      "name": "postcss-parent-selector",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "postcss"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/postcss-parent-selector"
+      ],
+      "fixAvailable": false
+    },
+    "retry-request": {
+      "name": "retry-request",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "teeny-request"
+      ],
+      "effects": [
+        "@google-cloud/common",
+        "@google-cloud/spanner",
+        "google-gax"
+      ],
+      "range": ">=7.0.0",
+      "nodes": [
+        "node_modules/retry-request"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    },
+    "systeminformation": {
+      "name": "systeminformation",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113329,
+          "name": "systeminformation",
+          "dependency": "systeminformation",
+          "title": "Command Injection via Unsanitized `locate` Output in `versions()` — systeminformation",
+          "url": "https://github.com/advisories/GHSA-5vv4-hvf7-2h46",
+          "severity": "high",
+          "cwe": [
+            "CWE-78"
+          ],
+          "cvss": {
+            "score": 8.8,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H"
+          },
+          "range": "<=5.30.7"
+        },
+        {
+          "source": 1113330,
+          "name": "systeminformation",
+          "dependency": "systeminformation",
+          "title": "Systeminformation has a Command Injection via unsanitized interface parameter in wifi.js retry path",
+          "url": "https://github.com/advisories/GHSA-9c88-49p5-5ggf",
+          "severity": "high",
+          "cwe": [
+            "CWE-78"
+          ],
+          "cvss": {
+            "score": 8.4,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<5.30.8"
+        }
+      ],
+      "effects": [
+        "@opentelemetry/host-metrics"
+      ],
+      "range": "<=5.30.7",
+      "nodes": [
+        "node_modules/systeminformation"
+      ],
+      "fixAvailable": {
+        "name": "nestjs-otel",
+        "version": "6.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "teeny-request": {
+      "name": "teeny-request",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "http-proxy-agent"
+      ],
+      "effects": [
+        "@google-cloud/common",
+        "@google-cloud/spanner",
+        "retry-request"
+      ],
+      "range": ">=7.1.3",
+      "nodes": [
+        "node_modules/teeny-request"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/spanner",
+        "version": "6.1.4",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 7,
+      "moderate": 10,
+      "high": 4,
+      "critical": 0,
+      "total": 21
+    },
+    "dependencies": {
+      "prod": 1174,
+      "dev": 577,
+      "optional": 106,
+      "peer": 71,
+      "peerOptional": 0,
+      "total": 1902
+    }
+  }
+}
