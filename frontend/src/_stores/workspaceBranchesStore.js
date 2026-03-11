@@ -1,6 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
+import { getActiveBranch, setActiveBranch } from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -45,12 +46,20 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
-            const activeBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
-            const currentBranch = resolveCurrentBranch(branches, activeBranchId);
+            // Prefer localStorage branch over server-returned activeBranchId
+            const storedBranch = getActiveBranch();
+            const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
+            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
+            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
+
+            // Persist resolved branch to localStorage
+            if (currentBranch) {
+              setActiveBranch(currentBranch);
+            }
 
             set({
               branches,
-              activeBranchId: currentBranch?.id || activeBranchId,
+              activeBranchId: currentBranch?.id || effectiveActiveBranchId,
               currentBranch,
               orgGitConfig: gitStatus,
               isLoading: false,
@@ -65,9 +74,12 @@ export const useWorkspaceBranchesStore = create(
           try {
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
-            const activeBranchId = data?.active_branch_id || data?.activeBranchId || null;
-            const currentBranch = resolveCurrentBranch(branches, activeBranchId);
-            set({ branches, activeBranchId: currentBranch?.id || activeBranchId, currentBranch });
+            // Prefer localStorage branch over server default
+            const storedBranch = getActiveBranch();
+            const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
+            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
+            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
+            set({ branches, activeBranchId: currentBranch?.id || effectiveActiveBranchId, currentBranch });
           } catch (error) {
             console.error('Failed to fetch branches:', error);
           }
@@ -80,9 +92,12 @@ export const useWorkspaceBranchesStore = create(
         },
 
         async switchBranch(branchId) {
-          await workspaceBranchesService.switchBranch(branchId);
+          // No longer calling backend — branch is tracked client-side only
           const branches = get().branches;
           const currentBranch = branches.find((b) => b.id === branchId) || null;
+          if (currentBranch) {
+            setActiveBranch(currentBranch);
+          }
           set({ activeBranchId: branchId, currentBranch });
         },
 
@@ -94,7 +109,8 @@ export const useWorkspaceBranchesStore = create(
         async pushWorkspace(commitMessage, targetBranch) {
           set({ isPushing: true });
           try {
-            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch);
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch, branchId);
             set({ isPushing: false });
             return result;
           } catch (error) {
@@ -106,7 +122,8 @@ export const useWorkspaceBranchesStore = create(
         async pullWorkspace(sourceBranch) {
           set({ isPulling: true });
           try {
-            const result = await workspaceBranchesService.pullWorkspace(sourceBranch);
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pullWorkspace(sourceBranch, branchId);
             set({ isPulling: false });
             return result;
           } catch (error) {

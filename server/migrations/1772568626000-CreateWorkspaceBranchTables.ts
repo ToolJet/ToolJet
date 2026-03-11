@@ -18,13 +18,7 @@ export class CreateWorkspaceBranchTables1772568626000 implements MigrationInterf
       );
     `);
 
-    // 2. active_branch_id on organization_git_sync
-    await queryRunner.query(`
-      ALTER TABLE organization_git_sync
-      ADD COLUMN IF NOT EXISTS active_branch_id UUID REFERENCES organization_git_sync_branches(id) ON DELETE SET NULL;
-    `);
-
-    // 3. data_source_versions
+    // 2. data_source_versions
     await queryRunner.query(`
       CREATE TABLE data_source_versions (
         id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,7 +61,6 @@ export class CreateWorkspaceBranchTables1772568626000 implements MigrationInterf
     await queryRunner.query(`DROP TABLE IF EXISTS data_source_version_options`);
     await queryRunner.query(`DROP INDEX IF EXISTS idx_data_source_versions_one_default`);
     await queryRunner.query(`DROP TABLE IF EXISTS data_source_versions`);
-    await queryRunner.query(`ALTER TABLE organization_git_sync DROP COLUMN IF EXISTS active_branch_id`);
     await queryRunner.query(`DROP TABLE IF EXISTS organization_git_sync_branches`);
   }
 }

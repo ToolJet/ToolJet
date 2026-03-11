@@ -21,7 +21,6 @@ import { OrganizationConstantsUtilService } from '@modules/organization-constant
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
-import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 
@@ -35,10 +34,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService,
-    protected readonly branchContextService: BranchContextService
+    protected readonly inMemoryCacheService: InMemoryCacheService
   ) {}
-  async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
+  async create(createArgumentsDto: CreateArgumentsDto, user: User, branchId?: string): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
         name: createArgumentsDto.name,
@@ -91,7 +89,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
 
       // Branch-aware: also create data_source_versions + data_source_version_options
-      const branchId = await this.branchContextService.getActiveBranchId(user.organizationId);
       if (branchId) {
         await this.createDataSourceVersionForBranch(dataSource, branchId, allEnvs, manager);
       }
@@ -215,7 +212,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId: string,
     name: string,
     options: Array<object>,
-    environmentId?: string
+    environmentId?: string,
+    branchId?: string
   ): Promise<void> {
     const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
 
@@ -247,12 +245,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
 
           // Branch-aware: also update data_source_version_options
-          const branchId = dataSource.scope === DataSourceScopes.GLOBAL
-            ? await this.branchContextService.getActiveBranchId(organizationId)
+          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL
+            ? (branchId || null)
             : null;
-          if (branchId) {
+          if (effectiveBranchId) {
             const dsv = await manager.findOne(DataSourceVersion, {
-              where: { dataSourceId: dataSource.id, branchId, isActive: true },
+              where: { dataSourceId: dataSource.id, branchId: effectiveBranchId, isActive: true },
             });
             if (dsv) {
               await this.appEnvironmentUtilService.updateVersionOptions(
@@ -272,12 +270,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             */
 
           // Get branchId once for all environments
-          const branchId = dataSource.scope === DataSourceScopes.GLOBAL
-            ? await this.branchContextService.getActiveBranchId(organizationId)
+          const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL
+            ? (branchId || null)
             : null;
-          const dsv = branchId
+          const dsv = nonMultiEnvBranchId
             ? await manager.findOne(DataSourceVersion, {
-                where: { dataSourceId: dataSource.id, branchId, isActive: true },
+                where: { dataSourceId: dataSource.id, branchId: nonMultiEnvBranchId, isActive: true },
               })
             : null;
 
@@ -441,7 +439,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   async findOneByEnvironment(
     dataSourceId: string,
     environmentId: string,
-    organizationId?: string
+    organizationId?: string,
+    branchId?: string
   ): Promise<DataSource> {
     const dataSource = await this.dataSourceRepository.findOneOrFail({
       where: { id: dataSourceId, organizationId },
@@ -476,13 +475,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     // Branch-aware option resolution for global data sources
-    const branchId = dataSource.scope === DataSourceScopes.GLOBAL
-      ? await this.branchContextService.getActiveBranchId(organizationId)
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL
+      ? (branchId || null)
       : null;
 
     if (environmentId) {
       dataSource.options = (
-        await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, branchId)
+        await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, effectiveBranchId)
       ).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
@@ -689,10 +688,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     dataSourceId: string,
     optionsToMerge: any,
     organizationId: string,
-    environmentId?: string
+    environmentId?: string,
+    branchId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId, branchId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge, manager);
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
@@ -703,12 +703,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       );
 
       // Branch-aware: also update version options
-      const branchId = dataSource.scope === DataSourceScopes.GLOBAL
-        ? await this.branchContextService.getActiveBranchId(organizationId)
+      const effectiveUpdateBranchId = dataSource.scope === DataSourceScopes.GLOBAL
+        ? (branchId || null)
         : null;
-      const dsv = branchId
+      const dsv = effectiveUpdateBranchId
         ? await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId, branchId, isActive: true },
+            where: { dataSourceId, branchId: effectiveUpdateBranchId, isActive: true },
           })
         : null;
 

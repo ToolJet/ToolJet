@@ -680,6 +680,9 @@ const useAppData = (
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
           setResolvedConstants(orgConstants);
           setSecrets(orgSecrets);
+        } else if (isVersionChanged) {
+          // Re-fetch datasources on version/branch switch (branch may have different active datasources)
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);

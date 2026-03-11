@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 
 export const appService = {
   getConfig,
@@ -51,7 +52,10 @@ function createApp(body = {}) {
   if (body.type === 'workflow') {
     return createWorkflow(body);
   }
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  // Include active branch ID so backend creates the app on the correct branch
+  const branchId = getActiveBranchId();
+  const payload = { ...body, ...(branchId && { branchId }) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(payload) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 

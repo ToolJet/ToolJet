@@ -10,17 +10,7 @@ export class SeedWorkspaceBranchData1772568627000 implements MigrationInterface 
       ON CONFLICT (organization_id, branch_name) DO NOTHING;
     `);
 
-    // 2. Set active_branch_id on organization_git_sync
-    await queryRunner.query(`
-      UPDATE organization_git_sync ogs
-      SET active_branch_id = wb.id
-      FROM organization_git_sync_branches wb
-      WHERE wb.organization_id = ogs.organization_id
-        AND wb.is_default = true
-        AND ogs.active_branch_id IS NULL;
-    `);
-
-    // 3. Create data_source_versions for all global DS (marked as default v1)
+    // 2. Create data_source_versions for all global DS (marked as default v1)
     await queryRunner.query(`
       INSERT INTO data_source_versions (data_source_id, branch_id, name, is_default, is_active)
       SELECT ds.id, wb.id, ds.name, true, true
@@ -31,7 +21,7 @@ export class SeedWorkspaceBranchData1772568627000 implements MigrationInterface 
       ON CONFLICT (data_source_id, branch_id) DO NOTHING;
     `);
 
-    // 4. Copy data_source_options → data_source_version_options for global DS
+    // 3. Copy data_source_options → data_source_version_options for global DS
     await queryRunner.query(`
       INSERT INTO data_source_version_options (data_source_version_id, environment_id, options)
       SELECT dsv.id, dso.environment_id, COALESCE(dso.options, '{}'::json)::jsonb
@@ -48,7 +38,6 @@ export class SeedWorkspaceBranchData1772568627000 implements MigrationInterface 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DELETE FROM data_source_version_options`);
     await queryRunner.query(`DELETE FROM data_source_versions`);
-    await queryRunner.query(`UPDATE organization_git_sync SET active_branch_id = NULL`);
     await queryRunner.query(`DELETE FROM organization_git_sync_branches`);
   }
 }

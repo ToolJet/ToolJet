@@ -1,4 +1,5 @@
 import { gitSyncService } from '@/_services';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import useStore from '@/AppBuilder/_stores/store';
 
 const initialState = {
@@ -181,6 +182,12 @@ export const createBranchSlice = (set, get) => ({
 
       // Update current branch first + mark auto-switch as done to prevent revert
       const targetBranch = state.allBranches.find((b) => b.name === branchName) || { name: branchName };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (targetBranch.id) {
+        setActiveBranch(targetBranch);
+      }
+
       set(
         (state) => ({
           ...state,
@@ -365,6 +372,11 @@ export const createBranchSlice = (set, get) => ({
       const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
         name: defaultBranchName,
       };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (defaultBranch.id) {
+        setActiveBranch(defaultBranch);
+      }
 
       set(
         (state) => ({

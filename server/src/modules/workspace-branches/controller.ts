@@ -62,7 +62,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('pull')
   async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
-    return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch);
+    return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
   }
 
   @InitFeature(FEATURE_KEY.LIST_REMOTE_BRANCHES)

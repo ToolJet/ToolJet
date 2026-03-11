@@ -47,6 +47,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppBranchState } from '@entities/app_branch_state.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -70,9 +71,17 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Get active workspace branch if git sync configured
-      const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-      const branchId = orgGit?.activeBranchId || undefined;
+      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
+      let branchId = appCreateDto.branchId;
+      if (!branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit) {
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+          });
+          branchId = defaultBranch?.id;
+        }
+      }
 
       const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId);
 
@@ -271,16 +280,18 @@ export class AppsService implements IAppsService {
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && name != app.name) {
       // Update AppBranchState for the active branch with the new app name
-      if (isGitSyncEnabled && orgGit?.activeBranchId) {
+      if (isGitSyncEnabled && orgGit) {
         const editingVersion = editingVersionId
           ? await this.versionRepository.findById(editingVersionId, app.id)
           : app.editingVersion;
-        const branchId = editingVersion?.branchId || orgGit.activeBranchId;
-        await this.appRepository.manager.update(
-          AppBranchState,
-          { appId: app.id, branchId, organizationId },
-          { appName: name, metaTimestamp: Date.now() }
-        );
+        const branchId = editingVersion?.branchId;
+        if (branchId) {
+          await this.appRepository.manager.update(
+            AppBranchState,
+            { appId: app.id, branchId, organizationId },
+            { appName: name, metaTimestamp: Date.now() }
+          );
+        }
       }
 
       const appRenameDto = {
@@ -358,7 +369,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, branchId } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -373,7 +384,7 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
       }
 
       if (isGetAll) {
@@ -392,7 +403,7 @@ export class AppsService implements IAppsService {
         );
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 

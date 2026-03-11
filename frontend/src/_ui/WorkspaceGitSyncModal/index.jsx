@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Modal from 'react-bootstrap/Modal';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import { toast } from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -154,6 +155,14 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       // Switch to the target branch — pass appId for co_relation_id resolution
       const appId = getAppIdFromUrl();
       const switchResult = await workspaceBranchesService.switchBranch(branchId, appId);
+
+      // Also update localStorage + workspace store
+      const branchObj = existingBranch || { id: branchId, name: selectedBranch };
+      setActiveBranch(branchObj);
+      useWorkspaceBranchesStore.setState({
+        activeBranchId: branchId,
+        currentBranch: branchObj,
+      });
 
       // Pull from that branch (now active) — creates stubs for all apps
       await actions.pullWorkspace();

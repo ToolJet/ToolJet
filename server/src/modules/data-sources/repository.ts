@@ -7,14 +7,10 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { DefaultDataSourceKind, GetQueryVariables } from './types';
 import { decode } from 'js-base64';
-import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
 
 @Injectable()
 export class DataSourcesRepository extends Repository<DataSource> {
-  constructor(
-    private dataSource: typeOrmDS,
-    private readonly branchContextService: BranchContextService
-  ) {
+  constructor(private dataSource: typeOrmDS) {
     super(DataSource, dataSource.createEntityManager());
   }
 
@@ -23,7 +19,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     organizationId: string,
     queryVars: GetQueryVariables
   ): Promise<DataSource[]> {
-    const { appVersionId, environmentId, types } = queryVars;
+    const { appVersionId, environmentId, types, branchId } = queryVars;
     // Data source options are attached only if selectedEnvironmentId is passed
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
@@ -34,8 +30,6 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isAdmin = userPermissions.isSuperAdmin;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
-
       const query = manager
         .createQueryBuilder(DataSource, 'data_source')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -53,12 +47,14 @@ export class DataSourcesRepository extends Repository<DataSource> {
           'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
           { branchId }
         );
-        query.innerJoinAndSelect(
+        query.innerJoin(
           'data_source_version_options',
           'dsvo',
           'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
           { environmentId }
         );
+        // Select version-specific columns so they appear in raw results
+        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
       } else if (branchId) {
         // Branch-aware but no environmentId: filter by branch existence only (no options loaded)
         query.innerJoin(
@@ -67,6 +63,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
           'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
           { branchId }
         );
+        query.addSelect(['dsv.id', 'dsv.name']);
       } else if (environmentId) {
         query.innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options');
       }
@@ -103,7 +100,18 @@ export class DataSourcesRepository extends Repository<DataSource> {
       if (environmentId && !useBranchPath) {
         query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });
       }
-      const result = await query.getMany();
+      let result: DataSource[];
+      let rawResults: any[] = [];
+
+      if (useBranchPath || branchId) {
+        // Use getRawAndEntities to get both entity data and raw dsv/dsvo columns
+        const rawAndEntities = await query.getRawAndEntities();
+        result = rawAndEntities.entities;
+        rawResults = rawAndEntities.raw;
+      } else {
+        result = await query.getMany();
+      }
+
       result.forEach((dataSource) => {
         if (dataSource.plugin) {
           if (dataSource.plugin.iconFile) {
@@ -133,20 +141,33 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       //remove tokenData from restapi datasources
       const dataSources = dataSourceList?.map((ds) => {
-        if (useBranchPath) {
-          // Options come from the dsvo raw columns selected via innerJoinAndSelect
-          const rawOptions = (ds as any).dsvo_options || {};
-          const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
-          if (ds.kind === 'restapi') {
-            const options = {};
-            Object.keys(parsedOptions).filter((key) => {
-              if (key !== 'tokenData') {
-                return (options[key] = parsedOptions[key]);
-              }
-            });
-            ds.options = options;
-          } else {
-            ds.options = { ...parsedOptions };
+        if (useBranchPath || branchId) {
+          // Find the matching raw row to get dsv/dsvo columns
+          const rawRow = rawResults.find((r) => r.data_source_id === ds.id);
+          if (rawRow) {
+            // Overlay version-specific name from data_source_versions
+            if (rawRow.dsv_name) {
+              ds.name = rawRow.dsv_name;
+            }
+            // Attach version id for frontend reference
+            (ds as any).versionId = rawRow.dsv_id || null;
+          }
+
+          if (useBranchPath && rawRow) {
+            // Options from data_source_version_options
+            const rawOptions = rawRow.dsvo_options || {};
+            const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+            if (ds.kind === 'restapi') {
+              const options = {};
+              Object.keys(parsedOptions).filter((key) => {
+                if (key !== 'tokenData') {
+                  return (options[key] = parsedOptions[key]);
+                }
+              });
+              ds.options = options;
+            } else {
+              ds.options = { ...parsedOptions };
+            }
           }
         } else {
           if (ds.kind === 'restapi') {
@@ -241,12 +262,23 @@ export class DataSourcesRepository extends Repository<DataSource> {
     });
   }
 
-  getQueriesByDatasourceId(datasourceId) {
-    return dbTransactionWrap((manager: EntityManager) => {
+  getQueriesByDatasourceId(datasourceId: string, branchId?: string | null) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (branchId) {
+        return manager
+          .createQueryBuilder(DataSource, 'ds')
+          .leftJoinAndSelect(
+            'ds.dataQueries',
+            'dq',
+            'dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE av.branch_id = :branchId)',
+            { branchId }
+          )
+          .where('ds.id = :datasourceId', { datasourceId })
+          .getMany();
+      }
+
       return manager.find(DataSource, {
-        where: {
-          id: datasourceId,
-        },
+        where: { id: datasourceId },
         relations: ['dataQueries'],
       });
     });

@@ -5,6 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import '@/_styles/switch-branch-modal.scss';
 
@@ -101,10 +102,12 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     const branchId = wsBranch?.id || branch.id;
 
     const result = await workspaceBranchesService.switchBranch(branchId, appId);
-    // Update workspace store to reflect the new active branch
+    // Update workspace store + localStorage to reflect the new active branch
+    const branchObj = wsBranch || { id: branchId, name: branch.name };
+    setActiveBranch(branchObj);
     useWorkspaceBranchesStore.setState({
       activeBranchId: branchId,
-      currentBranch: wsBranch || { id: branchId, name: branch.name },
+      currentBranch: branchObj,
     });
     toast.success(`Switched to ${branch.name}`);
     onClose();

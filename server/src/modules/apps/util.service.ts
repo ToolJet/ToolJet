@@ -432,7 +432,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, branchId?: string): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -460,7 +460,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type
+        type,
+        branchId
       );
 
       // Eagerly load appVersions for modules
@@ -485,7 +486,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    branchId?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -575,7 +577,7 @@ export class AppsUtilService implements IAppsUtilService {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
 
-  async count(user: User, searchKey, type: APP_TYPES): Promise<number> {
+  async count(user: User, searchKey, type: APP_TYPES, branchId?: string): Promise<number> {
     let resourceType: MODULES;
 
     switch (type) {
@@ -599,7 +601,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         undefined,
-        type
+        type,
+        branchId
       ).getCount();
 
       return apps;

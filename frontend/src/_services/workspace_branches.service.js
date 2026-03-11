@@ -43,8 +43,8 @@ function deleteBranch(branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/${branchId}`, requestOptions).then(handleResponse);
 }
 
-function pushWorkspace(commitMessage, targetBranch) {
-  const body = { commitMessage, ...(targetBranch && { targetBranch }) };
+function pushWorkspace(commitMessage, targetBranch, branchId) {
+  const body = { commitMessage, ...(targetBranch && { targetBranch }), ...(branchId && { branchId }) };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -54,13 +54,13 @@ function pushWorkspace(commitMessage, targetBranch) {
   return fetch(`${config.apiUrl}/workspace-branches/push`, requestOptions).then(handleResponse);
 }
 
-function pullWorkspace(sourceBranch) {
-  const body = sourceBranch ? { sourceBranch } : undefined;
+function pullWorkspace(sourceBranch, branchId) {
+  const body = { ...(sourceBranch && { sourceBranch }), ...(branchId && { branchId }) };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    ...(body && { body: JSON.stringify(body) }),
+    ...(Object.keys(body).length > 0 && { body: JSON.stringify(body) }),
   };
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
 }

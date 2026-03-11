@@ -24,10 +24,18 @@ export class WorkspacePushDto {
   @IsOptional()
   @IsString()
   targetBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class WorkspacePullDto {
   @IsOptional()
   @IsString()
   sourceBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }

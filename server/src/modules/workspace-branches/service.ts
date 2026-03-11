@@ -30,7 +30,12 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async pullWorkspace(organizationId: string, user?: User, sourceBranch?: string): Promise<{ success: boolean }> {
+  async pullWorkspace(
+    organizationId: string,
+    user?: User,
+    sourceBranch?: string,
+    branchId?: string
+  ): Promise<{ success: boolean }> {
     throw new NotFoundException();
   }
 
