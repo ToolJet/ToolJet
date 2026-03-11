@@ -15,8 +15,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], userAllPermissions: UserAllPermissions): void {
-    const { superAdmin, isAdmin } = userAllPermissions;
-    // Only super admins and workspace admins can manage branches
+    const { superAdmin, isAdmin, isBuilder } = userAllPermissions;
+    // Super admins and workspace admins have full branch management access
     if (superAdmin || isAdmin) {
       can(
         [
@@ -24,6 +24,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_BRANCH,
           FEATURE_KEY.SWITCH_BRANCH,
           FEATURE_KEY.DELETE_BRANCH,
+          FEATURE_KEY.PUSH_WORKSPACE,
+          FEATURE_KEY.PULL_WORKSPACE,
+          FEATURE_KEY.CHECK_UPDATES,
+          FEATURE_KEY.LIST_REMOTE_BRANCHES,
+        ],
+        WorkspaceBranch
+      );
+    }
+    // Builders can create branches, commit (push), pull, switch, and view — but not delete
+    if (isBuilder) {
+      can(
+        [
+          FEATURE_KEY.LIST_BRANCHES,
+          FEATURE_KEY.CREATE_BRANCH,
+          FEATURE_KEY.SWITCH_BRANCH,
           FEATURE_KEY.PUSH_WORKSPACE,
           FEATURE_KEY.PULL_WORKSPACE,
           FEATURE_KEY.CHECK_UPDATES,

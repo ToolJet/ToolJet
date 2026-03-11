@@ -23,6 +23,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -38,6 +39,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingAddDataSource, setPendingAddDataSource] = useState(null);
+  const pendingAddAfterSwitchRef = useRef(null);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
@@ -103,6 +107,16 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
+
+  // After branch switch + refetch, trigger the deferred add
+  useEffect(() => {
+    if (pendingAddAfterSwitchRef.current && !isLoading) {
+      const ds = pendingAddAfterSwitchRef.current;
+      pendingAddAfterSwitchRef.current = null;
+      createDataSource(ds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading]);
 
   const handleHideModal = (ds) => {
     if (dataSources?.length) {
@@ -332,15 +346,27 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   });
 
   const renderCardGroup = (source, type) => {
-    const canAddDataSource = canCreateDataSource() && !isWorkspaceBranchLocked;
+    const hasCreatePermission = canCreateDataSource();
+    const canAddDataSource = hasCreatePermission && !isWorkspaceBranchLocked;
     const addDataSourceBtn = (item) => (
-      <ToolTip message={isWorkspaceBranchLocked ? 'Create a branch to make changes' : 'You do not have permission to add a data source'} show={!canAddDataSource} placement="bottom">
+      <ToolTip
+        message={!hasCreatePermission ? 'You do not have permission to add a data source' : ''}
+        show={!hasCreatePermission}
+        placement="bottom"
+      >
         <div>
           <ButtonSolid
-            disabled={addingDataSource || !canAddDataSource}
+            disabled={addingDataSource || !hasCreatePermission}
             isLoading={addingDataSource}
             variant="secondary"
-            onClick={() => createDataSource(item)}
+            onClick={() => {
+              if (isWorkspaceBranchLocked) {
+                setPendingAddDataSource(item);
+                setShowSwitchBranchModal(true);
+              } else {
+                createDataSource(item);
+              }
+            }}
             data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
           >
             <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
@@ -509,7 +535,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
-            showSaveBtn={!isWorkspaceBranchLocked && (canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource())}
+            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            isWorkspaceBranchLocked={isWorkspaceBranchLocked}
             environmentLoading={environmentLoading}
             tags={tags}
           />
@@ -517,6 +544,22 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingAddDataSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingAddDataSource) {
+              pendingAddAfterSwitchRef.current = pendingAddDataSource;
+              setPendingAddDataSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

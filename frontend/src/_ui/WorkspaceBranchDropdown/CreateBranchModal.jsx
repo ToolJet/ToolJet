@@ -84,7 +84,6 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
       await actions.switchBranch(newBranch.id);
       onSuccess?.();
       onClose();
-      window.location.reload();
     } catch (error) {
       console.error('Error creating branch:', error);
       setValidationError(error?.message || 'An unexpected error occurred');
@@ -193,24 +192,22 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
             Branch name must be unique and max 50 characters
           </div>
         </div>
-        {/* Auto-commit checkbox */}                                                                                                                                                                  
-         <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                className="form-checkbox"
-                checked={autoCommit}
-                onChange={(e) => setAutoCommit(e.target.checked)}
-                disabled={true}
-              />
-              <span className="checkbox-text">
-                Commit changes
-                <span className="checkbox-helper">
-                  Branch will always be created in git to ensure sync with ToolJet
-                </span>
-              </span>
-            </label>
-          </div>
+        {/* Auto-commit checkbox */}
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              className="form-checkbox"
+              checked={autoCommit}
+              onChange={(e) => setAutoCommit(e.target.checked)}
+              disabled={true}
+            />
+            <span className="checkbox-text">
+              Commit changes
+              <span className="checkbox-helper">Branch will always be created in git to ensure sync with ToolJet</span>
+            </span>
+          </label>
+        </div>
         {/* Info message */}
         <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
           {/* Branch can only be created from the default branch */}

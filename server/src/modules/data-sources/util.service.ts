@@ -23,6 +23,7 @@ import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -36,7 +37,43 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
   ) {}
+
+  /**
+   * Validates that workspace constants are not being added directly on the default (master) branch.
+   * PRD requires that workspace constants in encrypted fields must go through a PR workflow.
+   */
+  private async validateNoConstantsOnDefaultBranch(branchId: string, options: Array<object>): Promise<void> {
+    const hasConstantReference = options.some((opt) => {
+      if (opt['workspace_constant']) return true;
+      if (
+        opt['encrypted'] &&
+        typeof opt['value'] === 'string' &&
+        (opt['value'].includes('{{constants') || opt['value'].includes('{{secrets'))
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    if (!hasConstantReference) return;
+
+    const branch = await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+    });
+
+    if (branch?.isDefault) {
+      throw new BadRequestException(
+        'Workspace constants cannot be added directly on the master branch. Please create a feature branch and submit a PR.'
+      );
+    }
+  }
+
   async create(createArgumentsDto: CreateArgumentsDto, user: User, branchId?: string): Promise<DataSource> {
+    // Validate: workspace constants cannot be added directly on the default (master) branch
+    if (branchId && createArgumentsDto.options?.length) {
+      await this.validateNoConstantsOnDefaultBranch(branchId, createArgumentsDto.options);
+    }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
         name: createArgumentsDto.name,
@@ -221,6 +258,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       throw new BadRequestException('Cannot update configuration of sample data source');
     }
 
+    // Validate: workspace constants cannot be added directly on the default (master) branch
+    if (branchId && options?.length) {
+      await this.validateNoConstantsOnDefaultBranch(branchId, options);
+    }
+
     try {
       await dbTransactionWrap(async (manager: EntityManager) => {
         const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
@@ -245,17 +287,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
 
           // Branch-aware: also update data_source_version_options
-          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL
-            ? (branchId || null)
-            : null;
+          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
           if (effectiveBranchId) {
             const dsv = await manager.findOne(DataSourceVersion, {
               where: { dataSourceId: dataSource.id, branchId: effectiveBranchId, isActive: true },
             });
             if (dsv) {
-              await this.appEnvironmentUtilService.updateVersionOptions(
-                newOptions, dsv.id, envToUpdate.id, manager
-              );
+              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
               // Also update DSV name if DS name changed
               if (name) {
                 await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
@@ -270,9 +308,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             */
 
           // Get branchId once for all environments
-          const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL
-            ? (branchId || null)
-            : null;
+          const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
           const dsv = nonMultiEnvBranchId
             ? await manager.findOne(DataSourceVersion, {
                 where: { dataSourceId: dataSource.id, branchId: nonMultiEnvBranchId, isActive: true },
@@ -288,9 +324,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
             // Branch-aware: also update version options
             if (dsv) {
-              await this.appEnvironmentUtilService.updateVersionOptions(
-                newOptions, dsv.id, env.id, manager
-              );
+              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, env.id, manager);
             }
           }
 
@@ -475,9 +509,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     // Branch-aware option resolution for global data sources
-    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL
-      ? (branchId || null)
-      : null;
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
 
     if (environmentId) {
       dataSource.options = (
@@ -703,9 +735,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       );
 
       // Branch-aware: also update version options
-      const effectiveUpdateBranchId = dataSource.scope === DataSourceScopes.GLOBAL
-        ? (branchId || null)
-        : null;
+      const effectiveUpdateBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
       const dsv = effectiveUpdateBranchId
         ? await manager.findOne(DataSourceVersion, {
             where: { dataSourceId, branchId: effectiveUpdateBranchId, isActive: true },
@@ -715,9 +745,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
         if (dsv) {
-          await this.appEnvironmentUtilService.updateVersionOptions(
-            updatedOptions, dsv.id, envToUpdate.id, manager
-          );
+          await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, envToUpdate.id, manager);
         }
       } else {
         const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
@@ -725,9 +753,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           allEnvs.map(async (env) => {
             await this.appEnvironmentUtilService.updateOptions(updatedOptions, env.id, dataSourceId, manager);
             if (dsv) {
-              await this.appEnvironmentUtilService.updateVersionOptions(
-                updatedOptions, dsv.id, env.id, manager
-              );
+              await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, env.id, manager);
             }
           })
         );
@@ -1044,11 +1070,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         if (dsvo) {
           const opts = dsvo.options || {};
           opts['tokenData'] = { value: updatedTokenData, encrypted: false };
-          await manager.update(
-            DataSourceVersionOptions,
-            { id: dsvo.id },
-            { options: opts, updatedAt: new Date() }
-          );
+          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options: opts, updatedAt: new Date() });
         }
       }
     });

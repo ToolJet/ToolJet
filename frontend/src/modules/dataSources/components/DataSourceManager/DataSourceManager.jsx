@@ -265,7 +265,8 @@ class DataSourceManagerComponent extends React.Component {
       'hubspot',
       'gmail',
       'googlesheetsv2',
-      'xero'];
+      'xero',
+    ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -437,11 +438,11 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ validationMessages: errorMap });
     const filteredValidationBanner = interactedFields
       ? Object.keys(this.state.validationMessages)
-        .filter((key) => interactedFields.has(key))
-        .reduce((result, key) => {
-          result.push(this.state.validationMessages[key]);
-          return result;
-        }, [])
+          .filter((key) => interactedFields.has(key))
+          .reduce((result, key) => {
+            result.push(this.state.validationMessages[key]);
+            return result;
+          }, [])
       : Object.values(this.state.validationMessages);
     this.setState({ validationError: filteredValidationBanner });
   };
@@ -471,6 +472,7 @@ class DataSourceManagerComponent extends React.Component {
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
         elementsProps={this.props.formProps?.[kind]}
+        isWorkspaceBranchLocked={this.props.isWorkspaceBranchLocked}
       />
     );
   };
@@ -958,15 +960,15 @@ class DataSourceManagerComponent extends React.Component {
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-        selectedDataSource?.name === datasourceName) ||
-      !isEmpty(validationMessages)
+          selectedDataSource?.name === datasourceName) ||
+        !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1028,7 +1030,7 @@ class DataSourceManagerComponent extends React.Component {
                             data-cy="data-source-name-input-field"
                             autoFocus
                             autoComplete="off"
-                            disabled={!canUpdateDataSource(selectedDataSource.id)}
+                            disabled={this.props.isWorkspaceBranchLocked || !canUpdateDataSource(selectedDataSource.id)}
                           />
                           {!this.props.isEditing && (
                             <span className="input-icon-addon">
@@ -1219,7 +1221,7 @@ class DataSourceManagerComponent extends React.Component {
                           appId={this.state.appId}
                         />
                       </div>
-                      {!isSampleDb && (
+                      {!isSampleDb && this.props.showSaveBtn !== false && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
                             className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
@@ -1263,22 +1265,24 @@ class DataSourceManagerComponent extends React.Component {
                           {this.props.t('globals.readDocumentation', 'Read documentation')}
                         </a>
                       </div>
-                      <div className="col-auto" data-cy="db-connection-save-button">
-                        <ButtonSolid
-                          leftIcon="floppydisk"
-                          fill={'#FDFDFE'}
-                          className="m-2"
-                          disabled={
-                            isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
-                          }
-                          variant="primary"
-                          onClick={this.createDataSource}
-                        >
-                          {isSaving
-                            ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                            : this.props.t('globals.save', 'Save')}
-                        </ButtonSolid>
-                      </div>
+                      {this.props.showSaveBtn !== false && (
+                        <div className="col-auto" data-cy="db-connection-save-button">
+                          <ButtonSolid
+                            leftIcon="floppydisk"
+                            fill={'#FDFDFE'}
+                            className="m-2"
+                            disabled={
+                              isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                            }
+                            variant="primary"
+                            onClick={this.createDataSource}
+                          >
+                            {isSaving
+                              ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                              : this.props.t('globals.save', 'Save')}
+                          </ButtonSolid>
+                        </div>
+                      )}
                     </Modal.Footer>
                   )}
               </>

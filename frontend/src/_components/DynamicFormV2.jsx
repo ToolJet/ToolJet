@@ -37,6 +37,7 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -393,10 +394,17 @@ const DynamicFormV2 = ({
     const { label, description, widget, required, width, key, help_text: helpText, list, buttonText } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
-    const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
+    const isEncrypted =
+      widget === 'password-v3' ||
+      widget === 'password-v3-textarea' ||
+      widget === 'password' ||
+      encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+
+    // On locked master branch, disable non-encrypted fields (encrypted fields remain editable)
+    const isFieldDisabledByBranchLock = isWorkspaceBranchLocked && !isEncrypted;
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
 
@@ -440,6 +448,8 @@ const DynamicFormV2 = ({
           onBlur,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
+          disabled: isFieldDisabledByBranchLock,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       }
       case 'password-v3':
@@ -484,7 +494,10 @@ const DynamicFormV2 = ({
           onBlur,
           isRequired: isRequired,
           isValidatedMessages: validationStatus,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           isEditing: isEditing,
@@ -506,7 +519,8 @@ const DynamicFormV2 = ({
           handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: isEncrypted,
           buttonText,
           width: width,
@@ -528,15 +542,20 @@ const DynamicFormV2 = ({
           helpText: helpText,
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
-            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+            handleOptionChange(
+              key,
+              e.target.checked ? (booleanMode ? true : 'enabled') : booleanMode ? false : 'disabled',
+              true
+            );
           },
         };
       case 'toggle-v2':
         return {
           checked: currentValue,
-          label:label,
+          label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
@@ -547,6 +566,7 @@ const DynamicFormV2 = ({
           onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       case 'checkbox':
         return {
@@ -557,7 +577,10 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
           helpText: helpText,
           isRequired: isRequired,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'checkbox-group':
         return {
@@ -684,7 +707,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
-                    widget !== 'toggle-v2' && 
+                    widget !== 'toggle-v2' &&
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -722,12 +745,12 @@ const DynamicFormV2 = ({
 
   const FlipComponentDropdown = (uiProperties) => {
     const flipComponentDropdowns = Object.values(uiProperties || {})
-    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
-    .sort((a, b) => {
-      const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
+      .filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      .sort((a, b) => {
+        const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
 
     // Build all components with their order for sorting
     const allComponents = [];
@@ -756,14 +779,14 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
                 {flipComponentDropdown.widget !== 'toggle-flip' &&
-                (flipComponentDropdown.label || isHorizontalLayout) && (
-                  <label
-                    className={cx('form-label')}
-                    data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                  >
-                    {flipComponentDropdown.label}
-                  </label>
-                )}
+                  (flipComponentDropdown.label || isHorizontalLayout) && (
+                    <label
+                      className={cx('form-label')}
+                      data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                    >
+                      {flipComponentDropdown.label}
+                    </label>
+                  )}
 
                 <div
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
@@ -831,7 +854,7 @@ const DynamicFormV2 = ({
 
   const isFlipComponentDropdown = (uiProperties) => {
     const checkFlipComponents = uiProperties
-      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      ? Object.values(uiProperties).filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
       : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);
