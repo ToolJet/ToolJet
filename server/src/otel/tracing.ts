@@ -104,7 +104,7 @@ function createFilteringSpanProcessor(delegate: BatchSpanProcessor): any {
 // Used for root spans whose entire trace (including all child spans) is noise.
 // Sampler DROP propagates to all children automatically — no orphaned child
 // spans reach the exporter, unlike the SpanProcessor approach.
-//
+
 // "GET /api/{*path}" is the Express wildcard catch-all for the SPA HTML5-history
 // fallback (ServeStaticModule). Each such request spawns ~10 child spans from
 // the license-check guard chain — all suppressed here with a single decision.
