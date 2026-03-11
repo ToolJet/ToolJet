@@ -33,7 +33,6 @@ export class ExternalApiSecurityGuard implements CanActivate {
 
     // Track external API activity as a synthetic system-level identity.
     // All external API calls share one credential, so this acts as a binary
-    // presence indicator under workspace_id="system" in OTEL metrics.
     try {
       trackUserActivity({ workspaceId: 'system', userId: 'external_api' });
     } catch {
