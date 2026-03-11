@@ -381,7 +381,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
     }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: resourceType }],
+      resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {

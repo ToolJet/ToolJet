@@ -668,14 +668,7 @@ class HomePageComponent extends React.Component {
 
   canUserPerform(user, action, app) {
     const currentSession = authenticationService.currentSessionValue;
-    const {
-      user_permissions,
-      app_group_permissions,
-      workflow_group_permissions,
-      folder_group_permissions,
-      super_admin,
-      admin,
-    } = currentSession;
+    const { user_permissions, app_group_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
 
     if (super_admin) return true;
 
@@ -712,24 +705,8 @@ class HomePageComponent extends React.Component {
           return false;
       }
     } else if (this.props.appType === 'front-end') {
-      // Check folder-level permissions based on the app's actual folder(s)
-      // An app can have folder permissions if:
-      // 1. User has is_all_edit_apps permission (can edit apps in all folders) AND app is actually in a folder
-      // 2. Any of the app's folders is in the user's edit_apps_in_folders_id list
-      // Apps not in any folder are NOT affected by folder-level permissions
-      const appFolderIds = app?.folder_ids || [];
-      const isAppInFolder = appFolderIds.length > 0;
-      const hasFolderEditApps =
-        folder_group_permissions &&
-        isAppInFolder &&
-        (folder_group_permissions.is_all_edit_apps ||
-          appFolderIds.some((folderId) => folder_group_permissions.edit_apps_in_folders_id?.includes(folderId)));
-      const hasFolderViewApps =
-        folder_group_permissions &&
-        isAppInFolder &&
-        (folder_group_permissions.is_all_viewable ||
-          appFolderIds.some((folderId) => folder_group_permissions.viewable_folders_id?.includes(folderId)));
-
+      // Backend resolves all folder-derived permissions (owned folders + granular folder permissions)
+      // into editable_apps_id / viewable_apps_id at session time, so no frontend folder checks needed here.
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -738,17 +715,13 @@ class HomePageComponent extends React.Component {
         app_group_permissions.is_all_viewable ||
         app_group_permissions.viewable_apps_id.includes(app?.id);
 
-      // For apps in folders, also consider folder-level permissions
-      const effectiveCanUpdate = canUpdateApp || hasFolderEditApps;
-      const effectiveCanRead = canReadApp || hasFolderViewApps || hasFolderEditApps;
-
       switch (action) {
         case 'create':
           return user_permissions.app_create;
         case 'read':
-          return this.isUserOwnerOfApp(user, app) || effectiveCanRead;
+          return this.isUserOwnerOfApp(user, app) || canReadApp;
         case 'update':
-          return effectiveCanUpdate || this.isUserOwnerOfApp(user, app);
+          return canUpdateApp || this.isUserOwnerOfApp(user, app);
         case 'delete':
           return user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
         default:

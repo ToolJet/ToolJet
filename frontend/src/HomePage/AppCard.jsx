@@ -128,51 +128,15 @@ export default function AppCard({
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;
 
-  // Determine folder-level edit permissions (decide if AppMenu should be shown)
-  const folderGroupPermissions = session?.folder_group_permissions;
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-
-  // True if this app belongs to at least one folder created by the current user.
-  // Applies everywhere — both in the all-apps view and inside a specific folder.
-  const isInOwnedFolder =
-    Array.isArray(ownedFolders) &&
-    ownedFolders.length > 0 &&
-    (app?.folder_ids || []).some((fid) => ownedFolders.some((f) => f.id === fid));
 
   // Check if user is a builder based on role, not just editable apps
   const isBuilder = hasBuilderRole(session?.role ?? {});
 
-  const appFolderIds = app?.folder_ids || [];
-  const isAppInFolder = appFolderIds.length > 0;
-  const hasAppFolderPreviewAccess =
-    isAppInFolder &&
-    (folderGroupPermissions?.is_all_viewable ||
-      folderGroupPermissions?.is_all_edit_apps ||
-      appFolderIds.some(
-        (folderId) =>
-          folderGroupPermissions?.viewable_folders_id?.includes(folderId) ||
-          folderGroupPermissions?.edit_apps_in_folders_id?.includes(folderId)
-      ));
-
-  const canEditAnyFolder =
-    isAppInFolder && // app must actually be in a folder
-    (folderGroupPermissions?.is_all_editable ||
-      appFolderIds.some((fid) => folderGroupPermissions?.editable_folders_id?.includes(fid)));
-
-  const effectivePreviewEnvironmentAccess =
-    !isBuilder && hasAppFolderPreviewAccess
-      ? {
-          ...environmentAccess,
-          development: true,
-          staging: true,
-          production: true,
-        }
-      : environmentAccess;
-
   const hasNonReleasedPreviewAccess =
-    effectivePreviewEnvironmentAccess.development ||
-    effectivePreviewEnvironmentAccess.staging ||
-    effectivePreviewEnvironmentAccess.production;
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
 
   // Builders need explicit released access. End users can launch if the app is released.
   const canAccessReleased = !isBuilder || environmentAccess.released;
@@ -260,8 +224,7 @@ export default function AppCard({
           const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
 
           // For preview, use first available environment from user's actual permissions.
-          // End users with folder access can preview from any non-released environment.
-          const defaultEnv = getDefaultEnvironment(effectivePreviewEnvironmentAccess, isBuilder, true);
+          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
           // Don't add env param if license is invalid or multi-environment feature is not available
           const queryParams = props.basicPlan ? {} : { env: defaultEnv };
           const previewQuery = queryString.stringify(queryParams);
@@ -320,11 +283,7 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canDeleteApp(app) ||
-                  canUpdateApp(app) ||
-                  canEditAnyFolder ||
-                  isInOwnedFolder ||
-                  appType === 'module') && (
+                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
                   <AppMenu
                     appId={app?.id}
                     appUserId={app?.user_id}
@@ -343,7 +302,6 @@ export default function AppCard({
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
                     ownedFolders={ownedFolders}
-                    isInOwnedFolder={isInOwnedFolder}
                   />
                 )}
               </div>
@@ -353,7 +311,7 @@ export default function AppCard({
             <AppNameDisplay tooltipRef={tooltipRef} />
           </div>
           <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
-            {(canUpdate || isInOwnedFolder) && (
+            {canUpdate && (
               <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
                 <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                   <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
@@ -362,7 +320,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || isInOwnedFolder || appType === 'module') && (
+            {(canUpdate || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -393,12 +351,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate &&
-              !isInOwnedFolder &&
-              canView &&
-              appType !== 'module' &&
-              hasNonReleasedPreviewAccess &&
-              ViewButton}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

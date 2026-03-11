@@ -275,10 +275,35 @@ export class AbilityUtilService {
       );
     }, manager);
 
-    // Resolve folder-level edit permissions into app IDs
+    // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
+    // folderDerivedAppIds tracks only apps that arrived via a folder the user actually has access to,
+    // so we can grant them full environment access without leaking to unrelated folders in the org.
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const folderDerivedAppIds = new Set<string>();
+
+      // 1. Apps in folders owned (created) by this user → always editable
+      if (!userAppsPermissions.isAllEditable) {
+        const ownedFolderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .innerJoin('folderApp.folder', 'folder')
+          .where('folder.createdBy = :userId', { userId: user.id })
+          .andWhere('folder.organizationId = :orgId', { orgId: user.organizationId })
+          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
+          .select('folderApp.appId')
+          .getMany();
+
+        const ownedFolderAppIds = ownedFolderApps.map((fa) => fa.appId);
+        userAppsPermissions.editableAppsId = Array.from(
+          new Set([...userAppsPermissions.editableAppsId, ...ownedFolderAppIds])
+        );
+        ownedFolderAppIds.forEach((id) => folderDerivedAppIds.add(id));
+      }
+
+      // 2. Apps in folders the user has explicit granular folder permissions on
       const editableFolderIds: string[] = [];
       const viewableFolderIds: string[] = [];
+      let allFoldersEditable = false;
+      let allFoldersViewable = false;
 
       for (const permission of foldersGranularPermissions) {
         const folderPermission = permission?.foldersGroupPermissions;
@@ -286,76 +311,92 @@ export class AbilityUtilService {
 
         if (permission.isAll) {
           if (folderPermission.canEditApps || folderPermission.canEditFolder) {
-            userAppsPermissions.isAllEditable = true;
+            allFoldersEditable = true;
           }
           if (folderPermission.canViewApps) {
-            userAppsPermissions.isAllViewable = true;
+            allFoldersViewable = true;
           }
-          // If both flags are set, no need to continue collecting folder IDs
-          if (userAppsPermissions.isAllEditable && userAppsPermissions.isAllViewable) break;
           continue;
         }
 
-        if (!permission.isAll) {
-          const folderIds = folderPermission.groupFolders?.map((gf) => gf.folderId) ?? [];
-          if (folderPermission.canEditApps || folderPermission.canEditFolder) {
-            editableFolderIds.push(...folderIds);
-          }
-          if (folderPermission.canViewApps) {
-            viewableFolderIds.push(...folderIds);
-          }
+        const folderIds = folderPermission.groupFolders?.map((gf) => gf.folderId) ?? [];
+        if (folderPermission.canEditApps || folderPermission.canEditFolder) {
+          editableFolderIds.push(...folderIds);
+        }
+        if (folderPermission.canViewApps) {
+          viewableFolderIds.push(...folderIds);
         }
       }
 
+      if (allFoldersEditable || allFoldersViewable) {
+        const allFolderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .innerJoin('folderApp.folder', 'folder')
+          .where('folder.organizationId = :orgId', { orgId: user.organizationId })
+          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
+          .select('folderApp.appId')
+          .getMany();
+        const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
+
+        if (allFoldersEditable && !userAppsPermissions.isAllEditable) {
+          userAppsPermissions.editableAppsId = Array.from(
+            new Set([...userAppsPermissions.editableAppsId, ...allFolderAppIds])
+          );
+          userAppsPermissions.viewableAppsId = Array.from(
+            new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
+          ); // TODO: check if we need to add apps to viewable list as well.
+        } else if (allFoldersViewable && !userAppsPermissions.isAllViewable) {
+          // View only — no edit
+          userAppsPermissions.viewableAppsId = Array.from(
+            new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
+          );
+        }
+
+        allFolderAppIds.forEach((id) => folderDerivedAppIds.add(id));
+      }
+
       // Resolve editable folder IDs → app IDs
-      if (editableFolderIds.length && !userAppsPermissions.isAllEditable) {
+      if (editableFolderIds.length) {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: editableFolderIds })
           .select('folderApp.appId')
           .getMany();
-
         const folderAppIds = folderApps.map((fa) => fa.appId);
-        userAppsPermissions.editableAppsId = Array.from(
-          new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
-        );
+
+        if (!userAppsPermissions.isAllEditable) {
+          userAppsPermissions.editableAppsId = Array.from(
+            new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
+          );
+        }
+        folderAppIds.forEach((id) => folderDerivedAppIds.add(id));
       }
 
       // Resolve viewable folder IDs → app IDs
-      if (viewableFolderIds.length && !userAppsPermissions.isAllViewable) {
+      if (viewableFolderIds.length) {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: viewableFolderIds })
           .select('folderApp.appId')
           .getMany();
-
         const folderAppIds = folderApps.map((fa) => fa.appId);
-        userAppsPermissions.viewableAppsId = Array.from(
-          new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
-        );
+
+        if (!userAppsPermissions.isAllViewable) {
+          userAppsPermissions.viewableAppsId = Array.from(
+            new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
+          );
+        }
+        folderAppIds.forEach((id) => folderDerivedAppIds.add(id));
       }
 
-      // if an app is in a folder, it should get all environment access permissions.
-      const allFolderApps = await manager
-        .createQueryBuilder(FolderApp, 'folderApp')
-        .select('folderApp.appId')
-        .getMany();
-
-      const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
-      for (const folderAppId of allFolderAppIds) {
-        if (!userAppsPermissions.appSpecificEnvironmentAccess![folderAppId]) {
-          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId] = {
-            development: true,
-            staging: true,
-            production: true,
-            released: true,
-          };
-        } else {
-          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].development = true;
-          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].staging = true;
-          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].production = true;
-          userAppsPermissions.appSpecificEnvironmentAccess![folderAppId].released = true;
-        }
+      // Grant full environment access only to apps that arrived via a folder the user has access to.
+      for (const appId of folderDerivedAppIds) {
+        userAppsPermissions.appSpecificEnvironmentAccess![appId] = {
+          development: true,
+          staging: true,
+          production: true,
+          released: true,
+        };
       }
     }, manager);
 

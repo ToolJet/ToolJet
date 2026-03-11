@@ -24,9 +24,6 @@ export function defineAppAbility(
   const currentUserId = UserAllPermissions?.user?.id;
   const isAppOwner = app && currentUserId && app.userId === currentUserId;
 
-  // App is in a folder the current user created — grants rename and icon update only (no full edit/delete).
-  const isAppInOwnedFolder = !!request?.tj_app_in_owned_folder;
-
   // Helper function to check if user can access released environment for an app
   const canAccessReleasedEnv = (appId: string): boolean => {
     if (!userAppPermissions) {
@@ -134,10 +131,5 @@ export function defineAppAbility(
     }
 
     can(permissions, App);
-  }
-
-  // Folder owners may rename the app and update its icon; deleting the app is not allowed.
-  if (isAppInOwnedFolder) {
-    can([FEATURE_KEY.UPDATE, FEATURE_KEY.UPDATE_ICON, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG], App);
   }
 }

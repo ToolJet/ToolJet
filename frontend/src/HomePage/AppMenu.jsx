@@ -20,7 +20,6 @@ export const AppMenu = function AppMenu({
   setMenuOpen,
   appType,
   ownedFolders,
-  isInOwnedFolder,
 }) {
   const { t } = useTranslation();
 
@@ -28,38 +27,30 @@ export const AppMenu = function AppMenu({
   const currentUserId = currentSession?.current_user?.id;
 
   // ─── Ownership ────────────────────────────────────────────────────────────────
-  // True ownership: compare DB-level user_id on the app to the current user's id.
   const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
 
   // ─── App-level edit access ────────────────────────────────────────────────────
-  // Group-level edit access (is_all_editable OR explicitly in editable list).
+  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
+  // already covers apps in folders owned by or explicitly shared with the user.
   const canEditApp =
     currentSession?.app_group_permissions?.is_all_editable ||
     currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
-  // App owners always retain full edit/delete rights, regardless of group permissions.
-  // Folder owners also get modify rights for apps inside their folders.
-  const canModifyApp = canEditApp || isAppOwner || isInOwnedFolder;
+  const canModifyApp = canEditApp || isAppOwner;
 
   const folderGroupPermissions = currentSession?.folder_group_permissions;
 
   const canEditAnyFolderViaGroup =
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
 
-  // Requires BOTH:
-  //   1. The user can modify the app (group grant OR app owner OR folder owner).
-  //   2. At least one folder is available in the dropdown:
-  //        a. Admin/super_admin → all folders
-  //        b. Group folder permissions (is_all_editable or editable_folders_id entries)
-  //        c. User owns folders — available to app owners AND folder owners (isInOwnedFolder).
-  const hasOwnedFolders = (isAppOwner || isInOwnedFolder) && Array.isArray(ownedFolders) && ownedFolders.length > 0;
+  // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
+  const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
 
   const canAddAppToFolder =
     canModifyApp &&
     (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders);
 
-  // Only show when browsing inside a specific folder AND the user has explicit folder-level
-  // edit permission. canModifyApp covers folder-owner case via isInOwnedFolder.
+  // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
   const canRemoveFromFolder =
     !!currentFolder?.id &&
     canModifyApp &&
@@ -67,8 +58,7 @@ export const AppMenu = function AppMenu({
       currentSession?.super_admin ||
       folderGroupPermissions?.is_all_editable ||
       folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
-      currentFolder?.created_by === currentUserId ||
-      isInOwnedFolder);
+      currentFolder?.created_by === currentUserId);
 
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
@@ -106,7 +96,7 @@ export const AppMenu = function AppMenu({
           <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
             <Popover.Body bsPrefix="popover-body">
               <div data-cy="card-options">
-                {(canUpdateApp || isInOwnedFolder) && (
+                {canUpdateApp && (
                   <Field
                     text={t(
                       'homePage.appCard.renameApp',
@@ -115,7 +105,7 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('rename-app')}
                   />
                 )}
-                {(canUpdateApp || isInOwnedFolder) && (
+                {canUpdateApp && (
                   <Field
                     text={t('homePage.appCard.changeIcon', 'Change Icon')}
                     onClick={() => openAppActionModal('change-icon')}
