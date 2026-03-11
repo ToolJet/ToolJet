@@ -270,7 +270,7 @@ export const createEventsSlice = (set, get) => ({
       const latestEvents = get().eventsSlice.getModuleEvents(moduleId);
       const filteredEvents = latestEvents.filter((event) => {
         const foundEvent = events.find((e) => e.id === event.id);
-        return foundEvent && foundEvent.name === eventName;
+        return foundEvent;
       });
       try {
         return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode, moduleId);

@@ -82,6 +82,7 @@ export const useAppDataStore = create(
           });
         },
         updateAppVersionEventHandlers: async (events, updateType = 'update', param) => {
+          console.log(events, 'events');
           get().actions.setIsSaving(true);
           if (param === 'actionId') {
             set({ actionsUpdatedLoader: true });
