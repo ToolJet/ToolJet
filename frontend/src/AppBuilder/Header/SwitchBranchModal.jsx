@@ -41,25 +41,16 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  // Determine current branch name from workspace branch context.
-  // When versionType is 'version' but branchId points to a workspace branch,
-  // the user is working on that workspace branch (not necessarily "main").
-  const currentBranchName = (() => {
-    const vType = selectedVersion?.versionType || selectedVersion?.version_type;
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
 
-    if (vType === 'branch') {
-      return selectedVersion?.name;
-    }
-
-    // Check branchId — the version may have been created on a workspace branch
-    const branchId = selectedVersion?.branchId || selectedVersion?.branch_id;
-    if (branchId) {
-      const wsBranch = allBranches.find((b) => b.id === branchId);
-      if (wsBranch) return wsBranch.name;
-    }
-
-    return currentBranch?.name || defaultBranchName;
-  })();
+  // Determine current branch name:
+  // For platform git sync: use workspace active branch name
+  // For per-app branching: use selectedVersion.name for branches, or default branch name for versions
+  const currentBranchName = workspaceActiveBranch?.name
+    ? workspaceActiveBranch.name
+    : selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch'
+    ? selectedVersion?.name
+    : currentBranch?.name || defaultBranchName;
 
   useEffect(() => {
     if (show && appId && organizationId) {
@@ -126,51 +117,51 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
       return;
     }
 
-    const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-    const isDefaultBranch = branch.name === defaultBranchName;
-
-    // Check if the current app has a branch-type version for the target branch.
-    // If not, the app on the target branch is a different App record — we need
-    // a workspace-level switch instead of an in-app version switch.
-    const devVersions = useStore.getState().developmentVersions || [];
-    const hasBranchVersion = devVersions.some(
-      (v) => (v.versionType === 'branch' || v.version_type === 'branch') && v.name === branch.name
-    );
-
     try {
-      if (isDefaultBranch && !hasBranchVersion) {
-        // Switching to default branch: try in-app switch to a regular version first
-        try {
-          const result = await switchToDefaultBranch(appId, branch.name);
-          if (result.success) {
-            setCurrentBranch(branch);
-            toast.success(`Switched to ${branch.name}`);
-            onClose();
-            return;
+      // Platform git sync: use workspace-level switching (navigates to resolved app)
+      const wsBranches = useWorkspaceBranchesStore.getState().branches;
+      if (wsBranches?.length > 0) {
+        const targetWsBranch = wsBranches.find((b) => b.name === branch.name);
+        if (targetWsBranch) {
+          const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
+          const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+          // Update workspace branch store
+          useWorkspaceBranchesStore.setState({
+            activeBranchId: targetWsBranch.id,
+            currentBranch: targetWsBranch,
+          });
+          if (resolvedAppId && resolvedAppId !== appId) {
+            // Navigate to the corresponding app on the target branch
+            const pathParts = window.location.pathname.split('/');
+            window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+          } else {
+            // Same app or no resolution needed, reload to refresh state
+            window.location.reload();
           }
-        } catch {
-          // In-app switch failed — fall through to workspace-level switch
+          return;
         }
       }
 
-      if (hasBranchVersion) {
-        // Current app has a version for this branch — do in-app switch
+      // Fallback: per-app branch switching (changes version in-place)
+      const isDefaultBranch = branch.name === defaultBranchName;
+      if (isDefaultBranch) {
+        const result = await switchToDefaultBranch(appId, branch.name);
+        if (result.success) {
+          setCurrentBranch(branch);
+          if (result.isDraft) {
+            toast.success(`Switched to ${branch.name} - Working on draft version`);
+          }
+          onClose();
+        }
+      } else {
         await switchBranch(appId, branch.name);
         setCurrentBranch(branch);
-        toast.success(`Switched to ${branch.name}`);
         onClose();
-      } else {
-        // No matching version in current app — workspace-level switch
-        await performWorkspaceLevelSwitch(branch);
       }
     } catch (error) {
-      // Safety net: if in-app switch fails unexpectedly, try workspace-level
-      try {
-        await performWorkspaceLevelSwitch(branch);
-      } catch (fallbackError) {
-        const errorMessage = fallbackError?.error || fallbackError?.message || 'Failed to switch branch';
-        toast.error(errorMessage);
-      }
+      console.error('Error switching branch:', error);
+      const errorMessage = error?.error || error?.message || 'Failed to switch branch';
+      toast.error(errorMessage);
     }
   };
 

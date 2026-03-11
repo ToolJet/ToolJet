@@ -26,6 +26,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -141,6 +142,9 @@ const useAppData = (
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
+  // Subscribe reactively to workspace branch store for freeze override
+  const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+
   // Used to trigger app refresh flow after restoring app history
   const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
   const previousAppHistoryId = usePrevious(restoredAppHistoryId);
@@ -149,6 +153,18 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+
+  // Reactive freeze override for platform git sync feature branches.
+  // The workspace branch store may initialize AFTER useAppData's initial load,
+  // so we watch it reactively and override freeze when it becomes a feature branch.
+  useEffect(() => {
+    if (moduleMode) return;
+    const isOnFeatureBranch = wsCurrentBranch && !wsCurrentBranch.is_default && !wsCurrentBranch.isDefault;
+    if (isOnFeatureBranch) {
+      setIsEditorFreezed(false);
+      updateReleasedVersionId(null);
+    }
+  }, [wsCurrentBranch, moduleMode, setIsEditorFreezed, updateReleasedVersionId]);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -387,8 +403,17 @@ const useAppData = (
           setIsQueryPaneExpanded(false);
         }
 
+        // Check if on a workspace feature branch (platform git sync)
+        // Feature branches should NOT be frozen — only main/default branch and released versions freeze
+        const wsState = useWorkspaceBranchesStore.getState();
+        const wsActiveBranch = wsState.currentBranch;
+        const isOnWorkspaceFeatureBranch =
+          wsActiveBranch && !wsActiveBranch.is_default && !wsActiveBranch.isDefault;
+
         if (!moduleMode) {
-          setIsEditorFreezed(appData.should_freeze_editor);
+          // On workspace feature branches, override server freeze (server freezes all VERSION-type
+          // versions when branching is enabled, but feature branch apps should be editable)
+          setIsEditorFreezed(isOnWorkspaceFeatureBranch ? false : appData.should_freeze_editor);
           const global_settings = mapKeys(
             appData.editing_version?.global_settings || appData.global_settings,
             (value, key) => camelCase(key)
@@ -534,7 +559,9 @@ const useAppData = (
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
-          updateReleasedVersionId(appData.current_version_id);
+          // On workspace feature branches, set releasedVersionId to null so that
+          // selectedVersionId === releasedVersionId doesn't falsely trigger freeze
+          updateReleasedVersionId(isOnWorkspaceFeatureBranch ? null : appData.current_version_id);
         }
 
         setEditorLoading(false, moduleId);
