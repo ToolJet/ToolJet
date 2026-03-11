@@ -23,6 +23,7 @@ export const ButtonGroup = function Button({
     hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
     textSize = 14,
+    fontWeight,
     borderRadius,
     visibility,
     disabledState,
@@ -34,10 +35,13 @@ export const ButtonGroup = function Button({
   const normalizedTextSize = Number(textSize);
   const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
   const computedLineHeight = computedFontSize * 1.42;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
 
   const computedStyles = {
     backgroundColor,
     color: textColor,
+    fontWeight: computedFontWeight,
     fontSize: `${computedFontSize}px`,
     lineHeight: `${computedLineHeight}px`,
     borderRadius: `${borderRadius}px`,

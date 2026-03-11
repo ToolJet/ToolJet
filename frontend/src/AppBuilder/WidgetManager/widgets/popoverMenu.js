@@ -134,6 +134,18 @@ export const popoverMenuConfig = {
             },
             accordian: 'Menu',
         },
+        fontWeight: {
+            type: 'select',
+            displayName: 'Font Weight',
+            options: [
+                { name: 'normal', value: 'normal' },
+                { name: 'medium', value: 'medium' },
+                { name: 'bold', value: 'bold' },
+                { name: 'lighter', value: 'lighter' },
+                { name: 'bolder', value: 'bolder' },
+            ],
+            accordian: 'Menu',
+        },
         borderColor: {
             type: 'colorSwatches',
             displayName: 'Border',
@@ -294,6 +306,7 @@ export const popoverMenuConfig = {
             hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
             textColor: { value: '#FFFFFF' },
             textSize: { value: '{{14}}' },
+            fontWeight: { value: 'normal' },
             borderColor: { value: 'var(--cc-primary-brand)' },
             loaderColor: { value: 'var(--cc-surface1-surface)' },
             icon: { value: 'IconMenu2' },

@@ -99,6 +99,17 @@ export const buttonGroupConfig = {
         defaultValue: 14,
       },
     },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -189,6 +200,7 @@ export const buttonGroupConfig = {
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },

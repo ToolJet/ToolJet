@@ -289,6 +289,18 @@ export const modalV2Config = {
       },
       accordian: 'trigger button',
     },
+    triggerButtonFontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'trigger button',
+    },
     icon: {
       type: 'icon',
       displayName: 'Icon',
@@ -389,6 +401,7 @@ export const modalV2Config = {
       triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
       triggerButtonTextSize: { value: '{{14}}' },
+      triggerButtonFontWeight: { value: 'normal' },
       headerDividerColor: { value: 'var(--cc-default-border)' },
       footerDividerColor: { value: 'var(--cc-default-border)' },
     },

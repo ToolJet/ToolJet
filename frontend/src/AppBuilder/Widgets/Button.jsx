@@ -15,6 +15,7 @@ export const Button = function Button(props) {
     hoverBackgroundColor,
     textColor,
     textSize = 14,
+    fontWeight,
     borderRadius,
     loaderColor,
     borderColor,
@@ -88,6 +89,8 @@ export const Button = function Button(props) {
   const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
   const computedLineHeight = computedFontSize * 1.42;
   const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -238,7 +241,7 @@ export const Button = function Button(props) {
                 <p
                   className="tj-text-sm"
                   style={{
-                    fontWeight: '500',
+                    fontWeight: computedFontWeight,
                     fontSize: `${computedFontSize}px`,
                     lineHeight: `${computedLineHeight}px`,
                     margin: '0px',

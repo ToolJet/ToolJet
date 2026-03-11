@@ -104,6 +104,18 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'button',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
@@ -241,6 +253,7 @@ export const buttonConfig = {
     events: [],
     styles: {
       textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
       textColor: { value: '#FFFFFF' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },

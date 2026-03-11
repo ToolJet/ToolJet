@@ -63,6 +63,7 @@ export const ModalV2 = function Modal({
     triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
     triggerButtonTextSize = 14,
+    triggerButtonFontWeight,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
@@ -73,6 +74,12 @@ export const ModalV2 = function Modal({
     : 14;
   const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
   const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
+  const normalizedTriggerButtonFontWeight = triggerButtonFontWeight === 'medium' ? 500 : triggerButtonFontWeight;
+  const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
+    ? normalizedTriggerButtonFontWeight
+    : normalizedTriggerButtonFontWeight === '0'
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -247,6 +254,7 @@ export const ModalV2 = function Modal({
             style={{
               fontSize: `${computedTriggerButtonFontSize}px`,
               lineHeight: `${computedTriggerButtonLineHeight}px`,
+              fontWeight: computedTriggerButtonFontWeight,
             }}
           >
             {triggerButtonLabel ?? 'Show Modal'}
