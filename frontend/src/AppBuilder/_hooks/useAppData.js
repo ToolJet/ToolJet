@@ -341,7 +341,7 @@ const useAppData = (
 
         setApp(
           {
-            appName: appData.name,
+            appName: appData.branch_app_name || appData.name,
             appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
             currentAppEnvironmentId: editorEnvironment.id,
@@ -626,7 +626,7 @@ const useAppData = (
         setPreviewData(null);
         const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
-          appName: appData.name,
+          appName: appData.branch_app_name || appData.name,
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,

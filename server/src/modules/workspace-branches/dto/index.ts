@@ -25,3 +25,9 @@ export class WorkspacePushDto {
   @IsString()
   targetBranch?: string;
 }
+
+export class WorkspacePullDto {
+  @IsOptional()
+  @IsString()
+  sourceBranch?: string;
+}

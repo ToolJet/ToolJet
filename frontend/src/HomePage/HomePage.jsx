@@ -59,6 +59,7 @@ import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedM
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -116,6 +117,7 @@ class HomePageComponent extends React.Component {
       selectedVersionOption: null,
       featuresLoaded: false,
       showCreateAppModal: false,
+      showSwitchBranchForCreate: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -1519,6 +1521,14 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           )}
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForCreate}
+            onClose={() => this.setState({ showSwitchBranchForCreate: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForCreate: false, showCreateAppModal: true });
+            }}
+          />
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1919,11 +1929,13 @@ class HomePageComponent extends React.Component {
                         <Button
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() =>
-                            this.setState({
-                              showCreateAppModal: true,
-                            })
-                          }
+                          onClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                            } else {
+                              this.setState({ showCreateAppModal: true });
+                            }
+                          }}
                           data-cy={`create-new-${
                             this.props.appType === 'workflow'
                               ? 'workflows'

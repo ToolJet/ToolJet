@@ -46,6 +46,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AppBranchState } from '@entities/app_branch_state.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -269,6 +270,19 @@ export class AppsService implements IAppsService {
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && name != app.name) {
+      // Update AppBranchState for the active branch with the new app name
+      if (isGitSyncEnabled && orgGit?.activeBranchId) {
+        const editingVersion = editingVersionId
+          ? await this.versionRepository.findById(editingVersionId, app.id)
+          : app.editingVersion;
+        const branchId = editingVersion?.branchId || orgGit.activeBranchId;
+        await this.appRepository.manager.update(
+          AppBranchState,
+          { appId: app.id, branchId, organizationId },
+          { appName: name, metaTimestamp: Date.now() }
+        );
+      }
+
       const appRenameDto = {
         user: user,
         organizationId: organizationId,

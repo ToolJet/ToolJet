@@ -10,13 +10,14 @@ import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderBut
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion, orgGit } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
@@ -24,9 +25,19 @@ export const EditorHeader = ({ darkMode }) => {
       appId: state.appStore.modules[moduleId].app.appId,
       organizationId: state.appStore.modules[moduleId].app.organizationId,
       selectedVersion: state.selectedVersion,
+      orgGit: state.orgGit,
     }),
     shallow
   );
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const isOnBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+  const isWorkspaceOnNonDefaultBranch =
+    workspaceActiveBranch?.name &&
+    workspaceActiveBranch.name !== defaultBranchName &&
+    !workspaceActiveBranch?.is_default &&
+    !workspaceActiveBranch?.isDefault;
+  const isOnFeatureBranch = isOnBranchVersion || isWorkspaceOnNonDefaultBranch;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -84,7 +95,7 @@ export const EditorHeader = ({ darkMode }) => {
                       <PreviewAndShareIcons />
                       {<BranchDropdown appId={appId} organizationId={organizationId} />}
                       {/* Hide version dropdown when on a feature branch */}
-                      {selectedVersion?.versionType !== 'branch' && (
+                      {!isOnFeatureBranch && (
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>

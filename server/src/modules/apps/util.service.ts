@@ -42,6 +42,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { AppBranchState } from '@entities/app_branch_state.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -81,9 +82,9 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      //create default app version
+      //create default app version — v1 is the base version, does NOT get branchId
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
-      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager, branchId);
+      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
       const defaultHomePage = await manager.save(
         manager.create(Page, {
@@ -154,9 +155,25 @@ export class AppsUtilService implements IAppsUtilService {
       };
       await manager.save(appVersion);
 
-      // Auto-create branch version when app is created on a workspace feature branch.
-      // This ensures switchBranch() in the frontend can find a versionType='branch' version.
+      // When created on a workspace branch, track this app in app_branch_state
+      // and optionally create a branch-type version for per-app branch switching.
       if (branchId) {
+        // Set co_relation_id early so it stays consistent for git push and branch state
+        await manager.update(App, { id: app.id }, { co_relation_id: app.id });
+        app.co_relation_id = app.id;
+
+        // Create app_branch_state — source of truth for which apps exist on which branch
+        await manager.save(
+          AppBranchState,
+          manager.create(AppBranchState, {
+            organizationId: user.organizationId,
+            branchId,
+            appId: app.id,
+            coRelationId: app.id,
+            appName: name,
+          })
+        );
+
         try {
           const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
           if (workspaceBranch && !workspaceBranch.isDefault) {

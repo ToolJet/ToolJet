@@ -194,9 +194,11 @@ export function BranchDropdown({ appId, organizationId }) {
   // Auto-switch to the correct branch version on initial load.
   // Uses branchId from the current version to find the matching branch-type version.
   // switchBranch() handles everything: version, environment, editability, banner, push/pull.
-  const initialBranchSwitchDone = useRef(false);
+  // NOTE: Uses store-level flag (initialAutoSwitchDone) instead of useRef to survive component remounts.
+  const initialAutoSwitchDone = useStore((state) => state.initialAutoSwitchDone);
+  const setInitialAutoSwitchDone = useStore((state) => state.setInitialAutoSwitchDone);
   useEffect(() => {
-    if (initialBranchSwitchDone.current) return;
+    if (initialAutoSwitchDone) return;
     if (!branchingEnabled || !appId) return;
     if (!developmentVersions?.length) return;
     // Already on a branch version — nothing to do
@@ -210,23 +212,13 @@ export function BranchDropdown({ appId, organizationId }) {
       (v) => v.versionType === 'branch' || v.version_type === 'branch'
     );
 
-    console.log('[AutoBranchSwitch] Check:', {
-      defaultBranch,
-      selectedVersionType: selectedVersion?.versionType,
-      currentVersionBranchId,
-      developmentVersionsCount: developmentVersions.length,
-      branchVersionNames: branchVersions.map((v) => v.name),
-    });
-
-    if (branchVersions.length === 0) return;
-
     // Determine target branch name:
     // 1. If current version has branchId, find the branch version with same branchId
     // 2. Fallback: use workspace store's active branch
     // 3. Fallback: if exactly one branch version exists, use it
     let targetBranchName = null;
 
-    if (currentVersionBranchId) {
+    if (currentVersionBranchId && branchVersions.length > 0) {
       const matchByBranchId = branchVersions.find(
         (v) => (v.branchId || v.branch_id) === currentVersionBranchId
       );
@@ -239,6 +231,16 @@ export function BranchDropdown({ appId, organizationId }) {
       const matchByWs = branchVersions.find((v) => v.name === workspaceActiveBranch.name);
       if (matchByWs) {
         targetBranchName = matchByWs.name;
+      } else {
+        // Workspace is on a non-default branch but no branch version exists in this app.
+        // Just update the display to reflect the workspace branch — don't attempt
+        // an in-app version switch which would fail.
+        const wsBranch = allBranches.find((b) => b.name === workspaceActiveBranch.name) || {
+          name: workspaceActiveBranch.name,
+        };
+        setCurrentBranch(wsBranch);
+        setInitialAutoSwitchDone(true);
+        return;
       }
     }
 
@@ -247,15 +249,12 @@ export function BranchDropdown({ appId, organizationId }) {
     }
 
     if (!targetBranchName || targetBranchName === defaultBranch) {
-      console.log('[AutoBranchSwitch] No target branch to switch to');
       return;
     }
 
-    initialBranchSwitchDone.current = true;
-    console.log('[AutoBranchSwitch] Switching to branch:', targetBranchName);
+    setInitialAutoSwitchDone(true);
     switchBranch(appId, targetBranchName)
-      .then((result) => console.log('[AutoBranchSwitch] Switch success:', result))
-      .catch((err) => console.error('[AutoBranchSwitch] Switch failed:', err?.message || err));
+      .catch((err) => console.error('AutoBranchSwitch failed:', err?.message || err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchingEnabled, appId, workspaceActiveBranch, developmentVersions, selectedVersion, orgGit]);
 
@@ -378,12 +377,22 @@ export function BranchDropdown({ appId, organizationId }) {
   const currentBranchName = selectedVersion?.name || currentBranch?.name;
 
   // Determine if on default branch:
-  // - If versionType is 'version', we're on a regular version (show default branch UI)
-  // - If versionType is 'branch', we're on a feature branch (show branch commit UI)
-  const isOnDefaultBranch = selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+  // Consider both the version type AND the workspace's active branch.
+  // When the workspace is on a non-default branch (e.g., after workspace-level switch),
+  // we should show that branch even if the app's version type is 'version'.
+  const isOnBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+  const isWorkspaceOnNonDefaultBranch =
+    workspaceActiveBranch?.name &&
+    workspaceActiveBranch.name !== defaultBranchName &&
+    !workspaceActiveBranch?.is_default &&
+    !workspaceActiveBranch?.isDefault;
+  const isOnDefaultBranch = !isOnBranchVersion && !isWorkspaceOnNonDefaultBranch;
 
-  // Display name: show default branch name when on a version, otherwise show current branch name
-  const displayBranchName = isOnDefaultBranch ? defaultBranchName : currentBranchName;
+  // Display name: show workspace branch when on a non-default workspace branch,
+  // branch version name when on a branch version, or default branch name otherwise
+  const displayBranchName = isOnDefaultBranch
+    ? defaultBranchName
+    : currentBranch?.name || workspaceActiveBranch?.name || currentBranchName;
 
   // Filter PRs based on active tab
   // Check both 'state' and 'status' fields to support different API responses
@@ -649,20 +658,19 @@ export function BranchDropdown({ appId, organizationId }) {
                   <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
                   <span>Create new branch</span>
                 </button>
-                {console.log('BranchDropdown - allBranches:', allBranches, 'length:', allBranches.length) ||
-                  (true && allBranches.length > 0 && (
-                    <button
-                      className="switch-branch-btn"
-                      onClick={() => {
-                        setShowDropdown(false);
-                        setShowSwitchModal(true);
-                      }}
-                      data-cy="switch-branch-btn"
-                    >
-                      <SolidIcon name="refresh" width="14" />
-                      <span>Switch branch</span>
-                    </button>
-                  ))}
+                {allBranches.length > 0 && (
+                  <button
+                    className="switch-branch-btn"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowSwitchModal(true);
+                    }}
+                    data-cy="switch-branch-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" />
+                    <span>Switch branch</span>
+                  </button>
+                )}
               </>
             ) : (
               <>

@@ -14,7 +14,11 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async switchBranch(organizationId: string, branchId: string): Promise<void> {
+  async switchBranch(
+    organizationId: string,
+    branchId: string,
+    appId?: string
+  ): Promise<{ success: boolean; resolvedAppId?: string }> {
     throw new NotFoundException();
   }
 
@@ -26,11 +30,15 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async pullWorkspace(organizationId: string, user?: User): Promise<{ success: boolean }> {
+  async pullWorkspace(organizationId: string, user?: User, sourceBranch?: string): Promise<{ success: boolean }> {
     throw new NotFoundException();
   }
 
   async checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse> {
+    throw new NotFoundException();
+  }
+
+  async listRemoteBranches(organizationId: string): Promise<{ name: string }[]> {
     throw new NotFoundException();
   }
 }

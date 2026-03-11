@@ -9,6 +9,7 @@ export const workspaceBranchesService = {
   pushWorkspace,
   pullWorkspace,
   checkForUpdates,
+  listRemoteBranches,
 };
 
 function list() {
@@ -27,8 +28,13 @@ function create(name, sourceBranchId) {
   return fetch(`${config.apiUrl}/workspace-branches`, requestOptions).then(handleResponse);
 }
 
-function switchBranch(branchId) {
-  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include' };
+function switchBranch(branchId, appId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    ...(appId && { body: JSON.stringify({ appId }) }),
+  };
   return fetch(`${config.apiUrl}/workspace-branches/${branchId}/activate`, requestOptions).then(handleResponse);
 }
 
@@ -48,8 +54,14 @@ function pushWorkspace(commitMessage, targetBranch) {
   return fetch(`${config.apiUrl}/workspace-branches/push`, requestOptions).then(handleResponse);
 }
 
-function pullWorkspace() {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+function pullWorkspace(sourceBranch) {
+  const body = sourceBranch ? { sourceBranch } : undefined;
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    ...(body && { body: JSON.stringify(body) }),
+  };
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
 }
 
@@ -57,4 +69,9 @@ function checkForUpdates(branch) {
   const params = branch ? `?branch=${encodeURIComponent(branch)}` : '';
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/check-updates${params}`, requestOptions).then(handleResponse);
+}
+
+function listRemoteBranches() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workspace-branches/remote`, requestOptions).then(handleResponse);
 }

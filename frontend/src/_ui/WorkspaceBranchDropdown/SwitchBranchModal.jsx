@@ -7,7 +7,7 @@ import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { Alert } from '@/_ui/Alert';
 import '@/_styles/switch-branch-modal.scss';
 
-export function WorkspaceSwitchBranchModal({ show, onClose }) {
+export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -34,9 +34,9 @@ export function WorkspaceSwitchBranchModal({ show, onClose }) {
 
   // Filter branches by search term
   const filteredBranches = branches.filter((branch) => {
-    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
+    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    // When used for "create app" flow, hide the default branch (user is leaving it)
+    if (onBranchSwitch && (branch.is_default || branch.isDefault)) return false;
     return true;
   });
 
@@ -50,7 +50,11 @@ export function WorkspaceSwitchBranchModal({ show, onClose }) {
       await actions.switchBranch(branch.id);
       toast.success(`Switched to ${branch.name}`);
       onClose();
-      window.location.reload();
+      if (onBranchSwitch) {
+        onBranchSwitch(branch);
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error switching branch:', error);
       const errorMessage = error?.error || error?.message || 'Failed to switch branch';

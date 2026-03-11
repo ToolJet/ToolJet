@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
-import { CreateBranchDto, WorkspacePushDto } from './dto';
+import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto } from './dto';
 import { IWorkspaceBranchController } from './interfaces/IController';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -39,9 +39,8 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @InitFeature(FEATURE_KEY.SWITCH_BRANCH)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id/activate')
-  async switchBranch(@User() user, @Param('id') branchId: string) {
-    await this.workspaceBranchService.switchBranch(user.organizationId, branchId);
-    return { success: true };
+  async switchBranch(@User() user, @Param('id') branchId: string, @Body() body?: { appId?: string }) {
+    return this.workspaceBranchService.switchBranch(user.organizationId, branchId, body?.appId);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_BRANCH)
@@ -62,7 +61,14 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @InitFeature(FEATURE_KEY.PULL_WORKSPACE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('pull')
-  async pullWorkspace(@User() user) {
-    return this.workspaceBranchService.pullWorkspace(user.organizationId, user);
+  async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
+    return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch);
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_REMOTE_BRANCHES)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('remote')
+  async listRemoteBranches(@User() user) {
+    return this.workspaceBranchService.listRemoteBranches(user.organizationId);
   }
 }

@@ -27,6 +27,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PUSH_WORKSPACE,
           FEATURE_KEY.PULL_WORKSPACE,
           FEATURE_KEY.CHECK_UPDATES,
+          FEATURE_KEY.LIST_REMOTE_BRANCHES,
         ],
         WorkspaceBranch
       );

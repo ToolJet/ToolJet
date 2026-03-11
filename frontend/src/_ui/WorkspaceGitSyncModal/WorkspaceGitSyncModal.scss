@@ -282,6 +282,56 @@
   flex-shrink: 0;
 }
 
+// Action choice section (Import vs Pull into current branch)
+.git-sync-modal .action-choice-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+
+  .action-choice-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--slate5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+
+    &:hover,
+    &.active {
+      border-color: var(--indigo9);
+    }
+
+    input[type='radio'] {
+      margin-top: 2px;
+      accent-color: var(--indigo9);
+      flex-shrink: 0;
+    }
+
+    .option-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .option-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate12);
+      line-height: 20px;
+    }
+
+    .option-description {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--slate11);
+      line-height: 18px;
+    }
+  }
+}
+
 .git-sync-modal .no-commits-empty-state {
   display: flex;
   align-items: flex-start;

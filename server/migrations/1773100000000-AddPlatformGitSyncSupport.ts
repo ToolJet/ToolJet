@@ -43,6 +43,10 @@ export class AddPlatformGitSyncSupport1773100000000 implements MigrationInterfac
         ADD CONSTRAINT fk_app_versions_branch
         FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE SET NULL;
     `);
+
+    // 4. Relax app name uniqueness for GIT-created apps.
+    //    See data-migration 1773100000001 — runs after older data-migrations
+    //    that create/modify the app_name_organization_id_unique constraint.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

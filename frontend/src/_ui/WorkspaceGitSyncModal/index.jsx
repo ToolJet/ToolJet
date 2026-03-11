@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import Modal from 'react-bootstrap/Modal';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { toast } from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -19,7 +20,6 @@ const UPDATE_STATUS = {
 export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [commitMessage, setCommitMessage] = useState('');
-  // const [activeTab, setActiveTab] = useState('push');
   const [activeTab, setActiveTab] = useState(initialTab);
   const [checkingForUpdate, setCheckingForUpdate] = useState({
     visible: true,
@@ -30,18 +30,25 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [pushLatestCommitData, setPushLatestCommitData] = useState(null);
   const [pushLatestCommitLoading, setPushLatestCommitLoading] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
+  const [pullAction, setPullAction] = useState('import');
+  const [actionChoiceMode, setActionChoiceMode] = useState(false);
 
-  const { orgGitConfig, branches, isPushing, isPulling } = useWorkspaceBranchesStore((state) => ({
-    orgGitConfig: state.orgGitConfig,
-    branches: state.branches || [],
-    isPushing: state.isPushing,
-    isPulling: state.isPulling,
-  }));
+  const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
+    (state) => ({
+      orgGitConfig: state.orgGitConfig,
+      branches: state.branches || [],
+      remoteBranches: state.remoteBranches || [],
+      currentBranch: state.currentBranch,
+      isPushing: state.isPushing,
+      isPulling: state.isPulling,
+    })
+  );
   const actions = useWorkspaceBranchesStore((state) => state.actions);
 
   const repoUrl = orgGitConfig?.repo_url || orgGitConfig?.repoUrl || '';
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const gitType = orgGitConfig?.git_type || orgGitConfig?.gitType || 'github_https';
+  const currentBranchName = currentBranch?.name || defaultGitBranch;
 
   const gitSyncUrl = (() => {
     if (gitType === 'gitlab') return repoUrl;
@@ -52,17 +59,17 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     return repoUrl;
   })();
 
-  // Set initial selected branch
+  // Set initial selected branch to current branch
   useEffect(() => {
-    if (!selectedBranch && defaultGitBranch) {
-      setSelectedBranch(defaultGitBranch);
+    if (!selectedBranch && currentBranchName) {
+      setSelectedBranch(currentBranchName);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultGitBranch]);
+  }, [currentBranchName]);
 
-  // Fetch latest commit for push/commit modal on mount
+  // Fetch latest commit for push/commit section
   useEffect(() => {
-    if (initialTab === 'push' && defaultGitBranch) {
+    if (activeTab === 'push' && defaultGitBranch && !pushLatestCommitData && !pushLatestCommitLoading) {
       setPushLatestCommitLoading(true);
       actions
         .checkForUpdates(defaultGitBranch)
@@ -77,11 +84,11 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTab, defaultGitBranch]);
+  }, [activeTab, defaultGitBranch]);
 
-  // Re-check when selected branch changes (only if we already have results)
+  // Re-check when selected branch changes (only if we already have results and not in action choice)
   useEffect(() => {
-    if (selectedBranch && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE) {
+    if (selectedBranch && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && !actionChoiceMode) {
       checkForUpdates();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,24 +101,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       status: UPDATE_STATUS.FETCHING,
     });
 
-    actions
-      .checkForUpdates(selectedBranch || defaultGitBranch)
-      .then((data) => {
-        if (data?.latestCommit) {
-          setLatestCommitData(data.latestCommit);
-          setCheckingForUpdate({
-            visible: false,
-            message: '',
-            status: UPDATE_STATUS.AVAILABLE,
-          });
-        } else {
-          setLatestCommitData(null);
-          setCheckingForUpdate({
-            visible: true,
-            message: 'Workspace is up to date with latest changes',
-            status: UPDATE_STATUS.UNAVAILABLE,
-          });
-        }
+    // Fetch remote branches and check for updates in parallel
+    Promise.all([actions.checkForUpdates(selectedBranch || currentBranchName), actions.fetchRemoteBranches()])
+      .then(([data]) => {
+        setLatestCommitData(data?.latestCommit || null);
+        // Always show dropdown after check, regardless of whether updates exist
+        setCheckingForUpdate({
+          visible: false,
+          message: '',
+          status: UPDATE_STATUS.AVAILABLE,
+        });
       })
       .catch((error) => {
         toast.error(error?.error || error?.message || 'Failed to check for updates');
@@ -121,6 +120,82 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           status: UPDATE_STATUS.NONE,
         });
       });
+  };
+
+  const handleBranchChange = (branchName) => {
+    setSelectedBranch(branchName);
+    // If selected branch differs from current, show action choice
+    if (branchName !== currentBranchName) {
+      setPullAction('import');
+      setActionChoiceMode(true);
+    } else {
+      setActionChoiceMode(false);
+    }
+  };
+
+  const getAppIdFromUrl = () => {
+    const match = window.location.pathname.match(/\/[^/]+\/apps\/([^/]+)/);
+    return match ? match[1] : null;
+  };
+
+  const handleImportBranch = async () => {
+    try {
+      // Check if branch already exists locally — if so, update it; if not, create it
+      const existingBranch = branches.find((b) => b.name === selectedBranch);
+      let branchId;
+
+      if (existingBranch) {
+        branchId = existingBranch.id;
+      } else {
+        const newBranch = await actions.createBranch(selectedBranch);
+        branchId = newBranch.id;
+      }
+
+      // Switch to the target branch — pass appId for co_relation_id resolution
+      const appId = getAppIdFromUrl();
+      const switchResult = await workspaceBranchesService.switchBranch(branchId, appId);
+
+      // Pull from that branch (now active) — creates stubs for all apps
+      await actions.pullWorkspace();
+
+      toast.success(`Imported ${selectedBranch} successfully`);
+      onClose();
+
+      // Navigate based on whether the current app exists in the target branch
+      const resolvedAppId = switchResult?.resolvedAppId || switchResult?.resolved_app_id;
+      const pathParts = window.location.pathname.split('/');
+      if (resolvedAppId && appId) {
+        window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+      } else if (appId) {
+        // Current app doesn't exist in that branch — go to homepage
+        window.location.href = `/${pathParts[1]}`;
+      } else {
+        // Already on homepage — just reload
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Import failed');
+    }
+  };
+
+  const handleOverwritePull = async () => {
+    try {
+      // Pull from selected branch into current branch (overwrites everything)
+      await actions.pullWorkspace(selectedBranch);
+      toast.success('Changes pulled successfully');
+      onClose();
+      window.location.reload();
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Pull failed');
+    }
+  };
+
+  const handleContinue = async () => {
+    if (pullAction === 'import') {
+      await handleImportBranch();
+    } else {
+      await handleOverwritePull();
+    }
   };
 
   const formatCommitDate = (dateString) => {
@@ -164,21 +239,58 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     }
   };
 
-  // const togglePushModal = () => setActiveTab('push');
-  // const togglePullModal = () => setActiveTab('pull');
+  // Use remote branches for dropdown, fall back to local branches
+  const dropdownBranches = remoteBranches.length > 0 ? remoteBranches : branches;
 
-  // ---- Pull section content (shared between pull-only and pushpull pull tab) ----
+  // ---- Action choice view (Import vs Pull into current branch) ----
+  const renderActionChoice = () => (
+    <div className="action-choice-section">
+      <label
+        className={cx('action-choice-option', { active: pullAction === 'import' })}
+        onClick={() => setPullAction('import')}
+      >
+        <input
+          type="radio"
+          name="pullAction"
+          value="import"
+          checked={pullAction === 'import'}
+          onChange={() => setPullAction('import')}
+        />
+        <div className="option-content">
+          <div className="option-title">Import as new branch</div>
+          <div className="option-description">Imports {selectedBranch} branch in ToolJet with the latest commit</div>
+        </div>
+      </label>
+      <label
+        className={cx('action-choice-option', { active: pullAction === 'overwrite' })}
+        onClick={() => setPullAction('overwrite')}
+      >
+        <input
+          type="radio"
+          name="pullAction"
+          value="overwrite"
+          checked={pullAction === 'overwrite'}
+          onChange={() => setPullAction('overwrite')}
+        />
+        <div className="option-content">
+          <div className="option-title">Pull into current branch</div>
+          <div className="option-description">Overwrites changes on current branch</div>
+        </div>
+      </label>
+    </div>
+  );
+
+  // ---- Pull section content ----
   const renderPullSection = () => (
     <div className="pull-section">
-      {/* <form noValidate className="d-flex align-items-center justify-content-center w-100"> */}
       <form
         noValidate
-        className={`d-flex w-100 h-100 ${
+        className={`d-flex w-100 ${
           checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE
             ? 'align-items-start justify-content-start'
             : 'align-items-center justify-content-center'
         }`}
-      >  
+      >
         {/* Check for updates button */}
         {checkingForUpdate?.visible && (
           <div className="form-group mb-3">
@@ -203,7 +315,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             <div className="form-group mb-3 w-100">
               <Dropdown
                 label="Select branch to pull from"
-                options={branches.reduce((acc, branch) => {
+                options={dropdownBranches.reduce((acc, branch) => {
                   acc[branch.name] = {
                     value: branch.name,
                     label: branch.name,
@@ -211,14 +323,14 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                   return acc;
                 }, {})}
                 value={selectedBranch}
-                onChange={setSelectedBranch}
+                onChange={handleBranchChange}
                 width="100%"
                 theme={darkMode ? 'dark' : 'light'}
               />
             </div>
 
-            {/* Latest commit info */}
-            {latestCommitData && (
+            {/* Latest commit info or up-to-date message */}
+            {latestCommitData ? (
               <div className="w-100">
                 <div className="selected-commit-header">LATEST COMMIT</div>
                 <div className="d-flex w-100">
@@ -246,6 +358,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className="no-commits-empty-state w-100">
+                <SolidIcon name="tick" />
+                <div className="empty-state-content">
+                  <div className="empty-state-title">Up to date</div>
+                  <div className="empty-state-description">
+                    Workspace is up to date with the latest changes on this branch
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -253,212 +375,156 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     </div>
   );
 
-  // Push/Pull tabs — only rendered on feature branches
-  // const showPushPullHeader = () => (
-  //   <div className="push-pull-tabs row mt-2" style={{ width: '350px' }}>
-  //     <div className={`tab-push ${activeTab === 'push' ? 'active' : ''} text-center w-50`}>
-  //       <button
-  //         className={`btn w-100 py-2 ${activeTab === 'push' ? 'text-primary' : 'text-secondary'} border-0`}
-  //         style={{
-  //           color: activeTab === 'push' ? '#4368E3' : '',
-  //           backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
-  //         }}
-  //         onClick={togglePushModal}
-  //       >
-  //         <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
-  //           <SolidIcon name="push-changes" fill={activeTab === 'push' ? '#4368E3' : '#ACB2B9'} />
-  //         </span>
-  //         <span style={{ fontWeight: activeTab === 'push' ? '500' : 'normal' }}>Push</span>
-  //       </button>
-  //     </div>
-  //     <div className={`tab-pull ${activeTab === 'pull' ? 'active' : ''} text-center w-50`}>
-  //       <button
-  //         className={`btn w-100 py-2 ${activeTab === 'pull' ? 'text-primary' : 'text-secondary'} border-0`}
-  //         style={{
-  //           color: activeTab === 'pull' ? '#4368E3' : '',
-  //           backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
-  //         }}
-  //         onClick={togglePullModal}
-  //       >
-  //         <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
-  //           <SolidIcon name="pull-changes" fill={activeTab === 'pull' ? '#4368E3' : '#ACB2B9'} />
-  //         </span>
-  //         <span style={{ fontWeight: activeTab === 'pull' ? '500' : 'normal' }}>Pull</span>
-  //       </button>
-  //     </div>
-  //   </div>
-  // );
-
-  // // --- PULL-only modal body (default branch) ---
-  // const renderPullOnlyBody = () => <div className="pull-container">{renderPullSection()}</div>;
-
-  // // --- PUSHPULL modal body (feature branch) ---
-  // const renderPushPullBody = () => (
-  //   <div className="pushpull-container">
-  //     {activeTab === 'push' && (
-  //       <form noValidate>
-  //         <div className="push-section mb-4">
-  //           <div className="d-flex flex-column w-100 align-items-center">
-  //             <div className="form-group mb-2 w-100">
-  //               <label className="mb-1 tj-text-xsm font-weight-500" data-cy="commit-message-label">
-  //                 Commit message
-  //               </label>
-  //               <div className="tj-app-input">
-  //                 <input
-  //                   onChange={handleCommitChange}
-  //                   type="text"
-  //                   value={commitMessage}
-  //                   placeholder="Briefly describe the changes you've made"
-  //                   className="form-control font-weight-400"
-  //                   data-cy="commit-message-input"
-  //                   autoFocus
-  //                 />
-  //               </div>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </form>
-  //     )}
-  //
-  //     {activeTab === 'pull' && renderPullSection()}
-  //   </div>
-  // );
-
-  // --- Modal body based on initialTab (no tabs, direct content) ---
-  const renderModalBody = () => {
-    if (initialTab === 'pull') {
-      return <div className="pull-container">{renderPullSection()}</div>;
-    }
-    return (
-      <div className="pushpull-container">
-        <form noValidate>
-          <div className="push-section mb-4">
-            <div className="d-flex flex-column w-100 align-items-start">
-              <div className="form-group mb-2 w-100">
-                <label className="mb-1 tj-text-xsm font-weight-500" data-cy="commit-message-label">
-                  Commit message
-                </label>
-                <div className="tj-app-input">
-                  <input
-                    onChange={handleCommitChange}
-                    type="text"
-                    value={commitMessage}
-                    placeholder="Briefly describe the changes you've made"
-                    className="form-control font-weight-400"
-                    data-cy="commit-message-input"
-                    autoFocus
-                  />
-                </div>
-              </div>
-              {/* Latest commit info */}
-              {pushLatestCommitLoading && (
-                <div className="d-flex justify-content-center w-100 mt-2">
-                  <div className="loader-container">
-                    <div className="primary-spin-loader"></div>
-                  </div>
-                </div>
-              )}
-
-              {!pushLatestCommitLoading && pushLatestCommitData && (
-                <div className="w-100">
-                  <div className="selected-commit-header">LATEST COMMIT</div>
-                  <div className="d-flex w-100">
-                    <div className="selected-commit-info">
-                      <div className="commit-icon">
-                        <SolidIcon name="commit" width="20" />
-                      </div>
-                      <div className="commit-content">
-                        <OverflowTooltip
-                          className="commit-title"
-                          whiteSpace="normal"
-                          style={{
-                            maxWidth: '100%',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                          }}
-                        >
-                          {pushLatestCommitData.message || 'No message'}
-                        </OverflowTooltip>
-                        <div className="commit-metadata">
-                          By {pushLatestCommitData.author || 'Unknown'} |{' '}
-                          {formatCommitDate(pushLatestCommitData.date)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!pushLatestCommitLoading && !pushLatestCommitData && (
-                <div className="no-commits-empty-state w-100 mt-2">
-                  <div className="empty-state-content">
-                    <div className="empty-state-title">No commits yet</div>
-                    <div className="empty-state-description">
-                      This will be your first commit to the repository.
-                    </div>
-                  </div>
-                </div>
-              )}
+  // ---- Push section content ----
+  const renderPushSection = () => (
+    <form noValidate>
+      <div className="push-section mb-4">
+        <div className="d-flex flex-column w-100 align-items-start">
+          <div className="form-group mb-2 w-100">
+            <label className="mb-1 tj-text-xsm font-weight-500" data-cy="commit-message-label">
+              Commit message
+            </label>
+            <div className="tj-app-input">
+              <input
+                onChange={handleCommitChange}
+                type="text"
+                value={commitMessage}
+                placeholder="Briefly describe the changes you've made"
+                className="form-control font-weight-400"
+                data-cy="commit-message-input"
+                autoFocus
+              />
             </div>
           </div>
-        </form>
+          {pushLatestCommitLoading && (
+            <div className="d-flex justify-content-center w-100 mt-2">
+              <div className="loader-container">
+                <div className="primary-spin-loader"></div>
+              </div>
+            </div>
+          )}
+
+          {!pushLatestCommitLoading && pushLatestCommitData && (
+            <div className="w-100 mt-2">
+              <div className="selected-commit-header">LATEST COMMIT</div>
+              <div className="d-flex w-100">
+                <div className="selected-commit-info">
+                  <div className="commit-icon">
+                    <SolidIcon name="commit" width="20" />
+                  </div>
+                  <div className="commit-content">
+                    <OverflowTooltip
+                      className="commit-title"
+                      whiteSpace="normal"
+                      style={{
+                        maxWidth: '100%',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {pushLatestCommitData.message || 'No message'}
+                    </OverflowTooltip>
+                    <div className="commit-metadata">
+                      By {pushLatestCommitData.author || 'Unknown'} | {formatCommitDate(pushLatestCommitData.date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!pushLatestCommitLoading && !pushLatestCommitData && (
+            <div className="no-commits-empty-state w-100 mt-2">
+              <div className="empty-state-content">
+                <div className="empty-state-title">No commits yet</div>
+                <div className="empty-state-description">This will be your first commit to the repository.</div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    );
+    </form>
+  );
+
+  // ---- Push/Pull tab header (feature branches only) ----
+  const renderPushPullTabs = () => (
+    <div className="push-pull-tabs row mt-2" style={{ width: '350px' }}>
+      <div className={`tab-push ${activeTab === 'push' ? 'active' : ''} text-center w-50`}>
+        <button
+          className={`btn w-100 py-2 ${activeTab === 'push' ? 'text-primary' : 'text-secondary'} border-0`}
+          style={{
+            color: activeTab === 'push' ? '#4368E3' : '',
+            backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
+          }}
+          onClick={() => setActiveTab('push')}
+        >
+          <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
+            <SolidIcon name="push-changes" fill={activeTab === 'push' ? '#4368E3' : '#ACB2B9'} />
+          </span>
+          <span style={{ fontWeight: activeTab === 'push' ? '500' : 'normal' }}>Push</span>
+        </button>
+      </div>
+      <div className={`tab-pull ${activeTab === 'pull' ? 'active' : ''} text-center w-50`}>
+        <button
+          className={`btn w-100 py-2 ${activeTab === 'pull' ? 'text-primary' : 'text-secondary'} border-0`}
+          style={{
+            color: activeTab === 'pull' ? '#4368E3' : '',
+            backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
+          }}
+          onClick={() => setActiveTab('pull')}
+        >
+          <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
+            <SolidIcon name="pull-changes" fill={activeTab === 'pull' ? '#4368E3' : '#ACB2B9'} />
+          </span>
+          <span style={{ fontWeight: activeTab === 'pull' ? '500' : 'normal' }}>Pull</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  // --- Modal body ---
+  const renderModalBody = () => {
+    // Default branch: pull-only
+    if (isOnDefaultBranch) {
+      if (actionChoiceMode) {
+        return <div className="pull-container">{renderActionChoice()}</div>;
+      }
+      return <div className="pull-container">{renderPullSection()}</div>;
+    }
+
+    // Feature branch: push/pull tabs
+    if (activeTab === 'pull') {
+      if (actionChoiceMode) {
+        return <div className="pushpull-container">{renderActionChoice()}</div>;
+      }
+      return <div className="pushpull-container">{renderPullSection()}</div>;
+    }
+    return <div className="pushpull-container">{renderPushSection()}</div>;
   };
 
-  // const renderModalFooter = () => {
-  //   if (isOnDefaultBranch) {
-  //     return (
-  //       <Modal.Footer>
-  //         <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPulling}>
-  //           Cancel
-  //         </ButtonSolid>
-  //         <ButtonSolid
-  //           variant="primary"
-  //           onClick={handlePull}
-  //           disabled={checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE || isPulling}
-  //           isLoading={isPulling}
-  //         >
-  //           Pull changes
-  //         </ButtonSolid>
-  //       </Modal.Footer>
-  //     );
-  //   }
-  //   return (
-  //     <Modal.Footer>
-  //       <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing || isPulling}>
-  //         Cancel
-  //       </ButtonSolid>
-  //       {activeTab === 'push' && (
-  //         <ButtonSolid
-  //           variant="primary"
-  //           onClick={handlePush}
-  //           disabled={isPushing || !commitMessage.trim()}
-  //           isLoading={isPushing}
-  //           leftIcon="commit"
-  //           fill="var(--indigo1)"
-  //           iconWidth="20"
-  //         >
-  //           Commit changes
-  //         </ButtonSolid>
-  //       )}
-  //       {activeTab === 'pull' && (
-  //         <ButtonSolid
-  //           variant="primary"
-  //           onClick={handlePull}
-  //           disabled={checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE || isPulling}
-  //           isLoading={isPulling}
-  //         >
-  //           Pull changes
-  //         </ButtonSolid>
-  //       )}
-  //     </Modal.Footer>
-  //   );
-  // };
-
   const renderModalFooter = () => {
-    if (initialTab === 'pull') {
+    // Pull tab active (default branch or feature branch pull tab)
+    if (activeTab === 'pull' || isOnDefaultBranch) {
+      if (actionChoiceMode) {
+        return (
+          <Modal.Footer>
+            <ButtonSolid
+              variant="tertiary"
+              onClick={() => {
+                setActionChoiceMode(false);
+                setSelectedBranch(currentBranchName);
+              }}
+              disabled={isPulling}
+            >
+              Cancel
+            </ButtonSolid>
+            <ButtonSolid variant="primary" onClick={handleContinue} disabled={isPulling} isLoading={isPulling}>
+              Continue
+            </ButtonSolid>
+          </Modal.Footer>
+        );
+      }
       return (
         <Modal.Footer>
           <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPulling}>
@@ -475,6 +541,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         </Modal.Footer>
       );
     }
+    // Push tab active
     return (
       <Modal.Footer>
         <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing}>
@@ -495,6 +562,15 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     );
   };
 
+  // Modal title changes based on mode
+  const modalTitle = (() => {
+    if (actionChoiceMode) {
+      return `Import ${selectedBranch} from git`;
+    }
+    if (isOnDefaultBranch) return 'Pull Commit';
+    return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
+  })();
+
   return (
     <Modal
       backdrop="static"
@@ -507,15 +583,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       })}
     >
       <Modal.Header>
-        {/* <Modal.Title className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch })} data-cy="modal-title"> */}
-        <Modal.Title className="font-weight-500" data-cy="modal-title">
+        <Modal.Title
+          className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch && !actionChoiceMode })}
+          data-cy="modal-title"
+        >
           <div className="git-sync-title row align-items-center" style={{ width: '350px' }}>
-            {/* <div className="col-9">Push Commit</div> */}
-            <div className="col-9">{initialTab === 'pull' ? 'Pull Commit' : 'Push Commit'}</div>
+            <div className="col-9">{modalTitle}</div>
             <div onClick={onClose} className="col-3 text-end cursor-pointer" data-cy="modal-close-button">
               <SolidIcon name="remove" width="20" />
             </div>
-            {gitSyncUrl && (
+            {gitSyncUrl && !actionChoiceMode && (
               <div
                 className="col-12 d-flex align-items-center"
                 style={{
@@ -533,10 +610,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
               </div>
             )}
           </div>
-          {/* {!isOnDefaultBranch && showPushPullHeader()} */}
+          {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()}
         </Modal.Title>
       </Modal.Header>
-      {/* <Modal.Body>{isOnDefaultBranch ? renderPullOnlyBody() : renderPushPullBody()}</Modal.Body> */}
       <Modal.Body>{renderModalBody()}</Modal.Body>
       {renderModalFooter()}
     </Modal>

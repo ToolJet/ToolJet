@@ -10,6 +10,7 @@ interface Features {
   [FEATURE_KEY.PUSH_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.PULL_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.CHECK_UPDATES]: FeatureConfig;
+  [FEATURE_KEY.LIST_REMOTE_BRANCHES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

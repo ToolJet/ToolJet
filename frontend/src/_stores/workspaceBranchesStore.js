@@ -11,6 +11,7 @@ const initialState = {
   orgGitConfig: null,
   isPushing: false,
   isPulling: false,
+  remoteBranches: [],
 };
 
 // Helper to resolve current branch from branches list + active ID
@@ -102,15 +103,26 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async pullWorkspace() {
+        async pullWorkspace(sourceBranch) {
           set({ isPulling: true });
           try {
-            const result = await workspaceBranchesService.pullWorkspace();
+            const result = await workspaceBranchesService.pullWorkspace(sourceBranch);
             set({ isPulling: false });
             return result;
           } catch (error) {
             set({ isPulling: false });
             throw error;
+          }
+        },
+
+        async fetchRemoteBranches() {
+          try {
+            const result = await workspaceBranchesService.listRemoteBranches();
+            set({ remoteBranches: result || [] });
+            return result || [];
+          } catch (error) {
+            console.error('Failed to fetch remote branches:', error);
+            return [];
           }
         },
 
