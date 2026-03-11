@@ -73,6 +73,19 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Hover background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+      accordian: 'container',
+    },
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text color',
@@ -223,6 +236,7 @@ export const buttonConfig = {
       loaderColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       padding: { value: 'default' },

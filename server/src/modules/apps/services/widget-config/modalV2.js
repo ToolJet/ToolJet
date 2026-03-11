@@ -262,6 +262,15 @@ export const modalV2Config = {
       },
       accordian: 'trigger button',
     },
+    triggerButtonHoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Hover background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'trigger button',
+    },
     triggerButtonTextColor: {
       type: 'colorSwatches',
       displayName: 'Text',
@@ -368,6 +377,7 @@ export const modalV2Config = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
       headerDividerColor: { value: 'var(--cc-default-border)' },
       footerDividerColor: { value: 'var(--cc-default-border)' },

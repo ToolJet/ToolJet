@@ -1,5 +1,5 @@
-const tinycolor = require('tinycolor2');
 import { MODAL_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export function createModalStyles({
   height,
@@ -13,6 +13,7 @@ export function createModalStyles({
   footerBackgroundColor,
   footerHeightPx,
   triggerButtonBackgroundColor,
+  triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
   triggerButtonTextColor,
   isVisible,
   boxShadow,
@@ -48,7 +49,10 @@ export function createModalStyles({
       display: isVisible ? '' : 'none',
       flexDirection: direction === 'left' ? 'row-reverse' : 'row',
       gap: '6px',
-      '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      '--tblr-btn-color-darker':
+        triggerButtonHoverBackgroundColor === 'var(--cc-primary-brand)'
+          ? getModifiedColor(triggerButtonBackgroundColor, 'hover')
+          : triggerButtonHoverBackgroundColor,
       boxShadow,
       borderColor: triggerButtonBackgroundColor,
       height: '100%',

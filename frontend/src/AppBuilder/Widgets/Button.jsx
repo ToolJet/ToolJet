@@ -12,6 +12,7 @@ export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
     backgroundColor,
+    hoverBackgroundColor,
     textColor,
     borderRadius,
     loaderColor,
@@ -73,8 +74,15 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-        ? backgroundColor
-        : 'transparent';
+      ? backgroundColor
+      : 'transparent';
+
+  const computedHoverBgColor =
+    hoverBackgroundColor === 'var(--cc-primary-brand)'
+      ? type === 'primary'
+        ? getModifiedColor(computedBgColor, 'hover')
+        : 'transparent'
+      : hoverBackgroundColor;
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -82,7 +90,7 @@ export const Button = function Button(props) {
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
-    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
@@ -224,7 +232,12 @@ export const Button = function Button(props) {
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
                 <p
                   className="tj-text-sm"
-                  style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  style={{
+                    fontWeight: '500',
+                    margin: '0px',
+                    padding: '0px',
+                    color: computedTextColor,
+                  }}
                   data-cy={`${dataCy}-label`}
                 >
                   {getSafeRenderableValue(label)}

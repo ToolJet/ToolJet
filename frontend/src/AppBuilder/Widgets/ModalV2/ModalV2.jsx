@@ -60,6 +60,7 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
     boxShadow,
     headerDividerColor,
@@ -188,6 +189,7 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     footerHeightPx,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundColor,
     triggerButtonTextColor,
     isVisible,
     boxShadow,
@@ -217,7 +219,7 @@ export const ModalV2 = function Modal({
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary overflow-hidden"
+          className="jet-btn btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/

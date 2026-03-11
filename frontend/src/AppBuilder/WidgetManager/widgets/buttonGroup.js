@@ -75,6 +75,14 @@ export const buttonGroupConfig = {
         defaultValue: false,
       },
     },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Hover background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+    },
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text color',
@@ -170,6 +178,7 @@ export const buttonGroupConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       textColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },

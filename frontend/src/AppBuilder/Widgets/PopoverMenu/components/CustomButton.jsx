@@ -22,6 +22,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
   // ===== STYLE PROPS =====
   const {
     backgroundColor,
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
     borderRadius,
     loaderColor,
@@ -63,13 +64,20 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       ? backgroundColor
       : 'transparent';
 
+  const computedHoverBgColor =
+    hoverBackgroundColor === 'var(--cc-primary-brand)'
+      ? buttonType === 'primary'
+        ? getModifiedColor(computedBgColor, 'hover')
+        : 'transparent'
+      : hoverBackgroundColor;
+
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height === 36 ? '36px' : height,
-    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked':
       buttonType === 'primary'
         ? getModifiedColor(computedBgColor, 'active')

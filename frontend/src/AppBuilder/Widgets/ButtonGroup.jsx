@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import _ from 'lodash';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const ButtonGroup = function Button({
   height,
@@ -19,6 +20,7 @@ export const ButtonGroup = function Button({
 
   const {
     backgroundColor,
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
     borderRadius,
     visibility,
@@ -44,6 +46,7 @@ export const ButtonGroup = function Button({
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(values);
+  const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
@@ -152,28 +155,43 @@ export const ButtonGroup = function Button({
           </p>
         )}
         <div>
-          {data?.map((item, index) => (
-            <button
-              data-cy={`${dataCy}-button-${index}`}
-              style={{
-                ...computedStyles,
-                backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
-                color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
-                transition: 'all .1s ease',
-                boxShadow,
-                ...(disabledState && disabledStyles),
-              }}
-              key={index}
-              disabled={disabledState}
-              className={'group-button overflow-hidden'}
-              onClick={(event) => {
-                event.stopPropagation();
-                buttonClick(index);
-              }}
-            >
-              {item}
-            </button>
-          ))}
+          {data?.map((item, index) => {
+            const isSelected = defaultActive?.includes(values[index]);
+            const buttonBackgroundColor = isSelected ? selectedBackgroundColor : backgroundColor;
+            const buttonHoverBackgroundColor =
+              hoverBackgroundColor === 'var(--cc-primary-brand)'
+                ? getModifiedColor(buttonBackgroundColor, 'hover')
+                : hoverBackgroundColor;
+
+            return (
+              <button
+                data-cy={`${dataCy}-button-${index}`}
+                style={{
+                  ...computedStyles,
+                  backgroundColor: hoveredButtonIndex === index ? buttonHoverBackgroundColor : buttonBackgroundColor,
+                  color: isSelected ? selectedTextColor : textColor,
+                  transition: 'all .1s ease',
+                  boxShadow,
+                  ...(disabledState && disabledStyles),
+                }}
+                key={index}
+                disabled={disabledState}
+                className={'group-button overflow-hidden'}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  buttonClick(index);
+                }}
+                onMouseEnter={() => {
+                  setHoveredButtonIndex(index);
+                }}
+                onMouseLeave={() => {
+                  setHoveredButtonIndex(null);
+                }}
+              >
+                {item}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
