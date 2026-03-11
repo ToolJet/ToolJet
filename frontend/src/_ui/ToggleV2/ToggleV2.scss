@@ -4,16 +4,20 @@
   gap: 8px;
   margin-bottom: 0;
 }
+
 .form-check-input.tj-toggle-switch {
   width: 28px !important;
   height: 16px !important;
 }
+
 .form-check-input:checked {
   background-color: var(--indigo9);
 }
+
 .form-check-input:hover {
   cursor: pointer;
 }
+
 .tj-toggle-v2 .text-wrappers {
   display: flex;
   flex-direction: column;
