@@ -584,7 +584,7 @@ describe("Custom Group Granular Access", () => {
 })
 
 const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
-    cy.get('.css-uzxezq-multiValue').each(($el, index) => {
+    cy.get('div.selected-value').each(($el, index) => {
         cy.wrap($el).should('contain', envTags[index]);
     })
     cy.get('.css-1wy0on6').click();
