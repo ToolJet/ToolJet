@@ -340,7 +340,7 @@ describe("Custom Group Granular Access", () => {
         ];
         let appId1;
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         cy.apiCreateApp(data.appName)
             .then((res) => {
                 appId1 = res.body.id;
