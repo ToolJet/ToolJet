@@ -492,7 +492,7 @@ const DynamicFormV2 = ({
           }),
           style: { marginBottom: '0px !important' },
           helpText: helpText,
-          value: currentValue || '',
+          value: currentValue !== null && currentValue !== undefined ? String(currentValue) : '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
           encrypted: isEncrypted,
