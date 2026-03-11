@@ -582,11 +582,11 @@ class BaseManageGroupPermissions extends React.Component {
                             },
                           }));
                         }}
-                        data-cy="workflows-check-input"
+                        data-cy="folders-check-input"
                       />
                     </div>
                     <div className="col-11">
-                      <div className="tj-text " data-cy="workflows-label">
+                      <div className="tj-text " data-cy="folders-label">
                         Folders
                       </div>
                     </div>

@@ -1091,7 +1091,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                           data-cy="folder-delete-helper-text"
                                         >
-                                          Delete existing folders in this workspace
+                                          Delete any folders in this workspace
                                         </span>
                                       </label>
                                     </div>
