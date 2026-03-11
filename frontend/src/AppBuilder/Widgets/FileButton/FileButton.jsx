@@ -6,6 +6,18 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePicker';
 import clsx from 'clsx';
 
+const fontWeightClass = {
+  normal: 'tw-font-normal',
+  medium: 'tw-font-medium',
+  bold: 'tw-font-bold',
+};
+
+const justifyClass = {
+  left: 'tw-justify-start',
+  center: 'tw-justify-center',
+  right: 'tw-justify-end',
+};
+
 export const FileButton = (props) => {
   const {
     height,
@@ -129,12 +141,8 @@ export const FileButton = (props) => {
               className={clsx(
                 'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
                 'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
-                {
-                  'tw-justify-start': contentAlignment === 'left',
-                  'tw-justify-center': contentAlignment === 'center',
-                  'tw-justify-end': contentAlignment === 'right',
-                  'tw-p-0': padding === 'none',
-                }
+                justifyClass[contentAlignment] ?? 'tw-justify-start',
+                { 'tw-p-0': padding === 'none' }
               )}
               style={buttonStyle}
               disabled={disabledState}
@@ -148,14 +156,7 @@ export const FileButton = (props) => {
                 {iconVisibility && <TablerIcon iconName={icon} size={16} color={iconColor} />}
                 <span
                   style={{ fontSize: `${labelSize}px`, color: labelColor }}
-                  className={clsx('tw-truncate tw-flex-1', {
-                    'tw-font-normal': labelWeight === 'normal',
-                    'tw-font-medium': labelWeight === 'medium',
-                    'tw-font-bold': labelWeight === 'bold',
-                    'tw-text-left': contentAlignment === 'left',
-                    'tw-text-center': contentAlignment === 'center',
-                    'tw-text-right': contentAlignment === 'right',
-                  })}
+                  className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                 >
                   {selectedFiles.length === 0 ? buttonText : selectedSummary}
                 </span>

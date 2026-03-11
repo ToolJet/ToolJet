@@ -200,6 +200,7 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'FileButton',
     ],
     Layout: [],
   };
