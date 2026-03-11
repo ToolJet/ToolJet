@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, LessThan, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -8,6 +8,8 @@ import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { CONSTRAINTS } from './constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
+
+const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
@@ -230,5 +232,14 @@ export class OrganizationRepository extends Repository<Organization> {
       // Then set the new default workspace
       await manager.update(Organization, { id: organizationId }, { isDefault: true });
     }, manager || this.manager);
+  }
+
+  touchLastAccessedAt(organizationId: string): void {
+    const threshold = new Date(Date.now() - LAST_ACCESSED_AT_UPDATE_INTERVAL_MS);
+    this.manager
+      .update(Organization, { id: organizationId, lastAccessedAt: LessThan(threshold) }, { lastAccessedAt: new Date() })
+      .catch((err) => {
+        console.error('error while updating organization last_accessed_at', err);
+      });
   }
 }

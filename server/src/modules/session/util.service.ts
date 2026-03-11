@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { DeepPartial, EntityManager, LessThan, MoreThanOrEqual, Not } from 'typeorm';
+import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
 import { ConfigService } from '@nestjs/config';
@@ -30,8 +30,6 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
-
-const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 @Injectable()
 export class SessionUtilService {
@@ -538,12 +536,7 @@ export class SessionUtilService {
 
       // Fire-and-forget: update workspace last_accessed_at at most once per interval
       if (organizationId) {
-        const threshold = new Date(Date.now() - LAST_ACCESSED_AT_UPDATE_INTERVAL_MS);
-        manager
-          .update(Organization, { id: organizationId, lastAccessedAt: LessThan(threshold) }, { lastAccessedAt: now })
-          .catch((err) => {
-            console.error('error while updating organization last_accessed_at', err);
-          });
+        this.organizationRepository.touchLastAccessedAt(organizationId);
       }
     });
   }
