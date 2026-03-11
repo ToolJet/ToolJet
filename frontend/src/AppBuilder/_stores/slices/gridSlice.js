@@ -163,8 +163,6 @@ export const createGridSlice = (set, get) => ({
         'isVisible'
       );
       let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
-      const isAccordionExpanded =
-        getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
 
       // Override visibility if component is set to not display on current layout
       if (componentDisplay === false) {
@@ -174,6 +172,9 @@ export const createGridSlice = (set, get) => ({
       // If the component is a container, we go to each and every child component and calculate the height of the container
       if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
         let contentHeight = 0;
+
+        const isAccordionExpanded =
+          getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
 
         // Special handling for Accordion: check if it's collapsed first
         if (componentType === 'Accordion') {
