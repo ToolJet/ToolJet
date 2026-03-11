@@ -95,6 +95,15 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'button',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
@@ -231,6 +240,7 @@ export const buttonConfig = {
     },
     events: [],
     styles: {
+      textSize: { value: '{{14}}' },
       textColor: { value: '#FFFFFF' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },

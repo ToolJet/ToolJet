@@ -280,6 +280,15 @@ export const modalV2Config = {
       },
       accordian: 'trigger button',
     },
+    triggerButtonTextSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'trigger button',
+    },
     icon: {
       type: 'icon',
       displayName: 'Icon',
@@ -379,6 +388,7 @@ export const modalV2Config = {
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      triggerButtonTextSize: { value: '{{14}}' },
       headerDividerColor: { value: 'var(--cc-default-border)' },
       footerDividerColor: { value: 'var(--cc-default-border)' },
     },

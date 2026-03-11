@@ -91,6 +91,14 @@ export const buttonGroupConfig = {
         defaultValue: false,
       },
     },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -180,6 +188,7 @@ export const buttonGroupConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      textSize: { value: '{{14}}' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },

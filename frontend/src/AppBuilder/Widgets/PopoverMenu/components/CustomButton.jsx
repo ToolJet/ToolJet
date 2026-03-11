@@ -24,6 +24,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     backgroundColor,
     hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
+    textSize = 14,
     borderRadius,
     loaderColor,
     borderColor,
@@ -70,6 +71,10 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         ? getModifiedColor(computedBgColor, 'hover')
         : 'transparent'
       : hoverBackgroundColor;
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -182,7 +187,14 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
                 <p
                   className="tj-text-sm"
-                  style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  style={{
+                    fontWeight: '500',
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    margin: '0px',
+                    padding: '0px',
+                    color: computedTextColor,
+                  }}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -195,8 +207,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
                     iconName={icon}
                     fallbackIcon="IconAlignBoxBottomLeft"
                     style={{
-                      width: '16px',
-                      height: '16px',
+                      width: `${computedIconSize}px`,
+                      height: `${computedIconSize}px`,
                       color: computedIconColor,
                     }}
                     stroke={1.5}

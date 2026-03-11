@@ -741,6 +741,7 @@ const widgetsWithStyleConditions = {
           'triggerButtonBackgroundColor',
           'triggerButtonHoverBackgroundColor',
           'triggerButtonTextColor',
+          'triggerButtonTextSize',
         ], //expecting an array of style definitions names
       },
     ],

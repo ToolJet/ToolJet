@@ -62,10 +62,17 @@ export const ModalV2 = function Modal({
     triggerButtonBackgroundColor,
     triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
+    triggerButtonTextSize = 14,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
+  const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
+    ? normalizedTriggerButtonTextSize
+    : 14;
+  const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
+  const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -235,7 +242,13 @@ export const ModalV2 = function Modal({
           data-cy={`${dataCy}-launch-button`}
         >
           {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}>
+          <span
+            className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
+            style={{
+              fontSize: `${computedTriggerButtonFontSize}px`,
+              lineHeight: `${computedTriggerButtonLineHeight}px`,
+            }}
+          >
             {triggerButtonLabel ?? 'Show Modal'}
           </span>
           {iconVisibility && (
@@ -243,8 +256,8 @@ export const ModalV2 = function Modal({
               iconName={iconName}
               fallbackIcon="IconHome2"
               style={{
-                width: '16px',
-                height: '16px',
+                width: `${computedTriggerButtonIconSize}px`,
+                height: `${computedTriggerButtonIconSize}px`,
                 color: iconColor,
               }}
               className="tw-flex-shrink-0"
