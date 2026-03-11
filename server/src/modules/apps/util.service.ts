@@ -432,7 +432,14 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, branchId?: string): Promise<AppBase[]> {
+  async all(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    isGetAll: boolean,
+    branchId?: string
+  ): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
