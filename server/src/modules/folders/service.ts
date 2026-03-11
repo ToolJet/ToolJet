@@ -117,9 +117,7 @@ export class FoldersService implements IFoldersService {
     }
 
     throw new ForbiddenException(
-      action === 'delete'
-        ? 'You do not have permission to delete this folder'
-        : 'You do not have permission to update this folder'
+      'You do not have access to perform this action'
     );
   }
 
