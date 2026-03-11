@@ -9,7 +9,7 @@ import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constant
 import { CONSTRAINTS } from './constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
 
-const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
