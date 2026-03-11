@@ -45,11 +45,10 @@
       "description": "Enter password"
     },
     "ssl_enabled": {
-      "type": "string",
+      "type": "boolean",
       "title": "SSL/TLS",
       "description": "Connect using SSL",
-      "enum": ["enabled", "disabled"],
-      "default": "disabled"
+      "default": true
     },
     "ssl_certificate": {
       "type": "string",
@@ -153,7 +152,7 @@
           {
             "if": {
               "properties": {
-                "ssl_enabled": { "const": "enabled" }
+                "ssl_enabled": { "const": true }
               }
             },
             "then": {
@@ -277,8 +276,8 @@
         "description": "Connect using SSL",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to PostgreSQL server",
-        "default": "disabled",
-        "enabled": {
+        "default": true,
+        "true": {
           "ssl_certificate": {
             "order": 80,
             "$ref": "#/properties/ssl_certificate",
@@ -330,7 +329,7 @@
             },
             "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,
@@ -485,8 +484,8 @@
         "description": "Connect using SSL",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to PostgreSQL server",
-        "default": "disabled",
-        "enabled": {
+        "default": true,
+        "true": {
           "ssl_certificate": {
             "order": 80,
             "$ref": "#/properties/ssl_certificate",
@@ -538,7 +537,7 @@
             },
             "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,
