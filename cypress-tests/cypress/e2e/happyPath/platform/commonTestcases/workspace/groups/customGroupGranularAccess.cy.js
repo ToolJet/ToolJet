@@ -416,7 +416,7 @@ describe("Custom Group Granular Access", () => {
             appId2 = appId;
         });
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
             apiAddUserToGroup(groupId1, data.email);
@@ -531,34 +531,19 @@ describe("Custom Group Granular Access", () => {
             cy.visit(`/applications/${appId2}`);
             cy.get(commonWidgetSelector.draggableWidget("text1")).should("contain", "production");
 
-            //Added the default permission for builder
-            loginAsAdmin();
-            cy.apiCreateGranularPermission(
-                "builder",
-                "Apps",
-                "app",
-                {
-                    canEdit: false,
-                    canView: true,
-                    canAccessDevelopment: true,
-                    canAccessStaging: true,
-                    canAccessProduction: false,
-                    canAccessReleased: true,
-                },
-                [appId1],
-                false
-            );
         })
     })
 
     it("Should verify builder own app dev access and invalid environment preview handling", () => {
         const appName1 = fake.companyName;
         let appId1;
-
-        cy.apiUpdateEnvironmentPermission("builder", {
-            name: "Apps",
-            isAll: false,
-            actions: {
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
+        //Added the app permission for builder
+        cy.apiCreateGranularPermission(
+            "builder",
+            "Apps",
+            "app",
+            {
                 canEdit: false,
                 canView: true,
                 canAccessDevelopment: false,
@@ -566,9 +551,10 @@ describe("Custom Group Granular Access", () => {
                 canAccessProduction: false,
                 canAccessReleased: false,
             },
-        }, "Apps");
+            false
+        );
 
-        // Scenario G: View + create + no environment -> can open own app in dev
+        // Scenario G: View + create + staging environment -> can open own app in dev
         cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
         cy.apiCreateApp(appName1)
             .then((res) => {
