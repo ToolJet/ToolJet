@@ -29,6 +29,7 @@ const DynamicSelector = ({
   fxEnabled = false,
   isMulti = false,
   autoFetch = false,
+  sizeStyles = {},
 }) => {
   const isDependentField = dependsOn?.length > 0;
 
@@ -296,6 +297,7 @@ const DynamicSelector = ({
   }, [autoFetch, selectedDataSource?.id, invokeMethod, isFxMode]);
   // Watch for changes in dependency state
   useEffect(() => {
+    if (isFxMode) return; // do not fetch while in expression mode
     if (isDependentField && compositeDependencyKey && depsReady) {
       const cacheKey = `${propertyKey}_cache`;
       const existingCache = get(options, cacheKey) || {};
@@ -324,7 +326,7 @@ const DynamicSelector = ({
         handleFetch();
       }
     }
-  }, [compositeDependencyKey]);
+  }, [compositeDependencyKey, isFxMode]);
 
   const handleSelectionChange = (selectedOption) => {
     // Clear no access error since user is making a new valid selection
@@ -363,6 +365,9 @@ const DynamicSelector = ({
   const handleFxChange = () => {
     const newFxMode = !isFxMode;
     setIsFxMode(newFxMode);
+
+    // Clear any stale error when switching back to dropdown mode
+    if (!newFxMode) setError(null);
 
     const updatedOptions = {
       ...options,
@@ -560,6 +565,7 @@ const DynamicSelector = ({
                 isMulti={isMulti}
                 closeMenuOnSelect={isMulti ? false : undefined}
                 components={isMulti ? { DropdownIndicator: null, ClearIndicator: null } : undefined}
+                {...sizeStyles}
               />
             </div>
           )}
