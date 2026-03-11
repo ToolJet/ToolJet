@@ -1,0 +1,67 @@
+.sql-group-by-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 1px solid var(--slate6);
+  border-radius: 6px;
+  cursor: text;
+  background-color: var(--base);
+}
+
+.sql-group-by-container:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(70, 107, 242, 0.2);
+}
+
+.group-by-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: var(--slate3);
+  border: 1px solid var(--slate6);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.group-by-chip-label {
+  color: var(--slate12);
+}
+
+.group-by-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--slate9);
+  width: 14px;
+  height: 14px;
+}
+
+.group-by-chip-remove:hover {
+  color: var(--slate12);
+}
+
+.group-by-input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--slate12);
+  padding: 2px 0;
+}
+
+.group-by-input::placeholder {
+  color: var(--slate8);
+}
