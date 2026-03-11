@@ -143,38 +143,41 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 2. Select the GUI mode from the dropdown.
 3. Select the operation you want to perform.
 4. Select the **Schema**, **Table** and add the **Primary key column** name.
-5. Then, in the editor, input the **records** as an array of objects.
-6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 ### List Rows
 Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
 
 #### Optional Parameters
-- **Filter** : Applies conditions to return only rows that match the specified criteria.
-- **Sort** : Orders the returned rows based on one or more selected columns.
-- **Aggregate** : Performs calculations such as count, sum, or average on selected columns.
-- **Group by** : Groups rows that have the same values in specified columns to enable aggregation.
-- **Limit** : Restricts the number of rows returned in the result.
-- **Offset** : Skips a specified number of rows before starting to return results.
+- **Filter**: Applies conditions to return only rows that match the specified criteria.
+- **Sort**: Orders the returned rows based on one or more selected columns.
+- **Aggregate**: Performs calculations such as count, sum, or average on selected columns.
+- **Group by**: Groups rows that have the same values in specified columns to enable aggregation.
+- **Limit**: Restricts the number of rows returned in the result.
+- **Offset**: Skips a specified number of rows before starting to return results.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/list-rows-gui.png" alt="List Rows GUI Postgresql"/>
 
 ### Create Rows
 Inserts a new row into the selected table with the specified column values.
 
+In the editor, ensure to the input the **Columns** in `string` format.
+
 #### Required Parameters
-- **Columns** : Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/create-rows-gui.png" alt="Create Rows GUI Postgresql"/>
 
 ### Update Rows
 Modifies existing rows in the table that match the provided filter conditions.
 
+In the editor, ensure to the input the **Columns** in `string` format.
+
 #### Required Parameters
-- **Columns** : Specify the columns and their new values that should be updated for the matching rows.
+- **Columns**: Specify the columns and their new values that should be updated for the matching rows.
 
 #### Optional Parameters
-- **Filter** : Defines conditions to select which rows should be updated.
+- **Filter**: Defines conditions to select which rows should be updated.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/update-rows-gui.png" alt="Update Rows GUI Postgresql"/>
 
@@ -182,17 +185,19 @@ Modifies existing rows in the table that match the provided filter conditions.
 Removes either all rows from the table or that match the specified filter conditions.
 
 #### Optional Parameters
-- **Filter** : Specifies conditions to determine which rows should be deleted from the table.
-- **Limit** : Restricts the maximum number of rows that can be deleted in the operation.
+- **Filter**: Specifies conditions to determine which rows should be deleted from the table.
+- **Limit**: Restricts the maximum number of rows that can be deleted in the operation.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
 
 ### Upsert Rows
 Inserts a new row or updates an existing row if a matching primary key already exists.
 
+In the editor, ensure to the input the **Columns** in `string` format.
+
 #### Required Parameters
-- **Primary Key column(s)** – Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
-- **Columns** : Defines the column–value pairs that will be inserted or updated in the row.
+- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/upsert-rows-gui.png" alt="Upsert Rows GUI Postgresql"/>
 
@@ -200,9 +205,10 @@ Inserts a new row or updates an existing row if a matching primary key already e
 Inserts multiple rows into the table in a single operation using an array of records.
 
 #### Required Parameters
-- **Records to Insert** – An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+- **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
 
-Here's the **Example Value** used for Bulk Insert Operation.
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
 [
   {
@@ -226,16 +232,19 @@ Here's the **Example Value** used for Bulk Insert Operation.
 ]
 ```
 
+</details>
+
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-insert-gui.png" alt="Bulk Insert GUI Postgresql"/>
 
 ### Bulk Update using Primary Key
 Updates multiple rows at once by matching each record with its corresponding primary key.
 
 #### Required Parameters
-- **Primary Key columns** – Specifies the column(s) used to uniquely identify the rows that should be updated.
-- **Records to Update** – An array of objects containing the primary key and the column values to be updated for each row.
+- **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
+- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row. 
 
-Here's the **Example Value** used for Bulk update using primary key Operation.
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
 [
   {
@@ -251,16 +260,21 @@ Here's the **Example Value** used for Bulk update using primary key Operation.
 ]
 ```
 
+</details>
+
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-update-gui.png" alt="Bulk Update using GUI Postgresql"/>
 
 ### Bulk Upsert using Primary Key
 Inserts new rows or updates existing rows in bulk based on matching primary key values.
 
 #### Required Parameters
-- **Primary Key columns** – Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
-- **Records to Update** – An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+- **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
+- **Records to Update**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
 
-This basically means If the row exists then update, if not do insert. Here's the **Example Value** used for Bulk upsert using primary key Operation. 
+This basically means If the row exists then update, if not do insert. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
 [
   {
@@ -277,6 +291,8 @@ This basically means If the row exists then update, if not do insert. Here's the
   }
 ]
 ```
+
+</details>
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-upsert-gui.png" alt="Bulk Upsert using GUI Postgresql"/>
 
