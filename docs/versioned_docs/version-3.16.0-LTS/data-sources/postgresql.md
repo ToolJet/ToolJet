@@ -22,7 +22,6 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 
 - **Host**
 - **Port**
-- **SSL**
 - **Database Name**
 - **Username**
 - **Password**
@@ -35,8 +34,6 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 ### Connection String
 
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
-
-- **Connection String**
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/postgresql/connection-string-v4.png" alt="PG connection string"/>
 
@@ -144,25 +141,144 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 
 1. Create a new query and select the PostgreSQL data source.
 2. Select the GUI mode from the dropdown.
-3. Select the operation **Bulk update using primary key**.
-4. Provide the **Table** name and the **Primary key column** name.
+3. Select the operation you want to perform.
+4. Select the **Schema**, **Table** and add the **Primary key column** name.
 5. Then, in the editor, input the **records** as an array of objects.
 6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
+### List Rows
+Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
+
+#### Optional Parameters
+- **Filter** : Applies conditions to return only rows that match the specified criteria.
+- **Sort** : Orders the returned rows based on one or more selected columns.
+- **Aggregate** : Performs calculations such as count, sum, or average on selected columns.
+- **Group by** : Groups rows that have the same values in specified columns to enable aggregation.
+- **Limit** : Restricts the number of rows returned in the result.
+- **Offset** : Skips a specified number of rows before starting to return results.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/list-rows-gui.png" alt="List Rows GUI Postgresql"/>
+
+### Create Rows
+Inserts a new row into the selected table with the specified column values.
+
+#### Required Parameters
+- **Columns** : Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/create-rows-gui.png" alt="Create Rows GUI Postgresql"/>
+
+### Update Rows
+Modifies existing rows in the table that match the provided filter conditions.
+
+#### Required Parameters
+- **Columns** : Specify the columns and their new values that should be updated for the matching rows.
+
+#### Optional Parameters
+- **Filter** : Defines conditions to select which rows should be updated.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/update-rows-gui.png" alt="Update Rows GUI Postgresql"/>
+
+### Delete Rows
+Removes either all rows from the table or that match the specified filter conditions.
+
+#### Optional Parameters
+- **Filter** : Specifies conditions to determine which rows should be deleted from the table.
+- **Limit** : Restricts the maximum number of rows that can be deleted in the operation.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
+
+### Upsert Rows
+Inserts a new row or updates an existing row if a matching primary key already exists.
+
+#### Required Parameters
+- **Primary Key column(s)** – Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Columns** : Defines the column–value pairs that will be inserted or updated in the row.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/upsert-rows-gui.png" alt="Upsert Rows GUI Postgresql"/>
+
+### Bulk Insert
+Inserts multiple rows into the table in a single operation using an array of records.
+
+#### Required Parameters
+- **Records to Insert** – An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+
+Here's the **Example Value** used for Bulk Insert Operation.
 ```json
 [
   {
-    "customer_id": 1,
-    "country": "India"
+    "id": 101,
+    "activity_date": "2026-03-11",
+    "category_id": 1,
+    "notes": "Project kickoff meeting"
   },
   {
-    "customer_id": 2,
-    "country": "USA"
+    "id": 102,
+    "activity_date": "2026-03-12",
+    "category_id": 2,
+    "notes": "Client requirement discussion"
+  },
+  {
+    "id": 103,
+    "activity_date": "2026-03-13",
+    "category_id": 3,
+    "notes": "Design review session"
   }
 ]
 ```
 
-<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/gui-query-v4.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-insert-gui.png" alt="Bulk Insert GUI Postgresql"/>
+
+### Bulk Update using Primary Key
+Updates multiple rows at once by matching each record with its corresponding primary key.
+
+#### Required Parameters
+- **Primary Key columns** – Specifies the column(s) used to uniquely identify the rows that should be updated.
+- **Records to Update** – An array of objects containing the primary key and the column values to be updated for each row.
+
+Here's the **Example Value** used for Bulk update using primary key Operation.
+```json
+[
+  {
+    "id": 101,
+    "category_id": 12,
+    "notes": "Updated: kickoff meeting completed"
+  },
+  {
+    "id": 102,
+    "category_id": 13,
+    "notes": "Updated: client requirements finalized"
+  }
+]
+```
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-update-gui.png" alt="Bulk Update using GUI Postgresql"/>
+
+### Bulk Upsert using Primary Key
+Inserts new rows or updates existing rows in bulk based on matching primary key values.
+
+#### Required Parameters
+- **Primary Key columns** – Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
+- **Records to Update** – An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+
+This basically means If the row exists then update, if not do insert. Here's the **Example Value** used for Bulk upsert using primary key Operation. 
+```json
+[
+  {
+    "id": 101,
+    "activity_date": "2026-03-11",
+    "category_id": 15,
+    "notes": "Updated activity entry"
+  },
+  {
+    "id": 104,
+    "activity_date": "2026-03-14",
+    "category_id": 18,
+    "notes": "New activity created via upsert"
+  }
+]
+```
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-upsert-gui.png" alt="Bulk Upsert using GUI Postgresql"/>
 
 :::tip
 
