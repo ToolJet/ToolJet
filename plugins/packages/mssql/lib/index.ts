@@ -147,7 +147,7 @@ export default class MssqlQueryService implements QueryService {
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
-    const { operation, table } = queryOptions;
+    const { operation, table, schema } = queryOptions;
     const queryBuilder = createQueryBuilder('mssql');
 
     switch (operation) {
@@ -155,6 +155,7 @@ export default class MssqlQueryService implements QueryService {
         const { list_rows, limit, offset } = queryOptions;
         const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
         const { query, params } = queryBuilder.listRows(table, {
+          schema,
           where_filters,
           order_filters,
           aggregates,
@@ -168,7 +169,10 @@ export default class MssqlQueryService implements QueryService {
 
       case 'create_row': {
         const { columns } = queryOptions.create_row || {};
-        const { query, params } = queryBuilder.createRow(table, columns) as { query: string; params: unknown[] };
+        const { query, params } = queryBuilder.createRow(table, schema, columns) as {
+          query: string;
+          params: unknown[];
+        };
         const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
         const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
         return { status: 'ok', data: result.recordset ?? [] };
@@ -177,7 +181,13 @@ export default class MssqlQueryService implements QueryService {
       case 'update_rows': {
         const { allow_multiple_updates, zero_records_as_success } = queryOptions;
         const { columns, where_filters } = queryOptions.update_rows || {};
-        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
+        const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        if (!allow_multiple_updates && !hasAtLeastOneFilter) {
+          throw new Error(
+            'At least one filter condition is required. Enable "Allow this query to update multiple rows" to update without filters.'
+          );
+        }
+        const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
           query: string;
           params: unknown[];
         };
@@ -190,9 +200,9 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'upsert_rows': {
-        const { primary_key_column, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
-        const { query, params } = queryBuilder.upsertRows(table, { primary_key_column, columns }) as {
+        const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
           query: string;
           params: unknown[];
         };
@@ -207,7 +217,14 @@ export default class MssqlQueryService implements QueryService {
       case 'delete_rows': {
         const { limit, zero_records_as_success } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
-        const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
+        const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        const hasLimit = limit != null && limit !== '';
+        if (!hasAtLeastOneFilter && !hasLimit) {
+          throw new Error(
+            'Delete requires at least one filter condition or a limit to prevent deleting all rows unintentionally.'
+          );
+        }
+        const { query, params } = queryBuilder.deleteRows(table, { schema, where_filters, limit }) as {
           query: string;
           params: unknown[];
         };
@@ -219,12 +236,12 @@ export default class MssqlQueryService implements QueryService {
           throw new Error('No rows were deleted.');
         }
 
-        return { status: 'ok', deletedRecords } as unknown as QueryResult;
+        return { status: 'ok', data: { deletedRecords } };
       }
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
+        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
           query: string;
           params: unknown[];
         };
@@ -234,9 +251,10 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'bulk_update_pkey': {
-        const { primary_key_column, records } = queryOptions;
+        const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          primary_key: [primary_key_column],
+          schema,
+          primary_key: primary_key_columns,
           rows_update: records,
         }) as { queries: { query: string; params: unknown[] }[] };
         const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
@@ -244,9 +262,10 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'bulk_upsert_pkey': {
-        const { primary_key_column, records } = queryOptions;
+        const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          primary_key: [primary_key_column],
+          schema,
+          primary_key: primary_key_columns,
           row_upsert: records,
         }) as { queries: { query: string; params: unknown[] }[] };
         const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
@@ -597,13 +616,11 @@ export default class MssqlQueryService implements QueryService {
 
       const result = await knexInstance
         .raw(
-          `
-          SELECT TABLE_NAME 
-          FROM INFORMATION_SCHEMA.TABLES 
-          WHERE TABLE_TYPE = 'BASE TABLE' 
-          AND TABLE_CATALOG = ?
-          ORDER BY TABLE_NAME
-        `,
+          `SELECT TABLE_NAME
+           FROM INFORMATION_SCHEMA.TABLES
+           WHERE TABLE_TYPE = 'BASE TABLE'
+           AND TABLE_CATALOG = ?
+           ORDER BY TABLE_NAME`,
           [sourceOptions.database]
         )
         .timeout(this.STATEMENT_TIMEOUT);
@@ -613,17 +630,90 @@ export default class MssqlQueryService implements QueryService {
         value: row.TABLE_NAME,
       }));
 
-      return {
-        status: 'ok',
-        data: tables,
-      };
+      return { status: 'ok', data: tables };
     } catch (err) {
       const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
     } finally {
-      if (knexInstance) {
-        await knexInstance.destroy();
-      }
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchSchemas(sourceOptions: SourceOptions): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT SCHEMA_NAME
+           FROM INFORMATION_SCHEMA.SCHEMATA
+           WHERE SCHEMA_NAME NOT IN ('sys', 'INFORMATION_SCHEMA', 'guest', 'db_owner', 'db_accessadmin',
+             'db_securityadmin', 'db_ddladmin', 'db_backupoperator', 'db_datareader', 'db_datawriter',
+             'db_denydatareader', 'db_denydatawriter')
+           ORDER BY SCHEMA_NAME`
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.SCHEMA_NAME, label: row.SCHEMA_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch schemas', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchTablesForSchema(
+    sourceOptions: SourceOptions,
+    schema: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT TABLE_NAME
+           FROM INFORMATION_SCHEMA.TABLES
+           WHERE TABLE_TYPE = 'BASE TABLE'
+           AND TABLE_CATALOG = ?
+           AND TABLE_SCHEMA = ?
+           ORDER BY TABLE_NAME`,
+          [sourceOptions.database, schema]
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.TABLE_NAME, label: row.TABLE_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchColumnsForTable(
+    sourceOptions: SourceOptions,
+    schema: string,
+    table: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT COLUMN_NAME
+           FROM INFORMATION_SCHEMA.COLUMNS
+           WHERE TABLE_CATALOG = ?
+           AND TABLE_SCHEMA = ?
+           AND TABLE_NAME = ?
+           ORDER BY ORDINAL_POSITION`,
+          [sourceOptions.database, schema, table]
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.COLUMN_NAME, label: row.COLUMN_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch columns', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
     }
   }
 
@@ -637,8 +727,29 @@ export default class MssqlQueryService implements QueryService {
       if (methodName === 'getTables') {
         return await this.listTables(sourceOptions);
       }
+
+      if (methodName === 'listSchemas') {
+        const schemas = await this._fetchSchemas(sourceOptions);
+        return { status: 'ok', data: schemas };
+      }
+
+      if (methodName === 'listTables') {
+        const schema = args?.values?.schema || '';
+        if (!schema) return { status: 'ok', data: [] };
+        const tables = await this._fetchTablesForSchema(sourceOptions, schema);
+        return { status: 'ok', data: tables };
+      }
+
+      if (methodName === 'listColumns') {
+        const schema = args?.values?.schema || '';
+        const table = args?.values?.table || '';
+        if (!schema || !table) return { status: 'ok', data: [] };
+        const columns = await this._fetchColumnsForTable(sourceOptions, schema, table);
+        return { status: 'ok', data: columns };
+      }
+
       throw new QueryError('Method not found', `Method ${methodName} is not supported for MSSQL plugin`, {
-        availableMethods: ['getTables'],
+        availableMethods: ['getTables', 'listSchemas', 'listTables', 'listColumns'],
       });
     } catch (err) {
       if (err instanceof QueryError) {
