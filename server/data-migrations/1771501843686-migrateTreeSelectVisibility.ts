@@ -54,7 +54,7 @@ export class MigrateTreeSelectVisibility1771501843686 implements MigrationInterf
             }
 
             if (!styles.labelColor) {
-                styles.labelColor = { value: styles?.textColor };
+                styles.labelColor = styles?.textColor
             }
 
             if (styles.labelStyle === undefined) {

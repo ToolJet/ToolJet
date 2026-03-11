@@ -2875,7 +2875,7 @@ function migrateProperties(
     // TreeSelect
     if (componentType === 'TreeSelect') {
       if (!styles.labelColor) {
-        styles.labelColor = { value: styles?.textColor };
+        styles.labelColor = styles?.textColor;
       }
       if (styles.labelStyle === undefined) {
         styles.labelStyle = { value: 'legacy' };
