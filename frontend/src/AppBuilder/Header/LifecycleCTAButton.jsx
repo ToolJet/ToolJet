@@ -16,7 +16,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const LifecycleCTAButton = () => {
   const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed, isGitSyncConfigured, orgGit } =
+  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed, isGitSyncConfigured } =
     useStore(
       (state) => ({
         selectedVersion: state.selectedVersion,
@@ -25,13 +25,9 @@ const LifecycleCTAButton = () => {
         featureAccess: state?.license?.featureAccess,
         isEditorFreezed: state.isEditorFreezed,
         isGitSyncConfigured: state.isGitSyncConfigured,
-        orgGit: state.orgGit,
       }),
       shallow
     );
-
-  // Hook must be called before any early returns (React Rules of Hooks)
-  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
@@ -41,15 +37,14 @@ const LifecycleCTAButton = () => {
   }
 
   // Determine if we're on default branch or feature branch
-  // Consider both the version type and the workspace's active branch
+  // For platform git sync: use workspace branch context
+  // For per-app branching: fall back to versionType check
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const orgGit = useStore((state) => state.orgGit);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  const isOnBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
-  const isWorkspaceOnNonDefaultBranch =
-    workspaceActiveBranch?.name &&
-    workspaceActiveBranch.name !== defaultBranchName &&
-    !workspaceActiveBranch?.is_default &&
-    !workspaceActiveBranch?.isDefault;
-  const isOnDefaultBranch = !isOnBranchVersion && !isWorkspaceOnNonDefaultBranch;
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {

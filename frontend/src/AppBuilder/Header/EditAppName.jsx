@@ -26,16 +26,13 @@ function EditAppName() {
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const isAppCommittedToGit = !!appGit?.id;
-  const isOnBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
-  const isWorkspaceOnNonDefaultBranch =
-    workspaceActiveBranch?.name &&
-    workspaceActiveBranch.name !== defaultBranchName &&
-    !workspaceActiveBranch?.is_default &&
-    !workspaceActiveBranch?.isDefault;
-  const isOnDefaultBranch = !isOnBranchVersion && !isWorkspaceOnNonDefaultBranch;
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType !== 'branch';
   const isRenameDisabled = !isGitSyncEnabled
     ? false
     : !isAppCommittedToGit
