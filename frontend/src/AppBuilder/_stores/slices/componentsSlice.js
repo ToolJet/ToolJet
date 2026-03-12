@@ -984,28 +984,17 @@ export const createComponentsSlice = (set, get) => ({
     const { addDependency } = get();
     const optionsPath = `queries.${queryId}.__options__`;
 
-    // Clean up existing __options__ node and all its edges.
-    // We use the raw DepGraph API (graph.graph) because:
-    // - DependencyGraph.removeNode(path) only removes CHILDREN (nodes starting with path.)
-    //   which is a no-op for leaf nodes like __options__
-    // - DependencyGraph.removeDependency(toPath) only removes ONE edge at a time
-    // - DepGraph.removeNode() removes the node AND disconnects all edges in one call
-    // Orphan cleanup is unnecessary — source paths (components.{id}.value) have other edges
+    // Clean up existing __options__ node and all its edges
     const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
     if (depGraph && depGraph.hasNode(optionsPath)) {
       set(
         (state) => {
-          const graph = state.dependencyGraph.modules[moduleId].graph;
-          if (graph.hasNode(optionsPath)) {
-            graph.graph.removeNode(optionsPath);
-          }
+          state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
           return { ...state };
         },
         false,
         'clearQueryOptionsDeps'
       );
-      const stillExists = get().dependencyGraph.modules[moduleId]?.graph?.hasNode(optionsPath);
-    } else {
     }
 
     // Extract all {{}} refs from the query's active options

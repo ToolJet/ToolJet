@@ -461,17 +461,12 @@ export const createDataQuerySlice = (set, get) => ({
       if (options.runOnDependencyChange) {
         get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
       } else {
-        // Toggle turned off — clean up __options__ sentinel node if it exists.
-        // Uses raw DepGraph.removeNode() which removes node + all edges in one call
-        // (see registerQueryDependencies in componentsSlice.js for detailed rationale)
+        // Toggle turned off — clean up __options__ sentinel node if it exists
         const optionsPath = `queries.${selectedQuery.id}.__options__`;
         const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
         if (depGraph && depGraph.hasNode(optionsPath)) {
           set((state) => {
-            const graph = state.dependencyGraph.modules[moduleId].graph;
-            if (graph.hasNode(optionsPath)) {
-              graph.graph.removeNode(optionsPath);
-            }
+            state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
             return { ...state };
           }, false, 'clearQueryOptionsDeps');
         }
