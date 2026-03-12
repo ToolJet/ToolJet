@@ -1,10 +1,14 @@
 import React from 'react';
+import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Sun } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { Link } from 'react-router-dom';
 import { SettingsMenu } from '@/modules/dashboard/components';
+
+const routeLinkClassName = (isRouteActive) => cn('tj-leftsidebar-icon-items', { active: isRouteActive });
 
 const BaseLeftNavSideBar = ({
   checkForUnsavedChanges,
@@ -28,15 +32,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('home') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('home'))}
                 data-cy="icon-home"
               >
-                <SolidIcon
-                  name="home"
-                  fill={router.pathname === getPrivateRoute('home') ? '#3E63DD' : 'var(--slate8)'}
-                />
+                <Home size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -46,20 +45,12 @@ const BaseLeftNavSideBar = ({
             <Link
               to={getPrivateRoute('dashboard')}
               onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
-              className={`tj-leftsidebar-icon-items  ${
-                (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
-                `current-seleted-route`
-              }`}
+              className={routeLinkClassName(
+                router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
+              )}
               data-cy="icon-dashboard"
             >
-              <SolidIcon
-                name="apps"
-                fill={
-                  router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
-                    ? '#3E63DD'
-                    : 'var(--slate8)'
-                }
-              />
+              <Blocks size={16} />
             </Link>
           </ToolTip>
         </li>
@@ -69,9 +60,7 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('workflows')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -80,16 +69,7 @@ const BaseLeftNavSideBar = ({
                   padding: '8px',
                 }}
               >
-                <SolidIcon
-                  name="workflows"
-                  fill={
-                    router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : darkMode
-                      ? '#4C5155'
-                      : '#C1C8CD'
-                  }
-                />
+                <Workflow size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -100,19 +80,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('database')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('database'))}
                 data-cy="icon-database"
               >
-                <SolidIcon
-                  name="table"
-                  fill={
-                    router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : 'var(--slate8)'
-                  }
-                />
+                <Table2 size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -125,15 +96,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('data_sources')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('data_sources'))}
                 data-cy="icon-global-datasources"
               >
-                <SolidIcon
-                  name="datasource"
-                  fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
-                />
+                <Puzzle size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -144,17 +110,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('workspace_constants')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('workspace_constants'))}
                 data-cy="icon-workspace-constants"
               >
-                <SolidIcon
-                  name="workspaceconstants"
-                  fill={router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'}
-                  width={25}
-                  viewBox={'0 0 20 20'}
-                />
+                <KeyRound size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -168,7 +127,7 @@ const BaseLeftNavSideBar = ({
               onClick={() => switchDarkMode(!darkMode)}
               data-cy="mode-switch-button"
             >
-              <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </Link>
           </ToolTip>
           <SettingsMenu

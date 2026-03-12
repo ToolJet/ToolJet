@@ -7621,34 +7621,14 @@ tbody {
   --tblr-breadcrumb-item-active-color: inherit;
 }
 
-.application-brand {
-  a {
-    height: 48px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
 .breadcrumb-item.active {
   font-weight: var(--tblr-breadcrumb-item-active-font-weight);
   color: var(--tblr-breadcrumb-item-active-color);
 }
 
-.settings-nav-item,
 .audit-log-nav-item,
 .notification-center-nav-item {
   border-radius: 4px;
-}
-
-.settings-nav-item {
-  height: 32px;
-  width: 32px;
-
-  &.active {
-    background-color: var(--indigo4);
-  }
 }
 
 .audit-log-nav-item {

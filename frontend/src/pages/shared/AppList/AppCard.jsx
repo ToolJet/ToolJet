@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button/Button';
 const moreActionOptions = [
   { label: 'Rename app', icon: <AppWindow size={16} color="var(--icon-weak)" />, action: 'rename-app' },
   { label: 'Customize icon', icon: <PencilRuler size={16} color="var(--icon-weak)" />, action: 'customize-icon' },
-  { label: 'Duplicate app', icon: <Copy size={16} color="var(--icon-weak)" />, action: 'duplicate-app' },
+  // { label: 'Duplicate app', icon: <Copy size={16} color="var(--icon-weak)" />, action: 'duplicate-app' }, // Only for apps/modules
   { label: 'Move to folder', icon: <FolderInput size={16} color="var(--icon-weak)" />, action: 'move-to-folder' },
   {
     label: 'Remove from folder',
@@ -32,7 +32,8 @@ export default function AppCard({
   editedBy = 'Edited 2m ago by user',
   onLaunch,
   onEdit,
-  onMoreOptions,
+  onToggleMenu,
+  onMenuItemClick,
 }) {
   const { name, editing_version, updated_at } = appDetails;
 
@@ -84,7 +85,7 @@ export default function AppCard({
                   size="medium"
                   variant="outline"
                   leadingIcon="ellipsis-vertical"
-                  onClick={onMoreOptions}
+                  onClick={onToggleMenu}
                 />
               </DropdownMenuTrigger>
 
@@ -94,7 +95,7 @@ export default function AppCard({
                     <DropdownMenuItem
                       key={option.action}
                       className="tw-text-text-default tw-font-body-default"
-                      onClick={() => onMoreOptions(option.action)}
+                      onClick={() => onMenuItemClick(option.action)}
                     >
                       {option.icon}
                       {option.label}
