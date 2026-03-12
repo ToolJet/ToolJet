@@ -40,8 +40,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
                    OR
 
                    -- multi-auth OFF: has credential_id on access_token
-                   (options->'multiple_auth_enabled'->>'value')::boolean = false
-                   AND options->'access_token'->>'credential_id' IS NOT NULL
+                   options->'access_token'->>'credential_id' IS NOT NULL
                  )
           ORDER  BY id
           LIMIT  $2
