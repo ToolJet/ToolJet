@@ -112,19 +112,19 @@ jobs:
                     "fields": [
                       {
                         "type": "mrkdwn",
-                        "text": "*Repository:*\\\\n${{ github.repository }}"
+                        "text": "*Repository:*\n${{ github.repository }}"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Image:*\\\\ntooljet/tooljet:ee-lts-latest"
+                        "text": "*Image:*\ntooljet/tooljet:ee-lts-latest"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Scanner:*\\\\nGrype"
+                        "text": "*Scanner:*\nGrype"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Scan Time:*\\\\n$(date -u +"%Y-%m-%d %H:%M UTC")"
+                        "text": "*Scan Time:*\n$(date -u +"%Y-%m-%d %H:%M UTC")"
                       }
                     ]
                   },
@@ -143,15 +143,15 @@ jobs:
                     "fields": [
                       {
                         "type": "mrkdwn",
-                        "text": "🔴 *Critical:*\\\\n${{ steps.parse-grype.outputs.critical }}"
+                        "text": "🔴 *Critical:*\n${{ steps.parse-grype.outputs.critical }}"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "🟠 *High:*\\\\n${{ steps.parse-grype.outputs.high }}"
+                        "text": "🟠 *High:*\n${{ steps.parse-grype.outputs.high }}"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "📊 *Total:*\\\\n${{ steps.parse-grype.outputs.total }}"
+                        "text": "📊 *Total:*\n${{ steps.parse-grype.outputs.total }}"
                       }
                     ]
                   },
@@ -180,9 +180,9 @@ jobs:
           EOF
           )
 
-          response=$(curl -s -w "%{http_code}" -X POST \\
-            -H 'Content-type: application/json' \\
-            --data "$payload" \\
+          response=$(curl -s -w "%{http_code}" -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
             "${{ secrets.SLACK_WEBHOOK_URL_VUR }}")
 
           http_code="${response: -3}"
