@@ -201,7 +201,11 @@ export const createGridSlice = (set, get) => ({
 
         // Only proceed with normal calculation if component is not an accordion or accordion is expanded
         if (componentType !== 'Accordion' || isAccordionExpanded) {
-          const element = document.querySelector(`.dynamic-${componentId}`);
+          const dynamicSelector =
+            doesSubContainerIndexExist && componentType !== 'Listview'
+              ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"] .dynamic-${componentId}`
+              : `.dynamic-${componentId}`;
+          const element = document.querySelector(dynamicSelector);
           // If the component is not a dynamic component, we use the height of the component from the layouts
           if (!element) {
             contentHeight = visibility
@@ -439,7 +443,10 @@ export const createGridSlice = (set, get) => ({
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
-        const element = document.querySelector(`.ele-${component.id}`);
+        const targetSelector = doesSubContainerIndexExist
+          ? `.ele-${component.id}[subcontainer-id="${subContainerIndex}"]`
+          : `.ele-${component.id}`;
+        const element = document.querySelector(targetSelector);
         if (!element) continue;
         const transformedTargetComponentId = doesSubContainerIndexExist
           ? `${component.id}-${subContainerIndex}`
@@ -465,8 +472,11 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const element = document.querySelector(`.ele-${componentId}`);
-          element.style.height = `${newHeight}px`;
+          const containerSelector = doesSubContainerIndexExist
+            ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`
+            : `.ele-${componentId}`;
+          const element = document.querySelector(containerSelector);
+          if (element) element.style.height = `${newHeight}px`;
         }
       }
 
