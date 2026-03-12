@@ -43,6 +43,7 @@ const initialState = {
   },
   selectedComponents: [],
   showWidgetDeleteConfirmation: false,
+  deleteTargetIsModuleEditor: false,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
@@ -1203,7 +1204,7 @@ export const createComponentsSlice = (set, get) => ({
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false, isModuleEditor = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1222,7 +1223,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageIndex,
     } = get();
     const isAppBeingEditedByAI = get().ai?.isLoading ?? false;
-    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI);
+    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI, isModuleEditor);
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
@@ -2015,9 +2016,10 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
-  setWidgetDeleteConfirmation: (value) => {
+  setWidgetDeleteConfirmation: (value, isModuleEditor = false) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
+      if (value) state.deleteTargetIsModuleEditor = isModuleEditor;
     });
   },
 

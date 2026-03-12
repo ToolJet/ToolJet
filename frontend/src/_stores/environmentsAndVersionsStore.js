@@ -81,10 +81,24 @@ export const useEnvironmentsAndVersionsStore = create(
         },
         setSelectedVersion: (selectedVersion) => set({ selectedVersion }),
         setEnvironmentAndVersionsInitStatus: (state) => set({ completedEnvironmentAndVersionsInit: state }),
-        createNewVersionAction: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
+        createNewVersionAction: async (
+          appId,
+          versionName,
+          selectedVersionId,
+          onSuccess,
+          onFailure,
+          versionType = 'version'
+        ) => {
           try {
             const editorEnvironment = get().selectedEnvironment.id;
-            const newVersion = await appVersionService.create(appId, versionName, selectedVersionId, editorEnvironment);
+            const newVersion = await appVersionService.create(
+              appId,
+              versionName,
+              '',
+              selectedVersionId,
+              editorEnvironment,
+              versionType
+            );
             const editorVersion = {
               id: newVersion.id,
               name: newVersion.name,

@@ -33,6 +33,7 @@ import { createFormComponentSlice } from './slices/componentSlices/formComponent
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { createBranchSlice } from './slices/branchSlice';
 enableMapSet();
 
 export default create(
@@ -71,6 +72,7 @@ export default create(
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),
+      ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )
