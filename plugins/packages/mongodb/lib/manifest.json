@@ -204,7 +204,7 @@
         }
       },
       "then": {
-        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
+        "required": []
       }
     }
   ],
