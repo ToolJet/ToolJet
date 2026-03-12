@@ -302,6 +302,7 @@ const RenderWidget = ({
               dataCy={`${componentName}`}
               currentMode={currentMode}
               subContainerIndex={subContainerIndex}
+              componentType={componentType}
             />
           </TrackedSuspense>
         </div>

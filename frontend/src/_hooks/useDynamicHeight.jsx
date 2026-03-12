@@ -14,14 +14,16 @@ export const useDynamicHeight = ({
   visibility,
   skipAdjustment = false,
   subContainerIndex,
+  componentType = '',
 }) => {
   const prevDynamicHeight = useRef(isDynamicHeightEnabled);
   const prevHeight = useRef(height);
 
   useEffect(() => {
-    const elementSelector = isTruthyOrZero(subContainerIndex)
-      ? `.ele-${id}[subcontainer-id="${subContainerIndex}"]`
-      : `.ele-${id}`;
+    const elementSelector =
+      isTruthyOrZero(subContainerIndex) && componentType !== 'Listview'
+        ? `.ele-${id}[subcontainer-id="${subContainerIndex}"]`
+        : `.ele-${id}`;
     const element = document.querySelector(elementSelector);
     if (!element) return;
     if (skipAdjustment && isDynamicHeightEnabled) {
