@@ -13,7 +13,6 @@ import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 //TODO: Revisit the logic of height (dropRef)
@@ -38,6 +37,7 @@ const Container = React.memo(
     canvasMaxWidth,
     componentType,
     appType,
+    hasNoScroll = false,
   }) => {
     const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -50,6 +50,10 @@ const Container = React.memo(
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    const isWidgetInSubContainerDragging = useStore(
+      (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
@@ -58,7 +62,6 @@ const Container = React.memo(
     const { isDragging } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
     }));
-
     // // // Cleanup ghost when drag ends
     useEffect(() => {
       if (!isDragging) {
@@ -71,10 +74,6 @@ const Container = React.memo(
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -117,11 +116,10 @@ const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns]);
+    }, [canvasWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -130,8 +128,10 @@ const Container = React.memo(
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+          const scrollLeft = realCanvas.scrollLeft || 0;
+          const scrollTop = realCanvas.scrollTop || 0;
+          const x = e.clientX - rect.left + scrollLeft;
+          const y = e.clientY - rect.top + scrollTop;
           setLastCanvasClickPosition({ x, y });
         }
       },
@@ -190,6 +190,8 @@ const Container = React.memo(
           })(),
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
+          // Prevent the scroll when dragging a widget inside the container or moving out of the container
+          overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
         }}
         className={cx('real-canvas', {
@@ -197,6 +199,8 @@ const Container = React.memo(
           'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
+          'has-no-scroll': hasNoScroll,
+          'is-child-being-dragged': !hasNoScroll && isWidgetInSubContainerDragging,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

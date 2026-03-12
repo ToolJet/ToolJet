@@ -65,6 +65,10 @@ import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
 import { chatConfig } from './chat';
+import { popoverMenuConfig } from './popoverMenu';
+import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
+import { tagsInputConfig } from './TagsInput';
 
 export {
   buttonConfig,
@@ -134,4 +138,8 @@ export {
   moduleContainerConfig,
   moduleViewerConfig,
   rangeSliderV2Config,
+  popoverMenuConfig,
+  audioRecorderConfig,
+  cameraConfig,
+  tagsInputConfig,
 };

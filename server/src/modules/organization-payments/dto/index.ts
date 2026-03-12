@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested, IsNumber } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PartialType } from '@nestjs/mapped-types';
 import { IsEmail, IsEnum, IsInt } from 'class-validator';
@@ -35,6 +35,7 @@ class ItemDto {
 enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
+  STARTER = 'starter',
 }
 
 export enum SubscriptionMode {
@@ -67,6 +68,7 @@ export class ProrationDto {
 export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
+  STARTER = 'starter',
 }
 
 export class PaymentRedirectDto {
@@ -137,4 +139,23 @@ export class UpdateSubscriptionDto {
 
   @IsNotEmpty()
   planForm: any;
+}
+
+export class TopUpPaymentDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(2000) //Min amount of credits
+  quantity: number;
+
+  @IsString()
+  @IsNotEmpty()
+  success_url: string;
+
+  @IsString()
+  @IsNotEmpty()
+  cancel_url: string;
+
+  @IsString()
+  @IsOptional()
+  promo_code: string;
 }

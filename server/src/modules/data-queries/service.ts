@@ -16,14 +16,17 @@ import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService } from './interfaces/IService';
 import { App } from '@entities/app.entity';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
+import { ACTION_TYPE } from '@modules/app-history/constants';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository
-  ) {}
+    protected readonly dataSourceRepository: DataSourcesRepository,
+    protected readonly appHistoryUtilService: AppHistoryUtilService
+  ) { }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -61,7 +64,7 @@ export class DataQueriesService implements IDataQueriesService {
       'You cannot create queries in the promoted version.'
     );
 
-    return dbTransactionWrap(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -78,6 +81,21 @@ export class DataQueriesService implements IDataQueriesService {
 
       return decamelizedQuery;
     });
+
+    // Queue history capture after successful data query creation
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(dataQueryDto.app_version_id, ACTION_TYPE.QUERY_ADD, {
+        queryName: dataQueryDto.name || 'Unnamed Query',
+        queryId: result.id,
+        operation: 'create',
+        queryData: dataQueryDto,
+        userId: user?.id,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for data query creation:', error);
+    }
+
+    return result;
   }
 
   async update(user: User, versionId: string, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto) {
@@ -92,13 +110,51 @@ export class DataQueriesService implements IDataQueriesService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
+
+    // Queue history capture after successful data query update
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.QUERY_UPDATE, {
+        queryName: updateDataQueryDto.name || 'Unnamed Query',
+        queryId: dataQueryId,
+        operation: 'update',
+        queryData: updateDataQueryDto,
+        userId: user?.id,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for data query update:', error);
+    }
   }
 
   async delete(dataQueryId: string) {
+    // Get app version ID before deletion (minimal query)
+    let appVersionId: string | null = null;
+
+    try {
+      const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { apps: true });
+      if (dataQuery?.appVersionId) {
+        appVersionId = dataQuery.appVersionId;
+      }
+    } catch (error) {
+      console.error('Failed to get app version ID for history capture:', error);
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
+
+    // Queue history capture with minimal data - queue will resolve name from previous state
+    if (appVersionId) {
+      try {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.QUERY_DELETE, {
+          queryId: dataQueryId,
+          operation: 'delete',
+          // No need to pre-fetch queryName - queue processor will resolve from history
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for data query deletion:', error);
+      }
+    }
   }
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
@@ -129,30 +185,31 @@ export class DataQueriesService implements IDataQueriesService {
     ability: AppAbility,
     dataSource: DataSource,
     response: Response,
-    mode?: string
+    mode?: string,
+    app?: App
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
 
     if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response) {
+  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
     const { resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view');
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
 
-  async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response) {
-    return this.runAndGetResult(user, dataQuery, options, response, environmentId);
+  async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
+    return this.runAndGetResult(user, dataQuery, options, response, environmentId, undefined, app);
   }
 
   protected async runAndGetResult(
@@ -161,7 +218,8 @@ export class DataQueriesService implements IDataQueriesService {
     resolvedOptions: object,
     response: Response,
     environmentId?: string,
-    mode?: string
+    mode?: string,
+    app?: App
   ): Promise<object> {
     let result = {};
 
@@ -172,7 +230,9 @@ export class DataQueriesService implements IDataQueriesService {
         resolvedOptions,
         response,
         environmentId,
-        mode
+        mode,
+        app,
+        undefined // opts parameter
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
@@ -194,6 +254,31 @@ export class DataQueriesService implements IDataQueriesService {
       }
     }
 
+    return result;
+  }
+
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
+    let result = {};
+    try {
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        result = {
+          status: 'failed',
+          message: error.message,
+          description: error.description,
+          data: error.data,
+        };
+      } else {
+        console.log(error);
+        result = {
+          status: 'failed',
+          message: 'Internal server error',
+          description: error.message,
+          data: {},
+        };
+      }
+    }
     return result;
   }
 

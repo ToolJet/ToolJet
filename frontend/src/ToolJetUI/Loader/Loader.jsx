@@ -1,10 +1,16 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
-const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
+const Loader = ({ width, style, absolute = true, color = '#3E63DD', reverse = false, classes = null }) => {
   const viewBoxSize = 240; // Increase the viewBox size as needed
+  const rotateFrom = reverse ? '360 120 120' : '0 120 120';
+  const rotateTo = reverse ? '0 120 120' : '360 120 120';
 
   return (
-    <div className="tj-widget-loader d-flex" style={{ ...style, position: absolute ? 'absolute' : 'relative' }}>
+    <div
+      className={cn('tj-widget-loader d-flex', classes?.loaderContainer)}
+      style={{ ...style, position: absolute ? 'absolute' : 'relative' }}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={width}
@@ -39,8 +45,8 @@ const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
             d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2 - 2}`}
           />
           <animateTransform
-            from="0 120 120"
-            to="360 120 120"
+            from={rotateFrom}
+            to={rotateTo}
             attributeName="transform"
             type="rotate"
             repeatCount="indefinite"

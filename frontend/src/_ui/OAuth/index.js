@@ -59,14 +59,20 @@ const OAuth = ({
 
   return (
     <>
-      <Select
-        options={authOptions(isGrpc)}
-        value={auth_type}
-        onChange={(value) => optionchanged('auth_type', value)}
-        width={'100%'}
-        useMenuPortal={false}
-        isDisabled={isDisabled}
-      />
+      {authOptions(isGrpc).length > 1 && (
+        <>
+          <label className="form-label" data-cy="authentication-type-dropdown-label">Authentication type</label>
+          <Select
+            options={authOptions(isGrpc)}
+            value={auth_type}
+            onChange={(value) => optionchanged('auth_type', value)}
+            width={'100%'}
+            useMenuPortal={false}
+            isDisabled={isDisabled}
+            dataCy="authentication-type"
+          />
+        </>
+      )}
       <ElementToRender
         add_token_to={add_token_to}
         header_prefix={header_prefix}

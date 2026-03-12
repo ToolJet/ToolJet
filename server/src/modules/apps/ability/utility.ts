@@ -8,7 +8,8 @@ import { defineWorkflowAbility } from './workflow.ability';
 export function createAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string
+  resourceId?: string,
+  request?: any
 ): void {
   const resourceType = UserAllPermissions?.resource[0]?.resourceType
     ? UserAllPermissions.resource[0].resourceType
@@ -16,10 +17,10 @@ export function createAbility(
 
   switch (resourceType) {
     case MODULES.APP:
-      defineAppAbility(can, UserAllPermissions, resourceId);
+      defineAppAbility(can, UserAllPermissions, resourceId, request);
       break;
     case MODULES.MODULES:
-      defineAppAbility(can, UserAllPermissions, resourceId);
+      defineAppAbility(can, UserAllPermissions, resourceId, request);
       break;
     case MODULES.WORKFLOWS:
       defineWorkflowAbility(can, UserAllPermissions, resourceId);

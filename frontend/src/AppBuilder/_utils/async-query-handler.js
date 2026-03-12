@@ -14,7 +14,7 @@ export class AsyncQueryHandler {
    */
   constructor(options = {}) {
     this.config = {
-      streamSSE: () => {},
+      streamSSE: () => { },
       extractJobId: (response) => response.data?.id,
       // Default implementation that doesn't make assumptions about specific status/type fields
       classifyEventStatus: (data) => {
@@ -27,10 +27,11 @@ export class AsyncQueryHandler {
         };
       },
       callbacks: {
-        onProgress: () => {},
-        onComplete: () => {},
-        onError: () => {},
-        onClose: () => {},
+        onProgress: () => { },
+        onComplete: () => { },
+        onError: () => { },
+        onCancel: () => { },
+        onClose: () => { },
       },
       ...options,
     };
@@ -41,7 +42,7 @@ export class AsyncQueryHandler {
   /**
    * Processes the initial query response and starts SSE monitoring
    * @param {Object} response - The initial query response
-   * @returns {{ __jobId: string, __cancel: Function, __asyncCompletionPromise: Promise<any> }} Status object with jobId, control methods, and completion promise
+   * @returns {{ __jobId: string, __asyncCompletionPromise: Promise<any> }} Status object with jobId and completion promise
    */
   processInitialResponse(response) {
     const jobId = this.config.extractJobId(response);
@@ -56,7 +57,7 @@ export class AsyncQueryHandler {
         this.resolveCompletion = resolve;
         this.rejectCompletion = reject;
       });
-    return { __jobId: jobId, __cancel: () => this.cancel(), __asyncCompletionPromise: this.__asyncCompletionPromise };
+    return { __jobId: jobId, __asyncCompletionPromise: this.__asyncCompletionPromise };
   }
 
   /**
@@ -98,6 +99,11 @@ export class AsyncQueryHandler {
           this.config.callbacks.onError(data);
           this.rejectCompletion(data);
           break;
+        case 'CANCELLED':
+          eventSource.close();
+          this.config.callbacks.onCancel(data);
+          this.rejectCompletion({ cancelled: true, ...data });
+          break;
         case 'CLOSE':
           eventSource.close();
           this.config.callbacks.onClose(data);
@@ -127,15 +133,11 @@ export class AsyncQueryHandler {
   /**
    * Cancels the ongoing async operation and cleans up resources.
    */
-  cancel() {
+  cleanup() {
     if (this.eventSource) {
       this.eventSource.close();
+      this.eventSource = null;
     }
-    // Notify backend to cancel the job if jobId exists
-    // if (this.jobId) {
-    //   fetch(`${this.config.endpoint}/${this.jobId}/cancel`, { method: 'POST' }).catch((e) =>
-    //     console.error('Failed to cancel async job', e)
-    //   );
-    // }
+    this.config.callbacks.onClose();
   }
 }

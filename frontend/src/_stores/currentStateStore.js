@@ -124,7 +124,7 @@ useCurrentStateStore.subscribe((state) => {
   if (!isEditorReady) return;
 
   // TODO: Change the logic of updating canvas background
-  updateCanvasBackground(useEditorStore.getState().canvasBackground);
+  // updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
   if (!isStoreIntialized) {

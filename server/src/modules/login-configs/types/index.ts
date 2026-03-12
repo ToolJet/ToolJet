@@ -44,6 +44,7 @@ interface Features {
   [FEATURE_KEY.UPDATE_INSTANCE_SSO]: FeatureConfig;
   [FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.GET_INSTANCE_SSO]: FeatureConfig;
+  [FEATURE_KEY.DELETE_ORGANIZATION_SSO]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

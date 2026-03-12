@@ -52,12 +52,13 @@ export const TimePicker = ({
     selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : 'Select time'
   );
 
-  const setInputValue = (date, format) => {
+  const setInputValue = (date, format, skipFireEvent = false) => {
     const timestamp = getUnixTime(date, format ? format : timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
       value: timestamp ? getFormattedSelectTimestamp(timestamp, timeFormat) : null,
     });
+    if (skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -88,7 +89,7 @@ export const TimePicker = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue);
+    setInputValue(defaultValue, null, true);
   }, [defaultValue, timeFormat]);
 
   useEffect(() => {
@@ -131,7 +132,7 @@ export const TimePicker = ({
 
   const componentProps = {
     popperClassName: cx(
-      'cc-timepicker-widget tj-table-datepicker tj-datepicker-widget react-datepicker-time-component',
+      'cc-timepicker-widget tj-table-datepicker tj-datepicker-widget react-datepicker-time-component !tw-mt-0',
       {
         'theme-dark dark-theme': darkMode,
       }
@@ -187,6 +188,7 @@ export const TimePicker = ({
       componentProps={componentProps}
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };

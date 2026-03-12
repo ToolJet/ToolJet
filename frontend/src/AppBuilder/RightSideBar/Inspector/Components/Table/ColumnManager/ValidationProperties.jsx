@@ -4,7 +4,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
 import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
-import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
+import CustomDatePickerHeader from '@/AppBuilder/Widgets/Table/CustomDatePickerHeader';
 import { resolveReferences } from '@/_helpers/utils';
 import cx from 'classnames';
 

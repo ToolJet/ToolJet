@@ -192,22 +192,19 @@ export default class GoogleCalendar implements QueryService {
     }
     let clientId = '';
     let clientSecret = '';
-    const oauth_type = source_options.find((item) => item.key === 'oauth_type')?.value;
+    const getOptionValue = (key: string) => {
+      if (Array.isArray(source_options)) {
+        return source_options.find((item) => item.key === key)?.value;
+      } else return source_options[key];
+    };
+
+    const oauth_type = getOptionValue('oauth_type');
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
       clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     } else {
-      clientId = source_options.find((item) => item.key === 'client_id')?.value;
-      clientSecret = source_options.find((item) => item.key === 'client_secret')?.value;
-    }
-
-    for (const item of source_options) {
-      if (item.key === 'client_id') {
-        clientId = item.value;
-      }
-      if (item.key === 'client_secret') {
-        clientSecret = item.value;
-      }
+      clientId = getOptionValue('client_id');
+      clientSecret = getOptionValue('client_secret');
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';

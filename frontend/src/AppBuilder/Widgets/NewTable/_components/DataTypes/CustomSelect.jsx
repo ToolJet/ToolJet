@@ -31,6 +31,28 @@ const COLORS = [
 
 const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
+  const hasScrolledOnOpenRef = useRef(false);
+  const menuListRef = useRef(null);
+
+  const firstSelectedIndex = props?.options?.findIndex(opt => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value));
+
+  useEffect(() => {
+    if (!selectProps?.menuIsOpen) {
+      hasScrolledOnOpenRef.current = false;
+      return;
+    }
+
+    if (hasScrolledOnOpenRef.current) return;
+    if (firstSelectedIndex < 0) return;
+
+    const menuEl = menuListRef.current;
+    const optionEl = menuEl?.children?.[firstSelectedIndex];
+
+    if (menuEl && optionEl) {
+      optionEl.scrollIntoView({ block: 'center' });
+      hasScrolledOnOpenRef.current = true;
+    }
+  }, [selectProps?.menuIsOpen, firstSelectedIndex]);
 
   return (
     <div
@@ -39,6 +61,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
       style={{
         backgroundColor: 'var(--cc-surface1-surface)',
         border: '1px solid var(--cc-default-border)',
+        minWidth: '200px',
       }}
     >
       <div
@@ -68,7 +91,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
         />
       </div>
       <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
-        <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
+        <MenuList {...props} innerRef={menuListRef} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
           {optionsLoadingState ? (
             <div className="text-center py-4">
               <div className="spinner-border text-primary" role="status">
@@ -132,16 +155,35 @@ const CustomMultiValueContainer = ({ children }) => (
   </div>
 );
 
-const DropdownIndicator = ({ selectProps }) => (
-  <div className="cell-icon-display" style={{ alignSelf: 'center' }}>
-    <SolidIcon
-      name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
-      width="16"
-      height="16"
-      fill="#6A727C"
-    />
-  </div>
-);
+const DropdownIndicator = ({ selectProps }) => {
+  return (
+    <div
+      className="cell-icon-display"
+      style={{ alignSelf: 'center' }}
+      onMouseDown={(e) => {
+        const isOpen = selectProps.menuIsOpen;
+        selectProps.onMenuOpen(!isOpen);
+
+        const tdElement = e.currentTarget.closest('td');
+        if (tdElement) {
+          const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          });
+          tdElement.dispatchEvent(clickEvent);
+        }
+      }}
+    >
+      <SolidIcon
+        name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
+        width="16"
+        height="16"
+        fill="#6A727C"
+      />
+    </div>
+  )
+};
 
 const getOverlay = (value, containerWidth, darkMode) => {
   if (!isArray(value)) return <div />;
@@ -298,8 +340,8 @@ export const CustomSelectColumn = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -308,8 +350,8 @@ export const CustomSelectColumn = ({
     if (isMulti && value?.length) {
       return isArray(value)
         ? options?.filter((option) =>
-            value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
-          )
+          value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
+        )
         : [];
     }
     return options?.find((option) => option.value === value) || [];
@@ -350,7 +392,7 @@ export const CustomSelectColumn = ({
         <div
           className="w-100 d-flex align-items-center"
           ref={containerRef}
-          onClick={() => {
+          onClick={(e) => {
             if (isNewRow && isEditable) {
               setIsFocused((prev) => !prev);
             }

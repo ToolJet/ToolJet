@@ -37,6 +37,13 @@ export interface UserWorkflowPermissions {
   isAllExecutable: boolean;
 }
 
+export interface EnvironmentPermissionSet {
+  development: boolean;
+  staging: boolean;
+  production: boolean;
+  released: boolean;
+}
+
 export interface UserAppsPermissions {
   editableAppsId: string[];
   isAllEditable: boolean;
@@ -44,6 +51,8 @@ export interface UserAppsPermissions {
   isAllViewable: boolean;
   hiddenAppsId: string[];
   hideAll: boolean;
+  environmentAccess?: EnvironmentPermissionSet;
+  appSpecificEnvironmentAccess?: Record<string, EnvironmentPermissionSet>;
 }
 
 export interface UserDataSourcePermissions {

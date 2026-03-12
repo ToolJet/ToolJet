@@ -1,5 +1,28 @@
 import React from 'react';
-function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width, top }) {
+
+import useStore from '@/AppBuilder/_stores/store';
+import { cn } from '@/lib/utils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { shallow } from 'zustand/shallow';
+
+function Label({
+  label,
+  width,
+  labelRef,
+  color,
+  defaultAlignment,
+  direction,
+  auto,
+  isMandatory,
+  _width,
+  top,
+  widthType,
+  inputId,
+  id,
+  classes = null,
+}) {
+  const { moduleId } = useModuleContext();
+  const isViewerMode = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'view', shallow);
   return (
     <>
       {label && (width > 0 || auto) && (
@@ -7,13 +30,16 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
           ref={labelRef}
           style={{
             width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${_width}%` : '100%',
-            maxWidth: defaultAlignment === 'side' ? '70%' : '100%',
+            maxWidth: widthType === 'ofField' && defaultAlignment === 'side' ? '70%' : '100%', // Maintaining this for backward compatibility
             display: 'flex',
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize: '12px',
             height: defaultAlignment === 'top' && '20px',
           }}
+          htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste
+          className={cn(classes?.labelContainer)}
+          id={id}
         >
           <p
             style={{

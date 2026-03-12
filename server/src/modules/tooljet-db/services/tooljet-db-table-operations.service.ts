@@ -28,9 +28,9 @@ import {
   decryptTooljetDatabasePassword,
   grantTenantRoleToTjdbAdminRole,
   isSQLModeDisabled,
+  generateTJDBPasswordForRole,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-import * as crypto from 'crypto';
 import {
   PostgrestError,
   TooljetDatabaseColumn,
@@ -1552,7 +1552,7 @@ export class TooljetDbTableOperationsService {
 
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
-    const dbPassword = crypto.randomBytes(8).toString('hex');
+    const dbPassword = generateTJDBPasswordForRole();
     const tjDbName = this.configService.get('TOOLJET_DB');
     const tooljetDbAdminUser = this.configService.get('TOOLJET_DB_USER');
 

@@ -8,6 +8,8 @@ import { fetchEdition } from './utils';
 // import * as cloudWhiteLabelling from '@cloud/modules/helpers/whiteLabelling';
 import * as posthog from '@/modules/common/helpers/posthog';
 import * as posthogCloud from '@ee/modules/common/helpers/posthog';
+import * as hubspot from '@/modules/common/helpers/hubspot';
+import * as hubspotCloud from '@ee/modules/common/helpers/hubspot';
 
 // Map of all helpers
 const helperModules = {
@@ -24,6 +26,11 @@ const helperModules = {
     ce: posthog,
     ee: posthog, //no posthog for ee
     cloud: posthogCloud,
+  },
+  hubspot: {
+    ce: hubspot,
+    ee: hubspot, //no hubspot for ee
+    cloud: hubspotCloud,
   },
   // Add other helpers here in the same structure
 };

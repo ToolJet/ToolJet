@@ -9,6 +9,7 @@ import { IProfileService } from '@modules/profile/interfaces/IService';
 import { File } from '@entities/file.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class ProfileService implements IProfileService {
@@ -51,6 +52,7 @@ export class ProfileService implements IProfileService {
   }
 
   async updateUserPassword(userId: string, password: string): Promise<void> {
+    validatePasswordServer(password);
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },

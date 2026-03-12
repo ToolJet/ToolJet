@@ -1,6 +1,6 @@
 export interface EmailOptions {
   to: string[];
-  from: string;
+  from: string | { email: string; name: string };
   subject: string;
   text: string;
   html?: string;
@@ -13,6 +13,7 @@ export type QueryOptions = {
   operation: string;
   send_mail_to: string[];
   send_mail_from: string;
+  send_mail_from_name?: string;
   subject: string;
   text: string;
   multiple_recipients: boolean;

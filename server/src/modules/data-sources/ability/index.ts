@@ -143,5 +143,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       }
       return;
     }
+
+    // End users should only have read access to data sources for preview functionality
+    if (userPermission?.isEndUser) {
+      can([FEATURE_KEY.GET, FEATURE_KEY.GET_FOR_APP], DataSource);
+      return;
+    }
   }
 }

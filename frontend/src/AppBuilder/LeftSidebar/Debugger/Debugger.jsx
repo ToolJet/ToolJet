@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react';
-import { HeaderSection } from '@/_ui/LeftSidebar';
-import { LeftSidebarDebugger } from '@/Editor/LeftSidebar/SidebarDebugger/SidebarDebugger';
+import React from 'react';
+import { LeftSidebarDebugger } from './SidebarDebugger/SidebarDebugger';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 

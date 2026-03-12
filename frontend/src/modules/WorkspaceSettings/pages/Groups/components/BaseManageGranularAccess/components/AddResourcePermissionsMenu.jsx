@@ -4,7 +4,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { RESOURCE_TYPE } from '../../../index';
 
-function AddResourcePermissionsMenu({
+function AddResourcePermissionsMenu ({
   openAddPermissionModal,
   resourcesOptions,
   currentGroupPermission,
@@ -50,6 +50,7 @@ function AddResourcePermissionsMenu({
                   openAddPermissionModal(resource);
                 }}
                 disabled={currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES}
+                data-cy={`add-${resource.toLowerCase()}-button`}
               >
                 <OverlayTrigger
                   key={index}
@@ -80,6 +81,7 @@ function AddResourcePermissionsMenu({
           className="add-icon tj-text-xsm font-weight-600"
           leftIcon="plus"
           disabled={currentGroupPermission.name === 'admin' || isBasicPlan}
+          data-cy="add-permission-button"
         >
           Add permission
         </ButtonSolid>

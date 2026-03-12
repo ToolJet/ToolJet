@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: GitSync CI/CD Overview
+sidebar_label: Overview
 ---
 <div className="badge badge--primary heading-badge">   
   <img 
@@ -32,5 +33,5 @@ With git sync CI/CD, you can:
 - Easy Integration: Easily integrate with any DevOps tool using ToolJet's RESTful APIs.
 
 ## Next Steps
-- Refer to [Using Git Sync CI/CD APIs](/docs/development-lifecycle/CICD/gitsync-api) for detailed API usage.
-- Check out [Git Sync CI/CD with Jenkins Example](/docs/development-lifecycle/CICD/example) for a practical implementation guide.
+- Refer to [Using Git Sync CI/CD APIs](/docs/development-lifecycle/cicd/gitsync-api/) for detailed API usage.
+- Check out [Git Sync CI/CD with Jenkins Example](/docs/development-lifecycle/cicd/example/) for a practical implementation guide.

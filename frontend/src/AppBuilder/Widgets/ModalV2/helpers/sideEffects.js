@@ -2,34 +2,33 @@
 // And cleaning up dom when modal is closed
 
 export const onShowSideEffects = () => {
-  const canvasElement = document.querySelector('.page-container.canvas-container');
+  const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
   const allModalContainers = realCanvasEl.querySelectorAll('.modal');
   const modalContainer = allModalContainers[allModalContainers.length - 1];
 
   if (canvasElement && realCanvasEl && modalContainer) {
-    const currentScroll = canvasElement.scrollTop;
-    canvasElement.style.overflowY = 'hidden';
+    // Disable page scrolling when modal is opened
+    canvasElement.style.setProperty('overflow', 'hidden', 'important');
 
+    // Modal Container which contain the main modal should be of same height as the canvas element
     modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+
+    // Position the modal container such that it is in the current canvas viewport (even if scrolled)
+    const currentScroll = canvasElement.scrollTop;
     modalContainer.style.top = `${currentScroll}px`;
   }
 };
 
-export const onHideSideEffects = (callback = () => {}) => {
-  const canvasElement = document.querySelector('.page-container.canvas-container');
+export const onHideSideEffects = () => {
+  const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+  if (!realCanvasEl) return;
   const allModalContainers = realCanvasEl.querySelectorAll('.modal');
-  const modalContainer = allModalContainers[allModalContainers.length - 1];
   const hasManyModalsOpen = allModalContainers.length > 1;
 
-  if (canvasElement && realCanvasEl && modalContainer) {
-    modalContainer.style.height = ``;
-    modalContainer.style.top = ``;
-    callback();
-    // fireEvent('onClose');
-  }
+  // Enable page scrolling for the canvas if there is no modal open
   if (canvasElement && !hasManyModalsOpen) {
-    canvasElement.style.overflow = 'auto';
+    canvasElement.style.setProperty('overflow', 'auto', 'important');
   }
 };

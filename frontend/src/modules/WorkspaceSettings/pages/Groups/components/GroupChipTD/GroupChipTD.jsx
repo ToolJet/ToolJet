@@ -20,7 +20,7 @@ const GroupChipTD = ({ groups = [] }) => {
     };
   }, [showAllGroups]);
 
-  function moveValuesToLast(arr, valuesToMove) {
+  function moveValuesToLast (arr, valuesToMove) {
     const validValuesToMove = valuesToMove.filter((value) => arr.includes(value));
 
     validValuesToMove.forEach((value) => {
@@ -41,7 +41,7 @@ const GroupChipTD = ({ groups = [] }) => {
   };
 
   const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index} data-cy="group-chip">
+    <span className="group-chip" key={index} data-cy={`${group.toLowerCase().replace(/\s+/g, '-')}-group-chip`}>
       {humanizeifDefaultGroupName(group)}
     </span>
   );

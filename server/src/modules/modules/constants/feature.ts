@@ -6,22 +6,22 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.MODULES]: {
     [FEATURE_KEY.CREATE_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.DELETE_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.UPDATE_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.IMPORT_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.EXORT_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.CLONE_MODULE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.MODULES,
     },
   },
 };

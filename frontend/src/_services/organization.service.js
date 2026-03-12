@@ -16,6 +16,7 @@ export const organizationService = {
   setDefaultWorkspace,
   updateOrganizationStatus,
   updateInheritSSO,
+  deleteOIDCConfig,
 };
 
 function getUsersByValue(searchInput) {
@@ -127,4 +128,13 @@ function checkWorkspaceUniqueness(name, slug) {
 function setDefaultWorkspace(workspaceId) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organizations/${workspaceId}/default`, requestOptions).then(handleResponse);
+}
+
+function deleteOIDCConfig(configId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/login-configs/organization-sso/${configId}`, requestOptions).then(handleResponse);
 }

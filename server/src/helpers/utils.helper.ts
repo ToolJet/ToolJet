@@ -8,6 +8,43 @@ import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
+import { BadRequestException } from '@nestjs/common';
+import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+
+const PASSWORD_REGEX =
+  /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+
+export function validatePasswordServer(password: string | undefined | null) {
+  if (!password) {
+    return;
+  }
+
+  const isEE = String(process.env.TOOLJET_EDITION || '').toLowerCase() === 'ee';
+  const complexityEnabled = String(process.env.ENABLE_PASSWORD_COMPLEXITY_RULES ?? 'false').toLowerCase() === 'true';
+
+  if (isEE && complexityEnabled) {
+    if (!password.trim()) {
+      throw new BadRequestException('Password is required');
+    }
+    if (!PASSWORD_REGEX.test(password)) {
+      throw new BadRequestException(
+        'Password must be 12–24 characters and may include letters, numbers and special characters'
+      );
+    }
+    return;
+  }
+
+  // CE / fallback rules
+  if (!password.trim()) {
+    throw new BadRequestException('Password is required');
+  }
+  if (password.length < 5) {
+    throw new BadRequestException('Password must be at least 5 characters long');
+  }
+  if (password.length > 100) {
+    throw new BadRequestException('Password can be at max 100 characters long');
+  }
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -429,6 +466,125 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
   return true;
 };
 
+/**
+ * Validates email domain for SSO sign-in with organization/instance hierarchy.
+ * Organization domain settings override instance settings.
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgDomain - Organization domain setting (backward compatible with old 'domain' field)
+ * @param instanceAllowedDomains - Instance level SSO allowed domains
+ * @returns true if domain is valid, false otherwise
+ */
+export const isValidSSODomain = (
+  email: string,
+  orgDomain: string | null | undefined,
+  instanceAllowedDomains: string | null | undefined
+): boolean => {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // Use organization domain if present (overrides instance), otherwise use instance setting
+  const allowedDomains = orgDomain || instanceAllowedDomains;
+
+  // If no domain restriction, allow all
+  if (!allowedDomains || !allowedDomains.trim()) {
+    return true;
+  }
+
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+  if (!domain) {
+    return false;
+  }
+
+  // Check if domain is in allowed list
+  const allowedDomainList = allowedDomains
+    .split(',')
+    .map((e) => e && e.trim())
+    .filter((e) => !!e);
+
+  return allowedDomainList.includes(domain);
+};
+
+/**
+ * Validates email domain for password sign-in with organization/instance hierarchy.
+ * Organization domain settings override instance settings.
+ * Supports both allowed domains (whitelist) and restricted domains (blacklist).
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgAllowedDomains - Organization level password allowed domains
+ * @param orgRestrictedDomains - Organization level password restricted domains
+ * @param instanceAllowedDomains - Instance level password allowed domains
+ * @param instanceRestrictedDomains - Instance level password restricted domains
+ * @returns true if domain is valid, false otherwise
+ */
+export const isValidPasswordDomain = (
+  email: string,
+  orgAllowedDomains: string | null | undefined,
+  orgRestrictedDomains: string | null | undefined,
+  instanceAllowedDomains: string | null | undefined,
+  instanceRestrictedDomains: string | null | undefined
+): boolean => {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+  if (!domain) {
+    return false;
+  }
+
+  // Use organization settings if present (overrides instance), otherwise use instance settings
+  const allowedDomains = orgAllowedDomains || instanceAllowedDomains;
+
+  // Check restricted domains from both org and instance (blacklist takes precedence)
+  // If domain is restricted in either org or instance, deny access
+  if (orgRestrictedDomains && orgRestrictedDomains.trim()) {
+    const orgRestrictedDomainList = orgRestrictedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    if (orgRestrictedDomainList.includes(domain)) {
+      return false;
+    }
+  }
+
+  if (instanceRestrictedDomains && instanceRestrictedDomains.trim()) {
+    const instanceRestrictedDomainList = instanceRestrictedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    if (instanceRestrictedDomainList.includes(domain)) {
+      return false;
+    }
+  }
+
+  // Check allowed domains (whitelist)
+  if (allowedDomains && allowedDomains.trim()) {
+    const allowedDomainList = allowedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    return allowedDomainList.includes(domain);
+  }
+
+  // If no restrictions configured, allow all
+  return true;
+};
+
 export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
 };
@@ -506,4 +662,108 @@ export function objectGUIDtoString(buffer) {
 
 export function isValidEmail(value: any): boolean {
   return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+export function normalizeEnvSlug(key: string): string {
+  // Convert `my-workspace` → `my_workspace`
+  return key.replace(/-/g, '_');
+}
+export function isAzureEntraIdIssuer(issuer?: string): boolean {
+  if (!issuer) return false;
+  const microsoftDomains = [
+    '.microsoftonline.com',
+    '.microsoftonline.us',
+    '.chinacloudapi.cn',
+    '.microsoftonline.de',
+    '.b2clogin.com',
+  ];
+  if (issuer.startsWith('https://sts.windows.net/')) {
+    return true;
+  }
+  return microsoftDomains.some((domain) => issuer.includes(domain));
+}
+
+export function throwIfSignalAborted(signal: AbortSignal, timeout: number) {
+  if (signal.aborted) {
+    throw new QueryError(`Defined query timeout of ${timeout}ms exceeded when running query.`, 'Query timed out', {});
+  }
+}
+
+/**
+ * Validates email domain for SSO sign-in with organization/instance hierarchy.
+ * Fetches instance settings internally. Organization domain settings override instance settings.
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgDomain - Organization domain setting (backward compatible with old 'domain' field)
+ * @param instanceSettingsUtilService - Instance settings util service to fetch settings
+ * @param isInstanceSSO - Whether this is instance-level SSO (domain already contains instance value)
+ * @returns Promise<boolean> - true if domain is valid, false otherwise
+ */
+export async function validateSSODomain(
+  email: string,
+  orgDomain: string | null | undefined,
+  instanceSettingsUtilService: any,
+  isInstanceSSO: boolean = false
+): Promise<boolean> {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // For instance SSO, orgDomain already contains instance value, so use it directly
+  if (isInstanceSSO) {
+    return isValidSSODomain(email, null, orgDomain);
+  }
+
+  // Fetch instance settings
+  const instanceSettings = await instanceSettingsUtilService.getSettings([
+    INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
+  ]);
+  const instanceAllowedDomains = instanceSettings?.ALLOWED_DOMAINS;
+
+  return isValidSSODomain(email, orgDomain, instanceAllowedDomains);
+}
+
+/**
+ * Validates email domain for password sign-in with organization/instance hierarchy.
+ * Fetches instance settings internally. Organization domain settings override instance settings.
+ * Supports both allowed domains (whitelist) and restricted domains (blacklist).
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgAllowedDomains - Organization level password allowed domains
+ * @param orgRestrictedDomains - Organization level password restricted domains
+ * @param instanceSettingsUtilService - Instance settings util service to fetch settings
+ * @returns Promise<boolean> - true if domain is valid, false otherwise
+ */
+export async function validatePasswordDomain(
+  email: string,
+  orgAllowedDomains: string | null | undefined,
+  orgRestrictedDomains: string | null | undefined,
+  instanceSettingsUtilService: any
+): Promise<boolean> {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // Fetch instance settings
+  const instanceSettings = await instanceSettingsUtilService.getSettings([
+    INSTANCE_SYSTEM_SETTINGS.PASSWORD_ALLOWED_DOMAINS,
+    INSTANCE_SYSTEM_SETTINGS.PASSWORD_RESTRICTED_DOMAINS,
+  ]);
+
+  return isValidPasswordDomain(
+    email,
+    orgAllowedDomains,
+    orgRestrictedDomains,
+    instanceSettings?.PASSWORD_ALLOWED_DOMAINS,
+    instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
+  );
 }

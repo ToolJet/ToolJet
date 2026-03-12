@@ -50,6 +50,8 @@ export const useComputedStyles = (styles) => {
             computedStyles.container.boxShadow = `0px 8px 16px 0px ${styles.boxShadowContainer}, 0px 0px 1px 0px ${styles.boxShadowContainer}`;
         }
 
+        computedStyles.container.borderRadius = styles.borderRadius;
+
         // message styles
         if (styles?.message && ['#1B1F24', '#1b1f24', '#1b1f24ff', '#1B1F24FF'].includes(styles.message)) {
             computedStyles.messageContent.message = 'var(--text-primary)';
@@ -120,5 +122,6 @@ export const useComputedStyles = (styles) => {
         styles?.accentColorField,
         styles?.textColorField,
         styles?.sendIconColorField,
+        styles?.borderRadius,
     ]);
 };

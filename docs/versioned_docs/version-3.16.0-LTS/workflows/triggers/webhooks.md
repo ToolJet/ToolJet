@@ -13,7 +13,7 @@ The Webhook trigger allows you to start a workflow execution when an external se
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/workflow-section.png" alt="Navigate to Workflow Section" />
 2. Click on **Create new workflow**, enter a unique name for your workflow, and click on **+Create workflow** to create the workflow. <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/new-wf.png" alt="Create a new workflow" />
-3. Configure your workflow. You can refer to the **[workflow overview documentation](/docs/workflows/overview)** to learn how you can configure a workflow.
+3. Configure your workflow. You can refer to the **[workflow overview documentation](/docs/workflows/overview/)** to learn how you can configure a workflow.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/configure-wf.png" alt="Configure workflow" />
 4. Navigate to the Triggers section and click on **Webhooks**. By default, the webhook trigger is disabled. Toggle the switch to **enable** the webhook trigger.
     <img style={{ marginTop: '15px' }} className="screenshot-full img-m" src="/img/workflows/triggers/webhook/enable-modal.png" alt="Webhook option on the left panel" /> <br/>

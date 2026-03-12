@@ -12,7 +12,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 export class AppPermissionsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
       configs,
       'app-permissions',
@@ -21,7 +21,7 @@ export class AppPermissionsModule extends SubModule {
 
     return {
       module: AppPermissionsModule,
-      controllers: [AppPermissionsController],
+      controllers: isMainImport ? [AppPermissionsController] : [],
       providers: [
         AppPermissionsService,
         AppPermissionsUtilService,
@@ -34,7 +34,7 @@ export class AppPermissionsModule extends SubModule {
         ComponentUsersRepository,
         ComponentPermissionsRepository,
         FeatureAbilityFactory,
-        GroupPermissionsRepository
+        GroupPermissionsRepository,
       ],
       exports: [AppPermissionsUtilService, AppPermissionsService],
     };

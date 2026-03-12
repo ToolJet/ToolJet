@@ -536,10 +536,14 @@ img {
 }
 
 [data-theme='dark'] .navbar-signin,
-[data-theme='dark'] .navbar-signin:hover,
-[data-theme='dark'] .navbar-website,
-[data-theme='dark'] .navbar-website:hover {
+[data-theme='dark'] .navbar-website
+ {
   color: white;
+}
+
+[data-theme='dark'] .navbar-signin:hover,
+[data-theme='dark'] .navbar-website:hover {
+  color: black;
 }
 
 .navbar-website {
@@ -890,6 +894,16 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   background-image: url('../../static/img/sidebar-icons/resources.svg');
 }
 
+/* Self-hosted only indicator for sidebar category */
+.self-hosted-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
 
 /* Dropdownns */
 
@@ -987,4 +1001,30 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 
 .sc-dTvVRJ {
   padding: 10px 0px !important;
+}
+
+/* Tooltip for outdated version in navbar dropdown */
+.dropdown__menu {
+  overflow: visible !important;
+}
+
+.dropdown__link[href*="2.50.0-LTS"] {
+  position: relative;
+}
+
+.dropdown__link[href*="2.50.0-LTS"]:hover::after {
+  content: "No longer maintained — upgrade to the latest LTS version.";
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1b1f24;
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }

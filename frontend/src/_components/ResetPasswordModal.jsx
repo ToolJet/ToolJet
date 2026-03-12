@@ -14,7 +14,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
-  const [helperText, setHelperText] = useState('Password should be at least 5 characters');
+  const [helperText, setHelperText] = useState('');
   const [validPassword, setValidPassword] = useState(true);
 
   useEffect(() => {
@@ -35,13 +35,13 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
   const handlePasswordInput = (input) => {
     setPassword(input);
     if (input.length > 100) {
-      setHelperText('Password should be Max 100 characters');
+      // setHelperText('Password should be Max 100 characters');
       setValidPassword(false);
     } else if (input.length < 5) {
-      setHelperText('Password should be at least 5 characters');
+      // setHelperText('Password should be at least 5 characters');
       setValidPassword(false);
     } else {
-      setHelperText('Password should be at least 5 characters');
+      // setHelperText('Password should be at least 5 characters');
       setValidPassword(true);
     }
   };
@@ -62,8 +62,9 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         closeModal();
       }
     } catch (error) {
-      toast.error('Password could not be reset. Please try again!');
-      closeModal();
+      const backendMessage = error?.data?.message || 'Password could not be reset. Please try again!';
+
+      toast.error(backendMessage);
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +95,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               Cancel
             </ButtonSolid>
-            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled || !validPassword} data-cy="reset-button">
+            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled} data-cy="reset-button">
               {isLoading ? 'Resetting...' : 'Reset'}
             </ButtonSolid>
           </>
@@ -191,7 +192,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                       </div>
                     </div>
                     <small style={{ color: !validPassword ? 'red' : undefined }} data-cy="password-helper-text">
-                      {helperText}
+                      {/* {helperText} */}
                     </small>
                   </div>
                 )}

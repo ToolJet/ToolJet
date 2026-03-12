@@ -8,6 +8,7 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import * as Sentry from '@sentry/nestjs';
 
 /**
  * Creates a logger instance with a specific context
@@ -41,8 +42,7 @@ export function rawBodyBuffer(req: any, res: any, buf: Buffer, encoding: BufferE
 /**
  * Handles licensing initialization for Enterprise Edition
  */
-export async function handleLicensingInit(app: NestExpressApplication) {
-  const logger = createLogger('Licensing');
+export async function handleLicensingInit(app: NestExpressApplication, logger: any) {
   const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
 
   logger.log(`Current edition: ${tooljetEdition}`);
@@ -84,17 +84,75 @@ export async function handleLicensingInit(app: NestExpressApplication) {
 }
 
 /**
+ * Applies OTEL middleware to Express app
+ * Note: The OTEL SDK is started at import time in src/otel/tracing.ts
+ * This function only applies the middleware after the app is created
+ */
+export async function initializeOtel(app: NestExpressApplication, logger: any) {
+  // Check if OTEL is enabled
+  if (process.env.ENABLE_OTEL !== 'true') {
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('⏭️ OTEL disabled (ENABLE_OTEL not set to true)');
+    }
+    return;
+  }
+
+  try {
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE && tooljetEdition !== TOOLJET_EDITIONS.Cloud) {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        logger.log('⏭️ OTEL skipped - not Enterprise or Cloud edition');
+      }
+      return;
+    }
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('🔭 Applying OpenTelemetry middleware...');
+    }
+
+    // Import otelMiddleware from tracing.ts (use relative path for runtime compatibility)
+    const { otelMiddleware } = await import('../otel/tracing');
+
+    // Apply OTEL middleware to Express app
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use(otelMiddleware);
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('✅ OpenTelemetry middleware applied successfully');
+      logger.log('   - SDK: Already started at import time');
+      logger.log('   - Tracing: Enabled');
+      logger.log('   - Metrics: Enabled');
+      logger.log('   - Auto-instrumentation: Active');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to initialize OpenTelemetry:', error);
+    // Don't throw - observability should never break the app
+  }
+}
+
+/**
  * Replaces subpath placeholders in static assets
  */
-export function replaceSubpathPlaceHoldersInStaticAssets() {
-  const logger = createLogger('StaticAssets');
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
+export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
   logger.log('Starting subpath placeholder replacement...');
+
+  const buildDir = join(__dirname, '../../../../', 'frontend/build');
+
+  // Get all files that need subpath replacement
+  // index.html is always present, runtime/main files may have contenthash in production
+  const allFiles = fs.readdirSync(buildDir);
+  const filesToReplaceAssetPath = [
+    'index.html',
+    ...allFiles.filter((f) => /^runtime(\.[a-f0-9]+)?\.js$/.test(f)),
+    ...allFiles.filter((f) => /^main(\.[a-f0-9]+)?\.js$/.test(f)),
+  ];
+
+  logger.log(`Files to process: ${filesToReplaceAssetPath.join(', ')}`);
 
   for (const fileName of filesToReplaceAssetPath) {
     try {
-      const file = join(__dirname, '../../../../', 'frontend/build', fileName);
+      const file = join(buildDir, fileName);
       logger.log(`Processing file: ${fileName}`);
 
       let newValue = process.env.SUB_PATH;
@@ -126,11 +184,29 @@ export function replaceSubpathPlaceHoldersInStaticAssets() {
   logger.log('✅ Subpath placeholder replacement completed');
 }
 
+export function initSentry(logger: any, configService: ConfigService) {
+  if (configService.get<string>('APM_VENDOR') !== 'sentry') return;
+
+  logger.log('Initializing Sentry...');
+  // Sentry initialization logic here
+  try {
+    Sentry.init({
+      dsn: configService.get<string>('SENTRY_DNS'),
+      tracesSampleRate: 1.0,
+      environment: configService.get<string>('NODE_ENV') || 'development',
+      debug: !!configService.get<string>('SENTRY_DEBUG'),
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    logger.error('❌ Failed to set Sentry options:', error);
+  }
+  logger.log('✅ Sentry initialization completed');
+}
+
 /**
  * Sets up security headers including CORS and CSP
  */
-export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService) {
-  const logger = createLogger('Security');
+export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService, logger: any) {
   logger.log('Setting up security headers...');
 
   try {
@@ -145,6 +221,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     app.enableCors({
       origin: configService.get<string>('ENABLE_CORS') === 'true' || tooljetHost,
       credentials: true,
+      maxAge: 86400,
     });
 
     // Get CSP whitelisted domains
@@ -177,7 +254,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
               'www.googletagmanager.com',
             ].concat(cspWhitelistedDomains),
             'object-src': ["'self'", 'data:'],
-            'media-src': ["'self'", 'data:'],
+            'media-src': ["'self'", 'data:', 'blob:'],
             'default-src': [
               'maps.googleapis.com',
               'storage.googleapis.com',
@@ -207,7 +284,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     // Custom headers middleware
     app.use((req, res, next) => {
-      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(self), microphone=(self)');
       res.setHeader('X-Powered-By', 'ToolJet');
 
       if (req.path.startsWith(`${subPath || '/'}api/`)) {
@@ -229,9 +306,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 /**
  * Builds the application version string
  */
-export function buildVersion(): string {
-  const logger = createLogger('Version');
-
+export function buildVersion(logger: any): string {
   try {
     logger.log('Reading version from .version file...');
     const rawVersion = fs.readFileSync('./.version', 'utf8').trim();
@@ -297,9 +372,34 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`CORS Enabled: ${corsEnabled}`);
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
+  logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
+
+  const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
+  logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
+  if (otelEnabled) {
+    logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+  }
+
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);
+  logger.log('='.repeat(60));
+  logger.log(
+    `Custom ORM logger: ${configService.get<string>('DISABLE_CUSTOM_QUERY_LOGGING') !== 'true' ? 'enabled' : 'disabled'}`
+  );
+  logger.log(
+    `Custom ORM logger logging level: ${configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`ORM logging level: ${configService.get<string>('ORM_LOGGING') || 'Not - configured'}`);
+  logger.log(
+    `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
+  );
+  logger.log(
+    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
 }
 

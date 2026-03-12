@@ -3,7 +3,7 @@ id: csa
 title: CSAs and Exposed Variables
 ---
 
-This guide covers component-specific actions for the **Form** Component and its exposed variables. To learn how to generate a form, refer to the [Generate Form](/docs/widgets/form/form) guide. For more information on **Form** Component Properties, check out the [Properties](/docs/widgets/form/properties) guide.
+This guide covers component-specific actions for the **Form** Component and its exposed variables. To learn how to generate a form, refer to the [Generate Form](/docs/widgets/form/) guide. For more information on **Form** Component Properties, check out the [Properties](/docs/widgets/form/properties) guide.
 
 ## Component Specific Actions (CSAs)
 

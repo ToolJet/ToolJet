@@ -9,6 +9,7 @@ export interface IAppsService {
   validatePrivateAppAccess(
     app: App,
     ability: AppAbility,
+    user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ): Promise<ValidateAppAccessResponseDto>;
   validateReleasedApp(ability: any, app: App): { id: string; slug: string };

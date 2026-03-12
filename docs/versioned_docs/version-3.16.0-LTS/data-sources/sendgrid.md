@@ -14,7 +14,7 @@ To establish a connection with the SendGrid datasource, you can either click on 
 ToolJet requires the following to connect to your SendGrid database:
 - **SendGrid API key**
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource-v2.png" alt="ToolJet - Data source - SendGrid" />
+<img class="screenshot-full img-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource-v2.png" alt="ToolJet - Data source - SendGrid" />
 
 :::info
 The SendGrid API Datasource supports for interaction with the mail endpoint of the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
@@ -40,17 +40,19 @@ The SendGrid API Datasource supports for interaction with the mail endpoint of t
 ### Email Service
 
 #### Required Parameters 
-- **Multiple recipients**
-- **Send email to**
-- **Send email from** 
-- **Subject**
-- **Body as text**
+- Multiple recipients
+- Send email to
+- Send email from 
+- Subject
+- Body as text
 
 
 #### Optional Parameter
-- **Body as HTML**
+- Sender Name
+- Body as HTML
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v2.png" alt="ToolJet - Query SendGrid"/>
+<img class="screenshot-full img-full" src="/img/datasource-reference/sendgrid/sendGrid-query.png" alt="ToolJet - Query SendGrid"/>
+
 
 :::info
 **Send mail to** - accepts an array/list of emails separated by comma.

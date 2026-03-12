@@ -194,8 +194,9 @@ const DropDownSelect = ({
         <Popover
           key={'page.i'}
           id={popoverId.current}
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
-            } tjdb-workflow-query-editor-popover-index`}
+          className={`${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          } tjdb-workflow-query-editor-popover-index`}
           style={{
             width: isForeignKeyInEditCell
               ? '300px'

@@ -144,12 +144,12 @@ const SignupForm = ({
     if (!validateEmail(formData.email)) {
       newErrors.email = 'Invalid email';
     }
-    if (formData.password.length < 5) {
-      newErrors.password = 'Password must be at least 5 characters long';
-    }
-    if (formData.password.length > 100) {
-      newErrors.password = 'Password can be at max 100 characters long';
-    }
+    // if (formData.password.length < 5) {
+    //   newErrors.password = 'Password must be at least 5 characters long';
+    // }
+    // if (formData.password.length > 100) {
+    //   newErrors.password = 'Password can be at max 100 characters long';
+    // }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

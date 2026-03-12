@@ -26,6 +26,12 @@ export interface SendPasswordResetEmailPayload {
   organizationId: string;
 }
 
+export interface SendEmailOtpPayload {
+  name: string;
+  otp: string;
+  email: string;
+}
+
 export interface SendCommentMentionEmailPayload {
   to: string;
   from: string;

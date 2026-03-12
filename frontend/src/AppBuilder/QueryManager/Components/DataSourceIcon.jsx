@@ -1,8 +1,8 @@
 import React from 'react';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import RunjsIcon from '@/Editor/Icons/runjs.svg';
-import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
-import RunpyIcon from '@/Editor/Icons/runpy.svg';
+import RunjsIcon from '@/AppBuilder/QueryManager/Icons/Icons/runjs.svg';
+import RunTooljetDbIcon from '@/AppBuilder/QueryManager/Icons/Icons/tooljetdb.svg';
+import RunpyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
 import ResponseIcon from '@assets/images/icons/response.svg';
 import IfIcon from '@assets/images/icons/if.svg';
 import LoopIcon from '@assets/images/icons/loop.svg';

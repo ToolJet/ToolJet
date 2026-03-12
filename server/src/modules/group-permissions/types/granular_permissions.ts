@@ -24,12 +24,14 @@ export interface CreateBaseAppsPermissionsObject {
 }
 export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsObject {
   hideFromDashboard?: boolean;
+  canAccessDevelopment?: boolean;
+  canAccessStaging?: boolean;
+  canAccessProduction?: boolean;
+  canAccessReleased?: boolean;
+  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
 }
 
 export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {}
-export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsObject {
-  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
-}
 
 export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.WORKFLOWS>;
@@ -81,6 +83,10 @@ export interface DataSourcesPermissionResourceItem {
 
 export interface AppsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {
   hideFromDashboard: boolean;
+  canAccessDevelopment?: boolean;
+  canAccessStaging?: boolean;
+  canAccessProduction?: boolean;
+  canAccessReleased?: boolean;
 }
 
 export interface WorkflowsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {}
@@ -103,7 +109,7 @@ export interface UpdateGranularPermissionObject {
 }
 
 export interface UpdateResourceGroupPermissionsObject<
-  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS
+  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS,
 > {
   group: GroupPermissions;
   granularPermissions: GranularPermissions;
@@ -129,6 +135,7 @@ export type ResourceGroupActions<T extends ResourceType> = ResourceActionMap[T];
 
 export interface ValidateResourceAction {
   isBuilderPermissions: boolean;
+  isEnvironmentPermissions?: boolean;
   organizationId: string;
   groupId: string;
 }

@@ -31,6 +31,7 @@ export interface Terms {
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
+    scim?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -40,6 +41,26 @@ export interface Terms {
   auditLogs?: {
     maximumDays?: number | string;
   };
+  app?: {
+    pages: {
+      enabled: boolean;
+      features: {
+        appHeaderAndLogo: boolean;
+        addNavGroup: boolean;
+      };
+    };
+    permissions: {
+      component: boolean;
+      query: boolean;
+      pages: boolean;
+    };
+  };
+  modules?: {
+    enabled: boolean;
+  };
+  permissions?: {
+    customGroups: boolean;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';
@@ -47,6 +68,7 @@ export interface Terms {
     createdBy?: string;
   };
   workflows?: {
+    enabled?: boolean;
     execution_timeout?: number;
     workspace?: {
       total?: number | string;

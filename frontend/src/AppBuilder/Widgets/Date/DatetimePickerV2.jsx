@@ -94,7 +94,7 @@ export const DatetimePickerV2 = ({
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date, format, propStoreTimezone) => {
+  const setInputValue = (date, format, propStoreTimezone, skipFireEvent = false) => {
     const isISOString = typeof date === 'string' && date.includes('T');
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
@@ -107,6 +107,7 @@ export const DatetimePickerV2 = ({
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
+    if (skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -185,7 +186,7 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
+    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess(), true);
   }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
@@ -350,7 +351,7 @@ export const DatetimePickerV2 = ({
   const isTwentyFourHourMode = is24HourFormat(displayFormat);
 
   const componentProps = {
-    popperClassName: cx('tj-table-datepicker tj-datepicker-widget', {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datetimepicker-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
@@ -430,6 +431,7 @@ export const DatetimePickerV2 = ({
       customHeaderProps={customHeaderProps}
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };

@@ -1,14 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
-import {
-  usePreviewLoading,
-  usePreviewData,
-  usePreviewPanelExpanded,
-  useQueryPanelStore,
-  usePreviewPanelHeight,
-  usePanelHeight,
-} from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';

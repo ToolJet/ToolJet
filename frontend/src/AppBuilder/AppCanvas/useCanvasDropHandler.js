@@ -14,6 +14,8 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
+const BUFFER_OFFSET = 15;
+
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
 
@@ -32,7 +34,6 @@ export const useCanvasDropHandler = () => {
     const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
     handleDeactivateTargets();
     hideGridLines();
-
     setShowModuleBorder(false); // Hide the module border when dropping
 
     if (isModuleEditor && canvasId === 'canvas') {
@@ -49,6 +50,9 @@ export const useCanvasDropHandler = () => {
       );
       return;
     }
+
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    setRightSidebarOpen(true);
 
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
@@ -89,27 +93,24 @@ export const useCanvasDropHandler = () => {
       await addComponentToCurrentPage(addedComponent);
     }
 
-    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-    setRightSidebarOpen(true);
+    // const canvas = document.querySelector('.canvas-container');
+    // const sidebar = document.querySelector('.editor-sidebar');
+    // const droppedElem = document.getElementById(addedComponent?.[0]?.id);
 
-    const canvas = document.querySelector('.canvas-container');
-    const sidebar = document.querySelector('.editor-sidebar');
-    const droppedElem = document.getElementById(addedComponent?.[0]?.id);
+    // if (!canvas || !sidebar || !droppedElem) return;
 
-    if (!canvas || !sidebar || !droppedElem) return;
+    // const droppedRect = droppedElem.getBoundingClientRect();
+    // const sidebarRect = sidebar.getBoundingClientRect();
 
-    const droppedRect = droppedElem.getBoundingClientRect();
-    const sidebarRect = sidebar.getBoundingClientRect();
+    // const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
 
-    const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-    if (isOverlapping) {
-      const overlap = droppedRect.right - sidebarRect.left;
-      canvas.scrollTo({
-        left: canvas.scrollLeft + overlap,
-        behavior: 'smooth',
-      });
-    }
+    // if (isOverlapping) {
+    //   const overlap = droppedRect.right - sidebarRect.left;
+    //   canvas.scrollTo({
+    //     left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
+    //     behavior: 'smooth',
+    //   });
+    // }
     // Reset canvas ID when dropping
     setCurrentDragCanvasId(null);
   };

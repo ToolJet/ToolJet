@@ -1,0 +1,15 @@
+.link-widget {
+  a {
+    pointer-events: none;
+    cursor: none !important;
+
+    .link-text {
+      pointer-events: all;
+      text-underline-offset: 32%; // Adds space between text and underline
+      cursor: pointer;
+      &:hover {
+        color: var(--link-hover-color) !important;
+      }
+    }
+  }
+}

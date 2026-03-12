@@ -18,11 +18,12 @@ Role Required: **Admin** <br/>
     <img className="screenshot-full" src="/img/sso/saml/workspaceset-v3.png" alt="SSO :SAMP" />
 
 2. By default, SAML is disabled. Toggle it on to enable SAML authentication.
-    <img className="screenshot-full img-l" src="/img/sso/saml/enable-v2.png" alt="SSO :SAMP" />
+    <img className="screenshot-full img-m" src="/img/sso/saml/enable-v3.png" alt="SSO :SAMP" />
 
 3. Enter the following configuration details:
-    - **SAML Provider Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
+    - **SSO Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
     - **Identity provider metadata**: Upload the data from the metadata file provided by your SAML provider. This file contains the SAML configuration details.
+    - **Enable group sync**: Toggle it on to enable the group sync.
     - **Group Attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
     - **Redirect URL**: Copy the redirect URL provided and paste it in the SAML provider's configuration page.
 
@@ -49,3 +50,18 @@ Role Required: **Admin** <br/>
 3. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
 
 4. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
+
+## Custom SSO Variables (SAML Attributes)
+
+ToolJet allows you to use custom SSO variables provided by your Identity Provider (IdP) during login.
+
+For SAML based SSO, these values originate as SAML attributes included in the SAML assertion. After successful authentication, ToolJet exposes them as variables in the App Builder.
+
+You can access these variables using:
+```js
+{{globals.currentUser.ssoUserInfo.<variable_name>}}
+```
+
+:::note
+Custom attributes must be explicitly configured in the Identity Provider to be included in the SAML assertion.
+:::

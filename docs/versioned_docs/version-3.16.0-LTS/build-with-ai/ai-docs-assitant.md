@@ -23,7 +23,7 @@ You can access this feature by selecting **Learn** from the dropdown on the AI c
 1. Custom Schema in [Form](/docs/widgets/form/) component: <br/>
     **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender? <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/form.png" alt="tooljet ai doc assistant" />
-2. Dynamic columns in [Table](/docs/widgets/table/table-properties/) component: <br/>
+2. Dynamic columns in [Table](/docs/widgets/table/) component: <br/>
     **Prompt**: Can you explain dynamic columns in the Table component? <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/table.png" alt="tooljet ai doc assistant" />
  3. Plotly JSON in [Chart](/docs/widgets/chart/) component: <br/>

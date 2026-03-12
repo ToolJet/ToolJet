@@ -5,8 +5,6 @@ title: Zendesk
 
 ToolJet can connect to Zendesk APIs to read and write data using OAuth 2.0, which helps us to limit an application's access to a user's account.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection 
 
 To establish a connection with the Zendesk data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Zendesk as the data source.
@@ -22,13 +20,11 @@ You can create a Zendesk data source with one of either of the two permission sc
 - **Read Only**
 - **Read and Write**
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/connection-v3.png" alt="ToolJet - Data source - Zendesk" />
+
 :::info
 You must first be a verified user to make Zendesk API requests. This is configured in the Admin Center interface in **Apps and integrations > APIs > Zendesk APIs.** For more information, see Security and Authentication in the [Zendesk Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication) or [check out Zendesk's docs](https://support.zendesk.com/hc/en-us/articles/4408845965210).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Zendesk
 
@@ -36,13 +32,6 @@ You must first be a verified user to make Zendesk API requests. This is configur
 2. Select the **Zendesk** datasource added in previous step.
 3. Select the desired operation and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
-
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/zendesk-v2.gif" alt="ToolJet - Data source - Zendesk" />
-
-</div>
-
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -52,57 +41,90 @@ You must first be a verified user to make Zendesk API requests. This is configur
 - **[Update a Ticket](#update-tickets)**
 - **[List Users](#list-users)**
 - **[Get User](#get-user)**
+- **[Get Profile](#get-profile)**
 - **[Search](#search)**
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/listops.png" alt="Zendesk supported operations" style={{marginBottom:'15px'}} />
 
 ### List Tickets
+
 Lists all the tickets in your Zendesk account.
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/list-tickets.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/list-tickets-query.png" alt="Zendesk list query"  />
 
 ### List Requested Tickets
+
 Lists all the tickets requested by the user. 
 
 #### Required Parameter
+
 - **User ID** 
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/list-requested-tickets.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/list-req-query.png" alt="Zendesk list query"  />
 
 ### Show Tickets
+
 Gets a ticket's properties with the given ID, though not the ticket comments.
 
 #### Required Parameter
+
 - **Ticket ID** 
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/show.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/show-query.png" alt="Zendesk show query"  />
 
 ### Update Tickets
+
 Updates a ticket's properties with the given ID.
 
 #### Required Parameter
+
 - **Ticket ID** 
 - **Body**
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/update.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/update-query.png" alt="Zendesk update query"  />
+
+#### Example:
+
+```yaml
+{
+    "ticket" : {
+        "status" : "solved"
+    }
+}
+```
 
 ### List Users
+
 Lists all the users in your Zendesk account.
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/list-users.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/list-users-query.png" alt="Zendesk list query"  />
 
 ### Get User
+
+Gets a user's information with the given ID.
+
+#### Required Parameter
+
+- **User ID** 
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/get-query.png" alt="Zendesk get query"  />
+
+### Get Profile
+
 Gets a user's profile with the given ID.
 
 #### Required Parameter
+
 - **User ID** 
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/get.png" alt="ToolJet - Data source - Zendesk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/get-profile-query.png" alt="Zendesk get query"  />
 
 ### Search
 
 The Search Query uses Zendesk's Search API to return tickets, users, and organizations with defined filters.
 
 #### Required Parameter
+
 - **Query** 
 
 Common filters include:
@@ -111,6 +133,4 @@ Common filters include:
 - `type:organization`
 - `type:ticket organization:12345 status:open`
 
-<img className="screenshot-full" src="/img/datasource-reference/zendesk/search.png" alt="ToolJet - Data source - Zendesk" />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/zendesk/search-query.png" alt="Zendesk search query" />

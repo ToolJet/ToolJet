@@ -1,0 +1,35 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Aftership datasource",
+  "description": "A schema defining Aftership datasource",
+  "type": "api",
+  "source": {
+    "name": "Aftership",
+    "kind": "aftership",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Aftership API key",
+      "hint": "You can find your API key in your Aftership account settings."
+  }
+},
+  "required": [
+    "apiKey"
+  ]
+}

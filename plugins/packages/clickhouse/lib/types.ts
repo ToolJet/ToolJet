@@ -5,11 +5,6 @@ export type SourceOptions = {
   host: string;
   database: string;
   protocol: string;
-  usePost?: string;
-  trimQuery?: string;
-  isUseGzip?: string;
-  debug?: string;
-  raw?: string;
 };
 export type QueryOptions = {
   operation: string;

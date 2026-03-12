@@ -35,6 +35,9 @@
       "@helpers/*": [
         "src/helpers/*"
       ],
+      "@otel/*": [
+        "src/otel/*"
+      ],
     },
   },
   "exclude": [

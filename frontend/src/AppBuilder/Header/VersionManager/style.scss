@@ -1,0 +1,335 @@
+// Version Manager Dropdown Styles
+
+.version-manager-popover {
+  .popover-body {
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .versions-list {
+    // Custom scrollbar styling
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--border-weak);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: var(--text-secondary);
+      }
+    }
+
+    // Smooth scrolling
+    scroll-behavior: smooth;
+  }
+
+  // Loading state animation
+  .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.15em;
+  }
+}
+
+.app-version-description {
+  min-height: 24px;
+  max-height: 96px; // 4 lines * 24px
+  overflow-y: auto;
+  resize: none;
+  line-height: 24px;
+  transition: height 0.2s;
+  background-color: var(--surfaces-surface-01) !important;
+}
+
+// Environment Toggle
+.environment-toggle {
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  .env-tab {
+    transition: all 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover:not(.selected):not(:disabled) {
+      background-color: var(--slate3);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &.selected {
+      box-shadow: 0px 0px 1px var(--interactive-default), 0px 1px 1px var(--interactive-hover);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}
+
+// Version Search Field
+.version-search-field {
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  input {
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--indigo3);
+    }
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+  }
+
+  .search-icon {
+    color: var(--text-tertiary);
+  }
+}
+
+// Version Dropdown Item
+.version-dropdown-item {
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  border-radius: 6px;
+  background-color: transparent;
+
+  &:hover:not(.disabled) {
+    background-color: var(--interactive-hover);
+  }
+
+
+  &.disabled {
+    background-color: transparent;
+    cursor: not-allowed;
+    opacity: 1;
+
+    .tj-text-sm,
+    .tj-text-xsm,
+    * {
+      color: var(--text-disabled) !important;
+    }
+
+    button {
+      background-color: var(--button-secondary-disabled) !important;
+      border-color: var(--border-weak) !important;
+      color: var(--text-disabled) !important;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+
+  .version-tag {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    border-radius: 4px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+
+    &.draft {
+      background-color: var(--background-warning-weak);
+      color: var(--text-warning);
+    }
+
+    &.released {
+      background-color: var(--background-success-weak);
+      color: var(--text-success);
+    }
+  }
+
+  .create-version-btn {
+    transition: all 0.2s ease;
+    font-family: 'IBM Plex Sans', sans-serif;
+
+    &:hover {
+      background-color: var(--button-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0px 2px 4px var(--interactive-selected);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .more-menu-trigger {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+      background-color: var(--slate3);
+    }
+  }
+
+  &:hover .more-menu-trigger {
+    opacity: 1;
+  }
+
+  .version-metadata {
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--text-tertiary);
+  }
+}
+
+// Create Draft Button
+.create-draft-button {
+  font-family: 'IBM Plex Sans', sans-serif;
+  outline: none;
+
+  button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: all 0.2s ease;
+    outline: none !important;
+    padding: 0px !important;
+    border: none;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background-color: var(--slate3) !important;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Create Draft Modal
+.create-draft-modal {
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  .modal-header {
+    border-bottom: 1px solid var(--border-weak);
+    padding: 16px 20px;
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-default);
+    }
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--border-weak);
+    padding: 12px 20px;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-default);
+    margin-bottom: 6px;
+  }
+
+  .form-control,
+  .form-select {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    border: 1px solid var(--border-weak);
+    border-radius: 6px;
+    padding: 8px 12px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--indigo6);
+      box-shadow: 0 0 0 2px var(--indigo3);
+    }
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .helper-text {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  .btn-primary {
+    background-color: var(--indigo6);
+    border-color: var(--indigo6);
+    font-weight: 500;
+
+    &:hover {
+      background-color: var(--indigo7);
+      border-color: var(--indigo7);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-weak);
+    color: var(--text-default);
+    font-weight: 500;
+
+    &:hover {
+      background-color: var(--slate3);
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.version-manager-popover {
+  animation: fadeIn 0.15s ease;
+}
+
+// Version Item Skeleton
+.version-item-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+
+  > div {
+    pointer-events: none;
+  }
+}
+.create-draft-button-tooltip{
+display: flex;
+.tooltip-inner{
+  width: 323px !important;
+  }
+}

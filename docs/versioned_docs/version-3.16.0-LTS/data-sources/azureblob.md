@@ -13,13 +13,7 @@ ToolJet requires the following to connect to your Azure Blob.
 
 - **Connection String**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/gdsazure-v2.png" alt="Azure Blob - ToolJet" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-connection.png" alt="Azure Blob - ToolJet" />
 
 ## Querying Azure Blob
 
@@ -32,15 +26,7 @@ ToolJet requires the following to connect to your Azure Blob.
 Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/app-builder/custom-code/transform-data)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/queries-v2.png" alt="Azure Blob - ToolJet" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-listqueries.png" alt="Azure Blob - ToolJet" />
 
 ## Supported Operations
 
@@ -59,21 +45,13 @@ The create container operation enables the creation of new containers within Azu
 
 - **Container Name**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/createcontainer-v2.png" alt="Azure blob: create container operation" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-create.png" alt="Azure blob: create container operation"/>
 
 ### List Containers
 
 The list container operation allows you to retrieve a list of containers within Azure Blob storage.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/listcon-v2.png" alt="Azure blob: list container operation" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-list.png" alt="Azure blob: list container operation"/>
 
 ### List Blobs
 
@@ -89,11 +67,7 @@ The list blobs operation enables you to retrieve a list of blobs within a specif
 - **Prefix**
 - **Continuation Token**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/listblobs-v2.png" alt="Azure blob: list blobs operation" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full"  src="/img/datasource-reference/azureblob/azureblob-listblob.png" alt="Azure blob: list blobs operation"/>
 
 ### Upload Blob
 
@@ -107,7 +81,7 @@ The upload blob operation allows you to upload a new blob or update an existing 
 - **Upload Data**
 - **Encoding**
 
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/uploadBlob.png" alt="Azure blob: upload blobs operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-upload.png" alt="Azure blob: upload blobs operation"/>
 
 ### Read Blob
 
@@ -118,11 +92,7 @@ The read blob operation allows you to retrieve the content of a specific blob st
 - **Container**
 - **Blob Name**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/read-v2.png" alt="Azure blob: read blob operation" style={{marginBottom:'15px'}} />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-read.png" alt="Azure blob: read blob operation"/>
 
 ### Delete Blob
 
@@ -133,10 +103,4 @@ The delete blob operation allows you to remove a specific blob from Azure Blob s
 - **Container**
 - **Blob Name**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/delete-v2.png" alt="Azure blob: delete blob operation" />
-
-</div>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/azureblob/azureblob-delete.png" alt="Azure blob: delete blob operation" />

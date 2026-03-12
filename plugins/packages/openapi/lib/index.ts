@@ -93,7 +93,8 @@ export default class Openapi implements QueryService {
       const response = await got(url, requestOptions);
       const contentType = response.headers['content-type'];
 
-      result = contentType !== 'application/json' ? response.body : JSON.parse(response.body);
+      result = contentType && contentType.includes('application/json') ? JSON.parse(response.body) : response.body;
+
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,

@@ -6,7 +6,7 @@ import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }) => {
+export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
   const { isModuleEditor } = useModuleContext();
   const canvasRef = useRef(null);
   const focusedParentId = useStore((state) => state.focusedParentId, shallow);
@@ -138,6 +138,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
         maxWidth: canvasMaxWidth,
         margin: '0 auto',
         transform: 'translateZ(0)',
+        ...(isModuleMode && { height: '100%' }),
       }}
     >
       {children}

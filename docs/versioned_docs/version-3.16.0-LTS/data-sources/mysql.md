@@ -5,13 +5,19 @@ title: MySQL
 
 ToolJet can connect to MySQL databases to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard. ToolJet supports both **Static** and **Dynamic** MySQL connections. Along with configuring fixed connection details at the datasource level, you can also define certain connection parameters dynamically from the query builder at runtime.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/addmysql.gif" alt="MySQL data source"/>
+### Static Connection
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/connection-v4.png" alt="MySQL data source"/>
+
+### Dynamic Connection 
+
+Dynamic connection allows specific MySQL connection parameters to be provided at runtime from the query builder, enabling flexible and dynamic database access.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/query-host.png" alt="mysql dynamic host"/>
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -19,32 +25,50 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 **ToolJet requires the following to connect to your MySQL database:**
 
-- **Username**
-- **Password**
-- **Database Name**
-- **Connection Type**
+- Username
+- Password
+- Database Name
+- Connection Type
 
 If you are using **Hostname** as the connection type, you will need to provide the following information:
 
-- **Host/IP**
-- **Port**
-- **SSL**
-- **SSL Certificate**:
-  - **CA Certificate**
-  - **Self-signed Certificate**
-  - **None**
+- Host/IP
+- Port
+- SSL
+- SSL Certificate:
+  - CA Certificate
+  - Self-signed Certificate
+  - None
 
 If you are using **Socket** as the connection type, you will need to provide the following information:
-
 - **Socket Path**
 
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect-v2.png" alt="mysql"/>
+### SSH Tunnelling 
 
-</div>
+ToolJet now supports SSH tunnelling for the MySQL data source, allowing secure connections to databases hosted inside private networks.This can be used to:
+- Access private databases
+- Improve security
+- Enable encrypted communication
+- Avoid firewall rule changes
 
-<div style={{paddingTop:'24px'}}>
+#### SSH Configuration
+
+To securely connect to a private MySQL database using SSH tunnelling:
+
+1. Enable the **SSH tunnel** toggle in the MySQL data source configuration.
+2. Provide the following details:
+   - **SSH host** – Server hostname or IP address.
+   - **SSH port** – Port number (default: `22`).
+   - **SSH username** – Username for the SSH server.
+   - **Authentication method** – Choose either:
+     - **Private key**
+     - **Password**
+
+Once configured, ToolJet establishes a secure SSH connection. All MSSQL queries are routed through this encrypted tunnel.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="Mysql SSH tunnelling connection" />
 
 ## Querying in SQL Mode
 
@@ -61,7 +85,7 @@ SQL mode can be used to query MySQL database using SQL queries.
 SELECT * FROM users
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/query-sql.png" alt="mysql querying"/>
 
 ### Parameterized Queries
 
@@ -72,22 +96,20 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/param-query-v2.png" alt="mysql parameter querying"/>
 
 ##### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
-
 SQL Parameters:
-
 - Key: username
-- Value: oliver // or `{{ components.username.value }}`
+- Value: oliver or `{{ components.username.value }}`
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/walkthrough/row-level-security) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security) guide for more information.
 
 ### Query Timeout
 
@@ -118,20 +140,14 @@ GUI mode can be used to query MySQL database without writing queries.
 5. In the editor enter the records in the form of an array of objects.
 6. Click on the **Run** button to run the query.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/gui-query.png" alt="mysql GUI querying"/>
+
 **Example:**
 
 ```json
 {{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mysql/guinew.png" alt="mysql"/>
-
-</div>
-
 :::tip
 Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
 :::
-
-</div>

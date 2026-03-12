@@ -1,0 +1,79 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "UPS datasource",
+  "description": "A schema defining UPS datasource",
+  "type": "api",
+  "source": {
+    "name": "UPS",
+    "kind": "ups",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "shipper_number": {
+        "type": "string"
+      },
+      "base_url": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "base_url": {
+      "value": "https://wwwcie.ups.com"
+    }
+  },
+  "properties": {
+    "client_id": {
+      "label": "Client ID",
+      "key": "client_id",
+      "type": "text",
+      "description": "Enter your UPS Client ID",
+      "helpText": "You can find your Client ID in your UPS developer account console."
+    },
+    "client_secret": {
+      "label": "Client secret",
+      "key": "client_secret",
+      "type": "password",
+      "description": "Enter your UPS Client Secret",
+      "helpText": "You can find your Client Secret in your UPS developer account console."
+    },
+    "shipper_number": {
+      "label": "Shipper number",
+      "key": "shipper_number",
+      "type": "text",
+      "description": "Enter your UPS Shipper Number"
+    },
+    "base_url": {
+      "label": "Base URL",
+      "key": "base_url",
+      "type": "dropdown",
+      "description": "Select the UPS base URL",
+      "list": [
+        {
+          "value": "https://onlinetools.ups.com",
+          "name": "[https://onlinetools.ups.com] To be used in production"
+        },
+        {
+          "value": "https://wwwcie.ups.com",
+          "name": "[https://wwwcie.ups.com] Recommended for testing"
+        }
+      ]
+    }
+  },
+  "required": [
+    "client_secret",
+    "client_id",
+    "shipper_number",
+    "base_url"
+  ]
+}

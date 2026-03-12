@@ -5,8 +5,6 @@ title: MariaDB
 
 ToolJet can connect to both self-hosted and cloud-based MariaDB servers to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the MariaDB global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -25,11 +23,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB data source connection" />
 
 ## Querying MariaDB
 
@@ -44,15 +38,7 @@ Once you have connected to the MariaDB datasource, follow these steps to write q
 Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/app-builder/custom-code/transform-data)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate-v2.png" alt="MariaDB query" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/query-v3.png" alt="MariaDB query" />
 
 ## CRUD Queries
 
@@ -85,7 +71,7 @@ VALUES ('John Doe', 25, 'john@example.com');
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUser.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/create-insert-v3.png" alt="MariaDB query" />
 
 </div>
 
@@ -99,11 +85,7 @@ VALUES
     ('Bob Johnson', 35, 'bob@example.com');
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUsers.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/create-insert-mutliple-v3.png" alt="MariaDB query" />
 
 ### Read (Select)
 
@@ -113,11 +95,7 @@ VALUES
 SELECT * FROM user;
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-1-v3.png" alt="MariaDB query" />
 
 #### To Retrieve Specific Columns From Users:
 
@@ -125,11 +103,7 @@ SELECT * FROM user;
 SELECT name, age, email FROM user;
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-2-v3.png" alt="MariaDB query"/>
 
 #### To Add Conditions and Filters to the Selection:
 
@@ -139,11 +113,7 @@ FROM user
 WHERE age > 25;
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-3-v3.png" alt="MariaDB query"/>
 
 ### Update
 
@@ -155,11 +125,7 @@ SET age = 26
 WHERE id = 1;
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/update-v3.png" alt="MariaDB query"/>
 
 ### Delete
 
@@ -169,17 +135,9 @@ WHERE id = 1;
 DELETE FROM user WHERE id = 1;
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/deleteuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/delete-v3.png" alt="MariaDB query"/>
 
 Remember to adjust the values and conditions based on your specific needs. These commands will allow you to create the table, insert data, retrieve data, update data, and delete data in the _users_ table in MariaDB.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Troubleshooting Tips
 
@@ -190,5 +148,3 @@ If you are having trouble connecting a MariaDB data source to ToolJet, try the f
 - Try restarting the ToolJet server.
 
 If you are still having trouble, please contact [ToolJet support](mailto:support@tooljet.com) or ask on [slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) for assistance.
-
-</div>

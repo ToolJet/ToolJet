@@ -15,6 +15,7 @@ export default ({
   isDisabled,
   width,
   dataCy,
+  classes = null,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -46,6 +47,7 @@ export default ({
               borderBottomRightRadius: '0',
               borderRight: 'none',
             }}
+            classes={classes}
           />
 
           <Input
@@ -66,6 +68,7 @@ export default ({
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
             }}
+            classes={classes}
           />
 
           <button

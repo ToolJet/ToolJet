@@ -6,7 +6,7 @@ title: Sharepoint
 ToolJet allows you to connect to Microsoft Sharepoint to perform various operations like managing sites, lists, and items using Microsoft Graph API.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection

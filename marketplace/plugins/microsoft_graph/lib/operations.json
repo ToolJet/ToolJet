@@ -1,0 +1,23 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Microsoft Graph datasource",
+  "description": "A schema defining Microsoft_graph datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+        "label": "",
+        "key": "ms_graph_operation",
+        "type": "react-component-api-endpoint",
+        "description": "Single select dropdown for operation",
+        "specUrl": {
+          "Outlook": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/outlook.json",
+          "Calendar": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/calendar.json",
+          "Users": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/users.json",
+          "Teams": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/teams.yaml",
+          "OneDrive": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/onedrive.json"
+        }
+      }
+  }
+}

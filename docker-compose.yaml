@@ -78,5 +78,22 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASSWORD=${PG_PASS}
 
+  redis:
+    container_name: redis
+    image: redis:6.2
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    env_file:
+      - .env
+    environment:
+      - MASTER=redis
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
 volumes:
   postgres:
+  redis:

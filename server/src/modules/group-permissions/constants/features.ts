@@ -10,11 +10,11 @@ export const FEATURES_EE: FeaturesConfig = {
       auditLogsKey: 'USER_ADD_TO_GROUP',
     },
     [FEATURE_KEY.CREATE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.CUSTOM_GROUPS,
       auditLogsKey: 'GROUP_PERMISSION_CREATE',
     },
     [FEATURE_KEY.DELETE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.CUSTOM_GROUPS,
       auditLogsKey: 'GROUP_PERMISSION_DELETE',
     },
     [FEATURE_KEY.DELETE_GROUP_USER]: {
@@ -22,7 +22,7 @@ export const FEATURES_EE: FeaturesConfig = {
       auditLogsKey: 'USER_REMOVE_FROM_GROUP',
     },
     [FEATURE_KEY.DUPLICATE]: {
-      license: LICENSE_FIELD.VALID,
+      license: LICENSE_FIELD.CUSTOM_GROUPS,
       auditLogsKey: 'GROUP_PERMISSION_DUPLICATE',
     },
     [FEATURE_KEY.GET_ADDABLE_USERS]: {

@@ -3,10 +3,6 @@ id: ai-credits
 title: Understanding AI Credits
 ---
 
-:::warning
-This implementation of AI credits will be available from 22nd September 2025.
-:::
-
 A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to creating custom code or modifying layouts, consumes a varied amount of credits based on the complexity and type of task. This approach provides transparent cost visibility while enabling you to scale your AI usage on-demand.
 
 In this guide you will learn about types of credits, credit usage, getting more credits, and more.

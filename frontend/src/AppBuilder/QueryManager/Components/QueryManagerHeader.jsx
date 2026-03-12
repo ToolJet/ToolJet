@@ -162,8 +162,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
   const inputRef = useRef();
 
@@ -262,10 +262,11 @@ const RunButton = ({ buttonLoadingState }) => {
     <span>
       <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
         <ButtonComponent
+          isLucid
           size="medium"
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
-          leadingIcon="play01"
+          leadingIcon="play"
           disabled={isInDraft}
           isLoading={isLoading}
           className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
@@ -285,8 +286,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();

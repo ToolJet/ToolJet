@@ -28,5 +28,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: {
       isPublic: true,
     },
+    [FEATURE_KEY.GET_SELFHOST_CUSTOMER]: {},
   },
 };

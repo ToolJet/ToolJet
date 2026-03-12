@@ -4,7 +4,7 @@ import { shallow } from 'zustand/shallow';
 import cx from 'classnames';
 import Tooltip from 'react-bootstrap/Tooltip';
 import './rightSidebarToggle.scss';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Plus, PencilRuler, BookOpen } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
@@ -18,6 +18,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
     if (item === activeRightSideBarTab && !isRightSidebarPinned) {
@@ -29,8 +30,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
 
   return (
     <div
-      className={cx(' right-sidebar-toggle left-sidebar', { 'dark-theme theme-dark': darkMode })}
-      data-cy="left-sidebar-inspector"
+      className={`tw-flex tw-flex-col tw-p-2 tw-gap-1.5 right-sidebar-toggle right-sidebar tw-bg-background-surface-layer-01 ${
+        darkMode ? 'dark-theme' : ''
+      }`}
+      data-cy="right-sidebar-inspector"
     >
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}
@@ -39,9 +42,19 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="plus"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector component-image-holder`}
+        iconOnly
+        className={`left-sidebar-inspector`}
         tip="Components"
-      />
+      >
+        <Plus
+          width="16"
+          height="16"
+          className={`${
+            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+          }`}
+        />
+      </SidebarItem>
+
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
         onClick={() => {
@@ -49,10 +62,20 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="propertiesstyles"
+        iconOnly
         iconWidth="14"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Component properties"
-      />
+        tip={isAnyComponentSelected ? 'Component properties' : 'No component selected'}
+        disabled={!isAnyComponentSelected}
+      >
+        <PencilRuler
+          width="16"
+          height="16"
+          className={`${
+            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+          }`}
+          style={{ opacity: !isAnyComponentSelected ? '0.5' : undefined }}
+        />
+      </SidebarItem>
       {appType !== 'module' && (
         <SidebarItem
           selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
@@ -61,9 +84,17 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           }}
           darkMode={darkMode}
           icon="file01"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+          iconOnly
           tip="Page settings"
-        />
+        >
+          <BookOpen
+            width="16"
+            height="16"
+            className={`${
+              activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+            }`}
+          />
+        </SidebarItem>
       )}
     </div>
   );

@@ -5,11 +5,11 @@ import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { useInput } from '../BaseComponents/hooks/useInput';
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const tinycolor = require('tinycolor2');
 
@@ -54,8 +54,9 @@ export const PhoneInput = (props) => {
     errTextColor,
     boxShadow,
     borderRadius,
+    widthType,
   } = styles;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const isInitialRender = useRef(true);
 
@@ -142,7 +143,7 @@ export const PhoneInput = (props) => {
 
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -169,10 +170,10 @@ export const PhoneInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderBottomLeftRadius: '0px',
-    borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
+
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
 
   return (
     <>
@@ -205,8 +206,18 @@ export const PhoneInput = (props) => {
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          widthType={widthType}
+          inputId={`component-${id}`}
+          classes={labelClasses}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+          }}
+        >
           <CountrySelect
             value={{ label: `${en[country]} +${getCountryCallingCodeSafe(country)}`, value: country }}
             options={options}
@@ -232,10 +243,16 @@ export const PhoneInput = (props) => {
             onChange={onInputValueChange}
             placeholder={placeholder}
             style={computedStyles}
+            id={`component-${id}`}
+            aria-disabled={disabledState}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
             className={`tj-text-input-widget ${
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
-            disabled={disabledState}
             data-ignore-hover={true}
             onBlur={handleBlur}
             onFocus={handleFocus}

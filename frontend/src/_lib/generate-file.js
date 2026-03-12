@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import * as jsPDFNamespace from 'jspdf';
 export default function generateFile(filename, data, fileType) {
   if (fileType === 'pdf') {
     generatePDF(filename, data);
@@ -21,6 +21,7 @@ export default function generateFile(filename, data, fileType) {
   }
 }
 function generatePDF(filename, data) {
+  const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace;
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 10;

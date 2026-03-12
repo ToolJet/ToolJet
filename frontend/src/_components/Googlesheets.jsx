@@ -94,34 +94,36 @@ const Googlesheets = ({
           </div>
         </div>
       </div>
-      <div className="row mt-3">
-        <center>
-          {authStatus === 'waiting_for_token' && (
-            <div>
+      {options?.authentication_type?.value === 'oauth2' && (
+        <div className="row mt-3">
+          <center>
+            {authStatus === 'waiting_for_token' && (
+              <div>
+                <Button
+                  className={`m2 ${isSaving ? ' loading' : ''}`}
+                  disabled={isSaving || isDisabled}
+                  onClick={() => saveDataSource()}
+                  data-cy="button-connect-gsheet"
+                >
+                  {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                </Button>
+              </div>
+            )}
+
+            {(!authStatus || authStatus === 'waiting_for_url') && (
               <Button
-                className={`m2 ${isSaving ? ' loading' : ''}`}
+                className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
                 disabled={isSaving || isDisabled}
-                onClick={() => saveDataSource()}
+                onClick={() => authGoogle()}
                 data-cy="button-connect-gsheet"
               >
-                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                {selectedDataSource?.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
+                {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
               </Button>
-            </div>
-          )}
-
-          {(!authStatus || authStatus === 'waiting_for_url') && (
-            <Button
-              className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving || isDisabled}
-              onClick={() => authGoogle()}
-              data-cy="button-connect-gsheet"
-            >
-              {selectedDataSource?.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
-              {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
-            </Button>
-          )}
-        </center>
-      </div>
+            )}
+          </center>
+        </div>
+      )}
     </div>
   );
 };

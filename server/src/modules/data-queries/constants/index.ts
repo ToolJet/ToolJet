@@ -8,4 +8,5 @@ export enum FEATURE_KEY {
   RUN_VIEWER = 'runViewer',
   RUN_EDITOR = 'runEditor',
   PREVIEW = 'preview',
+  LIST_TABLES = 'listTables',
 }

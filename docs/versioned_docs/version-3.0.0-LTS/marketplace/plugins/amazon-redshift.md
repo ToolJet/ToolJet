@@ -5,14 +5,13 @@ title: Amazon Redshift
 
 ToolJet can connect to Amazon Redshift, enabling your applications to query data directly from a Redshift cluster.
 
-
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/redshift/install.gif" alt="Marketplace Plugin: Amazon Redshift" />
 </div>
 
 <br/>
 
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -23,9 +22,9 @@ To connect to Amazon Redshift, you need to provide the following details:
 #### Required Parameters
 
 - **Region**: The region where your Redshift cluster is located. For example, `us-east-1`.
-- **Database Name**: The name of the database you want to connect to. 
+- **Database Name**: The name of the database you want to connect to.
 - **Authentication Type**: The type of authentication you want to use to connect to the Redshift cluster. Currently, only **IAM** is supported.
-- **Access Key**: The access key of the user you want to use to connect to the Redshift cluster. 
+- **Access Key**: The access key of the user you want to use to connect to the Redshift cluster.
 - **Secret Key**: The secret key of the user you want to use to connect to the Redshift cluster.
 
 #### Optional Parameters
@@ -49,19 +48,19 @@ Redshift supports a comprehensive set of SQL commands. You can use the SQL edito
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Read Data 
+### Read Data
 
 The following example demonstrates how to read data from a table in the connected Redshift cluster. The query selects all the columns from the `employee` table.
 
 ```sql
-SELECT * FROM employee 
+SELECT * FROM employee
 ```
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Write Data 
+### Write Data
 
 The following example demonstrates how to write data to a table in the connected Redshift cluster. The query inserts a new row into the `employee` table.
 
@@ -75,14 +74,14 @@ INSERT INTO employee (
     job_title,
     salary,
     department_id
-) VALUES ( 
-    'Tom', 
-    'Hudson', 
-    'tom.hudson@example.com', 
-    '234843294323', 
-    '2024-01-01', 
-    'Test Automation Engineer', 
-    245000.00, 
+) VALUES (
+    'Tom',
+    'Hudson',
+    'tom.hudson@example.com',
+    '234843294323',
+    '2024-01-01',
+    'Test Automation Engineer',
+    245000.00,
     12
 );
 ```
@@ -91,7 +90,7 @@ INSERT INTO employee (
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Update Data 
+### Update Data
 
 The following example demonstrates how to update data in a table in the connected Redshift cluster. The query updates the `first_name` and `last_name` columns of the `employee` table.
 
@@ -116,4 +115,3 @@ WHERE employee_id = 7;
 ```
 
 </div>
-

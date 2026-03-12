@@ -5,7 +5,7 @@ title: Google (OIDC)
 
 Google can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Google console. Refer to the **[OIDC Setup](/docs/user-management/sso/oidc/setup)** Guide to configure OIDC in your application.
 
-## Generating Client ID and Client Secret on GCS
+## Generating Client ID and Client Secret on GCC
 
 1. Go to **[Google Cloud console](https://console.cloud.google.com/)** and create a project.
     <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/gc-new-project.png" alt="Create New Project"/>

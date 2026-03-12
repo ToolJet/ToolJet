@@ -19,6 +19,7 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
@@ -28,7 +29,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 @Module({})
 export class AppsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       AppsController,
       WorkflowController,
@@ -53,10 +54,6 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
-    const { AppsActionsListener, TemporalService } = await this.getProviders(configs, 'workflows', [
-      'listeners/app-actions.listener',
-      'services/temporal.service',
-    ]);
 
     return {
       module: AppsModule,
@@ -70,18 +67,17 @@ export class AppsModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
         await AppEnvironmentsModule.register(configs),
       ],
-      controllers: [AppsController, WorkflowController],
+      controllers: isMainImport ? [AppsController, WorkflowController] : [],
       providers: [
         AppsService,
         WorkflowService,
         VersionRepository,
         AppsRepository,
         AppGitRepository,
-        AppsActionsListener,
-        TemporalService,
         PageService,
         EventsService,
         AppsUtilService,

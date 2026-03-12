@@ -47,11 +47,15 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           posthogHelper.captureEvent('create_workspace', {
             workspace_id: data?.organization_id || data?.current_organization_id || data?.id,
           });
-          toast.success('Workspace created successfully');
+          // Added this to show the toast for some seconds before re-loading the page
+          toast.success('Workspace created successfully', { duration: 900 });
           setIsCreating(false);
-          const newPath = appendWorkspaceId(slugValue, location.pathname, true);
-          window.history.replaceState(null, null, newPath);
-          window.location.reload();
+          closeModal();
+          setTimeout(() => {
+            const newPath = appendWorkspaceId(slugValue, location.pathname, true);
+            window.history.replaceState(null, null, newPath);
+            window.location.reload();
+          }, 950);
         },
         (error) => {
           setIsCreating(false);

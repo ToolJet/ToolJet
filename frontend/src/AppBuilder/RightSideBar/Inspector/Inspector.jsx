@@ -40,7 +40,6 @@ import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
@@ -48,7 +47,10 @@ import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
+import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { v4 as uuidv4 } from 'uuid';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -86,7 +88,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = [
+export const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
   'TextArea',
@@ -105,6 +107,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'TagsInput',
   'Button',
   'Icon',
   'Image',
@@ -117,7 +120,18 @@ const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'Tags',
   'Chat',
+  'PopoverMenu',
+  'Statistics',
+  'StarRating',
+  'CircularProgressBar',
+  'CustomComponent',
+  'Html',
+  'AudioRecorder',
+  'Camera',
+  'CodeEditor',
+  'Form',
 ];
 
 export const Inspector = ({
@@ -135,11 +149,12 @@ export const Inspector = ({
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -231,6 +246,25 @@ export const Inspector = ({
     if (attr) {
       oldValue = allParams[param.name][attr];
       allParams[param.name][attr] = value;
+
+      // When commonBackgroundColor changes for Tabs component, sync to all tab items if dynamic options are disabled
+      if (
+        component.component.component === 'Tabs' &&
+        param.name === 'commonBackgroundColor' &&
+        paramType === 'styles'
+      ) {
+        const useDynamicOptions = getResolvedValue(newDefinition.properties?.useDynamicOptions?.value);
+        if (!useDynamicOptions && newDefinition.properties?.tabItems?.value) {
+          const updatedTabItems = newDefinition.properties.tabItems.value.map((tabItem) => ({
+            ...tabItem,
+            fieldBackgroundColor: { value },
+          }));
+          newDefinition.properties.tabItems.value = updatedTabItems;
+          // // Also update the store for tabItems
+          setComponentProperty(selectedComponentId, 'tabItems', updatedTabItems, 'properties', 'value', false);
+          setTabsPropertiesPanelKey(uuidv4());
+        }
+      }
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
@@ -253,13 +287,6 @@ export const Inspector = ({
       }
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;
-      }
-      if (param.name === 'secondarySignDisplay') {
-        if (value === 'negative') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-        } else if (value === 'positive') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-        }
       }
     } else {
       oldValue = allParams[param.name];
@@ -338,13 +365,6 @@ export const Inspector = ({
         if (param.type === 'select' && defaultValue) {
           allParams[defaultValue.paramName]['value'] = defaultValue.value;
         }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
-        }
       } else {
         allParams[param.name] = value;
       }
@@ -415,7 +435,7 @@ export const Inspector = ({
       setWidgetDeleteConfirmation(true);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -479,6 +499,7 @@ export const Inspector = ({
   const propertiesTab = isMounted && (
     <div className={`${shouldFreeze && 'disabled'}`}>
       <GetAccordion
+        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
         componentName={componentMeta.component}
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
@@ -532,7 +553,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon" style={{ marginLeft: '8px' }}>
+      <div className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -560,17 +581,12 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px' }}
-            >
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
-          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+        <div
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
+            shouldFreeze && 'disabled'
+          }`}
+        >
+          <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
             <>
               <div className="width-unset" data-cy={'component-inspector-options'}>
@@ -580,7 +596,10 @@ export const Inspector = ({
                   rootClose={false}
                   show={showHeaderActionsMenu}
                   overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                    <Popover
+                      id="list-menu"
+                      className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                    >
                       <Popover.Body bsPrefix="list-item-popover-body">
                         {INSPECTOR_HEADER_OPTIONS.map((option) => {
                           const optionBody = (
@@ -597,13 +616,13 @@ export const Inspector = ({
                               <div
                                 className={classNames('list-item-option-menu-label', {
                                   'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                 })}
                               >
                                 {option?.label}
                               </div>
                               {option.value === 'permission' &&
-                                !licenseValid &&
+                                !hasAppPermissionComponent &&
                                 option.trailingIcon &&
                                 option.trailingIcon}
                             </div>
@@ -612,9 +631,11 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'Component permissions are available only in paid plans'}
+                              message={
+                                "You don't have access to component permissions. Upgrade your plan to access this feature."
+                              }
                               placement="left"
-                              show={!licenseValid}
+                              show={!hasAppPermissionComponent}
                             >
                               {optionBody}
                             </ToolTip>
@@ -666,13 +687,15 @@ const getDocsLink = (componentMeta) => {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
-      return 'https://docs.tooljet.ai/docs/widgets/multiselect';
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
-      return 'https://docs.tooljet.ai/docs/widgets/date-range-picker';
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
@@ -811,13 +834,13 @@ const handleRenderingConditionalStyles = (
 };
 
 const GetAccordion = React.memo(
-  ({ componentName, ...restProps }) => {
+  ({ componentName, tabsPropertiesPanelKey, ...restProps }) => {
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
 
       case 'Tabs':
-        return <TabsLayout {...restProps} />;
+        return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
 
       case 'Chart':
         return <Chart {...restProps} />;
@@ -843,7 +866,11 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
+      case 'TagsInput':
         return <Select {...restProps} />;
+
+      case 'Tags':
+        return <Tags {...restProps} />;
 
       case 'Chat':
         return <Chat {...restProps} />;
@@ -865,6 +892,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+      case 'PopoverMenu':
+        return <PopoverMenu {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

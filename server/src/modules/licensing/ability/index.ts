@@ -34,6 +34,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_USER_LIMITS,
           FEATURE_KEY.GET_WORKFLOW_LIMITS,
           FEATURE_KEY.GENERATE_CLOUD_TRIAL_LICENSE,
+          FEATURE_KEY.GET_SELFHOST_CUSTOMER,
         ],
         InstanceSettings
       );

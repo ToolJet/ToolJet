@@ -16,6 +16,8 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import InfoIcon from '@assets/images/icons/info.svg';
 import useStore from '@/AppBuilder/_stores/store';
+import { Button } from '@/components/ui/Button/Button';
+import { Share2 } from 'lucide-react';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -188,22 +190,20 @@ class ManageAppUsersComponent extends React.Component {
     const { isHovered } = this.state.isHovered;
 
     return (
-      <div title={'Share'} className="manage-app-users" data-cy="share-button-link">
-        <span
-          className="manage-app-users tj-secondary-btn editor-header-icon cursor-pointer"
-          onClick={() => {
-            this.validateThePreExistingSlugs();
-            this.setState({ showModal: true });
-          }}
-        >
-          <span
-            className={cx('d-flex', {
-              'share-disabled': false,
-            })}
+      <div className="manage-app-users" data-cy="share-button-link">
+        <ToolTip message="Share" placement="bottom">
+          <Button
+            variant="ghost"
+            iconOnly
+            onClick={() => {
+              this.validateThePreExistingSlugs();
+              this.setState({ showModal: true });
+            }}
           >
-            <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
-          </span>
-        </span>
+            <Share2 width="16" height="16" className="tw-text-icon-strong" />
+          </Button>
+        </ToolTip>
+
         <Modal
           show={this.state.showModal}
           size="lg"

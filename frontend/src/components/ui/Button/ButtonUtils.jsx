@@ -1,4 +1,4 @@
-export const getDefaultIconFillColor = (variant) => {
+export const getDefaultIconFillColor = (variant, iconOnly = false) => {
   switch (variant) {
     case 'primary':
     case 'dangerPrimary':
@@ -8,10 +8,29 @@ export const getDefaultIconFillColor = (variant) => {
       return 'var(--icon-brand)';
     case 'outline':
     case 'ghost':
-      return 'var(--icon-strong)';
+      return iconOnly ? 'var(--icon-strong)' : 'var(--icon-default)';
     case 'dangerSecondary':
     case 'dangerGhost':
       return 'var(--icon-danger)';
+    default:
+      return '';
+  }
+};
+
+export const getLucideIconClassName = (variant, iconOnly = false) => {
+  switch (variant) {
+    case 'primary':
+    case 'dangerPrimary':
+      return 'tw-text-icon-on-solid';
+    case 'secondary':
+    case 'ghostBrand':
+      return 'tw-text-icon-brand';
+    case 'outline':
+    case 'ghost':
+      return iconOnly ? 'tw-text-icon-strong' : 'tw-text-icon-default';
+    case 'dangerSecondary':
+    case 'dangerGhost':
+      return 'tw-text-icon-danger';
     default:
       return '';
   }
@@ -28,5 +47,18 @@ export const getIconSize = (size) => {
       return '14px';
     case 'small':
       return '12px';
+  }
+};
+
+export const getLucideIconSize = (size) => {
+  switch (size) {
+    case 'large':
+      return 20;
+    case 'default':
+      return 16;
+    case 'medium':
+      return 14;
+    case 'small':
+      return 12;
   }
 };

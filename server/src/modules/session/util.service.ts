@@ -19,7 +19,6 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { SSOConfigs } from '@entities/sso_config.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 import { MetadataUtilService } from '@modules/meta/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
@@ -30,6 +29,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
+import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -126,6 +126,19 @@ export class SessionUtilService {
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
       const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
 
+      // Track concurrent users if a new session was created and organization is available
+      if (loggedInUser?.id !== user.id && !isPatLogin && organization?.id) {
+        try {
+          incrementConcurrentUsers({
+            workspaceId: organization.id as string,
+            userId: user.id,
+            userRole: permissionData.admin ? 'admin' : 'member',
+          });
+        } catch (error) {
+          console.error('Error incrementing concurrent users metric:', error);
+        }
+      }
+
       const responsePayload = {
         organizationId: organization?.id,
         organization: organization?.name,
@@ -172,12 +185,17 @@ export class SessionUtilService {
       manager
     );
 
-    const role = await this.rolesRepository.getUserRole(user.id, user.organizationId, manager);
+    let role = await this.rolesRepository.getUserRole(user.id, user.organizationId, manager);
     const isAdmin = userPermissions.isAdmin;
     const superAdmin = userPermissions.isSuperAdmin;
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
+
+    if (superAdmin && !role) {
+      // If role is not found, fetch the admin role - Super admin not part of the organization
+      role = await this.rolesRepository.getAdminRoleOfOrganization(user.organizationId, manager);
+    }
 
     const metadata = userDetails?.userMetadata || '';
     const ssoUserInfo = userDetails?.ssoUserInfo || {};
@@ -215,22 +233,13 @@ export class SessionUtilService {
       );
 
       return JSON.parse(decryptedMetadata);
-    } catch (error) {
+    } catch {
       return {};
     }
   }
 
-  async getAllGroupsOfUser(user: User, manager: EntityManager) {
-    const allGroups = await this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
-
-    if (isSuperAdmin(user)) {
-      const adminRole = await this.rolesRepository.getAdminRoleOfOrganization(user.organizationId, manager);
-      if (allGroups && allGroups.length) {
-        return [...allGroups.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP), adminRole];
-      }
-      return [adminRole];
-    }
-    return allGroups;
+  getAllGroupsOfUser(user: User, manager: EntityManager): Promise<GroupPermissions[]> {
+    return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
   }
 
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
@@ -258,7 +267,7 @@ export class SessionUtilService {
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(
+      const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
@@ -267,6 +276,18 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
+
+      // Increment active sessions counter
+      try {
+        incrementActiveSessions({
+          userId,
+          sessionType: 'user',
+        });
+      } catch (error) {
+        console.error('Error incrementing active sessions metric:', error);
+      }
+
+      return session;
     }, manager);
   }
 

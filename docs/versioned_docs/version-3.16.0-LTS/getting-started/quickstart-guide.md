@@ -25,7 +25,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 <br/>
 
 - Click on the **Create new app** button on the dashboard. Name your application as "Employee Directory".
-- Click and drag a **[Table](/docs/widgets/table)** component on the canvas. Optionally, you can also design a header by adding more components.
+- Click and drag a **[Table](/docs/widgets/table/)** component on the canvas. Optionally, you can also design a header by adding more components.
 
 </div>
 
@@ -56,7 +56,7 @@ To display employees in the application, you will first have to fetch the data f
 </div>
 <br/>
 
-- Click on the **Add** button in the **[Query Panel](/docs/app-builder/query-panel/)** to create a new query.
+- Click on the **Add** button in the **[Query Panel](/docs/app-builder/connecting-with-data-sources/creating-managing-queries)** to create a new query.
 - Select **ToolJet Database** as the data source for the query.
 - Rename the query to _getEmployees_.
 - Choose _employees_ as the Table name, and _List rows_ as the Operation.

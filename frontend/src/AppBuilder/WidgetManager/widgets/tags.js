@@ -4,7 +4,7 @@ export const tagsConfig = {
   description: 'Display tag labels',
   component: 'Tags',
   defaultSize: {
-    width: 8,
+    width: 9,
     height: 30,
   },
   others: {
@@ -12,31 +12,85 @@ export const tagsConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    advanced: {
+      type: 'toggle',
+      displayName: 'Dynamic tags',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      accordian: 'Options',
+    },
     data: {
       type: 'code',
-      displayName: 'Tags',
-      validation: {
-        schema: {
-          type: 'array',
-          element: {
-            type: 'object',
-            object: { title: { type: 'string' }, color: { type: 'string' }, textColor: { type: 'string' } },
-          },
-        },
-        defaultValue:
-          "{{ [{ title: 'success', color: '#2fb344', textColor: '#fff' }, { title: 'info', color: '#206bc4', textColor: '#fff'  }] }}",
+      displayName: 'Schema',
+      conditionallyRender: {
+        key: 'advanced',
+        value: true,
       },
+      accordian: 'Options',
+    },
+    overflow: {
+      type: 'switch',
+      displayName: 'Overflow',
+      validation: { schema: { type: 'string' }, defaultValue: 'wrap' },
+      options: [
+        { displayName: 'Scroll', value: 'scroll' },
+        { displayName: 'Wrap', value: 'wrap' },
+      ],
+      accordian: 'Options',
+      isFxNotRequired: true,
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    size: {
+      type: 'switch',
+      displayName: 'Size',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'large',
       },
+      options: [
+        { displayName: 'Small', value: 'small' },
+        { displayName: 'Large', value: 'large' },
+      ],
+      accordian: 'pills',
+    },
+    borderRadius: {
+      type: 'input',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '8' },
+      accordian: 'pills',
     },
     padding: {
       type: 'switch',
@@ -45,11 +99,20 @@ export const tagsConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'default',
       },
-      isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
+      accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'container',
     },
     alignment: {
       type: 'alignButtons',
@@ -58,25 +121,87 @@ export const tagsConfig = {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
+      accordian: 'pills',
     },
   },
   exposedVariables: {},
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      advanced: { value: '{{false}}' },
       data: {
         value:
-          "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
+          "{{ [ \n\t\t{ title: 'success', color: '#34A94733', textColor: '#34A947' }, \n\t\t{ title: 'info', color: '#405DE61A', textColor: '#405DE6'  }, \n\t\t{ title: 'warning', color: '#F357171A', textColor: '#F35717'  }, \n\t\t{ title: 'danger', color: '#EB2E3933', textColor: '#EB2E39' } ] }}",
       },
+      options: {
+        value: [
+          {
+            title: 'success',
+            textColor: { value: '#34A947' },
+            backgroundColor: { value: '#34A94733' },
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: '{{true}}' },
+            visible: { value: true },
+          },
+          {
+            title: 'info',
+            textColor: { value: '#405DE6' },
+            backgroundColor: { value: '#405DE61A' },
+            icon: { value: 'IconInfoCircle' },
+            iconVisibility: { value: '{{true}}' },
+            visible: { value: true },
+          },
+          {
+            title: 'warning',
+            textColor: { value: '#F35717' },
+            backgroundColor: { value: '#F357171A' },
+            icon: { value: 'IconAlertTriangle' },
+            iconVisibility: { value: '{{true}}' },
+            visible: { value: true },
+          },
+          {
+            title: 'danger',
+            textColor: { value: '#EB2E39' },
+            backgroundColor: { value: '#EB2E3933' },
+            icon: { value: 'IconCircleXFilled' },
+            iconVisibility: { value: '{{true}}' },
+            visible: { value: true },
+          },
+        ],
+      },
+      overflow: { value: 'wrap' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       padding: { value: 'default' },
       alignment: { value: 'left' },
+      size: { value: 'small' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      borderRadius: { value: '8' },
     },
   },
 };

@@ -1,0 +1,18 @@
+.rotate-forever {
+    animation: spin 1.2s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+.canvas-component {
+  .CircularProgressbar {
+    width: unset;
+  }
+}

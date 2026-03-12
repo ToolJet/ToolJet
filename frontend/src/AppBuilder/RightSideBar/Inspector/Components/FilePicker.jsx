@@ -82,7 +82,9 @@ const FxSelect = ({
 /** Remove minFileCount and maxFileCount validations if multiple file selection is disabled */
 const getValidations = (componentMeta, component) => {
   const validations = Object.keys(componentMeta.validation || {});
-  const enableMultipleValue = resolveReferences(component.component.definition.properties.enableMultiple?.value ?? false);
+  const enableMultipleValue = resolveReferences(
+    component.component.definition.properties.enableMultiple?.value ?? false
+  );
   const enableMultipleFxActive = component.component.definition.properties.enableMultiple?.fxActive;
 
   if (!enableMultipleValue && !enableMultipleFxActive) {
@@ -110,10 +112,17 @@ const getPropertiesBySection = (propertiesMeta) => {
 
 const getConditionalAccordionItems = (component, renderCustomElement) => {
   const parseContent = resolveReferences(component.component.definition.properties.parseContent?.value ?? false);
+  const parseFileType = resolveReferences(
+    component.component.definition.properties.parseFileType?.value ?? 'auto-detect'
+  );
+
   const options = ['parseContent'];
   let renderOptions = options.map((option) => renderCustomElement(option));
 
-  const conditionalOptions = [{ name: 'parseFileType', condition: parseContent }];
+  const conditionalOptions = [
+    { name: 'parseFileType', condition: parseContent },
+    { name: 'delimiter', condition: parseContent && parseFileType === 'csv' },
+  ];
   conditionalOptions.forEach(({ name, condition }) => {
     if (condition) renderOptions.push(renderCustomElement(name));
   });

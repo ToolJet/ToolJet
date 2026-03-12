@@ -6,16 +6,16 @@ export const aiOnboardingService = {
   signInViaOAuth,
   signUpWithEmail,
   deleteAiCookies,
+  setAiCookie,
 };
 
-function signInViaOAuth(ssoType, ssoResponse) {
+function signInViaOAuth(ssoType, ssoResponse, utmParams = {}) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse }),
+    body: JSON.stringify({ ...ssoResponse, utmParams: utmParams }),
   };
-
   return fetch(`${config.apiUrl}/ai/onboarding/sign-in/common/${ssoType}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
@@ -52,4 +52,15 @@ function deleteAiCookies() {
   };
 
   return fetch(`${config.apiUrl}/ai/onboarding/delete-ai-cookies`, requestOptions).then(handleResponse);
+}
+
+function setAiCookie(cookieData) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(cookieData),
+  };
+
+  return fetch(`${config.apiUrl}/ai/onboarding/set-ai-cookie`, requestOptions).then(handleResponse);
 }

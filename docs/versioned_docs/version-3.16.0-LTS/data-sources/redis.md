@@ -5,13 +5,11 @@ title: Redis
 
 ToolJet enables you to execute Redis commands on your Redis instances.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connecting to Redis
 
 To establish a connection with the Redis data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Redis as the data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis data source Connection" />
 
 To connect ToolJet with Redis, you need to provide the following connection details:
 
@@ -30,10 +28,6 @@ Depending on the TLS certificate option selected, you may need to provide additi
   - **Client Key**: The client key for TLS connection.
   - **Client Cert**: The client certificate for TLS connection.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying Redis
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -51,7 +45,7 @@ The `PING` command is used to test the connection to Redis. If the connection is
 PING
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/ping.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/ping-query.png" alt="Redis querying" />
 
 ### SET Command
 
@@ -68,7 +62,7 @@ When the input value contains spaces, you should encode the value before providi
 SET products {{encodeURI('John Doe')}}
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/encode-v2.png" alt="Redis Example Encode" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/setprod-query.png" alt="Redis Example querying" />
 
 ### GET Command
 
@@ -87,15 +81,7 @@ To retrieve a value that was previously encoded while setting, you can use trans
   ```
 
 2. Enable Transformations (JS) and use `decodeURI`:
-
   ```js
   return JSON.parse(decodeURI(data));
   ```
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/datasource-reference/redis/decode-v2.png" alt="Redis Example Decode" />
-
-  </div>
-  
-</div>
+  <img className="screenshot-full img-full" src="/img/datasource-reference/redis/get-query.png" alt="Redis Example querying" />

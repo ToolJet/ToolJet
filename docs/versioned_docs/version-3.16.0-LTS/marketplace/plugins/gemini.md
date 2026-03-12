@@ -3,13 +3,13 @@ id: marketplace-plugin-gemini
 title: Gemini
 ---
 
-Google Gemini can be integrated with ToolJet to build context-aware, intelligent chatbots or generate creative text content. 
+The **Google Gemini** Plugin can be integrated with ToolJet to enable the development of context-aware, intelligent chatbots and to support the generation of high-quality, creative text content within applications.
 
 ## Connection
 
 To connect with Gemini, you will need the **API Key**, which can be generated from **[Google AI Studio](https://aistudio.google.com/apikey)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
 
 ## Supported Operations
 
@@ -20,19 +20,23 @@ Use this operation to generate text based on the prompt, system instructions, an
 **Required Parameters**
 
 - **Model**: Specifies the Gemini model to use for generating responses.
-    - Gemini 2.0 Flash
+    - **Gemini 3 Pro Preview**
+    - **Gemini 3 Flash Preview**
+    - **Gemini 2.5 Pro**
+    - **Gemini 2.5 Flash**
+    - **Gemini 2.5 Flash Lite**
+    - **Gemini 2.0 Flash**
+    - **Gemini 2.0 Flash Lite**
 
 - **Prompt**: The main user input for generating responses.
 
 **Optional Parameter**
 
 - **System Prompt**: A predefined instruction guiding the model's tone and behavior.
-
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -72,21 +76,17 @@ Use this operation for a chat-like conversation, where the model responds based 
 **Required Parameters**
 
 - **Model**: Specifies the Gemini model to use for generating responses in the chat.
-    - Gemini 2.0 Flash
-
+    - **Gemini 3 Pro Preview**
 - **User Prompt**: The user's question or request that the model will respond to.
 
 **Optional Parameter**
 
 - **System Prompt**: Provides the model with guidance on the style and type of responses expected.
-
 - **History**: Keeps track of previous interactions to maintain context in the conversation.
-
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

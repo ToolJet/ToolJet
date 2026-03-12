@@ -15,8 +15,8 @@ permissions:
 jobs:
 
 # Community Edition CE
-  create-ce-review-app:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
+  create-ce-review-app-old:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app-old' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -233,7 +233,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ce-review-app'
+                name: 'create-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -243,11 +243,11 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app']
+              labels: ['active-ce-review-app-old']
             })
 
-  destroy-ce-review-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app') || github.event.action == 'closed' }}
+  destroy-ce-review-app-old:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app-old') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -272,7 +272,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-ce-review-app'
+                name: 'destroy-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -283,7 +283,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-ce-review-app'
+                name: 'suspend-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -294,15 +294,15 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ce-review-app'
+                name: 'active-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
             }
 
      
-  suspend-ce-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ce-review-app' }}
+  suspend-ce-review-app-old:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ce-review-app-old' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -327,14 +327,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ce-review-app'
+                name: 'active-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-ce-review-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ce-review-app' }}
+  resume-ce-review-app-old:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ce-review-app-old' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -358,7 +358,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app']
+              labels: ['active-ce-review-app-old']
             })
 
             try {
@@ -366,7 +366,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-ce-review-app'
+                name: 'suspend-ce-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -376,9 +376,9 @@ jobs:
 
 # Enterprise Edition
 
-  create-ee-review-app:
+  create-ee-review-app-old:
     if: |
-      (github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app' || github.event.label.name == 'create-ee-lts-review-app' || github.event.label.name == 'review-app')) ||
+      (github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app-old' || github.event.label.name == 'create-ee-lts-review-app-old' || github.event.label.name == 'review-app-old')) ||
       (github.event.action == 'created' && (contains(github.event.comment.body, '/deploy-ee') || contains(github.event.comment.body, '/deploy-ee-lts')))
     runs-on: ubuntu-latest
 
@@ -432,7 +432,7 @@ jobs:
       - name: Determine Dockerfile path
         run: |
           # Check if LTS deployment is requested via comment or label
-          if [[ "${{ github.event.action }}" == "labeled" && "${{ github.event.label.name }}" == "create-ee-lts-review-app" ]]; then
+          if [[ "${{ github.event.action }}" == "labeled" && "${{ github.event.label.name }}" == "create-ee-lts-review-app-old" ]]; then
             DOCKERFILE="./docker/LTS/ee/ee-preview.Dockerfile"
             EDITION_TYPE="LTS"
             echo "Using LTS EE Dockerfile (triggered by label)"
@@ -565,23 +565,27 @@ jobs:
               },
               {
                 "key": "REDIS_HOST",
-                "value": "${{ secrets.RENDER_REDIS_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "REDIS_PORT",
-                "value": "${{ secrets.RENDER_REDIS_PORT }}"
+                "value": "6379"
               },
               {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
+                "key": "REDIS_DB",
+                "value": "0"
               },
               {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-ee-pr-${{ env.PR_NUMBER }}"
+                "key": "REDIS_TLS_ENABLED",
+                "value": "false"
               },
               {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
+                "key": "REDIS_PASSWORD",
+                "value": ""
+              },
+              {
+                "key": "WORKER",
+                "value": "true"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
@@ -646,7 +650,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ee-review-app'
+                name: 'create-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -657,7 +661,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ee-lts-review-app'
+                name: 'create-ee-lts-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -667,11 +671,11 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-review-app']
+              labels: ['active-ee-review-app-old']
             })
 
-  destroy-ee-review-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-review-app') || github.event.action == 'closed' }}
+  destroy-ee-review-app-old:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-review-app-old') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -696,7 +700,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-ee-review-app'
+                name: 'destroy-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -707,7 +711,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-ee-review-app'
+                name: 'suspend-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -718,7 +722,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ee-review-app'
+                name: 'active-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -726,8 +730,8 @@ jobs:
 
 
 
-  suspend-ee-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ee-review-app' }}
+  suspend-ee-review-app-old:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ee-review-app-old' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -752,14 +756,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ee-review-app'
+                name: 'active-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-ee-review-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ee-review-app' }}
+  resume-ee-review-app-old:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ee-review-app-old' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -783,7 +787,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-review-app']
+              labels: ['active-ee-review-app-old']
             })
 
             try {
@@ -791,7 +795,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-ee-review-app'
+                name: 'suspend-ee-review-app-old'
               })
             } catch (e) {
               console.log(e)
@@ -816,7 +820,7 @@ jobs:
             return labels.data.map(l => l.name);
 
       - name: Redeploy CE review app if active
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app-old')
         id: redeploy_ce
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -838,7 +842,7 @@ jobs:
 
 
       - name: Redeploy EE review app if active
-        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app-old')
         id: redeploy_ee
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}

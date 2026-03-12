@@ -12,7 +12,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { QueryOptions } from './types';
 
 export async function listBuckets(client: S3Client, options: QueryOptions): Promise<object> {
-  const command = new ListBucketsCommand(options);
+  const command = new ListBucketsCommand();
   return client.send(command);
 }
 

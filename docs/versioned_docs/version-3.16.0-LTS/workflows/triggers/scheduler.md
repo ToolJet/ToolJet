@@ -23,7 +23,7 @@ Cron mode offers precise scheduling using cron syntax. It’s perfect for tasks 
 
 ### On Regular Intervals
 
-1. Create and configure a workflow. Refer to the [Workflow Overview](/docs/workflows/overview) guide to create a new workflow.
+1. Create and configure a workflow. Refer to the [Workflow Overview](/docs/workflows/overview/) guide to create a new workflow.
 2. Navigate to the Triggers section on the left panel. Click on **Schedules**. And then click on **+ New schedule**. Select **Interval** as the Label. <br/>
     <img style={{ marginTop: '15px' }} className="screenshot-full img-m" src="/img/workflows/triggers/scheduler/new-schedule.png" alt="Scheduler - Interval Mode" />
 3. Fill the required fields.
@@ -38,7 +38,7 @@ Cron mode offers precise scheduling using cron syntax. It’s perfect for tasks 
 
 You can use Cron Syntax to configure a schedule. ToolJet offers an graphical user interface to configure corn schedule.
 
-1. Create and configure a workflow. Refer to the [Workflow Overview](/docs/workflows/overview) guide to create a new workflow.
+1. Create and configure a workflow. Refer to the [Workflow Overview](/docs/workflows/overview/) guide to create a new workflow.
 2. Navigate to the Triggers section on the left panel. Click on **Schedules**. And then click on **+ New schedule**. Select **Cron** as the Label. <br/>
     <img style={{ marginTop: '15px' }} className="screenshot-full img-m" src="/img/workflows/triggers/scheduler/cron-new-schedule.png" alt="Scheduler - Interval Mode" />
 3. Fill the required fields.

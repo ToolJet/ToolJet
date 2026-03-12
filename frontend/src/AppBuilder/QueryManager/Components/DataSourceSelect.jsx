@@ -5,10 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
-import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { defaultSources, staticDataSources as staticDatasources } from '../constants';
-import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { defaultSources, staticDataSources as staticDatasources, workflowDefaultSources } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/common/components/DataSourceComponents';
@@ -17,7 +14,17 @@ import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
 
-function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
+function DataSourceSelect({
+  isDisabled,
+  selectRef,
+  closePopup,
+  workflowDataSources,
+  onNewNode,
+  staticDataSources: defaultDataSources,
+  onQueryCreate,
+  skipClosePopup = false,
+  sampleDataSources = [],
+}) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
     (gds) => gds.type === DATA_SOURCE_TYPE.GLOBAL
@@ -34,9 +41,11 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const handleChangeDataSource = (source) => {
-    createDataQuery(source);
+    createDataQuery(source, false, {}, 'canvas', null, { callbackFunction: onQueryCreate });
     setPreviewData(null);
-    closePopup();
+    if (!skipClosePopup) {
+      closePopup();
+    }
   };
 
   useEffect(() => {
@@ -141,6 +150,37 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     ...userDefinedSourcesOpts,
   ];
 
+  // Group sample data sources by kind
+  const groupedSampleDataSources =
+    sampleDataSources && sampleDataSources.length > 0
+      ? Object.entries(groupBy(sampleDataSources, 'kind')).map(([kind, sources]) => ({
+        label: (
+          <div>
+            <DataSourceIcon source={sources[0]} height={16} />
+            <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+          </div>
+        ),
+        options: sources.map((source) => ({
+          label: (
+            <div
+              key={source.id}
+              className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+              style={{ fontSize: '13px' }}
+              data-tooltip-id="tooltip-for-add-query-dd-option"
+              data-tooltip-content={decodeEntities(source.name)}
+              data-cy={`ds-${source.name.toLowerCase()}`}
+            >
+              {decodeEntities(source.name)}
+              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+            </div>
+          ),
+          value: source.id,
+          isNested: true,
+          source,
+        })),
+      }))
+      : [];
+
   const dataSourcesAvailable = [
     {
       label: (
@@ -154,7 +194,8 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       options: defaultDataSources?.map((source) => ({
         label: (
           <div>
-            <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.kind}</span>
+            <DataSourceIcon source={source} height={16} />{' '}
+            <span className="ms-1 small"> {workflowDefaultSources[cleanWord(source.name)]?.name}</span>
           </div>
         ),
         value: source.name,
@@ -162,6 +203,22 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       })),
     },
     ...userDefinedSourcesOpts,
+    // Sample data sources group header
+    ...(groupedSampleDataSources.length > 0
+      ? [
+        {
+          label: (
+            <div>
+              <span className="color-slate9" style={{ fontWeight: 500 }}>
+                Sample data sources
+              </span>
+            </div>
+          ),
+          isDisabled: true,
+        },
+        ...groupedSampleDataSources,
+      ]
+      : []),
   ];
 
   const dataSourceList = workflowDataSources && workflowDataSources ? dataSourcesAvailable : DataSourceOptions;
@@ -183,8 +240,8 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
           source?.id !== 'if' && workflowDataSources
             ? onNewNode(source.kind, source.id, source.plugin_id, source)
             : source && source?.id === 'if'
-            ? onNewNode('if')
-            : handleChangeDataSource(source)
+              ? onNewNode('if')
+              : handleChangeDataSource(source)
         }
         classNames={{
           menu: () => 'tj-scrollbar',
@@ -254,8 +311,8 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
             },
             ...(isFocused &&
               isNested && {
-                '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
-              }),
+              '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
+            }),
           }),
           container: (styles) => ({
             ...styles,

@@ -20,7 +20,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { Page } from 'src/entities/page.entity';
+import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
@@ -44,6 +44,7 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
+import { AppVersionStatus } from '@entities/app_version.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -60,6 +61,8 @@ type DefaultDataSourceName =
   | 'runpydefault'
   | 'tooljetdbdefault'
   | 'workflowsdefault';
+
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
 
 type NewRevampedComponent =
   | 'Text'
@@ -80,7 +83,14 @@ type NewRevampedComponent =
   | 'Image'
   | 'FilePicker'
   | 'Icon'
-  | 'Steps';
+  | 'Steps'
+  | 'Statistics'
+  | 'StarRating'
+  | 'Tags'
+  | 'CircularProgressBar'
+  | 'Html'
+  | 'Chat'
+  | 'CurrencyInput';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -109,6 +119,33 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'FilePicker',
   'Icon',
   'Steps',
+  'Statistics',
+  'StarRating',
+  'Tags',
+  'CircularProgressBar',
+  'Html',
+  'Chat',
+  'CurrencyInput'
+];
+
+const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
+
+const INPUT_WIDGET_TYPES = [
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'TimePicker',
+  'DatetimePickerV2',
+  'TextArea',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'RangeSliderV2',
 ];
 
 @Injectable()
@@ -120,7 +157,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -143,7 +180,9 @@ export class AppImportExportService {
         });
 
       if (versionId) {
-        queryAppVersions.andWhere('app_versions.id = :versionId', { versionId });
+        queryAppVersions.andWhere('app_versions.id = :versionId', {
+          versionId,
+        });
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
@@ -154,7 +193,9 @@ export class AppImportExportService {
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
-          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
+          .andWhere('data_sources.scope != :scope', {
+            scope: DataSourceScopes.GLOBAL,
+          })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
@@ -175,7 +216,9 @@ export class AppImportExportService {
         .where('data_query.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
-        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .andWhere('dataSource.scope = :scope', {
+          scope: DataSourceScopes.GLOBAL,
+        })
         .getMany();
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
@@ -232,10 +275,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -247,10 +290,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -258,16 +301,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-              .createQueryBuilder(Component, 'components')
-              .leftJoinAndSelect('components.layouts', 'layouts')
-              .leftJoinAndSelect('components.permissions', 'permission')
-              .leftJoinAndSelect('permission.users', 'componentUser')
-              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-              .where('components.pageId IN(:...pageId)', {
-                pageId: pages.map((v) => v.id),
-              })
-              .orderBy('components.created_at', 'ASC')
-              .getMany()
+            .createQueryBuilder(Component, 'components')
+            .leftJoinAndSelect('components.layouts', 'layouts')
+            .leftJoinAndSelect('components.permissions', 'permission')
+            .leftJoinAndSelect('permission.users', 'componentUser')
+            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+            .where('components.pageId IN(:...pageId)', {
+              pageId: pages.map((v) => v.id),
+            })
+            .orderBy('components.created_at', 'ASC')
+            .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -279,7 +322,11 @@ export class AppImportExportService {
       //call the export function for each moduleAppiDs
       await Promise.all(
         moduleAppIds.map(async (moduleAppId) =>
-          moduleApps.push(await this.export(user, moduleAppId.moduleId, { version_id: moduleAppId.versionId }))
+          moduleApps.push(
+            await this.export(user, moduleAppId.moduleId, {
+              version_id: moduleAppId.versionId,
+            })
+          )
         )
       );
 
@@ -290,10 +337,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -348,11 +395,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-            .createQueryBuilder(App, 'app')
-            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-            .distinct(true)
-            .getMany()
+          .createQueryBuilder(App, 'app')
+          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+          .distinct(true)
+          .getMany()
         : [];
 
     // Process each module from the import data
@@ -443,8 +490,14 @@ export class AppImportExportService {
         : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
       const currentTooljetVersion = !cloning ? tooljetVersion : null;
-
-      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
+      const existingAppId = appParamsObj.existingAppId;
+      const importedApp = await this.createImportedAppForUser(
+        manager,
+        schemaUnifiedAppParams,
+        user,
+        isGitApp,
+        existingAppId
+      );
 
       const resourceMapping = await this.setupImportedAppAssociations(
         manager,
@@ -466,7 +519,9 @@ export class AppImportExportService {
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
       // hence updating slug explicitly
       //await importedApp.reload(); -> this will not work as we are using transaction
-      const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
+      const newApp = await manager.findOne(App, {
+        where: { id: importedApp.id },
+      });
       newApp.slug = importedApp.id;
       await manager.save(newApp);
       return { newApp, resourceMapping };
@@ -474,14 +529,19 @@ export class AppImportExportService {
   }
 
   async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
-    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
+    const mappings = {
+      ...resourceMapping.componentsMapping,
+      ...resourceMapping.dataQueryMapping,
+    };
     const newComponentIds = Object.values(resourceMapping.componentsMapping);
     const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
 
     if (newComponentIds.length > 0) {
       const components = await manager
         .createQueryBuilder(Component, 'components')
-        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
+        .where('components.id IN(:...componentIds)', {
+          componentIds: newComponentIds,
+        })
         .select([
           'components.id',
           'components.properties',
@@ -505,7 +565,9 @@ export class AppImportExportService {
     if (newQueriesIds.length > 0) {
       const dataQueries = await manager
         .createQueryBuilder(DataQuery, 'dataQueries')
-        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
+        .where('dataQueries.id IN(:...dataQueryIds)', {
+          dataQueryIds: newQueriesIds,
+        })
         .select(['dataQueries.id', 'dataQueries.options'])
         .getMany();
 
@@ -536,8 +598,13 @@ export class AppImportExportService {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
   }
-
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
+  async createImportedAppForUser(
+    manager: EntityManager,
+    appParams: any,
+    user: User,
+    isGitApp = false,
+    existingAppId?
+  ): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -555,7 +622,12 @@ export class AppImportExportService {
 
       await manager.save(importedApp);
       return importedApp;
-    }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+    }, [
+      {
+        dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE,
+        message: 'This app name is already taken.',
+      },
+    ]);
   }
 
   extractImportDataFromAppParams(appParams: Record<string, any>): {
@@ -607,7 +679,8 @@ export class AppImportExportService {
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
-    moduleResourceMappings?: Record<string, unknown>
+    moduleResourceMappings?: Record<string, unknown>,
+    createNewVersion?: boolean
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -645,7 +718,8 @@ export class AppImportExportService {
       importedApp,
       importingAppVersions,
       appResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      createNewVersion
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1004,6 +1078,10 @@ export class AppImportExportService {
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
+          type: page.type || PageType.DEFAULT,
+          openIn: page.openIn || PageOpenIn.SAME_TAB,
+          url: page.url || null,
+          appId: page.appId || '',
         });
 
         const pageCreated = await manager.save(newPage);
@@ -1208,7 +1286,9 @@ export class AppImportExportService {
       await Promise.all(updateArr);
 
       const newDataQueries = await manager.find(DataQuery, {
-        where: { appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+        where: {
+          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+        },
       });
 
       for (const importedDataQuery of importingDataQueriesForAppVersion) {
@@ -1355,7 +1435,9 @@ export class AppImportExportService {
     const isPluginInstalled = async (kind: string): Promise<boolean> => {
       if (pluginsFound.has(kind)) return true;
 
-      const pluginExists = !!(await manager.findOne(Plugin, { where: { pluginId: kind } }));
+      const pluginExists = !!(await manager.findOne(Plugin, {
+        where: { pluginId: kind },
+      }));
 
       if (pluginExists) pluginsFound.add(kind);
 
@@ -1394,10 +1476,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+            importingQuery.options,
+            externalResourceMappings['tooljet_database'],
+            organizationId
+          )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1699,7 +1781,10 @@ export class AppImportExportService {
       if (missingGroups.length > 0) {
         throw new HttpException(
           {
-            message: { type: APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.PERMISSION_CHECK, data: missingGroups },
+            message: {
+              type: APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.PERMISSION_CHECK,
+              data: missingGroups,
+            },
           },
           HttpStatus.BAD_REQUEST
         );
@@ -1818,7 +1903,8 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    createNewVersion?: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -1839,14 +1925,22 @@ export class AppImportExportService {
         currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
-      const version = await manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appVersion.definition,
-        name: appVersion.name,
-        currentEnvironmentId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      let version;
+      // this case only happens in the AI flow when app is imported within an existing app
+      if (importedApp.editingVersion && !createNewVersion) {
+        version = importedApp.editingVersion;
+      } else {
+        version = await manager.create(AppVersion, {
+          appId: importedApp.id,
+          definition: appVersion.definition,
+          name: appVersion.name,
+          currentEnvironmentId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parent_version_id: appVersion?.id || null,
+        });
+      }
 
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
@@ -2113,10 +2207,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user?.organizationId
-              )
+              query.options,
+              externalResourceMappings['tooljet_database'],
+              user?.organizationId
+            )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2151,7 +2245,9 @@ export class AppImportExportService {
     await manager.update(
       AppVersion,
       { id: version.id },
-      { definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping) }
+      {
+        definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping),
+      }
     );
   }
 
@@ -2236,7 +2332,10 @@ export class AppImportExportService {
     // From Section
     if (joinOptions?.from) {
       const { name = '' } = joinOptions.from;
-      joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
+      joinOptions.from = {
+        ...joinOptions.from,
+        name: tooljetDatabaseMapping[name]?.id ?? name,
+      };
     }
 
     // Sort Section
@@ -2270,7 +2369,12 @@ export class AppImportExportService {
         return { operator, leftField, rightField };
       }
     });
-    return { conditions: { ...joinConditions, conditionsList: [...updatedConditionList] } };
+    return {
+      conditions: {
+        ...joinConditions,
+        conditionsList: [...updatedConditionList],
+      },
+    };
   }
 
   async updateEventActionsForNewVersionWithNewMappingIds(
@@ -2284,7 +2388,10 @@ export class AppImportExportService {
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
       .getMany();
-    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
+    const mappings = {
+      ...oldDataQueryToNewMapping,
+      ...oldComponentToNewComponentMapping,
+    } as Record<string, string>;
 
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
@@ -2428,9 +2535,9 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent,
   component: Component,
-  componentTypes: NewRevampedComponent[],
+  componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
 ) {
   const properties = { ...component.properties };
@@ -2444,6 +2551,35 @@ function migrateProperties(
 
   const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
 
+  if (PartialRevampedComponents.includes(componentType as PartialRevampedComponent)) {
+    const defaultStylesByComponent: Record<string, Record<string, { value: string | number }>> = {
+      CodeEditor: {
+        borderColor: { value: 'var(--cc-weak-border)' },
+        backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      },
+      PDF: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      Calendar: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      CustomComponent: {
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        borderColor: { value: 'var(--cc-default-border)' },
+      },
+    };
+
+    const defaults = defaultStylesByComponent[componentType];
+    if (defaults) {
+      for (const [key, value] of Object.entries(defaults)) {
+        if (!styles[key]) {
+          styles[key] = value;
+        }
+      }
+    }
+  }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
@@ -2499,9 +2635,74 @@ function migrateProperties(
       }
     }
 
+    if (componentType === 'Chat') {
+      if (!styles.borderRadius) {
+        styles.borderRadius = { value: 6 };
+      }
+    }
+
+    // CircularProgressBar
+    if (componentType === 'CircularProgressBar') {
+      if (!properties.labelType) {
+        properties.labelType = { value: 'custom' };
+      }
+
+      if (!properties.text || !properties.text.value) {
+        properties.text = {
+          ...properties.text,
+          value: '',
+        };
+      }
+
+      if (!styles.completionColor) {
+        styles.completionColor = {
+          ...styles.color,
+        };
+      }
+
+      // When CircularProgressBar was released
+      const backwordCompatibilityCheck = !isVersionGreaterThanOrEqual(tooljetVersion, '3.16.33');
+      if (backwordCompatibilityCheck) {
+        if (styles.textSize) {
+          styles.textSize = {
+            ...styles.textSize,
+            fxActive: true,
+          };
+        }
+
+        if (styles.strokeWidth) {
+          styles.strokeWidth = {
+            ...styles.strokeWidth,
+            fxActive: true,
+          };
+        }
+
+        if (styles.counterClockwise) {
+          styles.counterClockwise = {
+            ...styles.counterClockwise,
+            fxActive: true,
+          };
+        }
+
+        if (styles.circleRatio) {
+          styles.circleRatio = {
+            ...styles.circleRatio,
+            fxActive: true,
+          };
+        }
+      }
+    }
+
     // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
+    }
+
+    //Tags
+    if (componentType === 'Tags') {
+      if (!('advanced' in properties)) {
+        properties.advanced = { value: '{{true}}' };
+      }
     }
 
     // Form
@@ -2525,6 +2726,10 @@ function migrateProperties(
         }
         delete styles.highlightColor;
       }
+
+      if (!styles.commonBackgroundColor) {
+        styles.commonBackgroundColor = { value: 'var(--cc-surface1-surface)' };
+      }
     }
 
     // Image
@@ -2544,7 +2749,10 @@ function migrateProperties(
         };
       }
       if (properties.enablePicker) {
-        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+        properties.enablePicker = {
+          ...properties.enablePicker,
+          fxActive: properties?.enablePicker?.fxActive ?? true,
+        };
       }
       if (properties.enableMultiple) {
         properties.enableMultiple = {
@@ -2553,20 +2761,32 @@ function migrateProperties(
         };
       }
       if (properties.fileType && !validation.fileType) {
-        validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
+        validation.fileType = {
+          ...properties.fileType,
+          fxActive: properties?.fileType?.fxActive ?? true,
+        };
         delete properties.fileType;
       }
 
       if (properties.maxFileCount && !validation.maxFileCount) {
-        validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+        validation.maxFileCount = {
+          ...properties.maxFileCount,
+          fxActive: properties?.fileType?.fxActive ?? true,
+        };
         delete properties.maxFileCount;
       }
       if (properties.maxSize && !validation.maxSize) {
-        validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+        validation.maxSize = {
+          ...properties.maxSize,
+          fxActive: properties?.maxSize?.fxActive ?? true,
+        };
         delete properties.maxSize;
       }
       if (properties.minSize && !validation.minSize) {
-        validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+        validation.minSize = {
+          ...properties.minSize,
+          fxActive: properties?.minSize?.fxActive ?? true,
+        };
         delete properties.minSize;
       }
 
@@ -2585,7 +2805,54 @@ function migrateProperties(
         delete properties.steps;
       }
     }
+
+    // Statistics
+    if (componentType === 'Statistics') {
+      properties.dataAlignment ??= { value: 'center' };
+      properties.secondaryValueAlignment ??= { value: 'vertical' };
+
+      styles.iconVisibility ??= { value: false };
+
+      if (styles.secondaryTextColour) {
+        styles.positiveSecondaryValueColor = styles.secondaryTextColour;
+        styles.negativeSecondaryValueColor = styles.secondaryTextColour;
+        delete styles.secondaryTextColour;
+      }
+    }
+
+    // StarRating
+    if (componentType === 'StarRating') {
+      if (!styles.labelStyle) {
+        styles.labelStyle = { value: 'legacy' };
+      }
+    }
+
+    // CurrencyInput
+    if (componentType === 'CurrencyInput') {
+      if (properties.showFlag == undefined) {
+        properties.showFlag = { value: true };
+      }
+    }
   }
+
+  // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
+  if (INPUT_WIDGET_TYPES.includes(componentType)) {
+    if (!styles.widthType) {
+      styles.widthType = { value: 'ofField' };
+    }
+  }
+
+  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
+  // The migration for Kanban will then be handled automatically along with other revamped components.
+  if (['Kanban'].includes(componentType)) {
+    if (general?.tooltip) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
+      delete general?.tooltip;
+    }
+  }
+
   return { properties, styles, general, generalStyles, validation };
 }
 

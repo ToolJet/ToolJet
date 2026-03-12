@@ -40,7 +40,7 @@ export default class Databricks implements QueryService {
       const client = new DBSQLClient();
       client.connect(credentials);
       client.on('error', (error) => {
-        console.log('Error in connection: ' + error.message);
+        console.error('Error in connection: ' + error.message);
       });
       return client;
     } catch (error) {

@@ -1,17 +1,10 @@
 import React from 'react';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
-import { shallow } from 'zustand/shallow';
-const TooljetBanner = ({ isDarkMode }) => {
-  const instanceId = useAppDataStore(
-    (state) => ({
-      instance_id: state.metadata?.instance_id,
-    }),
-    shallow
-  );
 
+const TooljetBanner = ({ isDarkMode }) => {
   return (
     <div
+      data-cy="powered-tj-banner"
       className={`powered-with-tj ${isDarkMode ? 'dark-theme' : ''}`}
       onClick={() => {
         const url = `https://tooljet.com`;
