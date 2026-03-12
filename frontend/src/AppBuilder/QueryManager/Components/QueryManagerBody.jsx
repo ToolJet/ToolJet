@@ -295,6 +295,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 index={index}
                 key={toggle}
                 darkMode={darkMode}
+                queryKind={selectedQuery?.kind}
               />
             ))}
             {selectedQuery?.kind === 'restapi' &&
@@ -311,7 +312,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           </div>
         </div>
         <div className="d-flex">
-          <div className="form-label">{ }</div>
+          <div className="form-label">{}</div>
           <SuccessNotificationInputs
             // currentState={currentState}
             options={options}
@@ -336,8 +337,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -402,14 +403,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${!hasPermissions || isFreezed ? 'disabled' : ''
-        }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
+        !hasPermissions || isFreezed ? 'disabled' : ''
+      }`}
       style={{
         height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
         overflowY: 'auto',
@@ -441,14 +443,27 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, value, toggleOption, darkMode }) => {
-  const [flag, setFlag] = useState(false);
+const UNSUPPORTED_DEPENDENCY_CHANGE_KINDS = new Set(['runjs', 'runpy']);
 
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  queryKind,
+}) => {
+  const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
 
+  const isDisabled = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
+
   useEffect(() => {
-    setFlag(value);
-  }, [value]);
+    setFlag(isDisabled ? false : value);
+  }, [value, isDisabled]);
 
   return (
     <div className="query-manager-settings-toggles">
@@ -456,13 +471,17 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, va
         dataCy={dataCy}
         isChecked={flag}
         toggleSwitchFunction={(flag) => {
+          if (isDisabled) return;
           setFlag((state) => !state);
           toggleOption(flag);
         }}
         action={action}
         darkMode={darkMode}
         label={t(translatedLabel, label)}
-        subLabel={subLabel}
+        subLabel={
+          isDisabled ? `Not available for ${queryKind === 'runpy' ? 'Run Python' : 'Run JavaScript'} queries` : subLabel
+        }
+        disabled={isDisabled}
       />
     </div>
   );

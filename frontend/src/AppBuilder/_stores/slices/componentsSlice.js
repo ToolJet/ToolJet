@@ -941,7 +941,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers, registerQueryDependencies } = get();
+    const {
+      getCurrentPageComponents,
+      addToDependencyGraph,
+      setResolvedComponents,
+      resolveOthers,
+      registerQueryDependencies,
+    } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
@@ -975,13 +981,19 @@ export const createComponentsSlice = (set, get) => ({
     // Orphan cleanup is unnecessary — source paths (components.{id}.value) have other edges
     const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
     if (depGraph && depGraph.hasNode(optionsPath)) {
-      set((state) => {
-        const graph = state.dependencyGraph.modules[moduleId].graph;
-        if (graph.hasNode(optionsPath)) {
-          graph.graph.removeNode(optionsPath);
-        }
-        return { ...state };
-      }, false, 'clearQueryOptionsDeps');
+      set(
+        (state) => {
+          const graph = state.dependencyGraph.modules[moduleId].graph;
+          if (graph.hasNode(optionsPath)) {
+            graph.graph.removeNode(optionsPath);
+          }
+          return { ...state };
+        },
+        false,
+        'clearQueryOptionsDeps'
+      );
+      const stillExists = get().dependencyGraph.modules[moduleId]?.graph?.hasNode(optionsPath);
+    } else {
     }
 
     // Extract all {{}} refs from the query's active options
