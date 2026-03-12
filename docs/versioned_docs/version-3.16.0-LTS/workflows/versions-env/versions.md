@@ -11,7 +11,7 @@ Each version is isolated and can be promoted across environments such as develop
 
 ## How Draft and Saved Versions Work
 
-A draft version represents the working copy of your workflow. When you create a new version or begin editing, ToolJet ensures that the changes happen inside a draft. Drafts allow you to safely modify nodes, edges, and workflow logic without affecting the active version.
+A draft version represents the working copy of your workflow. When you create a new version or begin editing, ToolJet ensures that the changes happen inside a draft. Drafts allow you to safely modify nodes, and workflow logic without affecting the active version.
 
 Saved versions are finalized checkpoints created from drafts. Saved versions are fixed, cannot be edited, and can be promoted to staging or production, released for execution, or used for rollback.
 

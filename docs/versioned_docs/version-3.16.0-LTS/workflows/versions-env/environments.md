@@ -33,7 +33,7 @@ The workflow lifecycle involves managing workflow versions across development, s
 
 Data sources and constants can be configured separately for each environment, and ToolJet will automatically use the appropriate ones based on the target environment.
 
-- **Development** - Developers build and test the workflow in the workflow editor. Nodes, edges, and logic can be freely modified.
+- **Development** - Developers build and test the workflow in the workflow editor. Nodes, and logic can be freely modified.
 - **Staging** - The testing or product team validates requirements and tests the workflow using staging data sources and constants. Workflow definitions cannot be edited in this environment.
 - **Production** - After thorough testing in staging, the workflow is promoted to production. Once promoted, you can release the version to make it the active workflow that responds to all triggers.
 
