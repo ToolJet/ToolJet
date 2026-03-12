@@ -6,6 +6,8 @@ import './multiselectV2.scss';
 import { highlightText } from '../DropdownV2/utils';
 
 const CustomOption = (props) => {
+  const labelText = String(props.label ?? '');
+
   return (
     <Option
       {...props}
@@ -16,9 +18,7 @@ const CustomOption = (props) => {
       <div className="d-flex multiselct-widget-option">
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
         <span style={{ marginLeft: '5px' }}>
-          {props.label?.includes('Select all')
-            ? 'Select all'
-            : highlightText(props.label?.toString(), props.selectProps.inputValue)}
+          {labelText.includes('Select all') ? 'Select all' : highlightText(labelText, props.selectProps.inputValue)}
         </span>
       </div>
     </Option>
