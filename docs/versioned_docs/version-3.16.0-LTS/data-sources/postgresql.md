@@ -22,22 +22,20 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 
 - **Host**
 - **Port**
-- **SSL**
 - **Database Name**
 - **Username**
 - **Password**
 - **Connection Options**
 - **SSL Certificate**
+- **SSH Tunnelling**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-connection-v4.png" alt="PG connection-manual"/>
 
 ### Connection String
 
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
 
-- **Connection String**
-
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/postgresql/connection-string-v4.png" alt="PG connection string"/>
 
 <br/><br/>
 
@@ -75,15 +73,13 @@ To securely connect to a private PostgreSQL database using SSH tunnelling:
 
 Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL queries are routed through this encrypted tunnel.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
 
-## Querying MongoDB
+## Querying PostgreSQL
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
 2. Select the operation that you want to perform and click **Save** to save the query.
 3. Click on the **Run** button to run the query.
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongoDB-operations.png" alt="ToolJet - Mongo query"/>
 
 ## Querying in SQL Mode
 
@@ -91,7 +87,7 @@ Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL que
 2. Select the SQL query mode from the dropdown and enter the query.
 3. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/sql1-v4.png" alt="PG connection"/>
 
 ### Parameterized Queries
 
@@ -102,18 +98,18 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
-
 #### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
 
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/sql2-v4.png" alt="Postgresql parameterized SQL queries"/>
+
 SQL Parameters: <br/>
 
 - Key: username <br/>
-- Value: oliver or `{{ components.username.value }}`
+- Value: `{{ components.username.value }}`
 
 ### Row Level Security
 
@@ -145,25 +141,158 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 
 1. Create a new query and select the PostgreSQL data source.
 2. Select the GUI mode from the dropdown.
-3. Select the operation **Bulk update using primary key**.
-4. Provide the **Table** name and the **Primary key column** name.
-5. Then, in the editor, input the **records** as an array of objects.
-6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+3. Select the operation you want to perform.
+4. Select the **Schema**, **Table** and add the **Primary key column** name.
+5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/gui-v2.png" alt="PG connection"/>
+### List Rows
+Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
 
+#### Optional Parameters
+- **Filter**: Applies conditions to return only rows that match the specified criteria.
+- **Sort**: Orders the returned rows based on one or more selected columns.
+- **Aggregate**: Performs calculations such as count, sum, or average on selected columns.
+- **Group by**: Groups rows that have the same values in specified columns to enable aggregation.
+- **Limit**: Restricts the number of rows returned in the result.
+- **Offset**: Skips a specified number of rows before starting to return results.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/list-rows-gui.png" alt="List Rows GUI Postgresql"/>
+
+### Create Rows
+Inserts a new row into the selected table with the specified column values.
+
+In the editor, ensure to the input the **Columns** in `string` format.
+
+#### Required Parameters
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/create-rows-gui.png" alt="Create Rows GUI Postgresql"/>
+
+### Update Rows
+Modifies existing rows in the table that match the provided filter conditions.
+
+In the editor, ensure to the input the **Columns** in `string` format.
+
+#### Required Parameters
+- **Columns**: Specify the columns and their new values that should be updated for the matching rows.
+
+#### Optional Parameters
+- **Filter**: Defines conditions to select which rows should be updated.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/update-rows-gui.png" alt="Update Rows GUI Postgresql"/>
+
+### Delete Rows
+Removes either all rows from the table or that match the specified filter conditions.
+
+#### Optional Parameters
+- **Filter**: Specifies conditions to determine which rows should be deleted from the table.
+- **Limit**: Restricts the maximum number of rows that can be deleted in the operation.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
+
+### Upsert Rows
+Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
+
+#### Required Parameters
+- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/upsert-rows-gui.png" alt="Upsert Rows GUI Postgresql"/>
+
+### Bulk Insert
+Inserts multiple rows into the table in a single operation using an array of records.
+
+#### Required Parameters
+- **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
 [
   {
-    "customer_id": 1,
-    "country": "India"
+    "id": 101,
+    "activity_date": "2026-03-11",
+    "category_id": 1,
+    "notes": "Project kickoff meeting"
   },
   {
-    "customer_id": 2,
-    "country": "USA"
+    "id": 102,
+    "activity_date": "2026-03-12",
+    "category_id": 2,
+    "notes": "Client requirement discussion"
+  },
+  {
+    "id": 103,
+    "activity_date": "2026-03-13",
+    "category_id": 3,
+    "notes": "Design review session"
   }
 ]
 ```
+
+</details>
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-insert-gui.png" alt="Bulk Insert GUI Postgresql"/>
+
+### Bulk Update using Primary Key
+Updates multiple rows at once by matching each record with its corresponding primary key.
+
+#### Required Parameters
+- **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
+- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+    "id": 101,
+    "category_id": 12,
+    "notes": "Updated: kickoff meeting completed"
+  },
+  {
+    "id": 102,
+    "category_id": 13,
+    "notes": "Updated: client requirements finalized"
+  }
+]
+```
+
+</details>
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-update-gui.png" alt="Bulk Update using GUI Postgresql"/>
+
+### Bulk Upsert using Primary Key
+Inserts new rows or updates existing rows in bulk based on matching primary key values.
+
+#### Required Parameters
+- **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
+- **Records to Update**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+
+This basically means If the row exists then update, if not do insert. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+    "id": 101,
+    "activity_date": "2026-03-11",
+    "category_id": 15,
+    "notes": "Updated activity entry"
+  },
+  {
+    "id": 104,
+    "activity_date": "2026-03-14",
+    "category_id": 18,
+    "notes": "New activity created via upsert"
+  }
+]
+```
+
+</details>
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-upsert-gui.png" alt="Bulk Upsert using GUI Postgresql"/>
 
 :::tip
 
