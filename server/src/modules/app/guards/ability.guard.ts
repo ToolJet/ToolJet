@@ -180,6 +180,7 @@ export abstract class AbilityGuard implements CanActivate {
     const messageMap: Record<string, string> = {
       CREATE_FOLDER_APP: 'You do not have permission to perform this action',
       DELETE_FOLDER_APP: 'You do not have permission to perform this action',
+      DELETE_FOLDER: 'You do not have permission to perform this action',
       // Add more subject-specific messages here
     };
     return messageMap?.[feature] ?? 'You do not have permission to access this resource';
