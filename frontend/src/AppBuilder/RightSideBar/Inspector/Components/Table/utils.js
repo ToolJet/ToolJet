@@ -15,6 +15,7 @@ import {
   TagsTypeIcon,
   RadioTypeIcon,
   RatingTypeIcon,
+  ButtonTypeIcon,
 } from './_assets';
 
 export const getColumnIcon = (columnType) => {
@@ -57,6 +58,8 @@ export const getColumnIcon = (columnType) => {
       return TagsTypeIcon;
     case 'rating':
       return RatingTypeIcon;
+    case 'button':
+      return ButtonTypeIcon;
     default:
       return null;
   }
