@@ -8,6 +8,11 @@ import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
 import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
@@ -381,6 +386,16 @@ const DynamicFormV2 = ({
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -513,6 +528,28 @@ const DynamicFormV2 = ({
           ...elementsProps?.[key],
         };
       }
+      case 'react-component-sql-filters': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+        };
+      }
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode: localStorage.getItem('darkMode') === 'true',
+        };
+      }
       case 'toggle':
         return {
           defaultChecked: currentValue,
@@ -522,19 +559,23 @@ const DynamicFormV2 = ({
       case 'toggle-flip':
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
-          defaultChecked: isEnabled,
           checked: isEnabled,
           label: label,
           helpText: helpText,
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
-            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+            handleOptionChange(
+              key,
+              e.target.checked ? (booleanMode ? true : 'enabled') : booleanMode ? false : 'disabled',
+              true
+            );
           },
         };
       case 'toggle-v2':
         return {
           checked: currentValue,
-          label:label,
+          label: label,
           helpText: helpText,
           disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
@@ -684,7 +725,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
-                    widget !== 'toggle-v2' && 
+                    widget !== 'toggle-v2' &&
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -722,12 +763,12 @@ const DynamicFormV2 = ({
 
   const FlipComponentDropdown = (uiProperties) => {
     const flipComponentDropdowns = Object.values(uiProperties || {})
-    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
-    .sort((a, b) => {
-      const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
+      .filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      .sort((a, b) => {
+        const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
 
     // Build all components with their order for sorting
     const allComponents = [];
@@ -759,14 +800,14 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
                 {flipComponentDropdown.widget !== 'toggle-flip' &&
-                (flipComponentDropdown.label || isHorizontalLayout) && (
-                  <label
-                    className={cx('form-label')}
-                    data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                  >
-                    {flipComponentDropdown.label}
-                  </label>
-                )}
+                  (flipComponentDropdown.label || isHorizontalLayout) && (
+                    <label
+                      className={cx('form-label')}
+                      data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                    >
+                      {flipComponentDropdown.label}
+                    </label>
+                  )}
 
                 <div
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
@@ -835,7 +876,7 @@ const DynamicFormV2 = ({
 
   const isFlipComponentDropdown = (uiProperties) => {
     const checkFlipComponents = uiProperties
-      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      ? Object.values(uiProperties).filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
       : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);

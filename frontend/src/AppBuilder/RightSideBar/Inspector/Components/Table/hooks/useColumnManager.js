@@ -43,6 +43,16 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       };
     }
 
+    // Handle button column initialization — starts with empty buttons array
+    if (property === 'columnType' && value === 'button') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        columnVisibility: true,
+        horizontalAlignment: 'left',
+        buttons: [],
+      };
+    }
+
     return modifiedColumn;
   }, []);
 
@@ -62,6 +72,16 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       if (ref) {
         await deleteEvents({ ref }, 'table_column');
       }
+
+      // Clean up events for all buttons in removed button columns
+      for (const col of removedColumns) {
+        if (col.columnType === 'button' && col.buttons) {
+          const columnKey = col.key || col.name;
+          for (const btn of col.buttons) {
+            await deleteEvents({ ref: `${columnKey}::${btn.id}` }, 'table_column');
+          }
+        }
+      }
     },
     [component, paramUpdated, deleteEvents]
   );
@@ -75,6 +95,9 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       typeProp: 'columnType',
       nonEditableTypes: ['link', 'image'],
       namePrefix: 'new_column',
+      defaultItemProps: {
+        includeKey: true,
+      },
       onPropertyChange: handlePropertyChange,
       onRemove: handleRemove,
     },
