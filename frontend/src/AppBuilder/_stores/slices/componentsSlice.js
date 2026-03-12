@@ -55,6 +55,12 @@ export function clearQueryRerunTimer(queryId) {
     queryRerunTimers.delete(queryId);
   }
 }
+
+/** Clear ALL pending rerun timers (e.g., on page switch). */
+function clearAllQueryRerunTimers() {
+  queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
+  queryRerunTimers.clear();
+}
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -941,6 +947,9 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
+    // Cancel any pending rerun timers from the previous page/context
+    clearAllQueryRerunTimers();
+
     const {
       getCurrentPageComponents,
       addToDependencyGraph,
