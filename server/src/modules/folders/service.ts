@@ -116,9 +116,7 @@ export class FoldersService implements IFoldersService {
       }
     }
 
-    throw new ForbiddenException(
-      'You do not have access to perform this action'
-    );
+    throw new ForbiddenException('You do not have access to perform this action');
   }
 
   async deleteFolder(user, id): Promise<DeleteResult> {
