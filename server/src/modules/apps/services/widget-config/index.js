@@ -75,6 +75,8 @@ import { accordionConfig } from './accordion';
 import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
+import { fileinputConfig } from './fileinput';
+import { navigationConfig } from './navigation';
 
 const widgets = {
   buttonConfig,
@@ -114,6 +116,7 @@ const widgets = {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -154,26 +157,31 @@ const widgets = {
   reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {
   properties: {},
   general: {
-    tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
+    tooltip: {
+      type: "code",
+      displayName: "Tooltip",
+      validation: { schema: { type: "string" } },
+    },
   },
   others: {},
   events: {},
   styles: {},
   validate: true,
   generalStyles: {
-    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
+    boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
   },
   definition: {
     others: {},
     events: [],
     styles: {},
     generalStyles: {
-      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      boxShadow: { value: "0px 0px 0px 0px #00000040" },
     },
   },
 };
@@ -185,17 +193,26 @@ const combineProperties = (widget, universal, isArray = false) => {
     properties: { ...universal.properties, ...widget.properties },
     general: { ...universal.general, ...widget.general },
     others: { ...universal.others, ...widget.others },
-    events: isArray ? [...universal.events, ...widget.events] : { ...universal.events, ...widget.events },
+    events: isArray
+      ? [...universal.events, ...widget.events]
+      : { ...universal.events, ...widget.events },
     styles: { ...universal.styles, ...widget.styles },
     generalStyles: { ...universal.generalStyles, ...widget.generalStyles },
-    exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
+    exposedVariables: {
+      ...universal.exposedVariables,
+      ...widget.exposedVariables,
+    },
   };
 };
 
 export const componentTypes = Object.values(widgets).map((widget) => {
   return {
     ...combineProperties(widget, universalProps),
-    definition: combineProperties(widget.definition, universalProps.definition, true),
+    definition: combineProperties(
+      widget.definition,
+      universalProps.definition,
+      true,
+    ),
   };
 });
 

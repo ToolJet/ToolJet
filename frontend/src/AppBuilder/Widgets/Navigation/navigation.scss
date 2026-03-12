@@ -1,0 +1,433 @@
+.navigation-widget {
+  box-sizing: border-box;
+
+  &.navigation-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  &.navigation-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navigation-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  // Horizontal menu - uses same styling as page navigation
+  .navigation-horizontal-menu {
+    width: 100%;
+
+    .navigation-horizontal-list {
+      padding: 0px !important;
+      margin: 0px !important;
+      height: 32px;
+      width: 100%;
+      gap: 6px;
+    }
+  }
+
+  // Vertical menu - uses pages-wrapper styling
+  .navigation-vertical-menu {
+    width: max-content;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  // Nav item styles - matches .tj-list-item from page navigation
+  .tj-list-item {
+    height: 32px;
+    justify-content: start;
+    padding: 6px 10px;
+    gap: 6px;
+    margin: 0px !important;
+    color: var(--nav-item-label-color);
+    border-radius: var(--nav-item-pill-radius);
+    display: flex;
+    align-items: center;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-family: 'IBM Plex Sans', sans-serif;
+
+    .custom-icon {
+      line-height: 10px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        color: var(--nav-item-icon-color);
+        transition: color 0.15s ease;
+      }
+    }
+
+    .page-name {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+    }
+
+    &.tj-list-item-selected {
+      color: var(--selected-nav-item-label-color);
+      background-color: var(--selected-nav-item-pill-bg);
+
+      .custom-icon svg {
+        color: var(--selected-nav-item-icon-color);
+      }
+    }
+
+    &.tj-list-item-disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  // Page group wrapper - matches page navigation
+  .page-group-wrapper {
+    height: 32px;
+    width: 100%;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background-color: transparent;
+    border-radius: var(--nav-item-pill-radius);
+    color: var(--nav-item-label-color);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-family: 'IBM Plex Sans', sans-serif;
+
+    .nav-chevron {
+      color: var(--nav-item-icon-color);
+      transition: color 0.15s ease;
+    }
+
+    .group-info {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 6px;
+
+      .page-name {
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .custom-icon {
+        line-height: 10px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          color: var(--nav-item-icon-color);
+          transition: color 0.15s ease;
+        }
+      }
+    }
+
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+
+      .nav-chevron {
+        color: var(--nav-item-label-color);
+      }
+    }
+
+    &.page-group-selected {
+      &[data-state='closed'] {
+        color: var(--selected-nav-item-label-color);
+        background-color: var(--selected-nav-item-pill-bg);
+
+        .custom-icon svg {
+          color: var(--selected-nav-item-icon-color);
+        }
+
+        .nav-chevron {
+          color: var(--selected-nav-item-icon-color);
+        }
+      }
+    }
+  }
+
+  // More button - matches .more-pages-btn from page navigation
+  .more-pages-btn {
+    height: 32px;
+    width: 75px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 6px;
+    border: none;
+    background-color: transparent;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--nav-item-label-color);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    border-radius: 6px;
+
+    svg {
+      color: var(--nav-item-icon-color);
+      transition: color 0.15s ease;
+    }
+
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+
+      svg {
+        color: var(--nav-item-label-color);
+      }
+    }
+
+    &[data-state='open'] {
+      background-color: var(--hovered-nav-item-pill-bg);
+
+      svg {
+        color: var(--nav-item-label-color);
+      }
+    }
+  }
+
+  // Page menu popup - matches page navigation dropdown
+  .page-menu-popup {
+    background: var(--background-surface-layer-01, #ffffff);
+    border-radius: 8px !important;
+    border: 1px solid var(--cc-weak-border, #e4e7eb);
+    padding: 8px;
+    box-shadow: 0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1)),
+      0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05));
+
+    .tj-list-item {
+      padding: 8px 12px !important;
+      height: 36px !important;
+      gap: 10px;
+      width: 100%;
+
+      &:hover {
+        background-color: var(--hovered-nav-item-pill-bg);
+      }
+
+      &.tj-list-item-selected {
+        color: var(--selected-nav-item-label-color);
+        background-color: var(--selected-nav-item-pill-bg);
+
+        .custom-icon svg {
+          color: var(--selected-nav-item-icon-color);
+        }
+      }
+    }
+
+    .page-group-wrapper {
+      padding: 8px 12px !important;
+      height: 36px !important;
+
+      .group-info {
+        gap: 10px;
+      }
+
+      .nav-chevron {
+        color: var(--nav-item-icon-color);
+        transition: color 0.15s ease;
+      }
+
+      &:hover {
+        background-color: var(--hovered-nav-item-pill-bg);
+
+        .nav-chevron {
+          color: var(--nav-item-label-color);
+        }
+      }
+
+      &.page-group-selected[data-state='closed'] {
+        color: var(--selected-nav-item-label-color);
+        background-color: var(--selected-nav-item-pill-bg);
+
+        .custom-icon svg {
+          color: var(--selected-nav-item-icon-color);
+        }
+
+        .nav-chevron {
+          color: var(--selected-nav-item-icon-color);
+        }
+      }
+    }
+
+    .accordion-item {
+      width: 100%;
+      margin: 0 !important;
+      border: none;
+
+      .accordion-body {
+        padding: 0 0 0 20px !important;
+        margin-top: 4px;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+
+        &.expanded {
+          display: flex;
+        }
+
+        .accordion-content {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+      }
+    }
+
+    &.dark-theme {
+      background: var(--background-surface-layer-01);
+      border-color: var(--cc-weak-border);
+    }
+  }
+
+  // Accordion item for vertical groups
+  .accordion-item {
+    width: 100%;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none;
+
+    .accordion-body {
+      padding: 0 0 0 32px !important;
+      border-bottom: 0px !important;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+
+      &.expanded {
+        display: flex;
+      }
+
+      &.collapsed {
+        display: none;
+      }
+
+      .accordion-content {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .tj-list-item {
+        margin-top: 0 !important;
+      }
+    }
+  }
+
+  // Scrollbar behavior for vertical mode — match editor canvas pattern:
+  // hidden by default, thin styled scrollbar appears on hover
+  &.navigation-vertical {
+    scrollbar-width: none; // Firefox: hide by default
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      background: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 4px;
+    }
+
+    &:hover {
+      scrollbar-width: thin; // Firefox: show on hover
+      scrollbar-color: var(--interactive-hover) transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--interactive-hover);
+      }
+    }
+  }
+
+  // Vertical mode adjustments
+  &.navigation-vertical {
+    .tj-list-item {
+      height: 36px;
+      padding: 8px 12px;
+      gap: 10px;
+      width: auto;
+    }
+
+    .page-group-wrapper {
+      height: 36px;
+      padding: 8px 12px;
+      width: auto;
+      justify-content: start;
+      gap: 4px;
+
+      .group-info {
+        width: auto;
+        gap: 10px;
+      }
+    }
+
+    .accordion-item {
+      width: auto;
+    }
+  }
+}
+
+// Elevate the widget wrapper's z-index when a Navigation dropdown is open.
+// Each widget wrapper uses `transform` which creates a stacking context,
+// so the dropdown can't appear above sibling widgets without this.
+// Consistent with `.target.hovered { z-index: 2 }` in Grid.css.
+.target:has(.navigation-widget [data-state='open']),
+.nested-target:has(.navigation-widget [data-state='open']) {
+  z-index: 3;
+}
+
+// Dark theme adjustments
+.navigation-widget.dark-theme {
+  .tj-list-item,
+  .page-group-wrapper {
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+    }
+  }
+
+  .more-pages-btn {
+    &:hover,
+    &[data-state='open'] {
+      background-color: var(--hovered-nav-item-pill-bg);
+    }
+  }
+}

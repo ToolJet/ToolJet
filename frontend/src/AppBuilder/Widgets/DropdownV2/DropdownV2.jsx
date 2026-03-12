@@ -15,6 +15,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
@@ -96,6 +97,8 @@ export const DropdownV2 = ({
     accentColor,
     padding,
     widthType,
+    menuWidthMode,
+    menuCustomWidth,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -320,6 +323,37 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
+
+  const menuContentWidth = useMemo(() => {
+    if (menuWidthMode !== 'matchContent') return null;
+    if (!Array.isArray(selectOptions) || selectOptions.length === 0) return null;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+
+      const baseFont = window?.getComputedStyle?.(ref?.current || document.body)?.font || '14px Inter, sans-serif';
+      context.font = baseFont;
+
+      const maxLabelWidth = selectOptions.reduce((acc, option) => {
+        const labelText = `${option?.label ?? ''}`;
+        return Math.max(acc, context.measureText(labelText).width || 0);
+      }, 0);
+
+      const paddingAllowance = 44; // matches option horizontal padding/spacing
+      const measurementBuffer = 24; // buffer so canvas measureText vs actual render don't cause ellipsis
+      const computed = Math.ceil(maxLabelWidth + paddingAllowance + measurementBuffer);
+      const capped = Math.min(computed, 520);
+      return Number.isFinite(capped) ? `${capped}px` : null;
+    } catch (_e) {
+      return null;
+    }
+  }, [menuWidthMode, selectOptions, ref]);
+
+  const menuWidthStyle = useMenuWidth(menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth);
+
   const customStyles = {
     container: (base) => ({
       ...base,
@@ -427,6 +461,7 @@ export const DropdownV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
+      ...menuWidthStyle,
       padding: '0 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
@@ -439,9 +474,14 @@ export const DropdownV2 = ({
     menu: (provided) => ({
       ...provided,
       backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
+      ...menuWidthStyle,
       borderRadius: '8px',
       boxShadow: 'unset',
       marginTop: '5px',
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
@@ -449,7 +489,6 @@ export const DropdownV2 = ({
     <>
       <div
         ref={dropdownRef}
-        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) ||
@@ -473,6 +512,7 @@ export const DropdownV2 = ({
         }}
       >
         <Label
+          dataCy={dataCy}
           label={label}
           width={labelWidth}
           labelRef={labelRef}
@@ -487,6 +527,7 @@ export const DropdownV2 = ({
           id={`${id}-label`}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="px-0 h-100 dropdownV2-widget"
           ref={ref}
           onClick={handleClickInsideSelect}
@@ -530,6 +571,7 @@ export const DropdownV2 = ({
             inputValue={searchInputValue}
             placeholder={placeholder}
             menuPortalTarget={document.body}
+            menuWidthStyle={menuWidthStyle}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,

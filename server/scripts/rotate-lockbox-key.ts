@@ -8,6 +8,8 @@ import { OrgEnvironmentConstantValue } from '../src/entities/org_environment_con
 import { SSOConfigs } from '../src/entities/sso_config.entity';
 import { OrganizationTjdbConfigurations } from '../src/entities/organization_tjdb_configurations.entity';
 import { UserDetails } from '../src/entities/user_details.entity';
+import { InstanceSettings } from '../src/entities/instance_settings.entity';
+import { INSTANCE_SETTINGS_ENCRYPTION_KEY, INSTANCE_CONFIGS_DATA_TYPES } from '../src/modules/instance-settings/constants';
 import { getEnvVars } from './database-config-utils';
 import { dbTransactionWrap } from '../src/helpers/database.helper';
 
@@ -43,7 +45,7 @@ Object.keys(ENV_VARS).forEach((key) => {
  */
 
 class RotationProgress {
-  private totalTables = 5;
+  private totalTables = 6;
   private completedTables = 0;
   private currentTable = '';
   private currentTableRows = 0;
@@ -173,6 +175,7 @@ async function bootstrap() {
       await rotateSSOConfigs(entityManager, dualKeyService, progress);
       await rotateTJDBConfigs(entityManager, dualKeyService, progress);
       await rotateUserDetails(entityManager, dualKeyService, progress);
+      await rotateInstanceSettings(entityManager, dualKeyService, progress);
 
       progress.complete();
 
@@ -474,6 +477,40 @@ async function rotateUserDetails(
   progress.completeTable();
 }
 
+// Table 6: instance_settings (password type rows, e.g. SMTP_PASSWORD)
+async function rotateInstanceSettings(
+  entityManager: EntityManager,
+  dualKeyService: DualKeyEncryptionService,
+  progress: RotationProgress
+): Promise<void> {
+  const settings = await entityManager.find(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  progress.startTable('instance_settings', settings.length);
+
+  for (const setting of settings) {
+    if (!setting.value) {
+      progress.incrementRow();
+      continue; // Skip nulls/empty
+    }
+
+    try {
+      // table = INSTANCE_SETTINGS_ENCRYPTION_KEY ('instance_settings'), column = the row's key (e.g. 'SMTP_PASSWORD')
+      const plainValue = await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, setting.value);
+      const newCiphertext = await dualKeyService.encryptWithNewKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, plainValue);
+
+      setting.value = newCiphertext;
+      await entityManager.save(setting);
+
+      progress.incrementRow();
+    } catch (error) {
+      throw new Error(`Failed to rotate instance setting ${setting.key}: ${error.message}`);
+    }
+  }
+
+  progress.completeTable();
+}
+
 async function verifyRotation(entityManager: EntityManager, newKey: string): Promise<void> {
   const testService = new DualKeyEncryptionService(newKey, newKey);
 
@@ -520,6 +557,15 @@ async function verifyRotation(entityManager: EntityManager, newKey: string): Pro
   if (userDetail?.userMetadata) {
     await testService.decryptWithOldKey('user_details', 'userMetadata', userDetail.userMetadata);
     console.log('  ✓ User details table verified');
+  }
+
+  // Test instance settings
+  const instanceSetting = await entityManager.findOne(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  if (instanceSetting?.value) {
+    await testService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
+    console.log('  ✓ Instance settings table verified');
   }
 }
 
@@ -580,6 +626,16 @@ async function testDecryptionWithOldKey(
   if (userDetail?.userMetadata) {
     await dualKeyService.decryptWithOldKey('user_details', 'userMetadata', userDetail.userMetadata);
     console.log('  ✓ User details table - old key works');
+    testedCount++;
+  }
+
+  // Test instance settings
+  const instanceSetting = await entityManager.findOne(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  if (instanceSetting?.value) {
+    await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
+    console.log('  ✓ Instance settings table - old key works');
     testedCount++;
   }
 

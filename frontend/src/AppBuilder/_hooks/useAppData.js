@@ -104,7 +104,7 @@ const useAppData = (
   const setEnvironmentLoadingState = useStore((state) => state.setEnvironmentLoadingState);
   const updateReleasedVersionId = useStore((state) => state.updateReleasedVersionId);
   const resetUndoRedoStack = useStore((state) => state.resetUndoRedoStack);
-  const checkAndSetTrueBuildSuggestionsFlag = useStore((state) => state.checkAndSetTrueBuildSuggestionsFlag);
+  const initSuggestions = useStore((state) => state.initSuggestions);
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
@@ -144,8 +144,8 @@ const useAppData = (
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   // Used to trigger app refresh flow after restoring app history
-  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
-  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
+  const restoreTimestamp = useStore((state) => state.restoreTimestamp);
+  const previousRestoreTimestamp = usePrevious(restoreTimestamp);
 
   const location = useRouter().location;
 
@@ -189,10 +189,11 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
-        checkAndSetTrueBuildSuggestionsFlag();
+        // Rebuild all suggestion segments for the new page's components/queries/variables
+        mode === 'edit' && initSuggestions(moduleId);
       }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode]);
+  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -376,6 +377,9 @@ const useAppData = (
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
           setIsQueryPaneExpanded(false);
+          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
+          const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
+          window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
         if (initialLoadRef.current) {
@@ -546,7 +550,6 @@ const useAppData = (
         console.log('here--- Time taken to load app data and set up the editor: ', performance.now() - p2);
         initialLoadRef.current = false;
 
-        !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
         };
@@ -557,19 +560,20 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
       const p2 = performance.now();
       flushExposedValueBatch();
       console.log('here--- Time taken to flush the batched exposed values: ', performance.now() - p2);
+      mode === 'edit' && initSuggestions(moduleId);
       runOnLoadQueries(moduleId).then(() => {
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady, moduleId]);
+  }, [isComponentLayoutReady, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
@@ -615,7 +619,7 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
+    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
     if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
@@ -728,7 +732,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

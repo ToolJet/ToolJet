@@ -35,6 +35,7 @@ export const DatepickerInput = forwardRef(
     showClearBtn,
     onClear,
     clearButtonRightOffset = 0,
+    dataCy,
   }) => {
     // Check if value is a placeholder text (not an actual date/time value)
     const isPlaceholderValue =
@@ -97,9 +98,10 @@ export const DatepickerInput = forwardRef(
             }
           }}
           // disabled={disable || loading}
+          data-cy={`${String(dataCy).toLowerCase()}-input-field`}
         />
         <span className="cell-icon-display">
-          <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
+          <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" data-cy={`${String(dataCy).toLowerCase()}-icon`} />
         </span>
         <span>
           {!isValid && showValidationError && visibility && (
@@ -137,6 +139,7 @@ export const DatepickerInput = forwardRef(
               transform: clearButtonTransform,
               zIndex: 3,
             }}
+            data-cy={`${dataCy}-clear-button`}
           >
             <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
           </button>

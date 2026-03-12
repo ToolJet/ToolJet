@@ -32,6 +32,7 @@ import {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -75,6 +76,7 @@ import {
   jsonEditorConfig,
   keyValuePairConfig,
   progressbarConfig,
+  navigationConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -119,6 +121,7 @@ export const widgets = [
   checkboxConfig,
   toggleSwitchV2Config,
   radiobuttonV2Config,
+  fileinputConfig,
   treeSelectConfig,
 
   //Date and time inputs
@@ -128,6 +131,7 @@ export const widgets = [
   daterangepickerConfig,
 
   //Navigation
+  navigationConfig,
   linkConfig,
   stepsConfig,
   paginationConfig,
