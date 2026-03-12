@@ -303,6 +303,7 @@ import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
 import PlayLucide from './PlayLucide.jsx';
+import Slack from './Slack.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -915,6 +916,8 @@ const Icon = (props) => {
       return <BackWithoutArrow {...props} />;
     case 'play-lucide':
       return <PlayLucide {...props} />;
+    case 'slack':
+      return <Slack {...props} />;
     default:
       return <Apps {...props} />;
   }

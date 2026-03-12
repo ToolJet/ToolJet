@@ -2,9 +2,7 @@ name: Render Preview Deploy (DockerHub-based)
 
 on:
   pull_request:
-    types: [closed, synchronize]
-  pull_request_target:
-    types: [labeled, unlabeled]
+    types: [labeled, unlabeled, closed, synchronize]
 
 env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -23,9 +21,9 @@ jobs:
 
   build-and-deploy-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ce-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'create-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -342,9 +340,9 @@ jobs:
 
   suspend-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ce-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -387,9 +385,9 @@ jobs:
 
   resume-ce:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ce-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -430,8 +428,9 @@ jobs:
 
   destroy-ce:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app' &&
-       contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)) ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ce-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -469,7 +468,7 @@ jobs:
           script: |
             const labelsToRemove = [
               'destroy-ce-review-app',
-              'suspend-ce-review-app', 
+              'suspend-ce-review-app',
               'active-ce-review-app'
             ];
             
@@ -491,9 +490,9 @@ jobs:
 
   build-and-deploy-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ee-lts-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'create-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -824,9 +823,9 @@ jobs:
 
   suspend-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ee-lts-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -869,9 +868,9 @@ jobs:
 
   resume-ee-lts:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ee-lts-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ee-lts-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -912,8 +911,9 @@ jobs:
 
   destroy-ee-lts:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-lts-review-app' &&
-       contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)) ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-lts-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -973,9 +973,9 @@ jobs:
 
   build-and-deploy-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ee-pre-release-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'create-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -1306,9 +1306,9 @@ jobs:
 
   suspend-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ee-pre-release-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -1351,9 +1351,9 @@ jobs:
 
   resume-ee-pre-release:
     if: |
+      github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ee-pre-release-review-app' &&
-      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -1394,8 +1394,9 @@ jobs:
 
   destroy-ee-pre-release:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-pre-release-review-app' &&
-       contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.sender.author_association)) ||
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-pre-release-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 

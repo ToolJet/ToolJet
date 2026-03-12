@@ -49,6 +49,14 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.UPDATE_USER_METADATA]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_USER_METADATA]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.PULL_NEW_APP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
@@ -78,6 +86,22 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.CREATE_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.UPDATE_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_GROUP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },

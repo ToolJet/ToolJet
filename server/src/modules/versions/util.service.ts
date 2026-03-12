@@ -14,7 +14,6 @@ import { VersionCreateDto } from './dto';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
-import { ACTION_TYPE } from '@modules/app-history/constants';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
@@ -221,26 +220,6 @@ export class VersionUtilService implements IVersionUtilService {
 
       return decamelizeKeys(appVersion);
     });
-
-    // Queue initial history capture for the created version
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(
-        result.id,
-        ACTION_TYPE.INITIAL_SNAPSHOT,
-        {
-          operation: 'version_create',
-          versionName: versionCreateDto.versionName,
-          versionFromId: versionCreateDto.versionFromId,
-          appId: app.id,
-          appName: app.name,
-        },
-        false,
-        user.id
-      );
-    } catch (error) {
-      console.error('Failed to queue initial history capture for version creation:', error);
-    }
-
     return result;
   }
 

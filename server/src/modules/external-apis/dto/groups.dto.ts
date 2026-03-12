@@ -12,6 +12,8 @@ import {
   ValidationArguments,
   Matches,
   MaxLength,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -228,4 +230,48 @@ export class CreateGroupExternalDto {
   @Type(() => GranularPermissionDto)
   @IsOptional()
   granularPermissions?: GranularPermissionDto[];
+}
+
+// Request DTO for partially updating a group
+export class UpdateGroupExternalDto {
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => value?.trim())
+  @MaxLength(50, {
+    message: 'Group name cannot exceed 50 characters',
+  })
+  @Matches(/^[a-zA-Z0-9_ -]+$/, {
+    message: 'Group name can only contain letters, numbers, underscores, spaces and hyphens',
+  })
+  name?: string;
+
+  @ValidateNested()
+  @Type(() => WorkspacePermissionsDto)
+  @IsOptional()
+  permissions?: WorkspacePermissionsDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GranularPermissionDto)
+  @IsOptional()
+  granularPermissions?: GranularPermissionDto[];
+}
+
+// Query parameters DTO for listing groups
+export class ListGroupsQueryDto {
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  per_page?: number = 20;
 }

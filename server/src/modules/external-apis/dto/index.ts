@@ -290,6 +290,23 @@ export class ValidatePATSessionDto {
   accessToken: string;
 }
 
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
 // Export groups DTOs
 export {
   CreateGroupExternalDto,
