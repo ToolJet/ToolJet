@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
+import { TableColumnContext } from './TableColumnContext';
+import { Button } from '@/components/ui/Button/Button';
+import { useButtonManager } from '../hooks/useButtonManager';
 
 export const ColumnPopoverContent = ({
   column,
@@ -15,8 +18,11 @@ export const ColumnPopoverContent = ({
   props,
   columnEventChanged,
   handleEventManagerPopoverCallback,
+  onDuplicateColumn,
+  onDeleteColumn,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
+  const [selectedButtonId, setSelectedButtonId] = useState(null);
   const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
   const popoverRef = useRef(null);
 
@@ -67,10 +73,7 @@ export const ColumnPopoverContent = ({
       }
     };
 
-    // Check position after a short delay to ensure popover is rendered
     const timeoutId = setTimeout(checkPopoverPosition, 100);
-
-    // Also check on window resize
     window.addEventListener('resize', checkPopoverPosition);
 
     return () => {
@@ -79,9 +82,78 @@ export const ColumnPopoverContent = ({
     };
   }, [index]);
 
+  const isButtonColumn = column.columnType === 'button';
+  const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
+
+  const buttonManager = useButtonManager({ column, index, onColumnItemChange });
+  const { removeButton, duplicateButton } = buttonManager;
+
+  const handleDelete = () => {
+    if (isButtonDetailView) {
+      removeButton(selectedButtonId);
+      setSelectedButtonId(null);
+    } else {
+      onDeleteColumn?.();
+    }
+  };
+
+  const handleDuplicate = () => {
+    if (isButtonDetailView) {
+      duplicateButton(selectedButtonId);
+    } else {
+      onDuplicateColumn?.();
+    }
+  };
+
+  {
+    /* TableColumnContext provides the table's component ID to all nested CodeHinters,
+        enabling rowData/cellValue autocomplete hints in column editors (properties, styles, etc.).
+        This avoids threading a tableColumnComponentId prop through every intermediate component. */
+  }
   return (
-    <>
-      <Popover.Header>
+    <TableColumnContext.Provider value={component?.id}>
+      <Popover.Header style={{ padding: '8px 16px 0 16px' }}>
+        <div className="d-flex align-items-center justify-content-between">
+          <div className="d-flex custom-gap-6 flex-row items-center justify-start">
+            {isButtonDetailView && (
+              <Button
+                variant="ghost"
+                size="medium"
+                iconOnly={true}
+                isLucid={true}
+                trailingIcon="arrow-left"
+                onClick={() => {
+                  setSelectedButtonId(null);
+                  setActiveTab('propertiesTab');
+                }}
+              />
+            )}
+            {!isButtonDetailView && <span className="tj-text tj-header-h8 d-flex align-items-center">Edit Column</span>}
+            {isButtonDetailView && <span className="tj-text tj-header-h8 d-flex align-items-center">Edit Button</span>}
+          </div>
+
+          <div className="d-flex flex-row">
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly={true}
+              isLucid={true}
+              trailingIcon="copy"
+              onClick={handleDuplicate}
+              title={isButtonDetailView ? 'Duplicate button' : 'Duplicate column'}
+            />
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly={true}
+              isLucid={true}
+              trailingIcon="trash"
+              onClick={handleDelete}
+              title={isButtonDetailView ? 'Delete button' : 'Delete column'}
+            />
+          </div>
+        </div>
+
         <div className="d-flex custom-gap-4 align-self-stretch tj-text tj-text-xsm font-weight-500 text-secondary cursor-pointer">
           <div
             className={`${activeTab === 'propertiesTab' && 'active-column-tab'} column-header-tab`}
@@ -119,6 +191,9 @@ export const ColumnPopoverContent = ({
             columnEventChanged={columnEventChanged}
             timeZoneOptions={timeZoneOptions}
             handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+            selectedButtonId={selectedButtonId}
+            setSelectedButtonId={setSelectedButtonId}
+            buttonManager={buttonManager}
           />
         ) : (
           <StylesTabElements
@@ -129,9 +204,11 @@ export const ColumnPopoverContent = ({
             onColumnItemChange={onColumnItemChange}
             getPopoverFieldSource={getPopoverFieldSource}
             component={component}
+            selectedButtonId={selectedButtonId}
+            buttonManager={buttonManager}
           />
         )}
       </Popover.Body>
-    </>
+    </TableColumnContext.Provider>
   );
 };
