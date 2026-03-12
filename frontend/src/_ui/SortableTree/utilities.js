@@ -11,7 +11,16 @@ function getDragDepth(offset, indentationWidth) {
   return Math.round(offset / indentationWidth);
 }
 
-export function getProjection(items, activeId, overId, dragOffset, indentationWidth, intersections, propertyNames = DEFAULT_PROPERTY_NAMES) {
+export function getProjection(
+  items,
+  activeId,
+  overId,
+  dragOffset,
+  indentationWidth,
+  intersections,
+  propertyNames = DEFAULT_PROPERTY_NAMES,
+  maxDepthLimit = 1
+) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
 
   try {
@@ -19,14 +28,16 @@ export function getProjection(items, activeId, overId, dragOffset, indentationWi
     const activeItemIndex = items.findIndex(({ id }) => id === activeId);
     const activeItem = items[activeItemIndex];
     const newItems = arrayMove(items, activeItemIndex, overItemIndex);
+    const previousItem = newItems[overItemIndex - 1];
     const nextItem = newItems[overItemIndex + 1];
     const dragDepth = getDragDepth(dragOffset, indentationWidth);
-    const projectedDepth = Math.min(activeItem.depth + dragDepth, 1);
-    const maxDepth = 1;
+    const projectedDepth = activeItem.depth + dragDepth;
+    // Max depth: one level deeper than the item above, but capped at limit
+    const maxDepth = Math.min(previousItem ? previousItem.depth + 1 : 0, maxDepthLimit);
     const minDepth = getMinDepth({ nextItem });
 
-    // Groups always stay at depth 0
-    if (activeItem[isGroupKey]) {
+    // In single-level mode (Navigation), groups always stay at depth 0
+    if (maxDepthLimit <= 1 && activeItem[isGroupKey]) {
       return { depth: 0, maxDepth, minDepth, [parentIdKey]: null };
     }
 
@@ -37,27 +48,37 @@ export function getProjection(items, activeId, overId, dragOffset, indentationWi
       depth = minDepth;
     }
 
-    if (depth < 1 && !activeItem[isGroupKey]) {
-      const highestIntersection = intersections?.[0];
-      const highestIntersectionId = highestIntersection?.[0];
-      const highestIntersectionItem = items.find(({ id }) => id === highestIntersectionId);
-      if (highestIntersectionItem?.[parentIdKey]) {
-        return { depth: 1, maxDepth: 1, minDepth: 1, [parentIdKey]: highestIntersectionItem[parentIdKey] };
+    // Ensure depth is never negative
+    depth = Math.max(depth, 0);
+
+    if (maxDepthLimit <= 1) {
+      // Legacy single-level logic for Navigation
+      if (depth < 1 && !activeItem[isGroupKey]) {
+        const highestIntersection = intersections?.[0];
+        const highestIntersectionId = highestIntersection?.[0];
+        const highestIntersectionItem = items.find(({ id }) => id === highestIntersectionId);
+        if (highestIntersectionItem?.[parentIdKey]) {
+          return { depth: 1, maxDepth: 1, minDepth: 1, [parentIdKey]: highestIntersectionItem[parentIdKey] };
+        }
       }
+
+      const parentId = getParentId(intersections, depth, items, isGroupKey, parentIdKey, maxDepthLimit);
+      const parentItem = items.find(({ id }) => id === parentId);
+      if (!parentItem?.[isGroupKey]) return { depth: 0, maxDepth, minDepth, [parentIdKey]: null };
+
+      return { depth, maxDepth, minDepth, [parentIdKey]: parentId };
     }
 
-    const parentId = getParentId(intersections, depth, items, isGroupKey, parentIdKey);
-    const parentItem = items.find(({ id }) => id === parentId);
-    if (!parentItem?.[isGroupKey]) return { depth: 0, maxDepth, minDepth, [parentIdKey]: null };
-
+    // Multi-level mode: find parentId by walking backwards from the drop position
+    const parentId = getParentIdForMultiLevel(newItems, overItemIndex, depth, parentIdKey);
     return { depth, maxDepth, minDepth, [parentIdKey]: parentId };
   } catch (error) {
     console.log('error', error);
-    return { depth: 0, maxDepth: 1, minDepth: 0, [parentIdKey]: null };
+    return { depth: 0, maxDepth: maxDepthLimit, minDepth: 0, [parentIdKey]: null };
   }
 }
 
-function getParentId(intersections, depth, items, isGroupKey, parentIdKey) {
+function getParentId(intersections, depth, items, isGroupKey, parentIdKey, _maxDepthLimit = 1) {
   if (depth < 1) return null;
   const highestIntersection = intersections?.[0];
   const highestIntersectionId = highestIntersection?.[0];
@@ -73,6 +94,26 @@ function getParentId(intersections, depth, items, isGroupKey, parentIdKey) {
   return null;
 }
 
+// For multi-level nesting: walk backwards from the drop position to find
+// the item at (depth - 1) which becomes the parent
+function getParentIdForMultiLevel(flatItems, overIndex, depth, _parentIdKey) {
+  if (depth <= 0) return null;
+
+  // Walk backwards from the drop position to find the nearest item at depth - 1
+  for (let i = overIndex - 1; i >= 0; i--) {
+    const item = flatItems[i];
+    if (item.depth === depth - 1) {
+      return item.id;
+    }
+    // If we encounter an item at a shallower depth, stop — there's no valid parent
+    if (item.depth < depth - 1) {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 function getMinDepth({ nextItem }) {
   if (nextItem) {
     return nextItem.depth;
@@ -81,7 +122,7 @@ function getMinDepth({ nextItem }) {
 }
 
 function flatten(items, parentIdValue = null, depth = 0, seenIds = new Set(), propertyNames = DEFAULT_PROPERTY_NAMES) {
-  const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
+  const { parentId: parentIdKey } = propertyNames;
 
   return items.reduce((acc, item) => {
     if (seenIds.has(item.id)) {
@@ -90,9 +131,7 @@ function flatten(items, parentIdValue = null, depth = 0, seenIds = new Set(), pr
     seenIds.add(item.id);
 
     const flatItem = { ...item, [parentIdKey]: parentIdValue, depth };
-    const children = item[isGroupKey] && item.children
-      ? flatten(item.children, item.id, depth + 1, seenIds, propertyNames)
-      : [];
+    const children = item.children ? flatten(item.children, item.id, depth + 1, seenIds, propertyNames) : [];
     return [...acc, flatItem, ...children];
   }, []);
 }
@@ -135,7 +174,7 @@ export function buildTree(flattenedItems, propertyNames = DEFAULT_PROPERTY_NAMES
 
   const cleanupChildren = (items) => {
     return items.map((item) => {
-      if (item[isGroupKey]) {
+      if (item[isGroupKey] || (item.children && item.children.length > 0)) {
         item.children = cleanupChildren(item.children || []);
       } else {
         delete item.children;
