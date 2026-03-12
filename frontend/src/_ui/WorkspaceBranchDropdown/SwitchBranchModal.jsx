@@ -53,6 +53,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
       if (onBranchSwitch) {
         onBranchSwitch(branch);
       }
+      window.location.reload();
     } catch (error) {
       console.error('Error switching branch:', error);
       const errorMessage = error?.error || error?.message || 'Failed to switch branch';
