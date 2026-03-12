@@ -248,7 +248,15 @@ export default class PostgresqlQueryService implements QueryService {
     }
     if (methodName === 'listTables') {
       const schema = args?.values?.schema || 'public';
-      return await this._fetchTables(sourceOptions, schema);
+      return await this._fetchTables(
+        sourceOptions,
+        schema,
+        '',
+        '',
+        args?.search || '',
+        args?.page,
+        args?.limit,
+      );
     }
     if (methodName === 'listColumns') {
       const schema = args?.values?.schema || 'public';
@@ -367,10 +375,8 @@ export default class PostgresqlQueryService implements QueryService {
         `;
         const countParams: any[] = allSchemas ? [searchPattern] : [schema, searchPattern];
 
-        const [{ rows }, { rows: countRows }] = await Promise.all([
-          knexInstance.raw(query, params),
-          knexInstance.raw(countQuery, countParams),
-        ]);
+        const { rows } = await knexInstance.raw(query, params);
+        const { rows: countRows } = await knexInstance.raw(countQuery, countParams);
 
         const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
 
@@ -434,8 +440,11 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     schema = 'public',
     dataSourceId = '',
-    dataSourceUpdatedAt = ''
-  ): Promise<Array<{ value: string; label: string }>> {
+    dataSourceUpdatedAt = '',
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
     try {
       const knexInstance = await this.getConnection(
         sourceOptions,
@@ -444,14 +453,34 @@ export default class PostgresqlQueryService implements QueryService {
         dataSourceId,
         dataSourceUpdatedAt
       );
-      const { rows } = await knexInstance.raw(
-        `SELECT table_name
-         FROM information_schema.tables
-         WHERE table_schema = ?
-           AND table_type = 'BASE TABLE'
-         ORDER BY table_name;`,
-        [schema]
-      );
+      const searchPattern = `%${search}%`;
+      const params: any[] = [schema, searchPattern];
+
+      let query = `SELECT table_name FROM information_schema.tables
+                  WHERE table_schema = ? AND table_type = 'BASE TABLE'
+                  AND table_name ILIKE ?
+                  ORDER BY table_name`;
+
+      if (limit) {
+        const offset = ((page || 1) - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const countQuery = `SELECT COUNT(*) AS total FROM information_schema.tables
+                            WHERE table_schema = ? AND table_type = 'BASE TABLE'
+                            AND table_name ILIKE ?`;
+
+        const { rows } = await knexInstance.raw(query, params);
+        const { rows: countRows } = await knexInstance.raw(countQuery, [schema, searchPattern]);
+        const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
+
+        return {
+          items: rows.map((r: any) => ({ value: r.table_name, label: r.table_name })),
+          totalCount,
+        };
+      }
+
+      const { rows } = await knexInstance.raw(query + ';', params);
       return rows.map((r: any) => ({ value: r.table_name, label: r.table_name }));
     } catch (err) {
       const errorMessage = err.message || 'An unknown error occurred';
