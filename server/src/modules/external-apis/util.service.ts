@@ -26,11 +26,7 @@ export class ExternalApiUtilService implements IExternalApiUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async getUserMetadata(
-    workspaceId: string,
-    userId: string,
-    manager?: EntityManager
-  ): Promise<any> {
+  async getUserMetadata(workspaceId: string, userId: string, manager?: EntityManager): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
