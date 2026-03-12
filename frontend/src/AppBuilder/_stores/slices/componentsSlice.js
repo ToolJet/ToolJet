@@ -2216,7 +2216,9 @@ export const createComponentsSlice = (set, get) => ({
           if (nodeData?.queryId) {
             const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
             if (query?.options?.runOnDependencyChange) {
-              scheduleQueryRerun(nodeData.queryId, nodeData.queryName || query.name, query.kind, moduleId, get);
+              // Use live name from store (queryIdNameMapping is updated on rename)
+              const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
+              scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
             }
           }
           return;
