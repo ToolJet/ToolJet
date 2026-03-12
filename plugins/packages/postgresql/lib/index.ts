@@ -114,61 +114,6 @@ export default class PostgresqlQueryService implements QueryService {
     return PostgresqlQueryService._instance;
   }
 
-  async invokeMethod(
-    methodName: string,
-    context: { user?: any; app?: any },
-    sourceOptions: SourceOptions,
-    args?: any
-  ): Promise<any> {
-    if (methodName === 'getTables') {
-      const dataSourceId = args?.dataSourceId || '';
-      const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
-      const isPaginated = !!args?.limit;
-      const result = await this.listTables(
-        sourceOptions,
-        dataSourceId,
-        dataSourceUpdatedAt,
-        {
-          search: args?.search,
-          page:   args?.page,
-          limit:  args?.limit,
-        }
-      );
-
-      const payload = (result as any)?.data ?? [];
-
-      if (isPaginated) {
-        const rows       = (payload as any)?.rows ?? [];
-        const totalCount = (payload as any)?.totalCount ?? 0;
-        const formattedTables = rows.map((row: any) => ({
-          label: String(row.table_name),
-          value: String(row.table_name),
-        }));
-        return {
-          items:      formattedTables,
-          totalCount: totalCount,
-        };
-      }
-
-      const rows = Array.isArray(payload) ? payload : [];
-      const formattedTables = rows.map((row: any) => ({
-        label: String(row.table_name),
-        value: String(row.table_name),
-      }));
-
-      return {
-        status: 'ok',
-        data:   formattedTables,
-      };
-    }
-
-    throw new QueryError(
-      'Method not found',
-      `Method ${methodName} is not supported for PostgreSQL plugin`,
-      { availableMethods: ['getTables'] }
-    );
-  }
-
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
