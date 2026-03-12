@@ -499,7 +499,11 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+              : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -677,7 +681,7 @@ const DynamicForm = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
@@ -762,9 +766,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(
+                          data-cy={`${generateCypressDataCy(
                             computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
-                          )}`}
+                          )}-button`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
