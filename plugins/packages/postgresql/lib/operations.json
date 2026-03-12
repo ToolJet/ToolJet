@@ -329,6 +329,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 25,
           "description": "Select the table to delete from",
           "placeholder": "Select table"
         },

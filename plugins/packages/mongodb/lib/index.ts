@@ -296,15 +296,16 @@ export default class MongodbService implements QueryService {
         collections = allCollections.slice(offset, offset + limit);
       }
 
+      const totalCount = allCollections.length;
+
       const result = collections.map((col) => ({
         collection_name: col.name,
         type: col.type || 'collection',
       }));
 
-
       return {
         status: 'ok',
-        data: result
+        data: { rows: result, totalCount: limit > 0 ? totalCount : result.length },
       } as any;
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
@@ -322,24 +323,33 @@ export default class MongodbService implements QueryService {
     if (methodName === 'listCollections') {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+      const isPaginated = !!args?.limit;
 
       const response = await this.listTables(
         sourceOptions,
         dataSourceId,
-        dataSourceUpdatedAt
+        dataSourceUpdatedAt,
+        {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        }
       );
 
-      const collections = (response?.data ?? []) as any[];
+      const payload = (response?.data ?? {}) as any;
+      const rows = payload?.rows ?? [];
+      const totalCount = payload?.totalCount ?? 0;
 
-      const formatted = collections.map((col: any) => ({
+      const formatted = rows.map((col: any) => ({
         label: col.collection_name,
         value: col.collection_name,
       }));
 
-      return {
-        status: 'ok',
-        data: formatted,
-      };
+      if (isPaginated) {
+        return { items: formatted, totalCount };
+      }
+
+      return { status: 'ok', data: formatted };
     }
 
     throw new QueryError(
