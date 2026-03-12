@@ -24,6 +24,10 @@ interface Features {
   [FEATURE_KEY.GENERATE_PAT]: FeatureConfig;
   [FEATURE_KEY.VALIDATE_PAT_SESSION]: FeatureConfig;
   [FEATURE_KEY.CREATE_GROUP]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_GROUP]: FeatureConfig;
+  [FEATURE_KEY.LIST_GROUPS]: FeatureConfig;
+  [FEATURE_KEY.GET_GROUP]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GROUP]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

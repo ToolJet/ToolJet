@@ -20,6 +20,10 @@ export enum FEATURE_KEY {
   GENERATE_PAT = 'GENERATE_PAT',
   VALIDATE_PAT_SESSION = 'VALIDATE_PAT_SESSION',
   CREATE_GROUP = 'CREATE_GROUP',
+  UPDATE_GROUP = 'UPDATE_GROUP',
+  LIST_GROUPS = 'LIST_GROUPS',
+  GET_GROUP = 'GET_GROUP',
+  DELETE_GROUP = 'DELETE_GROUP',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
