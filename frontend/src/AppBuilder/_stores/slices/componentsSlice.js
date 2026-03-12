@@ -30,13 +30,13 @@ import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
 
-// Script queries (RunJS/RunPy) debounce at 300ms since they execute locally in-browser.
-// Network queries (REST, DB, etc.) debounce at 500ms to avoid excess API calls.
+// Debounce delay for dependency-triggered query re-runs.
+// RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
   if (queryRerunTimers.has(queryId)) {
     clearTimeout(queryRerunTimers.get(queryId));
   }
-  const delay = kind === 'runjs' || kind === 'runpy' ? 300 : 500;
+  const delay = 500;
   const timerId = setTimeout(() => {
     queryRerunTimers.delete(queryId);
     const store = getStore();
@@ -969,6 +969,9 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   registerQueryDependencies: (queryId, queryName, kind, options, moduleId = 'canvas') => {
+    // RunJS/RunPy do not support dependency-triggered re-runs
+    if (kind === 'runjs' || kind === 'runpy') return;
+
     const { addDependency } = get();
     const optionsPath = `queries.${queryId}.__options__`;
 
