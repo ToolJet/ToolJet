@@ -230,7 +230,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     }
     try {
       await actions.pushWorkspace(commitMessage);
-      toast.success('Changes pushed successfully');
+      // toast.success('Changes pushed successfully');
+      toast.success('Commit was pushed to git successfully!');
       onClose();
     } catch (error) {
       toast.error(error?.message || 'Push failed');
@@ -240,7 +241,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const handlePull = async () => {
     try {
       await actions.pullWorkspace();
-      toast.success('Changes pulled successfully');
+      //toast.success('Changes pulled successfully');
+      toast.success('Commit pulled successfully!');
       onClose();
       window.location.reload();
     } catch (error) {
@@ -291,7 +293,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   // ---- Pull section content ----
   const renderPullSection = () => (
-    <div className="pull-section">
+    // <div className="pull-section">
+       <div className={cx('pull-section', { 'pull-section--centered': checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE })}>
       <form
         noValidate
         className={`d-flex w-100 ${
@@ -561,9 +564,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           onClick={handlePush}
           disabled={isPushing || !commitMessage.trim()}
           isLoading={isPushing}
-          leftIcon="commit"
-          fill="var(--indigo1)"
-          iconWidth="20"
+          // leftIcon="commit"
+          // fill="var(--indigo1)"
+          // iconWidth="20"
         >
           Commit changes
         </ButtonSolid>
