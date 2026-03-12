@@ -10,7 +10,7 @@ export type SourceOptions = {
   client_key: string;
   tls_certificate: string;
   connection_format: string;
-  use_ssl: 'enabled' | 'disabled';
+  use_ssl: boolean;
   query_params: string
   connection_string: string;
   connection_options: string[][]; 

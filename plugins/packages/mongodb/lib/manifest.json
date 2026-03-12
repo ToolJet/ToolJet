@@ -61,11 +61,10 @@
       }
     },
     "use_ssl": {
-      "type": "string",
+      "type": "boolean",
       "title": "SSL/TLS",
       "description": "Connect using SSL/TLS",
-      "enum": ["enabled", "disabled"],
-      "default": "disabled"
+      "default": false
     },
     "tls_certificate": {
       "type": "string",
@@ -166,7 +165,7 @@
           {
             "if": {
               "properties": {
-                "use_ssl": { "const": "enabled" }
+                "use_ssl": { "const": true }
               }
             },
             "then": {
@@ -213,7 +212,7 @@
         }
       },
       "then": {
-        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
+        "required": []
       }
     }
   ],
@@ -310,8 +309,8 @@
         "description": "Connect using SSL/TLS",
         "help_text": "Enable encrypted connections to MongoDB server",
         "widget": "toggle-flip",
-        "default": "disabled",
-        "enabled": {
+        "default": false,
+        "true": {
           "tls_certificate": {
             "order": 80,
             "$ref": "#/properties/tls_certificate",
@@ -363,7 +362,7 @@
             },
             "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,
@@ -531,8 +530,8 @@
         "description": "Connect using SSL/TLS",
         "help_text": "Enable encrypted connections to MongoDB server",
         "widget": "toggle-flip",
-        "default": "disabled",
-        "enabled": {
+        "default": false,
+        "true": {
           "tls_certificate": {
             "order": 80,
             "$ref": "#/properties/tls_certificate",
@@ -584,7 +583,7 @@
             "none": {}
           }
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,

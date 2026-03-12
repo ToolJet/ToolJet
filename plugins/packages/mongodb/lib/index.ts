@@ -445,7 +445,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
       };
     }
 
-    if (!clientOptions.tls && sourceOptions.use_ssl === 'enabled') {
+    if (!clientOptions.tls && sourceOptions.use_ssl === true) {
       clientOptions.tls = true;
     }
 
@@ -554,7 +554,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   const clientOptions: any = {};
   const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
-  if (sourceOptions.use_ssl === 'enabled') {
+  if (sourceOptions.use_ssl === true) {
     clientOptions.tls = true;
   } else if (!hasSSLInParams && isSrvConnection) {
     clientOptions.tls = true;
