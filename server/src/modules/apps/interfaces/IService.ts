@@ -17,6 +17,6 @@ export interface IAppsService {
   delete(app: App, user: User): Promise<void>;
   getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any>;
   findTooljetDbTables(appId: string): Promise<{ table_id: string }[]>;
-  getOne(app: App, user: User): Promise<any>;
+  getOne(app: App, user: User, branchId?: string): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;
 }

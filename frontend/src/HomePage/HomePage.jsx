@@ -221,11 +221,25 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
+    // Re-fetch apps when workspace branch changes (client-side branch switching)
+    this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
+      if (prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+      }
+    });
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
     if (hasClosedBanner) {
       this.setState({ showGroupMigrationBanner: false });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._branchStoreUnsubscribe) {
+      this._branchStoreUnsubscribe();
     }
   }
 

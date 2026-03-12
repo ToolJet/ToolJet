@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -157,8 +157,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
-  show(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.appsService.getOne(app, user);
+  show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
+    return this.appsService.getOne(app, user, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

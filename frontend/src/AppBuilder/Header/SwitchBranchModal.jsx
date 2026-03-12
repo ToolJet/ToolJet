@@ -41,7 +41,13 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const { workspaceActiveBranch, wsBranches, wsActions } = useWorkspaceBranchesStore((state) => ({
+    workspaceActiveBranch: state.currentBranch,
+    wsBranches: state.branches,
+    wsActions: state.actions,
+  }));
+
+  const isPlatformGitSync = wsBranches?.length > 0;
 
   // Determine current branch name:
   // For platform git sync: use workspace active branch name
@@ -55,61 +61,35 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   useEffect(() => {
     if (show && appId && organizationId) {
       setIsLoading(true);
-      // Fetch branches, versions, and development versions for proper branch switching
-      Promise.all([
-        fetchBranches(appId, organizationId),
-        lazyLoadAppVersions(appId),
-        fetchDevelopmentVersions(appId),
-      ]).finally(() => setIsLoading(false));
+      if (isPlatformGitSync) {
+        // Platform git sync: fetch workspace branches from DB only (no remote call)
+        wsActions.fetchBranches().finally(() => setIsLoading(false));
+      } else {
+        // Per-app branching: fetch from remote git
+        Promise.all([
+          fetchBranches(appId, organizationId),
+          lazyLoadAppVersions(appId),
+          fetchDevelopmentVersions(appId),
+        ]).finally(() => setIsLoading(false));
+      }
     }
-  }, [show, appId, organizationId, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions]);
+  }, [show, appId, organizationId, isPlatformGitSync, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions, wsActions]);
 
-  // Filter branches: exclude branches that are version names (versionType === 'version')
-  const filteredBranches = allBranches.filter((branch) => {
-    // Apply search filter
+  // Branch list: workspace branches for platform git sync, per-app branches otherwise
+  const branchList = isPlatformGitSync ? wsBranches : allBranches;
+  const filteredBranches = branchList.filter((branch) => {
     if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-
-    // Check if this branch name corresponds to a version with versionType === 'version'
-    // If so, exclude it (it's a version name, not an actual branch)
-    const isVersionName = appVersions?.some(
-      (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
-    );
-
-    // Show the branch only if it's NOT a version name
-    return !isVersionName;
-  });
-
-  /**
-   * Workspace-level branch switch: updates active branch on server,
-   * resolves the corresponding app on the target branch (via co_relation_id),
-   * and navigates to it.
-   */
-  const performWorkspaceLevelSwitch = async (branch) => {
-    // Prefer workspace branch ID (from workspace store) over allBranches ID
-    const wsBranches = useWorkspaceBranchesStore.getState().branches || [];
-    const wsBranch = wsBranches.find((b) => b.name === branch.name);
-    const branchId = wsBranch?.id || branch.id;
-
-    const result = await workspaceBranchesService.switchBranch(branchId, appId);
-    // Update workspace store + localStorage to reflect the new active branch
-    const branchObj = wsBranch || { id: branchId, name: branch.name };
-    setActiveBranch(branchObj);
-    useWorkspaceBranchesStore.setState({
-      activeBranchId: branchId,
-      currentBranch: branchObj,
-    });
-    toast.success(`Switched to ${branch.name}`);
-    onClose();
-    const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
-    const pathParts = window.location.pathname.split('/');
-    if (resolvedAppId) {
-      window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
-    } else {
-      window.location.href = `/${pathParts[1]}`;
+    // For per-app branching: exclude version names from the list
+    if (!isPlatformGitSync) {
+      const isVersionName = appVersions?.some(
+        (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
+      );
+      return !isVersionName;
     }
-  };
+    return true;
+  });
 
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
@@ -125,20 +105,22 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         if (targetWsBranch) {
           const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
           const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
-          // Persist to localStorage so the branch survives page reload
-          setActiveBranch(targetWsBranch);
-          // Update workspace branch store
+          // Persist branch to localStorage + update store
+          const branchObj = targetWsBranch;
+          setActiveBranch(branchObj);
           useWorkspaceBranchesStore.setState({
             activeBranchId: targetWsBranch.id,
-            currentBranch: targetWsBranch,
+            currentBranch: branchObj,
           });
-          if (resolvedAppId && resolvedAppId !== appId) {
+          toast.success(`Switched to ${branch.name}`);
+          onClose();
+          const pathParts = window.location.pathname.split('/');
+          if (resolvedAppId) {
             // Navigate to the corresponding app on the target branch
-            const pathParts = window.location.pathname.split('/');
             window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
           } else {
-            // Same app or no resolution needed, reload to refresh state
-            window.location.reload();
+            // App doesn't exist on target branch — go to dashboard
+            window.location.href = `/${pathParts[1]}`;
           }
           return;
         }

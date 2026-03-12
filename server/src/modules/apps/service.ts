@@ -427,7 +427,7 @@ export class AppsService implements IAppsService {
     return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
-  async getOne(app: App, user: User): Promise<any> {
+  async getOne(app: App, user: User, branchId?: string): Promise<any> {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];

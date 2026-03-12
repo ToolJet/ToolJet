@@ -251,7 +251,7 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Manual fetch last commit function
   const fetchLastCommit = async () => {
-    const currentBranchName = selectedVersion?.name || currentBranch?.name;
+    const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
     const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
     const isOnDefaultBranch = currentBranchName === defaultBranchName;
 
@@ -364,8 +364,8 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Check if current branch is the default branch
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  // Use selectedVersion.name as the current branch (ToolJet's version/branch name)
-  const currentBranchName = selectedVersion?.name || currentBranch?.name;
+  // Use workspace branch name for platform git sync, otherwise version/branch name for per-app branching
+  const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
 
   // Determine if on default branch:
   // For platform git sync: use workspace branch context (all versions have versionType='version')
@@ -641,20 +641,19 @@ export function BranchDropdown({ appId, organizationId }) {
                   <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
                   <span>Create new branch</span>
                 </button>
-                {console.log('BranchDropdown - allBranches:', allBranches, 'length:', allBranches.length) ||
-                  (true && allBranches.length > 0 && (
-                    <button
-                      className="switch-branch-btn"
-                      onClick={() => {
-                        setShowDropdown(false);
-                        setShowSwitchModal(true);
-                      }}
-                      data-cy="switch-branch-btn"
-                    >
-                      <SolidIcon name="refresh" width="14" />
-                      <span>Switch branch</span>
-                    </button>
-                  ))}
+                {allBranches.length > 0 && (
+                  <button
+                    className="switch-branch-btn"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowSwitchModal(true);
+                    }}
+                    data-cy="switch-branch-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" />
+                    <span>Switch branch</span>
+                  </button>
+                )}
               </>
             ) : (
               <>

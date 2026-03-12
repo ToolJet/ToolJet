@@ -220,7 +220,7 @@ export class AppsUtilService implements IAppsUtilService {
     }, manager);
   }
 
-  async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
+  async findAppWithIdOrSlug(slug: string, organizationId: string, branchId?: string): Promise<App> {
     let app: App;
     try {
       app = await this.appRepository.findById(slug, organizationId);

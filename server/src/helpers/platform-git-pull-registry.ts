@@ -6,7 +6,7 @@
  */
 
 export interface IPlatformGitPullService {
-  hydrateStubApp(stubApp: any, user: any): Promise<any>;
+  hydrateStubApp(stubApp: any, user: any, branchId?: string): Promise<any>;
 }
 
 let _pullService: IPlatformGitPullService | null = null;
