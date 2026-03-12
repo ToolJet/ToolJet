@@ -43,7 +43,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
-  console.log(selectedQueryId, 'selectedQueryId');
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
