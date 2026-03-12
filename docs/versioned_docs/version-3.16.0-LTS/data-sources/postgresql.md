@@ -191,9 +191,7 @@ Removes either all rows from the table or that match the specified filter condit
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
 
 ### Upsert Rows
-Inserts a new row or updates an existing row if a matching primary key already exists.
-
-In the editor, ensure to the input the **Columns** in `string` format.
+Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
 - **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
