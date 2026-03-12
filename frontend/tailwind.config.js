@@ -28,7 +28,7 @@ module.exports = {
         'background-success-weak': 'var(--background-success-weak)',
         'background-error-strong': 'var(--background-error-strong)',
         'background-error-weak': 'var(--background-error-weak)',
-        'background-warning-stong': 'var(--background-warning-stong)',
+        'background-warning-strong': 'var(--background-warning-strong)',
         'background-warning-weak': 'var(--background-warning-weak)',
         'background-inverse': 'var(--background-inverse)',
         'text-default': 'var(--text-default)',
