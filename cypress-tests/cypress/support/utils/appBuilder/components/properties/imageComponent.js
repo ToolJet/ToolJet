@@ -1,4 +1,4 @@
-import { selectDropdownOption, setColorPickerValue, setNumberInputValue, genralProperties } from "./common";
+import { selectDropdownOption, setColorPickerValue, setNumberInputValue } from "./common";
 
 export const verifyZoomFeature = (componentSelector, zoomToggle) => {
     cy.get(zoomToggle).click();
@@ -57,18 +57,6 @@ export const verifyImageFit = (componentSelector, dropdownSelector, fitOptions) 
             .find('img')
             .should('have.css', 'object-fit', value);
     });
-}
-
-export const verifyDisabilityToggle = (componentSelector, disableToggle, jsSetBtn, jsResetBtn) => {
-    const disabled = { attr: 'data-disabled', attrValue: 'true' };
-    const enabled = { attr: 'data-disabled', attrValue: 'false' };
-
-    cy.get(componentSelector).should('have.attr', 'data-disabled', 'false');
-
-    genralProperties(componentSelector, disableToggle, disabled);
-    genralProperties(componentSelector, jsResetBtn, enabled);
-    genralProperties(componentSelector, jsSetBtn, disabled);
-    genralProperties(componentSelector, disableToggle, enabled);
 }
 
 export const verifyImageFitAndBorderType = (componentSelector, fitDropdown, borderDropdown, fitOptions, borderOptions) => {

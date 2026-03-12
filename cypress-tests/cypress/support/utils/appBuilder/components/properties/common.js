@@ -34,3 +34,36 @@ export const setColorPickerValue = (colorPickerSelector, hex) => {
 export const setNumberInputValue = (inputSelector, value) => {
     cy.get(inputSelector).click().type(`{selectall}${value}{enter}`);
 }
+
+export const verifyVisibility = (componentSelector, controls) => {
+    const { toggle, csa, jsSet, jsReset } = controls;
+
+    genralProperties(componentSelector, csa, { state: "be.visible" });
+    genralProperties(componentSelector, csa, { state: "not.be.visible" });
+    genralProperties(componentSelector, jsSet, { state: "be.visible" });
+    genralProperties(componentSelector, jsReset, { state: "not.be.visible" });
+    genralProperties(componentSelector, toggle, { state: "be.visible" });
+}
+
+export const verifyLoadingState = (componentSelector, controls) => {
+    const { toggle, csa, jsSet, jsReset } = controls;
+
+    genralProperties(componentSelector, toggle, { className: "tj-widget-loader" });
+    genralProperties(componentSelector, jsSet, { className: "tj-widget-loader" });
+    genralProperties(componentSelector, jsReset, { className: "tj-widget-loader", classNameState: "not.exist" });
+    genralProperties(componentSelector, csa, { className: "tj-widget-loader" });
+    genralProperties(componentSelector, csa, { className: "tj-widget-loader", classNameState: "not.exist" });
+}
+
+export const verifyDisability = (componentSelector, controls) => {
+    const { csa, jsSet, jsReset } = controls;
+    const disabled = { attr: 'data-disabled', attrValue: 'true' };
+    const enabled = { attr: 'data-disabled', attrValue: 'false' };
+
+    cy.get(componentSelector).should('have.attr', 'data-disabled', 'false');
+
+    genralProperties(componentSelector, csa, disabled);
+    genralProperties(componentSelector, jsReset, enabled);
+    genralProperties(componentSelector, jsSet, disabled);
+    genralProperties(componentSelector, csa, enabled);
+}
