@@ -21,7 +21,7 @@ export class AddPlatformGitSyncSupport1773100000000 implements MigrationInterfac
         CONSTRAINT fk_app_branch_state_branch
           FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE,
         CONSTRAINT fk_app_branch_state_app
-          FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE SET NULL,
+          FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE CASCADE,
 
         CONSTRAINT uq_app_branch_state_org_branch_corel
           UNIQUE (organization_id, branch_id, co_relation_id)

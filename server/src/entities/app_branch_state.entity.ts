@@ -44,7 +44,7 @@ export class AppBranchState {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => App, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => App, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_id' })
   app: App;
 

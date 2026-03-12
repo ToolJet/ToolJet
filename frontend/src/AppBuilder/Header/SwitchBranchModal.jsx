@@ -38,6 +38,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     lazyLoadAppVersions: state.lazyLoadAppVersions,
     fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     appVersions: state.appVersions,
+    branchingEnabled: state.branchingEnabled,
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
@@ -46,8 +47,6 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     wsBranches: state.branches,
     wsActions: state.actions,
   }));
-
-  const isPlatformGitSync = wsBranches?.length > 0;
 
   // Determine current branch name:
   // For platform git sync: use workspace active branch name
@@ -61,7 +60,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   useEffect(() => {
     if (show && appId && organizationId) {
       setIsLoading(true);
-      if (isPlatformGitSync) {
+      if (branchingEnabled) {
         // Platform git sync: fetch workspace branches from DB only (no remote call)
         wsActions.fetchBranches().finally(() => setIsLoading(false));
       } else {
@@ -73,16 +72,16 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         ]).finally(() => setIsLoading(false));
       }
     }
-  }, [show, appId, organizationId, isPlatformGitSync, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions, wsActions]);
+  }, [show, appId, organizationId, branchingEnabled, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions, wsActions]);
 
   // Branch list: workspace branches for platform git sync, per-app branches otherwise
-  const branchList = isPlatformGitSync ? wsBranches : allBranches;
+  const branchList = branchingEnabled ? wsBranches : allBranches;
   const filteredBranches = branchList.filter((branch) => {
     if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
     // For per-app branching: exclude version names from the list
-    if (!isPlatformGitSync) {
+    if (!branchingEnabled) {
       const isVersionName = appVersions?.some(
         (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
       );

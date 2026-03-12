@@ -187,15 +187,38 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     }
   };
 
+  // Build a PR/merge URL to merge sourceBranch into targetBranch on the git provider
+  const buildMergeUrl = (sourceBranch, targetBranch) => {
+    const url = repoUrl || gitSyncUrl;
+    if (!url) return null;
+
+    const githubMatch = url.match(/github\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/);
+    const gitlabMatch = url.match(/gitlab\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/);
+    const bitbucketMatch = url.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(?:\.git)?$/);
+
+    if (githubMatch) {
+      const [, owner, repo] = githubMatch;
+      return `https://github.com/${owner}/${repo}/compare/${targetBranch}...${sourceBranch}?expand=1`;
+    } else if (gitlabMatch) {
+      const [, owner, repo] = gitlabMatch;
+      return `https://gitlab.com/${owner}/${repo}/-/merge_requests/new?merge_request[source_branch]=${sourceBranch}&merge_request[target_branch]=${targetBranch}`;
+    } else if (bitbucketMatch) {
+      const [, owner, repo] = bitbucketMatch;
+      return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${targetBranch}`;
+    }
+    return null;
+  };
+
   const handleOverwritePull = async () => {
-    try {
-      // Pull from selected branch into current branch (overwrites everything)
-      await actions.pullWorkspace(selectedBranch);
-      toast.success('Changes pulled successfully');
+    // Open PR/merge page on git provider instead of doing a local overwrite pull.
+    // The user merges on git, then pulls normally — this keeps local and git in sync.
+    const mergeUrl = buildMergeUrl(selectedBranch, currentBranchName);
+    if (mergeUrl) {
+      window.open(mergeUrl, '_blank', 'noopener,noreferrer');
+      toast.success('After merging on git, click Pull to update');
       onClose();
-      window.location.reload();
-    } catch (error) {
-      toast.error(error?.error || error?.message || 'Pull failed');
+    } else {
+      toast.error('Unable to determine repository URL');
     }
   };
 
