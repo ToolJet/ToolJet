@@ -242,7 +242,7 @@ export const createGridSlice = (set, get) => ({
                 const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
                 return {
                   ...acc,
-                  ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
+                  ...(temporaryLayouts[transformedId] && { [id]: temporaryLayouts[transformedId] }),
                 };
               }, {});
 
