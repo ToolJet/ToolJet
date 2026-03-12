@@ -114,6 +114,13 @@ module.exports = {
         'elevation-600': '0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-700': '0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
       },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        full: 'var(--radius-full)',
+      },
       fontSize: {
         sm: ['11px', '16px'],
         base: ['12px', '18px'],
