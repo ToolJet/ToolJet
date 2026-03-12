@@ -308,7 +308,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
     }
 
    // SSL config 
-    const shouldUseSSL = finalOptions.ssl_enabled === 'enabled';
+    const shouldUseSSL = finalOptions.ssl_enabled === true;
     let sslObject: any = null;
 
     if (shouldUseSSL) {

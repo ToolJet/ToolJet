@@ -72,11 +72,10 @@
       "default": false
     },
     "ssl_enabled": {
-      "type": "string",
+      "type": "boolean",
       "title": "SSL/TLS",
       "description": "Connect using SSL",
-      "enum": ["enabled", "disabled"],
-      "default": "disabled"
+      "default": false
     },
     "ssl_certificate": {
       "type": "string",
@@ -294,8 +293,8 @@
         "description": "Enable SSL connection",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to SQL Server.",
-        "default": "disabled",
-        "enabled": {
+        "default": false,
+        "true": {
           "ssl_certificate": {
             "order": 76,
             "$ref": "#/properties/ssl_certificate",
@@ -348,7 +347,7 @@
           },
           "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 80,
@@ -522,8 +521,8 @@
         "description": "Enable SSL connection",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to SQL Server.",
-        "default": "disabled",
-        "enabled": {
+        "default": false,
+        "true": {
           "ssl_certificate": {
             "order": 76,
             "$ref": "#/properties/ssl_certificate",
@@ -576,7 +575,7 @@
           },
           "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 80,

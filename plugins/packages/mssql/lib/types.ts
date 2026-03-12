@@ -10,7 +10,7 @@ export interface SourceOptions {
   azure?: boolean;
   connection_options?: string[][];
   allow_dynamic_connection_parameters?: boolean;
-  ssl_enabled?: 'enabled' | 'disabled';
+  ssl_enabled?: boolean;
   ssl_certificate?: string;
   ca_cert?: string;
   client_cert?: string;
