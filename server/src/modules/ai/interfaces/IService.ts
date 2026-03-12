@@ -43,4 +43,10 @@ export interface IAiService {
       }
     | any
   >;
+
+  listConversations(appId: string, userId: string, conversationType: string): Promise<any>;
+
+  createConversation(userId: string, appId: string, conversationType: string): Promise<any>;
+
+  getConversationById(conversationId: string, userId: string): Promise<any>;
 }

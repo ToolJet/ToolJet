@@ -540,6 +540,7 @@ export default class LicenseBase {
       externalApis: this.externalApis,
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
+      appHistory: this.appHistory,
     };
   }
 
@@ -575,6 +576,7 @@ export default class LicenseBase {
       workspacesCount: this.workspaces,
       workflows: this.workflows,
       startDate: this.startDate,
+      appHistoryEnabled: this.appHistory,
     };
   }
 
@@ -621,5 +623,16 @@ export default class LicenseBase {
       return true;
     }
     return !!this._app?.features?.release;
+  }
+
+  public get appHistory(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
+    }
+
+    if (this._app?.features?.history === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.history;
   }
 }

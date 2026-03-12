@@ -10,10 +10,22 @@
     "type": "database"
   },
   "properties": {
+    "connection_type": {
+      "type": "string",
+      "title": "Connection type",
+      "description": "Single select dropdown for connection_type",
+      "enum": ["manual", "string"],
+      "default": "manual"
+    },
+    "connection_string": {
+      "type": "string",
+      "title": "Connection string",
+      "description": "Server=localhost,1433;Database=mydb;User Id=sa;Password=mypass;"
+    },
     "host": {
       "type": "string",
       "title": "Host",
-      "description": "Enter host",
+      "description": "localhost",
       "default": "localhost"
     },
     "instanceName": {
@@ -24,13 +36,13 @@
     "port": {
       "type": "number",
       "title": "Port",
-      "description": "Enter port",
+      "description": "1433",
       "default": 1433
     },
     "database": {
       "type": "string",
-      "title": "Database name",
-      "description": "Name of the database"
+      "title": "Database",
+      "description": "Enter name of the database"
     },
     "username": {
       "type": "string",
@@ -52,78 +64,401 @@
       "title": "Azure (encrypt connection)",
       "description": "Toggle for azure",
       "default": false
+    },
+    "ssh_enabled": {
+      "type": "string",
+      "title": "SSH Tunnel",
+      "description": "Connect through an SSH server",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "ssh_host": {
+      "type": "string",
+      "title": "SSH Host"
+    },
+    "ssh_port": {
+      "type": "number",
+      "title": "SSH Port",
+      "default": 22
+    },
+    "ssh_username": {
+      "type": "string",
+      "title": "SSH Username"
+    },
+    "ssh_auth_type": {
+      "type": "string",
+      "title": "SSH Authentication Type",
+      "enum": ["private_key", "password"],
+      "default": "private_key"
+    },
+    "ssh_password": {
+      "type": "string",
+      "title": "SSH Password"
+    },
+    "ssh_private_key": {
+      "type": "string",
+      "title": "SSH Private Key"
+    },
+    "ssh_passphrase": {
+      "type": "string",
+      "title": "SSH Passphrase"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "connection_type": {
+            "const": "string"
+          }
+        }
+      },
+      "then": {
+        "required": ["connection_string"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssh_enabled": {
+            "const": "enabled"
+          }
+        }
+      },
+      "then": {
+        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
+      }
+    }
+  ],
   "tj:encrypted": [
-    "password"
+    "password",
+    "ssh_private_key",
+    "ssh_password",
+    "ssh_passphrase",
+    "connection_string"
   ],
   "required": [
-    "host",
-    "port",
-    "database",
-    "username",
-    "password"
+    "connection_type"
   ],
   "tj:ui:properties": {
-    "host": {
-      "$ref": "#/properties/host",
-      "key": "host",
-      "label": "Host",
-      "description": "Enter host",
-      "widget": "text-v3",
-      "required": true
+    "connection_type": {
+      "order": 1,
+      "$ref": "#/properties/connection_type",
+      "key": "connection_type",
+      "label": "Connection type",
+      "description": "Single select dropdown for connection_type",
+      "widget": "dropdown-component-flip",
+      "list": [
+        {
+          "name": "Manual connection",
+          "value": "manual"
+        },
+        {
+          "name": "Connection string",
+          "value": "string"
+        }
+      ]
     },
-    "instanceName": {
-      "$ref": "#/properties/instanceName",
-      "key": "instance_name",
-      "label": "Instance",
-      "description": "Enter the name of the database instance",
-      "widget": "text"
+    "manual": {
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "localhost",
+        "widget": "text-v3",
+        "required": true
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "1433",
+        "widget": "text-v3",
+        "required": true
+      },
+      "instanceName": {
+        "order": 30,
+        "$ref": "#/properties/instanceName",
+        "key": "instance_name",
+        "label": "Instance",
+        "description": "Enter the name of the database instance",
+        "widget": "text-v3"
+      },
+      "database": {
+        "order": 40,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database",
+        "description": "Enter name of the database",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 50,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 60,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+      },
+      "connection_options": {
+        "order": 70,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
+      "ssh_enabled": {
+        "order": 80,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH tunnel",
+        "description": "Connect through an SSH server",
+        "widget": "toggle-flip",
+        "default": false,
+        "help_text": "Connect through an SSH server to access databases in private networks."
+
+      },
+      "enabled": {
+        "ssh_host": {
+          "order": 90,
+          "$ref": "#/properties/ssh_host",
+          "key": "ssh_host",
+          "label": "SSH host",
+          "description": "ssh.example.com",
+          "help_text": "SSH server hostname or IP address",
+          "widget": "text-v3"
+        },
+        "ssh_port": {
+          "order": 100,
+          "$ref": "#/properties/ssh_port",
+          "key": "ssh_port",
+          "label": "SSH port",
+          "description": "22",
+          "help_text": "Default SSH port is 22",
+          "widget": "text-v3"
+        },
+        "ssh_username": {
+          "order": 110,
+          "$ref": "#/properties/ssh_username",
+          "key": "ssh_username",
+          "label": "SSH username",
+          "description": "SSH username",
+          "widget": "text-v3"
+        },
+        "ssh_auth_type": {
+          "order": 175,
+          "$ref": "#/properties/ssh_auth_type",
+          "key": "ssh_auth_type",
+          "label": "Authentication type",
+          "widget": "dropdown-component-flip",
+          "default": "private_key",
+          "list": [
+            { "value": "private_key", "name": "Private key" },
+            { "value": "password", "name": "Password" }
+          ]
+        },
+        "private_key": {
+          "ssh_private_key": {
+            "order": 180,
+            "$ref": "#/properties/ssh_private_key",
+            "key": "ssh_private_key",
+            "label": "SSH private key",
+            "widget": "password-v3-textarea"
+          },
+          "ssh_passphrase": {
+            "order": 190,
+            "$ref": "#/properties/ssh_passphrase",
+            "key": "ssh_passphrase",
+            "label": "SSH passphrase",
+            "widget": "password-v3"
+          }
+        },
+        "password": {
+          "ssh_password": {
+            "order": 180,
+            "$ref": "#/properties/ssh_password",
+            "key": "ssh_password",
+            "label": "SSH password",
+            "widget": "password-v3"
+          }
+        }
+      },
+      "disabled": {},
+      "azure": {
+        "order": 140,
+        "$ref": "#/properties/azure",
+        "key": "azure",
+        "label": "Azure encrypt connection",
+        "description": "Toggle for azure",
+        "help_text": "Enable encrypted connection for Azure SQL Database.",
+        "widget": "toggle-v2"
+      }
     },
-    "port": {
-      "$ref": "#/properties/port",
-      "key": "port",
-      "label": "Port",
-      "description": "Enter port",
-      "widget": "text-v3",
-      "required": true
-    },
-    "database": {
-      "$ref": "#/properties/database",
-      "key": "database",
-      "label": "Database name",
-      "description": "Name of the database",
-      "widget": "text-v3",
-      "required": true
-    },
-    "username": {
-      "$ref": "#/properties/username",
-      "key": "username",
-      "label": "Username",
-      "description": "Enter username",
-      "widget": "text-v3",
-      "required": true
-    },
-    "password": {
-      "$ref": "#/properties/password",
-      "key": "password",
-      "label": "Password",
-      "description": "Enter password",
-      "widget": "password-v3",
-      "required": true
-    },
-    "connection_options": {
-      "$ref": "#/properties/connection_options",
-      "key": "connection_options",
-      "label": "Connection options",
-      "widget": "react-component-headers"
-    },
-    "azure": {
-      "$ref": "#/properties/azure",
-      "key": "azure",
-      "label": "Azure (encrypt connection)",
-      "description": "Toggle for azure",
-      "widget": "toggle"
+    "string": {
+      "connection_string": {
+        "order": 2,
+        "$ref": "#/properties/connection_string",
+        "key": "connection_string",
+        "label": "Connection string",
+        "description": "Enter encoded connection string",
+        "widget": "password-v3-textarea",
+        "required": true
+      },
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "localhost",
+        "widget": "text-v3",
+        "required": true
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "1433",
+        "widget": "text-v3",
+        "required": true
+      },
+      "database": {
+        "order": 35,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database",
+        "description": "Enter database",
+        "widget": "text-v3"
+      },
+      "instanceName": {
+        "order": 30,
+        "$ref": "#/properties/instanceName",
+        "key": "instance_name",
+        "label": "Instance",
+        "description": "Enter the name of the database instance",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 40,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 50,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+      },
+      "connection_options": {
+        "order": 60,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
+      "ssh_enabled": {
+        "order": 80,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH tunnel",
+        "description": "Connect through an SSH server",
+        "widget": "toggle-flip",
+        "default": false,
+        "help_text": "Connect through an SSH server to access databases in private networks."
+
+      },
+      "enabled": {
+        "ssh_host": {
+          "order": 90,
+          "$ref": "#/properties/ssh_host",
+          "key": "ssh_host",
+          "label": "SSH host",
+          "description": "ssh.example.com",
+          "help_text": "SSH server hostname or IP address",
+          "widget": "text-v3"
+        },
+        "ssh_port": {
+          "order": 100,
+          "$ref": "#/properties/ssh_port",
+          "key": "ssh_port",
+          "label": "SSH port",
+          "description": "22",
+          "help_text": "Default SSH port is 22",
+          "widget": "text-v3"
+        },
+        "ssh_username": {
+          "order": 110,
+          "$ref": "#/properties/ssh_username",
+          "key": "ssh_username",
+          "label": "SSH username",
+          "description": "SSH Username",
+          "widget": "text-v3"
+        },
+        "ssh_auth_type": {
+          "order": 175,
+          "$ref": "#/properties/ssh_auth_type",
+          "key": "ssh_auth_type",
+          "label": "Authentication type",
+          "widget": "dropdown-component-flip",
+          "default": "private_key",
+          "list": [
+            { "value": "private_key", "name": "Private key" },
+            { "value": "password", "name": "Password" }
+          ]
+        },
+        "private_key": {
+          "ssh_private_key": {
+            "order": 180,
+            "$ref": "#/properties/ssh_private_key",
+            "key": "ssh_private_key",
+            "label": "SSH private key",
+            "widget": "password-v3-textarea"
+          },
+          "ssh_passphrase": {
+            "order": 190,
+            "$ref": "#/properties/ssh_passphrase",
+            "key": "ssh_passphrase",
+            "label": "SSH passphrase",
+            "widget": "password-v3"
+          }
+        },
+        "password": {
+          "ssh_password": {
+            "order": 180,
+            "$ref": "#/properties/ssh_password",
+            "key": "ssh_password",
+            "label": "SSH password",
+            "widget": "password-v3"
+          }
+        }
+      },
+      "disabled": {},
+      "azure": {
+        "order": 130,
+        "$ref": "#/properties/azure",
+        "key": "azure",
+        "label": "Azure encrypt connection",
+        "description": "Toggle for azure",
+        "widget": "toggle-v2",
+        "help_text": "Enable encrypted connection for Azure SQL Database."
+      }
     }
   }
 }
