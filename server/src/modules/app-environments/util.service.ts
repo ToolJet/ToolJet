@@ -227,7 +227,8 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     dataSourceId: string,
     organizationId: string,
     environmentId?: string,
-    branchId?: string
+    branchId?: string,
+    appVersionId?: string
   ): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
@@ -257,6 +258,30 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
           });
           if (dsvo) {
             // Return as DataSourceOptions-compatible shape
+            const result = {
+              id: dsvo.id,
+              options: dsvo.options,
+              environmentId: envId,
+              dataSourceId,
+              createdAt: dsvo.createdAt,
+              updatedAt: dsvo.updatedAt,
+              environmentName: envName,
+            } as any;
+            return result;
+          }
+        }
+      }
+
+      // Saved/tagged version path: read from data_source_version_options via appVersionId
+      if (appVersionId) {
+        const dsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId, appVersionId, isActive: true },
+        });
+        if (dsv) {
+          const dsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: dsv.id, environmentId: envId },
+          });
+          if (dsvo) {
             const result = {
               id: dsvo.id,
               options: dsvo.options,

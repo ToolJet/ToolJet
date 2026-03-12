@@ -125,6 +125,8 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         if (targetWsBranch) {
           const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
           const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+          // Persist to localStorage so the branch survives page reload
+          setActiveBranch(targetWsBranch);
           // Update workspace branch store
           useWorkspaceBranchesStore.setState({
             activeBranchId: targetWsBranch.id,

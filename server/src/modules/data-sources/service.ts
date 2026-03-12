@@ -24,6 +24,7 @@ import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
@@ -42,6 +43,19 @@ export class DataSourcesService implements IDataSourcesService {
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
+
+    // Derive branchId from the AppVersion if not explicitly provided
+    if (!query.branchId && query.appVersionId) {
+      const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+        return manager.findOne(AppVersion, {
+          where: { id: query.appVersionId },
+          select: ['id', 'branchId'],
+        });
+      });
+      if (appVersion?.branchId) {
+        query = { ...query, branchId: appVersion.branchId };
+      }
+    }
 
     let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
 

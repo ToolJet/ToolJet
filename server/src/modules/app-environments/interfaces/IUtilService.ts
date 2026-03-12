@@ -31,7 +31,7 @@ export interface IAppEnvironmentUtilService {
     licenseCheck?: boolean
   ): Promise<AppEnvironment>;
   getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]>;
-  getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions>;
+  getOptions(dataSourceId: string, organizationId: string, environmentId?: string, branchId?: string, appVersionId?: string): Promise<DataSourceOptions>;
   init(
     editorVersion: Partial<AppVersion>,
     organizationId: string,
