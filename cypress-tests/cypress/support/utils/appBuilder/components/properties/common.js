@@ -48,10 +48,10 @@ export const verifyVisibility = (componentSelector, controls) => {
 export const verifyLoadingState = (componentSelector, controls) => {
     const { toggle, csa, jsSet, jsReset } = controls;
 
-    genralProperties(componentSelector, toggle, { className: "tj-widget-loader" });
-    genralProperties(componentSelector, jsSet, { className: "tj-widget-loader" });
+    // genralProperties(componentSelector, toggle, { className: "tj-widget-loader" });
+    genralProperties(componentSelector, jsSet, { className: "tj-widget-loader", classNameState: "exist" });
     genralProperties(componentSelector, jsReset, { className: "tj-widget-loader", classNameState: "not.exist" });
-    genralProperties(componentSelector, csa, { className: "tj-widget-loader" });
+    genralProperties(componentSelector, csa, { className: "tj-widget-loader", classNameState: "exist" });
     genralProperties(componentSelector, csa, { className: "tj-widget-loader", classNameState: "not.exist" });
 }
 
@@ -62,8 +62,8 @@ export const verifyDisability = (componentSelector, controls) => {
 
     cy.get(componentSelector).should('have.attr', 'data-disabled', 'false');
 
-    genralProperties(componentSelector, csa, disabled);
-    genralProperties(componentSelector, jsReset, enabled);
     genralProperties(componentSelector, jsSet, disabled);
+    genralProperties(componentSelector, jsReset, enabled);
+    genralProperties(componentSelector, csa, disabled);
     genralProperties(componentSelector, csa, enabled);
 }

@@ -22,13 +22,10 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
     const visibilityToggle = '[data-cy="toggleswitch3"] .d-flex';
     const loadingState = '[data-cy="toggleswitch5"] .d-flex';
 
-    // JS action buttons (Run JS queries)
-    const jsSetVisibilityBtn = '[data-cy="jssetvisibility-label"]';
-    const jsResetVisibilityBtn = '[data-cy="jsresetvisibility-label"]';
-    const jsSetDisabilityBtn = '[data-cy="jssetdisiablity-label"]';
-    const jsResetDisabilityBtn = '[data-cy="jsresetdisiablity-label"]';
-    const jsSetLoadingBtn = '[data-cy="jssetloading-label"]';
-    const jsResetLoadingBtn = '[data-cy="jsresetloading-label"]';
+    // JS action toggles (single toggle for set/reset)
+    const jsVisibilityToggle = '[data-cy="jsvisibilitytoggle"] .d-flex';
+    const jsDisableToggle = '[data-cy="jsdisabletoggle"] .d-flex';
+    const jsLoadingToggle = '[data-cy="jsloadingtoggle"] .d-flex';
 
     // CSA checkboxes/toggles
     const csaVisibilityToggle = '[data-cy="csavisibility"] .d-flex';
@@ -78,21 +75,21 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
         verifyVisibility(componentSelector, {
             toggle: visibilityToggle,
             csa: csaVisibilityToggle,
-            jsSet: jsSetVisibilityBtn,
-            jsReset: jsResetVisibilityBtn,
+            jsSet: jsVisibilityToggle,
+            jsReset: jsVisibilityToggle,
         });
 
         verifyDisability(componentSelector, {
             csa: csaDisableToggle,
-            jsSet: jsSetDisabilityBtn,
-            jsReset: jsResetDisabilityBtn,
+            jsSet: jsDisableToggle,
+            jsReset: jsDisableToggle,
         });
 
         verifyLoadingState(componentSelector, {
             toggle: loadingState,
             csa: csaLoadingToggle,
-            jsSet: jsSetLoadingBtn,
-            jsReset: jsResetLoadingBtn,
+            jsSet: jsLoadingToggle,
+            jsReset: jsLoadingToggle,
         });
     });
 
