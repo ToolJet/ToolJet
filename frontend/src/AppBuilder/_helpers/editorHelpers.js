@@ -23,6 +23,7 @@ import { RadioButton } from '@/AppBuilder/Widgets/RadioButton';
 import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2';
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/AppBuilder/Widgets/Divider';
+import { FileInput } from '@/AppBuilder/Widgets/FileInput';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
@@ -87,7 +88,7 @@ const MapComponent = lazy(() => import('@/AppBuilder/Widgets/Map/Map'));
 const PDF = lazy(() => import('@/AppBuilder/Widgets/PDF'));
 const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'));
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
-const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect'));
+const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 
@@ -135,6 +136,7 @@ export const AllComponents = {
   StarRating,
   Divider,
   FilePicker,
+  FileInput,
   PasswordInput,
   EmailInput,
   PhoneInput,

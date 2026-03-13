@@ -15,6 +15,11 @@ import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import ApiEndpointInputOld from './ApiEndpointInputOld';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentConstantService } from '../_services';
@@ -171,7 +176,7 @@ const DynamicForm = ({
             const field = fields[key];
             return field?.dependsOn || field?.depends_on;
           });
-          
+
           if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
             const clearedOptions = { ...options };
             fieldsWithDependencies.forEach((fieldKey) => {
@@ -236,6 +241,16 @@ const DynamicForm = ({
         return OAuthWrapper;
       case 'dynamic-selector':
         return DynamicSelector;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
       default:
         return <div>Type is invalid</div>;
     }
@@ -285,6 +300,9 @@ const DynamicForm = ({
     fxEnabled,
     isMulti,
     autoFetch,
+    parse_key,
+    columnSelectorOperation,
+    columnSelectorDependsOn,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -324,7 +342,7 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
+          checked: options?.[key]?.value ?? options?.[key],
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
@@ -424,6 +442,7 @@ const DynamicForm = ({
           options,
           optionsChanged,
           selectedDataSource,
+          isRestApi: source === 'restapi',
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -480,7 +499,11 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+              : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -575,6 +598,36 @@ const DynamicForm = ({
           isMulti: isMulti || false,
           autoFetch: autoFetch || false,
         };
+      case 'react-component-sql-filters':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
       default:
         return {};
     }
@@ -625,11 +678,15 @@ const DynamicForm = ({
       const labelElement = (
         <label
           className="form-label"
-          data-cy={fieldType === 'dropdown' ? `${generateCypressDataCy(label)}-dropdown-label` : `label-${generateCypressDataCy(label)}`}
+          data-cy={
+            fieldType === 'dropdown'
+              ? `${generateCypressDataCy(label)}-dropdown-label`
+              : `${generateCypressDataCy(label)}-label`
+          }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
             textDecorationColor: 'var(--slate8)',
-            marginBottom: '2px'
+            marginBottom: '2px',
           }}
         >
           {label}
@@ -709,7 +766,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel')}`}
+                          data-cy={`${generateCypressDataCy(
+                            computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
+                          )}-button`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
@@ -736,11 +795,14 @@ const DynamicForm = ({
                       'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                       'w-100': isHorizontalLayout && type !== 'codehinter',
                     },
-                    'dynamic-form-element',
-
+                    'dynamic-form-element'
                   )}
                   style={{ width: '100%' }}
-                  data-cy={type === 'dropdown' || type === 'dropdown-component-flip' ? `${generateCypressDataCy(label ?? key)}-select-dropdown` : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`}
+                  data-cy={
+                    type === 'dropdown' || type === 'dropdown-component-flip'
+                      ? `${generateCypressDataCy(label ?? key)}-select-dropdown`
+                      : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`
+                  }
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
@@ -755,7 +817,7 @@ const DynamicForm = ({
             )
           );
         })}
-      </div >
+      </div>
     );
   };
 
@@ -767,7 +829,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'} >
+          <div className={isHorizontalLayout ? '' : 'row'}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div

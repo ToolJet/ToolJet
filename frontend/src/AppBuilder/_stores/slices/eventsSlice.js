@@ -326,6 +326,20 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      if (eventName === 'OnTableButtonColumnClicked') {
+        const { column, tableColumnEvents } = options;
+
+        if (column && tableColumnEvents) {
+          for (const event of tableColumnEvents) {
+            if (event?.event?.actionId) {
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+            }
+          }
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);
@@ -571,7 +585,7 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'run-query': {
             try {
-              const { queryId, queryName, component, eventId } = event;
+              const { queryId, queryName, component, eventId, callbackFns } = event;
               const params = event['parameters'];
               if (!queryId && !queryName) {
                 throw new Error('No query selected');
@@ -609,7 +623,8 @@ export const createEventsSlice = (set, get) => ({
                 eventId,
                 false,
                 false,
-                updatedModuleId
+                updatedModuleId,
+                callbackFns
               );
             } catch (error) {
               get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -918,8 +933,8 @@ export const createEventsSlice = (set, get) => ({
               if (!element) {
                 throw new Error('Component element not found in DOM.');
               }
-              const behavior = event.scrollBehavior || 'smooth';
-              const block = event.scrollBlock || 'nearest';
+              const behavior = event?.scrollBehavior || 'smooth';
+              const block = event?.scrollBlock || 'nearest';
               element.scrollIntoView({ behavior, block });
               return Promise.resolve();
             } catch (error) {
@@ -942,12 +957,23 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'switch-page': {
             try {
-              const { pageId } = event;
+              let { pageId } = event;
+              const { pageHandle } = event;
+
+              // Resolve pageHandle → pageId if pageId not provided
+              if (!pageId && pageHandle) {
+                const pages = get().modules[moduleId].pages;
+                pageId = pages.find((p) => p.handle === pageHandle.toLowerCase())?.id;
+                if (!pageId) {
+                  throw new Error(`Invalid page handle: "${pageHandle}"`);
+                }
+              }
+
               if (!pageId) {
-                throw new Error('No page ID provided');
+                throw new Error('Either pageId or pageHandle must be provided');
               }
               const { switchPage } = get();
-              const page = get().modules[moduleId].pages.find((page) => page.id === event.pageId);
+              const page = get().modules[moduleId].pages.find((page) => page.id === pageId);
               const queryParams = event.queryParams || [];
               if (page.restricted && mode !== 'edit') {
                 toast.error('Access to this page is restricted. Contact admin to know more.');
@@ -1007,7 +1033,7 @@ export const createEventsSlice = (set, get) => ({
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters, moduleId = 'canvas') => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns) => {
         const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
@@ -1031,7 +1057,7 @@ export const createEventsSlice = (set, get) => ({
         }
 
         if (isPreview) {
-          return previewQuery(query, true, processedParams);
+          return previewQuery(query, true, processedParams, moduleId, callbackFns);
         }
 
         const event = {
@@ -1039,6 +1065,7 @@ export const createEventsSlice = (set, get) => ({
           queryId: query.id,
           queryName: query.name,
           parameters: processedParams,
+          callbackFns,
         };
 
         return executeAction(event, mode, {}, moduleId);
@@ -1308,7 +1335,7 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const scrollComponentInToView = (componentName, eventObj, moduleId = 'canvas') => {
+      const scrollComponentInToView = (componentName, eventObj = {}, moduleId = 'canvas') => {
         let componentId = '';
         const { behaviour = 'smooth', block = 'nearest' } = eventObj;
         for (const [key, value] of currentComponents) {

@@ -32,6 +32,7 @@ import {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -121,6 +122,7 @@ export const widgets = [
   checkboxConfig,
   toggleSwitchV2Config,
   radiobuttonV2Config,
+  fileinputConfig,
   treeSelectConfig,
 
   //Date and time inputs

@@ -118,7 +118,7 @@ export const fillDataSourceTextField = (
   assertionType = "have",
   args
 ) => {
-  cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should(
+  cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should(
     `${assertionType}.text`,
     fieldName
   );
