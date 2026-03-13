@@ -56,11 +56,48 @@ digraph workflow {
 
 ## Step 1 — Determine if shadcn primitive is needed
 
-**Use shadcn primitive for:** Select, Dialog, Dropdown, Tooltip, Popover, Sheet, Tabs, Accordion, Command, Combobox, DatePicker — anything Radix-backed with complex keyboard/accessibility behaviour.
+**Rule:** Use shadcn when the component has a **Radix primitive underneath** (accessibility, keyboard, state machine). Skip shadcn when the component is **pure styling only** — wrapping a CVA wrapper in another CVA wrapper adds nothing.
 
-**Skip shadcn for:** Button, Badge, Label, Spinner, Avatar, Divider — anything that's just a styled element with no Radix state machine.
+### Use shadcn primitive for:
 
-If unsure: check `https://ui.shadcn.com/docs/components/{name}`.
+| Component | Radix package |
+|---|---|
+| Select | @radix-ui/react-select |
+| Dialog / AlertDialog | @radix-ui/react-dialog |
+| Tooltip | @radix-ui/react-tooltip |
+| Popover | @radix-ui/react-popover |
+| DropdownMenu | @radix-ui/react-dropdown-menu |
+| Tabs | @radix-ui/react-tabs |
+| Checkbox | @radix-ui/react-checkbox |
+| Switch | @radix-ui/react-switch |
+| RadioGroup | @radix-ui/react-radio-group |
+| Accordion | @radix-ui/react-accordion |
+| Sheet | @radix-ui/react-dialog |
+| NavigationMenu | @radix-ui/react-navigation-menu |
+| Slider | @radix-ui/react-slider |
+| Toggle | @radix-ui/react-toggle |
+| Collapsible | @radix-ui/react-collapsible |
+| HoverCard | @radix-ui/react-hover-card |
+| Avatar | @radix-ui/react-avatar |
+| Progress | @radix-ui/react-progress |
+| ScrollArea | @radix-ui/react-scroll-area |
+| Command | cmdk |
+| Calendar / DatePicker | react-day-picker |
+
+### Skip shadcn — write Rocket HOC directly:
+
+| Component | Why skip |
+|---|---|
+| Button | shadcn Button is just CVA+Slot, no Radix |
+| Badge | pure styled span |
+| Label | pure styled label |
+| Input | pure styled input |
+| Textarea | pure styled textarea |
+| Skeleton | pure styled div |
+| Separator | pure styled hr/div |
+| Spinner | pure animation |
+
+If unsure: read `shadcn-reference.md` (co-located with this skill). It has the full list with Radix status and CLI commands for every shadcn component. Only fall back to the live shadcn website if the component isn't listed there.
 
 ---
 

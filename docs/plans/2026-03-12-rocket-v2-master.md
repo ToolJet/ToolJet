@@ -45,10 +45,36 @@ Features / Pages             → src/features/<name>/
 | Dark mode class | `.dark-theme` (ToolJet convention) |
 | Tailwind dark modifier | `darkMode: ['class', '[class~="dark-theme"]']` — needs fixing in tailwind.config.js |
 | `globals.css` | NOT loaded in production — leave for shadcn CLI compat only; add new CSS vars to componentdesign.scss instead |
-| Simple primitives (Button, Badge) | CVA + Radix Slot directly — no shadcn layer needed |
-| Complex interactive (Select, Dialog, Tooltip…) | Install shadcn primitive → wrap in Rocket HOC |
+| Pure-styling components (Button, Badge, Input…) | Write Rocket HOC directly — no shadcn layer (shadcn Button is just CVA+Slot, wrapping it adds nothing) |
+| Radix-backed components (Select, Dialog, Tooltip…) | Install shadcn primitive → run shadcn-to-v3 → wrap in Rocket HOC |
 | Component approach | `forwardRef`, `PropTypes`, `displayName`, CVA for variants |
 | `cn()` utility | Already at `@/lib/utils` (classnames + tailwind-merge with tw- prefix) |
+
+### shadcn component catalogue
+
+**Reference doc:** `.claude/skills/create-rocket-component/shadcn-reference.md` — full list with Radix status + CLI commands, synced from the shadcn GitHub repo on 2026-03-13. Co-located with the skill so it's always available during execution.
+
+Decision rule: **Does shadcn's implementation use a `@radix-ui` package?** If yes → install via CLI + wrap. If no → write HOC directly.
+
+| Use shadcn CLI | Radix package | Skip shadcn — write directly |
+|---|---|---|
+| Select | @radix-ui/react-select | Button |
+| Dialog / AlertDialog | @radix-ui/react-dialog | Badge |
+| Tooltip | @radix-ui/react-tooltip | Label |
+| Popover | @radix-ui/react-popover | Input |
+| DropdownMenu | @radix-ui/react-dropdown-menu | Textarea |
+| Tabs | @radix-ui/react-tabs | Skeleton |
+| Checkbox | @radix-ui/react-checkbox | Separator |
+| Switch | @radix-ui/react-switch | Spinner |
+| RadioGroup | @radix-ui/react-radio-group | |
+| Accordion | @radix-ui/react-accordion | |
+| Sheet | @radix-ui/react-dialog | |
+| Slider | @radix-ui/react-slider | |
+| Avatar | @radix-ui/react-avatar | |
+| Progress | @radix-ui/react-progress | |
+| ScrollArea | @radix-ui/react-scroll-area | |
+| Command | cmdk | |
+| Calendar / DatePicker | react-day-picker | |
 
 ### Tailwind v3.4 prefix rules
 

@@ -10,5 +10,4 @@
  * Add exports here after running /create-rocket-component.
  */
 
-// Components will be exported here as they are built.
-// e.g. export { Button } from './Button/Button';
+export { Button, buttonVariants } from './Button/Button';
