@@ -40,7 +40,7 @@ export class ValidateQuerySourceGuard implements CanActivate {
       if (id) {
         dataSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
       } else {
-        dataSource = await this.dataSourceRepository.findById(dataSourceId);
+        dataSource = await this.dataSourceRepository.findById(dataSourceId, user.organizationId);
       }
 
       // If app is not found, throw NotFoundException
