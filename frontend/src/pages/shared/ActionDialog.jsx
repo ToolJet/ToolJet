@@ -16,6 +16,7 @@ export default function ActionDialog({
   ...dialogBodyProps
 }) {
   const { label: submitBtnLabel, ...submitBtnPropsRest } = submitBtnProps;
+  const { label: cancelBtnLabel, ...cancelBtnPropsRest } = cancelBtnProps;
 
   const DialogBody = Slot;
 
@@ -36,8 +37,8 @@ export default function ActionDialog({
         </DialogBody>
 
         <DialogFooter className={cn('tw-px-6 tw-py-4 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}>
-          <Button variant="outline" size="default" {...cancelBtnProps}>
-            Cancel
+          <Button variant="outline" size="default" {...cancelBtnPropsRest}>
+            {cancelBtnLabel ?? 'Cancel'}
           </Button>
 
           <Button variant="primary" size="default" {...submitBtnPropsRest}>

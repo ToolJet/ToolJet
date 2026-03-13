@@ -14,9 +14,16 @@ import {
   SelectItemText,
   SelectSeparator,
 } from '@/components/ui/Rocket/select';
+import { useWorkflowListStore } from '../../Workflows/store';
 
 export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder, onAddNewFolder }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
+
+  const handleCreateNewFolder = () => {
+    setFolderDialogState({ type: 'create-folder' });
+  };
 
   return (
     <Breadcrumb>
@@ -48,17 +55,18 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                       <Button
                         isLucid
                         iconOnly
-                        size="medium"
-                        variant="ghost"
-                        leadingIcon="trash"
-                        onClick={onAddNewFolder}
-                      />
-                      <Button
-                        isLucid
-                        iconOnly
                         size="small"
                         variant="ghost"
                         leadingIcon="square-pen"
+                        onClick={onAddNewFolder}
+                      />
+
+                      <Button
+                        isLucid
+                        iconOnly
+                        size="medium"
+                        variant="ghost"
+                        leadingIcon="trash"
                         onClick={onAddNewFolder}
                       />
                     </div> */}
@@ -66,11 +74,17 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                 ))}
               </SelectGroup>
 
-              {/* <SelectSeparator />
+              <SelectSeparator />
 
-              <Button isLucid variant="ghostBrand" leadingIcon="plus" className="tw-w-full" onClick={onAddNewFolder}>
+              <Button
+                isLucid
+                variant="ghostBrand"
+                leadingIcon="plus"
+                className="tw-w-full"
+                onClick={handleCreateNewFolder}
+              >
                 New folder
-              </Button> */}
+              </Button>
             </SelectContent>
           </Select>
         </BreadcrumbItem>

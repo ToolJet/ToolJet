@@ -22,6 +22,7 @@ import CRUDActionDialog from '../shared/CRUDActionDialog';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import CreateWorkflowBtn from './components/CreateWorkflowBtn';
 // import MoreActionsMenu from './components/MoreActionsMenu';
+import FolderActionDialog from '../shared/FolderBreadcrumb/FolderActionDialog';
 
 // TODOs:
 // Dialogs: Create/Rename/Delete/Import/Export workflow, Import workflow, Create/Edit/Delete folder, Move to folder, Change Icon
@@ -137,6 +138,7 @@ export default function Workflows() {
       <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
 
       <CRUDActionDialog />
+      <FolderActionDialog appType="workflow" />
     </WorkspaceLayout>
   );
 }

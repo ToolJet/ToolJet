@@ -15,11 +15,11 @@ const moreActionOptions = [
   { label: 'Rename app', icon: <AppWindow size={16} color="var(--icon-weak)" />, action: 'rename-app' },
   { label: 'Customize icon', icon: <PencilRuler size={16} color="var(--icon-weak)" />, action: 'customize-icon' },
   // { label: 'Duplicate app', icon: <Copy size={16} color="var(--icon-weak)" />, action: 'duplicate-app' }, // Only for apps/modules
-  { label: 'Move to folder', icon: <FolderInput size={16} color="var(--icon-weak)" />, action: 'move-to-folder' },
+  { label: 'Move to folder', icon: <FolderInput size={16} color="var(--icon-weak)" />, action: 'add-to-folder' },
   {
     label: 'Remove from folder',
     icon: <FolderOutput size={16} color="var(--icon-weak)" />,
-    action: 'remove-from-folder',
+    action: 'remove-app-from-folder',
   },
   { label: 'Export app', icon: <FileUp size={16} color="var(--icon-weak)" />, action: 'export-app' },
   { label: 'Delete app', icon: <Trash size={16} color="var(--icon-weak)" />, action: 'delete-app' },
@@ -34,6 +34,7 @@ export default function AppCard({
   onEdit,
   onToggleMenu,
   onMenuItemClick,
+  isUserNotInAllFolder,
 }) {
   const { name, editing_version, updated_at } = appDetails;
 
@@ -91,16 +92,33 @@ export default function AppCard({
 
               <DropdownMenuContent className="w-40" align="start">
                 <DropdownMenuGroup>
-                  {moreActionOptions.map((option) => (
+                  {/* {moreActionOptions.map((option) => (
                     <DropdownMenuItem
                       key={option.action}
                       className="tw-text-text-default tw-font-body-default"
-                      onClick={() => onMenuItemClick(option.action)}
+                      onClick={() => onMenuItemClick(option.action, appDetails)}
                     >
                       {option.icon}
                       {option.label}
                     </DropdownMenuItem>
-                  ))}
+                  ))} */}
+                  <DropdownMenuItem
+                    className="tw-text-text-default tw-font-body-default"
+                    onClick={() => onMenuItemClick('add-to-folder', appDetails)}
+                  >
+                    <FolderInput size={16} color="var(--icon-weak)" />
+                    Move to folder
+                  </DropdownMenuItem>
+
+                  {isUserNotInAllFolder && (
+                    <DropdownMenuItem
+                      className="tw-text-text-default tw-font-body-default"
+                      onClick={() => onMenuItemClick('remove-app-from-folder', appDetails)}
+                    >
+                      <FolderOutput size={16} color="var(--icon-weak)" />
+                      Remove from folder
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>

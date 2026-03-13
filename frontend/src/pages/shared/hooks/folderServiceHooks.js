@@ -7,6 +7,10 @@ import { folderService } from '@/_services/folder.service';
 import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
+// TODO: Check if we can move this logic away from this file
+import { useAppFilters } from './useAppFilters';
+import { useWorkflowListStore } from '../../Workflows/store';
+
 const defaultFolder = (appType) => ({
   label: `All ${appType === 'workflow' ? 'workflows' : 'applications'}`,
   value: 'all',
@@ -20,12 +24,12 @@ const selectFolders = (appType) => (raw) => {
 };
 
 export function useFetchFolders(queryParams, options) {
-  const { searchKey = '', appType = 'front-end' } = queryParams;
-  const { enabled = true } = options; // TODO: remove this later on if not required
+  const { appSearchQuery = '', appType = 'front-end' } = queryParams;
+  const { enabled = true } = options; // Will be required on modules page
 
   return useQuery({
-    queryKey: ['folders', { searchKey, appType }],
-    queryFn: () => folderService.getAll(searchKey, appType),
+    queryKey: ['folders', { appSearchQuery, appType }],
+    queryFn: () => folderService.getAll('', appType),
     select: selectFolders(appType),
     enabled,
     staleTime: Infinity,
@@ -40,9 +44,9 @@ export function useCreateFolder() {
     onError: (error) => {
       handleHttpErrorMessages(error, 'folder');
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       toast.success('Folder created.');
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
 
       posthogHelper.captureEvent('create_folder', {
         workspace_id:
@@ -55,8 +59,11 @@ export function useCreateFolder() {
 }
 
 export function useUpdateFolder() {
+  const { setFilters } = useAppFilters();
   const queryClient = useQueryClient();
-  const [setSearchParams] = useSearchParams();
+  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+
+  // const [setSearchParams] = useSearchParams();
 
   return useMutation({
     mutationFn: ({ name, folderId }) => folderService.updateFolder(name, folderId),
@@ -66,15 +73,18 @@ export function useUpdateFolder() {
     onSuccess: (response, variables) => {
       toast.success('Folder has been updated.');
 
-      setSearchParams({ folder: variables.name }); // TODO: Should we reset pagination??
+      setCurrentPage(1);
+      setFilters({ folderName: variables.name ?? '' });
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+      // setSearchParams({ folder: variables.name }); // TODO: Should we reset pagination??
     },
   });
 }
 
 export function useDeleteFolder() {
+  const { setFilters } = useAppFilters();
   const queryClient = useQueryClient();
-  const [setSearchParams] = useSearchParams();
+  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: (folderId) => folderService.deleteFolder(folderId),
@@ -84,14 +94,18 @@ export function useDeleteFolder() {
     onSuccess: () => {
       toast.success('Folder has been deleted.');
 
-      setSearchParams(undefined); // TODO: Navigate to all folder, Should we reset pagination??
+      setCurrentPage(1);
+      setFilters({ folderName: '' });
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+
+      // setSearchParams(undefined); // TODO: Navigate to all folder, Should we reset pagination??
     },
   });
 }
 
 export function useAddAppToFolder() {
-  const queryClient = useQueryClient();
+  const { folderId } = useAppFilters();
+  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.addToFolder(appId, folderId),
@@ -101,8 +115,10 @@ export function useAddAppToFolder() {
     onSuccess: (response, variables) => {
       toast.success('Added to folder.');
 
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
-      // TODO: Reset pagination??
+      if (folderId) {
+        setCurrentPage(1);
+      }
+
       posthogHelper.captureEvent('click_add_to_folder_button', {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
@@ -115,18 +131,20 @@ export function useAddAppToFolder() {
 }
 
 export function useRemoveAppFromFolder() {
-  const queryClient = useQueryClient();
+  const { folderId } = useAppFilters();
+  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.removeAppFromFolder(appId, folderId),
     onError: (error) => {
       toast.error(error?.error ?? '');
     },
-    onSuccess: (response, variables) => {
+    onSuccess: () => {
       toast.success('Removed from folder.');
 
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
-      // TODO: Reset pagination??
+      if (folderId) {
+        setCurrentPage(1);
+      }
     },
   });
 }
