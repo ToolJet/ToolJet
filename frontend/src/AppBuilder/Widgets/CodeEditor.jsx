@@ -32,6 +32,7 @@ const CodeEditor = ({
   width,
   currentMode,
   subContainerIndex,
+  componentType,
 }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -49,6 +50,7 @@ const CodeEditor = ({
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   const codeChanged = debounce((code) => {
