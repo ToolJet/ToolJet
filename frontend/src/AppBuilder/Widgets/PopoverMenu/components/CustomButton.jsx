@@ -32,6 +32,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     boxShadow,
     iconColor,
     direction,
+    contentAlignment,
     iconVisibility,
     icon,
   } = styles;
@@ -78,6 +79,13 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
   const computedIconSize = computedLineHeight * 0.8;
   const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
   const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const isReverseDirection = direction === 'left';
+  const computedContentAlignment =
+    {
+      left: isReverseDirection ? 'flex-end' : 'flex-start',
+      center: 'center',
+      right: isReverseDirection ? 'flex-start' : 'flex-end',
+    }[contentAlignment] ?? 'center';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -178,7 +186,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
               display: !exposedVariablesTemporaryState.isLoading ? 'flex' : 'none',
               alignItems: 'center',
               flexDirection: direction == 'left' ? 'row-reverse' : 'row',
-              justifyContent: 'center',
+              justifyContent: computedContentAlignment,
               gap: label?.length > 0 && '6px',
             }}
           >

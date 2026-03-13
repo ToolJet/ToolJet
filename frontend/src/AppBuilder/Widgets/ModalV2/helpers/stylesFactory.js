@@ -20,8 +20,16 @@ export function createModalStyles({
   headerDividerColor,
   footerDividerColor,
   direction,
+  triggerButtonContentAlignment,
 }) {
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
+  const isReverseDirection = direction === 'left';
+  const computedTriggerButtonContentAlignment =
+    {
+      left: isReverseDirection ? 'flex-end' : 'flex-start',
+      center: 'center',
+      right: isReverseDirection ? 'flex-start' : 'flex-end',
+    }[triggerButtonContentAlignment] ?? 'center';
   return {
     modalBody: {
       height: backwardCompatibilityCheck ? computedCanvasHeight : height,
@@ -48,6 +56,7 @@ export function createModalStyles({
       width: '100%',
       display: isVisible ? '' : 'none',
       flexDirection: direction === 'left' ? 'row-reverse' : 'row',
+      justifyContent: computedTriggerButtonContentAlignment,
       gap: '6px',
       '--tblr-btn-color-darker':
         triggerButtonHoverBackgroundColor === 'var(--cc-primary-brand)'

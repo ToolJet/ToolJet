@@ -64,6 +64,7 @@ export const ModalV2 = function Modal({
     triggerButtonTextColor,
     triggerButtonTextSize = 14,
     triggerButtonFontWeight,
+    triggerButtonContentAlignment,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
@@ -210,6 +211,7 @@ export const ModalV2 = function Modal({
     headerDividerColor,
     footerDividerColor,
     direction,
+    triggerButtonContentAlignment,
   });
 
   const { modalWidth, parentRef } = useModalEventSideEffects({

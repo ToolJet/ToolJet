@@ -134,6 +134,15 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
+    contentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'button',
+    },
 
     icon: {
       type: 'icon',
@@ -257,6 +266,7 @@ export const buttonConfig = {
       textColor: { value: '#FFFFFF' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },
+      contentAlignment: { value: 'center' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },

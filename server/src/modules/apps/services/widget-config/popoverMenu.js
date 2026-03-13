@@ -158,6 +158,15 @@ export const popoverMenuConfig = {
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
             accordian: 'Menu',
         },
+        contentAlignment: {
+            type: 'alignButtons',
+            displayName: 'Content alignment',
+            validation: {
+                schema: { type: 'string' },
+                defaultValue: 'center',
+            },
+            accordian: 'Menu',
+        },
         icon: {
             type: 'icon',
             displayName: 'Icon',
@@ -309,6 +318,7 @@ export const popoverMenuConfig = {
             fontWeight: { value: 'normal' },
             borderColor: { value: 'var(--cc-primary-brand)' },
             loaderColor: { value: 'var(--cc-surface1-surface)' },
+            contentAlignment: { value: 'center' },
             icon: { value: 'IconMenu2' },
             iconVisibility: { value: '{{true}}' },
             iconColor: { value: '#FFFFFF' },

@@ -301,6 +301,15 @@ export const modalV2Config = {
       ],
       accordian: 'trigger button',
     },
+    triggerButtonContentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'trigger button',
+    },
     icon: {
       type: 'icon',
       displayName: 'Icon',
@@ -402,6 +411,7 @@ export const modalV2Config = {
       triggerButtonTextColor: { value: '#ffffffff' },
       triggerButtonTextSize: { value: '{{14}}' },
       triggerButtonFontWeight: { value: 'normal' },
+      triggerButtonContentAlignment: { value: 'center' },
       headerDividerColor: { value: 'var(--cc-default-border)' },
       footerDividerColor: { value: 'var(--cc-default-border)' },
     },
