@@ -28,6 +28,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Port",
@@ -38,6 +39,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Database name",
@@ -48,6 +50,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Username",
@@ -170,5 +173,136 @@ export const postgresFormConfig = {
             fieldName: "SSL",
             shouldBeChecked: true
         }
+    ],
+};
+
+export const postgresQueryConfig = {
+    defaultFields: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            validations: {
+                defaultValue: "SQL mode",
+                disabled: false,
+            },
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Query",
+            assertion: "contain.text",
+            data: "SELECT * FROM users",
+        },
+        {
+            type: "label",
+            fieldName: "SQL Parameters",
+        },
+        {
+            type: "keyValue",
+            fieldName: null,
+            validations: {
+                rows: [
+                    {
+                        key: "Key",
+                        keyAssertion: "contain.text",
+                        value: "Value",
+                        valueAssertion: "contain.text",
+                        hasDeleteButton: true,
+                    },
+                ],
+            },
+        },
+        {
+            type: "button",
+            fieldName: "Add SQL parameter",
+            validations: {
+                disabled: false,
+            },
+        },
+    ],
+    guiModeDefault: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            validations: {
+                defaultValue: "Select..",
+                disabled: false,
+            },
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "codeMirror",
+            fieldName: "Table",
+            assertion: "contain.text",
+            data: "Enter table",
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Primary key column",
+            assertion: "contain.text",
+            data: "Enter primary key column",
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Records to update",
+            assertion: "contain.text",
+            data: "{{ [ ] }}",
+        },
+    ],
+};
+
+export const postgresQueryFillConfig = {
+    switchToGuiMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "GUI mode",
+        },
+    ],
+    switchToSqlMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "SQL mode",
+        },
+    ],
+    selectBulkUpdateOperation: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            text: "Bulk update using primary key",
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "codeMirrorInput",
+            fieldName: "Table",
+            text: ["student_data"],
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Primary key column",
+            text: ["id"],
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Records to update",
+            text: '{{ [{"id": 2, "name": "Bob Smith Updated"}] }}',
+        },
+    ],
+    selectWithParams: [
+        {
+            type: "codeMirrorInput",
+            fieldName: "query",
+            text: ["select name from student_data where id=:id"],
+        },
+        {
+            type: "codeMirrorKeyValue",
+            fieldName: null,
+            addButtonFieldName: "add-sql-parameter",
+            keyValueData: [
+                { key: "id", value: "2" },
+            ],
+        },
     ],
 };
