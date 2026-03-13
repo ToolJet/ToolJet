@@ -216,9 +216,9 @@ The exact order is driven by what Blocks and Features need — we don't build co
 
 | Question | Status |
 |---|---|
-| Figma MCP — what tools does it expose? What does a node lookup return? | Needs verification in fresh session |
-| `lts-3.16` — available locally as remote branch? | Needs `git branch -a` check |
-| Storybook Tailwind CSS processing — is PostCSS set up in Storybook webpack? | Needs verification at start of foundation setup |
+| Figma MCP — what tools does it expose? What does a node lookup return? | ✅ Verified 2026-03-13 — documented in skill + `memory/feedback_figma_mcp.md` |
+| `lts-3.16` — available locally as remote branch? | ✅ Confirmed locally, `design/rocket-v2` branched from it |
+| Storybook Tailwind CSS processing — is PostCSS set up in Storybook webpack? | ✅ Fixed — MiniCssExtractPlugin → style-loader in `.storybook/main.js` |
 | Motion tokens — when? | Deferred to after first 5 components |
 
 ---
@@ -230,6 +230,8 @@ The exact order is driven by what Blocks and Features need — we don't build co
 | Architecture decisions | ✅ Complete |
 | Token audit | ✅ Complete |
 | `shadcn-to-v3` skill | ✅ Written, in project context |
-| Foundation setup | ❌ Not started |
-| `create-rocket-component` skill | ❌ Not written — blocked on Figma MCP verification |
-| Memory updated | ❌ Stale |
+| Foundation setup | ✅ Complete (2026-03-13) — 10 commits on `design/rocket-v2` |
+| `create-rocket-component` skill | ✅ Written — spec-file pattern, 4 CVA shapes, Figma MCP documented |
+| Figma MCP | ✅ Verified working (2026-03-13) |
+| Memory updated | ✅ Current |
+| **Next** | `/create-rocket-component` → Button |

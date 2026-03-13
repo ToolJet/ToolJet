@@ -7,7 +7,7 @@ description: Use when adding a new component to the Rocket design system in Tool
 
 ## Overview
 
-Interactive workflow for adding a component to the Rocket design system. Handles shadcn install, Tailwind v3 conversion, variant collection (via Figma MCP or prompts), HOC generation, and stories — in the correct order, with the correct patterns.
+Interactive workflow for adding a component to the Rocket design system. The **spec file** (`{Name}.spec.md`) is the source of truth for every component — it is created once (from Figma MCP or interactive prompts), committed to the repo, and re-used on every subsequent code generation. Figma is only consulted when the spec doesn't exist yet or when a deliberate re-sync is requested.
 
 **Required sub-skill:** `shadcn-to-v3` — MUST run after every shadcn install.
 
@@ -24,23 +24,30 @@ digraph workflow {
   B [label="2. Needs shadcn primitive?" shape=diamond];
   C [label="npx shadcn@latest add {name}\nin frontend/"];
   D [label="invoke shadcn-to-v3\non installed file" shape=box style=filled fillcolor=lightyellow];
+  S [label="3. {Name}.spec.md exists?" shape=diamond];
+  SR [label="Read spec file\nskip to Step 4"];
   E [label="Figma URL provided?" shape=diamond];
-  F [label="Read Figma node via MCP\nextract variants/sizes/states"];
+  F [label="Call Figma MCP\nextract variants/sizes/states/tokens"];
   G [label="Ask interactively:\nvariants, sizes, states, slots"];
-  H [label="Generate Rocket/{Name}/{Name}.jsx"];
-  I [label="Generate {Name}.stories.jsx"];
-  J [label="Update Rocket/index.js"];
-  K [label="Output checklist"];
+  W [label="Write {Name}.spec.md\nshow user to confirm/tune" shape=box style=filled fillcolor=lightyellow];
+  H [label="4. Generate Rocket/{Name}/{Name}.jsx\n(from spec)"];
+  I [label="5. Generate {Name}.stories.jsx\n(from spec)"];
+  J [label="6. Update Rocket/index.js"];
+  K [label="7. Output checklist"];
 
   A -> B;
   B -> C [label="yes"];
-  B -> E [label="no"];
+  B -> S [label="no"];
   C -> D;
-  D -> E;
+  D -> S;
+  S -> SR [label="yes"];
+  S -> E [label="no"];
   E -> F [label="yes + MCP available"];
   E -> G [label="no / no MCP"];
-  F -> H;
-  G -> H;
+  F -> W;
+  G -> W;
+  SR -> H;
+  W -> H;
   H -> I -> J -> K;
 }
 ```
@@ -73,33 +80,203 @@ If shadcn added CSS vars there → copy only the new `--var: value` lines to `co
 
 ---
 
-## Step 3 — Collect variants and states
+## Step 3 — Spec file: read or create
 
-### Option A: Figma MCP (preferred)
+**First: check if the spec file already exists:**
+
+```
+frontend/src/components/ui/Rocket/{Name}/{Name}.spec.md
+```
+
+- **Exists → read it, skip to Step 4.** Do not call Figma MCP. Do not ask interactive questions.
+- **Does not exist → create it** using Option A (Figma MCP) or Option B (interactive prompts).
+
+---
+
+### Option A: Create spec from Figma MCP
 
 Ask: *"Do you have a Figma node URL for this component?"*
 
-If yes, use the Figma MCP to read the node. Extract:
-- **Variants** (e.g. Type=Primary, Type=Secondary)
-- **Sizes** (e.g. Size=SM, Size=MD, Size=LG)
-- **States** (e.g. State=Default, State=Hover, State=Disabled, State=Loading)
-- **Slots** (leading icon, trailing icon, prefix text, etc.)
-- **Prop names** as ToolJet would express them (map Figma names → code-friendly names)
+If yes, call **two tools in parallel:**
 
-### Option B: Interactive prompts (fallback)
+```
+mcp__figma-desktop__get_design_context
+  nodeId:           extract from URL — prefer focus-id over node-id (see below)
+  artifactType:     "REUSABLE_COMPONENT"
+  clientFrameworks: "react"
+  clientLanguages:  "javascript,typescript"
+
+mcp__figma-desktop__get_metadata
+  nodeId:           the node-id from the URL (page/canvas level)
+  clientFrameworks: "react"
+  clientLanguages:  "javascript,typescript"
+```
+
+Then call separately:
+
+```
+mcp__figma-desktop__get_variable_defs
+  nodeId: <same focus-id or component frame node>
+```
+
+**Extracting nodeId from a Figma URL:**
+- URL format: `https://www.figma.com/design/:fileKey/:name?node-id=66-30830&focus-id=68-45650`
+- `node-id=66-30830` → `66:30830` (replace `-` between the two numbers with `:`)
+- `focus-id=68-45650` → `68:45650`
+- **Use the `focus-id` node for `get_design_context`** — it targets the actual component frame. The `node-id` is often the page/canvas, which causes failures.
+- Use the `node-id` for `get_metadata` — it returns the full page tree.
+
+**"Too large" failure mode — sublayer strategy:**
+
+If `get_design_context` returns sparse metadata with _"design was too large... call get_design_context on the IDs of the sublayers"_:
+
+1. Use `get_metadata` output to find named child frames (ignore "Instance Table", "Labels", annotation frames)
+2. Call `get_design_context` on each named component frame (not the canvas, not individual `<symbol>` nodes)
+3. If frames are also too large, use `get_metadata` alone — semantic symbol names contain all the info needed
+
+Individual `<symbol>` nodes always return empty from `get_design_context`. Never call it on a symbol.
+
+**What to extract from `get_design_context`:**
+- TypeScript props type → prop names and string union values
+- `property1` / `Variant2` = Figma defaults when variants aren't named → resolve via metadata
+- Sizes as px classNames: `size-[40px]`, `size-[32px]` → cross-ref with metadata symbol dimensions
+
+**What to extract from `get_metadata`:**
+- Symbol names encode all variant info (two naming conventions in the wild):
+  - Simple: `Size=xs, State=Default`
+  - Emoji-prefixed: `📏 size=large, 🖱️ state=hover, 🎚️ varient=primary, 🔞 danger?=false`
+- Use `width`/`height` on each symbol to map unsemantic `VariantN` → semantic label
+
+**Figma naming → code props:**
+
+| Figma pattern | Code prop | Notes |
+|---|---|---|
+| `Size=xs/sm/md/lg` / `size=small/medium/large/default` | `size` | Direct prop values |
+| `varient=primary/secondary/ghost/outline` | `variant` | Note: Figma file has typo "varient" |
+| `danger?=true/false` | `danger` | Boolean prop |
+| `State=hover/pressed/focus` | not a prop | CSS: `hover:`, `active:`, `focus-visible:` |
+| `State=rest (default)` | not a prop | Same as `default` — Figma uses both spellings |
+| `State=disabled` | `disabled` | boolean prop + HTML attr |
+| `State=loading` | `loading` | boolean prop |
+| `State=Error` | `status` | `'error'` variant value |
+
+**What to extract from `get_variable_defs`:**
+- Returns `{ 'token/path': '#hexvalue' }` — slash-separated, lowercase paths
+- Color tokens: `button/primary → #4368e3` — maps to `tw-bg-button-primary`
+- Font tokens: `Font(family: "IBM Plex Sans", style: Medium, size: 14, ...)` — string, not hex
+- Effect tokens: `Effect(type: DROP_SHADOW, ...)` — string, not hex
+- Do not use raw hex values in the HOC — find the matching ToolJet token class
+
+**After extracting all data, write the spec file (see format below), then show it to the user to confirm or correct before proceeding.**
+
+---
+
+### Option B: Create spec from interactive prompts (fallback)
 
 Ask in sequence — wait for each answer before asking the next:
 
-1. *"What are the visual variants?"* (e.g. primary, secondary, outline, ghost, danger)
-2. *"What sizes?"* (e.g. sm, default, lg — or none if single size)
-3. *"What states apply?"* disabled / loading / error / success — pick all that apply
+1. *"Does this component have visual variants?"* (e.g. primary, secondary, outline — or **none**)
+2. *"Does this component have size variants?"* (e.g. sm, default, lg — or **none**)
+3. *"What interactive states apply?"* disabled / loading / error — pick all that apply (or none)
 4. *"Any icon slots or special features?"* leading icon, trailing icon, clearable, counter, etc.
+5. *"Any boolean modifier props?"* (e.g. `danger`, `fullWidth`, `rounded`)
+
+**"None" is a valid answer for 1 and 2.**
+
+After collecting answers, write the spec file (see format below) and show it to the user to confirm before proceeding.
+
+---
+
+### Spec file format
+
+**Path:** `frontend/src/components/ui/Rocket/{Name}/{Name}.spec.md`
+
+```markdown
+# {Name} — Rocket Design Spec
+<!-- figma: https://www.figma.com/design/... -->
+<!-- synced: YYYY-MM-DD -->
+
+## Props
+
+| Prop | Type | Values | Default |
+|---|---|---|---|
+| variant | string | primary \| secondary \| ghost \| outline | primary |
+| size | string | large \| default \| medium \| small | default |
+| danger | boolean | — | false |
+| disabled | boolean | — | false |
+| loading | boolean | — | false |
+
+## Sizes
+
+| Value | Height | Tailwind |
+|---|---|---|
+| large | 40px | tw-h-10 |
+| default | 32px | tw-h-8 |
+| medium | 28px | tw-h-7 |
+| small | 20px | tw-h-5 |
+
+## Token Mapping
+
+| Element | State | Figma token | ToolJet class |
+|---|---|---|---|
+| background | default | button/primary | tw-bg-button-primary |
+| background | hover | button/primary-hover | hover:tw-bg-button-primary-hover |
+| background | danger | button/danger-primary | tw-bg-button-danger-primary |
+| text | default | text/on-solid | tw-text-on-solid |
+| border | focus | Interactive/focusActive | focus-visible:tw-ring-interactive-focus |
+
+## Slots
+
+- leading icon (optional, `ReactNode`)
+- label (required, `string`)
+- trailing icon (optional, `ReactNode`)
+
+## CVA Shape
+
+Shape A — variants + sizes   (delete rows that don't apply)
+Shape B — variants only
+Shape C — sizes only
+Shape D — no CVA (static classes)
+
+## Notes
+
+- Any special rules, exceptions, or decisions not captured above
+```
+
+**Rules for writing the spec:**
+- Only include props that actually appear in Figma or were confirmed by the user
+- Omit sections that don't apply (e.g. no Sizes section if there are no size variants)
+- Token Mapping: list only tokens confirmed by `get_variable_defs` or known ToolJet tokens — no guessing
+- CVA Shape: pick one, delete the others
+
+---
+
+### Re-syncing spec from Figma
+
+When the user says *"update the {Name} spec from Figma"* or *"sync spec with Figma"*:
+
+1. Read the existing spec file
+2. Re-run the Figma MCP calls (same tools as Option A)
+3. Show a diff of what changed vs the current spec
+4. Ask the user to confirm before overwriting
+5. Write the updated spec — do not regenerate HOC or stories unless explicitly asked
 
 ---
 
 ## Step 4 — Generate the HOC
 
+**Read `{Name}.spec.md` first.** Use the CVA Shape, Props, Sizes, and Token Mapping tables to generate the HOC. Do not rely on memory of prior Figma calls.
+
 See `hoc-template.md` for the full template.
+
+**Choose the CVA shape from the spec:**
+
+| CVA Shape | Has variants? | Has sizes? | Notes |
+|---|---|---|---|
+| A | Yes | Yes | full CVA with `variants` and `size` keys |
+| B | Yes | No | omit `size` from CVA, destructuring, PropTypes |
+| C | No | Yes | omit `variant` from CVA, destructuring, PropTypes |
+| D | No | No | no CVA; static `cn()` call; export `[name]Classes` constant |
 
 **Critical rules — enforce these, they were the failure modes in PR #14498:**
 
@@ -119,15 +296,18 @@ See `hoc-template.md` for the full template.
 
 ## Step 5 — Generate stories
 
+**Read `{Name}.spec.md` first.** Use the Props and CVA Shape to determine which stories to generate.
+
 See `story-template.md` for the full template.
 
 **Rules:**
 - Title: `'Rocket/{Name}'`
 - Tags: `['autodocs']`
-- One named export per variant (e.g. `export const Primary`, `export const Secondary`)
-- One per key state: `Disabled`, `Loading` (if applicable)
-- One `AllVariants` composite story showing every variant side by side
-- One `Sizes` composite story if the component has size variants
+- One named export per variant (e.g. `export const Primary`, `export const Secondary`) — **skip if no variants**
+- One per key state: `Disabled`, `Loading` — **only if those states exist in spec**
+- One `AllVariants` composite story showing every variant side by side — **skip if no variants**
+- One `Sizes` composite story showing every size — **skip if no size variants**
+- If neither variants nor sizes exist: just one `Default` story
 - `parameters: { layout: 'centered' }` on the default export
 - Dark mode works automatically — Storybook decorator applies `.dark-theme`. No extra setup needed.
 
@@ -149,6 +329,7 @@ export { ComponentName, componentNameVariants } from './ComponentName/ComponentN
 
 ```
 ✅ shadcn/{name}.jsx installed + v3-converted   (if applicable)
+✅ Rocket/{Name}/{Name}.spec.md written + confirmed
 ✅ Rocket/{Name}/{Name}.jsx generated
 ✅ Rocket/{Name}/{Name}.stories.jsx generated
 ✅ Rocket/index.js updated
