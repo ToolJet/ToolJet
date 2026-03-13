@@ -6,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
@@ -17,13 +17,10 @@ import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
-import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
-import { DragResizeGhostWidget } from './GhostWidgets';
-
 import { Container } from './Container';
-import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
-import ConfigHandleButton from '@/_components/ConfigHandleButton';
+import { SuspenseCountProvider } from './SuspenseTracker';
+import { MobileLayout } from './Grid/MobileLayout';
+import { DesktopLayout } from './Grid/DesktopLayout';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
@@ -37,8 +34,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-  const mobileCanvasFrameRef = useRef(null);
-  const mobileNavSheetContainerRef = useRef(null);
 
   useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -65,8 +60,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const pageKey = useStore((state) => state.pageKey);
-  const selectedVersion = useStore((state) => state.selectedVersion, shallow);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const isMobileLayout = currentLayout === 'mobile';
@@ -99,19 +92,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     position,
     isPagesSidebarHidden
   );
-  const headerBackgroundColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor,
-    shallow
-  );
-  const headerBorderColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.borderColor,
-    shallow
-  );
-
-  const setCanvasHeaderSelected = useStore((state) => state.setCanvasHeaderSelected, shallow);
-  const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
-  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
-
   const minCanvasWidth = useCanvasMinWidth({
     currentMode,
     isModuleMode,
@@ -179,71 +159,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isCurrentVersionLocked,
   ]);
 
-  // === Shared canvas header JSX (used in both mobile and desktop layouts) ===
-  const _renderCanvasHeaderSlot = () => {
-    if (!showCanvasHeader) return null;
-    return (
-      <div
-        className={cx('canvas-header-slot', {
-          '!tw-w-[450px] tw-mx-auto': isMobileLayout && (currentMode === 'edit' || isMobilePreviewMode),
-          'canvas-header-slot--edit': currentMode === 'edit',
-          'canvas-header-slot--selected': isCanvasHeaderSelected,
-        })}
-        onClick={(e) => {
-          if (currentMode === 'edit') {
-            e.stopPropagation();
-            clearSelectedComponents();
-            setCanvasHeaderSelected(true);
-          }
-        }}
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          flexShrink: 0,
-          padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-          height: `${PAGE_CANVAS_HEADER_HEIGHT}px`,
-          border: `1px solid ${
-            isCanvasHeaderSelected ? 'var(--border-accent-strong)' : headerBorderColor ?? 'var(--cc-default-border)'
-          }`,
-          backgroundColor: headerBackgroundColor ?? (isAppDarkMode ? '#232E3C' : '#fff'),
-          width: '100%',
-        }}
-      >
-        {currentMode === 'edit' && (
-          <div className="canvas-header-tooltip">
-            <ConfigHandleButton
-              className="no-hover"
-              customStyles={{
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 6px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ cursor: 'default' }}>App header</span>
-            </ConfigHandleButton>
-          </div>
-        )}
-        <Container
-          id={`${moduleId}-header`}
-          canvasHeight={PAGE_CANVAS_HEADER_HEIGHT / 10}
-          canvasWidth={window.innerWidth}
-          darkMode={isAppDarkMode}
-          allowContainerSelect={false}
-          styles={{
-            margin: 0,
-            backgroundColor: 'transparent',
-            overflow: 'hidden',
-          }}
-          componentType="AppCanvas"
-          hasNoScroll={true}
-        />
-      </div>
-    );
-  };
-
   // === Shared main canvas Container JSX ===
   const mainCanvasContainer = (
     <Container
@@ -258,97 +173,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       pagePositionType={position}
       appType={appType}
     />
-  );
-
-  // === MOBILE LAYOUT: header + nav + canvas, all inside scroll for Moveable alignment ===
-  const _renderMobileLayout = () => (
-    <div
-      key={pageKey}
-      ref={mobileCanvasFrameRef}
-      data-cy="mobile-canvas-frame"
-      style={{ position: 'relative' }}
-      className={cx('!tw-w-[450px] tw-mx-auto')}
-    >
-      <div
-        ref={mobileNavSheetContainerRef}
-        data-cy="mobile-nav-sheet-container"
-        className={cx('tw-absolute tw-inset-0 tw-overflow-hidden tw-pointer-events-none')}
-      />
-      {/* Canvas header — sticky at top of scroll */}
-      {_renderCanvasHeaderSlot()}
-      {/* Mobile nav — sticky below header */}
-      {appType !== 'module' && (
-        <div
-          style={{
-            position: 'sticky',
-            top: showCanvasHeader ? PAGE_CANVAS_HEADER_HEIGHT : 0,
-            zIndex: 9,
-            flexShrink: 0,
-          }}
-        >
-          <MobileNavigationHeader
-            isMobileDevice={true}
-            currentPageId={currentPageId ?? homePageId}
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            canvasMaxWidth={canvasMaxWidth}
-            canvasContainerRef={mobileNavSheetContainerRef}
-          />
-        </div>
-      )}
-      {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
-      {mainCanvasContainer}
-      {currentMode === 'edit' && <DragResizeGhostWidget />}
-      <div id="component-portal" />
-      {appType !== 'module' && <div id="component-portal" />}
-    </div>
-  );
-
-  // === DESKTOP LAYOUT: flex-column with header + sidebar wrapper for Moveable alignment ===
-  const _renderDesktopLayout = () => (
-    <div
-      key={pageKey}
-      className={cx({ 'h-100': isModuleMode })}
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
-    >
-      {_renderCanvasHeaderSlot()}
-      <div
-        className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
-          'tw-flex-col': position === 'top' || isPagesSidebarHidden,
-        })}
-      >
-        {appType !== 'module' && (
-          <>
-            {/* === SIDEBAR STICKY WRAPPER === */}
-            <div
-              style={{
-                position: 'sticky',
-                top: showCanvasHeader && appType !== 'module' ? PAGE_CANVAS_HEADER_HEIGHT : 0,
-                flexShrink: 0,
-                zIndex: 5,
-                height: sideBarVisibleHeight,
-              }}
-            >
-              <PagesSidebarNavigation
-                isMobileDevice={isMobileLayout}
-                currentPageId={currentPageId ?? homePageId}
-                switchDarkMode={switchDarkMode}
-                isSidebarPinned={isViewerSidebarPinned}
-                setIsSidebarPinned={setIsSidebarPinned}
-                darkMode={darkMode}
-                canvasMaxWidth={canvasMaxWidth}
-                canvasContentRef={canvasContentRef}
-              />
-            </div>
-          </>
-        )}
-        {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
-        {mainCanvasContainer}
-      </div>
-      {currentMode === 'edit' && <DragResizeGhostWidget />}
-      <div id="component-portal" />
-      {appType !== 'module' && <div id="component-portal" />}
-    </div>
   );
 
   return (
@@ -420,7 +244,44 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
-                      {isMobileLayout ? _renderMobileLayout() : _renderDesktopLayout()}
+                      {isMobileLayout ? (
+                        <MobileLayout
+                          pageKey={pageKey}
+                          showCanvasHeader={showCanvasHeader}
+                          isMobileLayout={isMobileLayout}
+                          currentMode={currentMode}
+                          appType={appType}
+                          currentPageId={currentPageId}
+                          homePageId={homePageId}
+                          switchDarkMode={switchDarkMode}
+                          darkMode={darkMode}
+                          canvasMaxWidth={canvasMaxWidth}
+                          isAppDarkMode={isAppDarkMode}
+                          mainCanvasContainer={mainCanvasContainer}
+                        />
+                      ) : (
+                        <DesktopLayout
+                          pageKey={pageKey}
+                          isModuleMode={isModuleMode}
+                          isMobileLayout={isMobileLayout}
+                          showCanvasHeader={showCanvasHeader}
+                          position={position}
+                          isPagesSidebarHidden={isPagesSidebarHidden}
+                          appType={appType}
+                          sideBarVisibleHeight={sideBarVisibleHeight}
+                          currentPageId={currentPageId}
+                          homePageId={homePageId}
+                          switchDarkMode={switchDarkMode}
+                          isViewerSidebarPinned={isViewerSidebarPinned}
+                          setIsSidebarPinned={setIsSidebarPinned}
+                          darkMode={darkMode}
+                          canvasMaxWidth={canvasMaxWidth}
+                          canvasContentRef={canvasContentRef}
+                          currentMode={currentMode}
+                          isAppDarkMode={isAppDarkMode}
+                          mainCanvasContainer={mainCanvasContainer}
+                        />
+                      )}
                     </SuspenseCountProvider>
                   )}
 
