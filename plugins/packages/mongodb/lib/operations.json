@@ -225,6 +225,8 @@
             "invokeMethod": "listCollections",
             "label": "Fetch Collections"
           },
+          "pagination": true,
+          "pageSize": 25,
           "description": "Select a collection from the dropdown",
           "width": "320px",
           "height": "36px",
