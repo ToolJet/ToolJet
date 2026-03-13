@@ -10,7 +10,7 @@ export const dsCommonSelector = {
         return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
     },
     labelFieldName: (fieldName) => {
-        return `[data-cy="label-${cyParamName(fieldName)}"]`;
+        return `[data-cy="${cyParamName(fieldName)}-label"]`;
     },
     textField: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -32,19 +32,25 @@ export const dsCommonSelector = {
         return `[data-cy="${cyParamName(toggleName)}-toggle-input"]`;
     },
     button: (buttonName) => {
-        return `[data-cy="button-${cyParamName(buttonName)}"]`;
+        return `[data-cy="${cyParamName(buttonName)}-button"]`;
     },
     dataSourceNameInputField: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-input-field"]`;
     },
     keyInputField: (header, index) => {
-        return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
+        return header
+            ? `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`
+            : `[data-cy="key-${index}-input-field"]`;
     },
     valueInputField: (header, index) => {
-        return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
+        return header
+            ? `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`
+            : `[data-cy="value-${index}-input-field"]`;
     },
     deleteKeyValueButton: (header, index) => {
-        return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
+        return header
+            ? `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`
+            : `[data-cy="delete-button-${index}"]`;
     },
     addMoreButton: (header) => {
         return `[data-cy="${cyParamName(header)}-add-button"]`;
@@ -63,5 +69,8 @@ export const dsCommonSelector = {
     },
     checkboxInput: (checkboxName) => {
         return `[data-cy="${cyParamName(checkboxName)}-checkbox-input"]`;
-    }
+    },
+    codeMirrorField: (fieldName) => {
+        return `[data-cy="${cyParamName(fieldName)}-input-field"]`;
+    },
 };
