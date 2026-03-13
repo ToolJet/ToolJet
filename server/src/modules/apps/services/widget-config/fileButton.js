@@ -164,7 +164,7 @@ export const fileButtonConfig = {
     labelColor: {
       type: 'colorSwatches',
       displayName: 'Label color',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-text-on-solid)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'label and icon',
     },
     icon: {
@@ -325,7 +325,7 @@ export const fileButtonConfig = {
     styles: {
       labelSize: { value: '14' },
       labelWeight: { value: 'medium' },
-      labelColor: { value: 'var(--cc-text-on-solid)' },
+      labelColor: { value: 'var(--cc-surface1-surface)' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: 'var(--cc-surface1-surface)' },

@@ -36,7 +36,7 @@ export const FileButton = (props) => {
   const {
     labelSize = 14,
     labelWeight = 'medium',
-    labelColor = 'var(--cc-text-on-solid)',
+    labelColor = 'var(--cc-surface1-surface)',
     icon = 'IconHome2',
     iconVisibility,
     iconColor = 'var(--cc-surface1-surface)',
