@@ -124,7 +124,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
-      getExposedValueOfComponent,
+      getExposedPropertyForAdditionalActions,
     } = get();
 
     try {
@@ -157,8 +157,11 @@ export const createGridSlice = (set, get) => ({
       }
 
       // Priority: exposed visibility > component properties > component styles
-      const exposedValues = getExposedValueOfComponent(componentId);
-      const componentExposedVisibility = exposedValues?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        componentId,
+        subContainerIndex,
+        'isVisible'
+      );
       let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
 
       // Override visibility if component is set to not display on current layout
@@ -170,13 +173,15 @@ export const createGridSlice = (set, get) => ({
       if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
         let contentHeight = 0;
 
+        const isAccordionExpanded =
+          getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
+
         // Special handling for Accordion: check if it's collapsed first
         if (componentType === 'Accordion') {
-          const isExpanded = exposedValues?.isExpanded ?? true;
           const { properties = {} } = component || {};
           const { showHeader, headerHeight } = properties;
 
-          if (!isExpanded) {
+          if (!isAccordionExpanded) {
             // Accordion is collapsed - height should be just header height (or minimal if no header)
             if (visibility) {
               if (showHeader && isProperNumber(headerHeight)) {
@@ -195,8 +200,12 @@ export const createGridSlice = (set, get) => ({
         }
 
         // Only proceed with normal calculation if component is not an accordion or accordion is expanded
-        if (componentType !== 'Accordion' || (componentType === 'Accordion' && (exposedValues?.isExpanded ?? true))) {
-          const element = document.querySelector(`.dynamic-${componentId}`);
+        if (componentType !== 'Accordion' || isAccordionExpanded) {
+          const dynamicSelector =
+            doesSubContainerIndexExist && componentType !== 'Listview'
+              ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"] .dynamic-${componentId}`
+              : `.dynamic-${componentId}`;
+          const element = document.querySelector(dynamicSelector);
           // If the component is not a dynamic component, we use the height of the component from the layouts
           if (!element) {
             contentHeight = visibility
@@ -233,7 +242,7 @@ export const createGridSlice = (set, get) => ({
                 const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
                 return {
                   ...acc,
-                  ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
+                  ...(temporaryLayouts[transformedId] && { [id]: temporaryLayouts[transformedId] }),
                 };
               }, {});
 
@@ -434,7 +443,10 @@ export const createGridSlice = (set, get) => ({
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
-        const element = document.querySelector(`.ele-${component.id}`);
+        const targetSelector = doesSubContainerIndexExist
+          ? `.ele-${component.id}[subcontainer-id="${subContainerIndex}"]`
+          : `.ele-${component.id}`;
+        const element = document.querySelector(targetSelector);
         if (!element) continue;
         const transformedTargetComponentId = doesSubContainerIndexExist
           ? `${component.id}-${subContainerIndex}`
@@ -460,24 +472,38 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const element = document.querySelector(`.ele-${componentId}`);
-          element.style.height = `${newHeight}px`;
+          const containerSelector = doesSubContainerIndexExist
+            ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`
+            : `.ele-${componentId}`;
+          const element = document.querySelector(containerSelector);
+          if (element) element.style.height = `${newHeight}px`;
         }
       }
 
       setTemporaryLayouts(updatedLayouts);
 
       incrementCanvasUpdater();
+
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        adjustComponentPositions(
-          isContainer && isTruthyOrZero(subContainerIndex)
+        // Bubble the height change up to the parent container.
+        // For a Listview row instance, the next container to adjust is the Listview widget itself.
+        const parentComponentId =
+          componentType === 'Listview' && doesSubContainerIndexExist
             ? componentId
-            : changedComponent.component?.parent?.slice(0, 36),
-          currentLayout,
-          true,
-          componentType === 'Listview' ? null : subContainerIndex
-        );
+            : changedComponent.component?.parent?.slice(0, 36);
+
+        // Once the Listview widget is reached, continue upward outside the row scope.
+        const parentSubContainerIndex = componentType === 'Listview' ? null : subContainerIndex;
+
+        // Prevent no-progress recursion on the same target.
+        if (
+          parentComponentId &&
+          !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
+        ) {
+          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+        }
       }
+
       return updatedLayouts;
     } catch (error) {
       console.error('Error adjusting component positions:', error);
