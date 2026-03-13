@@ -645,7 +645,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
               </div>
             )}
           </div>
-          {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()}
+          {/* {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()} */}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>{renderModalBody()}</Modal.Body>
