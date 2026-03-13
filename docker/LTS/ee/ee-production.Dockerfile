@@ -86,7 +86,7 @@ COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production 
+RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
 
@@ -106,8 +106,8 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
 
-# Install dependencies for PostgREST, curl, tar, etc.
-RUN apt-get update && apt-get install -y \
+# Download PostgREST binary
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates tar \
     && rm -rf /var/lib/apt/lists/*
 
@@ -121,11 +121,12 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
 
 FROM debian:12-slim
 
+# Install runtime dependencies
+# - gnupg and wget omitted (curl covers all download needs)
+# - freetds-bin instead of freetds-dev (no headers/static libs needed at runtime)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
-    wget \
-    gnupg \
     unzip \
     ca-certificates \
     xz-utils \
@@ -135,7 +136,7 @@ RUN apt-get update && \
     libaio1 \
     git \
     openssh-client \
-    freetds-dev \
+    freetds-bin \
     python3.11 \
     python3.11-venv \
     libprotobuf32 \
@@ -145,7 +146,6 @@ RUN apt-get update && \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
     && tar -xf node-v22.15.1-linux-x64.tar.xz \
@@ -159,17 +159,19 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
 
-RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
-    wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
+RUN curl -Lo instantclient-basiclite-linuxx64.zip \
+        https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
+    curl -Lo instantclient-basiclite-linux.x64-11.2.0.4.0.zip \
+        https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
     unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
     unzip instantclient-basiclite-linux.x64-11.2.0.4.0.zip && rm -f instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
@@ -177,37 +179,24 @@ RUN rm -f *.zip *.key && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
 
-RUN mkdir -p /app
+# Create app dir, user, and sandboxing directories before COPYs
+RUN mkdir -p /app /etc/nsjail /tmp/python-execution /tmp/python-bundles \
+    && chmod 1777 /tmp/python-execution /tmp/python-bundles \
+    && useradd --create-home --home-dir /home/appuser appuser
 
-RUN useradd --create-home --home-dir /home/appuser appuser
-
-# Copy nsjail and Python runtime from builder
+# Copy nsjail binary, Python runtime, and nsjail config from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
-RUN chmod 4755 /usr/local/bin/nsjail
-
-# Copy Python runtime with pre-installed packages
 COPY --from=builder /opt/python-runtime /opt/python-runtime
-
-# Copy nsjail configuration file
-RUN mkdir -p /etc/nsjail
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
-# Create Python execution directories
-RUN mkdir -p \
-    /tmp/python-execution \
-    /tmp/python-bundles \
-    && chmod 1777 /tmp/python-execution \
-    && chmod 1777 /tmp/python-bundles
-
-# Use the PostgREST binary from the builder stage
+# Copy PostgREST binary from builder
 COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
 
 RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
     echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
     chmod +x /usr/local/bin/postgrest
 
-
-# Copy application with ownership set directly to avoid chown -R
+# Copy application artifacts with ownership set directly to avoid chown -R
 COPY --from=builder --chown=appuser:0 /app/package.json ./app/package.json
 COPY --from=builder --chown=appuser:0 /app/plugins/dist ./app/plugins/dist
 COPY --from=builder --chown=appuser:0 /app/plugins/client.js ./app/plugins/client.js
@@ -225,55 +214,37 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
-# Set group write permissions for frontend build files to support RedHat arbitrary user assignment
-RUN chmod -R g+w /app/frontend/build
+# Set all permissions and create remaining directories in a single layer
+RUN chmod 4755 /usr/local/bin/nsjail \
+    && chmod -R g+w /app/frontend/build \
+    && mkdir -p \
+        /home/appuser/rsyslog \
+        /app/server/tooljet/gitsync \
+        /tmp/.npm/npm-cache/_logs \
+        /var/lib/redis /var/log/redis /etc/redis \
+    && chown -R appuser:0 \
+        /home/appuser \
+        /app/server/tooljet \
+        /tmp/.npm/npm-cache \
+        /var/lib/redis /var/log/redis /etc/redis \
+    && chmod g+s \
+        /home/appuser \
+        /home/appuser/rsyslog \
+        /tmp/.npm/npm-cache \
+        /tmp/.npm/npm-cache/_logs \
+        /var/lib/redis /var/log/redis /etc/redis \
+    && chmod -R g=u \
+        /home/appuser \
+        /tmp/.npm/npm-cache \
+    && chmod -R 2770 /app/server/tooljet/gitsync \
+    && npm config set cache /tmp/.npm/npm-cache/ --global
 
-# Create directory /home/appuser and set ownership to appuser
-RUN mkdir -p /home/appuser \
-    && chown -R appuser:0 /home/appuser \
-    && chmod g+s /home/appuser \
-    && chmod -R g=u /home/appuser \
-    && npm cache clean --force
-
-# Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
-RUN mkdir -p /app/server/tooljet/gitsync \
-      && chown -R appuser:0 /app/server/tooljet \
-      && chmod -R 2770 /app/server/tooljet/gitsync
-
-# Create rsyslog directory for audit logs with proper permissions
-RUN mkdir -p /home/appuser/rsyslog \
-    && chown -R appuser:0 /home/appuser/rsyslog \
-    && chmod g+s /home/appuser/rsyslog \
-    && chmod -R g=u /home/appuser/rsyslog
-
-# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/ \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/ \
-    && chmod g+s /tmp/.npm/npm-cache/ \
-    && chmod -R g=u /tmp/.npm/npm-cache \
-    && npm cache clean --force
-
-# Set npm cache directory globally
-RUN npm config set cache /tmp/.npm/npm-cache/ --global
-ENV npm_config_cache /tmp/.npm/npm-cache/
-
-# Create directory /tmp/.npm/npm-cache/_logs and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/_logs \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/_logs \
-    && chmod g+s /tmp/.npm/npm-cache/_logs \
-    && chmod -R g=u /tmp/.npm/npm-cache/_logs
-
-# Create Redis data, log, and configuration directories
-RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
-    && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
-    && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
-    && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
-
+ENV npm_config_cache=/tmp/.npm/npm-cache/
 ENV HOME=/home/appuser
-# Switch back to appuser
+
 USER appuser
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]
