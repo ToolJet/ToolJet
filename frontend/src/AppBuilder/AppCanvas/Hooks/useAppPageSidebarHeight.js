@@ -5,7 +5,8 @@ export default function useAppPageSidebarHeight(
   showCanvasHeader,
   appType,
   pageCanvasHeight,
-  navigationType
+  navigationType,
+  isPagesSidebarNavigationHidden
 ) {
   const [height, setHeight] = useState('100dvh');
 
@@ -21,7 +22,7 @@ export default function useAppPageSidebarHeight(
     return () => observer.disconnect();
   }, [canvasContentRef]);
 
-  if (navigationType === 'top') return undefined;
+  if (navigationType === 'top' || isPagesSidebarNavigationHidden) return undefined;
 
   if (showCanvasHeader && appType !== 'module') return `calc(${height} - ${pageCanvasHeight}px)`;
 

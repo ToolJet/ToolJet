@@ -67,6 +67,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const pageKey = useStore((state) => state.pageKey);
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+
   const isMobileLayout = currentLayout === 'mobile';
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -94,7 +96,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     showCanvasHeader,
     appType,
     PAGE_CANVAS_HEADER_HEIGHT,
-    position
+    position,
+    isPagesSidebarHidden
   );
   const headerBackgroundColor = useStore(
     (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor,
@@ -109,7 +112,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
 
-  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const minCanvasWidth = useCanvasMinWidth({
     currentMode,
     isModuleMode,
