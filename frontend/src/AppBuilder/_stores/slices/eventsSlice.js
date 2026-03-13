@@ -327,6 +327,20 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      if (eventName === 'OnTableButtonColumnClicked') {
+        const { column, tableColumnEvents } = options;
+
+        if (column && tableColumnEvents) {
+          for (const event of tableColumnEvents) {
+            if (event?.event?.actionId) {
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+            }
+          }
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);
@@ -943,12 +957,23 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'switch-page': {
             try {
-              const { pageId } = event;
+              let { pageId } = event;
+              const { pageHandle } = event;
+
+              // Resolve pageHandle → pageId if pageId not provided
+              if (!pageId && pageHandle) {
+                const pages = get().modules[moduleId].pages;
+                pageId = pages.find((p) => p.handle === pageHandle.toLowerCase())?.id;
+                if (!pageId) {
+                  throw new Error(`Invalid page handle: "${pageHandle}"`);
+                }
+              }
+
               if (!pageId) {
-                throw new Error('No page ID provided');
+                throw new Error('Either pageId or pageHandle must be provided');
               }
               const { switchPage } = get();
-              const page = get().modules[moduleId].pages.find((page) => page.id === event.pageId);
+              const page = get().modules[moduleId].pages.find((page) => page.id === pageId);
               const queryParams = event.queryParams || [];
               if (page.restricted && mode !== 'edit') {
                 toast.error('Access to this page is restricted. Contact admin to know more.');

@@ -59,10 +59,11 @@ export interface Terms {
       query: boolean;
       pages: boolean;
     };
-    features? :{
+    features?: {
       promote: boolean;
       release: boolean;
-    }
+      history: boolean;
+    };
   };
   modules?: {
     enabled: boolean;

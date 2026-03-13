@@ -795,3 +795,74 @@ export async function validatePasswordDomain(
     instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
   );
 }
+
+/**
+ * Resolves workspace constants in an options array for OAuth token exchange.
+ * Options come as array of { key: string, value: string, encrypted: boolean }
+ */
+export async function resolveOptionsArrayForOAuth(
+  options: Array<object>,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<Array<object>> {
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions: Array<object> = [];
+
+  for (const option of options) {
+    const value = option['value'];
+    if (typeof value === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(value)) {
+        const resolved = await resolveConstantsFn(value);
+        resolvedOptions.push({ ...option, value: resolved });
+      } else {
+        resolvedOptions.push(option);
+      }
+    } else {
+      resolvedOptions.push(option);
+    }
+  }
+
+  return resolvedOptions;
+}
+
+/**
+ * Resolves workspace constants in source options for OAuth flows (generating auth URLs).
+ * Source options come as an object with key-value structure.
+ */
+export async function resolveSourceOptionsForOAuth(
+  sourceOptions: any,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<any> {
+  if (!sourceOptions || typeof sourceOptions !== 'object') {
+    return sourceOptions;
+  }
+
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions = { ...sourceOptions };
+
+  for (const key of Object.keys(resolvedOptions)) {
+    const option = resolvedOptions[key];
+
+    // Handle options in { value: '...' } format
+    if (option && typeof option === 'object' && 'value' in option) {
+      const value = option.value;
+      if (typeof value === 'string') {
+        constantMatcher.lastIndex = 0;
+        if (constantMatcher.test(value)) {
+          const resolved = await resolveConstantsFn(value);
+          resolvedOptions[key] = { ...option, value: resolved };
+        }
+      }
+    }
+    // Handle direct string values
+    else if (typeof option === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(option)) {
+        const resolved = await resolveConstantsFn(option);
+        resolvedOptions[key] = resolved;
+      }
+    }
+  }
+
+  return resolvedOptions;
+}

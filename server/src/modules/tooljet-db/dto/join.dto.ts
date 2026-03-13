@@ -1,11 +1,13 @@
-import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty } from 'class-validator';
+import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty, Matches, Validate, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { SQLInjectionValidator } from './index';
 
 // TODO: We need to remove custom error messages and make use of dto
 // default errors and let frontend show the errors on the specific fields
 class Table {
   @IsString()
   @IsNotEmpty({ message: '::Table name for join not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   name: string;
 
   @IsString()
@@ -16,10 +18,15 @@ class Table {
 class Field {
   @IsString()
   @IsNotEmpty({ message: '::Columns names for join not selected' })
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   name: string;
 
   @IsString()
   @IsNotEmpty({ message: '::Table names for join not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
@@ -49,10 +56,15 @@ class ConditionField {
 
   @IsString()
   @IsOptional() // present only when type is column
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
   @IsOptional() // present only when type is column
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;
 
   @IsString()
@@ -92,6 +104,7 @@ class Join {
 
   @IsString()
   @IsNotEmpty({ message: '::Join table is not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @ValidateNested()
@@ -103,20 +116,30 @@ class Join {
 class GroupBy {
   @IsString()
   @IsNotEmpty()
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;
 }
 
 class Order {
   @IsString()
   @IsNotEmpty({ message: '::Sort column not selected' })
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;
 
   @IsString()
   @IsNotEmpty({ message: '::Sort table not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsIn(['ASC', 'DESC'], { message: '::Sort direction not selected' })
