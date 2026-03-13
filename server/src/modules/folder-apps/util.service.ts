@@ -13,7 +13,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
-  constructor(protected readonly abilityService: AbilityService) {}
+  constructor(protected readonly abilityService: AbilityService) { }
 
   async allFoldersWithAppCount(
     user: User,
@@ -63,20 +63,26 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     searchKey?: string
   ): SelectQueryBuilder<Folder> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
+    );
+
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
+
     const viewableApps = userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
+      ? [null, ...explicitVisibleApps]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
-    const hiddenApps = [
-      ...userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id)),
-    ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+          ])
+        ),
+      ];
 
     const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey);
 
@@ -87,14 +93,20 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         query.andWhere('folder_apps.appId IN (:...viewableApps)', {
           viewableApps,
         });
-      } else if (!hideAll && hiddenApps?.length) {
+      } else if (!hideAll && hiddenNonEditable?.length) {
         // Not all apps are hidden
         query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', {
-          hiddenApps,
+          hiddenApps: hiddenNonEditable,
         });
       } else if (hideAll) {
-        // No need to return any
-        query.andWhere('1=0');
+        if (explicitVisibleApps.length > 0) {
+          query.andWhere('folder_apps.appId IN (:...viewableApps)', {
+            viewableApps,
+          });
+        }
+        else {// No need to return any
+          query.andWhere('1=0');
+        }
       }
     }
 
@@ -180,7 +192,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       // If app is already in a folder, remove it first (apps can only be in one folder)
       if (existingFolderApp) {
-        if (existingFolderApp.folderId === folderId) {
+        if (existingFolderApp.folderId === folderId && !skipGitSyncCheck) {
           throw new BadRequestException('App has already been added to the folder');
         }
         await manager.delete(FolderApp, { id: existingFolderApp.id });
@@ -206,22 +218,31 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   ): SelectQueryBuilder<AppBase> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
 
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
+    );
+
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
+
     const viewableAppsTotal = isAllEditable
       ? [null, ...folderAppIds]
       : hideAll
-        ? [null, ...userAppPermissions.editableAppsId]
+        ? [null, ...explicitVisibleApps] // key fix: include folder-derived viewable IDs
         : isAllViewable
-          ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+          ? [null, ...folderAppIds].filter((id) => !hiddenNonEditable.includes(id))
           : [
-              null,
-              ...Array.from(
-                new Set([
-                  ...userAppPermissions.editableAppsId,
-                  ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-                ])
-              ),
-            ];
+            null,
+            ...Array.from(
+              new Set([
+                ...userAppPermissions.editableAppsId,
+                ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+              ])
+            ),
+          ];
 
+    // Keep only apps in this folder
     const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 
     query.where('apps.id IN (:...viewableAppIds)', {

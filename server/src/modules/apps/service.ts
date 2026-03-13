@@ -68,7 +68,7 @@ export class AppsService implements IAppsService {
     protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
-  ) {}
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -148,12 +148,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-            await this.versionRepository.findLatestVersionForEnvironment(
-              app.id,
-              envId,
-              environmentName,
-              app.organizationId
-            );
+          await this.versionRepository.findLatestVersionForEnvironment(
+            app.id,
+            envId,
+            environmentName,
+            app.organizationId
+          );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -363,6 +363,7 @@ export class AppsService implements IAppsService {
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
+        console.log(`Fetched apps for folder ${folderId}:`, apps);
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
       }

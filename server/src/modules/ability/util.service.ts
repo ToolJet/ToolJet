@@ -342,11 +342,10 @@ export class AbilityUtilService {
           userAppsPermissions.editableAppsId = Array.from(
             new Set([...userAppsPermissions.editableAppsId, ...allFolderAppIds])
           );
-          userAppsPermissions.viewableAppsId = Array.from(
-            new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
-          ); // TODO: check if we need to add apps to viewable list as well.
-        } else if (allFoldersViewable && !userAppsPermissions.isAllViewable) {
-          // View only — no edit
+          // userAppsPermissions.viewableAppsId = Array.from(
+          //   new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
+          // ); // TODO: check if we need to add apps to viewable list as well.
+        } else if (allFoldersViewable) {
           userAppsPermissions.viewableAppsId = Array.from(
             new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
           );
@@ -364,11 +363,10 @@ export class AbilityUtilService {
           .getMany();
         const folderAppIds = folderApps.map((fa) => fa.appId);
 
-        if (!userAppsPermissions.isAllEditable) {
-          userAppsPermissions.editableAppsId = Array.from(
-            new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
-          );
-        }
+        userAppsPermissions.editableAppsId = Array.from(
+          new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
+        );
+
         folderAppIds.forEach((id) => folderDerivedAppIds.add(id));
       }
 
@@ -381,11 +379,10 @@ export class AbilityUtilService {
           .getMany();
         const folderAppIds = folderApps.map((fa) => fa.appId);
 
-        if (!userAppsPermissions.isAllViewable) {
-          userAppsPermissions.viewableAppsId = Array.from(
-            new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
-          );
-        }
+        userAppsPermissions.viewableAppsId = Array.from(
+          new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
+        );
+
         folderAppIds.forEach((id) => folderDerivedAppIds.add(id));
       }
 
