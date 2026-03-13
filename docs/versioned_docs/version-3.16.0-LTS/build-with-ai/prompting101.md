@@ -129,28 +129,27 @@ Describe how users will interact with the tool through specific workflows.
 - Pipeline Management Flow - Move deals through stages, update probabilities, log interactions
 - Reporting Flow - Generate weekly pipeline reports, track conversion metrics, analyze lead sources
 
-## Best Practices
+## Efficient Utilization of Credits
 
 ### Do This
 - **Write Specific Prompts with Detailed Context** <br/>
-    Include your business context, the problem you're solving, and what the output should look like. For example: "Build me a dashboard to track new users every day" is far more actionable than "Build a dashboard."
+    A precise prompt costs fewer credits because the AI resolves ambiguity in fewer back-and-forth steps. Include your business context, the problem you're solving, and what the output should look like. For example: "Build me a dashboard to track new user signups every day. I need a daily signups chart for the last 30 days, a summary of total users this month vs last month, and a table showing each new user's name, email, signup date, and plan type. Let me filter by date range and plan." spends credits on building — not on clarifying.
 - **Keep Prompts Concise** <br/>
-    Aim for ~500 words or less. Avoid pasting full PRDs or specification documents, extract only the relevant details for the task at hand.
+    Every word in your prompt is processed at a cost. Aim for ~500 words or less. Pasting full PRDs or spec documents inflates credit usage without improving output — extract only what's relevant to the task at hand.
 - **Keep the Number of Tasks Per Prompt Minimal** <br/>
-    Send one task at a time. Bundling multiple requirements into a single prompt reduces output quality and makes it harder to iterate.
+    Bundling multiple requirements into one prompt forces the AI to reason over a larger scope, consuming more credits and often producing lower-quality output. Send one focused task at a time.
 - **Split Operations into Smaller Tasks** <br/>
-    Break your work into focused steps rather than trying to accomplish everything in one go. Smaller, well-defined tasks produce better results and are easier to review.
+    A single large operation uses more credits and is harder to course-correct if something goes wrong. Breaking work into smaller steps means you spend credits only on what you've validated, not on reworking a bloated result.
 - **Start a New Conversation for Different Tasks** <br/>
-    Each conversation carries its full history, and the AI processes all of it on every request. Once you're done building one thing, start fresh for the next. For example, build your app in one conversation, then handle database setup in a separate one.
+    Every message in a conversation is re-processed with each new request — the longer the history, the more credits each turn costs. Once you've finished a task, start a fresh conversation rather than continuing the same thread for unrelated work.
 
 ### Avoid This
 
-- Generic descriptions lacking proper use cases and context
-- Feature lists without context ("needs forms, tables, and reports")
-- Technical jargon that doesn't match your business needs
-- Overly complex requirements that try to solve everything at once
-- UI layout details - let the AI handle design decisions
-- Very long prompts such as full PRDs or specification documents with thousands of words
+- Vague prompts that require multiple follow-up turns to clarify — each turn costs credits
+- Feature lists without context ("needs forms, tables, and reports") — the AI spends credits guessing intent
+- Pasting full PRDs or long specification documents — excess tokens add cost with no quality benefit
+- Bundling unrelated tasks into one prompt — broader scope means more processing and higher credit use
+- Over-specifying UI layout details — this adds prompt length and cost without meaningful impact, since the AI handles design decisions
 
 ## How Long Should My Prompt Be?
 
