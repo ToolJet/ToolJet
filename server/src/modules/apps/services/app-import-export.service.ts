@@ -97,7 +97,9 @@ type NewRevampedComponent =
   | 'Chat'
   | 'CurrencyInput'
   | 'PhoneInput'
-  | 'IFrame';
+  | 'IFrame'
+  | 'DropdownV2'
+  | 'TreeSelect';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -140,6 +142,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'CurrencyInput',
   'PhoneInput',
   'IFrame',
+  'DropdownV2',
+  'TreeSelect',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -2602,6 +2606,10 @@ function migrateProperties(
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         borderColor: { value: 'var(--cc-default-border)' },
       },
+      DropdownV2: {
+        menuWidthMode: { value: 'matchField' },
+        menuCustomWidth: { value: '256' },
+      },
     };
 
     const defaults = defaultStylesByComponent[componentType];
@@ -2877,8 +2885,35 @@ function migrateProperties(
       }
     }
 
+    // TreeSelect
+    if (componentType === 'TreeSelect') {
+      if (!styles.labelColor) {
+        styles.labelColor = styles?.textColor;
+      }
+      if (styles.labelStyle === undefined) {
+        styles.labelStyle = { value: 'legacy' };
+      }
+      if (!styles.alignment) {
+        styles.alignment = { value: 'top' };
+        styles.direction = { value: 'left' };
+      }
+      if (properties.advanced === undefined) {
+        properties.advanced = { value: true };
+      }
+    }
+
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
       properties.showClearBtn = { value: '{{false}}' };
+    }
+
+    // DropdownV2
+    if (componentType === 'DropdownV2') {
+      if (!styles.menuWidthMode) {
+        styles.menuWidthMode = { value: 'matchField' };
+      }
+      if (!styles.menuCustomWidth) {
+        styles.menuCustomWidth = { value: '256' };
+      }
     }
   }
 

@@ -16,6 +16,8 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+import { ToolTip } from '@/_components/ToolTip';
+import Icon from '@/_ui/Icon/solidIcons/index';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -45,6 +47,7 @@ const getColumnTypeDisplayText = (columnType) => {
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
+    button: 'Button',
   };
   return displayMap[columnType] ?? capitalize(columnType ?? '');
 };
@@ -153,6 +156,8 @@ export const Table = (props) => {
           props={props}
           columnEventChanged={handleColumnEventChange}
           handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+          onDuplicateColumn={() => duplicateColumn(index)}
+          onDeleteColumn={() => removeColumn(index, `${column.name}-${index}`)}
         />
       </Popover>
     ),
@@ -166,6 +171,8 @@ export const Table = (props) => {
       props,
       handleColumnEventChange,
       handleEventManagerPopoverCallback,
+      duplicateColumn,
+      removeColumn,
     ]
   );
 
@@ -488,6 +495,7 @@ export const Table = (props) => {
                                   <OverlayTrigger
                                     trigger="click"
                                     placement="left"
+                                    flip={true}
                                     rootClose={isRootCloseEnabled}
                                     overlay={renderColumnPopover(item, index)}
                                     onToggle={(show) => handleToggleColumnPopover(index, show)}
@@ -554,9 +562,27 @@ export const Table = (props) => {
           </div>
         ),
       },
-      // Action buttons section
+      // Action buttons section (deprecated — replaced by button column type)
       {
-        title: 'Action buttons',
+        title: (
+          <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+            <span>Action buttons</span>
+            <ToolTip
+              message={
+                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                  These Action buttons are deprecated and will be removed in a future update. Use the new Button column
+                  instead by adding a new column and selecting type as a button.
+                </div>
+              }
+              show={true}
+              placement="bottom"
+            >
+              <span>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            </ToolTip>
+          </div>
+        ),
         children: (
           <div className="field">
             <div className="row g-2">

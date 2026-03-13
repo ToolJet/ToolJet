@@ -70,7 +70,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 rel="noreferrer"
                 disabled={isDisabled}
                 onClick={(e) => handleEncryptedFieldsToggle(e, propertyKey)}
-                data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
+                data-cy={`${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}-button`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </ButtonSolid>
