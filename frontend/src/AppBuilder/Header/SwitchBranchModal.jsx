@@ -26,6 +26,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     lazyLoadAppVersions,
     fetchDevelopmentVersions,
     appVersions,
+    branchingEnabled,
   } = useStore((state) => ({
     allBranches: state.allBranches,
     selectedVersion: state.selectedVersion,
