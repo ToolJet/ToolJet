@@ -1,7 +1,7 @@
 const envVar = Cypress.env("environment");
 
-Cypress.Commands.add("apiCreateDataSource", (url, name, kind, options, cachedHeader) => {
-    cy.getAuthHeaders(cachedHeader).then((headers) => {
+Cypress.Commands.add("apiCreateDataSource", (url, name, kind, options, setCredentials = false) => {
+    cy.getAuthHeaders().then((headers) => {
         cy.request(
             {
                 method: "POST",
@@ -17,12 +17,59 @@ Cypress.Commands.add("apiCreateDataSource", (url, name, kind, options, cachedHea
             },
         ).then((response) => {
             expect(response.status).to.equal(201);
-            Cypress.env(`${name}-dataSource-id`, response.body.id);
+            const dataSourceId = response.body.id;
+            Cypress.env(`${name}-dataSource-id`, dataSourceId);
 
             Cypress.log({
                 name: "Create Data Source",
                 displayName: "Data source created",
                 message: `:\nDatasource: '${kind}',\nName: '${name}'`,
+            });
+
+            // Set credentials for the environment if flag is true
+            if (setCredentials) {
+                cy.apiSetDataSourceCredentials({
+                    dataSourceName: name,
+                    dataSourceId: dataSourceId,
+                    options: options,
+                    envName: "development",
+                });
+            }
+        });
+    });
+});
+
+Cypress.Commands.add("apiSetDataSourceCredentials", ({ dataSourceName, dataSourceId, options, envName = "development" }) => {
+    cy.getAuthHeaders().then((headers) => {
+        cy.apiGetEnvironments().then((environments) => {
+            const environment = environments.find((env) => env.name === envName);
+            if (!environment) {
+                throw new Error(`Environment '${envName}' not found`);
+            }
+
+            // Use provided dataSourceId or fetch it by name
+            const getDataSourceId = dataSourceId
+                ? cy.wrap(dataSourceId)
+                : cy.apiGetDataSourceIdByName(dataSourceName);
+
+            getDataSourceId.then((dsId) => {
+                cy.request({
+                    method: "PUT",
+                    url: `${Cypress.env("server_host")}/api/data-sources/${dsId}?environment_id=${environment.id}`,
+                    headers: headers,
+                    body: {
+                        name: dataSourceName,
+                        options: options,
+                    },
+                    log: false
+                }).then((response) => {
+                    expect(response.status).to.equal(200);
+                    Cypress.log({
+                        name: "Set DS Credentials",
+                        displayName: "Credentials set",
+                        message: `DS: '${dataSourceName}', Env: '${envName}'`,
+                    });
+                });
             });
         });
     });
