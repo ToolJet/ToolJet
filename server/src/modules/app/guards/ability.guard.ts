@@ -187,6 +187,6 @@ export abstract class AbilityGuard implements CanActivate {
 
     const match = messageGroups.find((group) => group.features.includes(feature));
 
-    return match?.message ?? 'You do not have access to perform this action';
+    return match?.message;
   }
 }
