@@ -626,12 +626,12 @@ export default class PostgresqlQueryService implements QueryService {
       const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
       const sslmode = parsedUrl.searchParams.get('sslmode') || parsedUrl.searchParams.get('ssl') || '';
 
-      let connSslEnabled: 'enabled' | 'disabled' | undefined;
+      let connSslEnabled: boolean | undefined;
 
       if (sslmode === 'require' || sslmode === 'verify-full' || sslmode === 'verify-ca' || sslmode === 'true') {
-        connSslEnabled = 'enabled';
+        connSslEnabled = true;
       } else if (sslmode === 'disable' || sslmode === 'false') {
-        connSslEnabled = 'disabled';
+        connSslEnabled = false;
       }
       // Explicit UI values override connection string values
       resolvedUser = sourceOptions.username || connUser;
@@ -644,7 +644,7 @@ export default class PostgresqlQueryService implements QueryService {
       resolvedDb = sourceOptions.database || connDb;
 
       // SSL Autofill
-      if ((!sourceOptions.ssl_enabled || sourceOptions.ssl_enabled === 'disabled') && connSslEnabled) {
+      if (!sourceOptions.ssl_enabled && connSslEnabled) {
         sourceOptions.ssl_enabled = connSslEnabled;
       }
     }
@@ -691,8 +691,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   private getSslConfig(sourceOptions: SourceOptions) {
-    // ssl_enabled is stored as string "enabled"/"disabled" from the toggle-flip widget
-    if (sourceOptions.ssl_enabled !== 'enabled') return false;
+    if (!sourceOptions.ssl_enabled) return false;
 
     return {
       rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
