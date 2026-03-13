@@ -33,6 +33,35 @@
     }
 }
 
+.canvas-footer-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    .real-canvas {
+        height: 100% !important;
+        min-height: unset !important;
+    }
+
+    &.canvas-footer-slot--edit {
+        &:hover,
+        &.canvas-footer-slot--selected {
+            .canvas-footer-tooltip {
+                display: flex !important;
+            }
+        }
+    }
+
+    .canvas-footer-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
+    }
+}
+
 .modal-backdrop {
     width: 100% !important;
     height: 100% !important;

@@ -6,7 +6,12 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  CONTAINER_FORM_CANVAS_PADDING,
+  PAGE_CANVAS_HEADER_HEIGHT,
+  PAGE_CANVAS_FOOTER_HEIGHT,
+} from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
@@ -92,8 +97,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const sideBarVisibleHeight = useAppPageSidebarHeight(
     canvasContentRef,
     showCanvasHeader,
+    showCanvasFooter,
     appType,
     PAGE_CANVAS_HEADER_HEIGHT,
+    PAGE_CANVAS_FOOTER_HEIGHT,
     position
   );
   const headerBackgroundColor = useStore(
@@ -108,6 +115,24 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const setCanvasHeaderSelected = useStore((state) => state.setCanvasHeaderSelected, shallow);
   const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
+
+  const showCanvasFooter = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.[
+        currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
+      ] ?? false,
+    shallow
+  );
+  const footerBackgroundColor = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.backgroundColor,
+    shallow
+  );
+  const footerBorderColor = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.borderColor,
+    shallow
+  );
+  const setCanvasFooterSelected = useStore((state) => state.setCanvasFooterSelected, shallow);
+  const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
 
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const minCanvasWidth = useCanvasMinWidth({
@@ -191,6 +216,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           if (currentMode === 'edit') {
             e.stopPropagation();
             clearSelectedComponents();
+            setCanvasFooterSelected(false);
             setCanvasHeaderSelected(true);
           }
         }}
@@ -227,6 +253,72 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         <Container
           id={`${moduleId}-header`}
           canvasHeight={PAGE_CANVAS_HEADER_HEIGHT / 10}
+          canvasWidth={window.innerWidth}
+          darkMode={isAppDarkMode}
+          allowContainerSelect={false}
+          styles={{
+            margin: 0,
+            backgroundColor: 'transparent',
+            overflow: 'hidden',
+          }}
+          componentType="AppCanvas"
+          hasNoScroll={true}
+        />
+      </div>
+    );
+  };
+
+  // === Shared canvas footer JSX (used in both mobile and desktop layouts) ===
+  const _renderCanvasFooterSlot = () => {
+    if (!showCanvasFooter) return null;
+    return (
+      <div
+        className={cx('canvas-footer-slot', {
+          '!tw-w-[450px] tw-mx-auto': isMobileLayout && (currentMode === 'edit' || isMobilePreviewMode),
+          'canvas-footer-slot--edit': currentMode === 'edit',
+          'canvas-footer-slot--selected': isCanvasFooterSelected,
+        })}
+        onClick={(e) => {
+          if (currentMode === 'edit') {
+            e.stopPropagation();
+            clearSelectedComponents();
+            setCanvasHeaderSelected(false);
+            setCanvasFooterSelected(true);
+          }
+        }}
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 10,
+          flexShrink: 0,
+          padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+          height: `${PAGE_CANVAS_FOOTER_HEIGHT}px`,
+          border: `1px solid ${
+            isCanvasFooterSelected ? 'var(--border-accent-strong)' : footerBorderColor ?? 'var(--cc-default-border)'
+          }`,
+          backgroundColor: footerBackgroundColor ?? (isAppDarkMode ? '#232E3C' : '#fff'),
+          width: '100%',
+        }}
+      >
+        {currentMode === 'edit' && (
+          <div className="canvas-footer-tooltip">
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ cursor: 'default' }}>App footer</span>
+            </ConfigHandleButton>
+          </div>
+        )}
+        <Container
+          id={`${moduleId}-footer`}
+          canvasHeight={PAGE_CANVAS_FOOTER_HEIGHT / 10}
           canvasWidth={window.innerWidth}
           darkMode={isAppDarkMode}
           allowContainerSelect={false}
@@ -296,6 +388,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       )}
       {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
       {mainCanvasContainer}
+      {_renderCanvasFooterSlot()}
       {currentMode === 'edit' && <DragResizeGhostWidget />}
       <div id="component-portal" />
       {appType !== 'module' && <div id="component-portal" />}
@@ -343,6 +436,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
         {mainCanvasContainer}
       </div>
+      {_renderCanvasFooterSlot()}
       {currentMode === 'edit' && <DragResizeGhostWidget />}
       <div id="component-portal" />
       {appType !== 'module' && <div id="component-portal" />}

@@ -68,6 +68,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const updatePageVisibility = useStore((state) => state.updatePageVisibility);
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
+  const togglePageFooter = useStore((state) => state.togglePageFooter);
   const updatePageAppId = useStore((state) => state.updatePageAppId);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
@@ -81,6 +82,16 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
 
   const showPageHeaderOnMobile = useStore(
     (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.showOnMobile,
+    shallow
+  );
+
+  const showPageFooterOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.showOnDesktop,
+    shallow
+  );
+
+  const showPageFooterOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.showOnMobile,
     shallow
   );
 
@@ -406,6 +417,35 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     onChange={(e) => {
                       const checked = e.target.checked;
                       togglePageHeader(page?.id, checked, 'mobile');
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="section-header pb-2 pt-2">Page footer</div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label className="form-label font-weight-400 mb-0">Show page footer on desktop</label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageFooterOnDesktop ?? false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageFooter(page?.id, checked, 'desktop');
+                    }}
+                  />
+                </label>
+              </div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label className="form-label font-weight-400 mb-0">Show page footer on mobile</label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageFooterOnMobile ?? false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageFooter(page?.id, checked, 'mobile');
                     }}
                   />
                 </label>

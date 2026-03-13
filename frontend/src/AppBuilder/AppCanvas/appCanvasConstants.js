@@ -73,3 +73,5 @@ export const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * al
 export const TOP_ALIGNMENT_HEIGHT_INCREMENT = 20;
 
 export const PAGE_CANVAS_HEADER_HEIGHT = 60;
+
+export const PAGE_CANVAS_FOOTER_HEIGHT = 60;
