@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { WorkspaceSwitchBranchModal } from './SwitchBranchModal';
 import { toast } from 'react-hot-toast';
@@ -161,15 +162,12 @@ export function WorkspaceBranchDropdown() {
     }
   }, [showDropdown]);
 
-  // Fetch PRs for default branch
-  // TODO: Wire to real endpoint when workspace-level PR fetch API is available
+  // Workspace-level PR fetch — returns all repo PRs (no app filtering)
   const handleFetchPRs = async () => {
     setIsLoadingPRs(true);
     try {
-      // Placeholder: replace with actual workspace PR fetch service call
-      // e.g., const data = await workspaceBranchesService.fetchPullRequests();
-      // setPullRequests(data || []);
-      setPullRequests([]);
+      const data = await workspaceBranchesService.fetchPullRequests();
+      setPullRequests(data?.pullRequests || []);
       setHasFetchedPRs(true);
       toast.success('PRs fetched successfully');
     } catch (error) {

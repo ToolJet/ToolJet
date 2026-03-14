@@ -10,6 +10,7 @@ export const workspaceBranchesService = {
   pullWorkspace,
   checkForUpdates,
   listRemoteBranches,
+  fetchPullRequests,
 };
 
 function list() {
@@ -74,4 +75,9 @@ function checkForUpdates(branch) {
 function listRemoteBranches() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/remote`, requestOptions).then(handleResponse);
+}
+
+function fetchPullRequests() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
 }

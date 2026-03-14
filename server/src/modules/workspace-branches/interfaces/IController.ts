@@ -10,4 +10,5 @@ export interface IWorkspaceBranchController {
   pullWorkspace(user: any): Promise<{ success: boolean }>;
   checkForUpdates(user: any, branch: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(user: any): Promise<{ name: string }[]>;
+  getPullRequests(user: any): Promise<any>;
 }

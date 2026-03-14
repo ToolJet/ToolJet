@@ -71,4 +71,11 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   async listRemoteBranches(@User() user) {
     return this.workspaceBranchService.listRemoteBranches(user.organizationId);
   }
+
+  @InitFeature(FEATURE_KEY.FETCH_PULL_REQUESTS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('pull-requests')
+  async getPullRequests(@User() user) {
+    return this.workspaceBranchService.getPullRequests(user.organizationId);
+  }
 }

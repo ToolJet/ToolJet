@@ -26,4 +26,5 @@ export interface IWorkspaceBranchService {
   pullWorkspace(organizationId: string, user?: User, sourceBranch?: string): Promise<{ success: boolean }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ name: string }[]>;
+  getPullRequests(organizationId: string): Promise<any>;
 }
