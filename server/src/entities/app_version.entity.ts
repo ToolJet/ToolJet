@@ -109,6 +109,9 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'branch_id' })
   branch: WorkspaceBranch;
 
+  @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
+  pulledAt: Date;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

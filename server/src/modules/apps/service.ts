@@ -46,7 +46,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { AppBranchState } from '@entities/app_branch_state.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
@@ -279,21 +278,6 @@ export class AppsService implements IAppsService {
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && name != app.name) {
-      // Update AppBranchState for the active branch with the new app name
-      if (isGitSyncEnabled && orgGit) {
-        const editingVersion = editingVersionId
-          ? await this.versionRepository.findById(editingVersionId, app.id)
-          : app.editingVersion;
-        const branchId = editingVersion?.branchId;
-        if (branchId) {
-          await this.appRepository.manager.update(
-            AppBranchState,
-            { appId: app.id, branchId, organizationId },
-            { appName: name, metaTimestamp: Date.now() }
-          );
-        }
-      }
-
       const appRenameDto = {
         user: user,
         organizationId: organizationId,
@@ -490,7 +474,11 @@ export class AppsService implements IAppsService {
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
 
-      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
+      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
+        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+      }
       if (appGit && !isDraft) {
         // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;

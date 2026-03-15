@@ -31,7 +31,6 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [pushLatestCommitData, setPushLatestCommitData] = useState(null);
   const [pushLatestCommitLoading, setPushLatestCommitLoading] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
-  const [pullAction, setPullAction] = useState('import');
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
@@ -125,9 +124,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   const handleBranchChange = (branchName) => {
     setSelectedBranch(branchName);
-    // If selected branch differs from current, show action choice
+    // If selected branch differs from current, show confirmation
     if (branchName !== currentBranchName) {
-      setPullAction('import');
       setActionChoiceMode(true);
     } else {
       setActionChoiceMode(false);
@@ -140,6 +138,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   };
 
   const handleImportBranch = async () => {
+    useWorkspaceBranchesStore.setState({ isPulling: true });
     try {
       // Check if branch already exists locally — if so, update it; if not, create it
       const existingBranch = branches.find((b) => b.name === selectedBranch);
@@ -184,50 +183,13 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       }
     } catch (error) {
       toast.error(error?.error || error?.message || 'Import failed');
-    }
-  };
-
-  // Build a PR/merge URL to merge sourceBranch into targetBranch on the git provider
-  const buildMergeUrl = (sourceBranch, targetBranch) => {
-    const url = repoUrl || gitSyncUrl;
-    if (!url) return null;
-
-    const githubMatch = url.match(/github\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/);
-    const gitlabMatch = url.match(/gitlab\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/);
-    const bitbucketMatch = url.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(?:\.git)?$/);
-
-    if (githubMatch) {
-      const [, owner, repo] = githubMatch;
-      return `https://github.com/${owner}/${repo}/compare/${targetBranch}...${sourceBranch}?expand=1`;
-    } else if (gitlabMatch) {
-      const [, owner, repo] = gitlabMatch;
-      return `https://gitlab.com/${owner}/${repo}/-/merge_requests/new?merge_request[source_branch]=${sourceBranch}&merge_request[target_branch]=${targetBranch}`;
-    } else if (bitbucketMatch) {
-      const [, owner, repo] = bitbucketMatch;
-      return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${targetBranch}`;
-    }
-    return null;
-  };
-
-  const handleOverwritePull = async () => {
-    // Open PR/merge page on git provider instead of doing a local overwrite pull.
-    // The user merges on git, then pulls normally — this keeps local and git in sync.
-    const mergeUrl = buildMergeUrl(selectedBranch, currentBranchName);
-    if (mergeUrl) {
-      window.open(mergeUrl, '_blank', 'noopener,noreferrer');
-      toast.success('After merging on git, click Pull to update');
-      onClose();
-    } else {
-      toast.error('Unable to determine repository URL');
+    } finally {
+      useWorkspaceBranchesStore.setState({ isPulling: false });
     }
   };
 
   const handleContinue = async () => {
-    if (pullAction === 'import') {
-      await handleImportBranch();
-    } else {
-      await handleOverwritePull();
-    }
+    await handleImportBranch();
   };
 
   const formatCommitDate = (dateString) => {
@@ -276,41 +238,13 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // Use remote branches for dropdown, fall back to local branches
   const dropdownBranches = remoteBranches.length > 0 ? remoteBranches : branches;
 
-  // ---- Action choice view (Import vs Pull into current branch) ----
-  const renderActionChoice = () => (
-    <div className="action-choice-section">
-      <label
-        className={cx('action-choice-option', { active: pullAction === 'import' })}
-        onClick={() => setPullAction('import')}
-      >
-        <input
-          type="radio"
-          name="pullAction"
-          value="import"
-          checked={pullAction === 'import'}
-          onChange={() => setPullAction('import')}
-        />
-        <div className="option-content">
-          <div className="option-title">Import as new branch</div>
-          <div className="option-description">Imports {selectedBranch} branch in ToolJet with the latest commit</div>
-        </div>
-      </label>
-      <label
-        className={cx('action-choice-option', { active: pullAction === 'overwrite' })}
-        onClick={() => setPullAction('overwrite')}
-      >
-        <input
-          type="radio"
-          name="pullAction"
-          value="overwrite"
-          checked={pullAction === 'overwrite'}
-          onChange={() => setPullAction('overwrite')}
-        />
-        <div className="option-content">
-          <div className="option-title">Pull into current branch</div>
-          <div className="option-description">Overwrites changes on current branch</div>
-        </div>
-      </label>
+  // ---- Confirmation view for importing a different branch ----
+  const renderImportConfirmation = () => (
+    <div className="import-confirmation-section">
+      <p>
+        <strong>{selectedBranch}</strong> branch does not exist in ToolJet, pulling this will import it as a new branch
+        with the latest commit. Do you want to proceed?
+      </p>
     </div>
   );
 
@@ -523,7 +457,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // Default branch: pull-only
     if (isOnDefaultBranch) {
       if (actionChoiceMode) {
-        return <div className="pull-container">{renderActionChoice()}</div>;
+        return <div className="pull-container">{renderImportConfirmation()}</div>;
       }
       return <div className="pull-container">{renderPullSection()}</div>;
     }
@@ -531,7 +465,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // Feature branch: push/pull tabs
     if (activeTab === 'pull') {
       if (actionChoiceMode) {
-        return <div className="pushpull-container">{renderActionChoice()}</div>;
+        return <div className="pushpull-container">{renderImportConfirmation()}</div>;
       }
       return <div className="pushpull-container">{renderPullSection()}</div>;
     }
@@ -602,6 +536,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     if (actionChoiceMode) {
       return `Import ${selectedBranch} from git`;
     }
+
     if (isOnDefaultBranch) return 'Pull Commit';
     return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
   })();

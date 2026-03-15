@@ -198,6 +198,11 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    const gitSyncToast = sessionStorage.getItem('git_sync_toast');
+    if (gitSyncToast) {
+      sessionStorage.removeItem('git_sync_toast');
+      setTimeout(() => toast.error(gitSyncToast), 500);
+    }
     this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {

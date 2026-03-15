@@ -112,14 +112,15 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             activeBranchId: targetWsBranch.id,
             currentBranch: branchObj,
           });
-          toast.success(`Switched to ${branch.name}`);
           onClose();
           const pathParts = window.location.pathname.split('/');
           if (resolvedAppId) {
             // Navigate to the corresponding app on the target branch
+            toast.success(`Switched to ${branch.name}`);
             window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
           } else {
             // App doesn't exist on target branch — go to dashboard
+            sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
             window.location.href = `/${pathParts[1]}`;
           }
           return;

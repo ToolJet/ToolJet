@@ -8,8 +8,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Replace the blanket UNIQUE(name, org, type) constraint with a partial index
  * that only enforces uniqueness for DEFAULT-created apps.
  *
- * GIT app uniqueness is guaranteed by AppBranchState's
- * UNIQUE(organization_id, branch_id, co_relation_id).
+ * GIT app uniqueness is enforced at the application level through
+ * app_versions.branch_id and apps.co_relation_id.
  *
  * The index keeps the same name so existing catchDbException(APP_NAME_UNIQUE)
  * calls continue to work for DEFAULT apps.

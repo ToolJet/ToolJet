@@ -42,7 +42,6 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
-import { AppBranchState } from '@entities/app_branch_state.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -155,24 +154,12 @@ export class AppsUtilService implements IAppsUtilService {
       };
       await manager.save(appVersion);
 
-      // When created on a workspace branch, track this app in app_branch_state
-      // and optionally create a branch-type version for per-app branch switching.
+      // When created on a workspace branch, set co_relation_id and
+      // optionally create a branch-type version for per-app branch switching.
       if (branchId) {
-        // Set co_relation_id early so it stays consistent for git push and branch state
+        // Set co_relation_id early so it stays consistent for git push
         await manager.update(App, { id: app.id }, { co_relation_id: app.id });
         app.co_relation_id = app.id;
-
-        // Create app_branch_state — source of truth for which apps exist on which branch
-        await manager.save(
-          AppBranchState,
-          manager.create(AppBranchState, {
-            organizationId: user.organizationId,
-            branchId,
-            appId: app.id,
-            coRelationId: app.id,
-            appName: name,
-          })
-        );
 
         try {
           const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
@@ -785,27 +772,23 @@ export class AppsUtilService implements IAppsUtilService {
     let shouldFreezeEditor = false;
     // Check version status and type
     if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
-      // Published versions are always frozen
       shouldFreezeEditor = true;
     } else if (
       editingVersion?.versionType === AppVersionType.VERSION &&
       editingVersion?.status === AppVersionStatus.DRAFT &&
       (!orgGit || !orgGit?.isBranchingEnabled)
     ) {
-      // Draft versions should never be frozen by git config, only by environment
-      // Keep existing shouldFreezeEditor value from environment priority check
+      // Draft VERSION without branching — not frozen
     } else if (
       editingVersion?.versionType === AppVersionType.VERSION &&
       editingVersion?.status !== AppVersionStatus.DRAFT
     ) {
-      // Non-draft version types are frozen
       shouldFreezeEditor = true;
     } else {
-      // For branch versions, check git config
-      if (appGit && editingVersion?.status !== AppVersionStatus.DRAFT) {
+      if (appGit) {
         shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
       } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
-        shouldFreezeEditor = orgGit?.isBranchingEnabled || shouldFreezeEditor;
+        shouldFreezeEditor = true;
       }
     }
 

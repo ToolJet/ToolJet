@@ -574,7 +574,7 @@ export class AppImportExportService {
         currentTooljetVersion,
         moduleResourceMappings
       );
-      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
