@@ -54,50 +54,19 @@ digraph workflow {
 
 ---
 
-## Step 1 — Determine if shadcn primitive is needed
+## Step 1 — Always install shadcn primitive
 
-**Rule:** Use shadcn when the component has a **Radix primitive underneath** (accessibility, keyboard, state machine). Skip shadcn when the component is **pure styling only** — wrapping a CVA wrapper in another CVA wrapper adds nothing.
+**Rule:** EVERY Rocket component MUST use a shadcn primitive as its structural base. This ensures the 3-layer architecture is consistent — shadcn handles structure (Slot, forwardRef, Radix primitives), Rocket HOC handles ToolJet token styling via CVA.
 
-### Use shadcn primitive for:
+Even for "simple" components like Button, Badge, or Input where shadcn is just CVA+Slot with no Radix underneath — **still install and wrap it**. The HOC overrides all shadcn styling via `className` + tailwind-merge. This gives us:
+- Consistent import pattern across every component
+- shadcn handles structural concerns (asChild/Slot, accessibility attrs)
+- Rocket HOC handles visual concerns (ToolJet tokens, CVA variants)
+- Future shadcn upgrades (accessibility fixes, new features) flow in automatically
 
-| Component | Radix package |
-|---|---|
-| Select | @radix-ui/react-select |
-| Dialog / AlertDialog | @radix-ui/react-dialog |
-| Tooltip | @radix-ui/react-tooltip |
-| Popover | @radix-ui/react-popover |
-| DropdownMenu | @radix-ui/react-dropdown-menu |
-| Tabs | @radix-ui/react-tabs |
-| Checkbox | @radix-ui/react-checkbox |
-| Switch | @radix-ui/react-switch |
-| RadioGroup | @radix-ui/react-radio-group |
-| Accordion | @radix-ui/react-accordion |
-| Sheet | @radix-ui/react-dialog |
-| NavigationMenu | @radix-ui/react-navigation-menu |
-| Slider | @radix-ui/react-slider |
-| Toggle | @radix-ui/react-toggle |
-| Collapsible | @radix-ui/react-collapsible |
-| HoverCard | @radix-ui/react-hover-card |
-| Avatar | @radix-ui/react-avatar |
-| Progress | @radix-ui/react-progress |
-| ScrollArea | @radix-ui/react-scroll-area |
-| Command | cmdk |
-| Calendar / DatePicker | react-day-picker |
+The only exception: components that shadcn does not provide at all (e.g. Spinner). In that case, use a plain HTML element or Radix primitive directly.
 
-### Skip shadcn — write Rocket HOC directly:
-
-| Component | Why skip |
-|---|---|
-| Button | shadcn Button is just CVA+Slot, no Radix |
-| Badge | pure styled span |
-| Label | pure styled label |
-| Input | pure styled input |
-| Textarea | pure styled textarea |
-| Skeleton | pure styled div |
-| Separator | pure styled hr/div |
-| Spinner | pure animation |
-
-If unsure: read `shadcn-reference.md` (co-located with this skill). It has the full list with Radix status and CLI commands for every shadcn component. Only fall back to the live shadcn website if the component isn't listed there.
+If unsure whether shadcn has a component: read `shadcn-reference.md` (co-located with this skill). Only fall back to the live shadcn website if the component isn't listed there.
 
 ---
 

@@ -1,16 +1,16 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { cva } from 'class-variance-authority';
-import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button as ShadcnButton } from '@/components/ui/Rocket/shadcn/button';
 
 const buttonVariants = cva(
   [
-    'tw-inline-flex tw-items-center tw-justify-center tw-font-medium tw-whitespace-nowrap',
-    'tw-rounded-md tw-border-0 tw-border-solid tw-transition-colors tw-appearance-none tw-outline-none',
+    // Resets not covered by shadcn base
+    'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
+    // Override shadcn focus ring with ToolJet token
     'focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-1',
-    'disabled:tw-pointer-events-none disabled:tw-opacity-50',
   ],
   {
     variants: {
@@ -28,11 +28,13 @@ const buttonVariants = cva(
           'disabled:tw-bg-button-secondary-disabled',
         ],
         ghost: [
+          'tw-bg-transparent',
           'tw-text-text-medium',
           'hover:tw-bg-interactive-hover',
           'active:tw-bg-interactive-selected',
         ],
         ghostBrand: [
+          'tw-bg-transparent',
           'tw-text-text-brand',
           'hover:tw-bg-interactive-hover',
           'active:tw-bg-interactive-selected',
@@ -53,6 +55,10 @@ const buttonVariants = cva(
         true: '',
         false: '',
       },
+      iconOnly: {
+        true: 'tw-px-0',
+        false: '',
+      },
     },
     compoundVariants: [
       {
@@ -70,8 +76,13 @@ const buttonVariants = cva(
         danger: true,
         class: 'tw-border-border-danger-weak tw-text-text-danger',
       },
+      // iconOnly — square dimensions per size
+      { iconOnly: true, size: 'large', class: 'tw-w-10' },
+      { iconOnly: true, size: 'default', class: 'tw-w-8' },
+      { iconOnly: true, size: 'medium', class: 'tw-w-7' },
+      { iconOnly: true, size: 'small', class: 'tw-w-5' },
     ],
-    defaultVariants: { variant: 'primary', size: 'default', danger: false },
+    defaultVariants: { variant: 'primary', size: 'default', danger: false, iconOnly: false },
   }
 );
 
@@ -81,9 +92,9 @@ const Button = forwardRef(function Button(
     variant,
     size,
     danger = false,
+    iconOnly = false,
     loading = false,
     disabled,
-    asChild = false,
     leadingVisual,
     trailingVisual,
     children,
@@ -91,13 +102,11 @@ const Button = forwardRef(function Button(
   },
   ref
 ) {
-  const Comp = asChild ? Slot : 'button';
-
   return (
-    <Comp
+    <ShadcnButton
       ref={ref}
       disabled={disabled || loading}
-      className={cn(buttonVariants({ variant, size, danger }), className)}
+      className={cn(buttonVariants({ variant, size, danger, iconOnly }), className)}
       {...props}
     >
       {loading ? (
@@ -109,7 +118,7 @@ const Button = forwardRef(function Button(
           {trailingVisual && <span className="tw-shrink-0">{trailingVisual}</span>}
         </>
       )}
-    </Comp>
+    </ShadcnButton>
   );
 });
 
@@ -119,6 +128,7 @@ Button.propTypes = {
   variant: PropTypes.oneOf(['primary', 'secondary', 'ghost', 'ghostBrand', 'outline']),
   size: PropTypes.oneOf(['large', 'default', 'medium', 'small']),
   danger: PropTypes.bool,
+  iconOnly: PropTypes.bool,
   disabled: PropTypes.bool,
   loading: PropTypes.bool,
   asChild: PropTypes.bool,

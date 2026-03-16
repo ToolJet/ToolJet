@@ -86,8 +86,8 @@ Uses CVA `compoundVariants` for the `danger` boolean modifier on primary and sec
 
 ## Notes
 
-- No shadcn primitive — Button is pure CVA + forwardRef. shadcn Button itself is just CVA+Slot (no Radix), so wrapping it adds nothing.
-- `asChild` prop enables render delegation via `@radix-ui/react-slot` (already installed).
+- Uses shadcn Button as structural base (Slot/asChild, forwardRef). All styling overridden by Rocket CVA via tailwind-merge.
+- `asChild` prop enables render delegation via shadcn's built-in `@radix-ui/react-slot`.
 - `danger` modifier applies to: primary (→ danger-primary tokens), secondary (→ danger border/text). Ghost, ghostBrand, outline have no danger variant in Figma.
 - `loading` state: hides content, shows centred `Loader2` icon spinning. Loader2 is a stand-in until Rocket Spinner is built.
 - Font: IBM Plex Sans Medium — handled by global body font, no explicit font-family class needed.

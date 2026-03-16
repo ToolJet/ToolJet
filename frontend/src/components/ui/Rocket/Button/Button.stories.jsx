@@ -17,6 +17,7 @@ export default {
       options: ['large', 'default', 'medium', 'small'],
     },
     danger: { control: 'boolean' },
+    iconOnly: { control: 'boolean' },
     disabled: { control: 'boolean' },
     loading: { control: 'boolean' },
   },
@@ -97,6 +98,36 @@ export const IconSizes = {
       <Button size="default" leadingVisual={<Plus size={14} />}>Default</Button>
       <Button size="medium" leadingVisual={<Plus size={12} />}>Medium</Button>
       <Button size="small" leadingVisual={<Plus size={12} />}>Small</Button>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Composite: icon-only buttons ──────────────────────────────────────────
+export const IconOnly = {
+  render: () => (
+    <div className="tw-flex tw-items-end tw-gap-3 tw-p-4">
+      {['large', 'default', 'medium', 'small'].map((size) => (
+        <Button key={size} size={size} iconOnly aria-label="Add">
+          <Plus size={size === 'small' ? 12 : size === 'medium' ? 12 : 14} />
+        </Button>
+      ))}
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+export const IconOnlyVariants = {
+  render: () => (
+    <div className="tw-flex tw-items-center tw-gap-3 tw-p-4">
+      {['primary', 'secondary', 'ghost', 'ghostBrand', 'outline'].map((variant) => (
+        <Button key={variant} variant={variant} iconOnly aria-label="Add">
+          <Plus size={14} />
+        </Button>
+      ))}
+      <Button variant="primary" danger iconOnly aria-label="Delete">
+        <Trash2 size={14} />
+      </Button>
     </div>
   ),
   parameters: { layout: 'padded' },

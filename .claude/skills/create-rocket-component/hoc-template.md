@@ -195,12 +195,10 @@ export { [Name], [name]Classes };
 
 ---
 
-## For components that don't need a shadcn primitive
+## For components not available in shadcn (rare)
 
-Same shapes as above, but:
-- No shadcn import
-- Use a plain HTML element or `Slot` from `@radix-ui/react-slot` as base
-- Add `asChild` prop if the component should support render delegation
+Only use this when shadcn does not provide the component at all (e.g. Spinner).
+Use a plain HTML element or `Slot` from `@radix-ui/react-slot` as base.
 
 ```jsx
 import { Slot } from '@radix-ui/react-slot';
@@ -209,7 +207,7 @@ const [Name] = forwardRef(function [Name](
   { className, variant, size, asChild = false, ...props },
   ref
 ) {
-  const Comp = asChild ? Slot : 'button'; // or 'span', 'div', etc.
+  const Comp = asChild ? Slot : 'div'; // or 'span', etc.
   return (
     <Comp
       ref={ref}
@@ -219,6 +217,8 @@ const [Name] = forwardRef(function [Name](
   );
 });
 ```
+
+**This is the exception, not the rule.** Default to installing + wrapping shadcn.
 
 ---
 
