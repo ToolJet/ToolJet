@@ -197,7 +197,7 @@ export async function grantTenantRoleToTjdbAdminRole(
 
 export async function syncTenantSchemaWithPostgrest(tooljetDbTransactionManager: EntityManager, tooljetDbUser: string) {
   await tooljetDbTransactionManager.query(`CREATE SCHEMA IF NOT EXISTS postgrest`);
-  await tooljetDbTransactionManager.query(`GRANT USAGE ON SCHEMA postgrest to ${tooljetDbUser}`);
+  await tooljetDbTransactionManager.query(`GRANT USAGE ON SCHEMA postgrest to "${tooljetDbUser}"`);
   await tooljetDbTransactionManager.query(`create or replace function postgrest.pre_config()
         returns void as $$
         select
