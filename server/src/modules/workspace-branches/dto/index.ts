@@ -8,6 +8,10 @@ export class CreateBranchDto {
   @IsOptional()
   @IsUUID()
   sourceBranchId?: string;
+
+  @IsOptional()
+  @IsString()
+  commitSha?: string;
 }
 
 export class SwitchBranchDto {

@@ -18,8 +18,8 @@ function list() {
   return fetch(`${config.apiUrl}/workspace-branches`, requestOptions).then(handleResponse);
 }
 
-function create(name, sourceBranchId) {
-  const body = { name, ...(sourceBranchId && { sourceBranchId }) };
+function create(name, sourceBranchId, commitSha) {
+  const body = { name, ...(sourceBranchId && { sourceBranchId }), ...(commitSha && { commitSha }) };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -81,3 +81,4 @@ function fetchPullRequests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
 }
+
