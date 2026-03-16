@@ -46,6 +46,7 @@ export default class GraphqlQueryService implements QueryService {
 
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
+    const hasDataSource = dataSourceId !== undefined;
 
     // Append parameters individually to preserve duplicates
     for (const [key, value] of Object.entries(paramsFromUrl)) {
@@ -55,7 +56,7 @@ export default class GraphqlQueryService implements QueryService {
         searchParams.append(key, String(value));
       }
     }
-    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions)) {
+    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
       searchParams.append(key, String(value));
     }
     const sourceBody = Object.fromEntries(
@@ -63,10 +64,10 @@ export default class GraphqlQueryService implements QueryService {
     );
     const mergedJson = { ...sourceBody, ...json };
 
-    const headers = sanitizeHeaders(sourceOptions, queryOptions);
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
 
     const cookieString = cookiesToString(
-      sanitizeCookies(sourceOptions, queryOptions)
+      sanitizeCookies(sourceOptions, queryOptions, hasDataSource)
     );
     if (cookieString) {
       (headers as Record<string, string>)['Cookie'] = cookieString;
