@@ -54,8 +54,6 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
       for (const row of batch) {
         const options = row.options ?? {};
         const multiAuthEnabled = options?.multiple_auth_enabled?.value === true;
-        console.log('options', options.multiple_auth_enabled, multiAuthEnabled);
-        console.log(options?.tokenData, 'tokenData');
 
         // ── Skip rows with no token data worth migrating ───────────────────
         const hasTokenData = multiAuthEnabled
@@ -76,7 +74,16 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
               refresh_token: string;
             }> = options.tokenData.value;
 
-            for (const tokenEntry of tokenDataArr) {
+            // Deduplicate by user_id — last entry wins for corrupt data
+            const deduplicatedTokenData = tokenDataArr.reduce(
+              (acc, entry) => {
+                acc[entry.user_id] = entry;
+                return acc;
+              },
+              {} as Record<string, (typeof tokenDataArr)[0]>
+            );
+
+            for (const tokenEntry of Object.values(deduplicatedTokenData)) {
               if (!tokenEntry.access_token && !tokenEntry.refresh_token) continue;
 
               const encryptedAccessToken = tokenEntry.access_token
@@ -85,6 +92,16 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
               const encryptedRefreshToken = tokenEntry.refresh_token
                 ? await encryptionService.encryptColumnValue('credentials', 'value', tokenEntry.refresh_token)
                 : null;
+
+              // INSERT OR REPLACE — if duplicate exists, delete and re-insert with latest token
+              await manager.query(
+                `
+                DELETE FROM datasource_user_token_data
+                WHERE  data_source_option_id = $1::uuid
+                AND    user_id = $2::uuid
+                `,
+                [row.id, tokenEntry.user_id]
+              );
 
               await manager.query(
                 `

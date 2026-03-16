@@ -23,7 +23,6 @@ export class AddDataSourceUserTokenData1772710222596 implements MigrationInterfa
             name: 'data_source_option_id',
             type: 'uuid',
             isNullable: false,
-            isUnique: true, // enforces 1-to-1 with data_source_options
           },
           {
             name: 'auth_token',
@@ -71,14 +70,19 @@ export class AddDataSourceUserTokenData1772710222596 implements MigrationInterfa
       }),
     );
 
-    //Index for quick lookup by data_source_option_id and user_id
-    await queryRunner.createIndex(
-      'datasource_user_token_data',
-      new TableIndex({
-        name: 'idx_datasource_user_token_data_option_user',
-        columnNames: ['data_source_option_id', 'user_id'],
-      }),
-    );
+    // Partial unique index: one row per (option + user) for multi-auth rows
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX idx_datasource_user_token_data_option_user
+      ON datasource_user_token_data (data_source_option_id, user_id)
+      WHERE user_id IS NOT NULL
+    `);
+
+    // Partial unique index: one row per option for single-auth rows (user_id = NULL)
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX idx_datasource_user_token_data_option_no_user
+      ON datasource_user_token_data (data_source_option_id)
+      WHERE user_id IS NULL
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToOne,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { DataSourceOptions } from './data_source_options.entity';
@@ -35,7 +35,11 @@ export class DatasourceUserTokenData {
   @UpdateDateColumn({ name: 'updated_at', default: () => 'now()' })
   updatedAt: Date;
 
-  @OneToOne(() => DataSourceOptions, { onDelete: 'CASCADE' })
+  // One data_source_option can have multiple token rows (one per user for multi-auth)
+  // Uniqueness is enforced via partial indexes in the migration:
+  //   - (data_source_option_id, user_id) WHERE user_id IS NOT NULL  → multi-auth
+  //   - (data_source_option_id)          WHERE user_id IS NULL      → single-auth
+  @ManyToOne(() => DataSourceOptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'data_source_option_id' })
   dataSourceOption: DataSourceOptions;
 }
