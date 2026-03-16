@@ -53,6 +53,30 @@ ToolJet Cloud allows you to map a custom domain or subdomain to your workspace, 
 Custom domain for ToolJet Cloud is available on **Trial**, **Teams**, and **Enterprise** plans.
 :::
 
+### Why Use a Custom Domain?
+
+Using a custom domain allows organizations to access ToolJet through their own branded URL instead of the default ToolJet URL. For example, instead of using a generic workspace URL, teams can access their apps through something like `tools.yourcompany.com`.
+
+This helps organizations:
+
+- Maintain consistent branding for internal tools and applications.
+- Provide a more professional and trusted experience for end-users of the apps built on ToolJet.
+- Integrate ToolJet more naturally into existing company infrastructure and internal portals.
+
+For teams building internal tools used by non-technical users, accessing applications through a company domain makes the platform feel like a native part of the organization’s product ecosystem rather than a third-party tool.
+
+### Workspace-level Domain Mapping
+
+In ToolJet Cloud, custom domains are configured per workspace. This means the domain you configure will apply only to that specific workspace and all applications within it.
+
+For example:
+| Workspace            | Custom Domain               |
+| -------------------- | --------------------------- |
+| Finance Workspace    | `finance-tools.company.com` |
+| Operations Workspace | `ops-tools.company.com`     |
+
+Once configured, users will access the workspace and its applications using the custom domain instead of the default ToolJet Cloud URL.
+
 ### Prerequisites
 
 - A registered domain name with access to its DNS settings.
@@ -88,3 +112,9 @@ DNS changes can take a few minutes to propagate, depending on your DNS provider 
 
 After some time, click **Test connection** on the Custom Domain settings page to verify that your domain is correctly mapped. Once the test passes, your ToolJet workspace will be accessible at your custom domain.
 
+### Impact of Updating a Custom Domain
+When a custom domain is configured or updated for a ToolJet Cloud workspace, the workspace will start resolving from the new domain once DNS propagation completes.
+
+Because authentication flows depend on the application URL, you may need to update redirect URLs in your authentication providers. For example, if you are using SSO providers such as Okta, Azure AD, or Google OAuth, ensure that the redirect/callback URLs include the new custom domain.
+
+If these URLs are not updated, users may encounter authentication errors during login.
