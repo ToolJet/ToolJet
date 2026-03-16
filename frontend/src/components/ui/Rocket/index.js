@@ -10,4 +10,5 @@
  * Add exports here after running /create-rocket-component.
  */
 
+export { Avatar, avatarVariants } from './Avatar/Avatar';
 export { Button, buttonVariants } from './Button/Button';
