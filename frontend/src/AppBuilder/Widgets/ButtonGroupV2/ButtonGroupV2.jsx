@@ -294,6 +294,7 @@ export const ButtonGroupV2 = (props) => {
             ? 'flex-column'
             : '']: true,
           'd-none': !exposedVariablesTemporaryState.isVisible,
+          'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
         })}
         aria-hidden={!exposedVariablesTemporaryState.isVisible}
         aria-disabled={exposedVariablesTemporaryState.isDisabled}
