@@ -1,5 +1,5 @@
 import React from 'react';
-import { FolderOpen, SquarePen, Trash } from 'lucide-react';
+import { FolderOpen } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
@@ -16,13 +16,27 @@ import {
 } from '@/components/ui/Rocket/select';
 import { useWorkflowListStore } from '../../Workflows/store';
 
-export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder, onAddNewFolder }) {
+export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
 
+  const selectedFolderLabel = folderList?.find((folder) => folder.value === selectedFolder)?.label ?? '';
+
   const handleCreateNewFolder = () => {
     setFolderDialogState({ type: 'create-folder' });
+  };
+
+  const handleEditFolder = () => {
+    setFolderDialogState({
+      type: 'edit-folder',
+      selectedFolderId: selectedFolder,
+      selectedFolderInitialName: selectedFolderLabel,
+    });
+  };
+
+  const handleDeleteFolder = () => {
+    setFolderDialogState({ type: 'delete-folder', selectedFolderId: selectedFolder });
   };
 
   return (
@@ -41,35 +55,50 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent className={cn('tw-min-w-52', { 'dark-theme theme-dark': darkMode })}>
-              {/* TODO: Search functionality */}
-              {/* <p>Search</p>
-              <SelectSeparator /> */}
+            <SelectContent align="end" className={cn('tw-min-w-52', { 'dark-theme theme-dark': darkMode })}>
+              <header className="tw-p-2">
+                <div className="tw-flex tw-justify-between tw-items-center tw-gap-1">
+                  <p className="tw-font-title-default tw-text-text-default tw-flex tw-items-center tw-gap-1.5">
+                    <span className="tw-p-1.5 tw-rounded-lg tw-bg-background-accent-weak">
+                      <FolderOpen size={16} color="var(--icon-accent)" />
+                    </span>
+                    {selectedFolderLabel}
+                  </p>
+
+                  <div className="tw-flex tw-items-center">
+                    <Button
+                      isLucid
+                      iconOnly
+                      size="medium"
+                      variant="ghost"
+                      leadingIcon="square-pen"
+                      onClick={handleEditFolder}
+                    />
+
+                    <Button
+                      isLucid
+                      iconOnly
+                      size="medium"
+                      variant="ghost"
+                      leadingIcon="trash"
+                      onClick={handleDeleteFolder}
+                    />
+                  </div>
+                </div>
+                {/* TODO: Search functionality */}
+                {/* <p>Search</p> */}
+              </header>
+
+              <SelectSeparator />
 
               <SelectGroup>
                 {folderList.map((folder) => (
-                  <SelectItem key={folder.value} value={folder.value} className="tw-justify-between tw-gap-2">
+                  <SelectItem
+                    key={folder.value}
+                    value={folder.value}
+                    className="tw-font-body-default tw-text-text-default tw-justify-between tw-gap-2"
+                  >
                     <SelectItemText>{folder.label}</SelectItemText>
-
-                    {/* <div className="tw-flex tw-items-center gap-1">
-                      <Button
-                        isLucid
-                        iconOnly
-                        size="small"
-                        variant="ghost"
-                        leadingIcon="square-pen"
-                        onClick={onAddNewFolder}
-                      />
-
-                      <Button
-                        isLucid
-                        iconOnly
-                        size="medium"
-                        variant="ghost"
-                        leadingIcon="trash"
-                        onClick={onAddNewFolder}
-                      />
-                    </div> */}
                   </SelectItem>
                 ))}
               </SelectGroup>

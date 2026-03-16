@@ -21,7 +21,7 @@ import ContentToolbar from '../shared/ContentToolbar';
 import CRUDActionDialog from '../shared/CRUDActionDialog';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import CreateWorkflowBtn from './components/CreateWorkflowBtn';
-// import MoreActionsMenu from './components/MoreActionsMenu';
+import MoreActionsMenu from './components/MoreActionsMenu';
 import FolderActionDialog from '../shared/FolderBreadcrumb/FolderActionDialog';
 
 // TODOs:
@@ -48,7 +48,7 @@ export default function Workflows() {
     { appType: 'workflow', folderId: selectedFolderId, appSearchQuery, pageNo: currentPage },
     { enabled: isFoldersSuccess }
   );
-  useFetchFeatureAccess();
+  const { data: featureAccess } = useFetchFeatureAccess();
   useFetchAppsLimit();
 
   const { data: workflowInstanceLevelLimit, isLoading: isLoadingInstanceLevelLimit } =
@@ -60,7 +60,8 @@ export default function Workflows() {
     // fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD }); // Also called in frontend/src/_ui/Layout/index.jsx check if we can skip this call from here
 
     // TODO: I guess if we do not render route itself we won't need this logic here
-    const canView = canUserPerformWorkflowAction('view') && isWorkflowsFeatureEnabled();
+    const { hasViewPermission } = canUserPerformWorkflowAction();
+    const canView = hasViewPermission && isWorkflowsFeatureEnabled();
 
     if (!canView) {
       toast.error('You do not have permission to view workflows');
@@ -97,6 +98,14 @@ export default function Workflows() {
 
   const isCreationDisabled = hasWorkflowLimitReached();
 
+  const checkUserPermissions = (app) => canUserPerformWorkflowAction('', app);
+
+  const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+  // Only exclude env param if license is invalid/expired (basic plan)
+  // If license is valid but multi-environment feature is not available, still include env param
+  const shouldExcludeEnvParam = invalidLicense;
+  const moduleEnabled = featureAccess?.modulesEnabled || false;
+
   return (
     <WorkspaceLayout>
       <main className="tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
@@ -104,7 +113,7 @@ export default function Workflows() {
           <div className="tw-flex tw-items-center tw-gap-2">
             <CreateWorkflowBtn disabled={isCreationDisabled} />
 
-            {/* <MoreActionsMenu disabled={isCreationDisabled} /> */}
+            <MoreActionsMenu disabled={isCreationDisabled} />
           </div>
         </PageHeader>
 
@@ -118,7 +127,14 @@ export default function Workflows() {
           <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
             {isWorkflowsFetchedOnce ? (
               workflows?.apps?.length ? (
-                <AppList apps={workflows.apps} />
+                <AppList
+                  apps={workflows.apps}
+                  appType="workflow"
+                  currentFolderId={selectedFolderId}
+                  checkUserPermissions={checkUserPermissions}
+                  basicPlan={shouldExcludeEnvParam}
+                  moduleEnabled={moduleEnabled}
+                />
               ) : (
                 <EmptyState
                   resourceType="workflows"

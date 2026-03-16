@@ -8,10 +8,10 @@ import { useWorkflowListStore } from '../store';
 export default function CreateWorkflowBtn({ disabled }) {
   const { t } = useTranslation();
 
-  const setOpenWorkflowDialogType = useWorkflowListStore((state) => state.setOpenWorkflowDialogType);
+  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
 
   const handleOpenCreateWorkflowDialog = () => {
-    setOpenWorkflowDialogType('create');
+    setAppDialogState({ type: 'create' });
   };
 
   return (

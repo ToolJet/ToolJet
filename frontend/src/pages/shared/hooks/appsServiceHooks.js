@@ -72,8 +72,9 @@ export function useCloneApp() {
 }
 
 export function useRenameApp() {
-  const { folderId } = useAppFilters();
   const queryClient = useQueryClient();
+
+  const { folderId } = useAppFilters();
   const currentPage = useWorkflowListStore((state) => state.currentPage);
   const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
 
@@ -138,8 +139,12 @@ export function useCreateApp() {
 export function useDeleteApp() {
   const queryClient = useQueryClient();
 
+  const { folderId } = useAppFilters();
+  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+
   return useMutation({
-    mutationFn: ({ id, appType }) => appsService.deleteApp(id, appType),
+    mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
     onError: () => {
       toast.error('Could not delete the app.');
     },
@@ -148,7 +153,11 @@ export function useDeleteApp() {
 
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} deleted successfully.`);
 
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      // queryClient.invalidateQueries({ queryKey: ['folders'] });
+      setCurrentPage(1);
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { folderId, appSearchQuery, appType: variables.appType }],
+      });
 
       // TODO: re-fetch apps list
       // this.fetchApps(

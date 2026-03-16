@@ -7,6 +7,11 @@ const folderDialogInitialState = {
   selectedFolderInitialName: '',
 };
 
+const appDialogInitialState = {
+  type: '',
+  appDetails: null,
+};
+
 const initialState = {
   openFolderDialogType: '',
   openWorkflowDialogType: '',
@@ -17,6 +22,7 @@ const initialState = {
   pageSize: 9,
   currentPage: 1,
   appSearchQuery: '',
+  appDialogState: { ...appDialogInitialState },
   folderDialogState: { ...folderDialogInitialState },
 };
 
@@ -47,6 +53,14 @@ export const useWorkflowListStore = createZustandStoreWithImmer(
     setPageSize: (size) =>
       set((state) => {
         state.pageSize = size;
+      }),
+    setAppDialogState: (updatedState) =>
+      set((state) => {
+        state.appDialogState = { ...state.appDialogState, ...updatedState };
+      }),
+    resetAppDialogState: () =>
+      set((state) => {
+        state.appDialogState = { ...appDialogInitialState };
       }),
     setFolderDialogState: (updatedState) =>
       set((state) => {

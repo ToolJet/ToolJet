@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Trash, Check } from 'lucide-react';
@@ -38,6 +38,10 @@ export default function FolderActionDialog({ appType }) {
   const [errorText, setErrorText] = useState('');
   const [name, setName] = useState(selectedFolderInitialName ?? '');
   const [selectedFolder, setSelectedFolder] = useState('');
+
+  useEffect(() => {
+    setName(selectedFolderInitialName ?? '');
+  }, [selectedFolderInitialName]);
 
   const handleResetState = () => {
     setName('');
