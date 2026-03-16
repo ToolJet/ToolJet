@@ -1,0 +1,29 @@
+/* Tab pane visibility — GraphQL specific */
+.graphql-tabpanes {
+  display: none;
+}
+
+.graphql-tabpanes.active {
+  display: block;
+}
+
+.graphql-tab-content {
+  /* intentionally empty */
+}
+
+
+.graphql-tabpanes .empty-paramlist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  min-height: 80px;
+}
+
+.graphql-tabpanes .empty-paramlist-btn {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
