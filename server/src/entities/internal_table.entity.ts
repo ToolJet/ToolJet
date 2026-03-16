@@ -21,6 +21,9 @@ export class InternalTable extends BaseEntity {
   @Column({ name: 'table_name' })
   tableName: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
