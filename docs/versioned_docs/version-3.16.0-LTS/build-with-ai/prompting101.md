@@ -133,7 +133,7 @@ Describe how users will interact with the tool through specific workflows.
 
 ### Do This
 - **Write Specific Prompts with Detailed Context** <br/>
-    A precise prompt costs fewer credits because the AI resolves ambiguity in fewer back-and-forth steps. Instead of "Build me a dashboard to track new user signups every day," include your business context, the problem you're solving, and what the output should look like: "Build me a dashboard to track new user signups every day. I need a daily signups chart for the last 30 days, a summary of total users this month vs last month, and a table showing each new user's name, email, signup date, and plan type. Let me filter by date range and plan." — this spends credits on building, not on clarifying.
+    A precise prompt costs fewer credits because the AI resolves ambiguity in fewer back-and-forth steps. Instead of "Build me a dashboard to track new user signups every day," include your business context, the problem you're solving, and what the output should look like: "Build me a dashboard to track new user signups every day. I need a daily signups chart for the last 30 days, a summary of total users this month vs last month, and a table showing each new user's name, email, signup date, and plan type. Let me filter by date range and plan." this spends credits on building, not on clarifying.
 - **Keep Prompts Concise** <br/>
     Every word in your prompt is processed at a cost. Aim for ~500 words or less. Pasting full PRDs or spec documents inflates credit usage without improving output, extract only what's relevant to the task at hand.
 - **Keep the Number of Tasks Per Prompt Minimal** <br/>
