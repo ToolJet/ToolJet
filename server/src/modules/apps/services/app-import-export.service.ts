@@ -591,7 +591,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      newApp.slug = importedApp.id;
+      newApp.slug = importedApp.slug || importedApp.id;
       await manager.save(newApp);
       return { newApp, resourceMapping };
     }, manager);
