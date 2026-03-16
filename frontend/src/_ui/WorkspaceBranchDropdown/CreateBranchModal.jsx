@@ -25,7 +25,9 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
 
-  const selectedSourceBranchId = sourceBranchId || activeBranchId;
+  // Always create from the default (main) branch
+  const defaultBranch = branches.find((b) => b.is_default || b.isDefault);
+  const selectedSourceBranchId = defaultBranch?.id || sourceBranchId || activeBranchId;
   const selectedSourceBranch = branches.find((b) => b.id === selectedSourceBranchId);
 
   // Close dropdown when clicking outside
@@ -39,19 +41,16 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Set default source branch on mount
+  // Always force source to the default (main) branch
   useEffect(() => {
-    if (branches.length > 0 && !sourceBranchId) {
-      // Default to the default branch
-      const defaultBranch = branches.find((b) => b.is_default || b.isDefault);
-      if (defaultBranch) {
-        setSourceBranchId(defaultBranch.id);
-      } else if (activeBranchId) {
-        setSourceBranchId(activeBranchId);
+    if (branches.length > 0) {
+      const mainBranch = branches.find((b) => b.is_default || b.isDefault);
+      if (mainBranch) {
+        setSourceBranchId(mainBranch.id);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branches, activeBranchId]);
+  }, [branches]);
 
   const validateBranchName = (name) => {
     if (!name || name.trim().length === 0) return 'Branch name is required';

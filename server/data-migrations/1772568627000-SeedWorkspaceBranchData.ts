@@ -33,6 +33,19 @@ export class SeedWorkspaceBranchData1772568627000 implements MigrationInterface 
         AND ds.app_version_id IS NULL
       ON CONFLICT (data_source_version_id, environment_id) DO NOTHING;
     `);
+
+    // 4. Backfill branch_id on existing app_versions for orgs with git sync
+    //    Assigns all existing versions (branch_id IS NULL) to the default branch
+    //    so they don't leak into every branch via the legacy pass-through filter
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET branch_id = wb.id
+      FROM apps a
+      JOIN organization_git_sync_branches wb
+        ON wb.organization_id = a.organization_id AND wb.is_default = true
+      WHERE av.app_id = a.id
+        AND av.branch_id IS NULL;
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

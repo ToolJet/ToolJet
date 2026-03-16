@@ -91,12 +91,15 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     return true;
   });
 
+  const [switchingBranchName, setSwitchingBranchName] = useState(null);
+
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
       onClose();
       return;
     }
 
+    setSwitchingBranchName(branch.name);
     try {
       // Platform git sync: use workspace-level switching (navigates to resolved app)
       const wsBranches = useWorkspaceBranchesStore.getState().branches;
@@ -112,7 +115,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             activeBranchId: targetWsBranch.id,
             currentBranch: branchObj,
           });
-          onClose();
+          // Don't close modal — let the dimmed/spinner state persist until page navigates
           const pathParts = window.location.pathname.split('/');
           if (resolvedAppId) {
             // Navigate to the corresponding app on the target branch
@@ -147,6 +150,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
       console.error('Error switching branch:', error);
       const errorMessage = error?.error || error?.message || 'Failed to switch branch';
       toast.error(errorMessage);
+      setSwitchingBranchName(null);
     }
   };
 
@@ -236,10 +240,10 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
 
         {/* Branch List */}
         <div className="branch-list-section">
-          {isLoading ? (
+          {isLoading || switchingBranchName ? (
             <div className="loading-state">
               <div className="spinner"></div>
-              <span>Loading branches...</span>
+              <span>{switchingBranchName ? `Switching to ${switchingBranchName}...` : 'Loading branches...'}</span>
             </div>
           ) : filteredBranches.length === 0 ? (
             <div className="empty-state">
