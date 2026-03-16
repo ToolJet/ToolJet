@@ -155,6 +155,37 @@ export const useWorkspaceBranchesStore = create(
         reset() {
           set(initialState);
         },
+
+        async reinitialize(workspaceId) {
+          set({ ...initialState, isLoading: true });
+          try {
+            const [branchData, gitStatus] = await Promise.all([
+              workspaceBranchesService.list().catch(() => null),
+              gitSyncService.getGitStatus(workspaceId).catch(() => null),
+            ]);
+
+            const branches = branchData?.branches || [];
+            const storedBranch = getActiveBranch();
+            const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
+            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
+            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
+
+            if (currentBranch) {
+              setActiveBranch(currentBranch);
+            }
+
+            set({
+              branches,
+              activeBranchId: currentBranch?.id || effectiveActiveBranchId,
+              currentBranch,
+              orgGitConfig: gitStatus,
+              isLoading: false,
+              isInitialized: true,
+            });
+          } catch (error) {
+            set({ isLoading: false, isInitialized: true });
+          }
+        },
       },
     }),
     { name: 'Workspace Branches' }
