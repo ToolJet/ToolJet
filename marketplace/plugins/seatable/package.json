@@ -1,0 +1,20 @@
+{
+  "name": "@tooljet-marketplace/seatable",
+  "version": "1.0.0",
+  "description": "ToolJet marketplace connector for SeaTable – connect to any SeaTable server and perform CRUD operations.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch",
+    "test": "cd ../.. && npm test"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "@tooljet-marketplace/common": "^1.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.0",
+    "typescript": "^5.4.0"
+  }
+}
