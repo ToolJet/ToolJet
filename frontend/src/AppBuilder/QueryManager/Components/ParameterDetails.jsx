@@ -101,7 +101,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             variant="outline"
             leadingIcon="plus"
             id="runjs-param-add-btn"
-            data-cy={`runjs-add-param-button`}
+            data-cy="query-param-add-button"
             onClick={() => setShowModal((show) => !show)}
           >
             Add
