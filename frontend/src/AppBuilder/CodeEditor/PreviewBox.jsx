@@ -593,7 +593,7 @@ const PreviewContainer = ({
           <Card
             className={cx({
               'bg-slate2': darkMode,
-              'query-manger-input-preview-popover-card': isInsideQueryManager,
+              'query-manager-input-preview-popover-card': isInsideQueryManager,
             })}
             style={{
               borderColor: errorStateActive ? 'var(--tomato8)' : 'var(--slate6)',
