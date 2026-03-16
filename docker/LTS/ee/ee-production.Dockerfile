@@ -94,7 +94,9 @@ ENV TOOLJET_EDITION=ee
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production && npm --prefix frontend prune --production
+# chmod -R g+w here so the final stage COPY gets correct permissions without a separate RUN layer
+# (avoids a ~1GB copy-on-write duplication in the final image)
+RUN npm --prefix frontend run build --production && npm --prefix frontend prune --production && chmod -R g+w /app/frontend/build
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
@@ -216,7 +218,6 @@ COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 # Set all permissions and create remaining directories in a single layer
 RUN chmod 4755 /usr/local/bin/nsjail \
-    && chmod -R g+w /app/frontend/build \
     && mkdir -p \
         /home/appuser/rsyslog \
         /app/server/tooljet/gitsync \
@@ -245,6 +246,6 @@ ENV HOME=/home/appuser
 USER appuser
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]
