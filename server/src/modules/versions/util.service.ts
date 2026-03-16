@@ -179,7 +179,7 @@ export class VersionUtilService implements IVersionUtilService {
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },
-        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+        relations: ['dataSources', 'dataSources.dataQueries'],
       });
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);

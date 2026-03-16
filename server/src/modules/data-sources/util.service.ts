@@ -18,7 +18,6 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { OrganizationConstantsUtilService } from '@modules/organization-constants/util.service';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
@@ -480,7 +479,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       where: { id: dataSourceId, organizationId },
       relations: [
         'apps',
-        'dataSourceOptions',
         'appVersion',
         'appVersion.app',
         'plugin',
@@ -490,12 +488,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ],
     });
 
-    if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
+    if (!environmentId) {
       //fix for env id issue when importing cloud/enterprise apps to CE
-      if (dataSource.dataSourceOptions?.length > 1) {
-        const env = await this.appEnvironmentUtilService.get(organizationId, null);
-        environmentId = env?.id;
-      } else {
+      const env = await this.appEnvironmentUtilService.get(organizationId, null);
+      environmentId = env?.id;
+      if (!environmentId) {
         throw new NotAcceptableException('Environment id should not be empty');
       }
     }
@@ -511,13 +508,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // Branch-aware option resolution for global data sources
     const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
 
-    if (environmentId) {
-      dataSource.options = (
-        await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, effectiveBranchId)
-      ).options;
-    } else {
-      dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
-    }
+    dataSource.options = (
+      await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, effectiveBranchId)
+    ).options;
+
     return dataSource;
   }
 
@@ -1089,15 +1083,26 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const allEnvs = await this.appEnvironmentUtilService.getAllEnvironments(organizationId, manager);
+
+      // Create default DataSourceVersion + DataSourceVersionOptions
+      const dataSource = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      const dsv = manager.create(DataSourceVersion, {
+        dataSourceId,
+        name: dataSource?.name || 'v1',
+        isDefault: true,
+        isActive: true,
+        branchId: null,
+      });
+      const savedDsv = await manager.save(DataSourceVersion, dsv);
+
       await Promise.all(
         allEnvs.map((env) => {
-          const options = manager.create(DataSourceOptions, {
+          const dsvo = manager.create(DataSourceVersionOptions, {
+            dataSourceVersionId: savedDsv.id,
             environmentId: env.id,
-            dataSourceId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            options: {},
           });
-          return manager.save(options);
+          return manager.save(DataSourceVersionOptions, dsvo);
         })
       );
     }, manager);
@@ -1105,7 +1110,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   /**
    * Creates a DataSourceVersion + DataSourceVersionOptions entries for
-   * the given branch, copying options from data_source_options.
+   * the given branch, copying options from the default DataSourceVersion.
    */
   protected async createDataSourceVersionForBranch(
     dataSource: DataSource,
@@ -1121,15 +1126,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
     const savedDsv = await manager.save(DataSourceVersion, dsv);
 
-    // Copy options from data_source_options to data_source_version_options
+    // Copy options from the default DataSourceVersion's options
+    const defaultDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, isDefault: true },
+    });
     for (const env of allEnvs) {
-      const dso = await manager.findOne(DataSourceOptions, {
-        where: { dataSourceId: dataSource.id, environmentId: env.id },
-      });
+      let sourceOptions = {};
+      if (defaultDsv) {
+        const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+        });
+        sourceOptions = defaultDsvo?.options || {};
+      }
       const dsvo = manager.create(DataSourceVersionOptions, {
         dataSourceVersionId: savedDsv.id,
         environmentId: env.id,
-        options: dso?.options || {},
+        options: sourceOptions,
       });
       await manager.save(DataSourceVersionOptions, dsvo);
     }
