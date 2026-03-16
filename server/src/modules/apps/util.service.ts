@@ -572,6 +572,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'RadioButtonV2',
                 'Tags',
                 'TagsInput',
+                'TreeSelect',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {

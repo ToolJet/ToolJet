@@ -32,6 +32,7 @@ const Table = memo(
     currentLayout,
     currentMode,
     subContainerIndex,
+    componentType,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -230,17 +231,22 @@ const Table = memo(
     }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
+    // Allow empty-table height recalculation only on visibility changes to avoid flicker during brief null/empty data states.
+    const prevVisibility = usePrevious(exposedVariablesTemporaryState?.isVisible);
+    const hasVisibilityChanged = prevVisibility !== exposedVariablesTemporaryState.isVisible;
+
     useDynamicHeight({
       isDynamicHeightEnabled,
       id: id,
       height,
       value: JSON.stringify({ heightChangeValue, tableData }),
-      skipAdjustment: exposedVariablesTemporaryState.isLoading || tableData.length === 0,
+      skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       adjustComponentPositions,
       currentLayout,
       width,
       visibility: exposedVariablesTemporaryState.isVisible,
       subContainerIndex,
+      componentType,
     });
 
     return (
