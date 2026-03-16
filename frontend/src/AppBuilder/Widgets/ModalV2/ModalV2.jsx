@@ -34,6 +34,7 @@ export const ModalV2 = function Modal({
   currentLayout,
   componentCount,
   subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
@@ -93,6 +94,7 @@ export const ModalV2 = function Modal({
     value: JSON.stringify({ headerHeight, showHeader, showModal }),
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {

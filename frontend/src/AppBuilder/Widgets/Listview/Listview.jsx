@@ -26,6 +26,7 @@ export const Listview = function Listview({
   dataCy,
   currentMode,
   subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
@@ -193,6 +194,7 @@ export const Listview = function Listview({
             visibility={visibility}
             parentHeight={height}
             dataCy={dataCy}
+            componentType={componentType}
           />
         ))}
       </div>
