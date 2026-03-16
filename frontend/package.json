@@ -172,6 +172,7 @@
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.28.5",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-links": "^9.1.5",
@@ -182,6 +183,8 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "autoprefixer": "^10.4.17",
     "babel-loader": "^9.1.2",
     "babel-plugin-console-source": "^2.0.5",
@@ -216,6 +219,7 @@
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.4.1",
     "terser-webpack-plugin": "^5.3.6",
+    "typescript": "^5.9.3",
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
@@ -275,8 +279,9 @@
     "analyze:dev": "ANALYZE=true webpack --mode=development",
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
     "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
-    "lint": "eslint . '**/*.{js,jsx}'",
-    "format": "eslint . --fix '**/*.{js,jsx}'",
+    "lint": "eslint . '**/*.{js,jsx,ts,tsx}'",
+    "format": "eslint . --fix '**/*.{js,jsx,ts,tsx}'",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build",
@@ -291,6 +296,7 @@
     "transform": {
       "^.+\\.js?$": "babel-jest",
       "^.+\\.jsx?$": "babel-jest",
+      "^.+\\.tsx?$": "babel-jest",
       "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
     },
     "transformIgnorePatterns": [
@@ -305,6 +311,8 @@
       "src"
     ],
     "moduleFileExtensions": [
+      "ts",
+      "tsx",
       "js",
       "json",
       "jsx"
