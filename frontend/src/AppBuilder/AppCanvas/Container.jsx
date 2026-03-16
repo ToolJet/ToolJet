@@ -132,7 +132,10 @@ const Container = React.memo(
     const handleCanvasClick = useCallback(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
-        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        const canvasId1 = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+
+        const canvasId = realCanvas?.getAttribute('data-parentId');
+        console.log('canvasId', canvasId1, canvasId, realCanvas);
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();

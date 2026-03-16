@@ -39,6 +39,7 @@ export const PageCanvasHeader = ({ showCanvasHeader, isMobileLayout, currentMode
         'canvas-header-slot--edit': currentMode === 'edit',
         'canvas-header-slot--selected': isCanvasHeaderSelected,
       })}
+      component-id="canvas-header"
       onClick={(e) => {
         if (currentMode === 'edit') {
           e.stopPropagation();
