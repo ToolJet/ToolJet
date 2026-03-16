@@ -115,10 +115,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV POSTGREST_VERSION=v12.2.0
 
+# Build the wrapper script here so the final stage gets both files in a single COPY,
+# avoiding a CoW duplication of the 17MB binary in a separate RUN layer
 RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-v12.2.0-linux-static-x64.tar.xz && \
     tar -xf postgrest.tar.xz && \
-    mv postgrest /postgrest && \
+    mv postgrest /postgrest-original && \
     rm postgrest.tar.xz && \
+    chmod +x /postgrest-original && \
+    printf '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"\n' > /postgrest && \
     chmod +x /postgrest
 
 FROM debian:12-slim
@@ -191,12 +195,9 @@ COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
 COPY --from=builder /opt/python-runtime /opt/python-runtime
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
-# Copy PostgREST binary from builder
+# Copy PostgREST binary and wrapper from builder — both already prepared, no extra RUN layer needed
+COPY --from=builder --chown=appuser:0 /postgrest-original /usr/local/bin/postgrest-original
 COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
-
-RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
-    echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
-    chmod +x /usr/local/bin/postgrest
 
 # Copy application artifacts with ownership set directly to avoid chown -R
 COPY --from=builder --chown=appuser:0 /app/package.json ./app/package.json
