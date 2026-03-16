@@ -1,0 +1,1189 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@aws-sdk/xml-builder": {
+      "name": "@aws-sdk/xml-builder",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "fast-xml-parser"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.8",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/xml-builder"
+      ],
+      "fixAvailable": true
+    },
+    "@google-cloud/firestore": {
+      "name": "@google-cloud/firestore",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "google-gax"
+      ],
+      "effects": [],
+      "range": "7.5.0-pre.0 || >=7.6.0",
+      "nodes": [
+        "../plugins/node_modules/@google-cloud/firestore"
+      ],
+      "fixAvailable": true
+    },
+    "@google-cloud/storage": {
+      "name": "@google-cloud/storage",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "retry-request",
+        "teeny-request"
+      ],
+      "effects": [
+        "snowflake-sdk"
+      ],
+      "range": ">=5.19.0",
+      "nodes": [
+        "../plugins/node_modules/@google-cloud/storage",
+        "../plugins/node_modules/snowflake-sdk/node_modules/@google-cloud/storage"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/storage",
+        "version": "5.18.3",
+        "isSemVerMajor": true
+      }
+    },
+    "@jest/core": {
+      "name": "@jest/core",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "jest-config",
+        "jest-runner"
+      ],
+      "effects": [
+        "jest"
+      ],
+      "range": "27.0.1 - 27.5.1",
+      "nodes": [
+        "../plugins/node_modules/@jest/core"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@lerna/create": {
+      "name": "@lerna/create",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "tar"
+      ],
+      "effects": [
+        "lerna"
+      ],
+      "range": ">=7.1.5",
+      "nodes": [
+        "../plugins/node_modules/@lerna/create"
+      ],
+      "fixAvailable": {
+        "name": "lerna",
+        "version": "6.4.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@nx/devkit": {
+      "name": "@nx/devkit",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "minimatch"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-pr-34253-d811c6c || 22.4.0-beta.0 - 22.5.3 || 22.6.0-beta.0 - 22.6.0-pr.34630.341e0e3",
+      "nodes": [
+        "../plugins/node_modules/@nx/devkit"
+      ],
+      "fixAvailable": true
+    },
+    "@tootallnate/once": {
+      "name": "@tootallnate/once",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113977,
+          "name": "@tootallnate/once",
+          "dependency": "@tootallnate/once",
+          "title": "@tootallnate/once vulnerable to Incorrect Control Flow Scoping",
+          "url": "https://github.com/advisories/GHSA-vpq2-c234-7xj6",
+          "severity": "low",
+          "cwe": [
+            "CWE-705"
+          ],
+          "cvss": {
+            "score": 3.3,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<3.0.1"
+        }
+      ],
+      "effects": [
+        "http-proxy-agent"
+      ],
+      "range": "<3.0.1",
+      "nodes": [
+        "../plugins/node_modules/@tootallnate/once",
+        "../plugins/node_modules/snowflake-sdk/node_modules/@tootallnate/once",
+        "../plugins/node_modules/teeny-request/node_modules/@tootallnate/once"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/storage",
+        "version": "5.18.3",
+        "isSemVerMajor": true
+      }
+    },
+    "compression-webpack-plugin": {
+      "name": "compression-webpack-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "serialize-javascript"
+      ],
+      "effects": [],
+      "range": "1.1.0 - 11.1.0",
+      "nodes": [
+        "node_modules/compression-webpack-plugin"
+      ],
+      "fixAvailable": {
+        "name": "compression-webpack-plugin",
+        "version": "12.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "css-minimizer-webpack-plugin": {
+      "name": "css-minimizer-webpack-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "serialize-javascript"
+      ],
+      "effects": [],
+      "range": "<=7.0.4",
+      "nodes": [
+        "node_modules/css-minimizer-webpack-plugin"
+      ],
+      "fixAvailable": {
+        "name": "css-minimizer-webpack-plugin",
+        "version": "8.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "dompurify": {
+      "name": "dompurify",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1114017,
+          "name": "dompurify",
+          "dependency": "dompurify",
+          "title": "DOMPurify contains a Cross-site Scripting vulnerability",
+          "url": "https://github.com/advisories/GHSA-v2wj-7wpq-c8vv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=3.1.3 <=3.3.1"
+        }
+      ],
+      "effects": [],
+      "range": "3.1.3 - 3.3.1",
+      "nodes": [
+        "node_modules/dompurify"
+      ],
+      "fixAvailable": true
+    },
+    "draft-js": {
+      "name": "draft-js",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "immutable"
+      ],
+      "effects": [
+        "draft-js-export-html",
+        "draft-js-import-element",
+        "draft-js-import-html",
+        "draft-js-utils"
+      ],
+      "range": ">=0.8.0",
+      "nodes": [
+        "node_modules/draft-js"
+      ],
+      "fixAvailable": {
+        "name": "draft-js",
+        "version": "0.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "draft-js-export-html": {
+      "name": "draft-js-export-html",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "draft-js",
+        "draft-js-utils"
+      ],
+      "effects": [],
+      "range": ">=0.6.0",
+      "nodes": [
+        "node_modules/draft-js-export-html"
+      ],
+      "fixAvailable": {
+        "name": "draft-js-export-html",
+        "version": "0.5.4",
+        "isSemVerMajor": true
+      }
+    },
+    "draft-js-import-element": {
+      "name": "draft-js-import-element",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "draft-js",
+        "draft-js-utils"
+      ],
+      "effects": [],
+      "range": ">=0.5.0",
+      "nodes": [
+        "node_modules/draft-js-import-element"
+      ],
+      "fixAvailable": true
+    },
+    "draft-js-import-html": {
+      "name": "draft-js-import-html",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "draft-js",
+        "draft-js-import-element"
+      ],
+      "effects": [],
+      "range": ">=0.4.0",
+      "nodes": [
+        "node_modules/draft-js-import-html"
+      ],
+      "fixAvailable": {
+        "name": "draft-js-import-html",
+        "version": "0.3.2",
+        "isSemVerMajor": true
+      }
+    },
+    "draft-js-utils": {
+      "name": "draft-js-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "draft-js"
+      ],
+      "effects": [],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/draft-js-utils"
+      ],
+      "fixAvailable": true
+    },
+    "fast-xml-parser": {
+      "name": "fast-xml-parser",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113567,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser has an entity encoding bypass via regex injection in DOCTYPE entity names",
+          "url": "https://github.com/advisories/GHSA-m7jm-9gc2-mpf2",
+          "severity": "critical",
+          "cwe": [
+            "CWE-185"
+          ],
+          "cvss": {
+            "score": 9.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:H/A:N"
+          },
+          "range": ">=4.1.3 <4.5.4"
+        },
+        {
+          "source": 1113570,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
+          "url": "https://github.com/advisories/GHSA-jmr7-xgp7-cmfj",
+          "severity": "high",
+          "cwe": [
+            "CWE-776"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.1.3 <4.5.4"
+        },
+        {
+          "source": 1114149,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser has stack overflow in XMLBuilder with preserveOrder",
+          "url": "https://github.com/advisories/GHSA-fj3w-jwp8-x2g3",
+          "severity": "low",
+          "cwe": [
+            "CWE-120"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=4.0.0-beta.0 <4.5.4"
+        },
+        {
+          "source": 1114153,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser has stack overflow in XMLBuilder with preserveOrder",
+          "url": "https://github.com/advisories/GHSA-fj3w-jwp8-x2g3",
+          "severity": "low",
+          "cwe": [
+            "CWE-120"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0 <5.3.8"
+        }
+      ],
+      "effects": [
+        "@aws-sdk/xml-builder"
+      ],
+      "range": "4.0.0-beta.0 - 4.5.3 || 5.0.0 - 5.3.7",
+      "nodes": [
+        "../plugins/node_modules/fast-xml-parser",
+        "../plugins/node_modules/snowflake-sdk/node_modules/fast-xml-parser"
+      ],
+      "fixAvailable": true
+    },
+    "google-gax": {
+      "name": "google-gax",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "retry-request"
+      ],
+      "effects": [
+        "@google-cloud/firestore"
+      ],
+      "range": ">=4.0.5-experimental",
+      "nodes": [
+        "../plugins/node_modules/google-gax"
+      ],
+      "fixAvailable": true
+    },
+    "http-proxy-agent": {
+      "name": "http-proxy-agent",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@tootallnate/once"
+      ],
+      "effects": [
+        "jsdom",
+        "teeny-request"
+      ],
+      "range": "4.0.1 - 5.0.0",
+      "nodes": [
+        "../plugins/node_modules/google-gax/node_modules/http-proxy-agent",
+        "../plugins/node_modules/http-proxy-agent",
+        "../plugins/node_modules/snowflake-sdk/node_modules/http-proxy-agent",
+        "../plugins/node_modules/teeny-request/node_modules/http-proxy-agent"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/storage",
+        "version": "5.18.3",
+        "isSemVerMajor": true
+      }
+    },
+    "immutable": {
+      "name": "immutable",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1114158,
+          "name": "immutable",
+          "dependency": "immutable",
+          "title": "Immutable is vulnerable to Prototype Pollution",
+          "url": "https://github.com/advisories/GHSA-wf6x-7x77-mvgw",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<3.8.3"
+        },
+        {
+          "source": 1114168,
+          "name": "immutable",
+          "dependency": "immutable",
+          "title": "Immutable is vulnerable to Prototype Pollution",
+          "url": "https://github.com/advisories/GHSA-wf6x-7x77-mvgw",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0 <5.1.5"
+        }
+      ],
+      "effects": [
+        "draft-js"
+      ],
+      "range": "<3.8.3 || >=5.0.0 <5.1.5",
+      "nodes": [
+        "node_modules/draft-js/node_modules/immutable",
+        "node_modules/immutable",
+        "node_modules/sass/node_modules/immutable"
+      ],
+      "fixAvailable": {
+        "name": "draft-js",
+        "version": "0.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jest": {
+      "name": "jest",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@jest/core",
+        "jest-cli"
+      ],
+      "effects": [],
+      "range": "27.0.1 - 27.5.1",
+      "nodes": [
+        "../plugins/node_modules/jest"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jest-cli": {
+      "name": "jest-cli",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@jest/core",
+        "jest-config"
+      ],
+      "effects": [],
+      "range": "27.0.1 - 27.5.1",
+      "nodes": [
+        "../plugins/node_modules/jest-cli"
+      ],
+      "fixAvailable": true
+    },
+    "jest-config": {
+      "name": "jest-config",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "jest-environment-jsdom",
+        "jest-runner"
+      ],
+      "effects": [
+        "@jest/core",
+        "jest-cli"
+      ],
+      "range": "27.0.1 - 27.5.1",
+      "nodes": [
+        "../plugins/node_modules/jest-config"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jest-environment-jsdom": {
+      "name": "jest-environment-jsdom",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "jsdom"
+      ],
+      "effects": [
+        "jest-config",
+        "jest-runner"
+      ],
+      "range": "27.0.1 - 30.0.0-rc.1",
+      "nodes": [
+        "../plugins/node_modules/jest-environment-jsdom"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jest-runner": {
+      "name": "jest-runner",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "jest-environment-jsdom"
+      ],
+      "effects": [
+        "@jest/core",
+        "jest-config"
+      ],
+      "range": "27.0.4 - 27.5.1",
+      "nodes": [
+        "../plugins/node_modules/jest-runner"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jsdom": {
+      "name": "jsdom",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "http-proxy-agent"
+      ],
+      "effects": [
+        "jest-environment-jsdom"
+      ],
+      "range": "16.6.0 - 22.1.0",
+      "nodes": [
+        "../plugins/node_modules/jsdom"
+      ],
+      "fixAvailable": {
+        "name": "jest",
+        "version": "30.3.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jspdf": {
+      "name": "jspdf",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1112264,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has Local File Inclusion/Path Traversal vulnerability",
+          "url": "https://github.com/advisories/GHSA-f8cm-6447-x5h2",
+          "severity": "critical",
+          "cwe": [
+            "CWE-22",
+            "CWE-35",
+            "CWE-73"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.0.4"
+        },
+        {
+          "source": 1112801,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has PDF Injection in AcroFormChoiceField that allows Arbitrary JavaScript Execution",
+          "url": "https://github.com/advisories/GHSA-pqxr-3g65-p328",
+          "severity": "high",
+          "cwe": [
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112802,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF Vulnerable to Denial of Service (DoS) via Unvalidated BMP Dimensions in BMPDecoder",
+          "url": "https://github.com/advisories/GHSA-95fx-jjr5-f39c",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112803,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF Vulnerable to Stored XMP Metadata Injection (Spoofing & Integrity Violation)",
+          "url": "https://github.com/advisories/GHSA-vm32-vv63-w422",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-74"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112804,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has Shared State Race Condition in addJS Plugin",
+          "url": "https://github.com/advisories/GHSA-cjw8-79x6-5cj4",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200",
+            "CWE-362"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1113309,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has a PDF Injection in AcroForm module allows Arbitrary JavaScript Execution (RadioButton.createOption and \"AS\" property)",
+          "url": "https://github.com/advisories/GHSA-p5xg-68wr-hm3m",
+          "severity": "high",
+          "cwe": [
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+          },
+          "range": "<4.2.0"
+        },
+        {
+          "source": 1113310,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has a PDF Object Injection via Unsanitized Input in addJS Method",
+          "url": "https://github.com/advisories/GHSA-9vjf-qc39-jprp",
+          "severity": "high",
+          "cwe": [
+            "CWE-94",
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+          },
+          "range": "<4.2.0"
+        },
+        {
+          "source": 1113324,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF Affected by Client-Side/Server-Side Denial of Service via Malicious GIF Dimensions",
+          "url": "https://github.com/advisories/GHSA-67pg-wm7f-q7fj",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<4.2.0"
+        }
+      ],
+      "effects": [
+        "jspdf-autotable"
+      ],
+      "range": "<=4.1.0",
+      "nodes": [
+        "node_modules/jspdf"
+      ],
+      "fixAvailable": {
+        "name": "jspdf",
+        "version": "4.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jspdf-autotable": {
+      "name": "jspdf-autotable",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        "jspdf"
+      ],
+      "effects": [],
+      "range": "2.0.9 - 2.1.0 || 2.3.3 - 5.0.2",
+      "nodes": [
+        "node_modules/jspdf-autotable"
+      ],
+      "fixAvailable": {
+        "name": "jspdf-autotable",
+        "version": "5.0.7",
+        "isSemVerMajor": true
+      }
+    },
+    "lerna": {
+      "name": "lerna",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/create",
+        "tar"
+      ],
+      "effects": [],
+      "range": "6.3.1-beta.0 - 6.3.1-beta.4 || >=6.4.2-beta.0",
+      "nodes": [
+        "../plugins/node_modules/lerna"
+      ],
+      "fixAvailable": {
+        "name": "lerna",
+        "version": "6.4.1",
+        "isSemVerMajor": true
+      }
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113459,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+          "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<3.1.3"
+        },
+        {
+          "source": 1113538,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+          "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+          "severity": "high",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.1.3"
+        },
+        {
+          "source": 1113545,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+          "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+          "severity": "high",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=10.0.0 <10.2.3"
+        },
+        {
+          "source": 1113546,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+          "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.1.4"
+        },
+        {
+          "source": 1113553,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+          "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=10.0.0 <10.2.3"
+        }
+      ],
+      "effects": [
+        "@nx/devkit",
+        "nx"
+      ],
+      "range": "<=3.1.3 || 10.0.0 - 10.2.2",
+      "nodes": [
+        "../plugins/node_modules/@nx/devkit/node_modules/minimatch",
+        "../plugins/node_modules/minimatch",
+        "../plugins/node_modules/nx/node_modules/minimatch"
+      ],
+      "fixAvailable": true
+    },
+    "nodemailer": {
+      "name": "nodemailer",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109804,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer: Email to an unintended domain can occur due to Interpretation Conflict",
+          "url": "https://github.com/advisories/GHSA-mm7p-fcc7-pg87",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-436"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<7.0.7"
+        },
+        {
+          "source": 1113165,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer’s addressparser is vulnerable to DoS caused by recursive calls",
+          "url": "https://github.com/advisories/GHSA-rcmh-qjqh-p98v",
+          "severity": "high",
+          "cwe": [
+            "CWE-703"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=7.0.10"
+        }
+      ],
+      "effects": [],
+      "range": "<=7.0.10",
+      "nodes": [
+        "../plugins/node_modules/nodemailer"
+      ],
+      "fixAvailable": {
+        "name": "nodemailer",
+        "version": "8.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "nx": {
+      "name": "nx",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "minimatch"
+      ],
+      "effects": [],
+      "range": "22.4.0-beta.0 - 22.5.3 || 22.6.0-beta.0 - 22.6.0-pr.34630.341e0e3",
+      "nodes": [
+        "../plugins/node_modules/nx"
+      ],
+      "fixAvailable": true
+    },
+    "retry-request": {
+      "name": "retry-request",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "teeny-request"
+      ],
+      "effects": [
+        "@google-cloud/storage",
+        "google-gax"
+      ],
+      "range": ">=7.0.0",
+      "nodes": [
+        "../plugins/node_modules/google-gax/node_modules/retry-request",
+        "../plugins/node_modules/snowflake-sdk/node_modules/retry-request"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/storage",
+        "version": "5.18.3",
+        "isSemVerMajor": true
+      }
+    },
+    "serialize-javascript": {
+      "name": "serialize-javascript",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113686,
+          "name": "serialize-javascript",
+          "dependency": "serialize-javascript",
+          "title": "Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString()",
+          "url": "https://github.com/advisories/GHSA-5c6j-r48x-rmvq",
+          "severity": "high",
+          "cwe": [
+            "CWE-96"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<=7.0.2"
+        }
+      ],
+      "effects": [
+        "compression-webpack-plugin",
+        "css-minimizer-webpack-plugin",
+        "terser-webpack-plugin"
+      ],
+      "range": "<=7.0.2",
+      "nodes": [
+        "node_modules/serialize-javascript"
+      ],
+      "fixAvailable": {
+        "name": "css-minimizer-webpack-plugin",
+        "version": "8.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "snowflake-sdk": {
+      "name": "snowflake-sdk",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@google-cloud/storage",
+        {
+          "source": 1102097,
+          "name": "snowflake-sdk",
+          "dependency": "snowflake-sdk",
+          "title": "snowflake-sdk may incorrectly validate temporary credential cache file permissions",
+          "url": "https://github.com/advisories/GHSA-xfhv-wqj6-rx99",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-281"
+          ],
+          "cvss": {
+            "score": 4.4,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N"
+          },
+          "range": ">=1.12.0 <=2.0.1"
+        },
+        {
+          "source": 1104100,
+          "name": "snowflake-sdk",
+          "dependency": "snowflake-sdk",
+          "title": "NodeJS Driver for Snowflake has race condition when checking access to Easy Logging configuration file",
+          "url": "https://github.com/advisories/GHSA-wmjq-jrm2-9wfr",
+          "severity": "low",
+          "cwe": [
+            "CWE-367"
+          ],
+          "cvss": {
+            "score": 3.3,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=1.10.0 <=2.0.3"
+        }
+      ],
+      "effects": [],
+      "range": ">=1.6.21",
+      "nodes": [
+        "../plugins/node_modules/snowflake-sdk"
+      ],
+      "fixAvailable": true
+    },
+    "svgo": {
+      "name": "svgo",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1114150,
+          "name": "svgo",
+          "dependency": "svgo",
+          "title": "SVGO DoS through entity expansion in DOCTYPE (Billion Laughs)",
+          "url": "https://github.com/advisories/GHSA-xpqw-6gx7-v673",
+          "severity": "high",
+          "cwe": [
+            "CWE-776"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "=4.0.0"
+        },
+        {
+          "source": 1114152,
+          "name": "svgo",
+          "dependency": "svgo",
+          "title": "SVGO DoS through entity expansion in DOCTYPE (Billion Laughs)",
+          "url": "https://github.com/advisories/GHSA-xpqw-6gx7-v673",
+          "severity": "high",
+          "cwe": [
+            "CWE-776"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.1.0 <2.8.1"
+        }
+      ],
+      "effects": [],
+      "range": "2.1.0 - 2.8.0 || 4.0.0",
+      "nodes": [
+        "node_modules/postcss-svgo/node_modules/svgo",
+        "node_modules/svgo"
+      ],
+      "fixAvailable": true
+    },
+    "tar": {
+      "name": "tar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1114200,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "tar has Hardlink Path Traversal via Drive-Relative Linkpath",
+          "url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-59"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=7.5.9"
+        }
+      ],
+      "effects": [
+        "@lerna/create",
+        "lerna"
+      ],
+      "range": "<=7.5.9",
+      "nodes": [
+        "../plugins/node_modules/tar"
+      ],
+      "fixAvailable": {
+        "name": "lerna",
+        "version": "6.4.1",
+        "isSemVerMajor": true
+      }
+    },
+    "teeny-request": {
+      "name": "teeny-request",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "http-proxy-agent"
+      ],
+      "effects": [
+        "@google-cloud/storage",
+        "retry-request"
+      ],
+      "range": ">=7.1.3",
+      "nodes": [
+        "../plugins/node_modules/google-gax/node_modules/teeny-request",
+        "../plugins/node_modules/snowflake-sdk/node_modules/teeny-request",
+        "../plugins/node_modules/teeny-request"
+      ],
+      "fixAvailable": {
+        "name": "@google-cloud/storage",
+        "version": "5.18.3",
+        "isSemVerMajor": true
+      }
+    },
+    "terser-webpack-plugin": {
+      "name": "terser-webpack-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "serialize-javascript"
+      ],
+      "effects": [],
+      "range": "<=5.3.16",
+      "nodes": [
+        "node_modules/terser-webpack-plugin"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 15,
+      "moderate": 2,
+      "high": 18,
+      "critical": 3,
+      "total": 38
+    },
+    "dependencies": {
+      "prod": 2336,
+      "dev": 1710,
+      "optional": 73,
+      "peer": 330,
+      "peerOptional": 0,
+      "total": 4428
+    }
+  }
+}
