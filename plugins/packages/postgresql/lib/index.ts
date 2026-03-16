@@ -619,8 +619,8 @@ export default class PostgresqlQueryService implements QueryService {
     if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       const parsedUrl = new URL(sourceOptions.connection_string);
 
-      const connUser = decodeURIComponent(parsedUrl.username || '');
-      const connPass = decodeURIComponent(parsedUrl.password || '');
+      const connUser = parsedUrl.username || '';
+      const connPass = parsedUrl.password || '';
       const connHost = parsedUrl.hostname || '';
       const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
       const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
