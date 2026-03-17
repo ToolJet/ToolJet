@@ -4,7 +4,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import EmptyTabContent from './EmptyTabContent';
 
 export default ({
-  options = [],
+  options: optionsProp = [],
   theme,
   onChange,
   jsonBody, // FIXME: Remove this once data migration to raw_body is complete
@@ -19,6 +19,7 @@ export default ({
   onInputChange,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const options = Array.isArray(optionsProp) ? optionsProp : [];
 
   return (
     <div className="tab-content-wrapper">
