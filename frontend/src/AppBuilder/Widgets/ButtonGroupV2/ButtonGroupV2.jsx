@@ -320,10 +320,14 @@ export const ButtonGroupV2 = (props) => {
           id={`${id}-label`}
           dataCy={dataCy}
         />
-        {exposedVariablesTemporaryState.isLoading ? (
-          <Loader style={{ position: 'static', margin: '9px auto 0 auto'}} width="20" />
-        ) : (
-          <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
+        <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
+          {exposedVariablesTemporaryState.isLoading ? (
+            <Loader
+              absolute={false}
+              style={{ margin: '0 auto', marginTop: alignment !== 'top' ? '8px' : '0' }}
+              width="20"
+            />
+          ) : (
             <div className="button-group-content" style={groupStyles} ref={groupRef}>
               {formattedOptions?.map((option, index) => (
                 <button
@@ -361,8 +365,8 @@ export const ButtonGroupV2 = (props) => {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       {userInteracted && exposedVariablesTemporaryState.isVisible && !isValid && (
         <div
