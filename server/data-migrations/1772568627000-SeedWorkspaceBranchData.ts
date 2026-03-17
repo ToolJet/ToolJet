@@ -2,11 +2,24 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SeedWorkspaceBranchData1772568627000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // 1. Create default 'main' branch for every org that has git sync configured
+    // 1. Create default branch for every org that has git sync configured
+    //    Uses the actual branch name from the provider config (HTTPS / SSH / GitLab),
+    //    falling back to 'main' only if no provider config exists.
     await queryRunner.query(`
       INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
-      SELECT organization_id, 'main', true
-      FROM organization_git_sync
+      SELECT
+        ogs.organization_id,
+        COALESCE(
+          ogh.github_branch,
+          ogsh.git_branch,
+          ogl.gitlab_branch,
+          'main'
+        ),
+        true
+      FROM organization_git_sync ogs
+      LEFT JOIN organization_git_https ogh ON ogh.config_id = ogs.id
+      LEFT JOIN organization_git_ssh ogsh ON ogsh.config_id = ogs.id
+      LEFT JOIN organization_gitlab ogl ON ogl.config_id = ogs.id
       ON CONFLICT (organization_id, branch_name) DO NOTHING;
     `);
 
