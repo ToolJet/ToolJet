@@ -2,6 +2,8 @@ import {
   NO_OF_GRIDS,
   HIDDEN_COMPONENT_HEIGHT,
   CONTAINER_FORM_CANVAS_PADDING,
+  BOX_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
@@ -256,7 +258,6 @@ export const createGridSlice = (set, get) => ({
                 const sum = layout.top + layout.height;
                 return Math.max(max, sum);
               }, 0);
-
               let extraHeight = 0;
 
               // If the component is a container, we need to get the header height
@@ -264,9 +265,15 @@ export const createGridSlice = (set, get) => ({
                 const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
                 const { showHeader, headerHeight, dynamicHeight } = properties;
 
-                // For regular Container and Accordion (expanded only) component, calculate height normally
+                // Account for layers between the wrapper element and the inner canvas:
+                // BOX_PADDING*2 (RenderWidget), SUBCONTAINER_CANVAS_BORDER_WIDTH*2 (container border),
+                // CONTAINER_FORM_CANVAS_PADDING*2 (content div padding)
+                extraHeight +=
+                  BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + CONTAINER_FORM_CANVAS_PADDING * 2;
+
                 if (showHeader && isProperNumber(headerHeight)) {
-                  extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
+                  // Header area: headerHeight + top/bottom padding + border-bottom divider
+                  extraHeight += headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 1;
                 }
 
                 // Special handling for Accordion when expanded
@@ -311,7 +318,11 @@ export const createGridSlice = (set, get) => ({
 
               // Calculate contentHeight only if it hasn't been set already (e.g., for accordion with dynamic height disabled its already calculated)
               if (!skipContentHeightCalculation) {
-                contentHeight = currentMax + 50 + extraHeight;
+                if (['Container', 'Accordion'].includes(componentType)) {
+                  contentHeight = currentMax + extraHeight;
+                } else {
+                  contentHeight = currentMax + 50 + extraHeight;
+                }
               }
             }
           }
