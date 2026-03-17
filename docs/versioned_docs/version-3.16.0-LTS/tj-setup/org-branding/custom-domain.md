@@ -3,18 +3,19 @@ id: custom-domain
 title: Custom Domain
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+A custom domain is a user-defined domain name that can be configured to access an application through a specific, recognizable URL.
 
-</div>
+### Why Use a Custom Domain?
+
+Using a custom domain allows organizations to access ToolJet through their own branded URL instead of the default ToolJet URL. For example, instead of using a generic workspace URL, teams can access their apps through something like `tools.yourcompany.com`.
+
+This helps organizations:
+
+- Maintain consistent branding for internal tools and applications.
+- Provide a more professional and trusted experience for end-users of the apps built on ToolJet.
+- Integrate ToolJet more naturally into existing company infrastructure and internal portals.
+
+For teams building internal tools used by non-technical users, accessing applications through a company domain makes the platform feel like a native part of the organization’s product ecosystem rather than a third-party tool.
 
 ## Self Hosted
 
@@ -46,24 +47,20 @@ After setting the environment variable and DNS configurations, restart your Tool
 
 
 ## ToolJet Cloud
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+
+</div>
 
 ToolJet Cloud allows you to map a custom domain or subdomain to your workspace, so your team can access ToolJet from a URL like `tools.yourcompany.com` instead of the default ToolJet Cloud URL.
-
-:::info
-Custom domain for ToolJet Cloud is available on **Trial**, **Teams**, and **Enterprise** plans.
-:::
-
-### Why Use a Custom Domain?
-
-Using a custom domain allows organizations to access ToolJet through their own branded URL instead of the default ToolJet URL. For example, instead of using a generic workspace URL, teams can access their apps through something like `tools.yourcompany.com`.
-
-This helps organizations:
-
-- Maintain consistent branding for internal tools and applications.
-- Provide a more professional and trusted experience for end-users of the apps built on ToolJet.
-- Integrate ToolJet more naturally into existing company infrastructure and internal portals.
-
-For teams building internal tools used by non-technical users, accessing applications through a company domain makes the platform feel like a native part of the organization’s product ecosystem rather than a third-party tool.
 
 ### Workspace-level Domain Mapping
 
