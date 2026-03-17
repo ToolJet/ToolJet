@@ -80,7 +80,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         manager
         );
       const newDataSource = manager.create(DataSource, {
-        //name: createArgumentsDto.name,
         name: finalName,
         kind: createArgumentsDto.kind,
         pluginId: createArgumentsDto.pluginId,
