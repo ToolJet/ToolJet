@@ -30,6 +30,7 @@ import Skeleton from 'react-loading-skeleton';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
+
 export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
   const [plugins, setPlugins] = useState([]);
