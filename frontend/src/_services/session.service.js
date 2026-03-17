@@ -1,8 +1,8 @@
 import { handleResponseWithoutValidation, authHeader } from '@/_helpers';
 import config from 'config';
 import queryString from 'query-string';
-import { getWorkspaceId } from '@/_helpers/utils';
-import { getRedirectToWithParams } from '@/_helpers/routes';
+import { getWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
+import { getRedirectToWithParams, isCustomDomain } from '@/_helpers/routes';
 import { getPatToken } from '@/AppBuilder/EmbedApp';
 
 export const sessionService = {
@@ -48,7 +48,24 @@ function logout(avoidRedirection = false, organizationId = null) {
     }
   };
 
-  return fetch(`${config.apiUrl}/session/logout`, requestOptions)
-    .then(handleResponseWithoutValidation)
-    .finally(() => redirectToLoginPage());
+  const logoutCurrentDomain = fetch(`${config.apiUrl}/session/logout`, requestOptions)
+    .then(handleResponseWithoutValidation);
+
+  // On custom domains, also logout from the base domain to prevent
+  // session transfer from re-authenticating the user after logout.
+  if (isCustomDomain()) {
+    const mainHost = stripTrailingSlash(window.public_config?.TOOLJET_HOST);
+    if (mainHost) {
+      const logoutBaseDomain = fetch(`${mainHost}/api/session/logout`, {
+        method: 'GET',
+        credentials: 'include',
+      }).catch((err) => console.error('[logout] Base domain logout failed:', err));
+
+      return Promise.all([logoutCurrentDomain, logoutBaseDomain])
+        .catch((err) => console.error('[logout] Logout request failed:', err))
+        .finally(() => redirectToLoginPage());
+    }
+  }
+
+  return logoutCurrentDomain.finally(() => redirectToLoginPage());
 }
