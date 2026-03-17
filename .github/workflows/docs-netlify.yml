@@ -2,11 +2,12 @@ name: Deploy to Netlify
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches:
       - documentation
     paths:
       - docs/**
+    types: [closed]
 
 jobs:
   build:
