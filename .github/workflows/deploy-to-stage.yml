@@ -4,18 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       branch_name:
-        description: 'Git branch to build from'
+        description: "Git branch to build from"
         required: true
-        default: 'lts-3.16'
+        default: "lts-3.16"
       dockerfile_path:
-        description: 'Path to Dockerfile'
+        description: "Path to Dockerfile"
         required: true
-        default: './docker/LTS/cloud/cloud-server.Dockerfile'
+        default: "./docker/LTS/cloud/cloud-server.Dockerfile"
         type: choice
         options:
           - ./docker/LTS/cloud/cloud-server.Dockerfile
       docker_tag:
-        description: 'Docker tag suffix (e.g., cloud-staging-v14)'
+        description: "Docker tag suffix (e.g., cloud-staging-v14)"
         required: true
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           sudo docker system prune -af
           sudo apt-get clean
-          df -h          
+          df -h
 
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -92,7 +92,7 @@ jobs:
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
 
       - name: Show the full Docker tag
-        run: | 
+        run: |
           echo "✅ Docker image tagged as: $IMAGE_TAG"
 
       # Deploy to AKS
@@ -155,7 +155,7 @@ jobs:
         run: |
           set -e
 
-          BRANCH="${{ github.event.inputs.branch_name }}"
+          BRANCH="${{ github.event.inputs.branch }}"
           REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
 
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
@@ -229,7 +229,7 @@ jobs:
         working-directory: repo
 
       - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
+        run: npm run build:plugins:prod && npm run build:frontend:cloud
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -243,24 +243,38 @@ jobs:
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
-          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
+          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
 
-      - name: 🚀 Deploy to Netlify
+      - name: 📝 Add SPA routing redirect rule
+        run: echo "/* /index.html 200" > repo/frontend/build/_redirects
+
+      - name: 🔧 Set CF Pages production branch to input branch
         run: |
-          npm install -g netlify-cli
-          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
+          echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
+          response=$(curl -s -w "\n%{http_code}" -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
+
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Production branch updated to: ${{ github.event.inputs.branch }}"
+          else
+            echo "❌ Failed to update production branch (HTTP $http_code)"
+            echo "$response"
+            exit 1
+          fi
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        run: |
+          echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
+          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+          npx wrangler pages deploy frontend/build \
+            --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} \
+            --branch=${{ github.event.inputs.branch }} \
+            --commit-dirty=true
         working-directory: repo
         env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
-          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
-          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
-          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
-          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
-          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
-          TOOLJET_EDITION: cloud
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID }}
