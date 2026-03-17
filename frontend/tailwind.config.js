@@ -105,6 +105,7 @@ module.exports = {
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',
         'interactive-focus-outline-inset': 'inset 0px 0px 0px 2px #fff',
+        'elevation-none': '0px 0px 0px 0px rgba(0, 0, 0, 0.0)',
         'elevation-000': '0px 1px 0px 0px rgba(0, 0, 0, 0.10)',
         'elevation-100': '0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-200': '0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
@@ -142,6 +143,7 @@ module.exports = {
     },
   },
   plugins: [
+    require('@tailwindcss/container-queries'),
     require('tailwindcss-animate'),
     plugin(({ addUtilities }) => {
       const newUtilities = {

@@ -313,5 +313,11 @@
     --elevation-500-box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.99), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
     --elevation-600-box-shadow: 0px 24px 40px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
     --elevation-700-box-shadow: 0px 32px 50px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
-    
+
+}
+
+// Rocket resets — override legacy theme.scss `input[type="text"] { outline-color: !important }`
+// Specificity: input.tw-appearance-none[type="text"] (0-1-2) > input[type="text"] (0-1-1)
+input.tw-appearance-none[type="text"] {
+  outline: none !important;
 }

@@ -34,3 +34,24 @@ export {
   InputGroupInput,
   InputGroupTextarea,
 } from './InputGroup/InputGroup';
+export { Input, inputVariants } from './Input/Input';
+export {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldContent,
+  FieldSet,
+  FieldLegend,
+  FieldTitle,
+  FieldSeparator,
+} from './Field/Field';
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from './InputGroup/InputGroup';
