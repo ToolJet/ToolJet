@@ -31,8 +31,10 @@ export class SeedDefaultDataSourceVersionsForAll1772568628000 implements Migrati
       ON CONFLICT (data_source_version_id, environment_id) DO NOTHING;
     `);
 
-    // Create version-specific DSVs for global data sources referenced by each app version.
-    // This ensures existing versions have their own DSV snapshots and don't rely on fallback to default.
+    // Create version-specific DSVs for global data sources referenced by each VERSION-type app version.
+    // Branch-type app_versions resolve DS options through their branch_id → branch DSV,
+    // so they should NOT get app_version_id-based DSVs.
+    // Only VERSION-type versions get their own DSV snapshots (frozen DS config at publish time).
     await queryRunner.query(`
       INSERT INTO data_source_versions (data_source_id, app_version_id, name, is_default, is_active, branch_id, version_from_id)
       SELECT DISTINCT ds.id, av.id, ds.name, false, true, NULL::uuid, def_dsv.id
@@ -40,10 +42,11 @@ export class SeedDefaultDataSourceVersionsForAll1772568628000 implements Migrati
       JOIN data_queries dq ON dq.app_version_id = av.id
       JOIN data_sources ds ON ds.id = dq.data_source_id AND ds.scope = 'global'
       JOIN data_source_versions def_dsv ON def_dsv.data_source_id = ds.id AND def_dsv.is_default = true
-      WHERE NOT EXISTS (
-        SELECT 1 FROM data_source_versions dsv
-        WHERE dsv.data_source_id = ds.id AND dsv.app_version_id = av.id
-      )
+      WHERE av.version_type != 'branch'
+        AND NOT EXISTS (
+          SELECT 1 FROM data_source_versions dsv
+          WHERE dsv.data_source_id = ds.id AND dsv.app_version_id = av.id
+        )
       ON CONFLICT DO NOTHING;
     `);
 

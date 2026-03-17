@@ -707,6 +707,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ];
     }
     await this.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
+
+    // Propagate OAuth token to all branch/version DSVs
+    const updatedTokenData =
+      tokenOptions.find((opt: any) => opt.key === 'tokenData')?.value ??
+      tokenOptions.find((opt: any) => opt.key === 'access_token')?.value;
+    if (updatedTokenData !== undefined) {
+      await this.propagateTokenToAllBranches(dataSource.id, environmentId, updatedTokenData);
+    }
+
     return;
   }
 
