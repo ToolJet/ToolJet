@@ -7,9 +7,11 @@
 .viewer {
     .dynamic-height-target {
         > .canvas-component {
-            > .widget-type-container {
-                > .sub-canvas {
-                    overflow-y: hidden !important;
+            > .jet-container {
+                > .widget-type-container {
+                    > .sub-canvas {
+                        overflow-y: hidden !important;
+                    }
                 }
             }
         }
