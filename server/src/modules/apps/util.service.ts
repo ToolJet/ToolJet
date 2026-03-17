@@ -211,7 +211,7 @@ export class AppsUtilService implements IAppsUtilService {
     let app: App;
     try {
       app = await this.appRepository.findById(slug, organizationId);
-    } catch (error) {
+    } catch {
       /* UUID parse error — slug is not a valid UUID, skip id lookup */
     }
 
@@ -461,6 +461,12 @@ export class AppsUtilService implements IAppsUtilService {
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      } else if (branchId) {
+        // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+        // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+        viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+          branchId,
+        });
       }
 
       if (isGetAll) {
