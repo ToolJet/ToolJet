@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "SeaTable datasource",
+  "description": "A schema defining SeaTable datasource",
+  "type": "api",
+  "source": {
+    "name": "SeaTable",
+    "kind": "seatable",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "server_url": {
+        "type": "string"
+      },
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "server_url": {
+      "label": "Server URL",
+      "key": "server_url",
+      "type": "text",
+      "description": "URL of your SeaTable server (e.g. https://cloud.seatable.io or your self-hosted instance)"
+    },
+    "api_token": {
+      "label": "API Token",
+      "key": "api_token",
+      "type": "textarea",
+      "encrypted": true,
+      "description": "Base-scoped API token. Create in SeaTable: Base > Advanced > API Token."
+    }
+  },
+  "required": [
+    "server_url",
+    "api_token"
+  ]
+}
