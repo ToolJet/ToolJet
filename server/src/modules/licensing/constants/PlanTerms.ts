@@ -27,6 +27,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     customThemes: false,
     serverSideGlobalResolve: false,
     scim: false,
+    selfhostAI: false,
     observability: false,
   },
   domains: [],

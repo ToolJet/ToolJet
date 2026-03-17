@@ -36,6 +36,7 @@ export interface Terms {
     google?: boolean;
     github?: boolean;
     observability?: boolean;
+    selfhostAI?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {

@@ -53,6 +53,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isSelfhostAI: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -80,6 +81,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._isSelfhostAI = false;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -143,6 +145,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isSelfhostAI = this.getFeatureValue('selfhostAI');
   }
 
   private getFeatureValue(key: string) {
@@ -506,6 +509,13 @@ export default class LicenseBase {
     return this._isAi;
   }
 
+  public get selfhostAI(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.selfhostAI;
+    }
+    return this._isSelfhostAI;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -532,6 +542,7 @@ export default class LicenseBase {
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
+      selfhostAI: this.selfhostAI,
       appWhiteLabelling: this.appWhiteLabelling,
       modulesEnabled: this.moduleEnabled,
       customGroups: this.customGroups,
