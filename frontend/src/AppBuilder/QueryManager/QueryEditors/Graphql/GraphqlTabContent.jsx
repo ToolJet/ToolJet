@@ -27,9 +27,8 @@ export default function GraphqlTabContent({
           key={index}
           data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}
         >
-          
-          <div className="fields-container mb-1 restapi-key-value d-flex flex-row">
-            <div className="field rounded-start rest-api-codehinter-key-field" style={{ flex: '0 0 33%' }}>
+          <div className="fields-container mb-1 graphql-key-value">
+            <div className="field col-4 rounded-start graphql-codehinter-key-field">
               <CodeHinter
                 type="basic"
                 initialValue={option[0]}
@@ -40,7 +39,7 @@ export default function GraphqlTabContent({
                 cyLabel={`${tabType}-key-${index}`}
               />
             </div>
-            <div className="field rest-api-options-codehinter" style={{ flex: '1', width: '200px' }}>
+            <div className="field col graphql-options-codehinter" style={{ width: '200px' }}>
               <CodeHinter
                 type="basic"
                 initialValue={option[1]}
