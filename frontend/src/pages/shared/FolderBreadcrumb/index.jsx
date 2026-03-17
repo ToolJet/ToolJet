@@ -14,10 +14,13 @@ import {
   SelectItemText,
   SelectSeparator,
 } from '@/components/ui/Rocket/select';
+import { authenticationService } from '@/_services/authentication.service';
+
 import { useWorkflowListStore } from '../../Workflows/store';
 
 export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const hasFolderCRUDPermission = authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d ?? false;
 
   const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
 
@@ -30,13 +33,16 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
   const handleEditFolder = () => {
     setFolderDialogState({
       type: 'edit-folder',
-      selectedFolderId: selectedFolder,
-      selectedFolderInitialName: selectedFolderLabel,
+      currentFolderId: selectedFolder,
+      initialFolderName: selectedFolderLabel,
     });
   };
 
   const handleDeleteFolder = () => {
-    setFolderDialogState({ type: 'delete-folder', selectedFolderId: selectedFolder });
+    setFolderDialogState({
+      type: 'delete-folder',
+      currentFolderId: selectedFolder,
+    });
   };
 
   return (
@@ -65,28 +71,28 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                     {selectedFolderLabel}
                   </p>
 
-                  <div className="tw-flex tw-items-center">
-                    <Button
-                      isLucid
-                      iconOnly
-                      size="medium"
-                      variant="ghost"
-                      leadingIcon="square-pen"
-                      onClick={handleEditFolder}
-                    />
+                  {selectedFolder && selectedFolder !== 'all' && hasFolderCRUDPermission && (
+                    <div className="tw-flex tw-items-center">
+                      <Button
+                        isLucid
+                        iconOnly
+                        size="medium"
+                        variant="ghost"
+                        leadingIcon="square-pen"
+                        onClick={handleEditFolder}
+                      />
 
-                    <Button
-                      isLucid
-                      iconOnly
-                      size="medium"
-                      variant="ghost"
-                      leadingIcon="trash"
-                      onClick={handleDeleteFolder}
-                    />
-                  </div>
+                      <Button
+                        isLucid
+                        iconOnly
+                        size="medium"
+                        variant="ghost"
+                        leadingIcon="trash"
+                        onClick={handleDeleteFolder}
+                      />
+                    </div>
+                  )}
                 </div>
-                {/* TODO: Search functionality */}
-                {/* <p>Search</p> */}
               </header>
 
               <SelectSeparator />
@@ -103,17 +109,21 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                 ))}
               </SelectGroup>
 
-              <SelectSeparator />
+              {hasFolderCRUDPermission && (
+                <>
+                  <SelectSeparator />
 
-              <Button
-                isLucid
-                variant="ghostBrand"
-                leadingIcon="plus"
-                className="tw-w-full"
-                onClick={handleCreateNewFolder}
-              >
-                New folder
-              </Button>
+                  <Button
+                    isLucid
+                    variant="ghostBrand"
+                    leadingIcon="plus"
+                    className="tw-w-full"
+                    onClick={handleCreateNewFolder}
+                  >
+                    New folder
+                  </Button>
+                </>
+              )}
             </SelectContent>
           </Select>
         </BreadcrumbItem>

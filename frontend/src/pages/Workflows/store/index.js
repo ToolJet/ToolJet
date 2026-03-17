@@ -2,9 +2,9 @@ import { createZustandStoreWithImmer } from '@/_stores/utils';
 
 const folderDialogInitialState = {
   type: '',
-  appIdToProcess: '',
-  selectedFolderId: '',
-  selectedFolderInitialName: '',
+  appDetails: null,
+  currentFolderId: '',
+  initialFolderName: '',
 };
 
 const appDialogInitialState = {

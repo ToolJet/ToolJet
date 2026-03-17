@@ -51,7 +51,6 @@ export default function AppMenu({
                 icon={PencilRuler}
                 label={t('homePage.appCard.changeIcon', 'Change Icon')}
                 onItemClick={() => onMenuItemClick('change-icon', appDetails)}
-                disabled
               />
             </>
           )}
@@ -97,7 +96,6 @@ export default function AppMenu({
                 icon={FileUp}
                 label={`Export ${appType === 'front-end' ? 'app' : appType}`}
                 onItemClick={() => onMenuItemClick('export', appDetails)}
-                disabled
               />
             </>
           )}
@@ -121,11 +119,10 @@ export default function AppMenu({
   );
 }
 
-function AppMenuItem({ icon: IconComponent, label, onItemClick, disabled }) {
+function AppMenuItem({ icon: IconComponent, label, onItemClick }) {
   return (
     <DropdownMenuItem
       onClick={onItemClick}
-      disabled={disabled}
       className="tw-text-text-default tw-font-body-default"
       data-cy={`${label.toLowerCase().replace(/\s+/g, '-')}-card-option`}
     >

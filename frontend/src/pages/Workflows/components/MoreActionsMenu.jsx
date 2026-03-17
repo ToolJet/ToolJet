@@ -118,7 +118,7 @@ export default function MoreActionsMenu({ disabled }) {
         <DropdownMenuContent className={cn('tw-min-w-52', { 'dark-theme theme-dark': darkMode })} align="end">
           <DropdownMenuGroup>
             <DropdownMenuItem
-              dataCy="import-option-label"
+              data-cy="import-option-label"
               className="tw-text-text-default tw-font-body-default"
               onClick={handleOpenFilePicker}
               disabled

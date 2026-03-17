@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { capitalize } from 'lodash';
 import { Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -10,17 +10,12 @@ import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/field';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 import { appTypeToDisplayNameMapping } from '../helper';
-import { useWorkflowListStore } from '../../Workflows/store';
 import { useCreateApp, useDeleteApp, useRenameApp } from '../hooks/appsServiceHooks';
 
 import ActionDialog from '../ActionDialog';
 
-export default function CRUDActionDialog() {
-  const appType = 'workflow';
+export default function CRUDActionDialog({ open, onClose, actionType, appDetails, appType }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
-
-  const appDialogState = useWorkflowListStore((state) => state.appDialogState);
-  const resetAppDialogState = useWorkflowListStore((state) => state.resetAppDialogState);
 
   const { mutate: createNewApp, isLoading: isCreatingApp } = useCreateApp();
   const { mutate: renameApp, isLoading: isRenamingApp } = useRenameApp();
@@ -28,17 +23,11 @@ export default function CRUDActionDialog() {
 
   // const inputRef = useRef();
 
-  const [name, setName] = useState(appDialogState.appDetails?.name ?? '');
+  const [name, setName] = useState(appDetails?.name ?? '');
   const [errorText, setErrorText] = useState('');
 
-  useEffect(() => {
-    setName(appDialogState.appDetails?.name ?? '');
-  }, [appDialogState.appDetails?.name]);
-
   const handleResetState = () => {
-    setName('');
-    setErrorText('');
-    resetAppDialogState();
+    onClose();
   };
 
   const handle409Error = (error) => {
@@ -61,7 +50,7 @@ export default function CRUDActionDialog() {
     e.preventDefault();
     const formattedAppName = name?.trim().replace(/\s+/g, ' ');
 
-    switch (appDialogState.type) {
+    switch (actionType) {
       case 'create':
         // TODO: Icon to be random from tabler icons & prompt required for app case
         createNewApp(
@@ -71,26 +60,26 @@ export default function CRUDActionDialog() {
         break;
       case 'rename':
         renameApp(
-          { appId: appDialogState.appDetails?.id, name: formattedAppName, appType },
+          { appId: appDetails?.id, name: formattedAppName, appType },
           { onError: handle409Error, onSuccess: handleResetState }
         );
         break;
       case 'delete':
-        deleteApp({ appId: appDialogState.appDetails?.id, appType }, { onSuccess: handleResetState });
+        deleteApp({ appId: appDetails?.id, appType }, { onSuccess: handleResetState });
         break;
       default:
         break;
     }
   };
 
-  const isDeleteActionType = appDialogState.type === 'delete';
+  const isDeleteActionType = actionType === 'delete';
   const isNonFormDialog = isDeleteActionType;
 
-  const submitBtnLabel = `${capitalize(appDialogState.type)} ${appTypeDisplayName.toLowerCase()}`;
+  const submitBtnLabel = `${capitalize(actionType)} ${appTypeDisplayName.toLowerCase()}`;
   const title = isNonFormDialog ? '' : submitBtnLabel;
   const isNameInvalid = name.trim().length === 0 || name?.length > 50 || Boolean(errorText);
-  const isNameChangeRequired = ['rename'].includes(appDialogState.type);
-  const isNameChanged = name?.trim() !== appDialogState.appDetails?.name;
+  const isNameChangeRequired = ['rename'].includes(actionType);
+  const isNameChanged = name?.trim() !== appDetails?.name;
 
   const isFormBeingSubmitted = isCreatingApp || isRenamingApp || isDeletingApp;
   const isCancelBtnDisabled = isFormBeingSubmitted;
@@ -98,30 +87,32 @@ export default function CRUDActionDialog() {
 
   return (
     <ActionDialog
-      open={Boolean(appDialogState.type)}
+      open={open}
       title={title}
-      cancelBtnProps={{ dataCy: 'cancel-button', disabled: isCancelBtnDisabled, onClick: handleResetState }}
-      submitBtnProps={{
-        label: submitBtnLabel,
-        disabled: isSubmitBtnDisabled,
-        isLoading: isFormBeingSubmitted,
-        form: `${appDialogState.type}-${appType}-form`,
-        dataCy: generateCypressDataCy(`${appDialogState.type}-${appType}-button`),
-        ...(isDeleteActionType && { variant: 'dangerPrimary' }),
-        ...(isNonFormDialog && { onClick: handleSubmitForm }),
-      }}
+      cancelBtnProps={{ 'data-cy': 'cancel-button', disabled: isCancelBtnDisabled, onClick: handleResetState }}
+      submitActions={[
+        {
+          label: submitBtnLabel,
+          disabled: isSubmitBtnDisabled,
+          isLoading: isFormBeingSubmitted,
+          form: `${actionType}-${appType}-form`,
+          'data-cy': generateCypressDataCy(`${actionType}-${appType}-button`),
+          ...(isDeleteActionType && { variant: 'dangerPrimary' }),
+          ...(isNonFormDialog && { onClick: handleSubmitForm }),
+        },
+      ]}
     >
-      {['create', 'rename'].includes(appDialogState.type) ? (
+      {['create', 'rename'].includes(actionType) ? (
         <CreateRenameCloneImportBody
           appType={appType}
           appName={name}
           errorText={errorText}
-          actionType={appDialogState.type}
+          actionType={actionType}
           isNameInputDisabled={isFormBeingSubmitted}
           onSubmit={handleSubmitForm}
           onFolderNameChange={handleNameChange}
         />
-      ) : appDialogState.type === 'delete' ? (
+      ) : actionType === 'delete' ? (
         <DeleteAppBody appType={appType} appName={name} />
       ) : (
         <></>
@@ -142,14 +133,14 @@ function CreateRenameCloneImportBody({
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
 
   const helpText =
-    name.length >= 50
+    appName.length >= 50
       ? 'Maximum length has been reached'
       : `${appTypeDisplayName} name must be unique and max 50 characters`;
 
   return (
     <form id={`${actionType}-${appType}-form`} className="tw-px-6 tw-py-4" onSubmit={onSubmit}>
       <Field>
-        <FieldLabel htmlFor={`${appType}-name`} dataCy={`${generateCypressDataCy(appTypeDisplayName)}-name-label`}>
+        <FieldLabel htmlFor={`${appType}-name`} data-cy={`${generateCypressDataCy(appTypeDisplayName)}-name-label`}>
           {`${appTypeDisplayName} name`}
         </FieldLabel>
 
@@ -164,7 +155,7 @@ function CreateRenameCloneImportBody({
           disabled={isNameInputDisabled}
           onChange={onFolderNameChange}
           className={cn({ 'tw-border-border-danger-strong': errorText })}
-          dataCy={`${generateCypressDataCy(appTypeDisplayName)}-name-input`}
+          data-cy={`${generateCypressDataCy(appTypeDisplayName)}-name-input`}
         />
 
         <FieldError

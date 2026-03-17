@@ -22,7 +22,7 @@ import { appIconNameMappingForLucideIcon, isValidSlug } from './helper';
 export default function AppCard({
   appDetails,
   appType,
-  basicPlan, // TODO: We are not passing this prop as of now, gets its value from parent
+  basicPlan,
   moduleEnabled,
   currentFolderId,
   onMenuItemClick,
@@ -31,10 +31,10 @@ export default function AppCard({
   const { t } = useTranslation();
   const { id, name, icon, editing_version, created_at, updated_at, slug, home_page_handle } = appDetails;
 
-  console.log('appDetails', appDetails, checkUserPermissions(appDetails));
-
-  const { hasCreatePermission, hasUpdatePermission, hasDeletePermission, hasReadPermission, hasViewPermission } =
-    useMemo(() => checkUserPermissions(appDetails), [appDetails]);
+  const { hasCreatePermission, hasUpdatePermission, hasDeletePermission, hasViewPermission } = useMemo(
+    () => checkUserPermissions(appDetails),
+    [appDetails]
+  );
 
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;

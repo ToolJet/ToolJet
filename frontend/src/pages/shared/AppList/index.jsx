@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useAppFilters } from '../hooks/useAppFilters';
 import { useWorkflowListStore } from '../../Workflows/store';
-
 import AppCard from './AppCard';
 
 export default function AppList({ apps, appType, currentFolderId, checkUserPermissions, basicPlan, moduleEnabled }) {
@@ -24,18 +23,22 @@ function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissi
   const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
   const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
 
-  const handleMenuItemClick = (actionType, appDetails) => {
+  const handleMenuItemClick = (actionType, appDetails, currentFolderId) => {
     switch (actionType) {
       case 'add-to-folder':
       case 'remove-app-from-folder':
-        setFolderDialogState({ type: actionType, appIdToProcess: appDetails.id, selectedFolderId: folderId });
+        setFolderDialogState({
+          appDetails,
+          type: actionType,
+          currentFolderId,
+        });
         break;
       case 'rename':
       case 'clone':
       case 'import':
       case 'delete':
-        // case 'change-icon':
-        // case 'export':
+      case 'change-icon':
+      case 'export':
         setAppDialogState({ type: actionType, appDetails });
         break;
       default:

@@ -18,11 +18,10 @@ import EmptyState from '../shared/EmptyState';
 import AppsFooter from '../shared/AppsFooter';
 import PageHeader from '../shared/PageHeader';
 import ContentToolbar from '../shared/ContentToolbar';
-import CRUDActionDialog from '../shared/CRUDActionDialog';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import CreateWorkflowBtn from './components/CreateWorkflowBtn';
 import MoreActionsMenu from './components/MoreActionsMenu';
-import FolderActionDialog from '../shared/FolderBreadcrumb/FolderActionDialog';
+import WorkflowDialogs from './components/WorkflowDialogs';
 
 // TODOs:
 // Dialogs: Create/Rename/Delete/Import/Export workflow, Import workflow, Create/Edit/Delete folder, Move to folder, Change Icon
@@ -153,8 +152,7 @@ export default function Workflows() {
 
       <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
 
-      <CRUDActionDialog />
-      <FolderActionDialog appType="workflow" />
+      <WorkflowDialogs />
     </WorkspaceLayout>
   );
 }

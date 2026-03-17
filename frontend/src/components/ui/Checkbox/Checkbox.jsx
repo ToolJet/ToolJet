@@ -60,7 +60,7 @@ const checkPositionVariants = cva('tw-flex', {
   },
 });
 
-const Checkbox = React.forwardRef(({ className, type, size, intermediate, align, ...props }, ref) => (
+const Checkbox = React.forwardRef(({ className, type, size, intermediate, align, classes = null, ...props }, ref) => (
   <div className={cn(checkPositionVariants({ align, size }), `${!props.helper && 'tw-items-center'}`, className)}>
     <CheckboxPrimitive.Root
       ref={ref}
@@ -91,8 +91,8 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
     </CheckboxPrimitive.Root>
     {props.label && (
       <div className={`tw-flex tw-flex-col ${props.helper && props.size === 'large' && 'tw-space-y-[2px]'}`}>
-        <CheckboxLabel label={props.label} size={size} disabled={props.disabled} />
-        <HelperText helper={props.helper} size={size} disabled={props.disabled} />
+        <CheckboxLabel className={classes?.checkboxLabel} label={props.label} size={size} disabled={props.disabled} />
+        <HelperText className={classes?.helperText} helper={props.helper} size={size} disabled={props.disabled} />
       </div>
     )}
   </div>

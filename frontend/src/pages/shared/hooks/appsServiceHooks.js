@@ -180,6 +180,12 @@ export function useDeleteApp() {
 }
 
 export function useChangeAppIcon() {
+  const queryClient = useQueryClient();
+
+  const { folderId } = useAppFilters();
+  const currentPage = useWorkflowListStore((state) => state.currentPage);
+  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
     onError: (error) => {
@@ -188,15 +194,80 @@ export function useChangeAppIcon() {
     onSuccess: (response, variables) => {
       toast.success('Icon updated.');
 
-      // TODO: Need to know which page data to update??
-      // queryClient.setQueryData()
-
-      // const updatedApps = apps.map((app) => {
-      //   if (app.id === appOperations.selectedApp.id) {
-      //     app.icon = appOperations.selectedIcon;
-      //   }
-      //   return app;
-      // });
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, folderId, appSearchQuery, appType: variables.appType }],
+      });
     },
+  });
+}
+
+export function useFetchAppVersions(appId) {
+  return useQuery({
+    queryKey: ['appVersions', appId],
+    queryFn: () => appsService.getVersions(appId),
+    enabled: !!appId,
+  });
+}
+
+export function useFetchAppTables(appId) {
+  return useQuery({
+    queryKey: ['appTables', appId],
+    queryFn: () => appsService.getTables(appId),
+    enabled: !!appId,
+  });
+}
+
+const selectTablesFromVersion = (raw) => {
+  const { dataQueries = [] } = raw?.editing_version || {};
+  const extractedIdData = [];
+
+  dataQueries.forEach((item) => {
+    if (item.kind === 'tooljetdb' && item.options?.operation === 'join_tables') {
+      const joinOptions = item.options?.join_table?.joins ?? [];
+
+      joinOptions.forEach((join) => {
+        const { table, conditions } = join;
+
+        if (table) extractedIdData.push(table);
+
+        conditions?.conditionsList?.forEach((condition) => {
+          const { leftField, rightField } = condition;
+
+          if (leftField?.table) extractedIdData.push(leftField.table);
+          if (rightField?.table) extractedIdData.push(rightField.table);
+        });
+      });
+    }
+
+    if (item.kind === 'tooljetdb' && item.options?.tableId) extractedIdData.push(item.options.tableId);
+  });
+
+  return Array.from(new Set(extractedIdData)).map((id) => ({ table_id: id }));
+};
+
+export function useFetchAppByVersion(appId, versionId) {
+  return useQuery({
+    queryKey: ['appByVersion', appId, versionId],
+    queryFn: () => appsService.getAppByVersion(appId, versionId),
+    select: selectTablesFromVersion,
+    enabled: !!appId && !!versionId,
+  });
+}
+
+export const downloadExportedData = (data, fileName) => {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = fileName + '.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+export function useExportApp() {
+  return useMutation({
+    mutationFn: ({ requestBody, appType }) => appsService.exportResource(requestBody, appType),
   });
 }

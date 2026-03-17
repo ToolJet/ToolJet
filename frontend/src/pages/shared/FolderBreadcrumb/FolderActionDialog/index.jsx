@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Trash, Check } from 'lucide-react';
@@ -17,15 +17,11 @@ import {
   useRemoveAppFromFolder,
   useUpdateFolder,
 } from '../../hooks/folderServiceHooks';
-import { useWorkflowListStore } from '../../../Workflows/store';
 
 import ActionDialog from '../../ActionDialog';
 
-export default function FolderActionDialog({ appType }) {
+export default function FolderActionDialog({ open, onClose, actionType, appId, appType, folderId, initialFolderName }) {
   const { t } = useTranslation();
-
-  const folderDialogState = useWorkflowListStore((state) => state.folderDialogState);
-  const resetFolderDialogState = useWorkflowListStore((state) => state.resetFolderDialogState);
 
   const { mutate: createNewFolder, isPending: isCreatingNewFolder } = useCreateFolder();
   const { mutate: editFolder, isPending: isEditingFolder } = useUpdateFolder();
@@ -33,21 +29,12 @@ export default function FolderActionDialog({ appType }) {
   const { mutate: addToFolder, isPending: isAddingToFolder } = useAddAppToFolder();
   const { mutate: removeAppFromFolder, isPending: isRemovingAppFromFolder } = useRemoveAppFromFolder();
 
-  const { type: actionType, selectedFolderId, selectedFolderInitialName, appIdToProcess } = folderDialogState;
-
   const [errorText, setErrorText] = useState('');
-  const [name, setName] = useState(selectedFolderInitialName ?? '');
+  const [name, setName] = useState(initialFolderName ?? '');
   const [selectedFolder, setSelectedFolder] = useState('');
 
-  useEffect(() => {
-    setName(selectedFolderInitialName ?? '');
-  }, [selectedFolderInitialName]);
-
   const handleResetState = () => {
-    setName('');
-    setErrorText('');
-    setSelectedFolder('');
-    resetFolderDialogState();
+    onClose();
   };
 
   const handleSubmitForm = (e) => {
@@ -67,38 +54,38 @@ export default function FolderActionDialog({ appType }) {
         break;
       }
       case 'edit-folder': {
-        if (formattedFolderName === selectedFolderInitialName) {
+        if (formattedFolderName === initialFolderName) {
           handleResetState();
           return;
         }
 
-        if (errorText || !selectedFolderId) return;
+        if (errorText || !folderId) return;
 
-        editFolder({ name: formattedFolderName, folderId: selectedFolderId }, { onSuccess: handleResetState });
+        editFolder({ name: formattedFolderName, folderId }, { onSuccess: handleResetState });
         break;
       }
       case 'delete-folder': {
-        if (!selectedFolderId) return;
+        if (!folderId) return;
 
-        deleteFolder(selectedFolderId, { onSuccess: handleResetState });
+        deleteFolder(folderId, { onSuccess: handleResetState });
         break;
       }
       case 'add-to-folder': {
-        if (!selectedFolder || !appIdToProcess) {
+        if (!selectedFolder || !appId) {
           toast.error('Select a folder');
           return;
         }
 
-        addToFolder({ appId: appIdToProcess, folderId: selectedFolder }, { onSuccess: handleResetState });
+        addToFolder({ appId, folderId: selectedFolder }, { onSuccess: handleResetState });
         break;
       }
       case 'remove-app-from-folder': {
-        if (!selectedFolderId || !appIdToProcess) {
+        if (!folderId || !appId) {
           toast.error('Select a folder');
           return;
         }
 
-        removeAppFromFolder({ appId: appIdToProcess, folderId: selectedFolderId }, { onSuccess: handleResetState });
+        removeAppFromFolder({ appId, folderId }, { onSuccess: handleResetState });
         break;
       }
       default:
@@ -123,7 +110,7 @@ export default function FolderActionDialog({ appType }) {
 
   const isNameEmpty = isCreateOrEditFolder && !name.trim();
   const isFolderToMoveSelected = isAddToFolder && !selectedFolder;
-  const isEditTypeAndNameIsSame = actionType === 'edit-folder' && name.trim() === selectedFolderInitialName.trim();
+  const isEditTypeAndNameIsSame = actionType === 'edit-folder' && name.trim() === initialFolderName.trim();
 
   const isFormBeingSubmitted =
     isCreatingNewFolder || isEditingFolder || isDeletingFolder || isAddingToFolder || isRemovingAppFromFolder;
@@ -136,23 +123,25 @@ export default function FolderActionDialog({ appType }) {
 
   return (
     <ActionDialog
+      open={open}
       title={dialogTitle}
-      open={Boolean(actionType)}
       cancelBtnProps={{
         'data-cy': 'cancel-button',
         label: t('globals.cancel', 'Cancel'),
         onClick: handleResetState,
         disabled: isCancelBtnDisabled,
       }}
-      submitBtnProps={{
-        label: submitBtnLabel,
-        disabled: isSubmitBtnDisabled,
-        isLoading: isFormBeingSubmitted,
-        form: `${actionType}-folder-form`,
-        'data-cy': `${actionType}-folder-button`,
-        ...(isRemoveAppFromFolderOrDeleteFolder && { variant: 'dangerPrimary' }),
-        ...(!isCreateOrEditFolder && { onClick: handleSubmitForm }),
-      }}
+      submitActions={[
+        {
+          label: submitBtnLabel,
+          disabled: isSubmitBtnDisabled,
+          isLoading: isFormBeingSubmitted,
+          form: `${actionType}-folder-form`,
+          'data-cy': `${actionType}-folder-button`,
+          ...(isRemoveAppFromFolderOrDeleteFolder && { variant: 'dangerPrimary' }),
+          ...(!isCreateOrEditFolder && { onClick: handleSubmitForm }),
+        },
+      ]}
     >
       {isCreateOrEditFolder ? (
         <CreateOrRenameFolderBody
@@ -164,7 +153,7 @@ export default function FolderActionDialog({ appType }) {
           isNameInputDisabled={isFormBeingSubmitted}
         />
       ) : isRemoveAppFromFolderOrDeleteFolder ? (
-        <DeleteOrRemoveAppFromFolder actionType={actionType} folderName={selectedFolderInitialName} />
+        <DeleteOrRemoveAppFromFolder actionType={actionType} folderName={initialFolderName} />
       ) : isAddToFolder ? (
         <AddToFolder appType={appType} selectedFolder={selectedFolder} setSelectedFolder={setSelectedFolder} />
       ) : (
@@ -197,7 +186,7 @@ function CreateOrRenameFolderBody({
           placeholder={placeholder}
           onChange={onFolderNameChange}
           disabled={isNameInputDisabled}
-          dataCy="folder-name-input"
+          data-cy="folder-name-input"
         />
 
         <FieldError className={cn({ 'tw-text-text-placeholder': !errorText })}>{errorText || ''}</FieldError>

@@ -9,13 +9,12 @@ export default function ActionDialog({
   open,
   handleOpenChange,
   cancelBtnProps,
-  submitBtnProps,
+  submitActions,
   children,
   title = null,
   classes = null,
   ...dialogBodyProps
 }) {
-  const { label: submitBtnLabel, ...submitBtnPropsRest } = submitBtnProps;
   const { label: cancelBtnLabel, ...cancelBtnPropsRest } = cancelBtnProps;
 
   const DialogBody = Slot;
@@ -41,11 +40,21 @@ export default function ActionDialog({
             {cancelBtnLabel ?? 'Cancel'}
           </Button>
 
-          <Button variant="primary" size="default" {...submitBtnPropsRest}>
-            {submitBtnLabel}
-          </Button>
+          <SubmitActions actions={submitActions} />
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
+}
+
+function SubmitActions({ actions }) {
+  const buttons = actions.map(({ label, variant = 'primary', size = 'default', ...rest }, i) => (
+    <Button key={i} variant={variant} size={size} {...rest}>
+      {label}
+    </Button>
+  ));
+
+  if (buttons.length === 1) return buttons[0];
+
+  return <div className="tw-flex tw-items-center tw-gap-2">{buttons}</div>;
 }
