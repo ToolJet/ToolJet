@@ -12,3 +12,25 @@
 
 export { Avatar, avatarVariants } from './Avatar/Avatar';
 export { Button, buttonVariants } from './Button/Button';
+export { InlineInfo, inlineInfoVariants } from './InlineInfo/InlineInfo';
+export { Input, inputVariants } from './Input/Input';
+export {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldContent,
+  FieldSet,
+  FieldLegend,
+  FieldTitle,
+  FieldSeparator,
+} from './Field/Field';
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from './InputGroup/InputGroup';
