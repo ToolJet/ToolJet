@@ -30,7 +30,7 @@ function InputGroup({ className, size = 'default', ...props }) {
         // Size
         inputGroupSizes[size],
         // Focus ring override
-        'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2 has-[[data-slot=input-group-control]:focus-visible]:tw-ring-[var(--interactive-focus-outline)] has-[[data-slot=input-group-control]:focus-visible]:tw-ring-offset-1',
+        'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2 has-[[data-slot=input-group-control]:focus-visible]:tw-ring-interactive-focus-outline has-[[data-slot=input-group-control]:focus-visible]:tw-ring-offset-1',
         // Error state override
         'has-[[data-slot][aria-invalid=true]]:tw-border-border-danger-strong has-[[data-slot][aria-invalid=true]]:tw-bg-background-error-weak',
         className

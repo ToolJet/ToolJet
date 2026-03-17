@@ -10,7 +10,7 @@ const buttonVariants = cva(
     // Resets not covered by shadcn base
     'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
     // Override shadcn focus ring with ToolJet token
-    'focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-1',
+    'focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
   ],
   {
     variants: {

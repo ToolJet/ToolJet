@@ -6,7 +6,14 @@ import {
   InputGroupText,
   InputGroupButton,
 } from './InputGroup';
-import { Search, Mail, Eye, EyeOff, ChevronDown, Copy } from 'lucide-react';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '../Select/Select';
+import { Search, Mail, Eye, ChevronDown, Copy, Globe, Phone } from 'lucide-react';
 
 export default {
   title: 'Rocket/InputGroup',
@@ -88,6 +95,80 @@ export const WithDropdown = {
           </InputGroupButton>
         </InputGroupAddon>
         <InputGroupInput type="number" placeholder="0.00" />
+      </InputGroup>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── With Select (leading) ─────────────────────────────────────────────────
+export const WithLeadingSelect = {
+  render: () => (
+    <div className="tw-w-80 tw-p-4">
+      <InputGroup>
+        <InputGroupAddon>
+          <Select defaultValue="usd">
+            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="usd">USD</SelectItem>
+              <SelectItem value="eur">EUR</SelectItem>
+              <SelectItem value="gbp">GBP</SelectItem>
+              <SelectItem value="inr">INR</SelectItem>
+            </SelectContent>
+          </Select>
+        </InputGroupAddon>
+        <InputGroupInput type="number" placeholder="0.00" />
+      </InputGroup>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── With Select (trailing) ────────────────────────────────────────────────
+export const WithTrailingSelect = {
+  render: () => (
+    <div className="tw-w-80 tw-p-4">
+      <InputGroup>
+        <InputGroupInput placeholder="Enter amount" />
+        <InputGroupAddon align="inline-end">
+          <Select defaultValue="usd">
+            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="usd">USD</SelectItem>
+              <SelectItem value="eur">EUR</SelectItem>
+              <SelectItem value="gbp">GBP</SelectItem>
+            </SelectContent>
+          </Select>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Phone Input (country code select + input) ─────────────────────────────
+export const PhoneInput = {
+  render: () => (
+    <div className="tw-w-80 tw-p-4">
+      <InputGroup>
+        <InputGroupAddon>
+          <Select defaultValue="+1">
+            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="+1">+1</SelectItem>
+              <SelectItem value="+44">+44</SelectItem>
+              <SelectItem value="+91">+91</SelectItem>
+              <SelectItem value="+49">+49</SelectItem>
+            </SelectContent>
+          </Select>
+        </InputGroupAddon>
+        <InputGroupInput type="tel" placeholder="(555) 123-4567" />
       </InputGroup>
     </div>
   ),
