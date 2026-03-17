@@ -44,6 +44,12 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
   schemaVersion: string;
 
+  @Column({ name: 'use_env_config', type: 'boolean', default: false })
+  useEnvConfig: boolean;
+
+  @Column({ name: 'env_git_provider', type: 'varchar', nullable: true })
+  envGitProvider: GITConnectionType | null;
+
   @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'app_git_sync',

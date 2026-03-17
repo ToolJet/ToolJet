@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, Delete, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, Delete, Query, NotFoundException, Patch } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import {
   OrganizationGitCreateDto,
@@ -10,11 +10,12 @@ import { IGitSyncController } from './Interfaces/IController';
 import { ProviderConfigDTO } from './dto/provider-config.dto';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
+import { UpdateGitEnvConfigDTO } from '@ee/git-sync/providers/dto/provider-config.dto';
 
 @Controller('git-sync')
 @InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
-  constructor() {}
+  constructor() { }
 
   @Get(':id/status')
   async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
@@ -77,4 +78,10 @@ export class GitSyncController implements IGitSyncController {
   ): Promise<any> {
     throw new NotFoundException();
   }
+
+  @Patch('env-configs')
+  async toggleEnvConfig(@User() user: UserEntity, @Body() configData: UpdateGitEnvConfigDTO) {
+    throw new NotFoundException();
+  }
+
 }
