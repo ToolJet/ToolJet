@@ -375,6 +375,13 @@ export const createGridSlice = (set, get) => ({
         },
       };
 
+      // ModalV2 is rendered as an overlay; its body size must not push
+      // sibling components of the trigger button on the canvas.
+      if (componentType === 'ModalV2' && isContainer) {
+        setTemporaryLayouts(updatedLayouts);
+        return;
+      }
+
       // Calculate the new top, bottom, left, right of the changed component
       // Left and Width are always the same as normal component layouts
       const changedCompLeft = changedComponent.layouts[currentLayout].left;
