@@ -297,7 +297,7 @@ export const initializeAuditLogMetrics = () => {
  * @param auditLogData - The audit log data to record
  */
 export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?: boolean) => {
-   if (!isOtelEnabled) {
+  if (!isOtelEnabled) {
    return;
  }
   if (!auditLogCounter) {
@@ -661,6 +661,7 @@ function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
       break;
   }
 }
+
 
 /**
  * Categorize error type from error message

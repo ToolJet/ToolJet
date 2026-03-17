@@ -357,6 +357,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           },
         };
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
+
       }
     }
   }

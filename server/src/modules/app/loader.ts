@@ -170,6 +170,16 @@ export class AppModuleLoader {
       } catch (error) {
         console.error('Error loading dynamic modules:', error);
       }
+
+      // Load the observability module — EE only.
+      // getImportPath() resolves to ee/ on EE and src/modules/ on CE.
+      // CE has no src/modules/observability → import fails → caught silently.
+      try {
+        const { ObservabilityModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/observability/module`);
+        dynamicModules.push(ObservabilityModule.register());
+      } catch (error) {
+        // CE or observability not available — safe to ignore
+      }
     }
 
     return [...staticModules, ...dynamicModules];

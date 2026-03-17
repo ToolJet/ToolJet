@@ -25,6 +25,7 @@ export const getPrivateRoute = (page, params = {}) => {
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
     modules: '/modules',
+    observability: '/observability',
     subscription: '/settings/subscription',
     license: '/settings/license',
   };
@@ -157,6 +158,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'settings',
     'licence',
     'error',
+    'observability',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];

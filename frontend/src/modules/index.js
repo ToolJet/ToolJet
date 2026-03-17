@@ -4,6 +4,7 @@ import './common/resources/styles/common.styles.scss';
 import Appbuilder from './Appbuilder';
 import AiBuilder from './AiBuilder';
 import getAuditLogsRoutes from './auditLogs';
+import getObservabilityRoutes from './observability';
 import auth from './auth';
 import Dashboard from './dashboard';
 import getDataSourcesRoutes from './dataSources/index';
@@ -26,6 +27,7 @@ export {
   getDataSourcesRoutes,
   Appbuilder,
   getAuditLogsRoutes,
+  getObservabilityRoutes,
   RenderWorkflow,
   AiBuilder,
   Modules,

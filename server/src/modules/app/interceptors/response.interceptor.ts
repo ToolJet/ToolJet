@@ -44,7 +44,7 @@ export class ResponseInterceptor implements NestInterceptor {
         }
         const featureInfo: FeatureConfig = MODULE_INFO?.[module]?.[features[0]];
 
-        if (!featureInfo || featureInfo?.skipAuditLogs || !logsData || !logsData?.userId) {
+        if (!featureInfo || featureInfo?.skipAuditLogs || !logsData || (!logsData?.userId && !(logsData?.resourceData as any)?.isPublic)) {
           return;
         }
 

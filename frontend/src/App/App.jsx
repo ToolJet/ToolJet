@@ -38,6 +38,7 @@ import {
   Workflows,
   getDataSourcesRoutes,
   getAuditLogsRoutes,
+  getObservabilityRoutes,
 } from '@/modules';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
@@ -350,6 +351,7 @@ class AppComponent extends React.Component {
                 />
 
                 {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                {getObservabilityRoutes({ ...mergedProps, darkMode })}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"

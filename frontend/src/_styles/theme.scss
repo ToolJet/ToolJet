@@ -8373,6 +8373,7 @@ tbody {
   // justify-content: center;
 
   &[data-name="Audit logs"],
+  &[data-name="Observability"],
   &[data-name="Workspace constants"],
   &[data-name="Profile settings"] {
     border-right: none;

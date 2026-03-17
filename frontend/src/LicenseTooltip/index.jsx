@@ -18,6 +18,7 @@ const LicenseTooltip = ({
   const currentUser = authenticationService.currentSessionValue;
   const paidFeatures = {
     'Audit logs': 'auditLogs',
+    'Observability': 'observabilityEnabled',
     'Custom styles': 'customStyling',
     'OpenID Connect': 'openid',
     LDAP: 'ldap',
