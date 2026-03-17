@@ -1179,7 +1179,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
    if (branchId) {
      qb.andWhere('dsv.branchId = :branchId', { branchId });
    } else {
-     qb.andWhere('dsv.branchId IS NULL');
+     qb.andWhere('dsv.isDefault = true');
    }
 
 
@@ -1224,7 +1224,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
      .createQueryBuilder(DataSourceVersion, 'dsv')
      .where('LOWER(dsv.name) = LOWER(:name)', { name })
      .andWhere('dsv.isActive = true')
-     .andWhere('dsv.id != :currentDsvId', { currentDsvId });
 
 
    if (branchId) {

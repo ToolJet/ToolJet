@@ -8,7 +8,7 @@ export class EnforceUniqueDataSourceNamesPerBranch1772000000000 implements Migra
         LOWER(name),
         COALESCE(branch_id, '00000000-0000-0000-0000-000000000000')
       )
-      WHERE is_active = true;
+      WHERE is_active = true AND is_default = false;
     `);
   }
 
