@@ -4,34 +4,37 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - develop
+      - documentation
     paths:
-    - docs/**
+      - docs/**
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: documentation
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18.18.2
 
       - name: Install dependencies
-        run: npm install
         working-directory: docs
+        run: npm install
 
       - name: Build the project
-        run: GTM=${{ secrets.GTM }} ALGOLIA_API_KEY=${{ secrets.ALGOLIA_API_KEY }} npm run build
         working-directory: docs
+        run: |
+          GTM=${{ secrets.GTM }} ALGOLIA_API_KEY=${{ secrets.ALGOLIA_API_KEY }} npm run build
 
       - name: Deploy to Netlify
-        run: |
-          npm install -g netlify-cli
-          netlify deploy --prod --dir=docs/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --prod --dir=docs/build --site=${{ secrets.NETLIFY_SITE_ID }}

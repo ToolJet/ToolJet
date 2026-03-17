@@ -185,8 +185,8 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{
               "files": [
-                "${{ secrets.CLOUDFLARE_CONFIG_URL_PROD }}",
-                "${{ secrets.CLOUDFLARE_METADATA_URL_PROD }}"
+                "${{ secrets.CLOUDFLARE_CONFIG_URL_STAGE }}",
+                "${{ secrets.CLOUDFLARE_METADATA_URL_STAGE }}"
               ]
             }')
 

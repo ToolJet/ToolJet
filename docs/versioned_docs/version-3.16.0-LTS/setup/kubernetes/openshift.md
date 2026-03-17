@@ -125,7 +125,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling

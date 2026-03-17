@@ -39,7 +39,7 @@ ToolJet’s REST API data source supports Bearer Token as the authentication typ
 
    2. **Client Certificate**: Requires a client certificate to authenticate with the server. **client.key**, **client.crt**, and **server.crt** files are the certificate files that are used to authenticate with the server. Copy the content of **client.key** file and paste it in the **Client Key** field. Copy the content of **client.crt** file and paste it in the **Client Cert** field. Copy the content of **server.crt** file and paste it in the **CA Cert** field.
 
-   <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/auth-bearer-certs.png" alt="ToolJet - Data source - REST API" />
+   <img className="screenshot-full img-l" src="/img/datasource-reference/rest-api/auth-bearer-certs.png" alt="ToolJet - Data source - REST API" />
 
 7. Once you have configured the REST API data source, click on the **Save** button.
 
@@ -98,7 +98,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
    3. **redirect_url**: `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.
 10. Keep the default selection for **Client Authentication** and **Save** the data source.
 
-<img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" />
+<img class="screenshot-full img-l" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" />
 
 ### Grant Type: Client Credentials
 
@@ -123,3 +123,22 @@ Let’s create a query to make a `GET` request to the URL, it will pop a new win
 - In the **Method** dropdown select `GET` and enable the `Run query on application load?`
 - Run the query.
 - A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
+
+## AWS Signature v4 Authentication
+
+AWS Signature Version 4 is an authentication mechanism used to securely sign requests sent to Amazon Web Services (AWS). It ensures that requests are authenticated using your AWS credentials and protected against tampering during transit.
+
+This authentication method is required when interacting with AWS services such as S3, Lambda, API Gateway, Bedrock, DynamoDB, and others that require signed requests.
+
+### Configuring REST API Data Source with AWS Signature v4
+
+To configure AWS Signature Version 4 authentication in the REST API data source:
+
+- **Authentication type**: Select `AWS v4` from the dropdown.
+- **Connect using credential provider chain** (Optional): Enable this option if ToolJet is running within an AWS environment (such as EC2, ECS, or Lambda) and should automatically use IAM role-based credentials. When enabled, the Access Key ID and Secret Access Key fields are not required.
+- **Access Key ID**: Enter the AWS Access Key ID associated with your IAM user or role.
+- **Secret Access Key**: Enter the corresponding AWS Secret Access Key. This value is securely encrypted and stored.
+- **Region**: Specify the AWS region of the service you are accessing (for example, `us-east-1`, `ap-south-1`, `eu-west-1`).
+- **Service**: Provide the AWS service identifier used for request signing (for example, `execute-api`, `s3`, `lambda`, `dynamodb`, `bedrock`).
+
+  <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/awsv4-connection.png" alt="REST API- aws v4 data source configuration" />
