@@ -30,7 +30,7 @@ export enum AppVersionType {
   BRANCH = 'branch',
 }
 @Entity({ name: 'app_versions' })
-@Unique(['name', 'appId'])
+@Unique(['name', 'appId', 'branchId'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
