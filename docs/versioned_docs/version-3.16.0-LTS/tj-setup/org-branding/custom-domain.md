@@ -15,7 +15,7 @@ This helps organizations:
 - Provide a more professional and trusted experience for end-users of the apps built on ToolJet.
 - Integrate ToolJet more naturally into existing company infrastructure and internal portals.
 
-For teams building internal tools used by non-technical users, accessing applications through a company domain makes the platform feel like a native part of the organization’s product ecosystem rather than a third-party tool.
+For teams building internal tools, accessing applications through a company domain makes the platform feel like a native part of the organization’s product ecosystem rather than a third-party tool.
 
 ## Self Hosted
 
@@ -24,9 +24,7 @@ In a self-hosted deployment of ToolJet, you can configure a custom domain by set
 ### Prerequisites
 
 - A running self-hosted instance of ToolJet.
-
 - A registered domain name.
-
 - A configured DNS record pointing your domain to the ToolJet server.
 
 
@@ -34,11 +32,11 @@ In a self-hosted deployment of ToolJet, you can configure a custom domain by set
 
 #### 1. Set the TOOLJET_HOST Environment Variable
 
-The TOOLJET_HOST variable defines the public URL where ToolJet will be accessible. You need to update this variable with your desired domain.
+The `TOOLJET_HOST` variable defines the public URL where ToolJet will be accessible. You need to update this variable with your desired domain.
 
-| variable     | description                                                      |
+| Variable     | Description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: `https://app.corp.ai`,`https://corp.ai`,`https://corp.ai/app` ) |
+| `TOOLJET_HOST` | the public URL of ToolJet client ( eg: `https://app.corp.com`,`https://corp.org`,`https://corp.ai` ) |
 
 
 #### 2. Restart Services
