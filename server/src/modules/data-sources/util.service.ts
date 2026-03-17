@@ -74,8 +74,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const finalName = await this.generateUniqueName(
+        createArgumentsDto.name,
+        branchId || null,
+        manager
+        );
       const newDataSource = manager.create(DataSource, {
-        name: createArgumentsDto.name,
+        //name: createArgumentsDto.name,
+        name: finalName,
         kind: createArgumentsDto.kind,
         pluginId: createArgumentsDto.pluginId,
         organizationId: user.organizationId,
@@ -295,6 +301,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
               // Also update DSV name if DS name changed
               if (name) {
+                await this.ensureUniqueActiveNameForUpdate(name, effectiveBranchId, dsv.id, manager);
                 await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
               }
             }
@@ -1148,4 +1155,85 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     return savedDsv;
   }
+   private escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  async generateUniqueName(baseName: string, branchId: string | null, manager: EntityManager): Promise<string> {
+   const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
+
+   const qb = manager
+     .createQueryBuilder(DataSourceVersion, 'dsv')
+     .where('dsv.isActive = true')
+     .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
+
+
+   if (branchId) {
+     qb.andWhere('dsv.branchId = :branchId', { branchId });
+   } else {
+     qb.andWhere('dsv.branchId IS NULL');
+   }
+
+
+   const existing = await qb.getMany();
+
+
+   if (!existing.length) return baseName;
+
+
+   const exactMatch = existing.some((dsv) => dsv.name === baseName);
+   if (!exactMatch) return baseName;
+
+
+   const usedNumbers = new Set(
+     existing
+       .map((dsv) => {
+         const match = dsv.name.match(
+           new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`)
+         );
+         return match ? parseInt(match[1], 10) : null;
+       })
+       .filter((n): n is number => n !== null)
+   );
+
+
+   let counter = 2;
+   while (usedNumbers.has(counter)) {
+     counter++;
+   }
+
+
+   return `${baseName}_${counter}`;
+ }
+
+  private async ensureUniqueActiveNameForUpdate(
+     name: string,
+     branchId: string | null, 
+     currentDsvId: string,
+     manager: EntityManager
+ ): Promise<void> {
+   const qb = manager
+     .createQueryBuilder(DataSourceVersion, 'dsv')
+     .where('LOWER(dsv.name) = LOWER(:name)', { name })
+     .andWhere('dsv.isActive = true')
+     .andWhere('dsv.id != :currentDsvId', { currentDsvId });
+
+
+   if (branchId) {
+     qb.andWhere('dsv.branchId = :branchId', { branchId });
+   } else {
+     qb.andWhere('dsv.branchId IS NULL');
+   }
+
+
+   const existing = await qb.getOne();
+
+
+   if (existing) {
+     throw new BadRequestException(
+       `An active data source with name "${name}" already exists in this branch`
+     );
+   }
+ }
+
 }
