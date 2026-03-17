@@ -102,6 +102,9 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'released_at', type: 'timestamp', nullable: true })
   releasedAt: Date;
 
+  @Column({ name: 'is_stub', default: false })
+  isStub: boolean;
+
   @Column({ name: 'branch_id', nullable: true })
   branchId: string;
 
