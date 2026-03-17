@@ -18,9 +18,7 @@ import { OrganizationList } from '@/modules/dashboard/components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Constants, redirectToWorkspace } from '@/_helpers/utils';
 import { SearchBox } from '@/_components/SearchBox';
-import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { ConstantsEnvironmentsTabs } from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/components';
-import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -123,25 +121,25 @@ const BaseManageOrgConstants = ({
     const globalCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-          if (constant.type === Constants.Global) {
-            const foundConstant = constant.values.find((env) => env.environmentName === envName);
-            if (!foundConstant || foundConstant.value === '') return false;
-            return true;
-          }
-          return false;
-        }).length
+            if (constant.type === Constants.Global) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     const secretCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-          if (constant.type === Constants.Secret) {
-            const foundConstant = constant.values.find((env) => env.environmentName === envName);
-            if (!foundConstant || foundConstant.value === '') return false;
-            return true;
-          }
-          return false;
-        }).length
+            if (constant.type === Constants.Secret) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     setGlobalCount(globalCount);
@@ -232,23 +230,27 @@ const BaseManageOrgConstants = ({
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
-  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
-    if (!state.isInitialized || !state.orgGitConfig) return false;
-    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
-    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
-    return !!(isBranchingEnabled && isDefault);
-  });
+  const isWorkspaceBranchLocked = false;
 
   const canCreateVariable = () => {
-    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canUpdateVariable = () => {
-    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canDeleteVariable = () => {
-    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const fetchEnvironments = () => {
@@ -486,7 +488,6 @@ const BaseManageOrgConstants = ({
           <OrganizationList />
         </div>
         <div className="page-wrapper" style={{ marginTop: 0 }}>
-          <WorkspaceLockedBanner pageContext="workspace constants" />
           <div className="container-xl mt-4" style={{ width: '880px' }}>
             <div className="align-items-center d-flex justify-content-between">
               <div className="tj-text-sm font-weight-500" data-cy="env-name">
@@ -608,7 +609,7 @@ const BaseManageOrgConstants = ({
                 <div className="manage-sso-container h-100">
                   <div className="d-flex manage-constant-wrapper-card">
                     {(activeTab === Constants.Global && globalCount > 0) ||
-                      (activeTab === Constants.Secret && secretCount > 0) ? (
+                    (activeTab === Constants.Secret && secretCount > 0) ? (
                       <div className="w-100 workspace-constant-card-body">
                         <ConstantTable
                           constants={currentTableData}

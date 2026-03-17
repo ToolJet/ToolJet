@@ -161,7 +161,7 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
-              {featureAccess?.gitSync && isBranchStoreInitialized && (
+              {featureAccess?.gitSync && isBranchStoreInitialized && pathname !== 'Workspace constants' && (
                 <>
                   <WorkspaceBranchDropdown />
                   <WorkspaceGitCTA />

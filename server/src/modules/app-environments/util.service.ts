@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { IAppEnvironmentUtilService } from './interfaces/IUtilService';
 import { AppVersion } from '@entities/app_version.entity';
@@ -16,17 +15,28 @@ import { DataSourceVersionOptions } from '@entities/data_source_version_options.
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor(protected readonly licenseTermsService: LicenseTermsService) { }
+  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(
-        DataSourceOptions,
-        {
-          environmentId,
-          dataSourceId,
-        },
-        { options, updatedAt: new Date() }
-      );
+      const defaultDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId, isDefault: true },
+      });
+      if (defaultDsv) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId },
+        });
+        if (dsvo) {
+          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options, updatedAt: new Date() });
+        } else {
+          await manager.save(
+            manager.create(DataSourceVersionOptions, {
+              dataSourceVersionId: defaultDsv.id,
+              environmentId,
+              options,
+            })
+          );
+        }
+      }
     }, manager);
   }
 
@@ -229,7 +239,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     environmentId?: string,
     branchId?: string,
     appVersionId?: string
-  ): Promise<DataSourceOptions> {
+  ): Promise<DataSourceVersionOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       let envName: string;
@@ -247,7 +257,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         envName = environment?.name || 'unknown';
       }
 
-      // Branch-aware path: read from data_source_version_options
+      // Branch-aware path: read from data_source_version_options for a specific branch
       if (branchId) {
         const dsv = await manager.findOne(DataSourceVersion, {
           where: { dataSourceId, branchId, isActive: true },
@@ -257,7 +267,6 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
             where: { dataSourceVersionId: dsv.id, environmentId: envId },
           });
           if (dsvo) {
-            // Return as DataSourceOptions-compatible shape
             const result = {
               id: dsvo.id,
               options: dsvo.options,
@@ -296,14 +305,31 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         }
       }
 
-      const dataSourceOptions = await manager.findOneOrFail(DataSourceOptions, {
-        where: { environmentId: envId, dataSourceId },
+      // Default version path: read from data_source_version_options via default DSV
+      const defaultDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId, isDefault: true },
       });
+      if (defaultDsv) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId: envId },
+        });
+        if (dsvo) {
+          const result = {
+            id: dsvo.id,
+            options: dsvo.options,
+            environmentId: envId,
+            dataSourceId,
+            createdAt: dsvo.createdAt,
+            updatedAt: dsvo.updatedAt,
+            environmentName: envName,
+          } as any;
+          return result;
+        }
+      }
 
-      // Add environment name to the returned object
-      (dataSourceOptions as any).environmentName = envName;
-
-      return dataSourceOptions;
+      throw new ForbiddenException(
+        `No data source version options found for dataSourceId=${dataSourceId}, environmentId=${envId}`
+      );
     });
   }
 

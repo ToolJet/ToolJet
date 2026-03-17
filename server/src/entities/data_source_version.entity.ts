@@ -53,7 +53,7 @@ export class DataSourceVersion {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => DataSource, (ds) => ds.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DataSource, (ds) => ds.dataSourceVersions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 

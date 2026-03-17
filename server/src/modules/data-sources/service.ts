@@ -275,7 +275,6 @@ export class DataSourcesService implements IDataSourcesService {
       environmentId,
       organizationId
     );
-    delete dataSource['dataSourceOptions'];
     return dataSource;
   }
 
