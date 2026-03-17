@@ -5,8 +5,12 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
-import { NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
+import {
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+  getSubContainerHeightAfterPadding,
+} from './appCanvasUtils';
+import { NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -168,29 +172,25 @@ const Container = React.memo(
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
     return (
       <div
-        // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
         ref={(el) => {
           realCanvasRef.current = el;
           drop(el);
         }}
         style={{
-          height: id === 'canvas' ? `${canvasHeight}` : '100%',
+          height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
+          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {
-              if (currentMode === 'view') {
-                return '100%';
-              } else {
-                return canvasMaxWidth;
-              }
+              return '100%';
             }
             // For Subcontainers
             return canvasWidth;

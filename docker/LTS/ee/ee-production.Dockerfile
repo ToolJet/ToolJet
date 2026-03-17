@@ -5,6 +5,50 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@10.9.2 && npm cache clean --force
 
+# Build nsjail for Python sandboxing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    g++ \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build-nsjail
+RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
+    cd nsjail && \
+    make && \
+    strip nsjail
+
+# Build Python runtime with pre-installed packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create isolated Python environment
+RUN python3.11 -m venv /opt/python-runtime
+
+# Upgrade pip and install common packages
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.6.4 \
+    typing-extensions==4.10.0
+
 RUN mkdir -p /app
 WORKDIR /app
 
@@ -26,13 +70,13 @@ RUN git submodule update --init --recursive
 
 # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
 RUN git submodule foreach " \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+    git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
-  else \
+    else \
     echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
     git checkout lts-3.16; \
-  fi"
+    fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -79,19 +123,25 @@ FROM debian:12-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        curl \
-        wget \
-        gnupg \
-        unzip \
-        ca-certificates \
-        xz-utils \
-        tar \
-        postgresql-client \
-        redis \
-        libaio1 \
-        git \
-        openssh-client \
-        freetds-dev \
+    curl \
+    wget \
+    gnupg \
+    unzip \
+    ca-certificates \
+    xz-utils \
+    tar \
+    postgresql-client \
+    redis \
+    libaio1 \
+    git \
+    openssh-client \
+    freetds-dev \
+    python3.11 \
+    python3.11-venv \
+    libprotobuf32 \
+    libnl-route-3-200 \
+    procps \
+    libcap2-bin \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -103,7 +153,7 @@ RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
     && rm node-v22.15.1-linux-x64.tar.xz
-ENV PATH=/usr/local/lib/nodejs/bin:$PATH
+ENV PATH=/usr/local/lib/nodejs/bin:/opt/python-runtime/bin:$PATH
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
@@ -130,6 +180,24 @@ WORKDIR /
 RUN mkdir -p /app
 
 RUN useradd --create-home --home-dir /home/appuser appuser
+
+# Copy nsjail and Python runtime from builder
+COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
+RUN chmod 4755 /usr/local/bin/nsjail
+
+# Copy Python runtime with pre-installed packages
+COPY --from=builder /opt/python-runtime /opt/python-runtime
+
+# Copy nsjail configuration file
+RUN mkdir -p /etc/nsjail
+COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
+
+# Create Python execution directories
+RUN mkdir -p \
+    /tmp/python-execution \
+    /tmp/python-bundles \
+    && chmod 1777 /tmp/python-execution \
+    && chmod 1777 /tmp/python-bundles
 
 # Use the PostgREST binary from the builder stage
 COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest

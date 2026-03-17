@@ -117,7 +117,7 @@ export const createDataQuerySlice = (set, get) => ({
         .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
         .then((data) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
               if (query.id === tempId) {
                 return {
@@ -169,7 +169,7 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .catch((error) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
               (query) => query.id !== tempId
             );
@@ -509,8 +509,9 @@ export const createDataQuerySlice = (set, get) => ({
           });
         });
     }, 500),
-    runOnLoadQueries: async (moduleId = 'canvas') => {
-      const queries = get().dataQuery.queries.modules[moduleId];
+    runOnLoadQueries: async (moduleId = 'canvas', queryList = null) => {
+      const queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+
       try {
         for (const query of queries) {
           if (
@@ -541,7 +542,7 @@ export const createDataQuerySlice = (set, get) => ({
 
       const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
       const queriesToUpdate = new Map(queriesInfo.update?.map((query) => [query.id, query]) ?? []);
-      const queriesToCreate = queriesInfo.create ?? [];
+      const queriesToCreate = (queriesInfo.create ?? []).map(normalizeQueryTransformationOptions);
 
       set(
         (state) => {
@@ -584,8 +585,7 @@ export const createDataQuerySlice = (set, get) => ({
             });
 
           queriesToCreate.forEach((query) => {
-            const normalizedQuery = normalizeQueryTransformationOptions(query);
-            updatedQueriesValue.push(normalizedQuery);
+            updatedQueriesValue.push(query);
 
             state.modules[moduleId].queryNameIdMapping[query.name] = query.id;
             state.modules[moduleId].queryIdNameMapping[query.id] = query.name;
@@ -597,7 +597,9 @@ export const createDataQuerySlice = (set, get) => ({
         'performDeletionUpdationAndCreationOfQuery'
       );
 
-      get().checkAndSetTrueBuildSuggestionsFlag();
+      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
+
+      get().rebuildQueryHints(moduleId);
     },
   },
 });

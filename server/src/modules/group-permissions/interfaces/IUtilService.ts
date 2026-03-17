@@ -54,7 +54,13 @@ export interface IGranularPermissionsUtilService {
   getBasicPlanGranularPermissions(role: USER_ROLE): GranularPermissions[];
 }
 
+export interface IPromoteAndReleaseFeatures {
+  promote: boolean;
+  release: boolean;
+}
+
 export interface IGroupPermissionsLicenseUtilService {
   isValidLicense(organiztionId: string): Promise<boolean>;
   isRestrictedPlan(organizationId: string): Promise<boolean>;
+  isPromoteAndReleaseEnabled(organizationId: string): Promise<IPromoteAndReleaseFeatures>;
 }

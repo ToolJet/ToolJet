@@ -14,3 +14,4 @@ export { default as BadgeTypeIcon } from './BadgeTypeIcon';
 export { default as TagsTypeIcon } from './TagsTypeIcon';
 export { default as RadioTypeIcon } from './RadioTypeIcon';
 export { default as RatingTypeIcon } from './RadioTypeIcon';
+export { default as ButtonTypeIcon } from './ButtonTypeIcon';

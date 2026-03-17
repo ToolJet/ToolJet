@@ -598,6 +598,10 @@ jobs:
               {
                 "key": "CUSTOM_GITHUB_TOKEN",
                 "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+              },
+              {
+                "key": "TOOLJET_WORKFLOW_SANDBOX_BYPASS",
+                "value": "true"
               }
             ],
             "serviceDetails": {

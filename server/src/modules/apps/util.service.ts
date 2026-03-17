@@ -15,7 +15,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -41,6 +41,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -51,7 +52,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) { }
+  ) {}
   async create(
     name: string,
     user: User,
@@ -71,55 +72,9 @@ export class AppsUtilService implements IAppsUtilService {
             userId: user.id,
             isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
             ...(isInitialisedFromPrompt && {
-              aiGenerationMetadata: {
-                steps: [
-                  {
-                    name: 'Describe app',
-                    id: 'describe_app',
-                    loadingStates: ['Generating PRD', 'PRD generated successfully'],
-                  },
-                  {
-                    name: 'Define specs',
-                    id: 'define_specs',
-                    loadingStates: ['Generating app specifications', 'Specifications generated successfully'],
-                  },
-                  {
-                    name: 'Design layout',
-                    id: 'design_layout',
-                    loadingStates: ['Designing app layout', 'Layout designed successfully'],
-                  },
-                  {
-                    name: 'Select datasource',
-                    id: 'select_datasource',
-                    loadingStates: ['Selecting datasource', 'Datasource selected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Connect datasource',
-                    id: 'connect_datasource',
-                    loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Setup database',
-                    id: 'setup_database',
-                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
-                  },
-                  {
-                    name: 'Generate app',
-                    id: 'generate_app',
-                    loadingStates: ['Generating app', 'App generated successfully'],
-                  },
-                ],
-                activeStep: 'describe_app',
-                completedSteps: [],
-                version: 'v3',
-              },
+              aiGenerationMetadata: {},
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
-            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
             ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
@@ -136,6 +91,7 @@ export class AppsUtilService implements IAppsUtilService {
           appVersionId: appVersion.id,
           index: 1,
           autoComputeLayout: true,
+          appId: app.id,
         })
       );
 
@@ -202,14 +158,15 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
     let app: App;
-    try {
+
+    if (isUUID(slug)) {
       app = await this.appRepository.findById(slug, organizationId);
-    } catch (error) {
-      /* means: UUID error. so the slug isn't not the id of the app */
-      if (error?.code === `22P02`) {
-        /* Search against slug */
+      if (!app) {
+        /* UUID could also be a slug, try slug lookup as fallback */
         app = await this.appRepository.findBySlug(slug, organizationId);
       }
+    } else {
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {
@@ -346,11 +303,14 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
-    const { name, currentEnvironmentId, definition } = body;
+    const { currentEnvironmentId, definition } = body;
     const { currentVersionId, organizationId } = app;
     let currentEnvironment: AppEnvironment;
 
-    if (version.id === currentVersionId && !body?.is_user_switched_version)
+    // Allow updates to non-released versions
+    // Note: status and name updates are already handled by versionsUtilService.updateVersion
+    // This function only handles workflow-specific fields: currentEnvironmentId and definition
+    if (version.id === currentVersionId && !body?.is_user_switched_version && (currentEnvironmentId || definition))
       throw new BadRequestException('You cannot update a released version');
 
     if (currentEnvironmentId || definition) {
@@ -360,17 +320,6 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     const editableParams = {};
-    if (name) {
-      //means user is trying to update the name
-      const versionNameExists = await this.versionRepository.findOne({
-        where: { name, appId: version.appId },
-      });
-
-      if (versionNameExists) {
-        throw new BadRequestException('Version name already exists.');
-      }
-      editableParams['name'] = name;
-    }
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
@@ -419,7 +368,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -446,22 +395,23 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        undefined,
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
         type
       );
 
       // Eagerly load appVersions for modules
-      if (type === APP_TYPES.MODULE) {
+      if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
 
-      if (page) {
-        return await viewableAppsQb
-          .take(9)
-          .skip(9 * (page - 1))
-          .getMany();
+      if (isGetAll) {
+        return await viewableAppsQb.getMany();
       }
-      return await viewableAppsQb.getMany();
+
+      return await viewableAppsQb
+        .take(9)
+        .skip(9 * (page - 1))
+        .getMany();
     });
   }
 
@@ -522,14 +472,14 @@ export class AppsUtilService implements IAppsUtilService {
     return userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-        null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-          ])
-        ),
-      ];
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -616,9 +566,17 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'Steps', 'Tabs', 'RadioButtonV2', 'Tags', 'TagsInput'].includes(
-                currentComponentData?.component?.component
-              ) &&
+              [
+                'DropdownV2',
+                'MultiselectV2',
+                'PopoverMenu',
+                'Steps',
+                'Tabs',
+                'RadioButtonV2',
+                'Tags',
+                'TagsInput',
+                'TreeSelect',
+              ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -682,10 +640,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-            .distinct(true)
-            .getMany()
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
           : [];
       return modules;
     });
@@ -740,5 +698,44 @@ export class AppsUtilService implements IAppsUtilService {
     return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
     }, manager);
+  }
+
+  /**
+   * Determines if the editor should be frozen based on version status, type, and git configuration
+   * @param editingVersion - The app version being edited
+   * @param environmentPriority - The priority of the current environment (> 1 means production-like)
+   * @param appGit - The app's git configuration
+   * @param orgGit - The organization's git configuration
+   * @returns boolean indicating if editor should be frozen
+   */
+  shouldFreezeEditor(editingVersion: AppVersion, appGit: any, orgGit: any): boolean {
+    let shouldFreezeEditor = false;
+    // Check version status and type
+    if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
+      // Published versions are always frozen
+      shouldFreezeEditor = true;
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status === AppVersionStatus.DRAFT &&
+      (!orgGit || !orgGit?.isBranchingEnabled)
+    ) {
+      // Draft versions should never be frozen by git config, only by environment
+      // Keep existing shouldFreezeEditor value from environment priority check
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status !== AppVersionStatus.DRAFT
+    ) {
+      // Non-draft version types are frozen
+      shouldFreezeEditor = true;
+    } else {
+      // For branch versions, check git config
+      if (appGit && editingVersion?.status !== AppVersionStatus.DRAFT) {
+        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
+      } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
+        shouldFreezeEditor = orgGit?.isBranchingEnabled || shouldFreezeEditor;
+      }
+    }
+
+    return shouldFreezeEditor;
   }
 }

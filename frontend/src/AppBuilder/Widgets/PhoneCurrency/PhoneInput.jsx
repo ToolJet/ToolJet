@@ -7,6 +7,7 @@ import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
@@ -14,7 +15,7 @@ import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -39,7 +40,7 @@ export const PhoneInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
   const {
     textColor,
@@ -58,6 +59,8 @@ export const PhoneInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const isInitialRender = useRef(true);
 
   const options = useMemo(
@@ -125,21 +128,29 @@ export const PhoneInput = (props) => {
   const loaderStyle = {
     right:
       direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        defaultAlignment === 'side' &&
+        hasLabel
         ? `${labelWidth + 11}px`
         : '11px',
     top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
+      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
     transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+  const countryCode = getCountryCallingCodeSafe(country);
+  const hasValue = (() => {
+    if (value === '' || value === null || value === undefined) return false;
+    if (!countryCode) return true;
+    const normalizedValue = `${value}`.trim();
+    const strippedValue = normalizedValue.replace(new RegExp(`^\\+${countryCode}`), '').trim();
+    return strippedValue.length > 0;
+  })();
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  const clearButtonTransform = 'translateY(-50%)';
 
   const computedStyles = {
     height: '100%',
@@ -147,27 +158,28 @@ export const PhoneInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
@@ -178,13 +190,11 @@ export const PhoneInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex phone-input-widget ${
-          defaultAlignment === 'top' &&
+        className={`text-input d-flex phone-input-widget ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : 'align-items-center'
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : 'align-items-center'
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -209,8 +219,10 @@ export const PhoneInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -234,6 +246,7 @@ export const PhoneInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <Input
             ref={inputRef}
@@ -250,15 +263,39 @@ export const PhoneInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-            className={`tj-text-input-widget ${
-              !isValid && showValidationError ? 'is-invalid' : ''
-            } validation-without-icon`}
+            className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
+              } validation-without-icon`}
             data-ignore-hover={true}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (

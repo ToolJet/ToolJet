@@ -151,3 +151,11 @@ function invoke(dataSourceId, methodName, environmentId, args) {
   };
   return fetch(url, requestOptions).then(handleResponse);
 }
+
+export function getAllTablesForADataSource(dataSourceId, environmentId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+
+  return fetch(`${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`, requestOptions).then(
+    handleResponse
+  );
+}

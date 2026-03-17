@@ -2,6 +2,7 @@ import React, { useState, useRef, Suspense, lazy } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
@@ -35,9 +36,9 @@ export const ConfigHandle = ({
   subContainerIndex,
   isDynamicHeightEnabled,
 }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
@@ -59,16 +60,17 @@ export const ConfigHandle = ({
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
-  const _showHandle = useStore((state) => {
-    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
-    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
-    // If one component is hovered and one is selected, show the handle for the hovered component
+
+  // If one component is hovered and one is selected, show the handle for the hovered component
+  const _showHandle = useTransientStore((state) => {
+    const isWidgetHovered = state.hoveredComponentForGrid === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '' || state.hoveredComponentBoundaryId !== '';
     return (
       ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
       isWidgetHovered ||
       (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
     );
-  }, shallow);
+  });
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
@@ -84,7 +86,7 @@ export const ConfigHandle = ({
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
@@ -213,6 +215,9 @@ export const ConfigHandle = ({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        if (isModal) {
+          setSelectedComponentAsModal(id);
+        }
         if (componentType === 'Tabs') {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {

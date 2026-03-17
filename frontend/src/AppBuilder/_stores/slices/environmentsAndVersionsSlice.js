@@ -22,6 +22,8 @@ const initialState = {
   developmentVersions: [],
   draftVersions: [],
   publishedVersions: [],
+  draftVersions: [],
+  publishedVersions: [],
   environmentLoadingState: 'completed',
   isPublicAccess: false,
 };
@@ -134,16 +136,25 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         );
       }
 
-      set((state) => ({
-        ...state,
-        selectedEnvironment,
-        selectedVersion: response.editorVersion,
-        appVersionEnvironment: response.appVersionEnvironment,
-        shouldRenderPromoteButton: response.shouldRenderPromoteButton,
-        shouldRenderReleaseButton: response.shouldRenderReleaseButton,
-        environments: response.environments,
-        versionsPromotedToEnvironment: [response.editorVersion],
-      }));
+      set((state) => {
+        const stateUpdate = {
+          ...state,
+          selectedEnvironment,
+          selectedVersion: response.editorVersion,
+          appVersionEnvironment: response.appVersionEnvironment,
+          shouldRenderPromoteButton: response.shouldRenderPromoteButton,
+          shouldRenderReleaseButton: response.shouldRenderReleaseButton,
+          environments: response.environments,
+          versionsPromotedToEnvironment: [response.editorVersion],
+        };
+
+        // Clear currentBranch if initial version is not a branch
+        const versionType = response.editorVersion?.versionType || response.editorVersion?.version_type;
+        if (versionType !== 'branch') {
+          stateUpdate.currentBranch = null;
+        }
+        return stateUpdate;
+      });
     } catch (error) {
       console.error('❌ DEBUG - Error while initializing the environment dropdown', error);
     }
@@ -223,7 +234,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     selectedVersionId,
     versionDescription = '',
     onSuccess,
-    onFailure
+    onFailure,
+    versionType = 'version'
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -232,7 +244,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionName,
         versionDescription,
         selectedVersionId,
-        editorEnvironment
+        editorEnvironment,
+        versionType
       );
       const editorVersion = {
         id: newVersion.id,
@@ -336,6 +349,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         name: data.editing_version.name,
         current_environment_id: data.editing_version.currentEnvironmentId,
         status: data.editing_version.status,
+        // Preserve versionType from API response to distinguish between regular versions and branch versions
+        versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -356,6 +371,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       };
+
+      // Clear currentBranch if switching to a regular version (not a branch)
+      if (selectedVersion.versionType !== 'branch') {
+        optionsToUpdate.currentBranch = null;
+      }
+
       set((state) => ({ ...state, ...optionsToUpdate }));
       onSuccess(data);
     } catch (error) {
@@ -386,7 +407,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const versionIsAvailableInEnvironment = environment?.priority <= get().appVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
           // Current version doesn't exist in target environment - fetch a version that does
-          const { appId } = useStore.getState().appStore.modules.canvas.app;
+          const modules = useStore.getState().appStore.modules;
+          const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
@@ -435,7 +457,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
     try {
-      const { appId } = useStore.getState().appStore.modules.canvas.app;
+      const modules = useStore.getState().appStore.modules;
+      const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
 
       const response = await appVersionService.promoteEnvironment(appId, versionId, get().selectedEnvironment.id);
 

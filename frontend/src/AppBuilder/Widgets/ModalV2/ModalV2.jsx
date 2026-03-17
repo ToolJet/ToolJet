@@ -34,6 +34,7 @@ export const ModalV2 = function Modal({
   currentLayout,
   componentCount,
   subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
@@ -69,6 +70,7 @@ export const ModalV2 = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
+  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
@@ -92,6 +94,7 @@ export const ModalV2 = function Modal({
     value: JSON.stringify({ headerHeight, showHeader, showModal }),
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {
@@ -127,6 +130,7 @@ export const ModalV2 = function Modal({
 
   const onHideModal = () => {
     hideModal();
+    clearSelectedComponents();
   };
 
   useEffect(() => {

@@ -14,7 +14,7 @@ export const appEditorSelector = {
             componentsNode: '[data-cy="inspector-components-node"]',
             menuIcon: '[data-cy="inspector-menu-icon"]',
             popoverBody: '.popover-body',
-            anyDeleteInPopover: '[data-cy*="delete"]',
+            anyDeleteInPopover: '.popover-body [data-cy*="delete"]',
             fxButtonAny: '[data-cy*="fx-button"]',
             codeInputFieldAny: '[data-cy*="input-field"]',
             codeEditorContent: '.cm-content',
@@ -24,13 +24,13 @@ export const appEditorSelector = {
         components: {
             widgetSearchInput: '[data-cy="widget-search-box-search-bar"]',
             draggableBox: '.draggable-box',
-            componentsPlusButton: '[data-cy="right-sidebar-plus-button"]',
+            componentsPlusButton: '[data-cy="right-sidebar-components-button"]',
             addEventHandlerButton: '[data-cy="add-event-handler"]',
             popupButton: '.popup-btn',
         },
 
         pages: {
-            pagesTabButton: '[data-cy="right-sidebar-file01-button"]',
+            pagesTabButton: '[data-cy="right-sidebar-page-settings-button"]',
             addNewPageButton: '#add-new-page',
             pageToggleInput: 'input.form-check-input',
             pageTextInput: 'input.form-control',

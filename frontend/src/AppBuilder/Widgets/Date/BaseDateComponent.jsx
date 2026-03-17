@@ -31,6 +31,8 @@ export const BaseDateComponent = ({
   customTimeInputProps,
   customDateInputProps,
   id,
+  showClearBtn,
+  dataCy
 }) => {
   const { i18n } = useTranslation();
   const currentLocale = getDateLocale(i18n.language);
@@ -56,6 +58,8 @@ export const BaseDateComponent = ({
     widthType,
   } = styles;
 
+  const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
+  const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderColor: focus
@@ -87,6 +91,7 @@ export const BaseDateComponent = ({
     ...(iconVisibility && {
       ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
     }),
+    ...(paddingRight && { paddingRight }),
   };
 
   const loaderStyles = {
@@ -97,10 +102,10 @@ export const BaseDateComponent = ({
         ? `${labelWidth + 11}px`
         : '11px',
     top: `${alignment === 'top'
-        ? ((label?.length > 0 && labelWidth > 0) ||
-          (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
-        '50%'
-        : 'calc(50% - 7px)'
+      ? ((label?.length > 0 && labelWidth > 0) ||
+        (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
+      '50%'
+      : 'calc(50% - 7px)'
       }`,
     transform:
       alignment === 'top' &&
@@ -126,7 +131,6 @@ export const BaseDateComponent = ({
 
   return (
     <div
-      data-cy={`label-${String(componentName).toLowerCase()}`}
       className={cx('d-flex datetimepicker-component', {
         [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
@@ -155,6 +159,7 @@ export const BaseDateComponent = ({
         _width={_width}
         widthType={widthType}
         inputId={`component-${id}`}
+        dataCy={dataCy}
       />
       <div
         className="px-0 h-100"
@@ -198,6 +203,8 @@ export const BaseDateComponent = ({
               label={label}
               {...customDateInputProps}
               inputId={id}
+              clearButtonRightOffset={iconVisibility && iconDirection === 'right' ? 20 : 0}
+              dataCy={dataCy}
             />
           }
           customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}

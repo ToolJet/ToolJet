@@ -165,8 +165,14 @@ dpkg -l | grep -E "openssl|libssl" | grep -E "^ii" | awk '{printf "%-20s %s\n", 
 sudo apt-get clean
 sudo rm -rf /var/lib/apt/lists/*
 
+# Mount temporary build volume (/dev/sdf maps to /dev/xvdf inside the instance)
+sudo mkfs.ext4 /dev/xvdf
+sudo mkdir -p /mnt/build
+sudo mount /dev/xvdf /mnt/build
+sudo chown ubuntu:ubuntu /mnt/build
+
 # Setup temporary build directory
-BUILD_DIR="/tmp/tooljet-build"
+BUILD_DIR="/mnt/build/tooljet-build"
 PROD_DIR="/home/ubuntu/app"
 
 mkdir -p "$BUILD_DIR"
@@ -225,10 +231,11 @@ mv /tmp/.env "$PROD_DIR/.env"
 mv /tmp/setup_app "$PROD_DIR/setup_app"
 sudo chmod +x "$PROD_DIR/setup_app"
 
-# Clean up build directory
+# Clean up build directory and unmount temporary build volume
 echo "Cleaning up build directory..."
 cd /home/ubuntu
 rm -rf "$BUILD_DIR"
+sudo umount /mnt/build
 
 echo "Production files copied successfully. Total size:"
 du -sh "$PROD_DIR"

@@ -75,6 +75,9 @@ export class App extends BaseEntity {
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column({
     type: 'enum',
     enumName: 'app_builder_mode',
@@ -101,6 +104,10 @@ export class App extends BaseEntity {
       name: string;
       id: string;
     };
+    dataSourceContext?: string | null;
+    threadId?: string | null;
+    chatMessages?: any[];
+    interrupt?: boolean;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

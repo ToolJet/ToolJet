@@ -124,6 +124,12 @@ export const Pagination = function Pagination({
                     goToPage(pageNum);
                   }}
                   className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
                 />
               );
             })}

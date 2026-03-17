@@ -20,6 +20,8 @@ import Check from '@/_ui/Icon/solidIcons/Check';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import RatingIconToggle from './RatingColumn/RatingIconToggle';
 import RatingColumnProperties from './RatingColumn/RatingColumnProperties';
+import { ButtonListManager } from './ButtonListManager';
+import { ButtonPropertiesTab } from './ButtonPropertiesTab';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -74,8 +76,12 @@ export const PropertiesTabElements = ({
   columnEventChanged,
   timeZoneOptions,
   handleEventManagerPopoverCallback,
+  selectedButtonId,
+  setSelectedButtonId,
+  buttonManager,
 }) => {
   const { t } = useTranslation();
+  const { addButton, removeButton, updateButtonProperty, reorderButtons, getButton } = buttonManager;
 
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),
@@ -83,102 +89,109 @@ export const PropertiesTabElements = ({
 
   return (
     <>
-      {column.columnType && <DeprecatedColumnTypeMsg columnType={column.columnType} darkMode={darkMode} />}
-      <div className="field px-3" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
-        <label data-cy={`label-column-type`} className="form-label">
-          {t('widget.Table.columnType', 'Column type')}
-        </label>
+      {!selectedButtonId && (
+        <>
+          {column.columnType && <DeprecatedColumnTypeMsg columnType={column.columnType} darkMode={darkMode} />}
+          <div className="field px-3" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
+            <label data-cy={`label-column-type`} className="form-label">
+              {t('widget.Table.columnType', 'Column type')}
+            </label>
 
-        <CustomSelect
-          options={[
-            { label: 'String', value: 'string' },
-            { label: 'Number', value: 'number' },
-            { label: 'Text', value: 'text' },
-            { label: 'Date Picker', value: 'datepicker' },
-            { label: 'Select', value: 'select' },
-            { label: 'MultiSelect', value: 'newMultiSelect' },
-            { label: 'Boolean', value: 'boolean' },
-            { label: 'Image', value: 'image' },
-            { label: 'Link', value: 'link' },
-            { label: 'JSON', value: 'json' },
-            { label: 'Markdown', value: 'markdown' },
-            { label: 'HTML', value: 'html' },
-            { label: 'Rating', value: 'rating' },
-            // Following column types are deprecated
-            { label: 'Default', value: 'default' },
-            { label: 'Dropdown', value: 'dropdown' },
-            { label: 'Multiselect', value: 'multiselect' },
-            { label: 'Toggle switch', value: 'toggle' },
-            { label: 'Radio', value: 'radio' },
-            { label: 'Badge', value: 'badge' },
-            { label: 'Multiple badges', value: 'badges' },
-            { label: 'Tags', value: 'tags' },
-          ]}
-          components={{
-            DropdownIndicator,
-            Option: CustomOption,
-            SingleValue: CustomValueContainer,
-          }}
-          onChange={(value) => {
-            onColumnItemChange(index, 'columnType', value);
-          }}
-          value={column.columnType}
-          useCustomStyles={true}
-          styles={customStylesForSelect}
-          className={`column-type-table-inspector`}
-        />
-      </div>
-      <div className="field px-3" data-cy={`input-and-label-column-name`}>
-        <label data-cy={`label-column-name`} className="form-label">
-          {t('widget.Table.columnName', 'Column name')}
-        </label>
-        <CodeHinter
-          currentState={currentState}
-          initialValue={column.name}
-          theme={darkMode ? 'monokai' : 'default'}
-          mode="javascript"
-          lineNumbers={false}
-          placeholder={column.name}
-          onChange={(value) => onColumnItemChange(index, 'name', value)}
-          componentName={getPopoverFieldSource(column.columnType, 'name')}
-          popOverCallback={(showing) => {
-            setColumnPopoverRootCloseBlocker('name', showing);
-          }}
-        />
-      </div>
-      <div data-cy={`input-and-label-key`} className="field px-3">
-        <label className="form-label">{t('widget.Table.key', 'Key')}</label>
-        <CodeHinter
-          currentState={currentState}
-          initialValue={column.key}
-          theme={darkMode ? 'monokai' : 'default'}
-          mode="javascript"
-          lineNumbers={false}
-          placeholder={column.name}
-          onChange={(value) => onColumnItemChange(index, 'key', value)}
-          componentName={getPopoverFieldSource(column.columnType, 'key')}
-          popOverCallback={(showing) => {
-            setColumnPopoverRootCloseBlocker('tableKey', showing);
-          }}
-        />
-      </div>
-      <div data-cy={`transformation-field`} className="field px-3">
-        <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
-        <CodeHinter
-          currentState={currentState}
-          initialValue={column?.transformation ?? '{{cellValue}}'}
-          theme={darkMode ? 'monokai' : 'default'}
-          mode="javascript"
-          lineNumbers={false}
-          placeholder={column.name}
-          onChange={(value) => onColumnItemChange(index, 'transformation', value)}
-          componentName={getPopoverFieldSource(column.columnType, 'transformation')}
-          popOverCallback={(showing) => {
-            setColumnPopoverRootCloseBlocker('transformation', showing);
-          }}
-          enablePreview={false}
-        />
-      </div>
+            <CustomSelect
+              options={[
+                { label: 'String', value: 'string' },
+                { label: 'Number', value: 'number' },
+                { label: 'Text', value: 'text' },
+                { label: 'Date Picker', value: 'datepicker' },
+                { label: 'Select', value: 'select' },
+                { label: 'MultiSelect', value: 'newMultiSelect' },
+                { label: 'Boolean', value: 'boolean' },
+                { label: 'Image', value: 'image' },
+                { label: 'Link', value: 'link' },
+                { label: 'JSON', value: 'json' },
+                { label: 'Markdown', value: 'markdown' },
+                { label: 'HTML', value: 'html' },
+                { label: 'Rating', value: 'rating' },
+                { label: 'Button', value: 'button' },
+                // Following column types are deprecated
+                { label: 'Default', value: 'default' },
+                { label: 'Dropdown', value: 'dropdown' },
+                { label: 'Multiselect', value: 'multiselect' },
+                { label: 'Toggle switch', value: 'toggle' },
+                { label: 'Radio', value: 'radio' },
+                { label: 'Badge', value: 'badge' },
+                { label: 'Multiple badges', value: 'badges' },
+                { label: 'Tags', value: 'tags' },
+              ]}
+              components={{
+                DropdownIndicator,
+                Option: CustomOption,
+                SingleValue: CustomValueContainer,
+              }}
+              onChange={(value) => {
+                onColumnItemChange(index, 'columnType', value);
+              }}
+              value={column.columnType}
+              useCustomStyles={true}
+              styles={customStylesForSelect}
+              className={`column-type-table-inspector`}
+            />
+          </div>
+          <div className="field px-3" data-cy={`input-and-label-column-name`}>
+            <label data-cy={`label-column-name`} className="form-label">
+              {t('widget.Table.columnName', 'Column name')}
+            </label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.name}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => onColumnItemChange(index, 'name', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'name')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('name', showing);
+              }}
+            />
+          </div>
+          <div data-cy={`input-and-label-key`} className="field px-3">
+            <label className="form-label">{t('widget.Table.key', 'Key')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.key}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => onColumnItemChange(index, 'key', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'key')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('tableKey', showing);
+              }}
+            />
+          </div>
+        </>
+      )}
+      {column.columnType !== 'button' && (
+        <div data-cy={`transformation-field`} className="field px-3">
+          <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
+          <CodeHinter
+            currentState={currentState}
+            initialValue={column?.transformation ?? '{{cellValue}}'}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={column.name}
+            onChange={(value) => onColumnItemChange(index, 'transformation', value)}
+            componentName={getPopoverFieldSource(column.columnType, 'transformation')}
+            popOverCallback={(showing) => {
+              setColumnPopoverRootCloseBlocker('transformation', showing);
+            }}
+            enablePreview={false}
+          />
+        </div>
+      )}
       {column.columnType === 'rating' && (
         <div data-cy={`rating-type-field`} className="field px-3 d-flex justify-content-between">
           <label className="form-label d-flex align-items-center">{'Icon'}</label>
@@ -193,6 +206,7 @@ export const PropertiesTabElements = ({
           <EventManager
             sourceId={props?.component?.id}
             eventSourceType="table_column"
+            customEventRefs={{ ref: column.name }}
             hideEmptyEventsAlert={true}
             eventMetaDefinition={{ events: { onChange: { displayName: 'On change' } } }}
             currentState={currentState}
@@ -206,6 +220,47 @@ export const PropertiesTabElements = ({
             pages={props.pages}
           />
         </div>
+      )}
+      {column.columnType === 'button' && !selectedButtonId && (
+        <>
+          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+              <ProgramaticallyHandleProperties
+                label="Visibility"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="columnVisibility"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+          <ButtonListManager
+            buttons={column.buttons || []}
+            onAddButton={addButton}
+            onReorderButtons={reorderButtons}
+            onSelectButton={setSelectedButtonId}
+          />
+        </>
+      )}
+      {column.columnType === 'button' && selectedButtonId && (
+        <ButtonPropertiesTab
+          button={getButton(selectedButtonId)}
+          column={column}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          onButtonPropertyChange={(property, value) => updateButtonProperty(selectedButtonId, property, value)}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          props={props}
+          columnEventChanged={columnEventChanged}
+          handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+        />
       )}
       {(column.columnType === 'dropdown' ||
         column.columnType === 'multiselect' ||
@@ -302,7 +357,7 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
-      {!['image', 'link'].includes(column.columnType) && (
+      {!['image', 'link', 'button'].includes(column.columnType) && (
         <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
           <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
             <ProgramaticallyHandleProperties
@@ -320,7 +375,8 @@ export const PropertiesTabElements = ({
           </div>
           {(column?.fxActiveFields?.includes('isEditable') || resolveReferences(column?.isEditable)) && (
             <ValidationProperties
-              column={column}
+              item={column}
+              itemType={column?.columnType}
               index={index}
               darkMode={darkMode}
               currentState={currentState}
@@ -349,22 +405,24 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
-      <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
-        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
-          <ProgramaticallyHandleProperties
-            label="Visibility"
-            currentState={currentState}
-            index={index}
-            darkMode={darkMode}
-            callbackFunction={onColumnItemChange}
-            property="columnVisibility"
-            props={column}
-            component={component}
-            paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
-            paramType="properties"
-          />
+      {column.columnType !== 'button' && (
+        <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+            <ProgramaticallyHandleProperties
+              label="Visibility"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="columnVisibility"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
+              paramType="properties"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {['select', 'newMultiSelect', 'datepicker', 'rating'].includes(column.columnType) && <hr className="mx-0 my-2" />}
       {column.columnType === 'datepicker' && (
@@ -400,6 +458,7 @@ export const PropertiesTabElements = ({
           currentState={currentState}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          paramToUpdate={'columns'}
           component={component}
           onColumnItemChange={onColumnItemChange}
         />

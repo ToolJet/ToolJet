@@ -40,6 +40,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RangeSliderV2',
   'Link',
   'FilePicker',
+  'FileInput',
   'Listview',
   'Statistics',
   'StarRating',
@@ -47,8 +48,12 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Kanban',
   'Html',
   'TagsInput',
+  'JSONExplorer',
+  'JSONEditor',
   'ProgressBar',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -75,6 +80,9 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   ProgressBar: 'Data',
   AudioRecorder: 'Content',
   Camera: 'Content',
+  Accordion: 'Data',
+  JSONExplorer: 'Data',
+  JSONEditor: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -177,6 +185,7 @@ export const baseComponentProperties = (
       'VerticalDivider',
       'Link',
       'FilePicker',
+      'FileInput',
       'Tabs',
       'Statistics',
       'StarRating',
@@ -185,7 +194,10 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'JSONExplorer',
+      'JSONEditor',
       'IFrame',
+      'Accordion',
     ],
     Layout: [],
   };

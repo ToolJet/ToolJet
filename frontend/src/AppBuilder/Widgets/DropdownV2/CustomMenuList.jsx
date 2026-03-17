@@ -11,8 +11,17 @@ const { MenuList } = components;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput } =
-    selectProps;
+  const {
+    onInputChange,
+    onMenuInputFocus,
+    optionsLoadingState,
+    darkMode,
+    inputValue,
+    menuId,
+    showSearchInput,
+    menuBackgroundColor,
+    menuWidthStyle,
+  } = selectProps;
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
@@ -55,6 +64,8 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       onTouchEnd={(e) => e.stopPropagation()}
       style={{
         ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
+        '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
+        ...(menuWidthStyle || {}),
       }}
     >
       {showSearchInput && (
@@ -93,6 +104,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           className="dropdown-multiselect-widget-custom-menu-list-body"
           style={{
             maxHeight: selectProps.maxMenuHeight || 300,
+            ...(menuWidthStyle || {}),
           }}
         >
           <div

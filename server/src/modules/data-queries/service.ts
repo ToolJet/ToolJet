@@ -8,25 +8,94 @@ import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
 import { decamelizeKeys } from 'humps';
 import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from './dto';
-import { DataQueriesUtilService } from './util.service';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
-import { IDataQueriesService } from './interfaces/IService';
+import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDeleteContext } from './interfaces/IService';
 import { App } from '@entities/app.entity';
-import { AppHistoryUtilService } from '@modules/app-history/util.service';
-import { ACTION_TYPE } from '@modules/app-history/constants';
+import { RequestContext } from '@modules/request-context/service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) { }
+    protected readonly dataSourceRepository: DataSourcesRepository
+  ) {}
+
+  /**
+   * Hook called before query creation - override in EE to capture state for history
+   */
+  protected async beforeQueryCreate(
+    user: User,
+    dataSource: DataSource,
+    dataQueryDto: CreateDataQueryDto
+  ): Promise<QueryCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query creation - override in EE to queue history
+   */
+  protected async afterQueryCreate(
+    context: QueryCreateContext | null,
+    createdQuery: any,
+    user: User,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query update - override in EE to capture state for history
+   */
+  protected async beforeQueryUpdate(
+    user: User,
+    versionId: string,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto
+  ): Promise<QueryUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query update - override in EE to queue history
+   */
+  protected async afterQueryUpdate(
+    context: QueryUpdateContext | null,
+    user: User,
+    versionId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query deletion - override in EE to capture state for history
+   */
+  protected async beforeQueryDelete(dataQueryId: string): Promise<QueryDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query deletion - override in EE to queue history
+   */
+  protected async afterQueryDelete(
+    context: QueryDeleteContext | null,
+    dataQueryId: string,
+    appVersionId: string | null,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -59,10 +128,12 @@ export class DataQueriesService implements IDataQueriesService {
     const { kind, name, options, app_version_id: appVersionId } = dataQueryDto;
 
     await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
-      user.defaultOrganizationId,
+      user.organizationId,
       appVersionId,
       'You cannot create queries in the promoted version.'
     );
+
+    const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const dataQuery = await this.dataQueryRepository.createOne(
@@ -82,18 +153,10 @@ export class DataQueriesService implements IDataQueriesService {
       return decamelizedQuery;
     });
 
-    // Queue history capture after successful data query creation
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(dataQueryDto.app_version_id, ACTION_TYPE.QUERY_ADD, {
-        queryName: dataQueryDto.name || 'Unnamed Query',
-        queryId: result.id,
-        operation: 'create',
-        queryData: dataQueryDto,
-        userId: user?.id,
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for data query creation:', error);
-    }
+    const operationTimestamp = Date.now();
+    this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message)
+    );
 
     return result;
   }
@@ -102,59 +165,37 @@ export class DataQueriesService implements IDataQueriesService {
     const { name, options } = updateDataQueryDto;
 
     await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
-      user.defaultOrganizationId,
+      user.organizationId,
       versionId,
       'You cannot update queries in the promoted version.'
     );
+
+    const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
-    // Queue history capture after successful data query update
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.QUERY_UPDATE, {
-        queryName: updateDataQueryDto.name || 'Unnamed Query',
-        queryId: dataQueryId,
-        operation: 'update',
-        queryData: updateDataQueryDto,
-        userId: user?.id,
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for data query update:', error);
-    }
+    const operationTimestamp = Date.now();
+    this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message)
+    );
   }
 
   async delete(dataQueryId: string) {
-    // Get app version ID before deletion (minimal query)
-    let appVersionId: string | null = null;
-
-    try {
-      const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { apps: true });
-      if (dataQuery?.appVersionId) {
-        appVersionId = dataQuery.appVersionId;
-      }
-    } catch (error) {
-      console.error('Failed to get app version ID for history capture:', error);
-    }
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforeQueryDelete(dataQueryId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
 
-    // Queue history capture with minimal data - queue will resolve name from previous state
-    if (appVersionId) {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.QUERY_DELETE, {
-          queryId: dataQueryId,
-          operation: 'delete',
-          // No need to pre-fetch queryName - queue processor will resolve from history
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for data query deletion:', error);
-      }
-    }
+    const operationTimestamp = Date.now();
+    const appVersionId = (context as any)?.appVersionId || null;
+    this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message)
+    );
   }
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
@@ -190,7 +231,9 @@ export class DataQueriesService implements IDataQueriesService {
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+    });
 
     if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
@@ -200,10 +243,18 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
+  async runQueryForApp(
+    user: User,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    response: Response,
+    app?: App
+  ) {
     const { resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+    });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
@@ -238,18 +289,18 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
-          metadata: error.metadata,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
+          metadata: error?.metadata,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
-          message: 'Internal server error',
-          description: error.message,
-          data: {},
+          message: error?.message || 'Internal server error',
+          description: error?.message,
+          data: error?.data || {},
         };
       }
     }
@@ -265,16 +316,16 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
-          description: error.message,
+          description: error?.message,
           data: {},
         };
       }
@@ -284,7 +335,9 @@ export class DataQueriesService implements IDataQueriesService {
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const newDataSource = await this.dataSourceRepository.findOneOrFail({ where: { id: newDataSourceId } });
+      const newDataSource = await this.dataSourceRepository.findOneOrFail({
+        where: { id: newDataSourceId, organizationId: user.organizationId },
+      });
       // FIXME: Disabling this check as workflows can change data source of a query with different kind
       // if (dataSource.kind !== newDataSource.kind && dataSource) {
       //   throw new BadRequestException();

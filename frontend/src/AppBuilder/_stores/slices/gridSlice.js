@@ -1,12 +1,14 @@
-import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  HIDDEN_COMPONENT_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
-  hoveredComponentForGrid: '',
-  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
@@ -23,17 +25,12 @@ const initialState = {
 
 export const createGridSlice = (set, get) => ({
   ...initialState,
-  setHoveredComponentForGrid: (id) =>
-    set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
-  getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
   checkHoveredComponentDynamicHeight: (id) => {
     const { getResolvedComponent } = get();
     const resolvedProperties = getResolvedComponent(id)?.properties;
     const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
-  setHoveredComponentBoundaryId: (id) =>
-    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   incrementCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
       type: 'incrementCanvasUpdater',
@@ -127,7 +124,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
-      getExposedValueOfComponent,
+      getExposedPropertyForAdditionalActions,
     } = get();
 
     try {
@@ -160,7 +157,11 @@ export const createGridSlice = (set, get) => ({
       }
 
       // Priority: exposed visibility > component properties > component styles
-      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        componentId,
+        subContainerIndex,
+        'isVisible'
+      );
       let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
 
       // Override visibility if component is set to not display on current layout
@@ -171,96 +172,148 @@ export const createGridSlice = (set, get) => ({
       // If the component is a container, we go to each and every child component and calculate the height of the container
       if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
         let contentHeight = 0;
-        const element = document.querySelector(`.dynamic-${componentId}`);
-        // If the component is not a dynamic component, we use the height of the component from the layouts
-        if (!element) {
-          contentHeight = visibility
-            ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
-            : HIDDEN_COMPONENT_HEIGHT;
-        } else {
-          // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
-          if (!visibility) {
-            contentHeight = HIDDEN_COMPONENT_HEIGHT;
-          } else {
-            // If the component is a tabs, we need to get the active tab
-            let modifiedComponentId = componentId;
-            if (componentType === 'Tabs') {
-              const activeTab = element?.getAttribute('activetab');
-              modifiedComponentId = `${componentId}-${activeTab}`;
-            }
 
-            // The normal component layouts
-            const componentLayouts = get()
-              .getContainerChildrenMapping(modifiedComponentId)
-              .reduce((acc, id) => {
-                const component = currentPageComponents[id];
-                if (!component) return acc;
+        const isAccordionExpanded =
+          getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
+
+        // Special handling for Accordion: check if it's collapsed first
+        if (componentType === 'Accordion') {
+          const { properties = {} } = component || {};
+          const { showHeader, headerHeight } = properties;
+
+          if (!isAccordionExpanded) {
+            // Accordion is collapsed - height should be just header height (or minimal if no header)
+            if (visibility) {
+              if (showHeader && isProperNumber(headerHeight)) {
+                contentHeight = headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 2; // 3 for bottom padding and 2 for top-bottom border
+              } else {
+                contentHeight = 0;
+              }
+            } else {
+              contentHeight = HIDDEN_COMPONENT_HEIGHT;
+            }
+            containerHeight = contentHeight;
+            // Skip the rest of the container height calculation for collapsed accordion
+          } else {
+            // Accordion is expanded - continue with normal calculation below
+          }
+        }
+
+        // Only proceed with normal calculation if component is not an accordion or accordion is expanded
+        if (componentType !== 'Accordion' || isAccordionExpanded) {
+          const dynamicSelector =
+            doesSubContainerIndexExist && componentType !== 'Listview'
+              ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"] .dynamic-${componentId}`
+              : `.dynamic-${componentId}`;
+          const element = document.querySelector(dynamicSelector);
+          // If the component is not a dynamic component, we use the height of the component from the layouts
+          if (!element) {
+            contentHeight = visibility
+              ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
+              : HIDDEN_COMPONENT_HEIGHT;
+          } else {
+            // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
+            if (!visibility) {
+              contentHeight = HIDDEN_COMPONENT_HEIGHT;
+            } else {
+              let skipContentHeightCalculation = false; // flag to skip content height calculation (eg. for accordion with dynamic height disabled)
+
+              // If the component is a tabs, we need to get the active tab
+              let modifiedComponentId = componentId;
+              if (componentType === 'Tabs') {
+                const activeTab = element?.getAttribute('activetab');
+                modifiedComponentId = `${componentId}-${activeTab}`;
+              }
+
+              // The normal component layouts
+              const componentLayouts = get()
+                .getContainerChildrenMapping(modifiedComponentId)
+                .reduce((acc, id) => {
+                  const component = currentPageComponents[id];
+                  if (!component) return acc;
+                  return {
+                    ...acc,
+                    [id]: component.layouts[currentLayout],
+                  };
+                }, {});
+
+              // Dynamic height layouts
+              const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
+                const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
                 return {
                   ...acc,
-                  [id]: component.layouts[currentLayout],
+                  ...(temporaryLayouts[transformedId] && { [id]: temporaryLayouts[transformedId] }),
                 };
               }, {});
 
-            // Dynamic height layouts
-            const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
-              const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
-              return {
-                ...acc,
-                ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
-              };
-            }, {});
+              const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
 
-            const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
-
-            // Calculate the height of the container
-            let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
-              if (!layout) {
-                return max;
-              }
-              const sum = layout.top + layout.height;
-              return Math.max(max, sum);
-            }, 0);
-
-            let extraHeight = 0;
-
-            // If the component is a container, we need to get the header height
-            if (componentType === 'Container') {
-              const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
-              const { showHeader, headerHeight } = properties;
-              if (showHeader && isProperNumber(headerHeight)) {
-                extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
-              }
-
-              // If the component is a form, we need to get the header and footer height
-            } else if (componentType === 'Form') {
-              const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-              const { component } = getComponentDefinition(modifiedComponentId);
-              const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
-              const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
-              const { showHeader, showFooter, headerHeight, footerHeight } = properties;
-              if (resolvedGenerateFormFrom === 'jsonSchema') {
-                //Inside element go inside fieldset and then find the last element and get the height
-                const lastElement = element.querySelector('fieldset:last-child');
-                if (lastElement) {
-                  currentMax = lastElement.offsetHeight;
+              // Calculate the height of the container
+              let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
+                if (!layout) {
+                  return max;
                 }
-              } else {
+                const sum = layout.top + layout.height;
+                return Math.max(max, sum);
+              }, 0);
+
+              let extraHeight = 0;
+
+              // If the component is a container, we need to get the header height
+              if (componentType === 'Container' || componentType === 'Accordion') {
+                const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
+                const { showHeader, headerHeight, dynamicHeight } = properties;
+
+                // For regular Container and Accordion (expanded only) component, calculate height normally
                 if (showHeader && isProperNumber(headerHeight)) {
-                  extraHeight += headerHeight;
+                  extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
                 }
-                if (showFooter && isProperNumber(footerHeight)) {
-                  extraHeight += footerHeight;
+
+                // Special handling for Accordion when expanded
+                if (componentType === 'Accordion') {
+                  // Calculate height normally, but respect dynamicHeight setting
+                  if (!dynamicHeight) {
+                    // If dynamicHeight is not enabled, use fixed height from layouts instead of calculating from children
+                    // So skip the rest of the content height calculation for fixed height accordion
+                    skipContentHeightCalculation = true;
+                  }
                 }
-                extraHeight += 20;
+
+                // If the component is a form, we need to get the header and footer height
+              } else if (componentType === 'Form') {
+                const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
+                const { component } = getComponentDefinition(modifiedComponentId);
+                const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
+                const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
+                const { showHeader, showFooter, headerHeight, footerHeight } = properties;
+                if (resolvedGenerateFormFrom === 'jsonSchema') {
+                  //Inside element go inside fieldset and then find the last element and get the height
+                  const lastElement = element.querySelector('fieldset:last-child');
+                  if (lastElement) {
+                    currentMax = lastElement.offsetHeight;
+                  }
+                } else {
+                  if (showHeader && isProperNumber(headerHeight)) {
+                    extraHeight += headerHeight;
+                  }
+                  if (showFooter && isProperNumber(footerHeight)) {
+                    extraHeight += footerHeight;
+                  }
+                  extraHeight += 20;
+                }
+
+                // If the component is a tabs, we add 20px for the bottom
+              } else if (componentType === 'Tabs') {
+                extraHeight = 40;
+              } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
+                extraHeight -= 40;
               }
 
-              // If the component is a tabs, we add 20px for the bottom
-            } else if (componentType === 'Tabs') {
-              extraHeight = 40;
-            } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
-              extraHeight -= 40;
+              // Calculate contentHeight only if it hasn't been set already (e.g., for accordion with dynamic height disabled its already calculated)
+              if (!skipContentHeightCalculation) {
+                contentHeight = currentMax + 50 + extraHeight;
+              }
             }
-            contentHeight = currentMax + 50 + extraHeight;
           }
         }
         if (visibility) {
@@ -344,7 +397,8 @@ export const createGridSlice = (set, get) => ({
         const sameParent = box.component?.parent === changedComponent.component?.parent;
 
         // Checking if changed component initial bottom is below the initial box top
-        const boxTop = temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top;
+        const transformedBoxId = doesSubContainerIndexExist ? `${box.id}-${subContainerIndex}` : box.id;
+        const boxTop = temporaryLayouts?.[transformedBoxId]?.top ?? box.layouts[currentLayout].top;
         const isBelow = oldChangedCompBottom <= boxTop;
         return sameParent && isBelow;
       });
@@ -389,7 +443,10 @@ export const createGridSlice = (set, get) => ({
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
-        const element = document.querySelector(`.ele-${component.id}`);
+        const targetSelector = doesSubContainerIndexExist
+          ? `.ele-${component.id}[subcontainer-id="${subContainerIndex}"]`
+          : `.ele-${component.id}`;
+        const element = document.querySelector(targetSelector);
         if (!element) continue;
         const transformedTargetComponentId = doesSubContainerIndexExist
           ? `${component.id}-${subContainerIndex}`
@@ -415,24 +472,38 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const element = document.querySelector(`.ele-${componentId}`);
-          element.style.height = `${newHeight}px`;
+          const containerSelector = doesSubContainerIndexExist
+            ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`
+            : `.ele-${componentId}`;
+          const element = document.querySelector(containerSelector);
+          if (element) element.style.height = `${newHeight}px`;
         }
       }
 
       setTemporaryLayouts(updatedLayouts);
 
       incrementCanvasUpdater();
+
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        adjustComponentPositions(
-          isContainer && isTruthyOrZero(subContainerIndex)
+        // Bubble the height change up to the parent container.
+        // For a Listview row instance, the next container to adjust is the Listview widget itself.
+        const parentComponentId =
+          componentType === 'Listview' && doesSubContainerIndexExist
             ? componentId
-            : changedComponent.component?.parent?.slice(0, 36),
-          currentLayout,
-          true,
-          componentType === 'Listview' ? null : subContainerIndex
-        );
+            : changedComponent.component?.parent?.slice(0, 36);
+
+        // Once the Listview widget is reached, continue upward outside the row scope.
+        const parentSubContainerIndex = componentType === 'Listview' ? null : subContainerIndex;
+
+        // Prevent no-progress recursion on the same target.
+        if (
+          parentComponentId &&
+          !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
+        ) {
+          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+        }
       }
+
       return updatedLayouts;
     } catch (error) {
       console.error('Error adjusting component positions:', error);
@@ -447,14 +518,7 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const {
-      clearSelectedComponents,
-      setActiveRightSideBarTab,
-      isRightSidebarOpen,
-      isGroupResizing,
-      isGroupDragging,
-      activeRightSideBarTab,
-    } = get();
+    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -478,6 +542,7 @@ export const createGridSlice = (set, get) => ({
       ].join(',');
       return !!document.querySelector(selector);
     };
+
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&

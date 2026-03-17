@@ -18,7 +18,8 @@ const getDate = (date, format) => {
 };
 
 export const ValidationProperties = ({
-  column,
+  item,
+  itemType,
   index,
   darkMode,
   currentState,
@@ -27,16 +28,15 @@ export const ValidationProperties = ({
   setColumnPopoverRootCloseBlocker,
 }) => {
   const { t } = useTranslation();
-  const columnType = column.columnType;
 
-  const getValidationList = (columnType) => {
-    switch (columnType) {
+  const getValidationList = (itemType) => {
+    switch (itemType) {
       case 'string':
       case undefined:
       case 'default':
       case 'text': {
         const properties = [];
-        if (column.columnType !== 'text') {
+        if (item.itemType !== 'text') {
           properties.push({
             property: 'regex',
             dateCy: 'input-and-label-regex',
@@ -106,7 +106,7 @@ export const ValidationProperties = ({
           },
         ];
       case 'datepicker': {
-        const isTimeChecked = resolveReferences(column?.isTimeChecked);
+        const isTimeChecked = resolveReferences(item?.isTimeChecked);
         let properties = [];
         properties.push([
           {
@@ -164,7 +164,7 @@ export const ValidationProperties = ({
         return [];
     }
   };
-  const validationsList = getValidationList(columnType);
+  const validationsList = getValidationList(itemType);
 
   if (validationsList.length < 1) {
     return '';
@@ -181,7 +181,7 @@ export const ValidationProperties = ({
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <ReactDatePicker
-              selected={getDate(column?.[validation.property], 'MM/DD/YYYY')}
+              selected={getDate(item?.[validation.property], 'MM/DD/YYYY')}
               onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('MM/DD/YYYY'))}
               showTimeSelectOnly={validation.showOnlyTime}
               placeholderText={validation?.placeholder ?? ''}
@@ -201,7 +201,7 @@ export const ValidationProperties = ({
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <Timepicker
-              selected={getDate(column?.[validation.property], 'HH:mm')}
+              selected={getDate(item?.[validation.property], 'HH:mm')}
               onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('HH:mm'))}
               placeholderText={validation?.placeholder ?? ''}
               timeFormat={'HH:mm'}
@@ -227,13 +227,13 @@ export const ValidationProperties = ({
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <CodeHinter
               currentState={currentState}
-              initialValue={column?.[validation.property]}
+              initialValue={item?.[validation.property]}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               placeholder={validation?.placeholder ?? ''}
               onChange={(value) => onColumnItemChange(index, validation.property, value)}
-              componentName={getPopoverFieldSource(column.columnType, validation.property)}
+              componentName={getPopoverFieldSource(item.itemType, validation.property)}
               popOverCallback={(showing) => {
                 setColumnPopoverRootCloseBlocker(validation.property, showing);
               }}

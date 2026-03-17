@@ -162,20 +162,19 @@ export const Steps = function Steps({
   useEffect(() => setIsDisabled(disabledState), [disabledState]);
   useEffect(() => setActiveStepId(currentStepId), [currentStepId]);
 
-  if (!isVisible) return null;
-
   return (
     <div
       ref={containerRef}
       className={`steps-container ${isDisabled ? 'disabled' : ''} ${filteredSteps.length === 1 ? 'single-step' : ''}`}
       style={{
         height,
+        display: isVisible ? 'flex' : 'none',
         boxShadow,
         padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
         paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
         ...dynamicStyle,
       }}
-      aria-hidden={!visibility}
+      aria-hidden={!isVisible}
       aria-disabled={disabledState}
       role="navigation"
       id={`component-${id}`}
