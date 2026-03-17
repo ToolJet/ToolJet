@@ -6,6 +6,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
+import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function Header({
   featureAccess,
@@ -14,6 +17,7 @@ function Header({
   toggleCollapsibleSidebar = () => {},
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
 
   const routes = (pathEnd, path) => {
     const pathParts = path.split('/');
@@ -157,6 +161,12 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
+              {featureAccess?.gitSync && isBranchStoreInitialized && pathname !== 'Workspace constants' && (
+                <>
+                  <WorkspaceBranchDropdown />
+                  <WorkspaceGitCTA />
+                </>
+              )}
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}

@@ -4,7 +4,7 @@ import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, ILike, Like } from 'typeorm';
+import { EntityManager, ILike } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -18,9 +18,11 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { OrganizationConstantsUtilService } from '@modules/organization-constants/util.service';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -34,16 +36,46 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
   ) {}
-  async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const uniqueName = await this.generateUniqueName(
-        createArgumentsDto.name,
-        createArgumentsDto.kind,
-        user.organizationId,
-        manager
+
+  /**
+   * Validates that workspace constants are not being added directly on the default (master) branch.
+   * PRD requires that workspace constants in encrypted fields must go through a PR workflow.
+   */
+  private async validateNoConstantsOnDefaultBranch(branchId: string, options: Array<object>): Promise<void> {
+    const hasConstantReference = options.some((opt) => {
+      if (opt['workspace_constant']) return true;
+      if (
+        opt['encrypted'] &&
+        typeof opt['value'] === 'string' &&
+        (opt['value'].includes('{{constants') || opt['value'].includes('{{secrets'))
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    if (!hasConstantReference) return;
+
+    const branch = await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+    });
+
+    if (branch?.isDefault) {
+      throw new BadRequestException(
+        'Workspace constants cannot be added directly on the master branch. Please create a feature branch and submit a PR.'
       );
+    }
+  }
+
+  async create(createArgumentsDto: CreateArgumentsDto, user: User, branchId?: string): Promise<DataSource> {
+    // Validate: workspace constants cannot be added directly on the default (master) branch
+    if (branchId && createArgumentsDto.options?.length) {
+      await this.validateNoConstantsOnDefaultBranch(branchId, createArgumentsDto.options);
+    }
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
-        name: uniqueName,
+        name: createArgumentsDto.name,
         kind: createArgumentsDto.kind,
         pluginId: createArgumentsDto.pluginId,
         organizationId: user.organizationId,
@@ -52,6 +84,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         updatedAt: new Date(),
       });
       const dataSource = await manager.save(newDataSource);
+
+      // Set co_relation_id = id so git sync serialization can identify this DS
+      if (!dataSource.co_relation_id) {
+        dataSource.co_relation_id = dataSource.id;
+        await manager.update(DataSource, { id: dataSource.id }, { co_relation_id: dataSource.id });
+      }
 
       // Creating empty options mapping
       await this.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
@@ -85,6 +123,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           })
         );
       }
+
+      // Branch-aware: also create data_source_versions + data_source_version_options
+      if (branchId) {
+        await this.createDataSourceVersionForBranch(dataSource, branchId, allEnvs, manager);
+      }
+
       return dataSource;
     });
   }
@@ -204,12 +248,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId: string,
     name: string,
     options: Array<object>,
-    environmentId?: string
+    environmentId?: string,
+    branchId?: string
   ): Promise<void> {
     const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
 
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot update configuration of sample data source');
+    }
+
+    // Validate: workspace constants cannot be added directly on the default (master) branch
+    if (branchId && options?.length) {
+      await this.validateNoConstantsOnDefaultBranch(branchId, options);
     }
 
     try {
@@ -234,6 +284,21 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
           await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+
+          // Branch-aware: also update data_source_version_options
+          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+          if (effectiveBranchId) {
+            const dsv = await manager.findOne(DataSourceVersion, {
+              where: { dataSourceId: dataSource.id, branchId: effectiveBranchId, isActive: true },
+            });
+            if (dsv) {
+              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
+              // Also update DSV name if DS name changed
+              if (name) {
+                await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
+              }
+            }
+          }
         } else {
           const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
           /* 
@@ -241,12 +306,30 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             this will help us to run the queries successfully when the user buys enterprise plan 
             */
 
+          // Get branchId once for all environments
+          const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+          const dsv = nonMultiEnvBranchId
+            ? await manager.findOne(DataSourceVersion, {
+                where: { dataSourceId: dataSource.id, branchId: nonMultiEnvBranchId, isActive: true },
+              })
+            : null;
+
           for (const env of allEnvs) {
             dataSource.options = (
               await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
             ).options;
             const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
             await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+
+            // Branch-aware: also update version options
+            if (dsv) {
+              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, env.id, manager);
+            }
+          }
+
+          // Update DSV name if needed
+          if (dsv && name) {
+            await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
         const updatableParams = {
@@ -257,18 +340,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         // Remove keys with undefined values
         cleanObject(updatableParams);
-        if (name) {
-          const existing = await manager.findOne(DataSource, {
-            where: {
-              organizationId,
-              name,
-              kind: dataSource.kind
-            },
-          });
-          if (existing && existing.id !== dataSourceId) {
-            throw new BadRequestException('Data source name must be unique for this kind');
-          }
-        }
 
         await manager.save(DataSource, updatableParams);
       });
@@ -401,13 +472,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   async findOneByEnvironment(
     dataSourceId: string,
     environmentId: string,
-    organizationId?: string
+    organizationId?: string,
+    branchId?: string
   ): Promise<DataSource> {
     const dataSource = await this.dataSourceRepository.findOneOrFail({
       where: { id: dataSourceId, organizationId },
       relations: [
         'apps',
-        'dataSourceOptions',
         'appVersion',
         'appVersion.app',
         'plugin',
@@ -417,12 +488,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ],
     });
 
-    if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
+    if (!environmentId) {
       //fix for env id issue when importing cloud/enterprise apps to CE
-      if (dataSource.dataSourceOptions?.length > 1) {
-        const env = await this.appEnvironmentUtilService.get(organizationId, null);
-        environmentId = env?.id;
-      } else {
+      const env = await this.appEnvironmentUtilService.get(organizationId, null);
+      environmentId = env?.id;
+      if (!environmentId) {
         throw new NotAcceptableException('Environment id should not be empty');
       }
     }
@@ -435,13 +505,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       );
     }
 
-    if (environmentId) {
-      dataSource.options = (
-        await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId)
-      ).options;
-    } else {
-      dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
-    }
+    // Branch-aware option resolution for global data sources
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    dataSource.options = (
+      await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, effectiveBranchId)
+    ).options;
+
     return dataSource;
   }
 
@@ -644,10 +714,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     dataSourceId: string,
     optionsToMerge: any,
     organizationId: string,
-    environmentId?: string
+    environmentId?: string,
+    branchId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId, branchId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge, manager);
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
@@ -657,13 +728,27 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         organizationId
       );
 
+      // Branch-aware: also update version options
+      const effectiveUpdateBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+      const dsv = effectiveUpdateBranchId
+        ? await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId, branchId: effectiveUpdateBranchId, isActive: true },
+          })
+        : null;
+
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+        if (dsv) {
+          await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, envToUpdate.id, manager);
+        }
       } else {
         const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
         await Promise.all(
-          allEnvs.map(async (envToUpdate) => {
-            await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+          allEnvs.map(async (env) => {
+            await this.appEnvironmentUtilService.updateOptions(updatedOptions, env.id, dataSourceId, manager);
+            if (dsv) {
+              await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, env.id, manager);
+            }
           })
         );
       }
@@ -951,7 +1036,38 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         },
       ];
       await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
+
+      // Propagate OAuth token to ALL branches (tokens are branch-invariant)
+      await this.propagateTokenToAllBranches(dataSourceId, environmentId, updatedTokenData);
     }
+  }
+
+  /**
+   * When an OAuth token refreshes, propagate the tokenData to all branch versions
+   * of this data source so tokens stay in sync across branches.
+   */
+  protected async propagateTokenToAllBranches(
+    dataSourceId: string,
+    environmentId: string,
+    updatedTokenData: any
+  ): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // Find all branch versions for this DS
+      const allDSVs = await manager.find(DataSourceVersion, {
+        where: { dataSourceId, isActive: true },
+      });
+
+      for (const dsv of allDSVs) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: dsv.id, environmentId },
+        });
+        if (dsvo) {
+          const opts = dsvo.options || {};
+          opts['tokenData'] = { value: updatedTokenData, encrypted: false };
+          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options: opts, updatedAt: new Date() });
+        }
+      }
+    });
   }
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
@@ -967,59 +1083,69 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const allEnvs = await this.appEnvironmentUtilService.getAllEnvironments(organizationId, manager);
+
+      // Create default DataSourceVersion + DataSourceVersionOptions
+      const dataSource = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      const dsv = manager.create(DataSourceVersion, {
+        dataSourceId,
+        name: dataSource?.name || 'v1',
+        isDefault: true,
+        isActive: true,
+        branchId: null,
+      });
+      const savedDsv = await manager.save(DataSourceVersion, dsv);
+
       await Promise.all(
         allEnvs.map((env) => {
-          const options = manager.create(DataSourceOptions, {
+          const dsvo = manager.create(DataSourceVersionOptions, {
+            dataSourceVersionId: savedDsv.id,
             environmentId: env.id,
-            dataSourceId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            options: {},
           });
-          return manager.save(options);
+          return manager.save(DataSourceVersionOptions, dsvo);
         })
       );
     }, manager);
   }
 
-  private escapeRegExp(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  async generateUniqueName(
-    baseName: string,
-    kind: string,
-    organizationId: string,
+  /**
+   * Creates a DataSourceVersion + DataSourceVersionOptions entries for
+   * the given branch, copying options from the default DataSourceVersion.
+   */
+  protected async createDataSourceVersionForBranch(
+    dataSource: DataSource,
+    branchId: string,
+    allEnvs: any[],
     manager: EntityManager
-  ): Promise<string> {
-    const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
-
-    const existing = await manager.find(DataSource, {
-      where: {
-        organizationId,
-        kind,
-        name: Like(`${escapedBase}%`),
-      },
+  ): Promise<DataSourceVersion> {
+    const dsv = manager.create(DataSourceVersion, {
+      dataSourceId: dataSource.id,
+      branchId,
+      name: dataSource.name,
+      isActive: true,
     });
+    const savedDsv = await manager.save(DataSourceVersion, dsv);
 
-    if (!existing.length) return baseName;
-
-    const exactMatch = existing.some((ds) => ds.name === baseName);
-    if (!exactMatch) return baseName;
-
-    const usedNumbers = new Set(
-      existing
-        .map((ds) => {
-          const match = ds.name.match(new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`));
-          return match ? parseInt(match[1], 10) : null;
-        })
-        .filter((n): n is number => n !== null)
-    );
-
-    let counter = 2;
-    while (usedNumbers.has(counter)) {
-      counter++;
+    // Copy options from the default DataSourceVersion's options
+    const defaultDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, isDefault: true },
+    });
+    for (const env of allEnvs) {
+      let sourceOptions = {};
+      if (defaultDsv) {
+        const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+        });
+        sourceOptions = defaultDsvo?.options || {};
+      }
+      const dsvo = manager.create(DataSourceVersionOptions, {
+        dataSourceVersionId: savedDsv.id,
+        environmentId: env.id,
+        options: sourceOptions,
+      });
+      await manager.save(DataSourceVersionOptions, dsvo);
     }
 
-    return `${baseName}_${counter}`;
+    return savedDsv;
   }
 }

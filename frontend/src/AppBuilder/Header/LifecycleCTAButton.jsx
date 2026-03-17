@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -36,9 +37,14 @@ const LifecycleCTAButton = () => {
   }
 
   // Determine if we're on default branch or feature branch
-  // - versionType === 'version' means default branch
-  // - versionType === 'branch' means feature branch
-  const isOnDefaultBranch = selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+  // For platform git sync: use workspace branch context
+  // For per-app branching: fall back to versionType check
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const orgGit = useStore((state) => state.orgGit);
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {

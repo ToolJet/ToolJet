@@ -38,6 +38,7 @@ import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { APP_TYPES } from './constants';
 import { Component } from 'src/entities/component.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
@@ -57,7 +58,8 @@ export class AppsUtilService implements IAppsUtilService {
     user: User,
     type: APP_TYPES,
     isInitialisedFromPrompt: boolean = false,
-    manager: EntityManager
+    manager: EntityManager,
+    branchId?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
@@ -79,7 +81,7 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      //create default app version
+      //create default app version — v1 is the base version, does NOT get branchId
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
       const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
@@ -151,20 +153,71 @@ export class AppsUtilService implements IAppsUtilService {
         appMode: 'light',
       };
       await manager.save(appVersion);
+
+      // When created on a workspace branch, set co_relation_id and
+      // optionally create a branch-type version for per-app branch switching.
+      if (branchId) {
+        // Set co_relation_id early so it stays consistent for git push
+        await manager.update(App, { id: app.id }, { co_relation_id: app.id });
+        app.co_relation_id = app.id;
+
+        try {
+          const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+          if (workspaceBranch && !workspaceBranch.isDefault) {
+            const branchVersion = await manager.save(
+              AppVersion,
+              manager.create(AppVersion, {
+                name: workspaceBranch.name,
+                appId: app.id,
+                definition: appVersion.definition,
+                currentEnvironmentId: firstPriorityEnv.id,
+                status: AppVersionStatus.DRAFT,
+                versionType: AppVersionType.BRANCH,
+                parentVersionId: appVersion.id,
+                branchId: branchId,
+                globalSettings: appVersion.globalSettings,
+                showViewerNavigation: appVersion.showViewerNavigation,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              })
+            );
+
+            // Create default page for branch version (same as v1's default page)
+            const branchHomePage = await manager.save(
+              manager.create(Page, {
+                name: 'Home',
+                handle: 'home',
+                appVersionId: branchVersion.id,
+                index: 1,
+                autoComputeLayout: true,
+                appId: app.id,
+              })
+            );
+
+            branchVersion.homePageId = branchHomePage.id;
+            await manager.save(branchVersion);
+          }
+        } catch (error) {
+          // Non-fatal: app still works on default branch if branch version creation fails
+          console.warn('Auto-create branch version failed:', error?.message);
+        }
+      }
+
       return app;
     }, manager);
   }
 
-  async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
+  async findAppWithIdOrSlug(slug: string, organizationId: string, branchId?: string): Promise<App> {
     let app: App;
     try {
       app = await this.appRepository.findById(slug, organizationId);
     } catch (error) {
-      /* means: UUID error. so the slug isn't not the id of the app */
-      if (error?.code === `22P02`) {
-        /* Search against slug */
-        app = await this.appRepository.findBySlug(slug, organizationId);
-      }
+      /* UUID parse error — slug is not a valid UUID, skip id lookup */
+    }
+
+    // Fallback to slug lookup if id lookup returned null or failed
+    if (!app) {
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {
@@ -366,7 +419,14 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    isGetAll: boolean,
+    branchId?: string
+  ): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -394,7 +454,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type
+        type,
+        branchId
       );
 
       // Eagerly load appVersions for modules
@@ -419,7 +480,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    branchId?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -509,7 +571,7 @@ export class AppsUtilService implements IAppsUtilService {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
 
-  async count(user: User, searchKey, type: APP_TYPES): Promise<number> {
+  async count(user: User, searchKey, type: APP_TYPES, branchId?: string): Promise<number> {
     let resourceType: MODULES;
 
     switch (type) {
@@ -533,7 +595,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         undefined,
-        type
+        type,
+        branchId
       ).getCount();
 
       return apps;
@@ -709,27 +772,23 @@ export class AppsUtilService implements IAppsUtilService {
     let shouldFreezeEditor = false;
     // Check version status and type
     if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
-      // Published versions are always frozen
       shouldFreezeEditor = true;
     } else if (
       editingVersion?.versionType === AppVersionType.VERSION &&
       editingVersion?.status === AppVersionStatus.DRAFT &&
       (!orgGit || !orgGit?.isBranchingEnabled)
     ) {
-      // Draft versions should never be frozen by git config, only by environment
-      // Keep existing shouldFreezeEditor value from environment priority check
+      // Draft VERSION without branching — not frozen
     } else if (
       editingVersion?.versionType === AppVersionType.VERSION &&
       editingVersion?.status !== AppVersionStatus.DRAFT
     ) {
-      // Non-draft version types are frozen
       shouldFreezeEditor = true;
     } else {
-      // For branch versions, check git config
-      if (appGit && editingVersion?.status !== AppVersionStatus.DRAFT) {
+      if (appGit) {
         shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
       } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
-        shouldFreezeEditor = orgGit?.isBranchingEnabled || shouldFreezeEditor;
+        shouldFreezeEditor = true;
       }
     }
 

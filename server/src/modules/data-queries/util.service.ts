@@ -20,6 +20,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -89,7 +90,30 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : appToUse.organizationId;
 
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
+      // Lazy-load appVersion if relation not loaded but appVersionId is available
+      if (!dataQuery.appVersion && dataQuery.appVersionId) {
+        dataQuery.appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+          return manager.findOne(AppVersion, {
+            where: { id: dataQuery.appVersionId },
+            select: ['id', 'versionType', 'branchId'],
+          });
+        });
+      }
+
+      // Branch-aware: resolve branchId from appVersion when version type is 'branch'
+      const branchId =
+        dataQuery?.appVersion?.versionType === AppVersionType.BRANCH ? dataQuery.appVersion.branchId : undefined;
+      // Saved/tagged version: resolve appVersionId for non-branch versions
+      const appVersionId =
+        dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
+
+      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+        dataSource.id,
+        organizationId,
+        envId,
+        branchId,
+        appVersionId
+      );
       const environmentId = dataSourceOptions.environmentId;
 
       dataSource.options = dataSourceOptions.options;

@@ -7,6 +7,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { AppModal } from '@/_components/AppModal';
 import { PenLine } from 'lucide-react';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
   const { moduleId } = useModuleContext();
@@ -23,10 +24,15 @@ function EditAppName() {
     shallow
   );
 
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const isAppCommittedToGit = !!appGit?.id;
-  const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType !== 'branch';
   const isRenameDisabled = !isGitSyncEnabled
     ? false
     : !isAppCommittedToGit

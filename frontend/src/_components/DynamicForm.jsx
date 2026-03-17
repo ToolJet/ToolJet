@@ -49,6 +49,7 @@ const DynamicForm = ({
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -319,6 +320,8 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
           encrypted: useEncrypted,
           isWorkspaceConstant: isWorkspaceConstant,
+          disabled: isWorkspaceBranchLocked && !useEncrypted,
+          isDisabled: isWorkspaceBranchLocked && !useEncrypted,
         };
       }
       case 'toggle':
@@ -339,7 +342,8 @@ const DynamicForm = ({
           useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
         };
       case 'checkbox-group':
@@ -366,7 +370,8 @@ const DynamicForm = ({
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
@@ -388,7 +393,8 @@ const DynamicForm = ({
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
@@ -420,7 +426,8 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           options,
           optionsChanged,
           selectedDataSource,
@@ -439,7 +446,8 @@ const DynamicForm = ({
           selectedDataSource,
           currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           optionsChanged,
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           scopes: options?.scopes?.value,
@@ -518,7 +526,8 @@ const DynamicForm = ({
           spec: options.spec?.value,
           audience: options?.audience?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           optionsChanged,
         };
       case 'filters':

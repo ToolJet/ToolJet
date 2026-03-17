@@ -4,6 +4,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { setActiveBranch } from '@/_helpers/active-branch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import '@/_styles/switch-branch-modal.scss';
 
 export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
@@ -23,6 +26,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     lazyLoadAppVersions,
     fetchDevelopmentVersions,
     appVersions,
+    branchingEnabled,
   } = useStore((state) => ({
     allBranches: state.allBranches,
     selectedVersion: state.selectedVersion,
@@ -35,45 +39,59 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     lazyLoadAppVersions: state.lazyLoadAppVersions,
     fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     appVersions: state.appVersions,
+    branchingEnabled: state.branchingEnabled,
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  // Determine current branch name: use selectedVersion.name for branches, or default branch name for versions
-  const currentBranchName =
-    selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch'
-      ? selectedVersion?.name
-      : selectedVersion?.versionType === 'version' || selectedVersion?.version_type === 'version'
-      ? defaultBranchName
-      : currentBranch?.name || defaultBranchName;
+  const { workspaceActiveBranch, wsBranches, wsActions } = useWorkspaceBranchesStore((state) => ({
+    workspaceActiveBranch: state.currentBranch,
+    wsBranches: state.branches,
+    wsActions: state.actions,
+  }));
+
+  // Determine current branch name:
+  // For platform git sync: use workspace active branch name
+  // For per-app branching: use selectedVersion.name for branches, or default branch name for versions
+  const currentBranchName = workspaceActiveBranch?.name
+    ? workspaceActiveBranch.name
+    : selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch'
+    ? selectedVersion?.name
+    : currentBranch?.name || defaultBranchName;
 
   useEffect(() => {
     if (show && appId && organizationId) {
       setIsLoading(true);
-      // Fetch branches, versions, and development versions for proper branch switching
-      Promise.all([
-        fetchBranches(appId, organizationId),
-        lazyLoadAppVersions(appId),
-        fetchDevelopmentVersions(appId),
-      ]).finally(() => setIsLoading(false));
+      if (branchingEnabled) {
+        // Platform git sync: fetch workspace branches from DB only (no remote call)
+        wsActions.fetchBranches().finally(() => setIsLoading(false));
+      } else {
+        // Per-app branching: fetch from remote git
+        Promise.all([
+          fetchBranches(appId, organizationId),
+          lazyLoadAppVersions(appId),
+          fetchDevelopmentVersions(appId),
+        ]).finally(() => setIsLoading(false));
+      }
     }
-  }, [show, appId, organizationId, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions]);
+  }, [show, appId, organizationId, branchingEnabled, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions, wsActions]);
 
-  // Filter branches: exclude branches that are version names (versionType === 'version')
-  const filteredBranches = allBranches.filter((branch) => {
-    // Apply search filter
+  // Branch list: workspace branches for platform git sync, per-app branches otherwise
+  const branchList = branchingEnabled ? wsBranches : allBranches;
+  const filteredBranches = branchList.filter((branch) => {
     if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-
-    // Check if this branch name corresponds to a version with versionType === 'version'
-    // If so, exclude it (it's a version name, not an actual branch)
-    const isVersionName = appVersions?.some(
-      (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
-    );
-
-    // Show the branch only if it's NOT a version name
-    return !isVersionName;
+    // For per-app branching: exclude version names from the list
+    if (!branchingEnabled) {
+      const isVersionName = appVersions?.some(
+        (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
+      );
+      return !isVersionName;
+    }
+    return true;
   });
+
+  const [switchingBranchName, setSwitchingBranchName] = useState(null);
 
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
@@ -81,13 +99,40 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
       return;
     }
 
+    setSwitchingBranchName(branch.name);
     try {
-      // Determine if this is the default branch
-      const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-      const isDefaultBranch = branch.name === defaultBranchName;
+      // Platform git sync: use workspace-level switching (navigates to resolved app)
+      const wsBranches = useWorkspaceBranchesStore.getState().branches;
+      if (wsBranches?.length > 0) {
+        const targetWsBranch = wsBranches.find((b) => b.name === branch.name);
+        if (targetWsBranch) {
+          const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
+          const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+          // Persist branch to localStorage + update store
+          const branchObj = targetWsBranch;
+          setActiveBranch(branchObj);
+          useWorkspaceBranchesStore.setState({
+            activeBranchId: targetWsBranch.id,
+            currentBranch: branchObj,
+          });
+          // Don't close modal — let the dimmed/spinner state persist until page navigates
+          const pathParts = window.location.pathname.split('/');
+          if (resolvedAppId) {
+            // Navigate to the corresponding app on the target branch
+            toast.success(`Switched to ${branch.name}`);
+            window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+          } else {
+            // App doesn't exist on target branch — go to dashboard
+            sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
+            window.location.href = `/${pathParts[1]}`;
+          }
+          return;
+        }
+      }
 
+      // Fallback: per-app branch switching (changes version in-place)
+      const isDefaultBranch = branch.name === defaultBranchName;
       if (isDefaultBranch) {
-        // Switch to default branch (finds active draft or latest version)
         const result = await switchToDefaultBranch(appId, branch.name);
         if (result.success) {
           setCurrentBranch(branch);
@@ -97,7 +142,6 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           onClose();
         }
       } else {
-        // Switch to feature branch
         await switchBranch(appId, branch.name);
         setCurrentBranch(branch);
         onClose();
@@ -106,6 +150,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
       console.error('Error switching branch:', error);
       const errorMessage = error?.error || error?.message || 'Failed to switch branch';
       toast.error(errorMessage);
+      setSwitchingBranchName(null);
     }
   };
 
@@ -195,10 +240,10 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
 
         {/* Branch List */}
         <div className="branch-list-section">
-          {isLoading ? (
+          {isLoading || switchingBranchName ? (
             <div className="loading-state">
               <div className="spinner"></div>
-              <span>Loading branches...</span>
+              <span>{switchingBranchName ? `Switching to ${switchingBranchName}...` : 'Loading branches...'}</span>
             </div>
           ) : filteredBranches.length === 0 ? (
             <div className="empty-state">

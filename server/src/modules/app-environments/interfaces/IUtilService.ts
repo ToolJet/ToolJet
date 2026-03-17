@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { IAppEnvironmentResponse } from './IAppEnvironmentResponse';
 import { AppVersion } from '@entities/app_version.entity';
 
@@ -31,7 +31,13 @@ export interface IAppEnvironmentUtilService {
     licenseCheck?: boolean
   ): Promise<AppEnvironment>;
   getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]>;
-  getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions>;
+  getOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string,
+    branchId?: string,
+    appVersionId?: string
+  ): Promise<DataSourceVersionOptions>;
   init(
     editorVersion: Partial<AppVersion>,
     organizationId: string,

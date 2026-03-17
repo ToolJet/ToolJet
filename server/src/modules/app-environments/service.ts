@@ -222,6 +222,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'parentVersionId',
           'promotedFrom',
           'versionType',
+          'branchId',
           'createdAt',
           'updatedAt',
           'publishedAt',

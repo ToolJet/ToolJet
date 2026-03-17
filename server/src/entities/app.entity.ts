@@ -78,6 +78,9 @@ export class App extends BaseEntity {
   @Column({ name: 'co_relation_id', nullable: true })
   co_relation_id: string;
 
+  @Column({ name: 'is_stub', default: false })
+  isStub: boolean;
+
   @Column({
     type: 'enum',
     enumName: 'app_builder_mode',

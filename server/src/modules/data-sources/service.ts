@@ -5,7 +5,7 @@ import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
-import { DataSourceTypes } from './constants';
+import { DataSourceScopes, DataSourceTypes } from './constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -23,6 +23,10 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -39,6 +43,19 @@ export class DataSourcesService implements IDataSourcesService {
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
+
+    // Derive branchId from the AppVersion if not explicitly provided
+    if (!query.branchId && query.appVersionId) {
+      const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+        return manager.findOne(AppVersion, {
+          where: { id: query.appVersionId },
+          select: ['id', 'branchId'],
+        });
+      });
+      if (appVersion?.branchId) {
+        query = { ...query, branchId: appVersion.branchId };
+      }
+    }
 
     let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
 
@@ -62,6 +79,7 @@ export class DataSourcesService implements IDataSourcesService {
       appVersionId: query.appVersionId,
       environmentId: selectedEnvironmentId,
       types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
+      branchId: query.branchId,
     });
     for (const dataSource of dataSources) {
       const parseIfNeeded = (data: any) => {
@@ -110,7 +128,7 @@ export class DataSourcesService implements IDataSourcesService {
     return { data_sources: decamelizedDatasources };
   }
 
-  async create(createDataSourceDto: CreateDataSourceDto, user: User): Promise<DataSource> {
+  async create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource> {
     const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
 
     if (kind === 'grpc') {
@@ -129,7 +147,8 @@ export class DataSourcesService implements IDataSourcesService {
         pluginId,
         environmentId: environment_id,
       },
-      user
+      user,
+      branchId
     );
 
     // Setting data for audit logs
@@ -154,14 +173,22 @@ export class DataSourcesService implements IDataSourcesService {
     return dataSource;
   }
 
-  async update(updateDataSourceDto: UpdateDataSourceDto, user: User, updateOptions: UpdateOptions) {
+  async update(updateDataSourceDto: UpdateDataSourceDto, user: User, updateOptions: UpdateOptions, branchId?: string) {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
     // Fetch datasource details for audit log
     const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
 
-    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
+    await this.dataSourcesUtilService.update(
+      dataSourceId,
+      user.organizationId,
+      user.id,
+      name,
+      options,
+      environmentId,
+      branchId
+    );
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -186,7 +213,7 @@ export class DataSourcesService implements IDataSourcesService {
     return await this.dataSourcesUtilService.decrypt(options);
   }
 
-  async delete(dataSourceId: string, user: User) {
+  async delete(dataSourceId: string, user: User, branchId?: string) {
     const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
     if (!dataSource) {
       return;
@@ -195,12 +222,25 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException('Cannot delete sample data source');
     }
 
-    const result = await this.findQueriesLinkedToDatasource(dataSourceId);
+    const result = await this.findQueriesLinkedToDatasource(dataSourceId, user.organizationId, branchId);
     if (result.dependent_queries) {
       throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
     }
 
-    await this.dataSourcesRepository.delete(dataSourceId);
+    // Branch-aware: soft-delete via DataSourceVersion.isActive = false
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    if (effectiveBranchId) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        await manager.update(
+          DataSourceVersion,
+          { dataSourceId, branchId: effectiveBranchId },
+          { isActive: false, updatedAt: new Date() }
+        );
+      });
+    } else {
+      await this.dataSourcesRepository.delete(dataSourceId);
+    }
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -235,7 +275,6 @@ export class DataSourcesService implements IDataSourcesService {
       environmentId,
       organizationId
     );
-    delete dataSource['dataSourceOptions'];
     return dataSource;
   }
 
@@ -280,8 +319,8 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
-  async findQueriesLinkedToDatasource(datasourceId: string) {
-    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId);
+  async findQueriesLinkedToDatasource(datasourceId: string, organizationId?: string, branchId?: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId, branchId || null);
     if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
 
     const queries = [];
@@ -311,7 +350,8 @@ export class DataSourcesService implements IDataSourcesService {
     methodName: string,
     user: User,
     environmentId: string,
-    args?: any
+    args?: any,
+    branchId?: string
   ): Promise<QueryResult> {
     const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
 
@@ -319,10 +359,14 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
     }
 
+    // Branch-aware: pass branchId for global DS option resolution
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
     const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
       dataSource.id,
       user.organizationId,
-      environmentId
+      environmentId,
+      effectiveBranchId
     );
 
     const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
@@ -366,7 +410,8 @@ export class DataSourcesService implements IDataSourcesService {
             const updatedDataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
               dataSource.id,
               user.organizationId,
-              environmentId
+              environmentId,
+              branchId
             );
 
             const updatedSourceOptions = await this.dataSourcesUtilService.parseSourceOptions(

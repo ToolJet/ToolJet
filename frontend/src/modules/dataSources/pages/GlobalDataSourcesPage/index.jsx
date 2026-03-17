@@ -1,16 +1,16 @@
-import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
+import React, { createContext, useMemo, useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
-import { returnDevelopmentEnv } from '@/_helpers/utils';
+import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -35,6 +35,21 @@ export const GlobalDataSourcesPage = (props) => {
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
+
+  const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const prevBranchIdRef = useRef(activeBranchId);
+
+  // Refetch datasources when the active branch changes (without hard reload)
+  useEffect(() => {
+    if (prevBranchIdRef.current !== activeBranchId && activeBranchId && environments?.length) {
+      prevBranchIdRef.current = activeBranchId;
+      setSelectedDataSource(null);
+      toggleDataSourceManagerModal(false);
+      setActiveDatasourceList('#commonlyused');
+      fetchDataSources(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBranchId, environments]);
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Commonly used');

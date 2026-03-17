@@ -1,4 +1,5 @@
 import { gitSyncService } from '@/_services';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import useStore from '@/AppBuilder/_stores/store';
 
 const initialState = {
@@ -10,6 +11,7 @@ const initialState = {
   isLoadingBranches: false,
   isLoadingPRs: false,
   branchError: null,
+  initialAutoSwitchDone: false,
 };
 
 export const createBranchSlice = (set, get) => ({
@@ -178,12 +180,19 @@ export const createBranchSlice = (set, get) => ({
         return { success: true, data: state.selectedVersion };
       }
 
-      // Update current branch first
+      // Update current branch first + mark auto-switch as done to prevent revert
       const targetBranch = state.allBranches.find((b) => b.name === branchName) || { name: branchName };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (targetBranch.id) {
+        setActiveBranch(targetBranch);
+      }
+
       set(
         (state) => ({
           ...state,
           currentBranch: targetBranch,
+          initialAutoSwitchDone: true,
         }),
         false,
         'switchBranch:updating-branch'
@@ -269,9 +278,6 @@ export const createBranchSlice = (set, get) => ({
     try {
       const state = get();
 
-      // Get feature branch names (exclude default branch) to help with filtering
-      const featureBranchNames = state.allBranches.filter((b) => b.name !== defaultBranchName).map((b) => b.name);
-
       // Branches always work in Development environment - ALWAYS use developmentVersions
       // This matches the PRD scenarios where all branch work happens in Development
       const developmentVersions = state.developmentVersions || [];
@@ -344,7 +350,6 @@ export const createBranchSlice = (set, get) => ({
       // Check if already on this version AND in Development environment
       const alreadyOnVersion = state.selectedVersion?.id === targetVersion.id;
       const alreadyInDevelopment = state.selectedEnvironment?.id === developmentEnv.id;
-
       if (alreadyOnVersion && alreadyInDevelopment) {
         const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
           name: defaultBranchName,
@@ -354,6 +359,7 @@ export const createBranchSlice = (set, get) => ({
           (state) => ({
             ...state,
             currentBranch: defaultBranch,
+            initialAutoSwitchDone: true,
           }),
           false,
           'switchToDefaultBranch:already-on-version'
@@ -362,15 +368,21 @@ export const createBranchSlice = (set, get) => ({
         return { success: true, data: state.selectedVersion, version: targetVersion };
       }
 
-      // Update current branch first
+      // Update current branch first + mark auto-switch as done to prevent revert
       const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
         name: defaultBranchName,
       };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (defaultBranch.id) {
+        setActiveBranch(defaultBranch);
+      }
 
       set(
         (state) => ({
           ...state,
           currentBranch: defaultBranch,
+          initialAutoSwitchDone: true,
         }),
         false,
         'switchToDefaultBranch:updating-branch'
@@ -515,6 +527,19 @@ export const createBranchSlice = (set, get) => ({
       }),
       false,
       'setCurrentBranch'
+    ),
+
+  /**
+   * Set initial auto-switch done flag (survives component remounts)
+   * @param {boolean} done
+   */
+  setInitialAutoSwitchDone: (done) =>
+    set(
+      () => ({
+        initialAutoSwitchDone: done,
+      }),
+      false,
+      'setInitialAutoSwitchDone'
     ),
 
   /**

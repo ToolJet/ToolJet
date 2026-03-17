@@ -3,6 +3,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
+import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
@@ -24,6 +25,7 @@ export class GitSyncModule extends SubModule {
       BaseGitUtilService,
       BaseGitSyncService,
       GitSyncAdapter,
+      WorkspaceGitSyncAdapter,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -37,6 +39,7 @@ export class GitSyncModule extends SubModule {
       'base-git-util.service',
       'base-git.service',
       'git-sync-adapter',
+      'workspace-git-sync-adapter',
     ]);
 
     return {
@@ -64,6 +67,8 @@ export class GitSyncModule extends SubModule {
         SourceControlProviderService,
         FeatureAbilityFactory,
         GitSyncAdapter,
+        WorkspaceGitSyncAdapter,
+        EncryptionService,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
@@ -72,7 +77,9 @@ export class GitSyncModule extends SubModule {
         BaseGitSyncService,
         BaseGitUtilService,
         GitSyncAdapter,
+        WorkspaceGitSyncAdapter,
         OrganizationGitSyncRepository,
+        SourceControlProviderService,
       ],
     };
   }

@@ -169,13 +169,19 @@ function checkForUpdatesByAppName(appName, branchName = '') {
   return fetch(`${config.apiUrl}/app-git/gitpull/app?${params.toString()}`, requestOptions).then(handleResponse);
 }
 
-function gitPull() {
+function gitPull(branch, currentBranchId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-git/gitpull`, requestOptions).then(handleResponse);
+  const queryParams = new URLSearchParams();
+  if (branch) queryParams.set('branch', branch);
+  if (currentBranchId) queryParams.set('currentBranchId', currentBranchId);
+  const queryString = queryParams.toString();
+  return fetch(`${config.apiUrl}/app-git/gitpull${queryString ? `?${queryString}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function confirmPullChanges(body, appId) {

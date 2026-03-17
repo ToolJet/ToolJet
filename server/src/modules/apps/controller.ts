@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -114,6 +114,7 @@ export class AppsController implements IAppsController {
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
+      branchId: query.branch_id,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }
@@ -121,7 +122,7 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('/addable')
-  indexAddable(@User() user: UserEntity) {
+  indexAddable(@User() user: UserEntity, @Query('branch_id') branchId?: string) {
     return this.appsService.getAllApps(
       user,
       {
@@ -129,6 +130,7 @@ export class AppsController implements IAppsController {
         folderId: null,
         searchKey: '',
         type: 'front-end',
+        branchId,
       },
       true
     );
@@ -155,8 +157,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
-  show(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.appsService.getOne(app, user);
+  show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
+    return this.appsService.getOne(app, user, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

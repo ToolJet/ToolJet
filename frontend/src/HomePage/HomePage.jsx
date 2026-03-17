@@ -57,6 +57,9 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -109,11 +112,15 @@ class HomePageComponent extends React.Component {
       importingApp: false,
       importingGitAppOperations: {},
       latestCommitData: null,
+      selectedImportBranch: null,
+      remoteBranches: [],
+      fetchingRemoteBranches: false,
       tags: [],
       fetchingLatestCommitData: false,
       selectedVersionOption: null,
       featuresLoaded: false,
       showCreateAppModal: false,
+      showSwitchBranchForCreate: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -191,6 +198,11 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    const gitSyncToast = sessionStorage.getItem('git_sync_toast');
+    if (gitSyncToast) {
+      sessionStorage.removeItem('git_sync_toast');
+      setTimeout(() => toast.error(gitSyncToast), 500);
+    }
     this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
@@ -217,11 +229,25 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
+    // Re-fetch apps when workspace branch changes (client-side branch switching)
+    this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
+      if (prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+      }
+    });
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
     if (hasClosedBanner) {
       this.setState({ showGroupMigrationBanner: false });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._branchStoreUnsubscribe) {
+      this._branchStoreUnsubscribe();
     }
   }
 
@@ -763,6 +789,14 @@ class HomePageComponent extends React.Component {
     return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
+  isWorkspaceBranchLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  };
+
   cancelDeleteAppDialog = () => {
     this.setState({
       isDeletingApp: false,
@@ -829,10 +863,17 @@ class HomePageComponent extends React.Component {
       });
   };
 
-  fetchRepoApps = () => {
-    this.setState({ fetchingAppsFromRepos: true, selectedAppRepo: null, importingGitAppOperations: {} });
+  fetchRepoApps = (branch) => {
+    this.setState({
+      fetchingAppsFromRepos: true,
+      selectedAppRepo: null,
+      importingGitAppOperations: {},
+      latestCommitData: null,
+      selectedVersionOption: null,
+    });
+    const currentBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
     gitSyncService
-      .gitPull()
+      .gitPull(branch, currentBranchId)
       .then((data) => {
         this.setState({ appsFromRepos: data?.meta_data });
       })
@@ -1079,8 +1120,26 @@ class HomePageComponent extends React.Component {
   handleCommitEnableChange = (e) => {
     this.setState({ commitEnabled: e.target.checked });
   };
-  toggleGitRepositoryImportModal = (e) => {
-    if (!this.state.showGitRepositoryImportModal) this.fetchRepoApps();
+  toggleGitRepositoryImportModal = async () => {
+    if (!this.state.showGitRepositoryImportModal) {
+      // Fetch remote branches when opening modal
+      this.setState({
+        fetchingRemoteBranches: true,
+        selectedImportBranch: null,
+        appsFromRepos: {},
+        selectedAppRepo: null,
+        importingGitAppOperations: {},
+        latestCommitData: null,
+        selectedVersionOption: null,
+      });
+      try {
+        const branches = await useWorkspaceBranchesStore.getState().actions.fetchRemoteBranches();
+        this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false });
+      } catch (error) {
+        toast.error('Failed to fetch remote branches');
+        this.setState({ fetchingRemoteBranches: false });
+      }
+    }
     this.setState({ showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal });
   };
 
@@ -1176,6 +1235,11 @@ class HomePageComponent extends React.Component {
       appType !== 'workflow'
     );
   };
+  handleImportBranchChange = (newVal) => {
+    this.setState({ selectedImportBranch: newVal });
+    this.fetchRepoApps(newVal);
+  };
+
   handleAppNameChange = (e) => {
     const newAppName = e.target.value;
     const { appsFromRepos } = this.state;
@@ -1204,7 +1268,7 @@ class HomePageComponent extends React.Component {
   };
 
   handleAppRepoChange = async (newVal) => {
-    const { appsFromRepos, orgGit } = this.state;
+    const { appsFromRepos, selectedImportBranch } = this.state;
     const selectedApp = appsFromRepos[newVal];
     this.setState({
       selectedAppRepo: newVal,
@@ -1224,17 +1288,15 @@ class HomePageComponent extends React.Component {
         selectedVersionOption: null,
       });
     }
-    const selectedBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.git_branch || orgGit?.git_lab_branch;
 
     try {
-      const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedBranch);
+      const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedImportBranch);
       this.setState({
         latestCommitData: data?.metaData,
         tags: data?.metaData.tags,
         fetchingLatestCommitData: false,
         selectedVersionOption: 'latest',
       });
-      // TODO: Handle the response data
     } catch (error) {
       console.error('Failed to check for updates:', error);
       this.setState({ fetchingLatestCommitData: false });
@@ -1390,6 +1452,9 @@ class HomePageComponent extends React.Component {
       importingApp,
       selectedVersionOption,
       importingGitAppOperations,
+      selectedImportBranch,
+      remoteBranches,
+      fetchingRemoteBranches,
       featuresLoaded,
       showCreateAppModal,
       showImportAppModal,
@@ -1500,6 +1565,7 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          {/* <WorkspaceLockedBanner /> */}
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
             <PermissionDeniedModal
@@ -1508,6 +1574,14 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           )}
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForCreate}
+            onClose={() => this.setState({ showSwitchBranchForCreate: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForCreate: false, showCreateAppModal: true });
+            }}
+          />
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1655,7 +1729,7 @@ class HomePageComponent extends React.Component {
             darkMode={this.props.darkMode}
           />
           <ModalBase
-            title={selectedAppRepo ? 'Import app' : 'Import app from git repository'}
+            title={'Import app from git repository'}
             show={showGitRepositoryImportModal}
             handleClose={this.toggleGitRepositoryImportModal}
             handleConfirm={this.importGitApp}
@@ -1667,129 +1741,168 @@ class HomePageComponent extends React.Component {
             }}
             darkMode={this.props.darkMode}
           >
-            {fetchingAppsFromRepos ? (
+            {fetchingRemoteBranches ? (
               <div className="loader-container">
                 <div className="primary-spin-loader"></div>
               </div>
             ) : (
               <>
+                {/* BRANCH SELECT */}
                 <div className="form-group">
-                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
-                    Create app from
+                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="select-branch-label">
+                    Select branch
                   </label>
-                  <div className="tj-app-input" data-cy="app-select">
+                  <div className="tj-app-input" data-cy="branch-select">
                     <Select
-                      options={this.generateOptionsForRepository()}
+                      options={(remoteBranches || []).map((b) => ({
+                        name: b.name || b,
+                        value: b.name || b,
+                      }))}
                       disabled={importingApp}
-                      onChange={this.handleAppRepoChange}
+                      onChange={this.handleImportBranchChange}
                       width={'100%'}
-                      value={selectedAppRepo}
-                      placeholder={'Select app from git repository...'}
+                      value={selectedImportBranch}
+                      placeholder={'Select branch...'}
                       closeMenuOnSelect={true}
                       customWrap={true}
                     />
                   </div>
                 </div>
-                {selectedAppRepo && (
-                  <div className="commit-info">
-                    {/* APP NAME */}
-                    <div className="form-group">
-                      <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="app-name-label">
-                        App name
-                      </label>
-                      <div className="tj-app-input">
-                        <input
-                          type="text"
-                          value={this.state.importedAppName}
-                          className={cx('form-control font-weight-400', {
-                            'tj-input-error-state': importingGitAppOperations?.message,
-                          })}
-                          onChange={this.handleAppNameChange}
-                        />
-                      </div>
-                      <div>
-                        <div
-                          className={cx(
-                            { 'tj-input-error': importingGitAppOperations?.message },
-                            'tj-text-xxsm info-text'
-                          )}
-                          data-cy="app-name-helper-text"
-                        >
-                          {importingGitAppOperations?.message}
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* EDITABLE CHECKBOX */}
-                    <div className="application-editable-checkbox-container">
-                      <input
-                        className="form-check-input"
-                        checked={this.state.isAppImportEditable}
-                        type="checkbox"
-                        onChange={() =>
-                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                        }
-                      />
-                      Make application editable
-                      <div className="helper-text">
-                        <div className="tj-text tj-text-xsm"></div>
-                        <div className="tj-text-xxsm">
-                          Enabling this allows editing and git sync push/pull access in development.
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* VERSION/TAG SELECT */}
+                {/* APP SELECT - shown after branch is selected */}
+                {selectedImportBranch && (
+                  <>
                     <div className="form-group">
-                      <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
-                        Select version to pull from
+                      <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
+                        Create app from
                       </label>
-                      <div className="tj-app-input" data-cy="version-select">
-                        <Select
-                          options={this.generateVersionOptions()}
-                          disabled={importingApp || fetchingLatestCommitData}
-                          onChange={this.handleVersionOptionChange}
-                          width={'100%'}
-                          value={this.state.selectedVersionOption}
-                          placeholder={fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'}
-                          closeMenuOnSelect={true}
-                          customWrap={true}
-                          customOption={this.renderVersionOption}
-                        />
-                      </div>
-                    </div>
-
-                    {/* LAST COMMIT */}
-                    <div className="form-group">
-                      <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
-                        Last commit
-                      </label>
-                      <div className="last-commit-info form-control">
-                        {fetchingLatestCommitData ? (
-                          // need to add UI for loading state here -> Pending
-                          <div className="message-info">Loading...</div>
+                      <div className="tj-app-input" data-cy="app-select">
+                        {fetchingAppsFromRepos ? (
+                          <div style={{ padding: '8px 0' }}>
+                            <div className="primary-spin-loader" style={{ width: '20px', height: '20px' }}></div>
+                          </div>
                         ) : (
-                          <>
-                            <div className="message-info">
-                              <div data-cy="last-commit-message">
-                                {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
-                              </div>
-                              <div data-cy="last-commit-version">
-                                {this.getSelectedVersionCommitInfo().gitVersionName}
-                              </div>
-                            </div>
-                            {this.getSelectedVersionCommitInfo().author && this.getSelectedVersionCommitInfo().date && (
-                              <div className="author-info" data-cy="auther-info">
-                                {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
-                                  new Date(this.getSelectedVersionCommitInfo().date)
-                                ).format('DD MMM YYYY, h:mm a')}`}
-                              </div>
-                            )}
-                          </>
+                          <Select
+                            options={this.generateOptionsForRepository()}
+                            disabled={importingApp}
+                            onChange={this.handleAppRepoChange}
+                            width={'100%'}
+                            value={selectedAppRepo}
+                            placeholder={'Select app...'}
+                            closeMenuOnSelect={true}
+                            customWrap={true}
+                          />
                         )}
                       </div>
                     </div>
-                  </div>
+
+                    {selectedAppRepo && (
+                      <div className="commit-info">
+                        {/* APP NAME */}
+                        <div className="form-group">
+                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="app-name-label">
+                            App name
+                          </label>
+                          <div className="tj-app-input">
+                            <input
+                              type="text"
+                              value={this.state.importedAppName}
+                              className={cx('form-control font-weight-400', {
+                                'tj-input-error-state': importingGitAppOperations?.message,
+                              })}
+                              onChange={this.handleAppNameChange}
+                            />
+                          </div>
+                          <div>
+                            <div
+                              className={cx(
+                                { 'tj-input-error': importingGitAppOperations?.message },
+                                'tj-text-xxsm info-text'
+                              )}
+                              data-cy="app-name-helper-text"
+                            >
+                              {importingGitAppOperations?.message}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* EDITABLE CHECKBOX */}
+                        <div className="application-editable-checkbox-container">
+                          <input
+                            className="form-check-input"
+                            checked={this.state.isAppImportEditable}
+                            type="checkbox"
+                            onChange={() =>
+                              this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                            }
+                          />
+                          Make application editable
+                          <div className="helper-text">
+                            <div className="tj-text tj-text-xsm"></div>
+                            <div className="tj-text-xxsm">
+                              Enabling this allows editing and git sync push/pull access in development.
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* VERSION/TAG SELECT */}
+                        <div className="form-group">
+                          <label
+                            className="mb-1 info-label tj-text-xsm font-weight-500"
+                            data-cy="version-select-label"
+                          >
+                            Select version to pull from
+                          </label>
+                          <div className="tj-app-input" data-cy="version-select">
+                            <Select
+                              options={this.generateVersionOptions()}
+                              disabled={importingApp || fetchingLatestCommitData}
+                              onChange={this.handleVersionOptionChange}
+                              width={'100%'}
+                              value={this.state.selectedVersionOption}
+                              placeholder={
+                                fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'
+                              }
+                              closeMenuOnSelect={true}
+                              customWrap={true}
+                              customOption={this.renderVersionOption}
+                            />
+                          </div>
+                        </div>
+
+                        {/* LAST COMMIT */}
+                        <div className="form-group">
+                          <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
+                            Last commit
+                          </label>
+                          <div className="last-commit-info form-control">
+                            {fetchingLatestCommitData ? (
+                              <div className="message-info">Loading...</div>
+                            ) : (
+                              <>
+                                <div className="message-info">
+                                  <div data-cy="last-commit-message">
+                                    {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
+                                  </div>
+                                  <div data-cy="last-commit-version">
+                                    {this.getSelectedVersionCommitInfo().gitVersionName}
+                                  </div>
+                                </div>
+                                {this.getSelectedVersionCommitInfo().author &&
+                                  this.getSelectedVersionCommitInfo().date && (
+                                    <div className="author-info" data-cy="auther-info">
+                                      {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
+                                        new Date(this.getSelectedVersionCommitInfo().date)
+                                      ).format('DD MMM YYYY, h:mm a')}`}
+                                    </div>
+                                  )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1908,11 +2021,13 @@ class HomePageComponent extends React.Component {
                         <Button
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() =>
-                            this.setState({
-                              showCreateAppModal: true,
-                            })
-                          }
+                          onClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                            } else {
+                              this.setState({ showCreateAppModal: true });
+                            }
+                          }}
                           data-cy={`create-new-${
                             this.props.appType === 'workflow'
                               ? 'workflows'
@@ -1970,9 +2085,9 @@ class HomePageComponent extends React.Component {
                   currentFolder={currentFolder}
                   folderChanged={this.folderChanged}
                   foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder()}
-                  canDeleteFolder={this.canDeleteFolder()}
-                  canUpdateFolder={this.canUpdateFolder()}
+                  canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                  canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
+                  canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
                   darkMode={this.props.darkMode}
                   canCreateApp={this.canCreateApp()}
                   appType={this.props.appType}
@@ -2014,6 +2129,7 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
+              <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} />
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -2028,6 +2144,7 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
+                {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}

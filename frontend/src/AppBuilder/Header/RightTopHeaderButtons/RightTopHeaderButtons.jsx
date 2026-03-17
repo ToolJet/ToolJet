@@ -12,12 +12,15 @@ import PromoteReleaseButton from '@/modules/Appbuilder/components/PromoteRelease
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
-  const { selectedVersion, selectedEnvironment } = useStore((state) => ({
+  const { moduleId } = useModuleContext();
+  const { selectedVersion, selectedEnvironment, creationMode } = useStore((state) => ({
     selectedVersion: state.selectedVersion,
     selectedEnvironment: state.selectedEnvironment,
+    creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
   }));
 
   const isNotPromotedOrReleased = selectedEnvironment?.name === 'development' && !selectedVersion?.isReleased;
+  const isWorkspaceGitApp = creationMode === 'GIT';
 
   return (
     <div className="d-flex justify-content-end navbar-right-section">
@@ -25,7 +28,7 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
         <GitSyncManager />
         <div className="tw-hidden navbar-seperator" />
         {/* <PreviewAndShareIcons /> */}
-        {isNotPromotedOrReleased && <LifecycleCTAButton />}
+        {(isNotPromotedOrReleased || isWorkspaceGitApp) && <LifecycleCTAButton />}
         {/* need to review if we need this or not */}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
