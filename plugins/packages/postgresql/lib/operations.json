@@ -86,7 +86,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -171,7 +171,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -209,7 +209,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -268,7 +268,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -328,7 +328,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -382,7 +382,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -420,7 +420,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -468,7 +468,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,

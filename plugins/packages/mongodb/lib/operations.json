@@ -93,7 +93,7 @@
     },
     "insert_one": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -134,7 +134,7 @@
     },
     "insert_many": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -175,7 +175,7 @@
     },
     "find_one": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -216,7 +216,7 @@
     },
     "find_many": {
       "collection": {
-          "label": "or search a Collection",
+          "label": "Collection",
           "key": "collection",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -257,7 +257,7 @@
     },
     "count_total": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -288,7 +288,7 @@
     },
     "count": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -329,7 +329,7 @@
     },
     "distinct": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -381,7 +381,7 @@
     },
     "update_one": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -432,7 +432,7 @@
     },
     "update_many": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -483,7 +483,7 @@
     },
     "replace_one": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -534,7 +534,7 @@
     },
     "find_one_replace": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -585,7 +585,7 @@
     },
     "find_one_update": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -636,7 +636,7 @@
     },
     "find_one_delete": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -677,7 +677,7 @@
     },
     "delete_one": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -718,7 +718,7 @@
     },
     "delete_many": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -759,7 +759,7 @@
     },
     "bulk_write": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -800,7 +800,7 @@
     },
     "aggregate": {
       "collection": {
-        "label": "or search a Collection",
+        "label": "Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,

@@ -519,9 +519,9 @@ const DynamicSelector = ({
   const paginationRef = useRef({});
   paginationRef.current = { handleLoadMore, isLoadingMore, fetchedData, totalCount, pageSize, pagination, isLoading };
   
-  const CustomMenuList = useMemo(
+  const CustomMenu = useMemo(
     () =>
-      function MenuListWithLoadMore({ children, ...props }) {
+      function MenuWithLoadMore({ children, ...props }) {
         const {
           handleLoadMore: onLoadMore,
           isLoadingMore: loading,
@@ -531,15 +531,13 @@ const DynamicSelector = ({
           pagination: paginated,
         } = paginationRef.current;
         
-        if (!paginated) return <RSComponents.MenuList {...props}>{children}</RSComponents.MenuList>;
+        if (!paginated) return <RSComponents.Menu {...props}>{children}</RSComponents.Menu>;
         
         const hasMore = total > 0 ? data.length < total : data.length > 0 && data.length % size === 0;
         
         return (
-          <>
-            <RSComponents.MenuList {...props}>
-              {children}
-            </RSComponents.MenuList>
+          <RSComponents.Menu {...props}>
+            {children}
             {hasMore && (
               <div style={{ 
                 padding: '6px 12px', 
@@ -573,7 +571,7 @@ const DynamicSelector = ({
                 </button>
               </div>
             )}
-          </>
+          </RSComponents.Menu>
         );
       },
     []
@@ -691,7 +689,7 @@ const DynamicSelector = ({
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
                 placeholder={
-                  isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`
+                  pagination ? (isLoading ? 'Discovering...' : `Search or Select ${label ?? ''}`) : isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`
                 }
                 isDisabled={disabled || (isDependentField && !depsReady)}
                 isLoading={isMulti ? isLoading && getCurrentValue().length === 0 : isLoading}
@@ -702,7 +700,7 @@ const DynamicSelector = ({
                 closeMenuOnSelect={isMulti ? false : undefined}
                 components={{
                   ...(isMulti ? { DropdownIndicator: null, ClearIndicator: null } : {}),
-                  ...(pagination ? { MenuList: CustomMenuList } : {}),
+                  ...(pagination ? { Menu: CustomMenu } : {}),
                 }}
                 onInputChange={(val) => { if (pagination) debouncedSearchRef.current(val); }}
                 filterOption={pagination ? () => true : undefined}

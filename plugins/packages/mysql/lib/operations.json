@@ -76,7 +76,7 @@
       },
       "bulk_update_pkey": {
        "table": {
-          "label": "or search a Table",
+          "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": false,
