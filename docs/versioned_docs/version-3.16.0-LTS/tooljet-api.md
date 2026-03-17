@@ -1691,7 +1691,6 @@ This endpoint is in beta and may change in future releases.
 
     | Field | Type | Description |
     |:------|:-----|:------------|
-    | `canView` | boolean | Allow viewing the application |
     | `canEdit` | boolean | Allow editing the application |
     | `hideFromDashboard` | boolean | Hide the application from the dashboard |
     | `environments` | array | Accessible environments: `"development"`, `"staging"`, `"production"`, `"released"` |
@@ -1719,7 +1718,6 @@ This endpoint is in beta and may change in future releases.
             "applyToAll": false,
             "resources": ["app-uuid-1", "app-uuid-2"],
             "permissions": {
-              "canView": true,
               "canEdit": false,
               "hideFromDashboard": false,
               "environments": ["production", "released"]
