@@ -530,14 +530,27 @@ const DynamicSelector = ({
           pageSize: size,
           pagination: paginated,
         } = paginationRef.current;
+        
         if (!paginated) return <RSComponents.MenuList {...props}>{children}</RSComponents.MenuList>;
+        
         const hasMore = total > 0 ? data.length < total : data.length > 0 && data.length % size === 0;
+        
         return (
-          <RSComponents.MenuList {...props}>
-            {children}
+          <>
+            <RSComponents.MenuList {...props}>
+              {children}
+            </RSComponents.MenuList>
             {hasMore && (
-              <div style={{ padding: '6px 12px', borderTop: '1px solid var(--slate5)', display: 'flex', justifyContent: 'center' }}>
-                <button
+              <div style={{ 
+                padding: '6px 12px', 
+                borderTop: '1px solid var(--slate5)', 
+                display: 'flex', 
+                justifyContent: 'center',
+                backgroundColor: localStorage.getItem('darkMode') === 'true' ? 'rgb(31,40,55)' : 'white',
+                borderBottomLeftRadius: '4px',
+                borderBottomRightRadius: '4px',
+              }}>
+               <button
                   onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onClick={onLoadMore}
                   disabled={loading}
@@ -560,7 +573,7 @@ const DynamicSelector = ({
                 </button>
               </div>
             )}
-          </RSComponents.MenuList>
+          </>
         );
       },
     []

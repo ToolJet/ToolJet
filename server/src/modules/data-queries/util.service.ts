@@ -20,6 +20,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
+import { ListTablesDto } from './dto';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -361,7 +362,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string, schema?: string, search?: string, page?: number, limit?: number): Promise<object> {
+  async listTables(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -388,7 +389,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
       dataSourceOptions.updatedAt,
-      { schema, search, page, limit }
+      { 
+        schema: listTablesOptions?.schema, 
+        search: listTablesOptions?.search, 
+        page: listTablesOptions?.page, 
+        limit: listTablesOptions?.limit 
+      }
     );
   }
 

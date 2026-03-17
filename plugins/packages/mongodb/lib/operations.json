@@ -93,7 +93,7 @@
     },
     "insert_one": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -103,7 +103,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -134,7 +134,7 @@
     },
     "insert_many": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -144,7 +144,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -175,7 +175,7 @@
     },
     "find_one": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -185,7 +185,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -216,7 +216,7 @@
     },
     "find_many": {
       "collection": {
-          "label": "Collection",
+          "label": "or search a Collection",
           "key": "collection",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -226,7 +226,7 @@
             "label": "Fetch Collections"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select a collection from the dropdown",
           "width": "320px",
           "height": "36px",
@@ -257,7 +257,7 @@
     },
     "count_total": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -267,7 +267,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -288,7 +288,7 @@
     },
     "count": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -298,7 +298,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -329,7 +329,7 @@
     },
     "distinct": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -339,7 +339,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -381,7 +381,7 @@
     },
     "update_one": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -391,7 +391,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -432,7 +432,7 @@
     },
     "update_many": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -442,7 +442,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -483,7 +483,7 @@
     },
     "replace_one": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -493,7 +493,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -534,7 +534,7 @@
     },
     "find_one_replace": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -544,7 +544,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -585,7 +585,7 @@
     },
     "find_one_update": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -595,7 +595,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -636,7 +636,7 @@
     },
     "find_one_delete": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -646,7 +646,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -677,7 +677,7 @@
     },
     "delete_one": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -687,7 +687,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -718,7 +718,7 @@
     },
     "delete_many": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -728,7 +728,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -759,7 +759,7 @@
     },
     "bulk_write": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -769,7 +769,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -800,7 +800,7 @@
     },
     "aggregate": {
       "collection": {
-        "label": "Collection",
+        "label": "or search a Collection",
         "key": "collection",
         "type": "dynamic-selector",
         "fxEnabled": false,
@@ -810,7 +810,7 @@
           "label": "Fetch Collections"
         },
         "pagination": true,
-        "pageSize": 25,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",

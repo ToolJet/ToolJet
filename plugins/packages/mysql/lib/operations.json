@@ -76,7 +76,7 @@
       },
       "bulk_update_pkey": {
        "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -86,7 +86,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "lineNumbers": false,
           "description": "Select a table from the dropdown",
           "width": "320px",

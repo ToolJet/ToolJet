@@ -470,8 +470,11 @@ export default class PostgresqlQueryService implements QueryService {
                             WHERE table_schema = ? AND table_type = 'BASE TABLE'
                             AND table_name ILIKE ?`;
 
-        const { rows } = await knexInstance.raw(query, params);
-        const { rows: countRows } = await knexInstance.raw(countQuery, [schema, searchPattern]);
+        const [{ rows }, { rows: countRows }] = await Promise.all([
+          knexInstance.raw(query, params),
+          knexInstance.raw(countQuery, [schema, searchPattern])
+        ]);
+        
         const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
 
         return {

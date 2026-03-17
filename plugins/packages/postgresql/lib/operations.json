@@ -86,7 +86,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -96,7 +96,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to query",
           "placeholder": "Select table"
         },
@@ -171,7 +171,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -181,7 +181,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to insert into",
           "placeholder": "Select table"
         },
@@ -209,7 +209,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -219,7 +219,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to update",
           "placeholder": "Select table"
         },
@@ -268,7 +268,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -278,7 +278,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to upsert into",
           "placeholder": "Select table"
         },
@@ -328,7 +328,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -338,7 +338,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to delete from",
           "placeholder": "Select table"
         },
@@ -382,7 +382,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -392,7 +392,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to insert into",
           "placeholder": "Select table"
         },
@@ -420,7 +420,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -430,7 +430,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to update",
           "placeholder": "Select table"
         },
@@ -468,7 +468,7 @@
           "placeholder": "Select schema"
         },
         "table": {
-          "label": "Table",
+          "label": "or search a Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
@@ -478,7 +478,7 @@
             "label": "Fetch Tables"
           },
           "pagination": true,
-          "pageSize": 25,
+          "pageSize": 6,
           "description": "Select the table to upsert into",
           "placeholder": "Select table"
         },

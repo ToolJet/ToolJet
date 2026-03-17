@@ -7,7 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
@@ -153,12 +153,9 @@ export class DataQueriesController implements IDataQueriesController {
     @User() user: UserEntity,
     @DataSource() dataSource: DataSourceEntity,
     @Param('environmentId') environmentId,
-    @Query('schema') schema?: string,
-    @Query('search') search?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number
+    @Query() listTablesOptions?: ListTablesDto
   ) {
-    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, schema, search, page, limit);
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, listTablesOptions);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)
