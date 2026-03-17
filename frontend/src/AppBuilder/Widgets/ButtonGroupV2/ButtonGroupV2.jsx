@@ -137,6 +137,7 @@ export const ButtonGroupV2 = (props) => {
           exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null
         );
         setValidationStatus(validationStatus);
+        setExposedVariable('isValid', validationStatus?.isValid);
       },
     },
     {
@@ -154,6 +155,7 @@ export const ButtonGroupV2 = (props) => {
   useEffect(() => {
     const exposedVariables = {
       ...exposedVariablesTemporaryState,
+      isValid: isValid,
       clear: async function () {
         updateExposedVariablesState('selected', []);
         setUserInteracted(true);
@@ -296,10 +298,12 @@ export const ButtonGroupV2 = (props) => {
           'd-none': !exposedVariablesTemporaryState.isVisible,
           'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
         })}
-        aria-hidden={!exposedVariablesTemporaryState.isVisible}
-        aria-disabled={exposedVariablesTemporaryState.isDisabled}
         role="group"
         id={`component-${id}`}
+        aria-hidden={!exposedVariablesTemporaryState.isVisible}
+        aria-disabled={exposedVariablesTemporaryState.isDisabled}
+        aria-busy={exposedVariablesTemporaryState.isLoading}
+        aria-invalid={!isValid}
         aria-labelledby={`${id}-label`}
         data-cy={dataCy}
         data-disabled={exposedVariablesTemporaryState.isDisabled}
