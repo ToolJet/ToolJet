@@ -19,8 +19,7 @@ const data = {
 
 describe("Instance Settings - All Users UI", () => {
   beforeEach(() => {
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     cleanAllUsers();
     cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
     cy.apiLogout();

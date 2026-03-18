@@ -405,6 +405,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               to: existingUser.email,
               name: existingUser.firstName,
               invitationtoken: existingUser.invitationToken,
+              organizationId: existingUser.defaultOrganizationId,
             },
           });
           const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
@@ -663,6 +664,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               to: user.email,
               name: user.firstName,
               invitationtoken: user.invitationToken,
+              organizationId: user.defaultOrganizationId,
             },
           });
         }
@@ -872,6 +874,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             to: user.email,
             name: user.firstName,
             invitationtoken: user.invitationToken,
+            organizationId: defaultWorkspace.id,
           },
         });
       }
@@ -940,6 +943,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           to: existingUser.email,
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
+          organizationId: defaultWorkspace.id,
         },
       });
 

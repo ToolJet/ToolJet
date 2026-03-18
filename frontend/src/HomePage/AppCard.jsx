@@ -11,7 +11,7 @@ import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -184,7 +184,7 @@ export default function AppCard({
             onClick={() => {
               if (app?.current_version_id && canAccessReleased) {
                 window.open(
-                  urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
+                  urlJoin(getHostURL(), `/applications/${app.slug}`)
                 );
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
