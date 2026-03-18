@@ -114,9 +114,10 @@ export class DataSourcesController implements IDataSourcesController {
   getDataSourceByEnvironment(
     @User() user: UserEntity,
     @Param('id') dataSourceId,
-    @Param('environment_id') environmentId
+    @Param('environment_id') environmentId,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId);
+    return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB)
