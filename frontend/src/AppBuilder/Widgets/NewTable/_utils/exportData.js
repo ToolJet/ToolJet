@@ -16,9 +16,9 @@ const getData = (table, forExcel = false) => {
         !forExcel // Get formatted headers for 'export to Excel' as expected by zipcelx's config
           ? column.columnDef.header
           : {
-              value: column.columnDef.header,
-              type: 'string',
-            }
+            value: column.columnDef.header,
+            type: 'string',
+          }
       );
       accessorKeys.push(column.columnDef.accessorKey || column.columnDef.header);
     });
@@ -34,9 +34,9 @@ const getData = (table, forExcel = false) => {
         !forExcel // Get formatted data for 'export to Excel' as expected by zipcelx's config
           ? cellValue
           : {
-              value: cellValue,
-              type: isNumber ? 'number' : 'string',
-            }
+            value: cellValue,
+            type: isNumber ? 'number' : 'string',
+          }
       );
     });
     return rowData;
@@ -73,7 +73,7 @@ export const exportToExcel = (table, componentName) => {
 // Export to PDF
 export const exportToPDF = async (table, componentName) => {
   // Lazy load jspdf and jspdf-autotable to reduce initial bundle size (~600kb)
-  const [JsPDFNamespace] = await Promise.all([
+  const [JsPDFNamespace, JSPDFAutoTableNamespace] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable'),
   ]);
@@ -82,8 +82,9 @@ export const exportToPDF = async (table, componentName) => {
   const pdfData = data.map((obj) => Object.values(obj));
   const fileName = getExportFileName(componentName);
   const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace.default;
+  const autoTable = JSPDFAutoTableNamespace.autoTable || JSPDFAutoTableNamespace.default;
   const doc = new JsPDF();
-  doc.autoTable({
+  autoTable(doc, {
     head: [headers],
     body: pdfData,
     styles: {
