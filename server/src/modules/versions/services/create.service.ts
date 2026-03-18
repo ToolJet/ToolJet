@@ -422,6 +422,14 @@ export class VersionsCreateService implements IVersionsCreateService {
           index: page.index,
           disabled: page.disabled,
           hidden: page.hidden,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
         })
       );
