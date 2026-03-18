@@ -43,16 +43,18 @@ export class SeaTableClient {
 
     this.baseToken = res.data.access_token;
     this.baseUuid = res.data.dtable_uuid;
+    const dtableServer: string = res.data.dtable_server ?? '';
 
-    if (!this.baseToken || !this.baseUuid) {
-      throw new Error('SeaTable token exchange failed – missing access_token or dtable_uuid');
+    if (!this.baseToken || !this.baseUuid || !dtableServer) {
+      throw new Error('SeaTable token exchange failed – missing access_token, dtable_uuid, or dtable_server');
     }
 
     // Renew 1 minute before expiry (default token lifetime = 1h)
     this.tokenExpiresAt = Date.now() + 59 * 60 * 1000;
 
+    const baseURL = `${dtableServer.replace(/\/$/, '')}/api/v2/dtables/${this.baseUuid}`;
     this.http = axios.create({
-      baseURL: `${this.serverUrl}/api-gateway/api/v2/dtables/${this.baseUuid}`,
+      baseURL,
       timeout: 30000,
       headers: { Authorization: `Bearer ${this.baseToken}` },
     });
@@ -99,7 +101,6 @@ export class SeaTableClient {
       const res = await http.post('/rows/', {
         table_name: tableName,
         rows: [row],
-        convert_keys: true,
       });
       return res.data.first_row ?? res.data;
     });

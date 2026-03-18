@@ -1,13 +1,22 @@
 import { SeaTableClient } from './seatable_client';
 import { SourceOptions, QueryOptions } from './types';
 
+let cachedClient: SeaTableClient | null = null;
+let cachedKey = '';
+
 function getClient(sourceOptions: SourceOptions): SeaTableClient {
   const serverUrl = sourceOptions.server_url;
   const apiToken = sourceOptions.api_token;
   if (!serverUrl || !apiToken) {
     throw new Error('Missing server_url or api_token in connection settings');
   }
-  return new SeaTableClient(serverUrl, apiToken);
+  const key = `${serverUrl}::${apiToken}`;
+  if (cachedClient && cachedKey === key) {
+    return cachedClient;
+  }
+  cachedClient = new SeaTableClient(serverUrl, apiToken);
+  cachedKey = key;
+  return cachedClient;
 }
 
 function parseJson(value: string | Record<string, unknown>): Record<string, unknown> {
