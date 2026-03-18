@@ -47,6 +47,7 @@ describe("Workspace constants", () => {
         cy.visit(data.workspaceSlug);
 
         // Create and update constants as needed
+        //updated new host
         createAndUpdateConstant(
             "url",
             "http://130.131.160.149:4000/development",
