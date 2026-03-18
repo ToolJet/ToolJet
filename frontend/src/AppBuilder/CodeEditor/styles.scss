@@ -502,17 +502,13 @@
     height: auto !important;
 }
 
-
 .query-hinter {
+    // Gets applied to multitline codeeditor only inside query panel
     .cm-editor {
-        border-bottom-right-radius: 4px !important;
-        border-bottom-left-radius: 4px !important;
+        border-radius: 8px;
         border-color: var(--borders-disabled-on-white);
-        border-top-right-radius: 0px !important;
-        border-top-left-radius: 0px !important;
         justify-content: center;
     }
-
 }
 
 .transformation-container {
