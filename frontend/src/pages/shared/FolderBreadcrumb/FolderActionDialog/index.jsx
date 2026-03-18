@@ -19,6 +19,7 @@ import {
 } from '../../hooks/folderServiceHooks';
 
 import ActionDialog from '../../ActionDialog';
+import SearchBar, { useSearch } from '../../SearchBar';
 
 export default function FolderActionDialog({ open, onClose, actionType, appId, appType, folderId, initialFolderName }) {
   const { t } = useTranslation();
@@ -217,28 +218,51 @@ function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
 
 function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
+  const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
 
   if (!isFoldersSuccess) return <></>; // TODO: Can add Skeleton loader
 
-  const filteredFolder = folders.filter((folder) => folder.value !== 'all');
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredFolder =
+    debouncedSearchTerm.trim() === ''
+      ? folders.filter((folder) => folder.value !== 'all')
+      : folders.filter(
+          (folder) => folder.value !== 'all' && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        );
 
   return (
     <div className="tw-px-6 tw-py-4 tw-border-b tw-border-border-weak">
-      <ul className="tw-list-none tw-max-h-56 tw-overflow-y-auto">
-        {filteredFolder.map((folder) => (
-          <li
-            role="button"
-            key={folder.value}
-            onClick={() => setSelectedFolder(folder.value)}
-            className="tw-flex tw-items-center tw-gap-2 tw-px-2 tw-py-1.5 tw-rounded-md tw-transition hover:tw-bg-interactive-default"
-          >
-            <div className="tw-size-4">
-              {selectedFolder === folder.value && <Check size={16} strokeWidth={3} color="var(--icon-accent)" />}
-            </div>
+      <SearchBar
+        placeholder="Search folders"
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        classes={{ searchInputContainer: 'tw-mb-4' }}
+      />
 
-            <span className="tw-font-body-default tw-text-text-default">{folder.label}</span>
+      <ul className="tw-list-none tw-h-56 tw-overflow-y-auto">
+        {filteredFolder.length ? (
+          filteredFolder.map((folder) => (
+            <li
+              role="button"
+              key={folder.value}
+              onClick={() => setSelectedFolder(folder.value)}
+              className="tw-flex tw-items-center tw-gap-2 tw-px-2 tw-py-1.5 tw-rounded-md tw-transition hover:tw-bg-interactive-default"
+            >
+              <div className="tw-size-4">
+                {selectedFolder === folder.value && <Check size={16} strokeWidth={3} color="var(--icon-accent)" />}
+              </div>
+
+              <span className="tw-font-body-default tw-text-text-default">{folder.label}</span>
+            </li>
+          ))
+        ) : (
+          <li>
+            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder">No matching results found</p>
           </li>
-        ))}
+        )}
       </ul>
     </div>
   );

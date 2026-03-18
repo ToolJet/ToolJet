@@ -97,7 +97,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
 
               <SelectSeparator />
 
-              <SelectGroup>
+              <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
                 {folderList.map((folder) => (
                   <SelectItem
                     key={folder.value}

@@ -175,14 +175,14 @@ export default function ExportAppModal({ open, onClose, appDetails }) {
               onCheckedChange={handleChangeSelectedVersion(currentVersion?.id)}
             />
 
-            {versions?.length > 1 ? (
+            {versions?.versions?.length > 1 ? (
               <>
                 <p className="tw-font-title-large tw-text-text-default" data-cy="other-version-label">
                   Older versions
                 </p>
 
                 <div className="tw-space-y-3">
-                  {versions.map((version) => {
+                  {versions.versions.map((version) => {
                     if (version.id !== currentVersion?.id) {
                       return (
                         <VersionItem
