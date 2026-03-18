@@ -154,7 +154,7 @@ export default class GraphqlQueryService implements QueryService {
 
   fetchHttpsCertsForCustomCA(sourceOptions: any) {
     if (!sourceOptions.ssl_certificate) {
-      return fetchHttpsCertsForCustomCA();
+      return {};
     }
 
     let httpsParams: any = {};
@@ -179,7 +179,7 @@ export default class GraphqlQueryService implements QueryService {
         break;
 
       default:
-        return fetchHttpsCertsForCustomCA();
+        return {};
     }
 
     if (process.env.NODE_EXTRA_CA_CERTS) {
