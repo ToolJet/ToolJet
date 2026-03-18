@@ -539,7 +539,6 @@
 .cm-content {
     word-break: break-all !important;
     max-width: 100% !important;
-    white-space: pre-wrap !important;
     word-wrap: break-all !important;
 }
 
@@ -547,7 +546,6 @@
 .cm-content {
     max-width: 98%;
     flex-shrink: 1 !important;
-    align-self: stretch !important;
 }
 
 .cm-line {
@@ -581,19 +579,6 @@
 
 .resize-modal-portal .resize-modal .resize-handle {
     border-bottom: none !important;
-}
-
-.cm-content {
-    word-break: break-all !important;
-    max-width: 100% !important;
-    white-space: pre-wrap !important;
-    word-wrap: break-all !important;
-}
-
-
-.cm-content {
-    max-width: 98%;
-    flex-shrink: 1 !important;
 }
 
 .cm-selectionLayer {
