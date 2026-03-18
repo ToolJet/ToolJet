@@ -175,6 +175,7 @@ export const Modal = function Modal({
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
       color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
+      overflowX: 'hidden',
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
