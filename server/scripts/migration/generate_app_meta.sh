@@ -22,8 +22,8 @@ TMPFILE=$(mktemp)
 find "$APPS_DIR" -name "app.json" > "$TMPFILE" 2>/dev/null
 
 while IFS= read -r app_json_path; do
-  # Get the directory containing app.json (strip the /app.json suffix)
-  app_dir=$(dirname "$app_json_path")
+  # Get the app directory (two levels up from app.json: apps/app-1/app/app.json → apps/app-1)
+  app_dir=$(dirname "$(dirname "$app_json_path")")
 
   # Extract the id field from app.json using grep + sed (no jq dependency)
   app_id=$(grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' "$app_json_path" | sed 's/.*"id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -n 1)

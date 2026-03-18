@@ -36,23 +36,12 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     // no branch information (e.g. background jobs, non-git-sync paths).
     // Branch-specific context is layered on top by the service layer when a branchId
     // is available (see EE AppsService.getOne).
-    let editingVersion = await this.appVersionRepository.findOne({
+    const editingVersion = await this.appVersionRepository.findOne({
       where: { appId: app.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
       order: { updatedAt: 'DESC' },
     });
 
-    // Fall back to any non-stub version for apps that only have BRANCH-type versions
-    // (e.g. a git-pull app that was hydrated directly onto a non-default branch before
-    // a default-branch version exists).
     if (!editingVersion) {
-      editingVersion = await this.appVersionRepository.findOne({
-        where: { appId: app.id, isStub: false },
-        order: { updatedAt: 'DESC' },
-      });
-    }
-
-    if (!editingVersion) {
-      // No non-stub version found — mark app as stub for the frontend
       (app as any).isStub = true;
       return;
     }
