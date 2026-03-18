@@ -6,6 +6,7 @@ import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
 import { Client as SSHClient } from 'ssh2';
 import net from 'net';
+import { isEmpty } from '@tooljet-plugins/common';
 
 function getAvailablePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -348,6 +349,15 @@ export default class MongodbService implements QueryService {
       status: 'ok',
     };
   }
+  
+  private connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions.connection_options || []).filter((o) => o.some((e) => !isEmpty(e)));
+    const connectionOptions = Object.fromEntries(_connectionOptions);
+    Object.keys(connectionOptions).forEach((key) =>
+      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
+    );
+    return connectionOptions;
+  }
 
 async getConnection(sourceOptions: SourceOptions): Promise<any> {
   let db = null;
@@ -439,7 +449,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
       clientOptions.tls = true;
     }
 
-    client = new MongoClient(uri, clientOptions);
+    client = new MongoClient(uri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
     await client.connect();
     db = client.db(database);
 } else {
@@ -549,7 +559,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   } else if (!hasSSLInParams && isSrvConnection) {
     clientOptions.tls = true;
   }
-  client = new MongoClient(finalUri, clientOptions);
+  client = new MongoClient(finalUri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
   await client.connect();
   db = client.db(finalDb);
 }

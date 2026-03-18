@@ -9,7 +9,7 @@ export interface ISessionService {
 
   sign(JWTPayload: any): string;
 
-  validateUserSession(userId: string, sessionId: string): Promise<void>;
+  validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void>;
 
   createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions>;
 

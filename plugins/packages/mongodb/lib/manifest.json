@@ -52,6 +52,14 @@
       "type": "string",
       "title": "Password"
     },
+    "connection_options": {
+      "type": "array",
+      "title": "Connection options",
+      "items": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
     "use_ssl": {
       "type": "boolean",
       "title": "SSL/TLS",
@@ -286,6 +294,13 @@
         "widget": "password-v3",
         "help_text": "Supports secrets (e.g.,{{secrets.db_password}})"
       },
+      "connection_options": {
+        "order": 65,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
       "use_ssl": {
         "order": 70,
         "$ref": "#/properties/use_ssl",
@@ -499,6 +514,13 @@
         "description": "Enter password",
         "widget": "password-v3",
         "help_text": "Supports secrets (e.g.,{{secrets.db_password}})"
+      },
+      "connection_options": {
+        "order": 65,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
       },
       "use_ssl": {
         "order": 70,
