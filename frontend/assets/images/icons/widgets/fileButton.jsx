@@ -9,10 +9,10 @@ const FileButton = (props) => (
     fill="none"
     {...props}
   >
-    <rect width="27" height="27" rx="4" fill="currentColor" fillOpacity="0.12" />
+    <rect width="27" height="27" rx="4" fill="#3E63DD" fillOpacity="0.12" />
     <path
       d="M8 19h11M13.5 8v9M10 13l3.5-3.5L17 13"
-      stroke="currentColor"
+      stroke="#3E63DD"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"

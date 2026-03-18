@@ -170,7 +170,7 @@ export const fileButtonConfig = {
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconFileSearch' },
       accordian: 'label and icon',
       visibility: false,
     },
@@ -228,6 +228,10 @@ export const fileButtonConfig = {
       type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+      conditionallyRender: {
+        key: 'buttonType',
+        value: 'solid',
+      },
       accordian: 'button',
     },
     hoverBackgroundColor: {
@@ -251,6 +255,10 @@ export const fileButtonConfig = {
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      conditionallyRender: {
+        key: 'buttonType',
+        value: 'solid',
       },
       accordian: 'button',
     },

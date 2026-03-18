@@ -54,6 +54,25 @@ export const FileButton = (props) => {
   const buttonText = properties.buttonText ?? 'Upload file';
   const enableClearSelection = properties.enableClearSelection ?? false;
 
+  const DEFAULT_SURFACE_COLOR = 'var(--cc-surface1-surface)';
+
+  const computedLabelColor =
+    DEFAULT_SURFACE_COLOR === labelColor
+      ? buttonType === 'solid'
+        ? labelColor
+        : 'var(--cc-primary-text)'
+      : labelColor;
+
+  const computedIconColor =
+    DEFAULT_SURFACE_COLOR === iconColor ? (buttonType === 'solid' ? iconColor : 'var(--cc-primary-text)') : iconColor;
+
+  const computedLoaderColor =
+    DEFAULT_SURFACE_COLOR === loaderColor
+      ? buttonType === 'solid'
+        ? loaderColor
+        : 'var(--cc-primary-brand)'
+      : loaderColor;
+
   const mergedProperties = useMemo(
     () => ({
       ...properties,
@@ -129,57 +148,64 @@ export const FileButton = (props) => {
   return (
     <div className="fileButton-widget tw-flex tw-flex-col tw-w-full" data-cy={dataCy}>
       <div className="tw-flex tw-items-center" style={{ height, width: '100%' }}>
-        {isLoading ? (
-          <Loader color={loaderColor} />
-        ) : (
-          <>
-            <input {...inputProps} className="tw-hidden" />
-            <Button
-              ref={browseButtonRef}
-              variant={buttonVariant}
-              size="default"
-              className={clsx(
-                'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
-                'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
-                justifyClass[contentAlignment] ?? 'tw-justify-start',
-                { 'tw-p-0': padding === 'none' }
-              )}
-              style={buttonStyle}
-              disabled={disabledState}
-              onClick={openFilePicker}
-            >
+        <input {...inputProps} className="tw-hidden" />
+        <Button
+          ref={browseButtonRef}
+          variant={buttonVariant}
+          size="default"
+          className={clsx(
+            'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
+            'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
+            justifyClass[contentAlignment] ?? 'tw-justify-start',
+            iconVisibility ?? 'tw-justify-center',
+            {
+              'tw-flex-row-reverse': iconDirection === 'right',
+            },
+            { 'tw-p-0': padding === 'none' }
+          )}
+          style={buttonStyle}
+          disabled={disabledState}
+          onClick={openFilePicker}
+        >
+          {isLoading ? (
+            <div className="tw-w-full tw-flex-1 tw-h-full tw-flex tw-items-center tw-justify-center">
+              <Loader color={computedLoaderColor} width="16" />
+            </div>
+          ) : (
+            <>
+              {iconVisibility && <TablerIcon iconName={icon} size={16} color={computedIconColor} />}
               <span
-                className={clsx('tw-flex tw-items-center tw-gap-1.5 tw-flex-1 tw-min-w-0 tw-overflow-hidden', {
-                  'tw-flex-row-reverse': iconDirection === 'right',
-                })}
+                className={clsx(
+                  'tw-flex tw-items-center tw-gap-1.5 tw-flex-1 tw-min-w-0 tw-overflow-hidden',
+                  justifyClass[contentAlignment] ?? 'tw-justify-start'
+                )}
               >
-                {iconVisibility && <TablerIcon iconName={icon} size={16} color={iconColor} />}
                 <span
-                  style={{ fontSize: `${labelSize}px`, color: labelColor }}
+                  style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
                   className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                 >
                   {selectedFiles.length === 0 ? buttonText : selectedSummary}
                 </span>
+                {selectedFiles.length > 0 && enableClearSelection && (
+                  <Button
+                    variant="ghost"
+                    iconOnly
+                    size="small"
+                    disabled={disabledState}
+                    className="tw-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      clearFiles();
+                    }}
+                  >
+                    <IconX width={16} className="tw-cursor-pointer" color="var(--icon-default)" />
+                  </Button>
+                )}
               </span>
-              {selectedFiles.length > 0 && enableClearSelection && (
-                <Button
-                  variant="ghost"
-                  iconOnly
-                  size="small"
-                  disabled={disabledState}
-                  className="tw-shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    clearFiles();
-                  }}
-                >
-                  <IconX width={16} className="tw-cursor-pointer" color="var(--icon-default)" />
-                </Button>
-              )}
-            </Button>
-          </>
-        )}
+            </>
+          )}
+        </Button>
       </div>
       {uiErrorMessage && (
         <div className="tw-text-[11px] tw-font-normal tw-leading-4 tw-mt-0.5 tw-text-[color:var(--cc-error-systemStatus)]">
