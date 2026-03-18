@@ -1,6 +1,7 @@
 import { resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
+import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
 import _ from 'lodash';
 
 const initialState = {
@@ -39,13 +40,14 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
   general: {},
 };
 
-// Exposed value batching — collects mutations during initial mount and flushes in a single set() call.
-// This avoids N individual set() calls (each notifying ~9000 subscribers) during component mount.
-let _isBatchingExposedValues = false;
-let _batchedMutations = [];
-let _batchedDependencyPaths = [];
+// Exposed value batching — buffers mutations during initial mount / page navigation
+// and flushes in a single set() call. Uses createBatchManager for ref-counted nesting.
+let _exposedValueBatch = null;
 
-export const createResolvedSlice = (set, get) => ({
+export const createResolvedSlice = (set, get) => {
+  _exposedValueBatch = createBatchManager(set, get);
+
+  return {
   ...initialState,
   initializeResolvedSlice: (moduleId) => {
     set(
@@ -60,43 +62,11 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   startExposedValueBatch: () => {
-    _isBatchingExposedValues = true;
-    _batchedMutations = [];
-    _batchedDependencyPaths = [];
+    _exposedValueBatch.startBatch();
   },
 
   flushExposedValueBatch: () => {
-    _isBatchingExposedValues = false;
-
-    if (_batchedMutations.length === 0) {
-      _batchedMutations = [];
-      _batchedDependencyPaths = [];
-      return;
-    }
-
-    const mutations = _batchedMutations;
-    const depPaths = _batchedDependencyPaths;
-    _batchedMutations = [];
-    _batchedDependencyPaths = [];
-
-    // Apply all buffered mutations in a single set() call
-    set(
-      (state) => {
-        mutations.forEach((mutation) => mutation(state));
-      },
-      false,
-      'flushExposedValueBatch'
-    );
-
-    // Run dependency updates (deduplicated)
-    const seen = new Set();
-    depPaths.forEach(({ path, moduleId }) => {
-      const key = `${path}|${moduleId}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-
-      get().updateDependencyValues(path, moduleId);
-    });
+    _exposedValueBatch.flush('flushExposedValueBatch');
   },
 
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
@@ -432,15 +402,15 @@ export const createResolvedSlice = (set, get) => ({
     const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
     if (existing !== undefined && _.isEqual(existing, value)) return;
 
-    if (_isBatchingExposedValues) {
-      _batchedMutations.push((state) => {
-        if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
-          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
-        state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
-      });
-      if (typeof value !== 'function') {
-        _batchedDependencyPaths.push({ path: `components.${componentId}.${property}`, moduleId });
-      }
+    if (_exposedValueBatch.isBatching()) {
+      _exposedValueBatch.bufferMutation(
+        (state) => {
+          if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+            state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+        },
+        typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
+      );
       return;
     }
 
@@ -462,19 +432,23 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   setExposedValues: (id, type, values, moduleId = 'canvas') => {
-    if (_isBatchingExposedValues) {
-      _batchedMutations.push((state) => {
-        Object.entries(values).forEach(([key, value]) => {
-          if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
-            state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
-          else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
-        });
-      });
+    if (_exposedValueBatch.isBatching()) {
+      const depPaths = [];
       Object.entries(values).forEach(([key, value]) => {
         if (typeof value !== 'function') {
-          _batchedDependencyPaths.push({ path: `components.${id}.${key}`, moduleId });
+          depPaths.push({ path: `components.${id}.${key}`, moduleId });
         }
       });
+      _exposedValueBatch.bufferMutation(
+        (state) => {
+          Object.entries(values).forEach(([key, value]) => {
+            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          });
+        },
+        depPaths
+      );
       return;
     }
 
@@ -900,4 +874,5 @@ export const createResolvedSlice = (set, get) => ({
       state.resolvedStore.modules[moduleId].exposedValues.output = {};
     });
   },
-});
+  };
+};
