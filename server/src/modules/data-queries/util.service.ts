@@ -91,6 +91,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
       const environmentId = dataSourceOptions.environmentId;
+      const dataSourceOptionId = dataSourceOptions.id;
 
       dataSource.options = dataSourceOptions.options;
 
@@ -101,7 +102,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organizationId,
         environmentId,
         user,
-        opts
+        opts,
+        dataSourceOptionId
       );
 
       // Determine whether query timeout is set, to initiate abort controller
@@ -243,12 +245,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user?.organizationId,
               environmentId
             );
-            const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+            const refreshedDataSourceOptions = await this.appEnvironmentUtilService.getOptions(
               dataSource.id,
               user.organizationId,
               environmentId
             );
-            dataSource.options = dataSourceOptions.options;
+            dataSource.options = refreshedDataSourceOptions.options;
 
             ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
               dataSource,
@@ -257,7 +259,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               organizationId,
               environmentId,
               user,
-              opts
+              opts,
+              refreshedDataSourceOptions.id
             ));
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
@@ -398,13 +401,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id,
     environmentId = undefined,
     user = undefined,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    dataSourceOptionId?: string
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
       environmentId,
-      user
+      user,
+      dataSourceOptionId
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
