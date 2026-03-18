@@ -40,14 +40,25 @@ export class DataSourcesRepository extends Repository<DataSource> {
       const useBranchPath = !!(branchId && environmentId);
 
       if (useBranchPath) {
-        // Branch-aware: join through data_source_versions → data_source_version_options
-        query.innerJoin(
+        // Branch-aware: prefer branch-specific DSV, fall back to default DSV
+        query.leftJoin(
           'data_source_versions',
           'dsv',
-          'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
+          `dsv.data_source_id = data_source.id AND (
+            (dsv.branch_id = :branchId AND dsv.is_active = true)
+            OR (
+              dsv.is_default = true
+              AND NOT EXISTS (
+                SELECT 1 FROM data_source_versions dsv2
+                WHERE dsv2.data_source_id = data_source.id
+                  AND dsv2.branch_id = :branchId
+                  AND dsv2.is_active = true
+              )
+            )
+          )`,
           { branchId }
         );
-        query.innerJoin(
+        query.leftJoin(
           'data_source_version_options',
           'dsvo',
           'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
@@ -56,11 +67,22 @@ export class DataSourcesRepository extends Repository<DataSource> {
         // Select version-specific columns so they appear in raw results
         query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
       } else if (branchId) {
-        // Branch-aware but no environmentId: filter by branch existence only (no options loaded)
-        query.innerJoin(
+        // Branch-aware but no environmentId: prefer branch DSV, fall back to default
+        query.leftJoin(
           'data_source_versions',
           'dsv',
-          'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
+          `dsv.data_source_id = data_source.id AND (
+            (dsv.branch_id = :branchId AND dsv.is_active = true)
+            OR (
+              dsv.is_default = true
+              AND NOT EXISTS (
+                SELECT 1 FROM data_source_versions dsv2
+                WHERE dsv2.data_source_id = data_source.id
+                  AND dsv2.branch_id = :branchId
+                  AND dsv2.is_active = true
+              )
+            )
+          )`,
           { branchId }
         );
         query.addSelect(['dsv.id', 'dsv.name']);
@@ -131,6 +153,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       if (environmentId && !useBranchPath && !branchId) {
         // Filter: DS must have options in version table for this env
         query.andWhere('dsvo.id IS NOT NULL');
+      }
+      if (useBranchPath || branchId) {
+        // Filter: DS must have at least a DSV (branch-specific or default fallback)
+        query.andWhere('dsv.id IS NOT NULL');
       }
       let result: DataSource[];
       let rawResults: any[] = [];

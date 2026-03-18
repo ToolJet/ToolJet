@@ -268,12 +268,14 @@ export class DataSourcesService implements IDataSourcesService {
   async findOneByEnvironment(
     dataSourceId: string,
     organizationId: string,
-    environmentId?: string
+    environmentId?: string,
+    branchId?: string
   ): Promise<DataSource> {
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
       environmentId,
-      organizationId
+      organizationId,
+      branchId
     );
     return dataSource;
   }

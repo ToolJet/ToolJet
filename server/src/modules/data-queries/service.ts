@@ -272,10 +272,10 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, branchId?: string) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, branchId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
