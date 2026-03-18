@@ -502,8 +502,8 @@ const DynamicForm = ({
           cyLabel: label
             ? generateCypressDataCy(label)
             : key
-              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
-              : '',
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,

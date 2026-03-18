@@ -54,7 +54,7 @@ export const NumberInput = (props) => {
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: showClearBtn ? '30px' : '0px', 
+      paddingRight: showClearBtn ? '30px' : '0px',
     };
   };
 

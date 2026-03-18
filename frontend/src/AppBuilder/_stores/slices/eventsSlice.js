@@ -2,6 +2,7 @@ import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { getHostURL, getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
@@ -10,7 +11,6 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
-import { getSubpath } from '@/_helpers/routes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -678,7 +678,8 @@ export const createEventsSlice = (set, get) => ({
                 window.open(url, '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  window.open(url);
+                  // eslint-disable-next-line no-undef
+                  window.open(urlJoin(getHostURL(), url));
                 }
               }
               return Promise.resolve();

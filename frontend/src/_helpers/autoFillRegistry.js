@@ -3,7 +3,6 @@ import { postgresqlAutoFillStrategy } from './autoFillStrategies/postgresqlAutoF
 import { mssqlAutoFillStrategy } from './autoFillStrategies/mssqlAutoFillStrategy';
 import { mysqlAutoFillStrategy } from './autoFillStrategies/mysqlAutoFillStrategy';
 
-
 const strategiesByKind = {
   mongodb: mongoDbAutoFillStrategy,
   mssql: mssqlAutoFillStrategy,
@@ -15,7 +14,7 @@ const strategiesByName = {
   MongoDB: mongoDbAutoFillStrategy,
   PostgreSQL: postgresqlAutoFillStrategy,
   'SQL Server': mssqlAutoFillStrategy,
-  'MySQL': mysqlAutoFillStrategy,
+  MySQL: mysqlAutoFillStrategy,
 };
 
 /**

@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import SSOButtonWrapper from '../SSOButtonWrapper';
-import { buildURLWithQuery } from '@/_helpers/utils';
+import { buildURLWithQuery, stripTrailingSlash } from '@/_helpers/utils';
+import { getSubpath } from '@/_helpers/routes';
 
 const GoogleSSOLoginButton = forwardRef((props, ref) => {
   const randomString = (length) => {
@@ -17,11 +18,12 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
     props.setSignupOrganizationDetails && props.setSignupOrganizationDetails();
     props.setRedirectUrlToCookie && props.setRedirectUrlToCookie();
 
+    // Always use the base domain (TOOLJET_HOST) for redirect_uri so it
+    // matches what's registered with Google, even on custom domains.
+    const base = stripTrailingSlash(window.public_config?.TOOLJET_HOST || window.location.origin);
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
-      redirect_uri: `${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ?? '/'}sso/google${
-        props.configId ? `/${props.configId}` : ''
-      }`,
+      redirect_uri: `${base}${getSubpath() ?? ''}/sso/google${props.configId ? `/${props.configId}` : ''}`,
       response_type: 'id_token',
       scope: 'email profile',
       client_id,

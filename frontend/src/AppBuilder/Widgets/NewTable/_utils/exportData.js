@@ -73,10 +73,8 @@ export const exportToExcel = (table, componentName) => {
 // Export to PDF
 export const exportToPDF = async (table, componentName) => {
   // Lazy load jspdf and jspdf-autotable to reduce initial bundle size (~600kb)
-  const [JsPDFNamespace] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable'),
-  ]);
+  // eslint-disable-next-line import/no-unresolved
+  const [JsPDFNamespace] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
 
   const { headers, data } = getData(table);
   const pdfData = data.map((obj) => Object.values(obj));
