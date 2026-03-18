@@ -33,10 +33,7 @@ module.exports = defineConfig({
     numTestsKeptInMemory: 1,
     experimentalMemoryManagement: true,
 
-    experimentalRunAllSpecs: true,
     experimentalModifyObstructiveThirdPartyCode: true,
-    experimentalOriginDependencies: true,
-    experimentalSkipDomainInjection: ['localhost'],
 
     downloadsFolder: "cypress/downloads",
     trashAssetsBeforeRuns: true,
