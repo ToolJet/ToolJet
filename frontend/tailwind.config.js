@@ -12,7 +12,7 @@ module.exports = {
   ],
   prefix: 'tw-',
   corePlugins: {
-    preflight: false,
+    preflight: true,
   },
   theme: {
     extend: {
@@ -31,6 +31,7 @@ module.exports = {
         'background-warning-stong': 'var(--background-warning-stong)',
         'background-warning-weak': 'var(--background-warning-weak)',
         'background-inverse': 'var(--background-inverse)',
+        'background-premium': 'var(--background-premium)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
@@ -101,6 +102,29 @@ module.exports = {
         'slider-handle': 'var(--slider-handle)',
         'slider-track': 'var(--slider-track)',
         'slider-fill': 'var(--slider-fill)',
+        background: 'var(--background-surface-layer-01)',
+        foreground: 'var(--text-default)',
+        primary: 'var(--background-accent-strong)',
+        'primary-foreground': 'var(--text-on-solid)',
+        secondary: 'var(--background-surface-layer-02)',
+        'secondary-foreground': 'var(--text-default)',
+        muted: 'var(--interactive-default)',
+        'muted-foreground': 'var(--text-placeholder)',
+        accent: 'var(--interactive-default)',
+        'accent-foreground': 'var(--text-on-solid)',
+        destructive: 'var(--background-error-strong)',
+        'destructive-foreground': 'var(--text-on-solid)',
+        input: 'var(--border-default)',
+        ring: 'var(--interactive-focus-outline)',
+        popover: 'var(--background-surface-layer-01)',
+        'popover-foreground': 'var(--text-default)',
+        'sidebar-foreground': 'var(--text-default)',
+        'sidebar-primary': 'var(--background-accent-strong)',
+        'sidebar-primary-foreground': 'var(--text-on-solid)',
+        'sidebar-accent': 'var(--background-accent-weak)',
+        'sidebar-accent-foreground': 'var(--text-brand)',
+        'sidebar-border': 'var(--border-weak)',
+        'sidebar-ring': 'var(--interactive-focus-outline)',
       },
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',
@@ -136,6 +160,7 @@ module.exports = {
   },
   plugins: [
     require('tailwindcss-animate'),
+    require('@tailwindcss/container-queries'),
     plugin(({ addUtilities }) => {
       const newUtilities = {
         '.font-display-small': {

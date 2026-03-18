@@ -8,23 +8,20 @@ const AppList = (props) => {
   const { t } = useTranslation();
   return (
     <div className="app-list">
-      {props.isLoading && (
-        <>
-          {Array.from(Array(2)).map((_, rowIndex) => (
-            <div className="row skeleton-container mb-3 mt-3" key={rowIndex}>
-              {Array.from(Array(3)).map((_, index) => (
-                <div className="col" key={rowIndex * 3 + index}>
-                  {rowIndex === 1 && index == 2 ? (
-                    <></>
-                  ) : (
-                    <Skeleton count={1} height={166} width={272} className="mb-1" />
-                  )}
-                </div>
-              ))}
-            </div>
-          ))}
-        </>
-      )}
+      {props.isLoading &&
+        Array.from(Array(2)).map((_, rowIndex) => (
+          <div className="row skeleton-container mb-3 mt-3" key={rowIndex}>
+            {Array.from(Array(3)).map((_, index) => (
+              <div className="col" key={rowIndex * 3 + index}>
+                {rowIndex === 1 && index == 2 ? (
+                  <></>
+                ) : (
+                  <Skeleton count={1} height={166} width={272} className="mb-1" />
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
       {!props.isLoading && props.meta.total_count > 0 && (
         <div className="">
           <div className="homepage-app-card-list-item-wrap">
@@ -59,9 +56,9 @@ const AppList = (props) => {
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"
           >
-            {props.currentFolder?.count == 0 &&
-              props.apps?.length == 0 &&
-              props.appSearchKey == '' &&
+            {props.currentFolder?.count === 0 &&
+              props.apps?.length === 0 &&
+              props.appSearchKey === '' &&
               t('homePage.thisFolderIsEmpty', 'This folder is empty')}
           </span>
         </div>

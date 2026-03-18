@@ -11,7 +11,7 @@
     "prefix": "tw-"
   },
   "aliases": {
-    "components": "@/components",
+    "components": "@/components/ui/Rocket",
     "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",

@@ -1,6 +1,5 @@
 /** @type { import('@storybook/react-webpack5').Preview } */
 
-import "../src/_styles/theme.scss";
 import "./preview.scss";
 import { withColorScheme, withRouter } from "./decorators"; // Import the decorators
 

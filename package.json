@@ -23,7 +23,8 @@
     "eslint-plugin-jest": "^28.13.3",
     "eslint-plugin-prettier": "^5.4.1",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.0"
+    "lint-staged": "^16.1.0",
+    "shadcn": "^3.0.0"
   },
   "scripts": {
     "prebuild:plugins": "npm run install:plugins",
