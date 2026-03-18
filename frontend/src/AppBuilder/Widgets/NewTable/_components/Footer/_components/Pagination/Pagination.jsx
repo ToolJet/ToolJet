@@ -27,17 +27,17 @@ export const Pagination = function Pagination({
   const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();
 
   function goToNextPage() {
-    paginationBtnClicked.current = true;
+    paginationBtnClicked.current = 'nextPage';
     table.nextPage();
   }
 
   function goToPreviousPage() {
-    paginationBtnClicked.current = true;
+    paginationBtnClicked.current = 'previousPage';
     table.previousPage();
   }
 
   function goToPage(targetPage) {
-    paginationBtnClicked.current = true;
+    paginationBtnClicked.current = 'goToPage';
     table.setPageIndex(targetPage - 1);
   }
 

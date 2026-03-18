@@ -149,10 +149,15 @@ export const TableExposedVariables = ({
   useEffect(() => {
     setExposedVariables({ pageIndex });
 
-    // Fire onPageChanged event only when the page was changed using pagination buttons and input in table footer,
+    // Fire page events only when the page was changed using pagination buttons and input in table footer,
     // not when using setPage CSA to maintain backward compatibility
-    if (paginationBtnClicked.current) {
-      mounted && fireEvent('onPageChanged');
+    if (paginationBtnClicked.current && mounted) {
+      fireEvent('onPageChanged');
+      if (paginationBtnClicked.current === 'nextPage') {
+        fireEvent('onNextPageClicked');
+      } else if (paginationBtnClicked.current === 'previousPage') {
+        fireEvent('onPreviousPageClicked');
+      }
     }
     paginationBtnClicked.current = false; // reset the flag
 
@@ -243,7 +248,6 @@ export const TableExposedVariables = ({
       });
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
-
 
   // Clear dataUpdates & changeSet when data is changed
   useEffect(() => {

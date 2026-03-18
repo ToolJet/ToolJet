@@ -303,6 +303,8 @@ export const tableConfig = {
     onRowClicked: { displayName: 'Row clicked' },
     onBulkUpdate: { displayName: 'Save changes' },
     onPageChanged: { displayName: 'Page changed' },
+    onNextPageClicked: { displayName: 'Next page' },
+    onPreviousPageClicked: { displayName: 'Previous page' },
     onSearch: { displayName: 'Search' },
     onCancelChanges: { displayName: 'Cancel changes' },
     onSort: { displayName: 'Sort applied' },
