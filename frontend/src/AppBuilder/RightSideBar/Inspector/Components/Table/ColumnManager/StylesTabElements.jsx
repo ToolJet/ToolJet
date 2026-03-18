@@ -9,6 +9,7 @@ import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
+import { ButtonStylesTab } from './ButtonStylesTab';
 
 export const StylesTabElements = ({
   column,
@@ -18,32 +19,37 @@ export const StylesTabElements = ({
   onColumnItemChange,
   getPopoverFieldSource,
   component,
+  selectedButtonId,
+  buttonManager,
 }) => {
+  const { updateButtonProperty, updateButtonProperties, getButton } = buttonManager;
   const { t } = useTranslation();
   return (
     <>
-      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-        <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
-            ? t('widget.Table.textAlignment', 'Text Alignment')
-            : 'Alignment'}
-        </label>
-        <ToggleGroup
-          onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
-          defaultValue={column?.horizontalAlignment || 'left'}
-          style={{ width: '58%' }}
-        >
-          <ToggleGroupItem value="left">
-            <AlignLeft width={14} />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="center">
-            <AlignCenter width={14} />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="right">
-            <AlignRight width={14} />
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+      {column.columnType !== 'button' && (
+        <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+          <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+            {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
+              ? t('widget.Table.textAlignment', 'Text Alignment')
+              : 'Alignment'}
+          </label>
+          <ToggleGroup
+            onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+            defaultValue={column?.horizontalAlignment || 'left'}
+            style={{ width: '58%' }}
+          >
+            <ToggleGroupItem value="left">
+              <AlignLeft width={14} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="center">
+              <AlignCenter width={14} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="right">
+              <AlignRight width={14} />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
       {column.columnType === 'toggle' && (
         <div>
           <div className="field px-3">
@@ -252,6 +258,37 @@ export const StylesTabElements = ({
             />
           </div>
         </div>
+      )}
+
+      {column.columnType === 'button' && !selectedButtonId && (
+        <div className="d-flex flex-column custom-gap-16">
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
+        </div>
+      )}
+
+      {column.columnType === 'button' && selectedButtonId && (
+        <ButtonStylesTab
+          button={getButton(selectedButtonId)}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          onButtonPropertyChange={(property, value) => updateButtonProperty(selectedButtonId, property, value)}
+          onButtonPropertiesChange={(updates) => updateButtonProperties(selectedButtonId, updates)}
+          component={component}
+        />
       )}
     </>
   );

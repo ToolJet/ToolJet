@@ -68,6 +68,7 @@ export function SortableTree({
   collapsible = true,
   indicator = true,
   indentationWidth = 15,
+  maxDepth = 1,
   darkMode,
   handlerClassName,
   nestedStyle,
@@ -109,7 +110,8 @@ export function SortableTree({
           offsetLeft,
           indentationWidth,
           intersections.current,
-          propertyNames
+          propertyNames,
+          maxDepth
         )
       : null;
 
@@ -147,8 +149,8 @@ export function SortableTree({
           isGroupKey,
           parentIdKey,
         });
-      } else {
-        // Default group-aware collision filtering
+      } else if (maxDepth <= 1) {
+        // Default group-aware collision filtering (only for single-level Navigation mode)
         const activeItemIsGroup = flattenedItems.find(({ id }) => id === active.id)?.[isGroupKey];
 
         if (activeItemIsGroup) {

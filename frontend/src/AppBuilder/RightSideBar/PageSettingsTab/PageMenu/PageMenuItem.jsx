@@ -4,6 +4,7 @@ import * as Icons from '@tabler/icons-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
+import { getHostURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
@@ -191,7 +192,7 @@ export const PageMenuItem = withRouter(
 
         if (page?.type === 'app') {
           if (page?.appId) {
-            const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+            const baseUrl = `${getHostURL()}/applications/${page.appId}`;
             if (page.openIn === 'new_tab') {
               window.open(baseUrl, '_blank');
             } else {

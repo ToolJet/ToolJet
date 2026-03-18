@@ -189,13 +189,14 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
                 <span
                   style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
                   className="ps-1 text-default"
+                  data-cy="transformation-label"
                 >
                   {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
                 </span>
               </OverlayTrigger>
             </span>
           </div>
-          <div className="d-flex text-placeholder justify-content-end">
+          <div className="d-flex text-placeholder justify-content-end" data-cy="transformation-copilot-info">
             <p>Powered by AI copilot</p>
             <EducativeLabel darkMode={darkMode} />
           </div>

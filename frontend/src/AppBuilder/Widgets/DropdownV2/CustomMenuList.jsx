@@ -20,6 +20,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     menuId,
     showSearchInput,
     menuBackgroundColor,
+    menuWidthStyle,
   } = selectProps;
 
   const parentRef = useRef(null);
@@ -64,6 +65,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       style={{
         ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
         '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
+        ...(menuWidthStyle || {}),
       }}
     >
       {showSearchInput && (
@@ -102,6 +104,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           className="dropdown-multiselect-widget-custom-menu-list-body"
           style={{
             maxHeight: selectProps.maxMenuHeight || 300,
+            ...(menuWidthStyle || {}),
           }}
         >
           <div
