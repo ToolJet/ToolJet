@@ -199,7 +199,7 @@ export const FileButton = (props) => {
                       clearFiles();
                     }}
                   >
-                    <IconX width={16} className="tw-cursor-pointer" color="var(--icon-default)" />
+                    <IconX width={16} className="tw-cursor-pointer" color={computedLabelColor} />
                   </Button>
                 )}
               </span>
