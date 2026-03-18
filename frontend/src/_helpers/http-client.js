@@ -14,12 +14,20 @@ const HttpVerb = {
 
 class HttpClient {
   constructor(args = {}) {
-    this.host = args.host ?? config.apiUrl;
+    this._host = args.host;
+    this._hostFn = args.hostFn;
     this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
       ...args.headers,
     };
+  }
+
+  // Lazy getter: config.apiUrl is mutated after module load on custom domains
+  // (see index.jsx), so we must read it at request time, not construction time.
+  get host() {
+    if (this._hostFn) return this._hostFn();
+    return this._host ?? config.apiUrl;
   }
 
   extractResponseHeaders(response) {

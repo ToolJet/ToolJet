@@ -8,6 +8,11 @@ import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
 import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
@@ -381,6 +386,16 @@ const DynamicFormV2 = ({
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -460,12 +475,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-            ? { valid: null, message: '' }
-            : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' };
+              ? { valid: null, message: '' }
+              : validationMessages[key]
+                ? { valid: false, message: validationMessages[key] }
+                : isRequired
+                  ? { valid: true, message: '' }
+                  : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -511,6 +526,28 @@ const DynamicFormV2 = ({
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-sql-filters': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+        };
+      }
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode: localStorage.getItem('darkMode') === 'true',
         };
       }
       case 'toggle':
@@ -626,7 +663,7 @@ const DynamicFormV2 = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >

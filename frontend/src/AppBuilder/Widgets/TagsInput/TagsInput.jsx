@@ -37,6 +37,7 @@ const TagsInput = ({
   currentLayout,
   currentMode,
   subContainerIndex,
+  componentType,
 }) => {
   const {
     label,
@@ -106,6 +107,7 @@ const TagsInput = ({
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {

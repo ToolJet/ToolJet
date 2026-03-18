@@ -62,7 +62,7 @@ export const RadioButtonV2 = ({
         .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: data?.label,
+          label: getSafeRenderableValue(data?.label),
           value: data?.value,
           isDisabled: data?.disable ?? false,
         }));
@@ -266,7 +266,7 @@ export const RadioButtonV2 = ({
                               : 'var(--text-primary)',
                       }}
                     >
-                      {getSafeRenderableValue(option.label)}
+                      {String(option.label)}
                     </span>
                     <input
                       data-cy={`${dataCy}-option-input-${index}`}

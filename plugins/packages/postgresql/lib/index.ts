@@ -7,6 +7,7 @@ import {
   QueryResult,
   QueryError,
   getTooljetEdition,
+  createQueryBuilder,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
@@ -15,108 +16,83 @@ import { Client } from 'ssh2';
 import { URL } from 'url';
 import net from 'net';
 
-  async function createLocalSSHTunnel(
-    sourceOptions: SourceOptions,
-    targetHost: string,
-    targetPort: number
-  ): Promise<{
-    sshClient: Client;
-    server: net.Server;
-    localPort: number;
-  }> {
-    return new Promise((resolve, reject) => {
-      const ssh = new Client();
-      ssh.on('ready', () => {
-        
-
-        const server = net.createServer((localSocket) => {
-          ssh.forwardOut(
-            localSocket.remoteAddress || '127.0.0.1',
-            localSocket.remotePort || 0,
-            targetHost,
-            targetPort,
-            (err, remoteStream) => {
-              if (err) {
-                localSocket.destroy();
-                return;
-              }
-
-              localSocket.pipe(remoteStream).pipe(localSocket);
-
-              remoteStream.on('error', () => {
-                localSocket.destroy();
-              });
-
-              localSocket.on('error', () => {
-                remoteStream.destroy();
-              });
+async function createLocalSSHTunnel(
+  sourceOptions: SourceOptions,
+  targetHost: string,
+  targetPort: number
+): Promise<{
+  sshClient: Client;
+  server: net.Server;
+  localPort: number;
+}> {
+  return new Promise((resolve, reject) => {
+    const ssh = new Client();
+    ssh.on('ready', () => {
+      const server = net.createServer((localSocket) => {
+        ssh.forwardOut(
+          localSocket.remoteAddress || '127.0.0.1',
+          localSocket.remotePort || 0,
+          targetHost,
+          targetPort,
+          (err, remoteStream) => {
+            if (err) {
+              localSocket.destroy();
+              return;
             }
-          );
-        });
 
-        server.listen(0, '127.0.0.1', () => {
-          const addr = server.address() as net.AddressInfo;
-          resolve({
-            sshClient: ssh,
-            server,
-            localPort: addr.port,
-          });
-        });
+            localSocket.pipe(remoteStream).pipe(localSocket);
+
+            remoteStream.on('error', () => {
+              localSocket.destroy();
+            });
+
+            localSocket.on('error', () => {
+              remoteStream.destroy();
+            });
+          }
+        );
       });
 
-      ssh.on('error', (e) => {
-        reject(e);
+      server.listen(0, '127.0.0.1', () => {
+        const addr = server.address() as net.AddressInfo;
+        resolve({
+          sshClient: ssh,
+          server,
+          localPort: addr.port,
+        });
       });
-
-      const sshConfig: any = {
-        host: sourceOptions.ssh_host,
-        port: Number(sourceOptions.ssh_port) || 22,
-        username: sourceOptions.ssh_username,
-        readyTimeout: 20000, // recommended
-      };
-
-      if (sourceOptions.ssh_auth_type === 'private_key') {
-        if (
-          !sourceOptions.ssh_private_key ||
-          sourceOptions.ssh_private_key.trim() === ''
-        ) {
-          return reject(
-            new Error('SSH private key is required for private_key auth type')
-          );
-        }
-        sshConfig.privateKey = Buffer.from(
-          sourceOptions.ssh_private_key
-        );
-        if (
-          sourceOptions.ssh_passphrase &&
-          sourceOptions.ssh_passphrase.trim() !== ''
-        ) {
-          sshConfig.passphrase =
-            sourceOptions.ssh_passphrase;
-        }
-
-      } else if (sourceOptions.ssh_auth_type === 'password') {
-        if (
-          !sourceOptions.ssh_password ||
-          sourceOptions.ssh_password.trim() === ''
-        ) {
-          return reject(
-            new Error('SSH password is required for password auth type')
-          );
-        }
-        sshConfig.password =
-          sourceOptions.ssh_password;
-
-      } else {
-        return reject(
-          new Error(
-            `Unsupported SSH auth type: ${sourceOptions.ssh_auth_type}`
-          )
-        );
-      }
-      ssh.connect(sshConfig);
     });
-  }
+
+    ssh.on('error', (e) => {
+      reject(e);
+    });
+
+    const sshConfig: any = {
+      host: sourceOptions.ssh_host,
+      port: Number(sourceOptions.ssh_port) || 22,
+      username: sourceOptions.ssh_username,
+      readyTimeout: 20000, // recommended
+    };
+
+    if (sourceOptions.ssh_auth_type === 'private_key') {
+      if (!sourceOptions.ssh_private_key || sourceOptions.ssh_private_key.trim() === '') {
+        return reject(new Error('SSH private key is required for private_key auth type'));
+      }
+      sshConfig.privateKey = Buffer.from(sourceOptions.ssh_private_key);
+      if (sourceOptions.ssh_passphrase && sourceOptions.ssh_passphrase.trim() !== '') {
+        sshConfig.passphrase = sourceOptions.ssh_passphrase;
+      }
+    } else if (sourceOptions.ssh_auth_type === 'password') {
+      if (!sourceOptions.ssh_password || sourceOptions.ssh_password.trim() === '') {
+        return reject(new Error('SSH password is required for password auth type'));
+      }
+      sshConfig.password = sourceOptions.ssh_password;
+    } else {
+      return reject(new Error(`Unsupported SSH auth type: ${sourceOptions.ssh_auth_type}`));
+    }
+    ssh.connect(sshConfig);
+  });
+}
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -136,45 +112,6 @@ export default class PostgresqlQueryService implements QueryService {
     }
     PostgresqlQueryService._instance = this;
     return PostgresqlQueryService._instance;
-  }
-
-  async invokeMethod(
-    methodName: string,
-    context: { user?: any; app?: any },
-    sourceOptions: SourceOptions,
-    args?: any
-  ): Promise<any> {
-    if (methodName === 'getTables') {
-      const dataSourceId = args?.dataSourceId || '';
-      const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
-      const result = await this.listTables(
-        sourceOptions,
-        dataSourceId,
-        dataSourceUpdatedAt
-      );
-
-      // safely unwrap possible structures
-      const tables =
-        (result as any)?.data?.data ??
-        (result as any)?.data ??
-        [];
-
-      const formattedTables = tables.map((row:any)=>({
-        label: String(row.table_name),
-        value: String(row.table_name),
-      }));
-
-      return {
-        status:'ok',
-        data: formattedTables,
-      };
-    }
-
-    throw new QueryError(
-      'Method not found',
-      `Method ${methodName} is not supported for PostgreSQL plugin`,
-      { availableMethods: ['getTables'] }
-    );
   }
 
   async run(
@@ -250,20 +187,14 @@ export default class PostgresqlQueryService implements QueryService {
     }
   }
 
-  async testConnection(
-    sourceOptions: SourceOptions
-  ): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     let knexInstance: Knex | undefined;
     try {
-      knexInstance =
-        await this.getConnection(sourceOptions, {}, false);
+      knexInstance = await this.getConnection(sourceOptions, {}, false);
 
-      await knexInstance
-        .raw('SELECT version();')
-        .timeout(this.STATEMENT_TIMEOUT);
+      await knexInstance.raw('SELECT version();').timeout(this.STATEMENT_TIMEOUT);
 
       return { status: 'ok' };
-
     } catch (err: any) {
       let message = 'Connection test failed';
       let details: any = {};
@@ -278,24 +209,18 @@ export default class PostgresqlQueryService implements QueryService {
         };
       }
       //  Invalid connection string
-      else if (
-        err instanceof TypeError &&
-        err.message?.includes('Invalid URL')
-      ) {
+      else if (err instanceof TypeError && err.message?.includes('Invalid URL')) {
         message = 'Invalid PostgreSQL connection string';
       }
 
       //  SSH errors
       else if (err?.message?.includes('SSH')) {
-
         message = `SSH connection failed : ${err.message}`;
-
       }
 
       //  Knex timeout
       else if (err?.name === 'KnexTimeoutError') {
-        message =
-          'Database connection timeout. Please check host/port/firewall';
+        message = 'Database connection timeout. Please check host/port/firewall';
       }
 
       //  fallback
@@ -303,17 +228,11 @@ export default class PostgresqlQueryService implements QueryService {
         message = err.message;
       }
 
-      throw new QueryError(
-        'Connection test failed',
-        message,
-        details
-      );
-
+      throw new QueryError('Connection test failed', message, details);
     } finally {
       //  Always cleanup SSH tunnel + knex
       if (knexInstance) {
-        const tunnel =
-          (knexInstance as any).__sshTunnel;
+        const tunnel = (knexInstance as any).__sshTunnel;
         await knexInstance.destroy();
         if (tunnel) {
           tunnel.server.close();
@@ -323,40 +242,336 @@ export default class PostgresqlQueryService implements QueryService {
     }
   }
 
-  async listTables(
+  async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
+    if (methodName === 'listSchemas') {
+      return await this._fetchSchemas(sourceOptions);
+    }
+    if (methodName === 'listTables') {
+      const schema = args?.values?.schema || 'public';
+      return await this._fetchTables(sourceOptions, schema);
+    }
+    if (methodName === 'listColumns') {
+      const schema = args?.values?.schema || 'public';
+      const table = args?.values?.table || '';
+      return await this._fetchColumns(sourceOptions, schema, table);
+    }
+
+    if (methodName === 'getTables') {
+      const dataSourceId = args?.dataSourceId || '';
+      const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+      const result = await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+
+      // safely unwrap possible structures
+      const tables = (result as any)?.data?.data ?? (result as any)?.data ?? [];
+
+      const formattedTables = tables.map((row: any) => ({
+        label: String(row.table_name),
+        value: String(row.table_name),
+      }));
+
+      return {
+        status: 'ok',
+        data: formattedTables,
+      };
+    }
+    throw new QueryError('Method not found', `Method '${methodName}' is not supported by the PostgreSQL plugin`, {});
+  }
+
+  async listSchemas(
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    let knexInstance;
+    const data = await this._fetchSchemas(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    schema = 'public'
+  ): Promise<QueryResult> {
+    const data = await this._fetchTables(sourceOptions, schema, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  async listColumns(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    schema = 'public',
+    table: string
+  ): Promise<QueryResult> {
+    const data = await this._fetchColumns(sourceOptions, schema, table, dataSourceId, dataSourceUpdatedAt);
+    return { status: 'ok', data };
+  }
+
+  private async _fetchSchemas(
+    sourceOptions: SourceOptions,
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
     try {
-      knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
-
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
       const { rows } = await knexInstance.raw(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_type = 'BASE TABLE'
-      ORDER BY table_name;
-    `);
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+          AND schema_name NOT LIKE 'pg_temp_%'
+          AND schema_name NOT LIKE 'pg_toast_temp_%'
+        ORDER BY schema_name;
+      `);
+      return rows.map((r: any) => ({ value: r.schema_name, label: r.schema_name }));
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch schemas', errorMessage, {});
+    }
+  }
 
-      return {
-        status: 'ok',
-        data: rows,
-      };
+  private async _fetchTables(
+    sourceOptions: SourceOptions,
+    schema = 'public',
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+      const { rows } = await knexInstance.raw(
+        `SELECT table_name
+         FROM information_schema.tables
+         WHERE table_schema = ?
+           AND table_type = 'BASE TABLE'
+         ORDER BY table_name;`,
+        [schema]
+      );
+      return rows.map((r: any) => ({ value: r.table_name, label: r.table_name }));
     } catch (err) {
       const errorMessage = err.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
     }
   }
 
-  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
-    if (queryOptions.operation !== 'bulk_update_pkey') {
-      return { rows: [] };
+  private async _fetchColumns(
+    sourceOptions: SourceOptions,
+    schema = 'public',
+    table: string,
+    dataSourceId = '',
+    dataSourceUpdatedAt = ''
+  ): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const knexInstance = await this.getConnection(
+        sourceOptions,
+        {},
+        !!dataSourceId,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+      const { rows } = await knexInstance.raw(
+        `SELECT column_name, data_type, is_nullable, column_default
+         FROM information_schema.columns
+         WHERE table_schema = ?
+           AND table_name = ?
+         ORDER BY ordinal_position;`,
+        [schema, table]
+      );
+      return rows.map((r: any) => ({ value: r.column_name, label: r.column_name }));
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch columns', errorMessage, {});
+    }
+  }
+
+  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { operation, table, schema } = queryOptions;
+    const queryBuilder = createQueryBuilder('postgresql');
+
+    switch (operation) {
+      case 'list_rows': {
+        const { list_rows, limit, offset } = queryOptions;
+        const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+        const { query, params } = queryBuilder.listRows(table, {
+          schema,
+          where_filters,
+          order_filters,
+          aggregates,
+          group_by,
+          limit,
+          offset,
+        }) as { query: string; params: unknown[] };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'create_row': {
+        const { columns } = queryOptions.create_row || {};
+        const { query, params } = queryBuilder.createRow(table, schema, columns) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'update_rows': {
+        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { columns, where_filters } = queryOptions.update_rows || {};
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        if (!hasWhereFilters) {
+          throw new Error(
+            'Update rows requires at least one filter condition when multiple row updates are not allowed.'
+          );
+        }
+        const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeWriteQuery(knexInstance, query, params, {
+          allow_multiple_updates,
+          zero_records_as_success,
+          operationLabel: 'updated',
+        });
+        return { status: 'ok', data: rows };
+      }
+
+      case 'upsert_rows': {
+        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { columns } = queryOptions.upsert_rows || {};
+        const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeWriteQuery(knexInstance, query, params, {
+          allow_multiple_updates,
+          zero_records_as_success,
+          operationLabel: 'upserted',
+        });
+        return { status: 'ok', data: rows };
+      }
+
+      case 'delete_rows': {
+        const { limit, zero_records_as_success } = queryOptions;
+        const { where_filters } = queryOptions.delete_rows || {};
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        const hasLimit = limit != null && limit !== '';
+        if (!hasWhereFilters && !hasLimit) {
+          throw new Error(
+            'delete_rows requires at least one filter condition or a limit to prevent accidental mass deletions.'
+          );
+        }
+        const { query, params } = queryBuilder.deleteRows(table, { schema, where_filters, limit }) as {
+          query: string;
+          params: unknown[];
+        };
+        const deletedRows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
+        const deletedRecords = deletedRows.length;
+
+        if (zero_records_as_success === false && deletedRecords === 0) {
+          throw new Error('No rows were deleted.');
+        }
+
+        return { status: 'ok', data: deletedRows };
+      }
+
+      case 'bulk_insert': {
+        const { records } = queryOptions;
+        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'bulk_update_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+          schema,
+          primary_key: primary_key_columns,
+          rows_update: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data, bulk_update_status: 'success' } as unknown as QueryResult;
+      }
+
+      case 'bulk_upsert_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+          schema,
+          primary_key: primary_key_columns,
+          row_upsert: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
+      }
+
+      default:
+        throw new Error(`Unsupported GUI operation: "${operation}"`);
+    }
+  }
+
+  private async executeParameterizedQuery(knexInstance: Knex, query: string, params: unknown[]): Promise<unknown[]> {
+    const { rows } = await knexInstance.raw(query, params as any[]);
+    return rows;
+  }
+
+  private async executeWriteQuery(
+    knexInstance: Knex,
+    query: string,
+    params: unknown[],
+    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
+  ): Promise<unknown[]> {
+    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+    const hasConstraints = allow_multiple_updates === false || zero_records_as_success === false;
+
+    if (!hasConstraints) {
+      // No constraint checks — run directly, RETURNING * surfaces the affected rows
+      const { rows: affectedRows } = await knexInstance.raw(`${query} RETURNING *`, params as any[]);
+      return affectedRows;
     }
 
-    const query = this.buildBulkUpdateQuery(queryOptions);
-    return await this.executeQuery(knexInstance, query);
+    // Wrap in a transaction so any thrown error automatically rolls back the write
+    return knexInstance.transaction(async (trx) => {
+      const { rows: affectedRows } = await trx.raw(`${query} RETURNING *`, params as any[]);
+
+      if (allow_multiple_updates === false && affectedRows.length > 1) {
+        throw new Error(
+          'Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.'
+        );
+      }
+
+      if (zero_records_as_success === false && affectedRows.length === 0) {
+        throw new Error(`No rows were ${operationLabel}.`);
+      }
+
+      return affectedRows;
+    });
+  }
+
+  private async executeBulkQueriesInTransaction(
+    knexInstance: Knex,
+    queries: { query: string; params: unknown[] }[]
+  ): Promise<unknown[]> {
+    const allRows: unknown[] = [];
+    await knexInstance.transaction(async (transaction) => {
+      for (const { query, params } of queries) {
+        const { rows } = await transaction.raw(`${query} RETURNING *`, params as any[]);
+        allRows.push(...rows);
+      }
+    });
+    return allRows;
   }
 
   private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
@@ -409,48 +624,29 @@ export default class PostgresqlQueryService implements QueryService {
       const connHost = parsedUrl.hostname || '';
       const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
       const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
-      const sslmode =
-      parsedUrl.searchParams.get('sslmode') ||
-      parsedUrl.searchParams.get('ssl') ||
-      '';
+      const sslmode = parsedUrl.searchParams.get('sslmode') || parsedUrl.searchParams.get('ssl') || '';
 
-      let connSslEnabled: 'enabled' | 'disabled' | undefined;
+      let connSslEnabled: boolean | undefined;
 
-      if (
-        sslmode === 'require' ||
-        sslmode === 'verify-full' ||
-        sslmode === 'verify-ca' ||
-        sslmode === 'true'
-      ) {
-        connSslEnabled = 'enabled';
-      } else if (
-        sslmode === 'disable' ||
-        sslmode === 'false'
-      ) {
-        connSslEnabled = 'disabled';
+      if (sslmode === 'require' || sslmode === 'verify-full' || sslmode === 'verify-ca' || sslmode === 'true') {
+        connSslEnabled = true;
+      } else if (sslmode === 'disable' || sslmode === 'false') {
+        connSslEnabled = false;
       }
       // Explicit UI values override connection string values
       resolvedUser = sourceOptions.username || connUser;
       resolvedPass = sourceOptions.password || connPass;
       // Only override if user explicitly changed away from the default
-      resolvedHost = (sourceOptions.host && sourceOptions.host !== 'localhost') 
-        ? sourceOptions.host 
-        : connHost;
+      resolvedHost = sourceOptions.host && sourceOptions.host !== 'localhost' ? sourceOptions.host : connHost;
 
-      resolvedPort =
-          sourceOptions.port &&
-          Number(sourceOptions.port) !== 5432
-            ? Number(sourceOptions.port)
-            : connPort;
+      resolvedPort = sourceOptions.port && Number(sourceOptions.port) !== 5432 ? Number(sourceOptions.port) : connPort;
 
       resolvedDb = sourceOptions.database || connDb;
 
-          // SSL Autofill
-    if ((!sourceOptions.ssl_enabled ||
-          sourceOptions.ssl_enabled === 'disabled') &&
-          connSslEnabled) {
-          sourceOptions.ssl_enabled = connSslEnabled;
-        }
+      // SSL Autofill
+      if (!sourceOptions.ssl_enabled && connSslEnabled) {
+        sourceOptions.ssl_enabled = connSslEnabled;
+      }
     }
 
     // --- SSL config ---
@@ -495,8 +691,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   private getSslConfig(sourceOptions: SourceOptions) {
-    // ssl_enabled is stored as string "enabled"/"disabled" from the toggle-flip widget
-    if (sourceOptions.ssl_enabled !== 'enabled') return false;
+    if (!sourceOptions.ssl_enabled) return false;
 
     return {
       rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
