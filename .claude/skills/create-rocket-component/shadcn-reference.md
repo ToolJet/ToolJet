@@ -9,10 +9,13 @@ or write the Rocket HOC directly.
 ## Decision rule
 
 > Can you run `npx shadcn@latest add {name}` and get a component that wraps a headless
-> primitive (Radix, cmdk, vaul, react-day-picker, embla, input-otp, sonner)?
+> primitive (Radix, Base UI, cmdk, vaul, react-day-picker, embla, input-otp, sonner)?
 > - **Yes** → install via CLI, run `shadcn-to-v3` skill, then wrap in Rocket HOC
 > - **No (pure styling)** → write Rocket HOC directly (no shadcn install)
-> - **Composition pattern** → install constituent primitives individually, compose in Rocket HOC
+>
+> **Registry bug (as of 2026-03-18):** Some newer components (e.g. Combobox) only exist
+> in the `new-york-v4` registry, not `new-york`. If `npx shadcn@latest add {name}` returns
+> a 404, try: `npx shadcn@latest add https://ui.shadcn.com/r/styles/new-york-v4/{name}.json`
 
 ---
 
@@ -53,6 +56,12 @@ nav, and/or ARIA roles. Install via CLI, convert with `shadcn-to-v3`, then wrap 
 | Toggle | @radix-ui/react-toggle | `npx shadcn@latest add toggle` |
 | Toggle Group | @radix-ui/react-toggle-group | `npx shadcn@latest add toggle-group` |
 | Tooltip | @radix-ui/react-tooltip | `npx shadcn@latest add tooltip` |
+
+### Base UI backed
+
+| Component | Library | CLI command |
+|---|---|---|
+| Combobox | @base-ui/react | `npx shadcn@latest add https://ui.shadcn.com/r/styles/new-york-v4/combobox.json` |
 
 ### Third-party library backed
 
@@ -102,15 +111,13 @@ Write the HOC directly using the hoc-template.md shapes.
 
 ---
 
-## Composition patterns — not standalone primitives
+## Composition patterns — docs-only, not in registry
 
-These are documented as shadcn "components" but are actually usage patterns that compose
-multiple primitives together. Install the constituent parts individually, then compose in
-the Rocket HOC layer.
+These appear in shadcn docs as usage examples but have no registry entry (`npx shadcn add` returns 404).
+Build them by composing their constituent installed primitives.
 
 | Pattern | Composed from | Notes |
 |---|---|---|
-| Combobox | Command + Popover | Search/filter dropdown |
 | Data Table | Table + @tanstack/react-table | Sortable/filterable table |
 | Date Picker | Calendar + Popover | Date selection dropdown |
 
@@ -125,7 +132,9 @@ the Rocket HOC layer.
 - **Avatar** IS Radix-backed — provides image load detection and fallback state machine.
 - **Direction** provides RTL/LTR context via `@radix-ui/react-direction`.
 - **Command** wraps `cmdk` — provides search/filter state machine, keyboard nav, grouping.
-  Used as the core of Combobox pattern.
+- **Combobox** wraps `@base-ui/react` — standalone primitive with built-in search, filtering,
+  multi-select (chips), and positioning. NOT a Command + Popover composition (that was the old pattern).
+  Requires `new-york-v4` registry URL due to shadcn registry bug.
 - **Drawer** wraps `vaul` — provides swipe-to-dismiss, snap points, nested drawers.
 - **Sonner** wraps `sonner` — provides toast notifications with stacking, swipe dismiss.
 - When this doc feels stale, re-sync from:

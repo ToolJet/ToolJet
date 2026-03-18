@@ -76,6 +76,16 @@ If unsure whether shadcn has a component: read `shadcn-reference.md` (co-located
 cd frontend && npx shadcn@latest add {name}
 ```
 
+**Registry fallback:** If the above returns a 404 ("item was not found"), the component
+may only exist in the `new-york-v4` registry. Retry with the full URL:
+
+```bash
+cd frontend && npx shadcn@latest add https://ui.shadcn.com/r/styles/new-york-v4/{name}.json
+```
+
+If the install tries to overwrite existing shadcn files (e.g. button.jsx), use `--overwrite`
+but immediately `git checkout` the overwritten files to restore them.
+
 Verify file landed at `src/components/ui/Rocket/shadcn/{name}.jsx`.
 If it went elsewhere, the `components.json` `"ui"` alias is wrong — fix Task 0.7 in the foundation setup first.
 
