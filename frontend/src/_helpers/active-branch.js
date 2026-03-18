@@ -35,3 +35,26 @@ export function getActiveBranchId(orgId) {
   const branch = getActiveBranch(orgId);
   return branch?.id || null;
 }
+
+/**
+ * Remove all tj_active_branch_* keys except the one for the current org.
+ * Call once on app load to prevent stale keys from accumulating
+ * across migration dumps or org switches.
+ */
+export function cleanupStaleBranchKeys(orgId) {
+  const id = orgId || getOrgId();
+  if (!id) return;
+  try {
+    const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(BRANCH_KEY_PREFIX) && key !== currentKey) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // ignore localStorage errors
+  }
+}

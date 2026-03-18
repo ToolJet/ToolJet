@@ -1,7 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import { getActiveBranch, setActiveBranch } from '@/_helpers/active-branch';
+import { getActiveBranch, setActiveBranch, cleanupStaleBranchKeys } from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -39,6 +39,8 @@ export const useWorkspaceBranchesStore = create(
         async initialize(workspaceId) {
           if (get().isInitialized) return;
           set({ isLoading: true });
+          // Remove stale tj_active_branch_* keys from other orgs / migration dumps
+          cleanupStaleBranchKeys();
           try {
             const [branchData, gitStatus] = await Promise.all([
               workspaceBranchesService.list().catch(() => null),
