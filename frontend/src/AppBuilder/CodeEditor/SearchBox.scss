@@ -3,7 +3,6 @@
     height: 44px;
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border-weak);
     padding: 8px;
     background-color: var(--background-surface-layer-01);
     border-radius: 4px 4px 0 0;
@@ -57,6 +56,6 @@
     z-index: 1000;
 }
 
-.cm-panels {
-    border-bottom: none;
+.cm-panels.cm-panels-top {
+    border-bottom-color: var(--border-weak) !important;
 }
