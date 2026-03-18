@@ -27,18 +27,16 @@ import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
 import { SignatureV4 } from '@smithy/signature-v4';
 import { Sha256 } from '@aws-crypto/sha256-js';
-function isFileObject(value) {
-  const keys = Object.keys(value);
+function isFileObject(value: unknown): value is Record<string, string> {
+  if (typeof value !== 'object' || value === null) return false;
+  const objectKeys = Object.keys(value);
 
+  // Check keys common to both old and new file object formats.
+  // 'base64Data' is specific enough to avoid false positives on regular objects.
   return (
-    typeof value === 'object' &&
-    keys.length > 0 &&
-    keys.includes('name') && // example.zip
-    keys.includes('type') && // application/zip
-    keys.includes('content') && // raw'ish bytes (contains new lines - \n)
-    keys.includes('dataURL') && // data url representation
-    keys.includes('base64Data') && // data in base64
-    keys.includes('filePath')
+    objectKeys.includes('name') && // filename e.g. example.zip
+    objectKeys.includes('type') && // MIME type e.g. application/zip
+    objectKeys.includes('base64Data') // file content encoded as base64
   );
 }
 
@@ -257,23 +255,23 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private setMultipartFormDataBody(requestOptions: OptionsOfTextResponseBody, body: any) {
-    if (body && Object.values(body).some(isFileObject)) {
-      const form = new FormData();
-      Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
-        if (isFileObject(value)) {
-          const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
-          form.append(key, fileBuffer, {
-            filename: value?.name || '',
-            contentType: value?.type || '',
-            knownLength: fileBuffer.length,
-          });
-        } else if (value != null) {
-          form.append(key, value);
-        }
-      });
-      requestOptions.body = form;
-      requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
-    }
+    if (!body) return;
+
+    const form = new FormData();
+    Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
+      if (isFileObject(value)) {
+        const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
+        form.append(key, fileBuffer, {
+          filename: value?.name || '',
+          contentType: value?.type || '',
+          knownLength: fileBuffer.length,
+        });
+      } else if (value != null) {
+        form.append(key, value);
+      }
+    });
+    requestOptions.body = form;
+    requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
   }
 
   private handleResponse(response: any) {
