@@ -7,3 +7,16 @@ export function useFindDependentPlugins() {
     mutationFn: (dataSources) => pluginsService.findDependentPlugins(dataSources),
   });
 }
+
+export function useInstallDependentPlugins() {
+  return useMutation({
+    mutationFn: ({ dependentPlugins, shouldAutoImportPlugin }) =>
+      pluginsService.installDependentPlugins(dependentPlugins, shouldAutoImportPlugin),
+  });
+}
+
+export function useUninstallPlugins() {
+  return useMutation({
+    mutationFn: (pluginsId) => pluginsService.uninstallPlugins(pluginsId),
+  });
+}

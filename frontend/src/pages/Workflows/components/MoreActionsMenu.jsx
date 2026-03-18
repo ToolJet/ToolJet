@@ -19,7 +19,7 @@ import { useFindDependentPlugins } from '../../shared/hooks/pluginsServiceHooks'
 const useReadAndImportFile = () => {
   const { mutateAsync: findDependentPlugins } = useFindDependentPlugins();
 
-  const setFileToImportDetails = useWorkflowListStore((state) => state.setFileToImportDetails);
+  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
 
   const handleFileChange = (event) => {
     console.log('event', event);
@@ -31,8 +31,8 @@ const useReadAndImportFile = () => {
 
       const fileReader = new FileReader();
       const fileName = file.name.replace('.json', '').substring(0, 50);
-      fileReader.readAsText(file, 'UTF-8');
 
+      fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = async (event) => {
         const result = event.target.result;
         let fileContent;
@@ -56,11 +56,14 @@ const useReadAndImportFile = () => {
           onSuccess: (response) => {
             const { pluginsToBeInstalled = [], pluginsListIdToDetailsMap = {} } = response.data;
 
-            setFileToImportDetails({
-              fileContent,
-              fileName,
-              dependentPlugins: pluginsToBeInstalled,
-              dependentPluginsDetail: { ...pluginsListIdToDetailsMap },
+            setAppDialogState({
+              type: 'import',
+              appDetails: {
+                fileContent,
+                fileName,
+                dependentPlugins: pluginsToBeInstalled,
+                dependentPluginsDetail: { ...pluginsListIdToDetailsMap },
+              },
             });
           },
         });
@@ -73,13 +76,7 @@ const useReadAndImportFile = () => {
 
       event.target.value = null;
     } catch (error) {
-      let errorMessage = 'Some Error Occured';
-
-      if (error?.error) {
-        errorMessage = error.error;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
+      const errorMessage = error?.error || error?.message || 'Some Error Occured';
 
       toast.error(errorMessage);
     }
@@ -121,7 +118,6 @@ export default function MoreActionsMenu({ disabled }) {
               data-cy="import-option-label"
               className="tw-text-text-default tw-font-body-default"
               onClick={handleOpenFilePicker}
-              disabled
             >
               <FileDown size={16} color="var(--icon-weak)" />
               {t('homePage.header.import', 'Import from device')}

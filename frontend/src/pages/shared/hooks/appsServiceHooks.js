@@ -11,7 +11,7 @@ import { useAppFilters } from './useAppFilters';
 import { useWorkflowListStore } from '../../Workflows/store';
 import { appTypeToDisplayNameMapping } from '../helper';
 
-const handleError = (error) => {
+export const handleError = (error) => {
   if ([409, 451].includes(error.statusCode)) return;
 
   const errorMessage = error?.error || error?.message || 'Some Error Occured';
@@ -198,6 +198,12 @@ export function useChangeAppIcon() {
         queryKey: ['apps', { pageNo: currentPage, folderId, appSearchQuery, appType: variables.appType }],
       });
     },
+  });
+}
+
+export function useImportResource() {
+  return useMutation({
+    mutationFn: ({ body, appType }) => appsService.importResource(body, appType),
   });
 }
 
