@@ -13,17 +13,25 @@ export default function ActionDialog({
   children,
   title = null,
   classes = null,
+  modality = true,
+  hasFooter = true,
   ...dialogBodyProps
 }) {
-  const { label: cancelBtnLabel, ...cancelBtnPropsRest } = cancelBtnProps;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const { label: cancelBtnLabel, ...cancelBtnPropsRest } = cancelBtnProps ?? {};
 
   const DialogBody = Slot;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={modality}>
       <DialogContent
         showCloseButton={false}
-        className={cn('tw-w-full tw-max-w-96 tw-p-0 tw-gap-0', classes?.dialogContent)}
+        className={cn(
+          'tw-w-full tw-max-w-96 tw-p-0 tw-gap-0',
+          { 'dark-theme theme-dark': darkMode },
+          classes?.dialogContent
+        )}
       >
         {title && (
           <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4">
@@ -35,13 +43,17 @@ export default function ActionDialog({
           {children}
         </DialogBody>
 
-        <DialogFooter className={cn('tw-px-6 tw-py-4 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}>
-          <Button variant="outline" size="default" {...cancelBtnPropsRest}>
-            {cancelBtnLabel ?? 'Cancel'}
-          </Button>
+        {hasFooter && (
+          <DialogFooter
+            className={cn('tw-px-6 tw-py-4 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}
+          >
+            <Button variant="outline" size="default" {...cancelBtnPropsRest}>
+              {cancelBtnLabel ?? 'Cancel'}
+            </Button>
 
-          <SubmitActions actions={submitActions} />
-        </DialogFooter>
+            <SubmitActions actions={submitActions} />
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

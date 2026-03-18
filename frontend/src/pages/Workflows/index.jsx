@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import { canUserPerformWorkflowAction } from './workflowPermissions';
 
@@ -22,9 +23,6 @@ import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import CreateWorkflowBtn from './components/CreateWorkflowBtn';
 import MoreActionsMenu from './components/MoreActionsMenu';
 import WorkflowDialogs from './components/WorkflowDialogs';
-
-// TODOs:
-// Dialogs: Create/Rename/Delete/Import/Export workflow, Import workflow, Create/Edit/Delete folder, Move to folder, Change Icon
 
 export default function Workflows() {
   const navigate = useNavigate();
@@ -50,9 +48,9 @@ export default function Workflows() {
   const { data: featureAccess } = useFetchFeatureAccess();
   useFetchAppsLimit();
 
-  const { data: workflowInstanceLevelLimit, isLoading: isLoadingInstanceLevelLimit } =
+  const { data: workflowInstanceLevelLimit, isSuccess: isInstanceLimitFetchedSuccessfully } =
     useFetchWorkflowLimit('instance');
-  const { data: workflowWorkspaceLevelLimit, isLoading: isLoadingWorkspaceLevelLimit } =
+  const { data: workflowWorkspaceLevelLimit, isSuccess: isWorkspaceLimitFetchedSuccessfully } =
     useFetchWorkflowLimit('workspace');
 
   useEffect(() => {
@@ -82,20 +80,31 @@ export default function Workflows() {
   };
 
   const hasWorkflowLimitReached = () => {
-    if (isLoadingInstanceLevelLimit || isLoadingWorkspaceLevelLimit) return false;
-
     const instanceLimitReached =
-      workflowInstanceLevelLimit.total === 0 || workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total;
+      workflowInstanceLevelLimit?.total === 0 ||
+      workflowInstanceLevelLimit?.current >= workflowInstanceLevelLimit?.total;
+
     const workspaceLimitReached =
-      workflowWorkspaceLevelLimit.total === 0 ||
-      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total;
+      workflowWorkspaceLevelLimit?.total === 0 ||
+      workflowWorkspaceLevelLimit?.current >= workflowWorkspaceLevelLimit?.total;
 
     return instanceLimitReached || workspaceLimitReached;
   };
 
+  const checkIsLimitNearingOrReached = (limit) => limit?.current >= limit?.total || limit?.current === limit?.total - 1;
+
+  const isInstanceLimitNearingOrReached = checkIsLimitNearingOrReached(workflowInstanceLevelLimit);
+  const isWorkspaceLimitNearingOrReached = checkIsLimitNearingOrReached(workflowWorkspaceLevelLimit);
+
+  const workflowLimitsDetails = isInstanceLimitNearingOrReached
+    ? workflowInstanceLevelLimit
+    : workflowWorkspaceLevelLimit;
+
   const totalAppCount = selectedFolderId ? workflows?.meta?.folder_count : workflows?.meta?.total_count;
 
-  const isCreationDisabled = hasWorkflowLimitReached();
+  const isWorkflowLimitReached = hasWorkflowLimitReached();
+  const isCreationDisabled =
+    !isInstanceLimitFetchedSuccessfully || !isWorkspaceLimitFetchedSuccessfully || isWorkflowLimitReached;
 
   const checkUserPermissions = (app) => canUserPerformWorkflowAction('', app);
 
@@ -109,11 +118,21 @@ export default function Workflows() {
     <WorkspaceLayout>
       <main className="tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
         <PageHeader title="Workflows">
-          <div className="tw-flex tw-items-center tw-gap-2">
-            <CreateWorkflowBtn disabled={isCreationDisabled} />
+          {isWorkflowLimitReached ? (
+            <LicenseBanner
+              type="workflow"
+              size="small"
+              showNewBanner
+              bannerVariant="inline"
+              limits={workflowLimitsDetails}
+            />
+          ) : (
+            <div className="tw-flex tw-items-center tw-gap-2">
+              <CreateWorkflowBtn disabled={isCreationDisabled} />
 
-            <MoreActionsMenu disabled={isCreationDisabled} />
-          </div>
+              <MoreActionsMenu disabled={isCreationDisabled} />
+            </div>
+          )}
         </PageHeader>
 
         <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
@@ -152,7 +171,10 @@ export default function Workflows() {
 
       <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
 
-      <WorkflowDialogs />
+      <WorkflowDialogs
+        workflowLimitsDetails={workflowLimitsDetails}
+        isLimitNearingOrReached={isInstanceLimitNearingOrReached || isWorkspaceLimitNearingOrReached}
+      />
     </WorkspaceLayout>
   );
 }

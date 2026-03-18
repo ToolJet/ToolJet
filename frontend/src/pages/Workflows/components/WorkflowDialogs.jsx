@@ -1,5 +1,7 @@
 import React from 'react';
 
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
+
 import CRUDActionDialog from '../../shared/CRUDActionDialog';
 import ChangeIconDialog from '../../shared/CRUDActionDialog/ChangeIconDialog';
 import ExportAppModal from '../../shared/CRUDActionDialog/ExportAppModal';
@@ -7,7 +9,7 @@ import FolderActionDialog from '../../shared/FolderBreadcrumb/FolderActionDialog
 
 import { useWorkflowListStore } from '../store';
 
-export default function WorkflowDialogs() {
+export default function WorkflowDialogs({ workflowLimitsDetails, isLimitNearingOrReached }) {
   const appDialogState = useWorkflowListStore((state) => state.appDialogState);
   const resetAppDialogState = useWorkflowListStore((state) => state.resetAppDialogState);
 
@@ -57,6 +59,16 @@ export default function WorkflowDialogs() {
           initialFolderName={folderDialogState.initialFolderName}
           appId={folderDialogState.appDetails?.id}
           appType={folderDialogState.appDetails?.type ?? 'workflow'}
+        />
+      )}
+
+      {isLimitNearingOrReached && (
+        <LicenseBanner
+          type="workflow"
+          size="small"
+          showNewBanner
+          bannerVariant="popover"
+          limits={workflowLimitsDetails}
         />
       )}
     </>
