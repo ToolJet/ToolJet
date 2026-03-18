@@ -167,4 +167,5 @@ export class App extends BaseEntity {
   aiConversations: AiConversation[];
 
   public editingVersion;
+  public isStub: boolean;
 }
