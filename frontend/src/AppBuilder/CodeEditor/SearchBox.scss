@@ -32,6 +32,16 @@
         }
     }
 
+    .search-match-count {
+        display: flex;
+        align-items: center;
+        font-family: 'IBM Plex Sans';
+        font-size: 11px;
+        line-height: 16px;
+        font-weight: 400;
+        color: var(--text-placeholder);
+    }
+
     .replace-buttons {
         display: flex;
         align-items: center;
