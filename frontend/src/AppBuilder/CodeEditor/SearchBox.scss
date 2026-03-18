@@ -5,7 +5,7 @@
     justify-content: space-between;
     padding: 8px;
     background-color: var(--background-surface-layer-01);
-    border-radius: 4px 4px 0 0;
+    border-radius: 8px 8px 0 0;
 
     .search-panel {
         display: flex;
@@ -58,4 +58,5 @@
 
 .cm-panels.cm-panels-top {
     border-bottom-color: var(--border-weak) !important;
+    border-radius: 8px 8px 0 0;
 }
