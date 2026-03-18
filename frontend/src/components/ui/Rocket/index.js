@@ -45,3 +45,5 @@ export {
   SelectLabel,
   SelectSeparator,
 } from './Select/Select';
+export { Toggle, toggleVariants, toggleBaseClasses } from './Toggle/Toggle';
+export { ToggleGroup, ToggleGroupItem } from './ToggleGroup/ToggleGroup';

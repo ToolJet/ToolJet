@@ -1,23 +1,27 @@
 # shadcn/ui Component Reference
 
 > Source: https://github.com/shadcn-ui/ui/tree/main/apps/v4/content/docs/components/radix
-> Synced: 2026-03-13 | shadcn CLI version at sync: 4.0.6
+> Synced: 2026-03-18 | shadcn CLI version at sync: 4.x
 
 This is the authoritative local reference for deciding whether to install a shadcn primitive
 or write the Rocket HOC directly.
 
 ## Decision rule
 
-> Does the component have a Radix primitives API doc link in its frontmatter?
-> - **Yes** → `npx shadcn@latest add {name}` then run `shadcn-to-v3` skill
-> - **No** → write Rocket HOC directly (no shadcn install)
+> Can you run `npx shadcn@latest add {name}` and get a component that wraps a headless
+> primitive (Radix, cmdk, vaul, react-day-picker, embla, input-otp, sonner)?
+> - **Yes** → install via CLI, run `shadcn-to-v3` skill, then wrap in Rocket HOC
+> - **No (pure styling)** → write Rocket HOC directly (no shadcn install)
+> - **Composition pattern** → install constituent primitives individually, compose in Rocket HOC
 
 ---
 
-## Use shadcn CLI — Radix-backed
+## Use shadcn CLI — headless-backed
 
-These components have real Radix state machines: focus management, keyboard nav, ARIA roles,
-compound component API. Install via CLI, convert with `shadcn-to-v3`, then wrap in Rocket HOC.
+These components wrap real headless primitives with state machines, focus management, keyboard
+nav, and/or ARIA roles. Install via CLI, convert with `shadcn-to-v3`, then wrap in Rocket HOC.
+
+### Radix-backed
 
 | Component | Radix primitive | CLI command |
 |---|---|---|
@@ -29,6 +33,7 @@ compound component API. Install via CLI, convert with `shadcn-to-v3`, then wrap 
 | Collapsible | @radix-ui/react-collapsible | `npx shadcn@latest add collapsible` |
 | Context Menu | @radix-ui/react-context-menu | `npx shadcn@latest add context-menu` |
 | Dialog | @radix-ui/react-dialog | `npx shadcn@latest add dialog` |
+| Direction | @radix-ui/react-direction | `npx shadcn@latest add direction` |
 | Dropdown Menu | @radix-ui/react-dropdown-menu | `npx shadcn@latest add dropdown-menu` |
 | Hover Card | @radix-ui/react-hover-card | `npx shadcn@latest add hover-card` |
 | Label | @radix-ui/react-label | `npx shadcn@latest add label` |
@@ -49,12 +54,26 @@ compound component API. Install via CLI, convert with `shadcn-to-v3`, then wrap 
 | Toggle Group | @radix-ui/react-toggle-group | `npx shadcn@latest add toggle-group` |
 | Tooltip | @radix-ui/react-tooltip | `npx shadcn@latest add tooltip` |
 
+### Third-party library backed
+
+These wrap non-Radix headless libraries but ARE installable via shadcn CLI and provide
+useful structural primitives worth wrapping.
+
+| Component | Library | CLI command |
+|---|---|---|
+| Calendar | react-day-picker | `npx shadcn@latest add calendar` |
+| Carousel | embla-carousel-react | `npx shadcn@latest add carousel` |
+| Command | cmdk | `npx shadcn@latest add command` |
+| Drawer | vaul | `npx shadcn@latest add drawer` |
+| Input OTP | input-otp | `npx shadcn@latest add input-otp` |
+| Sonner | sonner | `npx shadcn@latest add sonner` |
+
 ---
 
 ## Skip shadcn — write Rocket HOC directly
 
-These are pure styling components (CVA + HTML element). Installing via shadcn would just add
-a file we'd immediately overwrite. Write the HOC directly using the hoc-template.md shapes.
+These are pure styling components (CVA + HTML element). No headless primitive underneath.
+Write the HOC directly using the hoc-template.md shapes.
 
 | Component | What it is |
 |---|---|
@@ -63,26 +82,37 @@ a file we'd immediately overwrite. Write the HOC directly using the hoc-template
 | Breadcrumb | styled nav + ol + li |
 | Button | CVA + Slot — no Radix state machine |
 | Button Group | styled div wrapper |
-| Calendar | built on react-day-picker (install separately if needed) |
 | Card | styled div with header/content/footer slots |
-| Carousel | built on embla-carousel (install separately if needed) |
-| Chart | built on recharts (install separately if needed) |
-| Combobox | composed from Command + Popover — install those individually |
-| Command | built on cmdk (install separately if needed) |
-| Data Table | composed from Table + tanstack/react-table |
-| Date Picker | composed from Calendar + Popover |
-| Drawer | built on vaul (install separately if needed) |
+| Chart | styled wrapper for recharts |
+| Empty | empty state placeholder layout |
+| Field | styled form field wrapper (label + input + error) |
+| Form | form layout/validation wrapper |
 | Input | styled input element |
 | Input Group | styled wrapper for Input with addons |
-| Input OTP | built on input-otp (install separately if needed) |
+| Item | generic styled list item |
+| Kbd | styled keyboard shortcut indicator |
 | Native Select | styled native `<select>` element |
 | Pagination | styled nav with prev/next links |
+| Sidebar | styled sidebar layout |
 | Skeleton | animated styled div |
 | Spinner | animated SVG/div |
 | Table | styled table/thead/tbody/tr/td |
 | Textarea | styled textarea element |
-| Toast / Sonner | built on sonner (install separately if needed) |
 | Typography | styled heading/paragraph utilities |
+
+---
+
+## Composition patterns — not standalone primitives
+
+These are documented as shadcn "components" but are actually usage patterns that compose
+multiple primitives together. Install the constituent parts individually, then compose in
+the Rocket HOC layer.
+
+| Pattern | Composed from | Notes |
+|---|---|---|
+| Combobox | Command + Popover | Search/filter dropdown |
+| Data Table | Table + @tanstack/react-table | Sortable/filterable table |
+| Date Picker | Calendar + Popover | Date selection dropdown |
 
 ---
 
@@ -93,7 +123,10 @@ a file we'd immediately overwrite. Write the HOC directly using the hoc-template
 - **Label** IS Radix-backed — `@radix-ui/react-label` provides accessible `for` association.
 - **Separator** IS Radix-backed — provides `role="separator"` and `aria-orientation`.
 - **Avatar** IS Radix-backed — provides image load detection and fallback state machine.
-- **Combobox** and **Date Picker** are compositions, not primitives — build by combining
-  their constituent shadcn primitives.
+- **Direction** provides RTL/LTR context via `@radix-ui/react-direction`.
+- **Command** wraps `cmdk` — provides search/filter state machine, keyboard nav, grouping.
+  Used as the core of Combobox pattern.
+- **Drawer** wraps `vaul` — provides swipe-to-dismiss, snap points, nested drawers.
+- **Sonner** wraps `sonner` — provides toast notifications with stacking, swipe dismiss.
 - When this doc feels stale, re-sync from:
   `gh api repos/shadcn-ui/ui/contents/apps/v4/content/docs/components/radix --jq '.[].name'`
