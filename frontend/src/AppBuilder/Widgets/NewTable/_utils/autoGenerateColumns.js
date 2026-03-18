@@ -27,7 +27,7 @@ export default function autogenerateColumns(
   }
 
   const isValueIsPremitiveOrArray = (value) => {
-    if (typeof value !== 'object' || Array.isArray(value)) return true;
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return true;
   };
 
   const isValueIsPlainObject = (value) => {
@@ -66,7 +66,7 @@ export default function autogenerateColumns(
         where we do not auto-generate column for nested data
       */
       return Object.entries(firstRow).reduce((accumulator, [key, value]) => {
-        if (typeof value !== 'object') accumulator.push(key);
+        if (value === null || typeof value !== 'object') accumulator.push(key);
         return accumulator;
       }, []);
     }
