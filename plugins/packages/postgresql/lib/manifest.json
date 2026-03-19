@@ -426,8 +426,8 @@
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
         "widget": "password-v3-textarea",
         "required": true,
-        "help_text":"e.g., postgresql://admin:p%40ssword@localhost:5432/my%23db. Encode special characters using a URL encoder."
-      },
+        "help_text":"e.g., postgresql://admin:p%40ssword@localhost:5432/my%23db. Encode special characters using a <a href=\"https://meyerweb.com/eric/tools/dencoder/\" target=\"_blank\">URL encoder</a>."
+       },
       "host": {
         "order": 10,
         "$ref": "#/properties/host",

@@ -73,7 +73,7 @@ export const parsePostgresConnectionString = (connectionString) => {
       port: url.port || '5432',
       username: decodeURIComponent(url.username || ''),
       password: decodeURIComponent(url.password || ''),
-      database: url.pathname.replace(/^\//, '') || '',
+      database: decodeURIComponent(url.pathname.replace(/^\//, '') || ''),
       ssl_enabled: isSslOn ? true : isSslOff ? false : undefined,
       query_params: url.search || '',
       protocol: url.protocol.replace(':', ''),
