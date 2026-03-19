@@ -30,7 +30,6 @@ import Skeleton from 'react-loading-skeleton';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
-import PostMigrationDataSourceRenameBanner from '@/_components/DataSourceBanner/PostMigrationDataSourceRenameBanner';
 
 export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -263,7 +262,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     return (
       <div className="datasource-list-container" id="datasource-list-container">
         <div className="datasource-list">
-          <PostMigrationDataSourceRenameBanner darkMode={darkMode} />
           <div className="datasource-search-holder">
             <SearchBox
               dataCy={`home-page`}
