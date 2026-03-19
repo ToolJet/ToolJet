@@ -248,6 +248,7 @@ export const createAppSlice = (set, get) => ({
       setResolvedPageConstants,
       setPageSwitchInProgress,
       getCurrentPageId,
+      startExposedValueBatch,
       license,
       modules: {
         canvas: { pages },
@@ -255,6 +256,12 @@ export const createAppSlice = (set, get) => ({
       getCurrentMode,
     } = get();
     const isPreview = getCurrentMode(moduleId) !== 'edit';
+
+    // Start batching exposed value writes — new page's components will call
+    // setExposedValue during mount, these get buffered and flushed in a single
+    // set() when isComponentLayoutReady becomes true.
+    startExposedValueBatch();
+
     //!TODO clear all queued tasks
     cleanUpStore(true);
     get().clearTemporaryLayouts();
