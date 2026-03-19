@@ -253,3 +253,8 @@ Before submitting your prompt, verify you've included:
 - [ ] Realistic scope (start with 3-4 core pages)
 
 **Remember**: You don't need to format your prompt into rigid sections. The AI will understand your requirements regardless of structure - what matters most is the content and context you provide.
+
+
+
+---------
+adding some random text to create a pr
