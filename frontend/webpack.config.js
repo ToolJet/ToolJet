@@ -16,6 +16,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
+const PYODIDE_CDN_URL = 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/';
+const PYODIDE_LOCAL_URL = '/assets/libs/pyodide-0.23.2/';
+const pyodideBaseUrl = edition === 'cloud' ? PYODIDE_CDN_URL : PYODIDE_LOCAL_URL;
 const isDevEnv = process.env.NODE_ENV === 'development';
 const isProductionMode = environment === 'production';
 
@@ -51,6 +54,7 @@ const plugins = [
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
     'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     'process.env.TOOLJET_EDITION': JSON.stringify(edition || 'ce'),
+    'process.env.PYODIDE_BASE_URL': JSON.stringify(pyodideBaseUrl),
   }),
   // Module replacement for restricted imports
   new webpack.NormalModuleReplacementPlugin(/^(@ee\/|@cloud\/)/, (resource) => {

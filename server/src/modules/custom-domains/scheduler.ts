@@ -1,0 +1,174 @@
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { CustomDomain } from '@entities/custom_domain.entity';
+import { CustomDomainCacheService } from './cache.service';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { EntityManager, In, LessThan } from 'typeorm';
+
+const STALE_TTL_SECONDS = parseInt(process.env.CUSTOM_DOMAIN_STALE_TTL_SECONDS || '172800', 10);
+const cronKey = process.env.CUSTOM_DOMAIN_CLEANUP_INTERVAL || 'EVERY_DAY_AT_MIDNIGHT';
+const CLEANUP_CRON = CronExpression[cronKey as keyof typeof CronExpression] || CronExpression.EVERY_DAY_AT_MIDNIGHT;
+
+// NOTE: These status maps must stay in sync with CloudflareProvider.mapStatus / mapSslStatus.
+// TODO: Refactor this scheduler to inject and use CloudflareProvider instead of raw fetch calls.
+const STATUS_MAP: Record<string, string> = {
+  pending: 'pending_verification',
+  active: 'active',
+  active_redeploying: 'active',
+  blocked: 'failed',
+  moved: 'failed',
+  deleted: 'deleted',
+};
+
+const SSL_STATUS_MAP: Record<string, string> = {
+  pending_validation: 'pending',
+  pending_issuance: 'pending',
+  pending_deployment: 'pending',
+  active: 'active',
+  pending_deletion: 'deleted',
+  deleted: 'deleted',
+};
+
+@Injectable()
+export class CustomDomainStatusScheduler {
+  private readonly logger = new Logger(CustomDomainStatusScheduler.name);
+
+  constructor(@Optional() private readonly customDomainCacheService?: CustomDomainCacheService) {}
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleCron() {
+    if (process.env.ENABLE_CUSTOM_DOMAINS !== 'true') return;
+
+    // Skip polling if no domains are pending (Redis flag gate)
+    const hasPending = await this.customDomainCacheService?.hasPendingDomains();
+    if (!hasPending) return;
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const pendingDomains = await manager.find(CustomDomain, {
+        where: { status: In(['pending_verification', 'pending_ssl']) },
+        take: 50,
+      });
+
+      if (pendingDomains.length === 0) {
+        // Self-healing: flag was set but DB has no pending domains — clear it
+        await this.customDomainCacheService?.clearPendingFlag();
+        return;
+      }
+
+      this.logger.log(`Polling status for ${pendingDomains.length} pending custom domains`);
+
+      for (const domain of pendingDomains) {
+        try {
+          if (!domain.providerHostnameId) continue;
+
+          const response = await fetch(
+            `https://api.cloudflare.com/client/v4/zones/${process.env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${domain.providerHostnameId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          const data = await response.json();
+          if (!data.success) {
+            this.logger.error(
+              `Cloudflare API error polling ${domain.domain} (hostnameId: ${domain.providerHostnameId}): ` +
+                `HTTP ${response.status}, errors: ${JSON.stringify(data.errors)}`
+            );
+            continue;
+          }
+
+          const cfStatus = data.result.status;
+          const newStatus = STATUS_MAP[cfStatus] || 'pending_verification';
+          if (!STATUS_MAP[cfStatus]) {
+            this.logger.warn(`Unknown Cloudflare hostname status "${cfStatus}" for ${domain.domain}, defaulting to pending_verification`);
+          }
+
+          const rawSslStatus = data.result.ssl?.status;
+          let newSslStatus: string | null = null;
+          if (rawSslStatus) {
+            newSslStatus = SSL_STATUS_MAP[rawSslStatus] || 'pending';
+            if (!SSL_STATUS_MAP[rawSslStatus]) {
+              this.logger.warn(`Unknown Cloudflare SSL status "${rawSslStatus}" for ${domain.domain}, defaulting to pending`);
+            }
+          }
+
+          if (newStatus !== domain.status || newSslStatus !== domain.sslStatus) {
+            await manager.update(CustomDomain, domain.id, {
+              status: newStatus,
+              sslStatus: newSslStatus,
+              verificationErrors: data.result.verification_errors || null,
+            });
+            this.logger.log(`Domain ${domain.domain}: ${domain.status} -> ${newStatus}`);
+            await this.customDomainCacheService?.invalidate(domain.organizationId);
+            await this.customDomainCacheService?.rebuildOriginsSet();
+          }
+        } catch (error) {
+          this.logger.error(`Failed to poll status for ${domain.domain}: ${error.message}`);
+        }
+      }
+    });
+  }
+
+  @Cron(CLEANUP_CRON)
+  async handleStaleCleanup() {
+    if (process.env.ENABLE_CUSTOM_DOMAINS !== 'true') return;
+
+    const cutoffDate = new Date(Date.now() - STALE_TTL_SECONDS * 1000);
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const staleDomains = await manager.find(CustomDomain, {
+        where: { status: In(['pending_verification', 'pending_ssl']), updatedAt: LessThan(cutoffDate) },
+        take: 50,
+      });
+
+      if (staleDomains.length === 0) return;
+
+      this.logger.log(`Found ${staleDomains.length} stale pending custom domains for cleanup`);
+
+      for (const domain of staleDomains) {
+        try {
+          if (domain.providerHostnameId) {
+            const response = await fetch(
+              `https://api.cloudflare.com/client/v4/zones/${process.env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${domain.providerHostnameId}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+
+            if (!response.ok && response.status !== 404) {
+              const data = await response.json();
+              throw new Error(`Cloudflare DELETE failed: ${JSON.stringify(data.errors)}`);
+            }
+          }
+
+          // Mark as deleted first so it won't be retried if remove fails
+          await manager.update(CustomDomain, domain.id, { status: 'deleted' });
+          await manager.remove(domain);
+          await this.customDomainCacheService?.invalidate(domain.organizationId);
+          await this.customDomainCacheService?.rebuildOriginsSet();
+          this.logger.log(
+            `Cleaned up stale domain ${domain.domain} (org: ${domain.organizationId}, stale >${STALE_TTL_SECONDS}s)`
+          );
+        } catch (error) {
+          this.logger.error(`Failed to clean up stale domain ${domain.domain}: ${error.message}`);
+        }
+      }
+
+      // If we cleaned domains, check whether any pending remain
+      const remaining = await manager.find(CustomDomain, {
+        where: { status: In(['pending_verification', 'pending_ssl']) },
+        take: 1,
+      });
+      if (remaining.length === 0) {
+        await this.customDomainCacheService?.clearPendingFlag();
+      }
+    });
+  }
+}
