@@ -983,7 +983,12 @@ class DataSourceManagerComponent extends React.Component {
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
     return (
       pluginsLoaded && (
-        <div>
+        <div className="datasource-manager-container">
+          <style>{`
+            .datasource-save-btn-white-icon:disabled svg path {
+              fill: #FDFDFE !important;
+            }
+          `}</style>
           <Modal
             show={this.props.showDataSourceManagerModal}
             size={selectedDataSource ? 'lg' : 'xl'}
@@ -1222,7 +1227,7 @@ class DataSourceManagerComponent extends React.Component {
                       {!isSampleDb && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
-                            className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                            className={`m-2 datasource-save-btn-white-icon ${isSaving ? 'btn-loading' : ''}`}
                             isLoading={isSaving}
                             disabled={
                               isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
@@ -1267,7 +1272,7 @@ class DataSourceManagerComponent extends React.Component {
                         <ButtonSolid
                           leftIcon="floppydisk"
                           fill={'#FDFDFE'}
-                          className="m-2"
+                          className="m-2 datasource-save-btn-white-icon"
                           disabled={
                             isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
                           }
