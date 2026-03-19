@@ -30,6 +30,7 @@ export const gitSyncService = {
   createGitTag,
   checkTagExists,
   updateEnvConfigs,
+  testProviderConnection,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -239,6 +240,16 @@ function updateEnvConfigs(useEnvConfig, provider) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/git-sync/env-configs`, requestOptions).then(handleResponse);
+}
+
+function testProviderConnection(payload = {}) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/git-sync/test-connection`, requestOptions).then(handleResponse);
 }
 
 function updateAppEditState(appId, allowEditing) {
