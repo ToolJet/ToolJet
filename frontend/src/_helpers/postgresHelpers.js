@@ -5,14 +5,10 @@ export const validatePostgresConnectionString = (connectionString) => {
 
   const trimmed = connectionString.trim();
 
-  if (
-    !trimmed.startsWith('postgres://') &&
-    !trimmed.startsWith('postgresql://')
-  ) {
+  if (!trimmed.startsWith('postgres://') && !trimmed.startsWith('postgresql://')) {
     return {
       valid: false,
-      error:
-        "Invalid protocol. Connection string must start with 'postgres://' or 'postgresql://'",
+      error: "Invalid protocol. Connection string must start with 'postgres://' or 'postgresql://'",
     };
   }
 
@@ -59,10 +55,7 @@ export const parsePostgresConnectionString = (connectionString) => {
       ssl === 'true' ||
       ssl === '1';
 
-    const isSslOff =
-      sslmode === 'disable' ||
-      ssl === 'false' ||
-      ssl === '0';
+    const isSslOff = sslmode === 'disable' || ssl === 'false' || ssl === '0';
 
     return {
       host: url.hostname || '',
@@ -79,10 +72,7 @@ export const parsePostgresConnectionString = (connectionString) => {
   }
 };
 
-export const detectPostgresConnectionStringChange = (
-  oldString,
-  newString
-) => {
+export const detectPostgresConnectionStringChange = (oldString, newString) => {
   if (!oldString || !newString) return null;
 
   const oldParsed = parsePostgresConnectionString(oldString);

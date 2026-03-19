@@ -156,6 +156,7 @@ describe("Okta OIDC", () => {
       level: "workspace",
     });
 
+    cy.wait(3000);
     verifyUserRole("@userId", "end-user");
   });
 

@@ -38,8 +38,7 @@ export const useFieldManager = ({ component, paramUpdated, currentState }) => {
   const handleRemove = useCallback(
     async (removedFields) => {
       // Get existing deletion history
-      const existingFieldDeletionHistory =
-        component.component.definition.properties.fieldDeletionHistory?.value ?? [];
+      const existingFieldDeletionHistory = component.component.definition.properties.fieldDeletionHistory?.value ?? [];
 
       // Add removed field keys to deletion history
       const newFieldDeletionHistory = [

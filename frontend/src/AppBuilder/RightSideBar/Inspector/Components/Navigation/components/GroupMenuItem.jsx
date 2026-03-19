@@ -28,7 +28,9 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
     <div style={{ position: 'relative', width: '100%' }}>
       <div
         ref={optionsBtnRef}
-        className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme theme-dark' : ''} ${isEditing ? 'is-selected' : ''}`}
+        className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
+          darkMode ? 'dark-theme theme-dark' : ''
+        } ${isEditing ? 'is-selected' : ''}`}
         onClick={(e) => {
           e.preventDefault();
           setShowEditPopover(!showEditPopover);
@@ -69,11 +71,23 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
                 className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-actions-popover`}
               >
                 <Popover.Body className="p-2">
-                  <div className="nav-item-action-option" onClick={(e) => { e.stopPropagation(); handleEdit(); }}>
+                  <div
+                    className="nav-item-action-option"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit();
+                    }}
+                  >
                     <TablerIcon iconName="IconPencil" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Edit group</span>
                   </div>
-                  <div className="nav-item-action-option nav-item-action-option-danger" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
+                  <div
+                    className="nav-item-action-option nav-item-action-option-danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete();
+                    }}
+                  >
                     <TablerIcon iconName="IconTrash" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Delete group</span>
                   </div>

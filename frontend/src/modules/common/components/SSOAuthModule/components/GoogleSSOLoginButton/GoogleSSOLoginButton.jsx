@@ -23,9 +23,7 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
     const base = stripTrailingSlash(window.public_config?.TOOLJET_HOST || window.location.origin);
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
-      redirect_uri: `${base}${getSubpath() ?? ''}/sso/google${
-        props.configId ? `/${props.configId}` : ''
-      }`,
+      redirect_uri: `${base}${getSubpath() ?? ''}/sso/google${props.configId ? `/${props.configId}` : ''}`,
       response_type: 'id_token',
       scope: 'email profile',
       client_id,

@@ -289,7 +289,7 @@ const DynamicSelector = ({
       } else {
         cachedData = existingCache['nonDependentCache'];
       }
-      
+
       if (!cachedData || cachedData.length === 0) {
         handleFetch();
       }

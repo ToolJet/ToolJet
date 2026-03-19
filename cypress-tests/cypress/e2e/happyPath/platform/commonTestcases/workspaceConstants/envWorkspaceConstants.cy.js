@@ -142,7 +142,7 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="env_constants-button"]').click();
         verifyConstantValueVisibility(
             dataSourceSelector.baseUrlTextField,
-            "http://20.29.40.108:4000/development"
+            "http://130.131.160.149:4000/development"
         );
         verifyConstantValueVisibility(
             '[value="{{constants.headerKey}}"]',
