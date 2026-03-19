@@ -13,10 +13,10 @@ import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/field';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { authenticationService } from '@/_services/authentication.service';
 
+import { useAppsStore } from '../store';
 import { appTypeToDisplayNameMapping } from '../helper';
 import { handleError, useCreateApp, useDeleteApp, useImportResource, useRenameApp } from '../hooks/appsServiceHooks';
 import { useInstallDependentPlugins, useUninstallPlugins } from '../hooks/pluginsServiceHooks';
-import { useWorkflowListStore } from '../../Workflows/store';
 
 import ActionDialog from '../ActionDialog';
 
@@ -25,7 +25,7 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
 
   const navigate = useNavigate();
 
-  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const { mutate: createNewApp, isLoading: isCreatingApp } = useCreateApp();
   const { mutate: renameApp, isLoading: isRenamingApp } = useRenameApp();

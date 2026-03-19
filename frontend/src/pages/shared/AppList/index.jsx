@@ -1,7 +1,8 @@
 import React from 'react';
 
+import { useAppsStore } from '../store';
 import { useAppFilters } from '../hooks/useAppFilters';
-import { useWorkflowListStore } from '../../Workflows/store';
+
 import AppCard from './AppCard';
 
 export default function AppList({ apps, appType, currentFolderId, checkUserPermissions, basicPlan, moduleEnabled }) {
@@ -20,8 +21,8 @@ export default function AppList({ apps, appType, currentFolderId, checkUserPermi
 function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissions, basicPlan, moduleEnabled }) {
   const { folderId } = useAppFilters();
 
-  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
-  const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+  const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
 
   const handleMenuItemClick = (actionType, appDetails, currentFolderId) => {
     switch (actionType) {

@@ -13,13 +13,13 @@ import {
 } from '@/components/ui/Rocket/dropdown-menu';
 import { Button } from '@/components/ui/Button/Button';
 
-import { useWorkflowListStore } from '../store';
+import { useAppsStore } from '../../shared/store';
 import { useFindDependentPlugins } from '../../shared/hooks/pluginsServiceHooks';
 
 const useReadAndImportFile = () => {
   const { mutateAsync: findDependentPlugins } = useFindDependentPlugins();
 
-  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const handleFileChange = (event) => {
     console.log('event', event);

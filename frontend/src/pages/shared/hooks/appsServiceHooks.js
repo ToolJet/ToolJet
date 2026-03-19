@@ -7,8 +7,8 @@ import { appsService } from '@/_services/apps.service';
 import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
+import { useAppsStore } from '../store';
 import { useAppFilters } from './useAppFilters';
-import { useWorkflowListStore } from '../../Workflows/store';
 import { appTypeToDisplayNameMapping } from '../helper';
 
 export const handleError = (error) => {
@@ -75,8 +75,8 @@ export function useRenameApp() {
   const queryClient = useQueryClient();
 
   const { folderId } = useAppFilters();
-  const currentPage = useWorkflowListStore((state) => state.currentPage);
-  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ appId, name, appType }) => appsService.saveApp(appId, { name }, appType),
@@ -140,8 +140,8 @@ export function useDeleteApp() {
   const queryClient = useQueryClient();
 
   const { folderId } = useAppFilters();
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
-  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -183,8 +183,8 @@ export function useChangeAppIcon() {
   const queryClient = useQueryClient();
 
   const { folderId } = useAppFilters();
-  const currentPage = useWorkflowListStore((state) => state.currentPage);
-  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useAppsStore } from '@/pages/shared/store';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import CRUDActionDialog from '../../shared/CRUDActionDialog';
@@ -7,14 +8,12 @@ import ChangeIconDialog from '../../shared/CRUDActionDialog/ChangeIconDialog';
 import ExportAppModal from '../../shared/CRUDActionDialog/ExportAppModal';
 import FolderActionDialog from '../../shared/FolderBreadcrumb/FolderActionDialog';
 
-import { useWorkflowListStore } from '../store';
+export default function WorkflowDialogs({ appType, workflowLimitsDetails, isLimitNearingOrReached }) {
+  const appDialogState = useAppsStore((state) => state.appDialogState);
+  const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
 
-export default function WorkflowDialogs({ workflowLimitsDetails, isLimitNearingOrReached }) {
-  const appDialogState = useWorkflowListStore((state) => state.appDialogState);
-  const resetAppDialogState = useWorkflowListStore((state) => state.resetAppDialogState);
-
-  const folderDialogState = useWorkflowListStore((state) => state.folderDialogState);
-  const resetFolderDialogState = useWorkflowListStore((state) => state.resetFolderDialogState);
+  const folderDialogState = useAppsStore((state) => state.folderDialogState);
+  const resetFolderDialogState = useAppsStore((state) => state.resetFolderDialogState);
 
   const isExportAppDialogOpen = appDialogState.type === 'export';
   const isChangeIconDialogOpen = appDialogState.type === 'change-icon';
@@ -38,7 +37,7 @@ export default function WorkflowDialogs({ workflowLimitsDetails, isLimitNearingO
           onClose={resetAppDialogState}
           actionType={appDialogState.type}
           appDetails={appDialogState.appDetails}
-          appType={appDialogState.appDetails?.type ?? 'workflow'}
+          appType={appDialogState.appDetails?.type ?? appType}
         />
       )}
 
@@ -58,13 +57,13 @@ export default function WorkflowDialogs({ workflowLimitsDetails, isLimitNearingO
           folderId={folderDialogState.currentFolderId}
           initialFolderName={folderDialogState.initialFolderName}
           appId={folderDialogState.appDetails?.id}
-          appType={folderDialogState.appDetails?.type ?? 'workflow'}
+          appType={folderDialogState.appDetails?.type ?? appType}
         />
       )}
 
       {isLimitNearingOrReached && (
         <LicenseBanner
-          type="workflow"
+          type={appType === 'front-end' ? 'apps' : appType}
           size="small"
           showNewBanner
           bannerVariant="popover"

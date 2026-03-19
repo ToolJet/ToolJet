@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
@@ -9,7 +10,7 @@ import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import { canUserPerformWorkflowAction } from './workflowPermissions';
 
-import { useWorkflowListStore } from './store';
+import { useAppsStore } from '../shared/store';
 import { useFetchFolders } from '../shared/hooks/folderServiceHooks';
 import { useFetchFeatureAccess } from '../shared/hooks/licenseServiceHooks';
 import { useFetchApps, useFetchAppsLimit, useFetchWorkflowLimit } from '../shared/hooks/appsServiceHooks';
@@ -26,10 +27,11 @@ import WorkflowDialogs from './components/WorkflowDialogs';
 
 export default function Workflows() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const currentPage = useWorkflowListStore((state) => state.currentPage);
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
-  const appSearchQuery = useWorkflowListStore((state) => state.appSearchQuery);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -46,7 +48,6 @@ export default function Workflows() {
     { enabled: isFoldersSuccess }
   );
   const { data: featureAccess } = useFetchFeatureAccess();
-  useFetchAppsLimit();
 
   const { data: workflowInstanceLevelLimit, isSuccess: isInstanceLimitFetchedSuccessfully } =
     useFetchWorkflowLimit('instance');
@@ -128,7 +129,10 @@ export default function Workflows() {
             />
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
-              <CreateWorkflowBtn disabled={isCreationDisabled} />
+              <CreateWorkflowBtn
+                label={t('workflowsDashboard.header.createNewApplication')}
+                disabled={isCreationDisabled}
+              />
 
               <MoreActionsMenu disabled={isCreationDisabled} />
             </div>
@@ -159,7 +163,10 @@ export default function Workflows() {
                   title="You don’t have any workflows yet"
                   description="Create a workflow to start automating your tasks."
                 >
-                  <CreateWorkflowBtn disabled={isCreationDisabled} />
+                  <CreateWorkflowBtn
+                    label={t('workflowsDashboard.header.createNewApplication')}
+                    disabled={isCreationDisabled}
+                  />
                 </EmptyState>
               )
             ) : (
@@ -172,6 +179,7 @@ export default function Workflows() {
       <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
 
       <WorkflowDialogs
+        appType="workflow"
         workflowLimitsDetails={workflowLimitsDetails}
         isLimitNearingOrReached={isInstanceLimitNearingOrReached || isWorkspaceLimitNearingOrReached}
       />

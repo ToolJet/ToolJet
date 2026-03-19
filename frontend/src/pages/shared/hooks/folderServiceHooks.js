@@ -7,9 +7,8 @@ import { folderService } from '@/_services/folder.service';
 import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-// TODO: Check if we can move this logic away from this file
+import { useAppsStore } from '../store';
 import { useAppFilters } from './useAppFilters';
-import { useWorkflowListStore } from '../../Workflows/store';
 
 const defaultFolder = (appType) => ({
   label: `All ${appType === 'workflow' ? 'workflows' : 'applications'}`,
@@ -61,7 +60,7 @@ export function useCreateFolder() {
 export function useUpdateFolder() {
   const { setFilters } = useAppFilters();
   const queryClient = useQueryClient();
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   // const [setSearchParams] = useSearchParams();
 
@@ -84,7 +83,7 @@ export function useUpdateFolder() {
 export function useDeleteFolder() {
   const { setFilters } = useAppFilters();
   const queryClient = useQueryClient();
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: (folderId) => folderService.deleteFolder(folderId),
@@ -105,7 +104,7 @@ export function useDeleteFolder() {
 
 export function useAddAppToFolder() {
   const { folderId } = useAppFilters();
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.addToFolder(appId, folderId),
@@ -132,7 +131,7 @@ export function useAddAppToFolder() {
 
 export function useRemoveAppFromFolder() {
   const { folderId } = useAppFilters();
-  const setCurrentPage = useWorkflowListStore((state) => state.setCurrentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.removeAppFromFolder(appId, folderId),

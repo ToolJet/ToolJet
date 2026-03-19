@@ -50,6 +50,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import Apps from '@/pages/Apps';
 
 import WorkflowsNew from '../pages/Workflows';
 import ReactQueryClientProvider from './ReactQueryClientProvider';
@@ -473,6 +474,15 @@ class AppComponent extends React.Component {
                 <Route
                   exact
                   path="/:workspaceId"
+                  element={
+                    <PrivateRoute darkMode={darkMode}>
+                      <Apps />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/apps"
                   element={
                     <PrivateRoute darkMode={darkMode}>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />

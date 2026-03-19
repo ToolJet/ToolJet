@@ -2,13 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
+import { useAppsStore } from '@/pages/shared/store';
 
-import { useWorkflowListStore } from '../store';
-
-export default function CreateWorkflowBtn({ disabled }) {
+export default function CreateWorkflowBtn({ label, disabled }) {
   const { t } = useTranslation();
 
-  const setAppDialogState = useWorkflowListStore((state) => state.setAppDialogState);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const handleOpenCreateWorkflowDialog = () => {
     setAppDialogState({ type: 'create' });
@@ -23,7 +22,7 @@ export default function CreateWorkflowBtn({ disabled }) {
       disabled={disabled}
       onClick={handleOpenCreateWorkflowDialog}
     >
-      {t('workflowsDashboard.header.createNewApplication')}
+      {label}
     </Button>
   );
 }

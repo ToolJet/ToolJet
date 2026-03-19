@@ -16,13 +16,14 @@ import {
 } from '@/components/ui/Rocket/select';
 import { authenticationService } from '@/_services/authentication.service';
 
-import { useWorkflowListStore } from '../../Workflows/store';
+import { useAppsStore } from '../store';
+// import SearchBar from '../SearchBar';
 
 export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const hasFolderCRUDPermission = authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d ?? false;
 
-  const setFolderDialogState = useWorkflowListStore((state) => state.setFolderDialogState);
+  const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
 
   const selectedFolderLabel = folderList?.find((folder) => folder.value === selectedFolder)?.label ?? '';
 
@@ -93,6 +94,8 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                     </div>
                   )}
                 </div>
+
+                {/* <SearchBar /> */}
               </header>
 
               <SelectSeparator />

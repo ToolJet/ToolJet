@@ -26,7 +26,8 @@ const initialState = {
   folderDialogState: { ...folderDialogInitialState },
 };
 
-export const useWorkflowListStore = createZustandStoreWithImmer(
+// For apps, workflow and module list page
+export const useAppsStore = createZustandStoreWithImmer(
   (set) => ({
     ...initialState,
     setOpenWorkflowDialogType: (type) =>
@@ -71,5 +72,5 @@ export const useWorkflowListStore = createZustandStoreWithImmer(
         state.folderDialogState = { ...folderDialogInitialState };
       }),
   }),
-  { storeName: 'Workflow list' }
+  { storeName: 'Apps store' }
 );
