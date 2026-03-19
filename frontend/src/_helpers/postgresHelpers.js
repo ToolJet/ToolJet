@@ -29,6 +29,17 @@ export const validatePostgresConnectionString = (connectionString) => {
       }
     }
 
+    try {
+      if (url.username) decodeURIComponent(url.username);
+      if (url.password) decodeURIComponent(url.password);
+      if (url.pathname) decodeURIComponent(url.pathname.replace(/^\//, ''));
+    } catch {
+      return {
+        valid: false,
+        error: 'Invalid URL encoding in connection string credentials',
+      };
+    }
+
     return { valid: true, error: '' };
   } catch {
     return { valid: false, error: 'Malformed PostgreSQL connection string' };
