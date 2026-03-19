@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
 
+const CLOSE_EVENT = 'folder-menu:close';
+
 export const FolderMenu = function FolderMenu({
   deleteFolder,
   editFolder,
@@ -12,16 +14,37 @@ export const FolderMenu = function FolderMenu({
   darkMode,
   dataCy = '',
 }) {
+  const menuId = React.useRef(Math.random());
   const [open, setOpen] = React.useState(false);
-  const closeMenu = () => {
-    document.body.click();
+
+  const handleToggle = (isOpen) => {
+    if (isOpen) {
+      // Broadcast to all other menus to close
+      window.dispatchEvent(new CustomEvent(CLOSE_EVENT, { detail: { id: menuId.current } }));
+    }
+    setOpen(isOpen);
   };
+
+  const handleHide = () => {
+    setOpen(false);
+  };
+
+  React.useEffect(() => {
+    const handleCloseOthers = (e) => {
+      if (e.detail.id !== menuId.current) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener(CLOSE_EVENT, handleCloseOthers);
+    return () => window.removeEventListener(CLOSE_EVENT, handleCloseOthers);
+  }, []);
+
   const Field = ({ text, onClick, customClass }) => {
     return (
       <div
         role="button"
         onClick={() => {
-          closeMenu();
+          handleHide();
           onClick();
         }}
         className={cx('field mb-3', {
@@ -44,9 +67,9 @@ export const FolderMenu = function FolderMenu({
       trigger="click"
       placement="bottom-end"
       rootClose
-      onToggle={(isOpen) => {
-        setOpen(isOpen);
-      }}
+      show={open}
+      onToggle={handleToggle}
+      onHide={handleHide}
       overlay={
         <Popover
           id="popover-app-menu"
