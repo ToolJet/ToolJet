@@ -48,7 +48,7 @@ async function generatePDF(filename, data) {
         body: value.map((item) => Object.values(item)),
       });
 
-      y = doc.autoTable.previous.finalY + 10;
+      y = doc.lastAutoTable.finalY + 10;
     } else if (valueType === 'object' && value !== null) {
       const columnNames = Object.keys(value);
 
@@ -59,7 +59,7 @@ async function generatePDF(filename, data) {
         body: [Object.values(value)],
       });
 
-      y = doc.autoTable.previous.finalY + 10;
+      y = doc.lastAutoTable.finalY + 10;
     } else {
       throw new Error('Invalid data type. Expected string, object, or array.');
     }
