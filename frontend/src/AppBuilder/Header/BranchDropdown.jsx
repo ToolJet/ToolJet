@@ -234,7 +234,11 @@ export function BranchDropdown({ appId, organizationId }) {
       }
     }
 
-    if (!targetBranchName && branchVersions.length === 1) {
+    // Only fall back to the single branch version when the workspace active branch is
+    // a feature branch (non-default). On the default/main workspace branch the user is
+    // intentionally on the canonical version — do not auto-switch.
+    const isOnDefaultWorkspaceBranch = !workspaceActiveBranch || workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault;
+    if (!targetBranchName && branchVersions.length === 1 && !isOnDefaultWorkspaceBranch) {
       targetBranchName = branchVersions[0].name;
     }
 

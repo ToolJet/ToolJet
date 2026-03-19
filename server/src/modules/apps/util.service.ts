@@ -167,7 +167,9 @@ export class AppsUtilService implements IAppsUtilService {
             const branchVersion = await manager.save(
               AppVersion,
               manager.create(AppVersion, {
-                name: workspaceBranch.name,
+                // UUID: BRANCH-type versions are never user-visible, so use a
+                // unique placeholder that can never conflict with user-named versions.
+                name: uuidv4(),
                 appId: app.id,
                 definition: appVersion.definition,
                 currentEnvironmentId: firstPriorityEnv.id,
@@ -785,10 +787,12 @@ export class AppsUtilService implements IAppsUtilService {
     ) {
       shouldFreezeEditor = true;
     } else {
-      if (appGit) {
-        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
-      } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
+      // Workspace branching takes precedence: if branching is enabled, VERSION-type drafts on the
+      // default branch are always frozen (edits must happen on feature branches).
+      if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
         shouldFreezeEditor = true;
+      } else if (appGit) {
+        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
       }
     }
 

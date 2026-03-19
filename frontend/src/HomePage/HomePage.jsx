@@ -231,7 +231,7 @@ class HomePageComponent extends React.Component {
 
     // Re-fetch apps when workspace branch changes (client-side branch switching)
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      if (state.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
       }

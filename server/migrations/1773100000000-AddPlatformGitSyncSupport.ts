@@ -28,14 +28,18 @@ export class AddPlatformGitSyncSupport1773100000000 implements MigrationInterfac
       );
     `);
 
-    // 2. Add is_stub column to apps
+    // 2. Add is_stub column to app_versions (branch-level stub tracking)
     await queryRunner.query(`
-      ALTER TABLE apps ADD COLUMN IF NOT EXISTS is_stub BOOLEAN NOT NULL DEFAULT false;
+      ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_stub BOOLEAN NOT NULL DEFAULT false;
     `);
 
-    // 3. Add branch_id column to app_versions (structural FK to workspace branches)
+    // 3. Add branch_id and is_stub to app_versions (branch-level tracking)
     await queryRunner.query(`
       ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS branch_id UUID;
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_stub BOOLEAN NOT NULL DEFAULT false;
     `);
 
     await queryRunner.query(`
@@ -51,8 +55,9 @@ export class AddPlatformGitSyncSupport1773100000000 implements MigrationInterfac
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS fk_app_versions_branch;`);
+    await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS is_stub;`);
     await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS branch_id;`);
-    await queryRunner.query(`ALTER TABLE apps DROP COLUMN IF EXISTS is_stub;`);
+    // apps.is_stub removed — stub status is derived from app_versions
     await queryRunner.query(`DROP TABLE IF EXISTS app_branch_state;`);
   }
 }
