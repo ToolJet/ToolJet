@@ -113,7 +113,10 @@ export default function MoreActionsMenu({ disabled }) {
           />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent className={cn('tw-min-w-52', { 'dark-theme theme-dark': darkMode })} align="end">
+        <DropdownMenuContent
+          className={cn('tw-min-w-52 tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}
+          align="end"
+        >
           <DropdownMenuGroup>
             <DropdownMenuItem
               data-cy="import-option-label"

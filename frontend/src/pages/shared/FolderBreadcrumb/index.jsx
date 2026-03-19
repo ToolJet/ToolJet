@@ -62,7 +62,10 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent align="end" className={cn('tw-min-w-52', { 'dark-theme theme-dark': darkMode })}>
+            <SelectContent
+              align="end"
+              className={cn('tw-min-w-52 tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}
+            >
               <header className="tw-p-2">
                 <div className="tw-flex tw-justify-between tw-items-center tw-gap-1">
                   <p className="tw-font-title-default tw-text-text-default tw-flex tw-items-center tw-gap-1.5">
@@ -98,7 +101,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                 {/* <SearchBar /> */}
               </header>
 
-              <SelectSeparator />
+              <SelectSeparator className="tw-bg-border-weak" />
 
               <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
                 {folderList.map((folder) => (
@@ -114,7 +117,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
 
               {hasFolderCRUDPermission && (
                 <>
-                  <SelectSeparator />
+                  <SelectSeparator className="tw-bg-border-weak" />
 
                   <Button
                     isLucid

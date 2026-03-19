@@ -63,14 +63,10 @@ export default function AppCard({
       <TruncatedText
         content={name}
         data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-title`}
-        className="tw-flex-1 tw-text-text-default tw-font-title-default tw-m-0"
+        className="tw-flex-1 tw-text-text-default tw-font-title-large tw-m-0"
       >
         {decodeEntities(name)}
       </TruncatedText>
-
-      {/* <p className="tw-m-0 tw-text-text-default tw-font-title-default tw-truncate">
-        {name}
-      </p> */}
 
       {hasUpdatePermission && (
         <TooltipComp content={created_at ? moment(created_at).format('dddd, MMMM Do YYYY, h:mm:ss a') : ''}>
@@ -92,7 +88,7 @@ export default function AppCard({
       <div
         data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-card`}
         className={cn(
-          'tw-relative tw-h-[6.375rem] tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-rounded-lg tw-cursor-pointer tw-transition-shadow tw-duration-200 hover:tw-shadow-[0px_0px_1px_0px_rgba(48,50,51,0.05),_0px_2px_4px_0px_rgba(48,50,51,0.1)]',
+          'tw-relative tw-h-[6.625rem] tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-rounded-lg tw-cursor-pointer tw-transition-shadow tw-duration-200 hover:tw-shadow-[0px_0px_1px_0px_rgba(48,50,51,0.05),_0px_2px_4px_0px_rgba(48,50,51,0.1)]',
           { 'tw-opacity-50 tw-pointer-events-none': isAppTypeModuleAndModuleNotEnabled },
           { 'tw-group ': !isAppTypeModuleAndModuleNotEnabled }
         )}

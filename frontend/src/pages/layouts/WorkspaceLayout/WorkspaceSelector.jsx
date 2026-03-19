@@ -64,10 +64,10 @@ export default function WorkspaceSelector({ totalCount = 8 }) {
           <SelectValue />
         </SelectTrigger>
 
-        <SelectContent className={cn('tw-min-w-60', { 'dark-theme theme-dark': darkMode })}>
+        <SelectContent className={cn('tw-min-w-60 tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}>
           <h6 className="tw-font-title-default tw-text-text-default tw-p-2">Workspaces ({workspaceList?.length})</h6>
 
-          <SelectSeparator className="tw-border-border-weak" />
+          <SelectSeparator className="tw-bg-border-weak" />
 
           <SelectGroup>
             {workspaceList.map((workspace) => (
@@ -81,7 +81,7 @@ export default function WorkspaceSelector({ totalCount = 8 }) {
             ))}
           </SelectGroup>
 
-          <SelectSeparator className="tw-border-border-weak" />
+          <SelectSeparator className="tw-bg-border-weak" />
 
           <Button isLucid variant="ghost" leadingIcon="plus" className="tw-w-full" onClick={handleAddNewWorkspace}>
             Add new workspace

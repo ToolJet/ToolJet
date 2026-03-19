@@ -28,7 +28,7 @@ export default function ActionDialog({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          'tw-w-full tw-max-w-96 tw-p-0 tw-gap-0',
+          'tw-w-full tw-max-w-96 tw-p-0 tw-gap-0 tw-border-border-weak',
           { 'dark-theme theme-dark': darkMode },
           classes?.dialogContent
         )}

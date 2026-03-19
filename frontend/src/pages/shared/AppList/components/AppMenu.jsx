@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppWindow, Copy, FileUp, FolderInput, FolderOutput, PencilRuler, Trash } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,8 @@ export default function AppMenu({
 }) {
   const { t } = useTranslation();
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -37,7 +40,7 @@ export default function AppMenu({
         />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-40" align="start">
+      <DropdownMenuContent className={cn('tw-border-border-weak', { 'dark-theme theme-dark': darkMode })} align="start">
         <DropdownMenuGroup data-cy="card-options">
           {hasUpdatePermission && (
             <>

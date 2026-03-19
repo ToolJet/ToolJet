@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { cn } from '@/lib/utils';
 import {
   Pagination,
   PaginationContent,
@@ -31,6 +32,8 @@ function getPageNumbers(currentPage, totalPages) {
 }
 
 export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize = 50, onPageChange, onPageSizeChange }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const totalPages = Math.ceil(totalItems / pageSize);
   const pages = getPageNumbers(currentPage, totalPages);
 
@@ -44,7 +47,7 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
           <SelectTrigger className="tw-h-7 tw-w-14 tw-text-xs tw-px-1.5 tw-py-1 tw-rounded-md tw-border-border-default">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className={cn('tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}>
             {PAGE_SIZE_OPTIONS.map((size) => (
               <SelectItem key={size} value={size} className="tw-text-xs">
                 {size}
