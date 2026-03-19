@@ -41,7 +41,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
   const [pendingAddDataSource, setPendingAddDataSource] = useState(null);
-  const pendingAddAfterSwitchRef = useRef(null);
+  const [pendingCreateDS, setPendingCreateDS] = useState(null);
+  const loadingSeenRef = useRef(false);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
@@ -110,13 +111,18 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
 
   // After branch switch + refetch, trigger the deferred add
   useEffect(() => {
-    if (pendingAddAfterSwitchRef.current && !isLoading) {
-      const ds = pendingAddAfterSwitchRef.current;
-      pendingAddAfterSwitchRef.current = null;
+    if (!pendingCreateDS) return;
+    if (isLoading) {
+      loadingSeenRef.current = true;
+    }
+    if (!isLoading && loadingSeenRef.current) {
+      const ds = pendingCreateDS;
+      loadingSeenRef.current = false;
+      setPendingCreateDS(null);
       createDataSource(ds);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataSources, isLoading]);
+  }, [dataSources, isLoading, pendingCreateDS]);
 
   const handleHideModal = (ds) => {
     if (dataSources?.length) {
@@ -553,7 +559,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
           }}
           onBranchSwitch={() => {
             if (pendingAddDataSource) {
-              pendingAddAfterSwitchRef.current = pendingAddDataSource;
+              loadingSeenRef.current = false;
+              setPendingCreateDS(pendingAddDataSource);
               setPendingAddDataSource(null);
             }
             setShowSwitchBranchModal(false);

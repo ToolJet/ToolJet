@@ -61,9 +61,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
 
     if (branch?.isDefault) {
-      throw new BadRequestException(
-        'Workspace constants cannot be added directly on the master branch. Please create a feature branch and submit a PR.'
-      );
+      throw new BadRequestException('Constants must be created on a branch');
     }
   }
 

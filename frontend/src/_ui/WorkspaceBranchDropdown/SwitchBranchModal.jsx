@@ -49,11 +49,12 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
     try {
       await actions.switchBranch(branch.id);
       toast.success(`Switched to ${branch.name}`);
-      onClose();
       if (onBranchSwitch) {
         onBranchSwitch(branch);
+      } else {
+        onClose();
+        window.location.reload();
       }
-      window.location.reload();
     } catch (error) {
       console.error('Error switching branch:', error);
       const errorMessage = error?.error || error?.message || 'Failed to switch branch';
