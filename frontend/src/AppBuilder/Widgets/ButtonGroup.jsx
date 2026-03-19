@@ -20,6 +20,7 @@ export const ButtonGroup = function Button({
 
   const {
     backgroundColor,
+    hoverBackgroundMode,
     hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
     textSize = 14,
@@ -169,9 +170,9 @@ export const ButtonGroup = function Button({
             const isSelected = defaultActive?.includes(values[index]);
             const buttonBackgroundColor = isSelected ? selectedBackgroundColor : backgroundColor;
             const buttonHoverBackgroundColor =
-              hoverBackgroundColor === 'var(--cc-primary-brand)'
-                ? getModifiedColor(buttonBackgroundColor, 'hover')
-                : hoverBackgroundColor;
+              hoverBackgroundMode === 'manual'
+                ? hoverBackgroundColor || getModifiedColor(buttonBackgroundColor, 'hover')
+                : getModifiedColor(buttonBackgroundColor, 'hover');
 
             return (
               <button

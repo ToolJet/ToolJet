@@ -106,14 +106,36 @@ export const popoverMenuConfig = {
             },
             accordian: 'Menu',
         },
-        hoverBackgroundColor: {
-            type: 'colorSwatches',
+        hoverBackgroundMode: {
+            type: 'switch',
             displayName: 'Hover background',
-            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+            options: [
+                { displayName: 'Auto', value: 'auto' },
+                { displayName: 'Manual', value: 'manual' },
+            ],
             conditionallyRender: {
                 key: 'buttonType',
                 value: 'primary',
             },
+            accordian: 'Menu',
+            isFxNotRequired: true,
+        },
+        hoverBackgroundColor: {
+            type: 'colorSwatches',
+            displayName: '',
+            showLabel: false,
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            conditionallyRender: [
+                {
+                    key: 'buttonType',
+                    value: 'primary',
+                },
+                {
+                    key: 'hoverBackgroundMode',
+                    value: 'manual',
+                },
+            ],
             accordian: 'Menu',
         },
         textColor: {
@@ -312,6 +334,7 @@ export const popoverMenuConfig = {
         events: [],
         styles: {
             backgroundColor: { value: 'var(--cc-primary-brand)' },
+            hoverBackgroundMode: { value: 'auto' },
             hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
             textColor: { value: '#FFFFFF' },
             textSize: { value: '{{14}}' },

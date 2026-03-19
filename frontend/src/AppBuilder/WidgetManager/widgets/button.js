@@ -73,17 +73,39 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
-    hoverBackgroundColor: {
-      type: 'colorSwatches',
+    hoverBackgroundMode: {
+      type: 'switch',
       displayName: 'Hover background',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: false,
-      },
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
       conditionallyRender: {
         key: 'type',
         value: 'primary',
       },
+      accordian: 'container',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: [
+        {
+          key: 'type',
+          value: 'primary',
+        },
+        {
+          key: 'hoverBackgroundMode',
+          value: 'manual',
+        },
+      ],
       accordian: 'container',
     },
     textColor: {
@@ -269,6 +291,7 @@ export const buttonConfig = {
       contentAlignment: { value: 'center' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
+      hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },

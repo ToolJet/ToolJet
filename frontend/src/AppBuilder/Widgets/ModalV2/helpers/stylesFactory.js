@@ -13,6 +13,7 @@ export function createModalStyles({
   footerBackgroundColor,
   footerHeightPx,
   triggerButtonBackgroundColor,
+  triggerButtonHoverBackgroundMode,
   triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
   triggerButtonTextColor,
   isVisible,
@@ -59,9 +60,9 @@ export function createModalStyles({
       justifyContent: computedTriggerButtonContentAlignment,
       gap: '6px',
       '--tblr-btn-color-darker':
-        triggerButtonHoverBackgroundColor === 'var(--cc-primary-brand)'
-          ? getModifiedColor(triggerButtonBackgroundColor, 'hover')
-          : triggerButtonHoverBackgroundColor,
+        triggerButtonHoverBackgroundMode === 'manual'
+          ? triggerButtonHoverBackgroundColor || getModifiedColor(triggerButtonBackgroundColor, 'hover')
+          : getModifiedColor(triggerButtonBackgroundColor, 'hover'),
       boxShadow,
       borderColor: triggerButtonBackgroundColor,
       height: '100%',

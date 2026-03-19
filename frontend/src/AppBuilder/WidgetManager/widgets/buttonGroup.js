@@ -75,12 +75,27 @@ export const buttonGroupConfig = {
         defaultValue: false,
       },
     },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      isFxNotRequired: true,
+    },
     hoverBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Hover background',
+      displayName: '',
+      showLabel: false,
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'hoverBackgroundMode',
+        value: 'manual',
       },
     },
     textColor: {
@@ -197,6 +212,7 @@ export const buttonGroupConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{14}}' },

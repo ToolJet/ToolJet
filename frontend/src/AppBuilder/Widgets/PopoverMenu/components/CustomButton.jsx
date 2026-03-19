@@ -22,6 +22,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
   // ===== STYLE PROPS =====
   const {
     backgroundColor,
+    hoverBackgroundMode,
     hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
     textSize = 14,
@@ -68,11 +69,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       : 'transparent';
 
   const computedHoverBgColor =
-    hoverBackgroundColor === 'var(--cc-primary-brand)'
-      ? buttonType === 'primary'
-        ? getModifiedColor(computedBgColor, 'hover')
-        : 'transparent'
-      : hoverBackgroundColor;
+    buttonType === 'primary'
+      ? hoverBackgroundMode === 'manual'
+        ? hoverBackgroundColor || getModifiedColor(computedBgColor, 'hover')
+        : getModifiedColor(computedBgColor, 'hover')
+      : 'transparent';
   const normalizedTextSize = Number(textSize);
   const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
   const computedLineHeight = computedFontSize * 1.42;

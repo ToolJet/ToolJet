@@ -12,6 +12,7 @@ export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
     backgroundColor,
+    hoverBackgroundMode,
     hoverBackgroundColor,
     textColor,
     textSize = 14,
@@ -81,11 +82,11 @@ export const Button = function Button(props) {
       : 'transparent';
 
   const computedHoverBgColor =
-    hoverBackgroundColor === 'var(--cc-primary-brand)'
-      ? type === 'primary'
-        ? getModifiedColor(computedBgColor, 'hover')
-        : 'transparent'
-      : hoverBackgroundColor;
+    type === 'primary'
+      ? hoverBackgroundMode === 'manual'
+        ? hoverBackgroundColor || getModifiedColor(computedBgColor, 'hover')
+        : getModifiedColor(computedBgColor, 'hover')
+      : 'transparent';
   const normalizedTextSize = Number(textSize);
   const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
   const computedLineHeight = computedFontSize * 1.42;
