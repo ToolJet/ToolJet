@@ -52,7 +52,6 @@ export class DataSourcesRepository extends Repository<DataSource> {
                 SELECT 1 FROM data_source_versions dsv2
                 WHERE dsv2.data_source_id = data_source.id
                   AND dsv2.branch_id = :branchId
-                  AND dsv2.is_active = true
               )
             )
           )`,
@@ -79,7 +78,6 @@ export class DataSourcesRepository extends Repository<DataSource> {
                 SELECT 1 FROM data_source_versions dsv2
                 WHERE dsv2.data_source_id = data_source.id
                   AND dsv2.branch_id = :branchId
-                  AND dsv2.is_active = true
               )
             )
           )`,

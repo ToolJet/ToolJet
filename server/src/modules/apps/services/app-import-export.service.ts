@@ -46,6 +46,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -1336,6 +1337,12 @@ export class AppImportExportService {
           );
         }
 
+        // For newly created data sources, create branch-aware DSV so workspace
+        // git sync recognizes this DS on the active branch instead of creating a duplicate.
+        if (!this.isExistingDataSource(dataSourceForAppVersion) && !isDefaultDatasource) {
+          await this.createBranchAwareDsvForNewDataSource(manager, dataSourceForAppVersion, user.organizationId);
+        }
+
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
           user?.organizationId,
@@ -1912,6 +1919,18 @@ export class AppImportExportService {
         },
       });
     };
+    // Git exports replace id with co_relation_id, so the imported dataSource.id
+    // is actually the source's co_relation_id. Look up by co_relation_id to
+    // find existing DS that were previously imported or created locally.
+    const globalDataSourceByCoRelationId = async (dataSource: DataSource) => {
+      return await manager.findOne(DataSource, {
+        where: {
+          co_relation_id: dataSource.id,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
+        },
+      });
+    };
     const globalDataSourceWithSameNameExists = async (dataSource: DataSource) => {
       return await manager.findOne(DataSource, {
         where: {
@@ -1924,7 +1943,9 @@ export class AppImportExportService {
       });
     };
     const existingDatasource =
-      (await globalDataSourceWithSameIdExists(dataSource)) || (await globalDataSourceWithSameNameExists(dataSource));
+      (await globalDataSourceWithSameIdExists(dataSource)) ||
+      (await globalDataSourceByCoRelationId(dataSource)) ||
+      (await globalDataSourceWithSameNameExists(dataSource));
 
     if (existingDatasource) return existingDatasource;
 
@@ -1941,10 +1962,15 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
+          scope: DataSourceScopes.GLOBAL,
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
+
+        // Set co_relation_id so workspace git sync can identify this DS.
+        // Use the imported id (source's co_relation_id) to maintain identity across branches.
+        newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+        await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
         return newDataSource;
       }
@@ -1956,10 +1982,15 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
+        scope: DataSourceScopes.GLOBAL,
         pluginId: null,
       });
       await manager.save(newDataSource);
+
+      // Set co_relation_id so workspace git sync can identify this DS.
+      // Use the imported id (source's co_relation_id) to maintain identity across branches.
+      newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+      await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
       return newDataSource;
     };
@@ -1968,6 +1999,62 @@ export class AppImportExportService {
       return await createDsFromPluginInstalled(dataSource);
     } else {
       return await createNewGlobalDs(dataSource);
+    }
+  }
+
+  /**
+   * For a newly created data source, create a branch-specific DSV record
+   * so that workspace git sync recognizes it on the active branch.
+   * Copies options from the default DSV to the branch DSV.
+   */
+  private async createBranchAwareDsvForNewDataSource(
+    manager: EntityManager,
+    dataSource: DataSource,
+    organizationId: string
+  ): Promise<void> {
+    // Only create branch DSV if workspace branching is configured
+    const defaultBranch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    if (!defaultBranch) return;
+
+    const branchId = defaultBranch.id;
+
+    // Check if a branch-specific DSV already exists
+    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId },
+    });
+    if (existingBranchDsv) return;
+
+    // Find the default DSV to copy from
+    const defaultDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, isDefault: true },
+    });
+    if (!defaultDsv) return;
+
+    // Create branch-specific DSV
+    const branchDsv = await manager.save(
+      manager.create(DataSourceVersion, {
+        dataSourceId: dataSource.id,
+        branchId,
+        name: defaultDsv.name,
+        isActive: true,
+      })
+    );
+
+    // Copy options from default DSV to branch DSV
+    const defaultOptions = await manager.find(DataSourceVersionOptions, {
+      where: { dataSourceVersionId: defaultDsv.id },
+    });
+    for (const dOpt of defaultOptions) {
+      await manager.save(
+        manager.create(DataSourceVersionOptions, {
+          dataSourceVersionId: branchDsv.id,
+          environmentId: dOpt.environmentId,
+          options: dOpt.options,
+        })
+      );
     }
   }
 

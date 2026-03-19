@@ -959,9 +959,8 @@ class DataSourceManagerComponent extends React.Component {
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, selectedDataSource?.options, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
