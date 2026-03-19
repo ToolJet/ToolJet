@@ -752,7 +752,7 @@ export default class PostgresqlQueryService implements QueryService {
       const connPass = decodeURIComponent(parsedUrl.password || '');
       const connHost = parsedUrl.hostname || '';
       const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
-      const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
+      const connDb =decodeURIComponent( parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '');
       const sslmode = parsedUrl.searchParams.get('sslmode') || parsedUrl.searchParams.get('ssl') || '';
 
       let connSslEnabled: boolean | undefined;
