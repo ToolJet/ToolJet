@@ -195,10 +195,18 @@ function SearchPanel({ view }) {
 
     const currentLabel = searchInfo.current === null ? '?' : searchInfo.current;
     const totalLabel = searchInfo.hasOverflow ? `${MATCH_COUNT_LIMIT}+` : searchInfo.total;
+    const visibleCountLabel = `${currentLabel} of ${totalLabel}`;
+    const ariaLabel = searchInfo.hasOverflow
+      ? `${visibleCountLabel}. ${MATCH_COUNT_TOOLTIP}`
+      : visibleCountLabel;
 
     return (
-      <span className="search-match-count" title={searchInfo.hasOverflow ? MATCH_COUNT_TOOLTIP : undefined}>
-        {currentLabel} of {totalLabel}
+      <span
+        className="search-match-count"
+        title={searchInfo.hasOverflow ? MATCH_COUNT_TOOLTIP : undefined}
+        aria-label={ariaLabel}
+      >
+        {visibleCountLabel}
       </span>
     );
   };
