@@ -18,8 +18,8 @@ All standard `<input>` HTML attributes are forwarded.
 | Value | Height | Font size | Padding | Tailwind |
 |---|---|---|---|---|
 | large | 40px | 14px / 20px | 12px h, 10px v | `tw-h-10 tw-text-lg tw-px-3 tw-py-2.5` |
-| default | 36px | 12px / 18px | 12px h, 8px v | `tw-h-9 tw-text-base tw-px-3 tw-py-2` |
-| small | 32px | 12px / 18px | 12px h, 6px v | `tw-h-8 tw-text-base tw-px-3 tw-py-1.5` |
+| default | 32px | 12px / 18px | 12px h, 8px v | `tw-h-8 tw-text-base tw-px-3 tw-py-2` |
+| small | 28px | 12px / 18px | 12px h, 6px v | `tw-h-7 tw-text-base tw-px-3 tw-py-1.5` |
 
 ## Token Mapping
 

@@ -2,8 +2,8 @@ import * as React from "react"
 import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/Rocket/shadcn/button"
-import { Input } from "@/components/ui/Rocket/shadcn/input"
+import { Button } from "@/components/ui/Rocket/Button/Button"
+import { Input } from "@/components/ui/Rocket/Input/Input"
 import { Textarea } from "@/components/ui/Rocket/shadcn/textarea"
 
 function InputGroup({

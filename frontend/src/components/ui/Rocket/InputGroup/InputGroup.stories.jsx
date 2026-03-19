@@ -3,12 +3,12 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupSelect,
   InputGroupText,
   InputGroupButton,
 } from './InputGroup';
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
   SelectValue,
@@ -90,9 +90,17 @@ export const WithDropdown = {
     <div className="tw-w-72 tw-p-4">
       <InputGroup>
         <InputGroupAddon>
-          <InputGroupButton>
-            USD <ChevronDown size={12} />
-          </InputGroupButton>
+          <Select defaultValue="usd">
+            <InputGroupSelect>
+              <SelectValue />
+            </InputGroupSelect>
+            <SelectContent>
+              <SelectItem value="usd">USD</SelectItem>
+              <SelectItem value="eur">EUR</SelectItem>
+              <SelectItem value="gbp">GBP</SelectItem>
+              <SelectItem value="inr">INR</SelectItem>
+            </SelectContent>
+          </Select>
         </InputGroupAddon>
         <InputGroupInput type="number" placeholder="0.00" />
       </InputGroup>
@@ -108,9 +116,9 @@ export const WithLeadingSelect = {
       <InputGroup>
         <InputGroupAddon>
           <Select defaultValue="usd">
-            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+            <InputGroupSelect>
               <SelectValue />
-            </SelectTrigger>
+            </InputGroupSelect>
             <SelectContent>
               <SelectItem value="usd">USD</SelectItem>
               <SelectItem value="eur">EUR</SelectItem>
@@ -134,9 +142,9 @@ export const WithTrailingSelect = {
         <InputGroupInput placeholder="Enter amount" />
         <InputGroupAddon align="inline-end">
           <Select defaultValue="usd">
-            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+            <InputGroupSelect>
               <SelectValue />
-            </SelectTrigger>
+            </InputGroupSelect>
             <SelectContent>
               <SelectItem value="usd">USD</SelectItem>
               <SelectItem value="eur">EUR</SelectItem>
@@ -157,9 +165,9 @@ export const PhoneInput = {
       <InputGroup>
         <InputGroupAddon>
           <Select defaultValue="+1">
-            <SelectTrigger className="tw-border-0 tw-shadow-none tw-bg-transparent tw-h-auto tw-px-0 tw-text-base tw-gap-1 focus:tw-ring-0">
+            <InputGroupSelect>
               <SelectValue />
-            </SelectTrigger>
+            </InputGroupSelect>
             <SelectContent>
               <SelectItem value="+1">+1</SelectItem>
               <SelectItem value="+44">+44</SelectItem>

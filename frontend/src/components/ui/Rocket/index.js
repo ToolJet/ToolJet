@@ -32,6 +32,7 @@ export {
   InputGroupButton,
   InputGroupText,
   InputGroupInput,
+  InputGroupSelect,
   InputGroupTextarea,
 } from './InputGroup/InputGroup';
 export {
@@ -45,6 +46,21 @@ export {
   SelectLabel,
   SelectSeparator,
 } from './Select/Select';
+export {
+  Combobox,
+  ComboboxInput,
+  comboboxInputVariants,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+  ComboboxValue,
+  ComboboxGroup,
+  ComboboxLabel,
+  ComboboxSeparator,
+  ComboboxCollection,
+  ComboboxTrigger,
+} from './Combobox/Combobox';
 export { Toggle, toggleVariants, toggleBaseClasses } from './Toggle/Toggle';
 export { ToggleGroup, ToggleGroupItem } from './ToggleGroup/ToggleGroup';
 export {
@@ -56,3 +72,11 @@ export {
   PaginationNext,
   PaginationEllipsis,
 } from './Pagination/Pagination';
+export {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipArrow,
+  tooltipContentClasses,
+} from './Tooltip/Tooltip';
