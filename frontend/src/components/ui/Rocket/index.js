@@ -80,3 +80,4 @@ export {
   TooltipArrow,
   tooltipContentClasses,
 } from './Tooltip/Tooltip';
+export { Label, labelVariants } from './Label/Label';
