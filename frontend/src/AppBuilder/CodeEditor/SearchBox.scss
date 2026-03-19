@@ -9,15 +9,30 @@
 
     .search-panel {
         display: flex;
-        width: 309px;
         height: 28px;
         gap: 4px;
 
         .search-replace-inputs {
             height: 28px;
-            width: 245px;
             display: flex;
-            gap: 5px;
+
+            // Using :focus-within + z-index to prevent sibling input from overlapping the focus ring due to DOM paint order
+            &> div:first-child > div:nth-child(2):focus-within {
+                z-index: 1;
+            }
+            
+            input[name="search"] {
+                width: 120px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border-right: none;
+            }
+            
+            input[name="replace"] {
+                width: 120px;
+                border-top-left-radius: 0px;
+                border-bottom-left-radius: 0px;
+            }
         }
 
         .search-buttons {

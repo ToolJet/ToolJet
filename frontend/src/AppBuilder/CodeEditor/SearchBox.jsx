@@ -173,6 +173,7 @@ function SearchPanel({ view }) {
         size="small"
         value={searchText}
         aria-label="Find text"
+        name="search"
       />
       <InputComponent
         leadingIcon="arrowreturn01"
@@ -181,7 +182,7 @@ function SearchPanel({ view }) {
         placeholder="Replace"
         size="small"
         value={replaceText}
-        aria-label="Replace text"
+        name="replace"
       />
     </div>
   );
@@ -278,8 +279,8 @@ function SearchPanel({ view }) {
       <div className="search-panel">
         {displaySearchField()}
         {displaySearchButtons()}
+        {displaySearchCount()}
       </div>
-      {displaySearchCount()}
       {displayReplaceButtons()}
     </div>
   );
