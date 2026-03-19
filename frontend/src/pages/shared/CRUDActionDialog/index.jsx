@@ -365,13 +365,13 @@ function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
 
   return (
-    <div>
+    <div className="tw-mt-3">
       <p className="tw-font-title-default tw-text-text-default">Marketplace plugins to be installed</p>
       <p className="tw-font-body-default tw-text-text-default">
         Following plugins will be installed in your workspace to create their respective queries in this template app
       </p>
 
-      <div className="tw-border tw-border-border-weak tw-rounded-lg tw-overflow-hidden">
+      <div className="tw-border tw-border-border-weak tw-rounded-lg tw-overflow-hidden tw-mt-2">
         <button
           type="button"
           className="tw-flex tw-items-center tw-justify-between tw-w-full tw-h-10 tw-px-4 tw-py-1.5 tw-border-b tw-border-border-weak tw-rounded-none"
@@ -382,7 +382,7 @@ function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
         </button>
 
         {isAccordionOpen && (
-          <div>
+          <div className="tw-px-4 tw-py-1.5">
             <ul className="tw-list-none">
               {dependentPlugins.map((plugin, index) => {
                 const pluginsName = dependentPluginsDetail[plugin].name || plugin;

@@ -35,7 +35,6 @@ function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissi
         break;
       case 'rename':
       case 'clone':
-      case 'import':
       case 'delete':
       case 'change-icon':
       case 'export':

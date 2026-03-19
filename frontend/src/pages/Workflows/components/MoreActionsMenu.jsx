@@ -59,6 +59,7 @@ const useReadAndImportFile = () => {
             setAppDialogState({
               type: 'import',
               appDetails: {
+                name: fileName,
                 fileContent,
                 fileName,
                 dependentPlugins: pluginsToBeInstalled,
