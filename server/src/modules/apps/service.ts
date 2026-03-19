@@ -27,7 +27,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';

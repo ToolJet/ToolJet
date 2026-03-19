@@ -322,7 +322,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {app.is_stub ? (
+            {app?.app_versions?.[0]?.is_stub ? (
               <div>
                 <ToolTip message="Sync app from git">
                   <Link
@@ -375,7 +375,7 @@ export default function AppCard({
               </div>
             ) : null}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedAccess && ViewButton}
-            {!app.is_stub && appType !== 'module' && LaunchButton}
+            {!app?.app_versions?.[0]?.is_stub && appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>
