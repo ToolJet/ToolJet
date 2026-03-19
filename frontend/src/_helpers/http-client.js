@@ -1,8 +1,38 @@
 import config from 'config';
 import { authenticationService } from '@/_services';
+import { sessionService } from '@/_services/session.service';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
+
+// Track pending SSO info refresh to avoid duplicate requests
+let ssoInfoRefreshPromise = null;
+
+/**
+ * Refreshes the session when OIDC tokens have been updated on the backend.
+ * Called when response contains X-SSO-Info-Updated header.
+ */
+async function refreshSsoInfo() {
+  // Dedupe concurrent refresh requests
+  if (ssoInfoRefreshPromise) {
+    return ssoInfoRefreshPromise;
+  }
+
+  ssoInfoRefreshPromise = (async () => {
+    try {
+      const newSession = await sessionService.validateSession();
+      if (newSession && !newSession.authentication_failed) {
+        authenticationService.updateCurrentSession(newSession);
+      }
+    } catch (error) {
+      console.warn('[SSO Info Refresh] Failed to refresh session:', error);
+    } finally {
+      ssoInfoRefreshPromise = null;
+    }
+  })();
+
+  return ssoInfoRefreshPromise;
+}
 
 const HttpVerb = {
   Get: 'GET',
@@ -69,6 +99,13 @@ class HttpClient {
       statusText: response.statusText,
       headers: this.extractResponseHeaders(response),
     };
+
+    // Check if OIDC tokens were refreshed on the backend
+    // Trigger async session refresh to update globals.currentUser.ssoUserInfo
+    if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+      refreshSsoInfo(); // Fire-and-forget — don't block the current request
+    }
+
     const text = await response.text();
     try {
       payload.data = isEmpty(text) ? text : JSON.parse(text);

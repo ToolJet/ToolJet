@@ -4,10 +4,40 @@ import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
+
+// Track pending SSO info refresh to avoid duplicate requests
+let ssoInfoRefreshPromise = null;
+
+/**
+ * Refreshes the session when OIDC tokens have been updated on the backend.
+ * Called when response contains X-SSO-Info-Updated header.
+ */
+async function refreshSsoInfo() {
+  // Dedupe concurrent refresh requests
+  if (ssoInfoRefreshPromise) {
+    return ssoInfoRefreshPromise;
+  }
+
+  ssoInfoRefreshPromise = (async () => {
+    try {
+      const newSession = await sessionService.validateSession();
+      if (newSession && !newSession.authentication_failed) {
+        authenticationService.updateCurrentSession(newSession);
+      }
+    } catch (error) {
+      console.warn('[SSO Info Refresh] Failed to refresh session:', error);
+    } finally {
+      ssoInfoRefreshPromise = null;
+    }
+  })();
+
+  return ssoInfoRefreshPromise;
+}
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -20,6 +50,12 @@ export function handleResponse(
   queryParamToUpdate = null,
   avoidUpgradeModal = false
 ) {
+  // Check if OIDC tokens were refreshed on the backend
+  // Trigger async session refresh to update globals.currentUser.ssoUserInfo
+  if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+    refreshSsoInfo(); // Fire-and-forget — don't block the current request
+  }
+
   return response.text().then((text) => {
     let modalBody = (
       <>
