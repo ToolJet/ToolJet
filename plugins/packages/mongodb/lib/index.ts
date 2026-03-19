@@ -117,6 +117,14 @@ function validateSSHOptions(sourceOptions: SourceOptions): void {
   }
 }
 
+function safeDecodeAndEncode(value: string): string {
+  try {
+    return encodeURIComponent(decodeURIComponent(value));
+  } catch {
+    return encodeURIComponent(value);
+  }
+}
+
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
@@ -397,8 +405,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const database = sourceOptions.database;
     let host = sourceOptions.host;
     let port = Number(sourceOptions.port) || 27017;
-    const username = encodeURIComponent(sourceOptions.username || '');
-    const password = encodeURIComponent(sourceOptions.password || '');
+    const username = safeDecodeAndEncode(sourceOptions.username || '');
+    const password = safeDecodeAndEncode(sourceOptions.password || '');
 
     if (format === 'mongodb+srv' && sourceOptions.ssh_enabled === 'enabled') {
       throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
@@ -509,8 +517,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   if (authPart.includes(":")) {
     const colonIdx = authPart.indexOf(":");
-    connUser = decodeURIComponent(authPart.slice(0, colonIdx));
-    connPass = decodeURIComponent(authPart.slice(colonIdx + 1));
+    connUser = authPart.slice(0, colonIdx);
+    connPass = authPart.slice(colonIdx + 1);
   }
 
   const finalUser = explicitUser || connUser || "";
@@ -556,7 +564,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const finalHosts = hostsList.join(",");
   const finalDb = explicitDb || dbNameFromConn || "";
   const authSection = needsAuth
-    ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
+    ? `${safeDecodeAndEncode(finalUser)}:${safeDecodeAndEncode(finalPass)}@`
     : "";
 
   let finalUri = `${protocol}://${authSection}${finalHosts}`;
