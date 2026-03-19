@@ -14,4 +14,5 @@ export type QueryOptions = {
   subject: string;
   textContent: string;
   htmlContent: string;
+  attachment_array?: string | { name: string; dataURL: string }[];
 };
