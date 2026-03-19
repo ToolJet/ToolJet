@@ -47,3 +47,12 @@ export {
 } from './Select/Select';
 export { Toggle, toggleVariants, toggleBaseClasses } from './Toggle/Toggle';
 export { ToggleGroup, ToggleGroupItem } from './ToggleGroup/ToggleGroup';
+export {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from './Pagination/Pagination';
