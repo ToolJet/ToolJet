@@ -731,6 +731,8 @@ class HomePageComponent extends React.Component {
           return false;
       }
     } else if (this.props.appType === 'front-end') {
+      // Backend resolves all folder-derived permissions (owned folders + granular folder permissions)
+      // into editable_apps_id / viewable_apps_id at session time, so no frontend folder checks needed here.
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -778,15 +780,17 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
   };
 
   canUpdateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
+    // For now, we use folderCreate as the master permission for folder update
+    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
   isWorkspaceBranchLocked = () => {
@@ -1924,9 +1928,21 @@ class HomePageComponent extends React.Component {
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
                   <Select
-                    options={this.state.folders.map((folder) => {
-                      return { name: folder.name, value: folder.id };
-                    })}
+                    options={this.state.folders
+                      .filter((folder) => {
+                        const currentSession = authenticationService.currentSessionValue;
+                        if (currentSession?.super_admin || currentSession?.admin) return true;
+
+                        // Check if user has edit permissions for the folder
+                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        if (folderPermissions?.is_all_editable) return true;
+                        if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
+
+                        // Allow folder owners to add apps to their own folders
+                        const currentUserId = currentSession?.current_user?.id;
+                        return !!(currentUserId && folder.created_by === currentUserId);
+                      })
+                      .map((folder) => ({ name: folder.name, value: folder.id }))}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
                       this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
@@ -2279,6 +2295,9 @@ class HomePageComponent extends React.Component {
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
+                    ownedFolders={this.state.folders.filter(
+                      (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
+                    )}
                   />
                 )}
               </div>

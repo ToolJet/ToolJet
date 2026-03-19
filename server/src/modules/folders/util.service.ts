@@ -35,6 +35,7 @@ export class FoldersUtilService implements IFoldersUtilService {
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user?.organizationId,
+            createdBy: user?.id,
             type,
           })
         );
