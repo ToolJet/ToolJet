@@ -37,6 +37,7 @@ export const NumberInput = (props) => {
     e.preventDefault();
     const newValue = (inputLogic.value || 0) + 1;
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
@@ -46,6 +47,7 @@ export const NumberInput = (props) => {
     e.preventDefault();
     const newValue = (inputLogic.value || 0) - 1;
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
