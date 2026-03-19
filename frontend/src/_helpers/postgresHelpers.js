@@ -63,10 +63,21 @@ export const parsePostgresConnectionString = (connectionString) => {
       sslmode === 'verify-ca' ||
       sslmode === 'prefer' ||
       sslmode === 'allow' ||
+      sslmode === 'on' ||
+      sslmode === 'yes' ||
       ssl === 'true' ||
+      ssl === 'on' ||
+      ssl === 'yes' ||
       ssl === '1';
 
-    const isSslOff = sslmode === 'disable' || ssl === 'false' || ssl === '0';
+    const isSslOff =
+      sslmode === 'disable' ||
+      sslmode === 'off' ||
+      sslmode === 'no' ||
+      ssl === 'false' ||
+      ssl === 'off' ||
+      ssl === 'no' ||
+      ssl === '0';
 
     return {
       host: url.hostname || '',
