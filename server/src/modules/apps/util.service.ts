@@ -42,6 +42,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -211,14 +212,14 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findAppWithIdOrSlug(slug: string, organizationId: string, branchId?: string): Promise<App> {
     let app: App;
-    try {
-      app = await this.appRepository.findById(slug, organizationId);
-    } catch {
-      /* UUID parse error — slug is not a valid UUID, skip id lookup */
-    }
 
-    // Fallback to slug lookup if id lookup returned null or failed
-    if (!app) {
+    if (isUUID(slug)) {
+      app = await this.appRepository.findById(slug, organizationId);
+      if (!app) {
+        /* UUID could also be a slug, try slug lookup as fallback */
+        app = await this.appRepository.findBySlug(slug, organizationId);
+      }
+    } else {
       app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
@@ -644,6 +645,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'RadioButtonV2',
                 'Tags',
                 'TagsInput',
+                'TreeSelect',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {

@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import {BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException} from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -18,7 +18,12 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { IVersionService } from './interfaces/IService';
+import {
+  IVersionService,
+  VersionCreateContext,
+  VersionUpdateContext,
+  VersionSettingsUpdateContext,
+} from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -43,6 +48,79 @@ export class VersionService implements IVersionService {
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
+
+  /**
+   * Hook called before version creation - override in EE to capture state for history
+   */
+  protected async beforeVersionCreate(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<VersionCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version creation - override in EE to queue history
+   */
+  protected async afterVersionCreate(
+    context: VersionCreateContext | null,
+    createdVersion: any,
+    app: App,
+    user: User
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version update - override in EE to capture state for history
+   */
+  protected async beforeVersionUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version update - override in EE to queue history
+   */
+  protected async afterVersionUpdate(
+    context: VersionUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version settings update - override in EE to capture state for history
+   */
+  protected async beforeVersionSettingsUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionSettingsUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version settings update - override in EE to queue history
+   */
+  protected async afterVersionSettingsUpdate(
+    context: VersionSettingsUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -53,7 +131,10 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    return await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    const context = await this.beforeVersionCreate(app, user, versionCreateDto);
+    const result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    await this.afterVersionCreate(context, result, app, user);
+    return result;
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
@@ -163,6 +244,8 @@ export class VersionService implements IVersionService {
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
@@ -182,8 +265,10 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
-    // Queue history capture if homepage or settings are being updated
-    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+    const operationTimestamp = Date.now();
+    this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message)
+    );
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
@@ -196,12 +281,16 @@ export class VersionService implements IVersionService {
   }
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionSettingsUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
-    // Queue history capture for settings changes AFTER successful update
-    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+    const settingsOperationTimestamp = Date.now();
+    this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto, user.id, settingsOperationTimestamp).catch(
+      (err) => console.error('[AppHistory] Fire-and-forget afterVersionSettingsUpdate failed:', err.message)
+    );
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,

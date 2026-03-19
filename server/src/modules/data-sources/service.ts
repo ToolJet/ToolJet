@@ -294,6 +294,7 @@ export class DataSourcesService implements IDataSourcesService {
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
+
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
     return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
   }

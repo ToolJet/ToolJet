@@ -141,8 +141,8 @@ const useAppData = (
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   // Used to trigger app refresh flow after restoring app history
-  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
-  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
+  const restoreTimestamp = useStore((state) => state.restoreTimestamp);
+  const previousRestoreTimestamp = usePrevious(restoreTimestamp);
 
   const location = useRouter().location;
 
@@ -374,6 +374,9 @@ const useAppData = (
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
           setIsQueryPaneExpanded(false);
+          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
+          const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
+          window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
         if (initialLoadRef.current) {
@@ -607,7 +610,7 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
+    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
     if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
@@ -723,7 +726,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

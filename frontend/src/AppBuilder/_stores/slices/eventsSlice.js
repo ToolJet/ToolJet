@@ -2,6 +2,8 @@ import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { getHostURL } from '@/_helpers/routes';
+import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
@@ -326,6 +328,20 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      if (eventName === 'OnTableButtonColumnClicked') {
+        const { column, tableColumnEvents } = options;
+
+        if (column && tableColumnEvents) {
+          for (const event of tableColumnEvents) {
+            if (event?.event?.actionId) {
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+            }
+          }
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);
@@ -463,9 +479,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -664,7 +679,7 @@ export const createEventsSlice = (set, get) => ({
                 window.open(url, '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  window.open(url);
+                  window.open(urlJoin(getHostURL(), url));
                 }
               }
               return Promise.resolve();
@@ -943,12 +958,23 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'switch-page': {
             try {
-              const { pageId } = event;
+              let { pageId } = event;
+              const { pageHandle } = event;
+
+              // Resolve pageHandle → pageId if pageId not provided
+              if (!pageId && pageHandle) {
+                const pages = get().modules[moduleId].pages;
+                pageId = pages.find((p) => p.handle === pageHandle.toLowerCase())?.id;
+                if (!pageId) {
+                  throw new Error(`Invalid page handle: "${pageHandle}"`);
+                }
+              }
+
               if (!pageId) {
-                throw new Error('No page ID provided');
+                throw new Error('Either pageId or pageHandle must be provided');
               }
               const { switchPage } = get();
-              const page = get().modules[moduleId].pages.find((page) => page.id === event.pageId);
+              const page = get().modules[moduleId].pages.find((page) => page.id === pageId);
               const queryParams = event.queryParams || [];
               if (page.restricted && mode !== 'edit') {
                 toast.error('Access to this page is restricted. Contact admin to know more.');

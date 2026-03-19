@@ -15,6 +15,11 @@ import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import ApiEndpointInputOld from './ApiEndpointInputOld';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentConstantService } from '../_services';
@@ -29,6 +34,7 @@ import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
+import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
 
 const DynamicForm = ({
   schema,
@@ -207,6 +213,8 @@ const DynamicForm = ({
         return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-key-value-tabs':
+        return GraphqlKeyValueTabs;
       case 'react-component-sort':
         return Sort;
       case 'react-component-oauth-authentication':
@@ -237,6 +245,16 @@ const DynamicForm = ({
         return OAuthWrapper;
       case 'dynamic-selector':
         return DynamicSelector;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
       default:
         return <div>Type is invalid</div>;
     }
@@ -286,6 +304,10 @@ const DynamicForm = ({
     fxEnabled,
     isMulti,
     autoFetch,
+    parse_key,
+    columnSelectorOperation,
+    columnSelectorDependsOn,
+    tabs,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -327,7 +349,7 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
+          checked: options?.[key]?.value ?? options?.[key],
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
@@ -376,6 +398,14 @@ const DynamicForm = ({
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-key-value-tabs': {
+        return {
+          options,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          tabs: tabs || [],
         };
       }
       case 'react-component-sort': {
@@ -489,7 +519,11 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+              : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -585,6 +619,36 @@ const DynamicForm = ({
           isMulti: isMulti || false,
           autoFetch: autoFetch || false,
         };
+      case 'react-component-sql-filters':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
       default:
         return {};
     }
@@ -638,7 +702,7 @@ const DynamicForm = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
@@ -723,9 +787,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(
+                          data-cy={`${generateCypressDataCy(
                             computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
-                          )}`}
+                          )}-button`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>

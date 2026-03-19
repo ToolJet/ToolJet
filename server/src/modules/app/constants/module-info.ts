@@ -46,6 +46,7 @@ import { FEATURES as CRM_FEATURES } from '@modules/CRM/constants/feature';
 import { FEATURES as METRICS } from '@modules/metrices/constants/features';
 import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 import { FEATURES as WORKSPACE_BRANCHES_FEATURES } from '@modules/workspace-branches/constants/feature';
+import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -100,4 +101,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...CRM_FEATURES,
   ...SCIM_FEATURES,
   ...WORKSPACE_BRANCHES_FEATURES,
+  ...CUSTOM_DOMAINS_FEATURES,
 };

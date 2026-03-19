@@ -6,12 +6,14 @@
 
 .viewer {
     .dynamic-height-target {
-        .canvas-component {
-            .widget-type-container {
-                .sub-canvas {
-                    overflow-y: hidden !important;
+        > .canvas-component {
+            > .jet-container {
+                > .widget-type-container {
+                    > .sub-canvas {
+                        overflow-y: hidden !important;
+                    }
                 }
+            }
+        }
     }
-  }
-}
 }

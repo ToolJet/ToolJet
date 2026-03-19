@@ -922,7 +922,7 @@ export const hightlightMentionedUserInComment = (comment) => {
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: '/assets/libs/pyodide-0.23.2/' });
+    const pyodide = await window.loadPyodide({ indexURL: process.env.PYODIDE_BASE_URL });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);

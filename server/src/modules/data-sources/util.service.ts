@@ -12,7 +12,7 @@ import { CredentialsService } from '@modules/encryption/services/credentials.ser
 import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { cleanObject } from '@helpers/utils.helper';
+import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -193,7 +193,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
-  async parseOptionsForOauthDataSource(options: Array<object>, resetSecureData = false, userId?: string) {
+  async parseOptionsForOauthDataSource(
+    options: Array<object>,
+    resetSecureData = false,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string
+  ) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
@@ -204,6 +210,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
 
       // const queryService = new allPlugins[provider]();
+
+      // Resolve workspace constants in options before calling accessDetailsFrom
+      let resolvedOptions = options;
+      if (organizationId && environmentId) {
+        resolvedOptions = await resolveOptionsArrayForOAuth(options, (value) =>
+          this.resolveConstants(value, organizationId, environmentId)
+        );
+      }
+
       let accessDetailsPromise: Promise<any>;
 
       const cacheKey = `${provider}_${authCode}`;
@@ -211,7 +226,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (this.inMemoryCacheService.has(cacheKey)) {
         accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
       } else {
-        accessDetailsPromise = queryService.accessDetailsFrom(authCode, options, resetSecureData);
+        accessDetailsPromise = queryService.accessDetailsFrom(authCode, resolvedOptions, resetSecureData);
         this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
       }
       const accessDetails = await accessDetailsPromise;
@@ -310,7 +325,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             )
           ).options;
 
-          const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
+          const newOptions = await this.parseOptionsForUpdate(
+            dataSource,
+            options,
+            manager,
+            userId,
+            organizationId,
+            envToUpdate.id
+          );
           if (shouldUpdateDefault) {
             await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
           }
@@ -409,7 +431,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             dataSource.options = (
               await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id, nonMultiEnvBranchId)
             ).options;
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
+            const newOptions = await this.parseOptionsForUpdate(
+              dataSource,
+              options,
+              manager,
+              userId,
+              organizationId,
+              env.id
+            );
             if (shouldUpdateDefault) {
               await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
             }
@@ -456,7 +485,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return decryptedOptions;
   }
 
-  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager, userId?: string) {
+  async parseOptionsForUpdate(
+    dataSource: DataSource,
+    options: Array<object>,
+    manager: EntityManager,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string
+  ) {
     if (!options) return {};
 
     const resolvedOptions = [];
@@ -474,7 +510,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    const optionsWithOauth = await this.parseOptionsForOauthDataSource(resolvedOptions, false, userId);
+    const optionsWithOauth = await this.parseOptionsForOauthDataSource(
+      resolvedOptions,
+      false,
+      userId,
+      organizationId,
+      environmentId
+    );
     const parsedOptions = {};
 
     if (dataSource?.options) {
@@ -1187,8 +1229,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
+    const {
+      provider,
+      source_options = {},
+      plugin_id = null,
+      environment_id,
+      organization_id,
+    } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
+
+    if (organization_id && environment_id) {
+      const resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
+        this.resolveConstants(value, organization_id, environment_id)
+      );
+      return { url: service.authUrl(resolvedSourceOptions) };
+    }
+
     return { url: service.authUrl(source_options) };
   }
 

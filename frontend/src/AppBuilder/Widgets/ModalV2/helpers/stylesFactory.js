@@ -33,6 +33,7 @@ export function createModalStyles({
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
       '--cc-modal-header-divider-color': headerDividerColor,
+      overflowX: 'hidden',
     },
     modalFooter: {
       backgroundColor:
