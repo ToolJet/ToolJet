@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class EnforceUniqueDataSourceNamesPerBranch1772000000000 implements MigrationInterface {
+export class EnforceUniqueDataSourceNamesPerBranch1773229181000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE UNIQUE INDEX idx_unique_active_name_branch

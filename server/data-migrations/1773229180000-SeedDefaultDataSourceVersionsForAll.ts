@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class SeedDefaultDataSourceVersionsForAll1772568628000 implements MigrationInterface {
+export class SeedDefaultDataSourceVersionsForAll1773229180000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default data_source_versions for ALL data sources that don't already have one.
     // The prior seed (1772568627000) only covered global DS in git-sync enabled orgs.

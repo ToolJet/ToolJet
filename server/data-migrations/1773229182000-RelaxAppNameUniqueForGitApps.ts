@@ -19,7 +19,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *   - 1684157120658-AddUniqueConstraintToAppName
  *   - 1705379107714-AddAppNameAppTypeWorkspaceConstraint
  */
-export class RelaxAppNameUniqueForGitApps1773100000001 implements MigrationInterface {
+export class RelaxAppNameUniqueForGitApps1773229182000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE apps DROP CONSTRAINT IF EXISTS app_name_organization_id_unique;
