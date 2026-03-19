@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import JSON5 from 'json5'; // Import JSON5 for more lenient parsing

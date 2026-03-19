@@ -16,7 +16,7 @@ export const TextInput = (props) => {
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: showClearBtn ? '25px' : '0px', 
+      paddingRight: showClearBtn ? '25px' : '0px',
     };
   };
   return (
