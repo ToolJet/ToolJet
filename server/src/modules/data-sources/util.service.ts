@@ -74,11 +74,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const finalName = await this.generateUniqueName(
-        createArgumentsDto.name,
-        branchId || null,
-        manager
-        );
+      const finalName = await this.generateUniqueName(createArgumentsDto.name, branchId || null, manager);
       const newDataSource = manager.create(DataSource, {
         name: finalName,
         kind: createArgumentsDto.kind,
@@ -96,42 +92,51 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         await manager.update(DataSource, { id: dataSource.id }, { co_relation_id: dataSource.id });
       }
 
-      // Creating empty options mapping
-      await this.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
-
-      // Find the environment to be updated
+      const allEnvs = await this.appEnvironmentUtilService.getAll(user.organizationId, null, manager);
       const envToUpdate = await this.appEnvironmentUtilService.get(
         user.organizationId,
         createArgumentsDto.environmentId,
         false,
         manager
       );
-      await this.appEnvironmentUtilService.updateOptions(
-        await this.parseOptionsForCreate(createArgumentsDto.options, false, manager),
-        envToUpdate.id,
-        dataSource.id,
-        manager
-      );
-      // Find other environments to be updated
-      const allEnvs = await this.appEnvironmentUtilService.getAll(user.organizationId, null, manager);
 
-      if (allEnvs?.length) {
-        const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
-        await Promise.all(
-          envsToUpdate?.map(async (env) => {
-            await this.appEnvironmentUtilService.updateOptions(
-              await this.parseOptionsForCreate(createArgumentsDto.options, true, manager),
-              env.id,
-              dataSource.id,
-              manager
-            );
-          })
-        );
-      }
-
-      // Branch-aware: also create data_source_versions + data_source_version_options
       if (branchId) {
-        await this.createDataSourceVersionForBranch(dataSource, branchId, allEnvs, manager);
+        // Branch-aware: create ONLY the branch-specific DSV (no default DSV).
+        // The default DSV will be created when this branch is merged to main
+        // via git pull/deserialize. This prevents the DS from appearing on main
+        // before the branch is merged.
+        await this.createDataSourceVersionForBranchWithOptions(
+          dataSource,
+          branchId,
+          envToUpdate,
+          allEnvs,
+          createArgumentsDto.options,
+          manager
+        );
+      } else {
+        // No branch: create the default DSV and write options to it
+        await this.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
+
+        await this.appEnvironmentUtilService.updateOptions(
+          await this.parseOptionsForCreate(createArgumentsDto.options, false, manager),
+          envToUpdate.id,
+          dataSource.id,
+          manager
+        );
+
+        if (allEnvs?.length) {
+          const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
+          await Promise.all(
+            envsToUpdate?.map(async (env) => {
+              await this.appEnvironmentUtilService.updateOptions(
+                await this.parseOptionsForCreate(createArgumentsDto.options, true, manager),
+                env.id,
+                dataSource.id,
+                manager
+              );
+            })
+          );
+        }
       }
 
       return dataSource;
@@ -282,27 +287,78 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             encrypted: false,
           });
 
+        // Determine if we should update the isDefault DSV.
+        // isDefault = "snapshot of main" — only update it when:
+        //   - No branchId (no git sync / license expired)
+        //   - branchId is the default (main) branch
+        // Skip for feature branches — their edits shouldn't alter the main fallback.
+        let shouldUpdateDefault = true;
+        if (branchId) {
+          const branch = await manager.findOne(WorkspaceBranch, {
+            where: { id: branchId },
+            select: ['id', 'isDefault'],
+          });
+          shouldUpdateDefault = !!branch?.isDefault;
+        }
+
         if (isMultiEnvEnabled) {
+          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
           dataSource.options = (
-            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+            await this.appEnvironmentUtilService.getOptions(
+              dataSourceId,
+              organizationId,
+              envToUpdate.id,
+              effectiveBranchId
+            )
           ).options;
 
           const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
-          await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+          if (shouldUpdateDefault) {
+            await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+          }
 
           // Branch-aware: also update data_source_version_options
-          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
           if (effectiveBranchId) {
-            const dsv = await manager.findOne(DataSourceVersion, {
+            let dsv = await manager.findOne(DataSourceVersion, {
               where: { dataSourceId: dataSource.id, branchId: effectiveBranchId, isActive: true },
             });
-            if (dsv) {
-              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
-              // Also update DSV name if DS name changed
-              if (name) {
-                await this.ensureUniqueActiveNameForUpdate(name, effectiveBranchId, dsv.id, manager);
-                await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
+            if (!dsv) {
+              // Auto-create branch DSV (DS was likely created before git sync was enabled)
+              dsv = await manager.save(
+                manager.create(DataSourceVersion, {
+                  dataSourceId: dataSource.id,
+                  branchId: effectiveBranchId,
+                  name: name || dataSource.name,
+                  isActive: true,
+                })
+              );
+              // Seed DSVOs for all environments from default DSV
+              const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
+              const defaultDsv = await manager.findOne(DataSourceVersion, {
+                where: { dataSourceId: dataSource.id, isDefault: true },
+              });
+              for (const env of allEnvs) {
+                let sourceOptions = {};
+                if (defaultDsv) {
+                  const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                    where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+                  });
+                  sourceOptions = defaultDsvo?.options || {};
+                }
+                await manager.save(
+                  manager.create(DataSourceVersionOptions, {
+                    dataSourceVersionId: dsv.id,
+                    environmentId: env.id,
+                    options: sourceOptions,
+                  })
+                );
               }
+            }
+            await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
+            // Also update DSV name if DS name changed
+            if (name) {
+              await this.ensureUniqueActiveNameForUpdate(name, effectiveBranchId, dsv.id, manager);
+              await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
             }
           }
         } else {
@@ -314,18 +370,51 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           // Get branchId once for all environments
           const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
-          const dsv = nonMultiEnvBranchId
+          let dsv = nonMultiEnvBranchId
             ? await manager.findOne(DataSourceVersion, {
                 where: { dataSourceId: dataSource.id, branchId: nonMultiEnvBranchId, isActive: true },
               })
             : null;
 
+          // Auto-create branch DSV if missing (DS created before git sync)
+          if (nonMultiEnvBranchId && !dsv) {
+            dsv = await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: dataSource.id,
+                branchId: nonMultiEnvBranchId,
+                name: name || dataSource.name,
+                isActive: true,
+              })
+            );
+            const defaultDsv = await manager.findOne(DataSourceVersion, {
+              where: { dataSourceId: dataSource.id, isDefault: true },
+            });
+            for (const env of allEnvs) {
+              let sourceOptions = {};
+              if (defaultDsv) {
+                const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                  where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+                });
+                sourceOptions = defaultDsvo?.options || {};
+              }
+              await manager.save(
+                manager.create(DataSourceVersionOptions, {
+                  dataSourceVersionId: dsv.id,
+                  environmentId: env.id,
+                  options: sourceOptions,
+                })
+              );
+            }
+          }
+
           for (const env of allEnvs) {
             dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
+              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id, nonMultiEnvBranchId)
             ).options;
             const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager, userId);
-            await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+            if (shouldUpdateDefault) {
+              await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+            }
 
             // Branch-aware: also update version options
             if (dsv) {
@@ -713,6 +802,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ];
     }
     await this.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
+
+    // Propagate OAuth token to all branch/version DSVs
+    const updatedTokenData =
+      tokenOptions.find((opt: any) => opt.key === 'tokenData')?.value ??
+      tokenOptions.find((opt: any) => opt.key === 'access_token')?.value;
+    if (updatedTokenData !== undefined) {
+      await this.propagateTokenToAllBranches(dataSource.id, environmentId, updatedTokenData);
+    }
+
     return;
   }
 
@@ -742,8 +840,20 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           })
         : null;
 
+      // Only update isDefault DSV when not on a feature branch
+      let shouldUpdateDefault = true;
+      if (branchId) {
+        const branch = await manager.findOne(WorkspaceBranch, {
+          where: { id: branchId },
+          select: ['id', 'isDefault'],
+        });
+        shouldUpdateDefault = !!branch?.isDefault;
+      }
+
       if (isMultiEnvEnabled) {
-        await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+        if (shouldUpdateDefault) {
+          await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+        }
         if (dsv) {
           await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, envToUpdate.id, manager);
         }
@@ -751,7 +861,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
         await Promise.all(
           allEnvs.map(async (env) => {
-            await this.appEnvironmentUtilService.updateOptions(updatedOptions, env.id, dataSourceId, manager);
+            if (shouldUpdateDefault) {
+              await this.appEnvironmentUtilService.updateOptions(updatedOptions, env.id, dataSourceId, manager);
+            }
             if (dsv) {
               await this.appEnvironmentUtilService.updateVersionOptions(updatedOptions, dsv.id, env.id, manager);
             }
@@ -1115,13 +1227,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   /**
-   * Creates a DataSourceVersion + DataSourceVersionOptions entries for
-   * the given branch, copying options from the default DataSourceVersion.
+   * Creates a branch-specific DSV with options written directly (no default DSV needed).
+   * Used when creating a DS on a feature branch — the default DSV is not created
+   * until the branch is merged to main via git pull.
    */
-  protected async createDataSourceVersionForBranch(
+  protected async createDataSourceVersionForBranchWithOptions(
     dataSource: DataSource,
     branchId: string,
+    envToUpdate: any,
     allEnvs: any[],
+    rawOptions: any[],
     manager: EntityManager
   ): Promise<DataSourceVersion> {
     const dsv = manager.create(DataSourceVersion, {
@@ -1132,107 +1247,95 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
     const savedDsv = await manager.save(DataSourceVersion, dsv);
 
-    // Copy options from the default DataSourceVersion's options
-    const defaultDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, isDefault: true },
-    });
-    for (const env of allEnvs) {
-      let sourceOptions = {};
-      if (defaultDsv) {
-        const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
-          where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
-        });
-        sourceOptions = defaultDsvo?.options || {};
-      }
-      const dsvo = manager.create(DataSourceVersionOptions, {
+    // Write parsed options directly to the branch DSV for the selected environment
+    const parsedOptions = await this.parseOptionsForCreate(rawOptions, false, manager);
+    await manager.save(
+      manager.create(DataSourceVersionOptions, {
         dataSourceVersionId: savedDsv.id,
-        environmentId: env.id,
-        options: sourceOptions,
-      });
-      await manager.save(DataSourceVersionOptions, dsvo);
+        environmentId: envToUpdate.id,
+        options: parsedOptions,
+      })
+    );
+
+    // Write credential-stripped options for remaining environments
+    const otherEnvs = allEnvs.filter((env) => env.id !== envToUpdate.id);
+    for (const env of otherEnvs) {
+      const strippedOptions = await this.parseOptionsForCreate(rawOptions, true, manager);
+      await manager.save(
+        manager.create(DataSourceVersionOptions, {
+          dataSourceVersionId: savedDsv.id,
+          environmentId: env.id,
+          options: strippedOptions,
+        })
+      );
     }
 
     return savedDsv;
   }
-   private escapeRegExp(str: string): string {
+  private escapeRegExp(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   async generateUniqueName(baseName: string, branchId: string | null, manager: EntityManager): Promise<string> {
-   const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
+    const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
 
-   const qb = manager
-     .createQueryBuilder(DataSourceVersion, 'dsv')
-     .where('dsv.isActive = true')
-     .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
+    const qb = manager
+      .createQueryBuilder(DataSourceVersion, 'dsv')
+      .where('dsv.isActive = true')
+      .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
 
+    if (branchId) {
+      qb.andWhere('dsv.branchId = :branchId', { branchId });
+    } else {
+      qb.andWhere('dsv.branchId IS NULL');
+    }
 
-   if (branchId) {
-     qb.andWhere('dsv.branchId = :branchId', { branchId });
-   } else {
-     qb.andWhere('dsv.branchId IS NULL');
-   }
+    const existing = await qb.getMany();
 
+    if (!existing.length) return baseName;
 
-   const existing = await qb.getMany();
+    const exactMatch = existing.some((dsv) => dsv.name === baseName);
+    if (!exactMatch) return baseName;
 
+    const usedNumbers = new Set(
+      existing
+        .map((dsv) => {
+          const match = dsv.name.match(new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`));
+          return match ? parseInt(match[1], 10) : null;
+        })
+        .filter((n): n is number => n !== null)
+    );
 
-   if (!existing.length) return baseName;
+    let counter = 2;
+    while (usedNumbers.has(counter)) {
+      counter++;
+    }
 
-
-   const exactMatch = existing.some((dsv) => dsv.name === baseName);
-   if (!exactMatch) return baseName;
-
-
-   const usedNumbers = new Set(
-     existing
-       .map((dsv) => {
-         const match = dsv.name.match(
-           new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`)
-         );
-         return match ? parseInt(match[1], 10) : null;
-       })
-       .filter((n): n is number => n !== null)
-   );
-
-
-   let counter = 2;
-   while (usedNumbers.has(counter)) {
-     counter++;
-   }
-
-
-   return `${baseName}_${counter}`;
- }
+    return `${baseName}_${counter}`;
+  }
 
   private async ensureUniqueActiveNameForUpdate(
-     name: string,
-     branchId: string | null, 
-     currentDsvId: string,
-     manager: EntityManager
- ): Promise<void> {
-   const qb = manager
-     .createQueryBuilder(DataSourceVersion, 'dsv')
-     .where('LOWER(dsv.name) = LOWER(:name)', { name })
-     .andWhere('dsv.isActive = true')
-     .andWhere('dsv.id != :currentDsvId', { currentDsvId });
+    name: string,
+    branchId: string | null,
+    currentDsvId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const qb = manager
+      .createQueryBuilder(DataSourceVersion, 'dsv')
+      .where('LOWER(dsv.name) = LOWER(:name)', { name })
+      .andWhere('dsv.isActive = true')
+      .andWhere('dsv.id != :currentDsvId', { currentDsvId });
 
+    if (branchId) {
+      qb.andWhere('dsv.branchId = :branchId', { branchId });
+    } else {
+      qb.andWhere('dsv.branchId IS NULL');
+    }
 
-   if (branchId) {
-     qb.andWhere('dsv.branchId = :branchId', { branchId });
-   } else {
-     qb.andWhere('dsv.branchId IS NULL');
-   }
+    const existing = await qb.getOne();
 
-
-   const existing = await qb.getOne();
-
-
-   if (existing) {
-     throw new BadRequestException(
-       `An active data source with name "${name}" already exists in this branch`
-     );
-   }
- }
-
+    if (existing) {
+      throw new BadRequestException(`An active data source with name "${name}" already exists in this branch`);
+    }
+  }
 }

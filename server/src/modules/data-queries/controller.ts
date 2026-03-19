@@ -152,9 +152,10 @@ export class DataQueriesController implements IDataQueriesController {
   async listTables(
     @User() user: UserEntity,
     @DataSource() dataSource: DataSourceEntity,
-    @Param('environmentId') environmentId
+    @Param('environmentId') environmentId,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId);
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)

@@ -2195,7 +2195,7 @@ class HomePageComponent extends React.Component {
                       readAndImport={this.readAndImport}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
-                      openCreateAppModal={this.openCreateAppModal}
+                      openCreateAppModal={() => { if (this.isWorkspaceBranchLocked()) { this.setState({ showSwitchBranchForCreate: true }); } else { this.openCreateAppModal(); } }}
                       openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}

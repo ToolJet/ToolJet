@@ -23,13 +23,23 @@ export interface IDataSourcesService {
 
   create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource>;
 
-  update(updateDataSourceDto: UpdateDataSourceDto, user: User, updateOptions: UpdateOptions, branchId?: string): Promise<void>;
+  update(
+    updateDataSourceDto: UpdateDataSourceDto,
+    user: User,
+    updateOptions: UpdateOptions,
+    branchId?: string
+  ): Promise<void>;
 
   delete(dataSourceId: string, user: User, branchId?: string): Promise<void>;
 
   changeScope(dataSourceId: string, user: User): Promise<void>;
 
-  findOneByEnvironment(dataSourceId: string, environmentId: string, organizationId?: string): Promise<DataSource>;
+  findOneByEnvironment(
+    dataSourceId: string,
+    environmentId: string,
+    organizationId?: string,
+    branchId?: string
+  ): Promise<DataSource>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 
