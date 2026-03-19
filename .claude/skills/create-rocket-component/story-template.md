@@ -60,6 +60,95 @@ export const Sizes = {
 };
 ```
 
+---
+
+## Compound / multi-part component stories (Shape E)
+
+For components with sub-components (Combobox, Select, etc.), stories use render functions
+and show the full composition. For filterable/selectable components, use the `items` collection API.
+
+```jsx
+import React from 'react';
+import {
+  [Name],
+  [Name]Input,
+  [Name]Content,
+  [Name]List,
+  [Name]Item,
+  [Name]Empty,
+} from './[Name]';
+
+const items = ['Option A', 'Option B', 'Option C', 'Option D'];
+
+export default {
+  title: 'Rocket/[Name]',
+  component: [Name],
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+};
+
+// ── Default (with items collection API) ──────────────────────────────────
+export const Default = {
+  render: () => (
+    <div className="tw-w-72 tw-p-4">
+      <[Name] items={items}>
+        <[Name]Input placeholder="Search..." />
+        <[Name]Content>
+          <[Name]List>
+            {(item) => (
+              <[Name]Item key={item} value={item}>
+                {item}
+              </[Name]Item>
+            )}
+          </[Name]List>
+          <[Name]Empty>No results found.</[Name]Empty>
+        </[Name]Content>
+      </[Name]>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── States ───────────────────────────────────────────────────────────────
+export const States = {
+  render: () => (
+    <div className="tw-flex tw-flex-col tw-gap-3 tw-w-72 tw-p-4">
+      {[
+        { label: 'Default', props: {} },
+        { label: 'Disabled', props: { disabled: true } },
+        { label: 'Loading', props: { loading: true } },
+        { label: 'Error', props: { 'aria-invalid': 'true' } },
+      ].map(({ label, props }) => (
+        <div key={label}>
+          <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block">{label}</span>
+          <[Name] items={items}>
+            <[Name]Input placeholder="Placeholder" {...props} />
+            <[Name]Content>
+              <[Name]List>
+                {(item) => (
+                  <[Name]Item key={item} value={item}>{item}</[Name]Item>
+                )}
+              </[Name]List>
+            </[Name]Content>
+          </[Name]>
+        </div>
+      ))}
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+```
+
+### Key rules for compound component stories
+
+- **Use `items` prop on root** for filterable/selectable components — enables filtering + selection
+- **Render function on List** `{(item) => <Item>}` — Base UI maps/filters items automatically
+- **Plain string items** are simplest — `['React', 'Vue', 'Angular']`. Value and label are the same.
+- **Wrap in a width container** — `<div className="tw-w-72 tw-p-4">` prevents stories from collapsing
+- **Empty state story** — pass `items={[]}` with `open` to show the empty state
+
+---
+
 ## Notes
 
 - Dark mode: no setup needed — Storybook decorator applies `.dark-theme` when dark bg selected

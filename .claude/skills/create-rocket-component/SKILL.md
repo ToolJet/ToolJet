@@ -253,6 +253,7 @@ Shape A — variants + sizes   (delete rows that don't apply)
 Shape B — variants only
 Shape C — sizes only
 Shape D — no CVA (static classes)
+Shape E — compound/multi-part (list sub-components and which need CVA vs static cn())
 
 ## Notes
 
@@ -293,8 +294,9 @@ See `hoc-template.md` for the full template.
 | B | Yes | No | omit `size` from CVA, destructuring, PropTypes |
 | C | No | Yes | omit `variant` from CVA, destructuring, PropTypes |
 | D | No | No | no CVA; static `cn()` call; export `[name]Classes` constant |
+| E | n/a | n/a | compound/multi-part (e.g. Combobox, Select, InputGroup) — multiple wrappers, shared context, re-exports |
 
-**Critical rules — enforce these, they were the failure modes in PR #14498:**
+**Critical rules — enforce these, they were the failure modes in prior work:**
 
 | Rule | Wrong | Right |
 |---|---|---|
@@ -305,6 +307,24 @@ See `hoc-template.md` for the full template.
 | CVA className override | passed inside CVA call | passed via `cn(variants({...}), className)` |
 | disabled: modifier | `tw-disabled:opacity-50` | `disabled:tw-opacity-50` |
 | Dark mode | body class check / MutationObserver | `dark:tw-*` Tailwind modifier |
+| Missing border-style | `tw-border-border-default` (invisible) | `tw-border-solid tw-border-border-default` (preflight is off) |
+| forwardRef on render targets | plain function component | `forwardRef` — required for Base UI `render` prop targets |
+| Base UI collection API | static `<Item>` children (no filtering/selection) | `items` prop on root + render function on List |
+| Dropdown width | anchors to trigger button (narrow) | anchor context ref on full-width wrapper |
+
+### Compound component rules (Shape E)
+
+These rules apply when wrapping shadcn components that export multiple sub-components:
+
+1. **forwardRef on EVERY wrapper** — Base UI uses `React.cloneElement` with refs. A missing `forwardRef` silently breaks features (selection, value updates, focus management). This was the root cause of Combobox selection not working: `InputGroupInput` didn't forward its ref → Base UI couldn't register the input element → `inputInsidePopup` stayed `true` → input value was never filled after selection.
+
+2. **Use the `items` collection API** for filterable/selectable components — pass `items` prop on root, render function child `{(item) => <Item>}` on List. This enables Base UI's built-in filtering, selection tracking, and empty state detection. Without `items`, Base UI operates in composition mode where `filteredItems` is always `[]`.
+
+3. **Anchor context for dropdown width** — Base UI's Positioner anchors to the Trigger element by default (often a small button). For full-width dropdowns, create a React context that passes a ref from root → input wrapper → content's `anchor` prop.
+
+4. **`tw-border-solid` is required** — Tailwind preflight is disabled (`corePlugins: { preflight: false }`), so `border-style` defaults to `none`. Always include `tw-border-solid` alongside border color/width classes.
+
+5. **Override InputGroup modifiers exactly** — `tailwind-merge` only resolves conflicts when modifier strings are identical. `focus-within:tw-ring-2` does NOT conflict with `has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2`. Use InputGroup's exact modifier strings to override.
 
 **File path:** `frontend/src/components/ui/Rocket/{Name}/{Name}.jsx`
 

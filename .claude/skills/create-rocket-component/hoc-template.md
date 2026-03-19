@@ -8,6 +8,9 @@ component's dimension matrix, then fill in the bracketed parts.
 ## CVA shape decision
 
 ```
+Is it a compound/multi-part component? (Root + Content + Item + …)
+  └── YES → Shape E: compound (multiple wrappers, shared context, re-exports)
+
 Has visual variants? (primary/secondary/danger…)
   ├── YES + has sizes  → Shape A: full CVA (variants + size)
   ├── YES + no sizes   → Shape B: CVA (variants only)
@@ -192,6 +195,126 @@ const [Name] = forwardRef(function [Name](
 
 export { [Name], [name]Classes };
 ```
+
+---
+
+## Shape E — compound / multi-part components (e.g. Combobox, Select, InputGroup)
+
+Some shadcn components are **compound** — they export multiple sub-components (Root, Input,
+Content, Item, etc.) that work together. These don't fit Shapes A–D because:
+
+- Multiple sub-components each need their own styled wrapper
+- Sub-components may share state via React context (e.g. anchor refs)
+- The root component may need to inject default props (e.g. `selectionMode`)
+- Some sub-components need CVA; others just need static `cn()` overrides
+
+### Pattern
+
+```jsx
+import React, { forwardRef, createContext, useContext, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import {
+  [Name] as Shadcn[Name],
+  [Name]Part as Shadcn[Name]Part,
+  // Re-exported unchanged (no visual tokens to override)
+  [Name]OtherPart,
+} from '@/components/ui/Rocket/shadcn/[name]';
+
+// ── Shared context (if sub-components need to communicate) ────────────────
+// Example: anchor ref for dropdown width matching
+const [Name]AnchorContext = createContext(null);
+
+// ── Sub-component with CVA (the "main" styled part) ──────────────────────
+const [name]PartVariants = cva(
+  [/* base classes using ToolJet tokens */],
+  {
+    variants: {
+      size: {
+        large: '...',
+        default: '...',
+        small: '...',
+      },
+    },
+    defaultVariants: { size: 'default' },
+  }
+);
+
+const [Name]Part = forwardRef(function [Name]Part(
+  { className, size, ...props },
+  ref
+) {
+  return (
+    <Shadcn[Name]Part
+      ref={ref}
+      className={cn([name]PartVariants({ size }), className)}
+      {...props}
+    />
+  );
+});
+[Name]Part.displayName = '[Name]Part';
+
+// ── Sub-component with static styling ────────────────────────────────────
+const [Name]OtherPart = forwardRef(function [Name]OtherPart(
+  { className, ...props },
+  ref
+) {
+  return (
+    <Shadcn[Name]OtherPart
+      ref={ref}
+      className={cn('tw-token-class tw-another-token', className)}
+      {...props}
+    />
+  );
+});
+
+// ── Root (context provider + default props) ──────────────────────────────
+function [Name](props) {
+  const anchorRef = useRef(null);
+  return (
+    <[Name]AnchorContext.Provider value={anchorRef}>
+      <Shadcn[Name] {...props} />
+    </[Name]AnchorContext.Provider>
+  );
+}
+
+// ── Exports ──────────────────────────────────────────────────────────────
+export {
+  [Name],
+  [Name]Part,
+  [name]PartVariants,
+  // Re-exports from shadcn (no visual tokens to override)
+  [Name]OtherPart,
+};
+```
+
+### Key rules for compound components
+
+| Rule | Details |
+|---|---|
+| **forwardRef on EVERY sub-component** | Base UI uses `React.cloneElement` with refs for internal state. A missing ref breaks features silently (see below). |
+| **Re-export unchanged parts** | If a shadcn sub-component has no visual tokens to override, re-export it directly — don't wrap it. |
+| **Context for cross-part state** | Use React context when sub-components need shared state (e.g. anchor ref for dropdown positioning). |
+| **Default props on root** | Set sensible defaults that differ from Base UI's internals (e.g. `selectionMode`). |
+| **One CVA per styled sub-component** | Not every sub-component needs CVA — many just need a static `cn()` call. |
+
+### forwardRef — THE critical rule for compound components
+
+**Every Rocket wrapper component that gets used as a `render` prop target MUST use `forwardRef`.**
+
+Base UI's `useRenderElement` calls `React.cloneElement(renderElement, { ref, value, ... })`.
+In React 18, if the target component is NOT wrapped in `forwardRef`, the ref is silently dropped.
+This breaks Base UI's internal state management — it can't find DOM elements it needs.
+
+**Real failure case (Combobox):** `InputGroupInput` was a plain function (no `forwardRef`).
+Base UI's `ComboboxPrimitive.Input` passed a ref through `render={<InputGroupInput />}`.
+The ref was dropped → `setInputElement` never ran → `inputInsidePopup` stayed at default `true`
+→ `shouldFillInput` evaluated to `false` → selecting an item never updated the input value.
+The fix: wrapping `InputGroupInput` in `forwardRef`.
+
+**Rule of thumb:** If a Rocket component is ever passed as `render={<Component />}` or used
+inside `React.cloneElement`, it MUST forward its ref. When in doubt, always use `forwardRef`.
 
 ---
 
