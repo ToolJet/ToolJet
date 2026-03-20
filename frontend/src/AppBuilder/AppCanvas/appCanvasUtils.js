@@ -242,6 +242,16 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
+export function resolvePastedComponentName({ isCut, isCloning, originalName, componentType, mergedComponents }) {
+  if (isCut && !isCloning && typeof originalName === 'string' && originalName.length > 0) {
+    const taken = Object.values(mergedComponents).some((c) => c.component.name === originalName);
+    if (!taken) {
+      return originalName;
+    }
+  }
+  return computeComponentName(componentType, mergedComponents);
+}
+
 export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
@@ -577,9 +587,16 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     const newComponentId = isCut ? component.id : uuidv4();
     if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
     if (component.component.component === 'Form') formComponentIds.add(newComponentId);
-    const componentName = computeComponentName(component.component.component, {
+    const mergedComponents = {
       ...components,
-      ...Object.fromEntries(finalComponents.map((component) => [component.id, component])),
+      ...Object.fromEntries(finalComponents.map((c) => [c.id, c])),
+    };
+    const componentName = resolvePastedComponentName({
+      isCut,
+      isCloning,
+      originalName: component.component.name,
+      componentType: component.component.component,
+      mergedComponents,
     });
     const parentRef = component.isParentTabORCalendar
       ? component.component.parent.split('-').slice(0, -1).join('-')
