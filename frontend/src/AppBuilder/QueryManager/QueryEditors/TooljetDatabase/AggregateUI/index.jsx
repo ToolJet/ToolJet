@@ -356,7 +356,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   return (
     <>
       <div className="d-flex wf-block" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="tooljetdb-aggregate-label">
           Aggregate
         </label>
         <div
@@ -413,6 +413,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                     }}
                     className="d-flex justify-content-center align-items-center border"
                     onClick={() => handleDeleteAggregate(aggregateKey)}
+                    data-cy="tooljetdb-aggregate-delete-button"
                   >
                     <SolidIcon name="trash" width="16" fill="var(--slate9)" />
                   </div>
@@ -439,6 +440,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
               addNewAggregateOption();
             }}
             className={`d-flex justify-content-start width-fit-content`}
+            data-cy="tooljetdb-aggregate-add-condition-button"
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -451,7 +453,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
         </div>
       </div>
       <div className="d-flex wf-block" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="tooljetdb-group-by-label">
           Group by
         </label>
         <div className="field-container col minw-400-w-400">

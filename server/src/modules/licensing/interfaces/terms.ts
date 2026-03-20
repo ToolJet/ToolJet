@@ -32,6 +32,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    customDomains?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;

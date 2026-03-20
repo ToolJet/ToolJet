@@ -145,6 +145,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.CANVAS_PAGE_FOOTER:
       return licenseInstance.canvasPageFooterEnabled;
 
+    case LICENSE_FIELD.CUSTOM_DOMAINS:
+      return licenseInstance.customDomains;
+
     case LICENSE_FIELD.GOOGLE:
       return licenseInstance.google;
 

@@ -103,7 +103,6 @@ function DataSourcePicker({ darkMode }) {
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {updatedStaticDataSources.map((source) => {
-
             return (
               <ButtonSolid
                 key={`${source.id}-${source.kind}`}
