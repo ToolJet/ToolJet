@@ -525,11 +525,13 @@ export const createPageMenuSlice = (set, get) => {
         modeStore,
         isPreviewInEditor,
         setCurrentPageHandle,
+        eventsSlice,
       } = get();
       const pages = modules[moduleId].pages;
       const selectedVersionName = selectedVersion?.name;
       const selectedEnvironmentName = selectedEnvironment?.name;
       const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
 
       if (page?.type === 'url') {
         if (page?.url) {
@@ -562,6 +564,11 @@ export const createPageMenuSlice = (set, get) => {
           return false;
         }
         return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
+        return;
       }
 
       if (currentPageId === page?.id) {

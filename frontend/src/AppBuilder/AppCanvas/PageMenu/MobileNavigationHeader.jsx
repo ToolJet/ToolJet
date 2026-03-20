@@ -8,11 +8,11 @@ import Header from '@/AppBuilder/Viewer/Header';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
-import PageMenuConfigHandle from './PageMenuConfigHandle';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import PageMenuConfigHandle from '@/AppBuilder/AppCanvas/ConfigHandle/PageMenuConfigHandle';
 
 // Lazy load MobileNavigationMenu to reduce initial bundle size
-const MobileNavigationMenu = React.lazy(() => import('./MobileNavigationMenu'));
+const MobileNavigationMenu = React.lazy(() => import('@/AppBuilder/AppCanvas/PageMenu/MobileNavigationMenu'));
 
 const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switchDarkMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
