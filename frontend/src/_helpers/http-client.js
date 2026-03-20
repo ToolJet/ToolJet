@@ -1,6 +1,7 @@
 import config from 'config';
 import { authenticationService } from '@/_services';
 import { sessionService } from '@/_services/session.service';
+import useStore from '@/AppBuilder/_stores/store';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
@@ -9,7 +10,9 @@ import { handleUnSubscription } from '@/_helpers/utils';
 let ssoInfoRefreshPromise = null;
 
 /**
- * Refreshes the session when OIDC tokens have been updated on the backend.
+ * Refreshes ssoUserInfo in the editor globals when OIDC tokens have been updated on the backend.
+ * Directly patches the Zustand resolved store so the editor sees updated ssoUserInfo without
+ * triggering a full app reload via the session BehaviorSubject.
  * Called when response contains X-SSO-Info-Updated header.
  */
 async function refreshSsoInfo() {
@@ -22,7 +25,18 @@ async function refreshSsoInfo() {
     try {
       const newSession = await sessionService.validateSession();
       if (newSession && !newSession.authentication_failed) {
-        authenticationService.updateCurrentSession(newSession);
+        const ssoUserInfo = newSession?.current_user?.sso_user_info;
+        const role = newSession?.role?.name;
+        // Directly update the editor globals store — avoids touching the session BehaviorSubject
+        // which would trigger a full app reload via useAppData's currentSession effect.
+        try {
+          useStore.getState().setResolvedGlobals('currentUser', {
+            ...(ssoUserInfo !== undefined && { ssoUserInfo }),
+            ...(role !== undefined && { role }),
+          });
+        } catch {
+          // Not in the editor context (store not initialized), safe to ignore
+        }
       }
     } catch (error) {
       console.warn('[SSO Info Refresh] Failed to refresh session:', error);

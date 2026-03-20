@@ -4,17 +4,19 @@ import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService } from '@/_services';
-import { authenticationService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
+import useStore from '@/AppBuilder/_stores/store';
 
 // Track pending SSO info refresh to avoid duplicate requests
 let ssoInfoRefreshPromise = null;
 
 /**
- * Refreshes the session when OIDC tokens have been updated on the backend.
+ * Refreshes ssoUserInfo in the editor globals when OIDC tokens have been updated on the backend.
+ * Directly patches the Zustand resolved store so the editor sees updated ssoUserInfo without
+ * triggering a full app reload via the session BehaviorSubject.
  * Called when response contains X-SSO-Info-Updated header.
  */
 async function refreshSsoInfo() {
@@ -27,7 +29,16 @@ async function refreshSsoInfo() {
     try {
       const newSession = await sessionService.validateSession();
       if (newSession && !newSession.authentication_failed) {
-        authenticationService.updateCurrentSession(newSession);
+        const ssoUserInfo = newSession?.current_user?.sso_user_info;
+        const role = newSession?.role?.name;
+        try {
+          useStore.getState().setResolvedGlobals('currentUser', {
+            ...(ssoUserInfo !== undefined && { ssoUserInfo }),
+            ...(role !== undefined && { role }),
+          });
+        } catch {
+          // Not in the editor context (store not initialized), safe to ignore
+        }
       }
     } catch (error) {
       console.warn('[SSO Info Refresh] Failed to refresh session:', error);
@@ -52,7 +63,10 @@ export function handleResponse(
 ) {
   // Check if OIDC tokens were refreshed on the backend
   // Trigger async session refresh to update globals.currentUser.ssoUserInfo
-  if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+  const xSsoHeader = response.headers.get('X-SSO-Info-Updated');
+  console.log('[handleResponse] url:', response.url, 'X-SSO-Info-Updated:', xSsoHeader);
+  if (xSsoHeader === 'true') {
+    console.log('[handleResponse] triggering refreshSsoInfo()');
     refreshSsoInfo(); // Fire-and-forget — don't block the current request
   }
 
