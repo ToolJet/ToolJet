@@ -249,7 +249,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                               <DragResizeGhostWidget />
                             </>
                           )}
-                          <div id="component-portal" />
                           {appType !== 'module' && <div id="component-portal" />}
                         </div>
                       </SuspenseCountProvider>

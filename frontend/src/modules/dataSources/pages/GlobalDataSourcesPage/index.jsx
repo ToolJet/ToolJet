@@ -5,12 +5,11 @@ import { globalDatasourceService, appEnvironmentService, authenticationService, 
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
-import { returnDevelopmentEnv } from '@/_helpers/utils';
+import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import { getWorkspaceId } from '@/_helpers/utils';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
