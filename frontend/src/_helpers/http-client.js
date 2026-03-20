@@ -71,8 +71,8 @@ class HttpClient {
       headers: this.extractResponseHeaders(response),
     };
 
-    // Check if OIDC tokens were refreshed on the backend
-    // Trigger async session refresh to update globals.currentUser.ssoUserInfo
+    // Check if OIDC tokens were refreshed on the backend.
+    // Also checked in handle-response.js to cover both HttpClient and legacy fetch call paths.
     if (response.headers.get('X-SSO-Info-Updated') === 'true') {
       refreshSsoInfo(); // Fire-and-forget — don't block the current request
     }

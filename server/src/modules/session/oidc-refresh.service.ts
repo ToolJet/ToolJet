@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class OidcRefreshService {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async checkAndRefreshIfNeeded(_user: any): Promise<boolean> {
-    // No-op in CE — OIDC token refresh is an EE feature
+    // No-op in CE — see server/ee/session/oidc-refresh.service.ts for EE implementation
     return false;
   }
 }

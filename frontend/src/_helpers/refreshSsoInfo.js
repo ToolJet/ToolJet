@@ -5,9 +5,9 @@ import useStore from '@/AppBuilder/_stores/store';
 let ssoInfoRefreshPromise = null;
 
 /**
- * Refreshes ssoUserInfo in the editor globals when OIDC tokens have been updated on the backend.
- * Directly patches the Zustand resolved store so the editor sees updated ssoUserInfo without
- * triggering a full app reload via the session BehaviorSubject.
+ * Refreshes ssoUserInfo in the application state when OIDC tokens have been updated on the backend.
+ * Patches the Zustand resolved store if in editor context, falling back gracefully otherwise.
+ * Avoids touching the session BehaviorSubject which would trigger a full app reload.
  * Called when response contains X-SSO-Info-Updated header.
  */
 export async function refreshSsoInfo() {
@@ -29,8 +29,9 @@ export async function refreshSsoInfo() {
             ...(ssoUserInfo !== undefined && { ssoUserInfo }),
             ...(role !== undefined && { role }),
           });
-        } catch {
-          // Not in the editor context (store not initialized), safe to ignore
+        } catch (storeError) {
+          // Expected when not in editor context (store not initialized)
+          console.debug('[SSO Info Refresh] Store not available (non-editor context):', storeError?.message);
         }
       }
     } catch (error) {

@@ -21,12 +21,9 @@ export function handleResponse(
   queryParamToUpdate = null,
   avoidUpgradeModal = false
 ) {
-  // Check if OIDC tokens were refreshed on the backend
-  // Trigger async session refresh to update globals.currentUser.ssoUserInfo
-  const xSsoHeader = response.headers.get('X-SSO-Info-Updated');
-  console.log('[handleResponse] url:', response.url, 'X-SSO-Info-Updated:', xSsoHeader);
-  if (xSsoHeader === 'true') {
-    console.log('[handleResponse] triggering refreshSsoInfo()');
+  // Check if OIDC tokens were refreshed on the backend.
+  // Also checked in http-client.js to cover both legacy fetch and HttpClient call paths.
+  if (response.headers.get('X-SSO-Info-Updated') === 'true') {
     refreshSsoInfo(); // Fire-and-forget — don't block the current request
   }
 
