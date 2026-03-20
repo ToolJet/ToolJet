@@ -8,47 +8,7 @@ import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
-import useStore from '@/AppBuilder/_stores/store';
-
-// Track pending SSO info refresh to avoid duplicate requests
-let ssoInfoRefreshPromise = null;
-
-/**
- * Refreshes ssoUserInfo in the editor globals when OIDC tokens have been updated on the backend.
- * Directly patches the Zustand resolved store so the editor sees updated ssoUserInfo without
- * triggering a full app reload via the session BehaviorSubject.
- * Called when response contains X-SSO-Info-Updated header.
- */
-async function refreshSsoInfo() {
-  // Dedupe concurrent refresh requests
-  if (ssoInfoRefreshPromise) {
-    return ssoInfoRefreshPromise;
-  }
-
-  ssoInfoRefreshPromise = (async () => {
-    try {
-      const newSession = await sessionService.validateSession();
-      if (newSession && !newSession.authentication_failed) {
-        const ssoUserInfo = newSession?.current_user?.sso_user_info;
-        const role = newSession?.role?.name;
-        try {
-          useStore.getState().setResolvedGlobals('currentUser', {
-            ...(ssoUserInfo !== undefined && { ssoUserInfo }),
-            ...(role !== undefined && { role }),
-          });
-        } catch {
-          // Not in the editor context (store not initialized), safe to ignore
-        }
-      }
-    } catch (error) {
-      console.warn('[SSO Info Refresh] Failed to refresh session:', error);
-    } finally {
-      ssoInfoRefreshPromise = null;
-    }
-  })();
-
-  return ssoInfoRefreshPromise;
-}
+import { refreshSsoInfo } from './refreshSsoInfo';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
