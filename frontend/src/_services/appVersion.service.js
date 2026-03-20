@@ -46,12 +46,13 @@ function getAppVersionData(appId, versionId, mode) {
   );
 }
 
-function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId) {
+function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {
   const body = {
     versionName,
     versionDescription,
     versionFromId,
     environmentId: currentEnvironmentId,
+    versionType,
   };
 
   const requestOptions = {

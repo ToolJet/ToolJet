@@ -24,8 +24,9 @@ export const groupsText = {
   resourcesApps: "Apps",
   resourcesFolders: "Folder",
   createLabel: "Create",
-  folderCreateLabel: "Create/Update/Delete",
-  folderHelperText: "All operations on folders",
+  folderCreateLabel: "Create",
+  folderCreateHelperText: "Create new folders in this workspace",
+  folderDeleteHelperText: "Delete any folders in this workspace",
   deleteLabel: "Delete",
   deleteMessage: "This permission will be permanently deleted. Do you want to continue?",
   permissionUpdatedToast: "Group permissions updated",
@@ -85,6 +86,13 @@ export const groupsText = {
   warningText: "Users must be always be part of one default group. This will define the user count in your plan.",
   continueButtonText: "Continue",
   roleUpdateToastMessage: "Role updated successfully",
+
+  folderEditLabel: "Edit folder",
+  folderEditHelperText: "Rename the folder, add, remove and edit apps in the folder",
+  folderEditAppLabel: "Edit apps",
+  folderEditAppHelperText: "Edit apps in the folder",
+  folderViewAppLabel: "View apps",
+  folderViewAppHelperText: "View apps in the folder",
 
   endUserToBuilderMessage: Cypress.env('environment') === 'Community'
     ? "Changing the user role from end-user to builder will grant access the user access to all resources.Are you sure you want to continue?"

@@ -39,6 +39,10 @@ export const useVersionManagerStore = create(
         const { versions, searchQuery } = get();
 
         let filtered = versions;
+        filtered = filtered.filter((v) => {
+          const versionType = v.versionType || v.version_type;
+          return versionType !== 'branch';
+        });
 
         // Filter by search query only
         if (searchQuery) {
