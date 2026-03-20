@@ -3,241 +3,180 @@ id: branching-and-pr
 title: Branching and Pull Requests
 ---
 
-:::warning BETA VERSION
-**Branching and Pull Requests is currently in beta** and not recommended for production use.
+:::warning BETA
+Branching and Pull Requests is currently in beta and not recommended for production use.
 :::
 
-Branching enables multiple developers to work on an isolated copy of the application (their own branch) where changes don't affect others or the live production application until explicitly merged. Branching helps in protecting production quality through mandatory code reviews before changes go live and provide complete change history through Git integration, making every modification traceable and reversible.
+Branching lets multiple developers work on isolated copies of the same application. Each developer gets their own branch where changes stay separate from the live application until explicitly merged through a pull request. This helps in protecting production quality through mandatory code reviews before changes go live and provide complete change history through Git integration, making every modification traceable and reversible.
 
-When multiple developers need to build features or fix bugs in the same application, they need a way to work independently without disrupting each other or risking production stability. Branching solves this by:
-- Protecting production quality through mandatory code reviews before changes go live
-- Enabling parallel development, so teams can maintain speed without compromising on safety
-- Providing complete change history through Git integration, making every modification traceable and reversible
-
-**When to Enable Branching?**
-
-Enable branching at the workspace level when:
-- Multiple developers work on the same applications
-- You need formal approval workflows before production changes
-- Change tracking and review are organizational requirements
+You can leverage branching when:
+- Multiple developers work on the same application simultaneously.
+- You need formal review and approval workflows before changes reach production.
+- Change tracking and auditability are organizational requirements.
 
 ## Understanding Branches and Versions
 
 ### Master Branch and Sub-Branches
 
-- **Master Branch**: The main branch containing your live application and its linear development history. The master branch is locked—changes can only enter through approved pull requests, never through direct edits.
-- **Sub-Branches**: Independent copies created from the master branch where developers make changes freely. Each sub-branch is isolated until merged back to master.
+Your application has two types of branches:
 
-### Versions as Milestones
-Versions exist only on the master branch, marking stable points in your application's development:
-- **Draft Version**: The current working state on master (one active draft at a time).
-- **Saved Version**: A finalized milestone, automatically committed to Git.
-- **Released Version**: A version released from the production environment.
+- **Master Branch**: The main branch containing your live application and its linear development history. The master branch is locked. Changes can only enter through approved pull requests, never through direct edits.
+- **Sub-Branches**: Independent copies created from the master branch where you make changes freely. Each sub-branch is isolated until merged back to master.
 
-Sub-branches don't have versions, they themselves are working copies of a specific version.
+### Versions as Tags
+
+Versions exist only on the master branch and act as tags that mark stable points in your application's development. When you save a version, ToolJet automatically creates a corresponding tag on your Git provider, making each milestone traceable in your repository.
+
+- **Draft Version**: The current working state on master. Only one draft can be active at a time. This is where merged changes land before being finalized.
+- **Saved Version**: A finalized, locked milestone that is automatically committed and tagged in Git. No further edits are allowed on a saved version.
+- **Released Version**: A saved version that has been promoted through environments and released to production.
+
+Sub-branches don't have versions. They are working copies of a specific version.
+
+**Example**: You create an application and start building on a sub-branch. After merging your changes into master, you pull the changes to *v1*. When you save it, ToolJet commits and creates a `<appname>/v1` tag in Git. You then promote _v1_ through staging and production. Later, you create a new draft _v2_ from _v1_ to continue development. _v1_ remains locked and tagged in Git as a reference point.
 
 ## Setting Up Branching
 
-To enable branching you would need to configure the git sync. Follow the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to configure it. Once Git Sync is configure then the branching is enabled by default (only for the beta version). Specify your Default Branch Name (typically "master" or "main"). This becomes your master branch where live applications reside.
+To enable branching, you need to configure Git Sync first. Follow the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up. Once Git Sync is configured, branching is enabled by default (only during beta). Specify your default branch name (typically "master" or "main") This becomes your master branch where live applications reside.
 
-:::warning NOTE
-ToolJet supports branching **only over Git HTTPS**. SSH is not supported.
+:::warning
+ToolJet supports branching **only over Git HTTPS**. SSH is not supported yet.
+:::
+
+## Using Git Sync Across Multiple Instances
+
+If you run separate ToolJet instances for different environments (e.g., one for development, another for staging or production), you can connect them to the same Git repository. Git acts as the bridge between instances. Changes saved and tagged on one instance can be pulled into another.
+
+For example:
+- **Development instance**: Developers create branches, build features, commit changes, and merge pull requests. Saved versions are automatically tagged in Git.
+- **Staging/Production instance**: Pull saved versions from Git to deploy and release them. No manual export or import needed.
+
+This lets you enforce environment separation at the infrastructure level while keeping all instances in sync through a single Git repository.
+
+:::info
+To decide whether a single or multi-instance setup is right for your organization, refer to [Choosing Your Instance Setup](/docs/tj-setup/instances#choosing-your-instance-setup).
 :::
 
 ## Creating and Managing Branches
 
 ### Create a New Branch
 
-1. Open your application
-2. Click the branch dropdown in the top navigation
-3. Select **+ Create New Branch** <br/><br/>
-    <img className="screenshot-full img-l" src="/img/development-lifecycle/branching/new-branch-modal.png" alt="GitSync" /><br/><br/>
-4. Enter a descriptive branch name <br/><br/>
-    <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/branch-name-modal.png" alt="GitSync" /><br/><br/>
-5. Choose the version to branch from (typically the current draft)
+1. Open your application.
+2. Click the branch dropdown in the top navigation.
+3. Select **+ Create New Branch**. <br/><br/>
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/branching/new-branch-modal.png" alt="Create new branch modal" /><br/><br/>
+4. Enter a descriptive branch name. <br/><br/>
+    <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/branch-name-modal.png" alt="Branch name input" /><br/><br/>
+5. Choose the version to branch from (typically the current draft).
 6. Click **Create Branch**.
 
 Your new branch is immediately available in ToolJet and automatically synced to Git.
 
 ### Switch Between Branches
 
-1. Click the branch dropdown in the top navigation and then click on **Switch Branch**  <br/><br/>
-    <img className="screenshot-full img-l" src="/img/development-lifecycle/branching/new-branch-modal.png" alt="GitSync" /><br/><br/>
-2. Select any active branch to switch
-3. All your edits now apply to the selected branch
-
-<!-- ### Rename a Branch
-
-1. Select the branch you want to rename
-2. Click the branch dropdown → Rename Branch
-3. Enter the new name
-4. Click Save
-
-Changes sync automatically to Git. Note: Master branch cannot be renamed from ToolJet. -->
+1. Click the branch dropdown in the top navigation and click **Switch Branch**. <br/><br/>
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/branching/switch-branch.png" alt="Switch branch dropdown" /><br/><br/>
+2. Select the branch you want to switch to.
+3. All your edits now apply to the selected branch.
 
 ## Working with Pull Requests
 
 Pull requests are how changes move from sub-branches to the master branch. All pull request management happens in your Git provider (GitHub, GitLab, etc.).
 
-### Push Changes to Git
+### Commit Changes to Git
 
-Available only on sub-branches (master is locked):
+You can commit changes only on sub-branches (master is locked):
 
-1. Make your changes in ToolJet
-2. Click **Commit** button in the top navigation
-3. Add a commit message describing your changes <br/>
-    <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/commit-changes.png" alt="GitSync" />
-4. Click **Commit Changes**
+1. Make your changes in ToolJet.
+2. Click the **Commit** button in the top navigation.
+3. Add a commit message describing your changes.  
 
-Changes are committed to your current branch in Git.
+    <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/commit-changes.png" alt="Commit changes modal" />
+4. Click **Commit Changes**.
+
+Your changes are committed to the current branch in Git.
 
 ### Pull Changes from Git
 
-**On Master Branch:**
+To pull changes on the master branch:
 
-1. Ensure you're on the master branch with a draft version active
-2. Click **Pull Commit**
-3. Current draft is replaced with Git content
+1. Ensure you're on the master branch with an active draft version.
+2. Click **Pull Commit**.
+3. The current draft will be replaced with the content from Git.
 
 ### Create a Pull Request
 
-A pull request is created in your Git provider, and the merge also happens there. All changes must be committed to Git to keep your application in sync.
+Pull requests are created and merged in your Git provider. All changes must be committed to Git to keep your application in sync.
 
-1. In ToolJet: Push your branch changes to Git
-    - Click **Commit** button in the top navigation
-    - Add a commit message describing your changes <br/>
-        <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/commit-changes.png" alt="GitSync" />
-    - Click **Commit Changes**
-2. Create Pull Request
-    - After committing your changes, click the branch name in the navigation bar.
-    - Click the **Create pull request** button.<br/>
-        <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/pr-button.png" alt="GitSync" />
-    - You’ll be redirected to your Git provider to create the pull request. To keep the flow consistent, some fields are pre-filled. You can edit them or directly create the PR.
-3. Review and Approval:
-    - Add reviewers and description
-    - Submit for review
-    - Reviewers examine changes in Git
-    - Address any feedback or conflicts
-    - Approver merges the pull request
-4. In ToolJet: Pull merged changes into master
-    - Switch to the master branch and create a draft version
-    - Click **Pull Commit**
-    - Changes replace the current draft version
+1. **Commit your branch changes**:  
+    Click the **Commit** button in the top navigation, add a commit message, and click **Commit Changes**.
 
-<!-- ### View Pull Request Status
+    <img className="screenshot-full img-s" src="/img/development-lifecycle/branching/commit-changes.png" alt="Commit changes modal" />
+2. **Create a pull request**:  
+    Click the branch name in the navigation bar, then click **Create pull request**.
 
-1. Click the Pull Requests icon in the top navigation
-2. View all active pull requests for your application
-3. Click Refresh to sync the latest status from Git
+    <img className="screenshot-full img-m" src="/img/development-lifecycle/branching/pr-button.png" alt="Create pull request button" />
+   You'll be redirected to your Git provider where some fields are pre-filled. Edit them as needed or create the PR directly.
+3. **Review and merge**:  
+    Add reviewers and a description, submit for review, address any feedback or conflicts, and have the approver merge the pull request.
+4. **Pull merged changes into master**:  
+    Switch to the master branch, create a draft version, and click **Pull Commit**. The merged changes replace the current draft.
 
-Note: Pull request status is read-only in ToolJet. All actions (approve, merge, close) happen in Git. -->
+## Common Scenarios
 
-<!-- **On Sub-Branches:**
-
-1. Switch to your sub-branch
-2. Click Pull from Git
-3. Select any branch to pull from (often master for rebasing)
-4. Click Pull
-5. Current branch content is replaced with selected branch content 
-
-## Common Scenarios -->
-
-## Creating Your First Released Version
+### Creating Your First Released Version
 
 **Scenario**: You've built a new application and need to release version 1.
 
-1. Create your application (master branch and draft v1 created automatically)
-2. Create a sub-branch from draft v1: developer/initial-build
-3. Develop your application on the branch
-4. Push changes to Git
-5. In Git: Create pull request, get approval, merge to master
-6. In ToolJet: Pull from Git into master branch
-7. Save draft v1 as version v1 (auto-commits to Git)
-8. Promote v1 to staging for testing
-9. Promote v1 to production
-10. Release v1
- 
+1. Create your application (master branch and draft v1 are created automatically).
+2. Create a sub-branch from draft v1 (e.g., _developer/initial-build_).
+3. Develop your application on the branch.
+4. Commit your changes to Git.
+5. In Git: Create a pull request, get approval, and merge to master.
+6. In ToolJet: Pull from Git into the master branch.
+7. Save draft v1 as version v1 (auto-commits to Git).
+8. Promote v1 to staging for testing.
+9. Promote v1 to production.
+10. Release v1.
+
 ### Parallel Development
 
-**Scenario**: Two developers need to work on different features simultaneously.
+**Scenario**: Two developers need to work on different features at the same time.
 
-1. Developer A creates branch `johnson/inventory` from current master
-2. Developer B creates branch `taylor/search` from current master
-3. Both developers work independently and push their changes
+1. Developer A creates branch _johnson/inventory_ from the current master.
+2. Developer B creates branch _taylor/search_ from the current master.
+3. Both developers work independently and commit their changes.
 4. In Git:
-    - Both create pull requests to master
-    - Resolve any merge conflicts
-    - Manager approves both PRs
-    - Merge both branches to master
+    - Both create pull requests to master.
+    - Resolve any merge conflicts.
+    - Manager approves and merges both PRs to master.
 5. In ToolJet:
-    - Create draft v2 from v1 (if no active draft exists)
-    - Pull changes from Git into draft v2
-    - Save v2 as a version
-    - Promote and release v2
-
-### Patching a Released Version
-
-**Scenario**: Version 2 is released, version 3 is in draft, but v2 has a production bug requiring immediate fix.
-
-Existing versions:
-- v1 (Released)
-- v2 (Released, needs patch)
-- v3 (Draft, ongoing work)
-
-Steps:
-1. Save draft v3 as v3 (preserves ongoing work)
-2. Create new draft v2.1 from v2
-3. Create branch `robert/patch` from v2
-4. Make fixes on the patch branch and commit to Git
-5. In Git: Create PR, get approval, merge to master
-6. In ToolJet: Pull changes into draft v2.1
-7. Save v2.1 as a version
-8. Promote v2.1 to staging, then production
-9. Release v2.1
-
-<!--  
-### Rebasing Your Branch
-
-**Scenario**: You're working on a branch while another developer's changes get merged to master. You need those changes.
-
-Setup:
-- Master has v1, v2, and draft v3
-- Branch `taylor/search` created from v2
-- Branch `johnson/inventory` created from v2
-
-Steps:
-1. Taylor completes work and creates pull request
-2. In Git: Pull request approved and merged to master
-3. In ToolJet: Pull from Git into draft v3 (now has Taylor's changes)
-4. On Johnson's branch: Pull from master branch into nechal/inventory
-5. Resolve any conflicts locally, then push updated branch to Git -->
+    - Create draft v2 from v1 (if no active draft exists).
+    - Pull changes from Git into draft v2.
+    - Save v2 as a version.
+    - Promote and release v2.
 
 ## Creating and Saving Versions
 
 ### Creating Draft Versions
 
-On Master Branch Only:
-- One active draft version at a time
-- Create new draft from any saved version
-- Draft represents the current working state
+Draft versions can only be created on the master branch. Only one draft can be active at a time.
 
-To create a new draft:
-1. Switch to master branch
-2. Click version dropdown → Create Draft
-3. Select the version to draft from
-4. Click Create
+1. Switch to the master branch.
+2. Click the version dropdown and select **Create Draft**.
+3. Select the version to draft from.
+4. Click **Create**.
 
 ### Saving Versions
 
-When you save a draft version:
-1. Switch to master branch with active draft
-2. Click Save Version
-3. Enter version number (e.g., v2, v2.1)
-4. Click Save
-5. Version is automatically committed to Git
-6. Saved versions cannot be edited (locked state)
+When you save a draft, it becomes a locked milestone:
 
-**Important**: Once saved, no further commits are allowed on that version. Saved versions represent completed milestones.
+1. Switch to the master branch with an active draft.
+2. Click **Save Version**.
+3. Enter a version number (e.g., v2, v2.1).
+4. Click **Save**.
+
+The version is automatically committed to Git. Once saved, no further commits are allowed on that version. Saved versions represent completed milestones.
 
 <!-- ### Closing Branches
 Branches can only be closed in your Git provider, not in ToolJet:
@@ -273,6 +212,7 @@ When auto-commit is enabled, saving a draft version automatically pushes it to G
 | Pull from Git | ✅ Draft only | ✅ Open branches | 
 | Rename | ❌ Git only | ❌ Git only | 
 | Close | ❌ Never | ❌ Git only |
+
 
 <!-- ### Conflict Resolution
 
