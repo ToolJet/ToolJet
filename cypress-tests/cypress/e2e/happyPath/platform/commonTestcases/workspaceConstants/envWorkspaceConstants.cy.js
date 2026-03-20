@@ -65,7 +65,7 @@ describe("Workspace constants", () => {
             "Constants created from environment variables cannot be edited or deleted"
         );
 
-        switchToConstantTab("Secrets");
+        switchToConstantTab("Secretsh");
         cy.get('[data-cy="headervalue-constant-visibility"]').click();
         cy.get('[data-cy="headervalue-workspace-constant-value"]')
             .should("be.visible")
