@@ -228,6 +228,8 @@ function exportResource(body, appType) {
 }
 
 function importResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

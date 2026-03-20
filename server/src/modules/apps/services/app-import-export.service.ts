@@ -538,7 +538,8 @@ export class AppImportExportService {
     isGitApp = false,
     tooljetVersion = '',
     cloning = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    branchId?: string
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -590,7 +591,9 @@ export class AppImportExportService {
         externalResourceMappings,
         isNormalizedAppDefinitionSchema,
         currentTooljetVersion,
-        moduleResourceMappings
+        moduleResourceMappings,
+        undefined,
+        branchId
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
@@ -921,7 +924,8 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    branchId?: string 
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -964,7 +968,8 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      createNewVersion
+      createNewVersion,
+      branchId
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2290,7 +2295,8 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    branchId?: string
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2373,6 +2379,7 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id,
+          branchId,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
