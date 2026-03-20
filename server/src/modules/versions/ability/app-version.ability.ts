@@ -8,7 +8,7 @@ import { MODULES } from '@modules/app/constants/modules';
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string
+  resourceId?: string,
 ): void {
   const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[resource[0].resourceType];
@@ -143,7 +143,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
-        FEATURE_KEY.GET_ONE
+        FEATURE_KEY.GET_ONE,
       ],
       App
     );

@@ -11,7 +11,7 @@ import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -29,6 +29,7 @@ export default function AppCard({
   canViewApp,
   currentFolder,
   appType,
+  ownedFolders,
   ...props
 }) {
   const canUpdate = canUpdateApp(app);
@@ -126,18 +127,18 @@ export default function AppCard({
   // Calculate released app access before LaunchButton definition
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;
-  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
 
-  // Check if user has access to any non-released environment (dev, staging, or production)
-  const hasNonReleasedAccess =
-    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
 
   // Check if user is a builder based on role, not just editable apps
   const isBuilder = hasBuilderRole(session?.role ?? {});
 
-  // Check if user can access released apps
-  // End-users (non-builders) always have released app access
-  // Builders need explicit canAccessReleased permission
+  const hasNonReleasedPreviewAccess =
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
+
+  // Builders need explicit released access. End users can launch if the app is released.
   const canAccessReleased = !isBuilder || environmentAccess.released;
 
   const LaunchButton =
@@ -184,7 +185,7 @@ export default function AppCard({
             onClick={() => {
               if (app?.current_version_id && canAccessReleased) {
                 window.open(
-                  urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
+                  urlJoin(getHostURL(), `/applications/${app.slug}`)
                 );
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
@@ -222,13 +223,7 @@ export default function AppCard({
           const pageHandle = app.home_page_handle || 'home';
           const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
 
-          const session = authenticationService.currentSessionValue;
-          const appPerms = session?.app_group_permissions;
-          const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-
-          // Check if user is a builder
-          const isBuilder = appPerms?.is_all_editable || appPerms?.editable_apps_id?.includes(app.id) || false;
-          // For preview, use first available environment from user's actual permissions
+          // For preview, use first available environment from user's actual permissions.
           const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
           // Don't add env param if license is invalid or multi-environment feature is not available
           const queryParams = props.basicPlan ? {} : { env: defaultEnv };
@@ -288,8 +283,10 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
                   <AppMenu
+                    appId={app?.id}
+                    appUserId={app?.user_id}
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
                     canCreateApp={canCreateApp()}
@@ -304,6 +301,7 @@ export default function AppCard({
                     currentFolder={currentFolder}
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
+                    ownedFolders={ownedFolders}
                   />
                 )}
               </div>
@@ -353,7 +351,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && hasNonReleasedAccess && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

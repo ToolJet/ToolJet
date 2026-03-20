@@ -270,7 +270,7 @@ describe("Manage Groups", () => {
                 cy.get(dataSourceSelector.listQuery("user1-datasource"))
                     .should("be.visible")
                     .click();
-                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryAddParamButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryCreateAndRunButton)
                     .eq(0)
                     .should("be.enabled");
@@ -282,7 +282,7 @@ describe("Manage Groups", () => {
                 cy.get(dataSourceSelector.listQuery("user2-datasource"))
                     .should("be.visible")
                     .click();
-                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryAddParamButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryCreateAndRunButton)
                     .eq(0)
                     .should("be.enabled");

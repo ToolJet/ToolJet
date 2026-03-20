@@ -5,7 +5,6 @@ import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
-
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
   protected getAbilityFactory() {

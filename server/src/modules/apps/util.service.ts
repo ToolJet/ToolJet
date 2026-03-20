@@ -28,10 +28,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -41,6 +38,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -51,7 +49,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) {}
+  ) { }
   async create(
     name: string,
     user: User,
@@ -157,14 +155,15 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
     let app: App;
-    try {
+
+    if (isUUID(slug)) {
       app = await this.appRepository.findById(slug, organizationId);
-    } catch (error) {
-      /* means: UUID error. so the slug isn't not the id of the app */
-      if (error?.code === `22P02`) {
-        /* Search against slug */
+      if (!app) {
+        /* UUID could also be a slug, try slug lookup as fallback */
         app = await this.appRepository.findBySlug(slug, organizationId);
       }
+    } else {
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {
@@ -384,7 +383,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
     }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: resourceType }],
+      resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -467,17 +466,29 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    return userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
+    );
+
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
+
+    // hideAll => strict allow-list mode (explicit grants only)
+    if (userAppPermissions.hideAll) {
+      return [null, ...explicitVisibleApps];
+    }
+
+    // normal mode => editable always visible, viewable minus hidden (non-editable)
+    return [
+      null,
+      ...Array.from(
+        new Set([
+          ...userAppPermissions.editableAppsId,
+          ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+        ])
+      ),
+    ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -527,7 +538,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const apps = await this.viewableAppsQueryUsingPermissions(
+      return await this.viewableAppsQueryUsingPermissions(
         user,
         userPermission[resourceType],
         manager,
@@ -535,8 +546,6 @@ export class AppsUtilService implements IAppsUtilService {
         undefined,
         type
       ).getCount();
-
-      return apps;
     });
   }
 
@@ -638,10 +647,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });

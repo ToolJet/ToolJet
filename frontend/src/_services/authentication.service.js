@@ -20,6 +20,7 @@ const currentSessionSubject = new BehaviorSubject({
   app_group_permissions: null,
   data_source_group_permissions: null,
   workflow_group_permissions: null,
+  folder_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,

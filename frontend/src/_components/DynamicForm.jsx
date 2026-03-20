@@ -34,6 +34,7 @@ import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
+import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
 
 const DynamicForm = ({
   schema,
@@ -211,6 +212,8 @@ const DynamicForm = ({
         return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-key-value-tabs':
+        return GraphqlKeyValueTabs;
       case 'react-component-sort':
         return Sort;
       case 'react-component-oauth-authentication':
@@ -303,6 +306,7 @@ const DynamicForm = ({
     parse_key,
     columnSelectorOperation,
     columnSelectorDependsOn,
+    tabs,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -389,6 +393,14 @@ const DynamicForm = ({
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-key-value-tabs': {
+        return {
+          options,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          tabs: tabs || [],
         };
       }
       case 'react-component-sort': {
@@ -499,7 +511,11 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+              : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -677,7 +693,7 @@ const DynamicForm = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
@@ -762,9 +778,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(
+                          data-cy={`${generateCypressDataCy(
                             computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
-                          )}`}
+                          )}-button`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
