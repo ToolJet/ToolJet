@@ -117,11 +117,11 @@ function validateSSHOptions(sourceOptions: SourceOptions): void {
   }
 }
 
-function safeDecodeAndEncode(value: string): string {
+function safeDecode(value: string): string {
   try {
-    return encodeURIComponent(decodeURIComponent(value));
+    return decodeURIComponent(value);
   } catch {
-    return encodeURIComponent(value);
+    return value;
   }
 }
 
@@ -405,8 +405,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const database = sourceOptions.database;
     let host = sourceOptions.host;
     let port = Number(sourceOptions.port) || 27017;
-    const username = safeDecodeAndEncode(sourceOptions.username || '');
-    const password = safeDecodeAndEncode(sourceOptions.password || '');
+    const username = encodeURIComponent(sourceOptions.username || '');
+    const password = encodeURIComponent(sourceOptions.password || '');
 
     if (format === 'mongodb+srv' && sourceOptions.ssh_enabled === 'enabled') {
       throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
@@ -517,8 +517,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   if (authPart.includes(":")) {
     const colonIdx = authPart.indexOf(":");
-    connUser = authPart.slice(0, colonIdx);
-    connPass = authPart.slice(colonIdx + 1);
+    connUser = safeDecode(authPart.slice(0, colonIdx));
+    connPass = safeDecode(authPart.slice(colonIdx + 1));
   }
 
   const finalUser = explicitUser || connUser || "";
@@ -564,7 +564,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const finalHosts = hostsList.join(",");
   const finalDb = explicitDb || dbNameFromConn || "";
   const authSection = needsAuth
-    ? `${safeDecodeAndEncode(finalUser)}:${safeDecodeAndEncode(finalPass)}@`
+    ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
     : "";
 
   let finalUri = `${protocol}://${authSection}${finalHosts}`;
