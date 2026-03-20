@@ -26,6 +26,7 @@ export const Listview = function Listview({
   dataCy,
   currentMode,
   subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
@@ -170,8 +171,9 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div
-        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${isDynamicHeightEnabled ? 'flex-grow-1' : ''
-          }`}
+        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
+          isDynamicHeightEnabled ? 'flex-grow-1' : ''
+        }`}
       >
         {filteredData.map((listItem, index) => (
           <ListviewSubcontainer
@@ -193,6 +195,7 @@ export const Listview = function Listview({
             visibility={visibility}
             parentHeight={height}
             dataCy={dataCy}
+            componentType={componentType}
           />
         ))}
       </div>

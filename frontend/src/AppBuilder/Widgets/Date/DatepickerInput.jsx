@@ -101,7 +101,12 @@ export const DatepickerInput = forwardRef(
           data-cy={`${String(dataCy).toLowerCase()}-input-field`}
         />
         <span className="cell-icon-display">
-          <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" data-cy={`${String(dataCy).toLowerCase()}-icon`} />
+          <IconElement
+            style={iconStyles}
+            width="16"
+            className="table-column-datepicker-input-icon"
+            data-cy={`${String(dataCy).toLowerCase()}-icon`}
+          />
         </span>
         <span>
           {!isValid && showValidationError && visibility && (

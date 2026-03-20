@@ -24,8 +24,7 @@ export const RadioButtonV2 = ({
   subContainerIndex,
   dataCy,
 }) => {
-  const { label, value, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } =
-    properties;
+  const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
 
   const {
     activeColor,

@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import CodeMirror from '@uiw/react-codemirror';
 import { ToolTip } from './Components/ToolTip';
 

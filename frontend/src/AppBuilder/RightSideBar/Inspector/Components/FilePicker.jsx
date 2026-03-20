@@ -79,8 +79,6 @@ const FxSelect = ({
   );
 };
 
-
-
 const getPropertiesBySection = (propertiesMeta) => {
   const properties = [];
   const additionalActions = [];
@@ -97,8 +95,6 @@ const getPropertiesBySection = (propertiesMeta) => {
   }
   return { properties, additionalActions, dataProperties };
 };
-
-
 
 export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -143,12 +139,12 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   // Insert FxSelect for file type
   // Note: Adjusting index if necessary, assuming properties is always first index 0.
   // Properties -> 0, Events -> 1, Validation -> 2
-  // We need to double check where the fileType is located. 
+  // We need to double check where the fileType is located.
   // It is properly located in Validation section which is usually 3rd if Events exist.
   // baseComponentProperties returns [Properties, Events, Validation, ...].
   // Safe way is to find the Validation section.
 
-  const validationSection = accordionItems.find(item => item.title === 'Validation');
+  const validationSection = accordionItems.find((item) => item.title === 'Validation');
   if (validationSection) {
     // Find the index of fileType
     // This part is a bit brittle in original code too: accordionItems[2].children[1]

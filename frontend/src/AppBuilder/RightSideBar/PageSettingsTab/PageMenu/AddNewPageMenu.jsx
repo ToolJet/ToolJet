@@ -21,7 +21,9 @@ export function AddNewPageMenu({ darkMode }) {
   };
 
   return (
-    <div className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}>
+    <div
+      className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}
+    >
       <Button
         ref={newPageBtnRef}
         key="new-page-btn"
