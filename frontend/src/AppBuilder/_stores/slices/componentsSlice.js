@@ -1403,6 +1403,7 @@ export const createComponentsSlice = (set, get) => ({
         // Only add events that have required fields
         if (event?.event && event?.target && component.id != null && event?.index != null) {
           allEvents.push({
+            name: event?.name,
             event: {
               ...event.event,
             },
