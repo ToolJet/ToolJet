@@ -177,7 +177,8 @@ export const QueryDataPane = ({ darkMode }) => {
           </div>
         ) : (
           <div
-            className={`query-list tj-scrollbar overflow-auto ${filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
+            className={`query-list tj-scrollbar overflow-auto ${
+              filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
             }`}
           >
             <div>

@@ -77,6 +77,7 @@ import { jsonEditorConfig } from './jsonEditor';
 import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 export {
   buttonConfig,
@@ -133,7 +134,8 @@ export {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
+  buttonGroupV2Config,
   pdfConfig,
   stepsConfig,
   kanbanConfig,

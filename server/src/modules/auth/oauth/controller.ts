@@ -33,13 +33,17 @@ export class OauthController implements IOAuthController {
 
   @InitFeature(FEATURE_KEY.OAUTH_OPENID_CONFIGS)
   @Get(['openid/configs/:configId', 'openid/configs'])
-  async getOpenIDRedirect(@Res({ passthrough: true }) response: Response, @Param('configId') configId) {
+  async getOpenIDRedirect(
+    @Req() req,
+    @Res({ passthrough: true }) response: Response,
+    @Param('configId') configId
+  ): Promise<any> {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.OAUTH_SAML_CONFIGS)
   @Get(['saml/configs/:configId'])
-  async getSAMLRedirect(@Param('configId') configId) {
+  async getSAMLRedirect(@Req() req, @Param('configId') configId) {
     throw new NotFoundException();
   }
 

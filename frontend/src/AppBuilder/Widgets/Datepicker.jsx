@@ -148,9 +148,11 @@ export const Datepicker = function Datepicker({
     >
       <DatePickerComponent
         open={isCalendarOpen}
-        className={`input-field form-control ${!isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${shouldShowClearBtn ? 'has-clear-btn' : ''
-          }`}
+        className={`input-field form-control ${
+          !isValid && showValidationError ? 'is-invalid' : ''
+        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${
+          shouldShowClearBtn ? 'has-clear-btn' : ''
+        }`}
         popperClassName={cx('legacy-datepicker-poppper tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : ''}

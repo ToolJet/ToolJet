@@ -88,6 +88,7 @@ export const DropdownV2 = ({
     direction,
     fieldBorderColor,
     fieldBackgroundColor,
+    placeholderTextColor,
     labelWidth,
     icon,
     iconVisibility,
@@ -421,7 +422,7 @@ export const DropdownV2 = ({
     }),
     placeholder: (provided, _state) => ({
       ...provided,
-      color: 'var(--cc-placeholder-text)',
+      color: placeholderTextColor || 'var(--cc-placeholder-text)',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -482,6 +483,7 @@ export const DropdownV2 = ({
     menuPortal: (base) => ({
       ...base,
       ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
+      zIndex: 1040,
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
@@ -589,6 +591,7 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             menuBackgroundColor={menuBackgroundColor}
             optionsLoadingState={optionsLoadingState && advanced}
+            placeholderTextColor={placeholderTextColor}
             menuPlacement="auto"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {

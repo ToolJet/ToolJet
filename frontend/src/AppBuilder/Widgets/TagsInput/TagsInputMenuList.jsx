@@ -25,10 +25,10 @@ const TagsInputMenuList = ({
 
   // Check if inputValue already exists in selected tags or all options (case-insensitive)
   const trimmedInput = inputValue?.trim()?.toLowerCase();
-  const isAlreadyExists = trimmedInput && (
-    selectedValues.some((tag) => tag.value?.toLowerCase() === trimmedInput) ||
-    allOptions.some((opt) => opt.value?.toLowerCase() === trimmedInput)
-  );
+  const isAlreadyExists =
+    trimmedInput &&
+    (selectedValues.some((tag) => tag.value?.toLowerCase() === trimmedInput) ||
+      allOptions.some((opt) => opt.value?.toLowerCase() === trimmedInput));
 
   // Only show create footer if value doesn't already exist
   const showCreateFooter = allowNewTags && inputValue?.trim() && !isAlreadyExists;
@@ -55,17 +55,13 @@ const TagsInputMenuList = ({
     >
       {!optionsLoadingState ? (
         <>
-          <div
-            className="tags-input-menu-list-body"
-          >
+          <div className="tags-input-menu-list-body">
             {hasRegularOptions ? (
               <MenuList {...props} selectProps={selectProps}>
                 {children}
               </MenuList>
             ) : (
-              <div className="tags-input-no-options">
-                {inputValue?.trim() ? 'No results' : 'No options'}
-              </div>
+              <div className="tags-input-no-options">{inputValue?.trim() ? 'No results' : 'No options'}</div>
             )}
           </div>
 
@@ -96,12 +92,8 @@ const TagsInputMenuList = ({
               }}
             >
               <div className="tags-input-new-tag-preview-wrapper">
-                <div className='tags-input-new-tag-preview'>
-                  <span
-                  className='add-text'
-                  >
-                    add
-                  </span>
+                <div className="tags-input-new-tag-preview">
+                  <span className="add-text">add</span>
                   <span
                     className="tags-input-new-tag-preview-text"
                     style={{

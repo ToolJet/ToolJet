@@ -73,7 +73,18 @@ export const getPathname = (path, excludeSlug = false) => {
   return getSubpath() ? (path || pathname).replace(getSubpath(), '') : path || pathname;
 };
 
-export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
+export const getHostURL = () => {
+  const base = isCustomDomain() ? window.location.origin : window.public_config?.TOOLJET_HOST;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
+};
+
+/** Always returns the base TOOLJET_HOST URL (never the custom domain).
+ *  Use this when generating links that should point to the platform host,
+ *  e.g. workspace link previews for newly created workspaces. */
+export const getBaseHostURL = () => {
+  const base = window.public_config?.TOOLJET_HOST || window.location.origin;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
+};
 
 export const dashboardUrl = (data, redirectTo, relativePath) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
@@ -281,4 +292,41 @@ export const eraseRedirectUrl = () => {
 export const redirectToWorkflows = (data, redirectTo, relativePath = null) => {
   const workflowUrl = `${dashboardUrl(data, redirectTo, relativePath)}/workflows`;
   window.location = workflowUrl;
+};
+
+/** Detects whether the app is loaded on a custom domain by comparing
+ *  window.location.hostname against TOOLJET_HOST. Returns false if
+ *  TOOLJET_HOST is not configured or malformed. */
+export const isCustomDomain = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (!tooljetHost) return false;
+  try {
+    const tooljetHostname = new URL(tooljetHost).hostname;
+    return window.location.hostname !== tooljetHostname;
+  } catch (e) {
+    console.error('[isCustomDomain] TOOLJET_HOST is not a valid URL:', tooljetHost, e);
+    return false;
+  }
+};
+
+/** Redirect to the main TOOLJET_HOST, preserving the current path and query string. Returns true if redirected. */
+export const redirectToMainHost = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (tooljetHost) {
+    window.location.href = `${stripTrailingSlash(tooljetHost)}${window.location.pathname}${window.location.search}`;
+    return true;
+  }
+  console.error('[redirectToMainHost] TOOLJET_HOST is not configured — cannot redirect to main host');
+  return false;
+};
+
+/** Returns the HTTPS URL for an organization's custom domain, or null if the
+ *  org has no custom domain or their license has expired. */
+export const getTargetDomainURL = (organization) => {
+  const customDomain = organization?.custom_domain;
+  if (!customDomain) return null;
+  if (organization?.license_type?.is_expired) return null;
+  // Strip any accidental protocol prefix stored in the DB
+  const hostname = customDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  return `https://${hostname}`;
 };

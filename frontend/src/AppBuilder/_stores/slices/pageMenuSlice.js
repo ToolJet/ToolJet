@@ -1,11 +1,11 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
 import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { getSubpath } from '@/_helpers/routes';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,
@@ -525,11 +525,13 @@ export const createPageMenuSlice = (set, get) => {
         modeStore,
         isPreviewInEditor,
         setCurrentPageHandle,
+        eventsSlice,
       } = get();
       const pages = modules[moduleId].pages;
       const selectedVersionName = selectedVersion?.name;
       const selectedEnvironmentName = selectedEnvironment?.name;
       const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
 
       if (page?.type === 'url') {
         if (page?.url) {
@@ -551,11 +553,7 @@ export const createPageMenuSlice = (set, get) => {
 
       if (page?.type === 'app') {
         if (page?.appId) {
-          let appUrl = `/applications/${page.appId}`;
-
-          const path = getSubpath();
-          if (path) appUrl = path + appUrl;
-
+          const appUrl = `${getHostURL()}/applications/${page.appId}`;
           if (page.openIn === 'new_tab') {
             window.open(appUrl, '_blank');
           } else {
@@ -566,6 +564,11 @@ export const createPageMenuSlice = (set, get) => {
           return false;
         }
         return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
+        return;
       }
 
       if (currentPageId === page?.id) {

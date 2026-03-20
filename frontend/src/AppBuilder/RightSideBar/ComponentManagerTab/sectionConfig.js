@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
+    valueSet: new Set(['Button', 'ButtonGroupV2', 'PopoverMenu']),
   },
   data: {
     title: 'Data',
@@ -82,7 +82,16 @@ const sectionConfig = {
   },
   legacy: {
     title: 'Legacy',
-    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect', 'RangeSlider']),
+    valueSet: new Set([
+      'Modal',
+      'Datepicker',
+      'RadioButton',
+      'ToggleSwitch',
+      'DropDown',
+      'Multiselect',
+      'RangeSlider',
+      'ButtonGroup',
+    ]),
   },
 };
 

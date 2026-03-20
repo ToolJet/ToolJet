@@ -1,4 +1,5 @@
 import { getWorkspaceId } from '@/_helpers/utils';
+import { getHostURL } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState, useCallback } from 'react';
@@ -15,16 +16,7 @@ export function UserGroupsSelect(props) {
         {children}
         <div className="add-group-btn">
           <ButtonSolid
-            onClick={() =>
-              window.open(
-                urlJoin(
-                  `${window.public_config?.TOOLJET_HOST}${
-                    window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : ''
-                  }`,
-                  `/${workspaceId}/workspace-settings/groups`
-                )
-              )
-            }
+            onClick={() => window.open(urlJoin(getHostURL(), `/${workspaceId}/workspace-settings/groups`))}
             iconCustomClass="rectangle-add-icon"
             className="create-group"
             fill="var(--indigo9)"
