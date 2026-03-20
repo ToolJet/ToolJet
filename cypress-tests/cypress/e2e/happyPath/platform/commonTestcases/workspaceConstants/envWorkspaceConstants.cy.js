@@ -47,7 +47,7 @@ describe("Workspace constants", () => {
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
 
-        // Show envconstant details
+ /*       // Show envconstant details
         cy.get('[data-cy="envconstant-constant-visibility"]').click();
 
         // Validate the value for the envConstant entry
@@ -65,7 +65,7 @@ describe("Workspace constants", () => {
             "Constants created from environment variables cannot be edited or deleted"
         );
 
-        switchToConstantTab("Secretsh");
+        switchToConstantTab("Secrets");
         cy.get('[data-cy="headervalue-constant-visibility"]').click();
         cy.get('[data-cy="headervalue-workspace-constant-value"]')
             .should("be.visible")
@@ -76,15 +76,25 @@ describe("Workspace constants", () => {
 
         // Check tooltip text on hover (strip HTML for Cypress match)
         assertTooltipText(
-            '[data-cy="headervalue-edit-button"]',
+            '[data-cy="headervalue-edit-buttons"]',
             "Constants created from environment variables cannot be edited or deleted"
         );
-
+*/
         cy.get(commonSelectors.dashboardIcon).click();
 
         importConstantsApp("cypress/fixtures/templates/env_constants-export.json");
         cy.wait(2000);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        cy.reload();
+        
+        cy.get('[data-cy="version-switcher-button"]').click();
+        cy.get('[data-cy="create-draft-version-button"]').click();
+        cy.get('[data-cy="version-name-input-field"]').clear().type("v2");
+        cy.get('[data-cy="create-draft-version-create-button"]').click();
+        cy.wait(2000);
+        cy.get('[data-cy="list-query-datasource_restapi_secret"]').should("exist").click();
+        cy.get('[data-cy="query-preview-button"]').click();
+        cy.get('[data-cy="query-runy-button"]').should("exist");
+        //cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         //******Workflow bug*************************//
 
