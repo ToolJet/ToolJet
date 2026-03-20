@@ -54,6 +54,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Accordion',
   'ReorderableList',
   'KeyValuePair',
+  'ButtonGroupV2',
 ];
 
 const RenderWidget = ({
@@ -303,6 +304,7 @@ const RenderWidget = ({
               dataCy={`${componentName}`}
               currentMode={currentMode}
               subContainerIndex={subContainerIndex}
+              componentType={componentType}
             />
           </TrackedSuspense>
         </div>

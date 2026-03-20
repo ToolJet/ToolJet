@@ -7,7 +7,6 @@ import Home from '@/_ui/Icon/solidIcons/Home';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
-import { RenameInput } from './RenameInput';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';

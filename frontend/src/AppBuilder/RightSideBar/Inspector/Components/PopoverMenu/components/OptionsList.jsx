@@ -17,7 +17,7 @@ const OptionsList = ({
   getResolvedValue,
   getItemStyle,
   // Configurable props for reuse
-  dataCyPrefix = 'inspector-popover-menu',
+  dataCyPrefix = '',
   popoverFields,
   popoverClassName,
   ...restProps
