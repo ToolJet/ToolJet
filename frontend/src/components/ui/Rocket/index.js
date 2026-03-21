@@ -98,3 +98,17 @@ export {
   DropdownMenuSub,
   DropdownMenuRadioGroup,
 } from './DropdownMenu/DropdownMenu';
+export {
+  Dialog,
+  DialogContent,
+  dialogContentVariants,
+  DialogOverlay,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogClose,
+  DialogPortal,
+} from './Dialog/Dialog';
