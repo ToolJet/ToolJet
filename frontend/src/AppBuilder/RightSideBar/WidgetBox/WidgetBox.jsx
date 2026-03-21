@@ -23,6 +23,7 @@ const NEW_WIDGETS = [
   'JSONEditor',
   'Navigation',
   'KeyValuePair',
+  'FileButton',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

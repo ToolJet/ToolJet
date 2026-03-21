@@ -202,8 +202,7 @@ export const fileButtonConfig = {
     },
     contentAlignment: {
       type: 'switch',
-      displayName: '',
-      showLabel: false,
+      displayName: 'Content alignment',
       isIcon: true,
       isFxNotRequired: true,
       options: [
@@ -339,7 +338,7 @@ export const fileButtonConfig = {
       iconColor: { value: 'var(--cc-surface1-surface)' },
       iconDirection: { value: 'left' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },
-      contentAlignment: { value: 'left' },
+      contentAlignment: { value: 'center' },
       buttonType: { value: 'solid' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       hoverBackgroundColor: { value: 'auto' },

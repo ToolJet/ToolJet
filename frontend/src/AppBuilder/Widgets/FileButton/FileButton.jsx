@@ -42,7 +42,7 @@ export const FileButton = (props) => {
     iconColor = 'var(--cc-surface1-surface)',
     iconDirection = 'left',
     loaderColor = 'var(--cc-surface1-surface)',
-    contentAlignment = 'left',
+    contentAlignment = 'center',
     buttonType = 'solid',
     backgroundColor = 'var(--cc-primary-brand)',
     hoverBackgroundColor = 'auto',
@@ -137,6 +137,7 @@ export const FileButton = (props) => {
       ...(hoverBackgroundColor !== 'auto' && { '--button-primary-hover': hoverBackgroundColor }),
     }),
     ...(buttonType === 'outline' && {
+      background: 'transparent',
       ...(hoverBackgroundColor !== 'auto' && { '--button-outline-hover': hoverBackgroundColor }),
     }),
   };
