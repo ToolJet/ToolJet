@@ -30,7 +30,7 @@ All standard `<input>` HTML attributes are forwarded.
 | border | hover | `--border-strong` | `hover:tw-border-border-strong` |
 | text | default | `--text-default` | `tw-text-text-default` |
 | placeholder | default | `--text-placeholder` | `placeholder:tw-text-text-placeholder` |
-| shadow | default | `--elevation-000` | `tw-shadow-elevation-000` |
+| shadow | default | `--elevation-none` | `tw-shadow-elevation-none` |
 | focus ring | focus | `--interactive-focus-outline` | `focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-1` |
 | border | error | `--border-danger-strong` | `aria-[invalid=true]:tw-border-border-danger-strong` |
 | background | error | `--background-error-weak` | `aria-[invalid=true]:tw-bg-background-error-weak` |

@@ -51,11 +51,29 @@ Only `className` prop — no variants.
 
 ## Sizes
 
-| Value | Item size | Prev/Next height | Tailwind (item) |
+### PaginationLink (page items)
+
+| Value | Size | Tailwind |
+|---|---|---|
+| large | 32px | tw-size-8 |
+| default | 28px | tw-size-7 |
+| small | 24px | tw-size-6 |
+
+### PaginationPrevious / PaginationNext
+
+| Value | Height | Padding | Tailwind |
 |---|---|---|---|
-| large | 32px | 32px | tw-size-8 |
-| default | 28px | 28px | tw-size-7 |
-| small | 24px | 24px | tw-size-6 |
+| large | 32px | px-3 py-1 | tw-h-8 tw-px-3 tw-py-1 |
+| default | 28px | px-2.5 py-1 | tw-h-7 tw-px-2.5 tw-py-1 |
+| small | 24px | px-2 py-0.5 | tw-h-6 tw-px-2 tw-py-0.5 |
+
+### PaginationEllipsis
+
+| Value | Size | Tailwind |
+|---|---|---|
+| large | 32px | tw-size-8 |
+| default | 28px | tw-size-7 |
+| small | 24px | tw-size-6 |
 
 ## Layout
 

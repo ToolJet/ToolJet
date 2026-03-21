@@ -1,13 +1,13 @@
 ---
 name: shadcn-to-v3
-description: Use when a shadcn component has been installed via npx/pnpm dlx and needs conversion from Tailwind v4 syntax to v3.4 with tw- prefix. Triggers after any `shadcn add` command in a project that uses Tailwind v3.4 with a prefix.
+description: Use when a shadcn component has been installed via npx/pnpm dlx and needs conversion from Tailwind v4 syntax to v3.4 with tw- prefix AND React 19 patterns to React 18. Triggers after any `shadcn add` command in a project that uses Tailwind v3.4 with a prefix and React 18.
 ---
 
-# shadcn → Tailwind v3.4 Conversion
+# shadcn → Tailwind v3.4 + React 18 Conversion
 
 ## Overview
 
-shadcn CLI generates components with Tailwind v4 class syntax. This project uses **Tailwind v3.4 with `tw-` prefix**. Every shadcn-installed file must be converted before use.
+shadcn CLI generates components with Tailwind v4 class syntax and may use React 19 patterns. This project uses **Tailwind v3.4 with `tw-` prefix** and **React 18**. Every shadcn-installed file must be converted before use.
 
 Run this immediately after every `npx shadcn@latest add <component>` or `pnpm dlx shadcn@latest add <component>`.
 
@@ -26,7 +26,94 @@ git status --short | grep "src/components/ui/Rocket/shadcn/"
 
 ---
 
-## Step 2: Check for issues before editing
+## Step 2: React 19 → 18 conversion
+
+Check each modified file for React 19 patterns and convert them to React 18 equivalents.
+
+### Check for React 19 patterns
+
+```bash
+FILE="frontend/src/components/ui/Rocket/shadcn/<component>.jsx"
+
+# Check 1: ref-as-prop (React 19 pattern — no forwardRef)
+grep -n 'function.*{ ref[,\s }]' "$FILE" || echo "✅ No ref-as-prop found"
+
+# Check 2: Arrow component with ref destructured from props
+grep -n '({ ref,' "$FILE" | grep -v 'forwardRef' || echo "✅ No arrow ref-as-prop found"
+
+# Check 3: React 19-only hooks
+grep -n 'useActionState\|useFormStatus\|useOptimistic\|\buse(' "$FILE" || echo "✅ No React 19 hooks found"
+```
+
+### Rule R1 — Convert `ref` as prop → `React.forwardRef`
+
+React 19 passes `ref` as a regular prop. React 18 requires `forwardRef`.
+
+**Pattern A — function declaration:**
+```jsx
+// React 19 (wrong in React 18)
+function Button({ className, ref, ...props }) {
+  return <button ref={ref} className={className} {...props} />
+}
+
+// ✅ React 18
+const Button = React.forwardRef(({ className, ...props }, ref) => {
+  return <button ref={ref} className={className} {...props} />
+})
+Button.displayName = "Button"
+```
+
+**Pattern B — arrow const (more common in shadcn):**
+```jsx
+// React 19 (wrong in React 18)
+const Input = ({ className, type, ref, ...props }) => {
+  return <input ref={ref} type={type} className={cn("...", className)} {...props} />
+}
+
+// ✅ React 18
+const Input = React.forwardRef(({ className, type, ...props }, ref) => {
+  return <input ref={ref} type={type} className={cn("...", className)} {...props} />
+})
+Input.displayName = "Input"
+```
+
+**Conversion steps:**
+1. Remove `ref` from the destructured props object
+2. Wrap the component in `React.forwardRef((..., ref) => ...)`
+3. Add `ComponentName.displayName = "ComponentName"` (or `Primitive.displayName` if wrapping Radix)
+4. Keep `ref={ref}` on the rendered element — it's already there
+
+### Rule R2 — React 19 hooks (rare in shadcn, common in form components)
+
+| React 19 hook | React 18 replacement |
+|---|---|
+| `useActionState(action, init)` | `useReducer` or `useState` + manual dispatch |
+| `useFormStatus()` | Remove — use local state or a form library |
+| `useOptimistic(state, updater)` | `useState` with manual optimistic pattern |
+| `use(promise)` | `useSuspenseQuery` (TanStack) or `Suspense` + `throw promise` |
+| `use(context)` | `useContext(context)` |
+
+If any of these are found, flag to the user — they require manual conversion based on context.
+
+### Rule R3 — `ref` cleanup callbacks (React 19)
+
+React 19 allows returning a cleanup function from `ref` callbacks. React 18 does not.
+
+```jsx
+// React 19 (wrong in React 18)
+<div ref={(node) => {
+  node.addEventListener('click', handler)
+  return () => node.removeEventListener('click', handler)  // ← cleanup
+}} />
+
+// ✅ React 18 — use useEffect for cleanup instead
+```
+
+If found, flag to the user — requires manual refactor.
+
+---
+
+## Step 3: Check for Tailwind issues before editing
 
 Run all three checks on each file:
 
@@ -45,7 +132,7 @@ grep -n 'tw-hover:\|tw-focus:\|tw-active:\|tw-disabled:\|tw-group-\|tw-peer-\|tw
 
 ---
 
-## Step 3: Apply conversions
+## Step 4: Apply Tailwind conversions
 
 ### Rule 1 — Add `tw-` to utility classes (most common)
 
@@ -236,7 +323,7 @@ optimizations that can be re-added at the Rocket HOC layer if needed.
 
 ---
 
-## Step 4: Handle globals.css modifications
+## Step 5: Handle globals.css modifications
 
 shadcn may append to `src/styles/globals.css` — this file uses Tailwind v4 syntax and is **NOT loaded in production** in this project.
 
@@ -250,7 +337,7 @@ If modified:
 
 ---
 
-## Step 5: Verify — no issues remain
+## Step 6: Verify — no issues remain
 
 ```bash
 FILE="frontend/src/components/ui/Rocket/shadcn/<component>.jsx"
@@ -280,6 +367,15 @@ grep -n 'tw-outline-hidden\|tw-shadow-xs' "$FILE"
 
 # v4-only variants
 grep -n 'pointer-coarse:' "$FILE"
+
+# React 19: ref-as-prop (should be forwardRef)
+grep -n 'function.*{ ref[,\s }]\|({ ref,' "$FILE" | grep -v 'forwardRef'
+
+# React 19: hooks
+grep -n 'useActionState\|useFormStatus\|useOptimistic\|\buse(' "$FILE"
+
+# React 19: ref cleanup callbacks
+grep -n 'return () =>' "$FILE"
 ```
 
 If all return empty, the conversion is complete.
@@ -320,9 +416,12 @@ modifier    utility (needs tw-)
 | v4 outline-hidden | `tw-outline-hidden` | `tw-outline-none` |
 | v4 shadow-xs | `tw-shadow-xs` | `tw-shadow-sm` |
 | v4 pointer-coarse | `pointer-coarse:tw-size-5` | remove (v4-only variant) |
+| React 19 ref-as-prop | `function Btn({ ref, ...props })` | `const Btn = React.forwardRef((..., ref) => ...)` |
+| React 19 `use(ctx)` | `use(MyContext)` | `useContext(MyContext)` |
+| React 19 hooks | `useActionState(...)` | flag to user — manual conversion needed |
 
 ---
 
 ## Integration with create-rocket-component
 
-This skill must run automatically inside `create-rocket-component` after every `npx shadcn@latest add` step, before the Rocket HOC is generated. The HOC imports from the converted file — if the file has v4 classes, the HOC will break visually.
+This skill must run automatically inside `create-rocket-component` after every `npx shadcn@latest add` step, before the Rocket HOC is generated. The HOC imports from the converted file — if the file has v4 classes or React 19 patterns, the HOC will break.

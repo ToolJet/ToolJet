@@ -15,12 +15,12 @@
 
 ## Sizes (matches Button)
 
-| Value | Height | Min-width | Tailwind |
-|---|---|---|---|
-| large | 40px | 40px | tw-h-10 tw-min-w-10 tw-px-2.5 |
-| default | 32px | 32px | tw-h-8 tw-min-w-8 tw-px-2 |
-| medium | 28px | 28px | tw-h-7 tw-min-w-7 tw-px-1.5 |
-| small | 20px | 20px | tw-h-5 tw-min-w-5 tw-px-1 |
+| Value | Height | Tailwind |
+|---|---|---|
+| large | 40px | tw-h-10 tw-px-2.5 tw-text-lg |
+| default | 32px | tw-h-8 tw-px-2 tw-text-base |
+| medium | 28px | tw-h-7 tw-px-1.5 tw-text-base |
+| small | 20px | tw-h-5 tw-px-1 tw-text-sm |
 
 ## Token Mapping
 
@@ -29,6 +29,7 @@
 | background | default | tw-bg-transparent |
 | background | hover | hover:tw-bg-interactive-hover |
 | background | on (data-[state=on]) | data-[state=on]:tw-bg-interactive-selected |
+| shadow | off (data-[state=off]) | data-[state=off]:tw-shadow-elevation-100 |
 | text | default | tw-text-text-medium |
 | text | on | data-[state=on]:tw-text-text-default |
 | border (outline only) | default | tw-border tw-border-border-weak |
@@ -43,5 +44,6 @@ Shape A — variants + sizes
 
 - Uses shadcn Toggle as structural base (Radix `@radix-ui/react-toggle` — manages pressed state, keyboard, aria-pressed).
 - Follows Button sizing exactly (large/default/medium/small).
-- `min-width` equals height for square icon-only toggles; content can expand width.
+- Min-width forced to 0 (`!tw-min-w-0`) to override shadcn's default. Icon-only toggles use `[&:has(>svg:only-child)]:tw-aspect-square` for square shape.
 - `pressed` / `defaultPressed` / `onPressedChange` pass through to Radix.
+- Off state has subtle shadow (`data-[state=off]:tw-shadow-elevation-100`).

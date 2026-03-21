@@ -16,9 +16,9 @@ const toggleGroupItemVariants = cva(
   [
     ...toggleBaseClasses,
     'tw-gap-1 tw-rounded-[5px]',
-    'tw-bg-transparent tw-text-text-disabled',
+    'tw-bg-transparent tw-text-text-disabled [&_svg]:tw-text-icon-weak',
     'hover:tw-bg-transparent', // override shadcn's hover:tw-bg-muted
-    'data-[state=on]:tw-bg-background-surface-layer-01 data-[state=on]:tw-text-text-default data-[state=on]:tw-shadow-elevation-100',
+    'data-[state=on]:tw-bg-background-surface-layer-01 data-[state=on]:tw-text-text-default data-[state=on]:tw-shadow-elevation-100 data-[state=on]:[&_svg]:tw-text-icon-strong',
   ],
   {
     variants: {
