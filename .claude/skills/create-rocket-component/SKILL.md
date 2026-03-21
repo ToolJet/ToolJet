@@ -316,15 +316,27 @@ See `hoc-template.md` for the full template.
 
 These rules apply when wrapping shadcn components that export multiple sub-components:
 
-1. **forwardRef on EVERY wrapper** — Base UI uses `React.cloneElement` with refs. A missing `forwardRef` silently breaks features (selection, value updates, focus management). This was the root cause of Combobox selection not working: `InputGroupInput` didn't forward its ref → Base UI couldn't register the input element → `inputInsidePopup` stayed `true` → input value was never filled after selection.
+1. **forwardRef on EVERY styled wrapper** — Radix uses `React.cloneElement` with refs internally. A missing `forwardRef` silently breaks features (selection, value updates, focus management, positioning). This was the root cause of Combobox selection not working: `InputGroupInput` didn't forward its ref → Base UI couldn't register the input element → `inputInsidePopup` stayed `true` → input value was never filled after selection. **Exception:** purely structural re-exports (Root, Group, Portal, Sub, RadioGroup) don't need a wrapper at all — just re-export them directly. Only add `forwardRef` wrappers on sub-components where you're overriding className with ToolJet tokens.
 
-2. **Use the `items` collection API** for filterable/selectable components — pass `items` prop on root, render function child `{(item) => <Item>}` on List. This enables Base UI's built-in filtering, selection tracking, and empty state detection. Without `items`, Base UI operates in composition mode where `filteredItems` is always `[]`.
+2. **Re-export structural-only parts directly** — Sub-components that have no visual tokens to override (Root, Trigger, Group, Portal, Sub, RadioGroup) should be re-exported as-is from shadcn. Don't wrap them in a forwardRef HOC unnecessarily. Example: `const DropdownMenu = ShadcnDropdownMenu;` or `export { DropdownMenuGroup } from './shadcn/dropdown-menu';`.
 
-3. **Anchor context for dropdown width** — Base UI's Positioner anchors to the Trigger element by default (often a small button). For full-width dropdowns, create a React context that passes a ref from root → input wrapper → content's `anchor` prop.
+3. **Anchor context — only when trigger ≠ desired anchor** — Base UI's Positioner anchors to the Trigger element by default. This is correct for most components (DropdownMenu, Tooltip, Popover — the trigger IS the click target). Only create a `createContext` + `useRef` anchor pattern when the trigger is a small sub-element but the dropdown should match a larger wrapper's width. Real example: Combobox — the trigger is a chevron button (~28px) but the dropdown should match the full InputGroup width, so we pass an anchor ref from Root → InputGroup wrapper → Content's `anchor` prop.
 
-4. **`tw-border-solid` is required** — Tailwind preflight is disabled (`corePlugins: { preflight: false }`), so `border-style` defaults to `none`. Always include `tw-border-solid` alongside border color/width classes.
+4. **Use the `items` collection API** for filterable/selectable components — pass `items` prop on root, render function child `{(item) => <Item>}` on List. This enables Base UI's built-in filtering, selection tracking, and empty state detection. Without `items`, Base UI operates in composition mode where `filteredItems` is always `[]`. **Not needed for:** action menus (DropdownMenu), tooltips, dialogs — only for components with search/filter/selection.
 
-5. **Override InputGroup modifiers exactly** — `tailwind-merge` only resolves conflicts when modifier strings are identical. `focus-within:tw-ring-2` does NOT conflict with `has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2`. Use InputGroup's exact modifier strings to override.
+5. **`tw-border-solid` is required** — Tailwind preflight is disabled (`corePlugins: { preflight: false }`), so `border-style` defaults to `none`. Always include `tw-border-solid` alongside border color/width classes.
+
+6. **Override InputGroup modifiers exactly** — `tailwind-merge` only resolves conflicts when modifier strings are identical. `focus-within:tw-ring-2` does NOT conflict with `has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2`. Use InputGroup's exact modifier strings to override.
+
+### Decision guide: when to use context/refs vs simple re-exports
+
+| Component type | Anchor context? | Items API? | forwardRef wrappers? |
+|---|---|---|---|
+| **Action menu** (DropdownMenu) | No — Radix auto-anchors to Trigger | No — not filterable | Only on styled sub-components |
+| **Tooltip / Popover** | No — anchors to Trigger naturally | No | Only on Content |
+| **Select** (non-searchable) | No — Trigger is full-width already | No | Only on styled sub-components |
+| **Combobox** (searchable) | YES — chevron trigger ≠ full input width | YES — needs filtering | On ALL render targets |
+| **Dialog / Sheet** | No — no anchor needed | No | Only on Content/Overlay |
 
 **File path:** `frontend/src/components/ui/Rocket/{Name}/{Name}.jsx`
 
