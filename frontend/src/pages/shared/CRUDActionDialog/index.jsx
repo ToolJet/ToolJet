@@ -12,13 +12,22 @@ import { Input } from '@/components/ui/Rocket/input';
 import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/field';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { authenticationService } from '@/_services/authentication.service';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 import { useAppsStore } from '../store';
 import { appTypeToDisplayNameMapping } from '../helper';
-import { handleError, useCreateApp, useDeleteApp, useImportResource, useRenameApp } from '../hooks/appsServiceHooks';
+import {
+  handleError,
+  useCloneApp,
+  useCreateApp,
+  useDeleteApp,
+  useImportResource,
+  useRenameApp,
+} from '../hooks/appsServiceHooks';
 import { useInstallDependentPlugins, useUninstallPlugins } from '../hooks/pluginsServiceHooks';
 
 import ActionDialog from '../ActionDialog';
+import { useDeployTemplateApp } from '../../../_services/hooks/libraryAppServiceHooks';
 
 export default function CRUDActionDialog({ open, onClose, actionType, appDetails, appType }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
@@ -27,13 +36,15 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
 
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
-  const { mutate: createNewApp, isLoading: isCreatingApp } = useCreateApp();
-  const { mutate: renameApp, isLoading: isRenamingApp } = useRenameApp();
-  const { mutate: deleteApp, isLoading: isDeletingApp } = useDeleteApp();
-  const { mutateAsync: installDependentPlugins, isLoading: isInstallingDependentPlugins } =
+  const { mutate: createNewApp, isPending: isCreatingApp } = useCreateApp();
+  const { mutate: renameApp, isPending: isRenamingApp } = useRenameApp();
+  const { mutate: deleteApp, isPending: isDeletingApp } = useDeleteApp();
+  const { mutate: cloneApp, isPending: isCloningApp } = useCloneApp();
+  const { mutateAsync: installDependentPlugins, isPending: isInstallingDependentPlugins } =
     useInstallDependentPlugins();
-  const { mutateAsync: importResource, isLoading: isImportingResource } = useImportResource();
-  const { mutateAsync: uninstallPlugins, isLoading: isUninstallingPlugins } = useUninstallPlugins();
+  const { mutateAsync: importResource, isPending: isImportingResource } = useImportResource();
+  const { mutateAsync: uninstallPlugins, isPending: isUninstallingPlugins } = useUninstallPlugins();
+  const { mutate: deployTemplateApp, isPending: isDeployingTemplateApp } = useDeployTemplateApp();
 
   // const inputRef = useRef();
 
@@ -81,6 +92,25 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
       case 'delete':
         deleteApp({ appId: appDetails?.id, appType }, { onSuccess: handleResetState });
         break;
+      case 'clone': {
+        // TODO:
+        // if (appType === !canAddUnlimited && current >= total) {
+        //   toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
+        //   return;
+        // }
+
+        cloneApp(
+          {
+            body: {
+              app: [{ id: appDetails?.id, name: formattedAppName }],
+              organization_id: authenticationService?.currentSessionValue?.current_organization_id,
+            },
+            appType,
+          },
+          { onError: handle409Error, onSuccess: handleResetState }
+        );
+        break;
+      }
       case 'import':
       case 'import-anyway': {
         const { fileContent, fileName, dependentPlugins, dependentPluginsDetail } = appDetails;
@@ -173,6 +203,45 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
         }
         break;
       }
+      case 'create-from-template': {
+        const { templateId, dependentPlugins } = appDetails;
+
+        deployTemplateApp(
+          {
+            identifier: templateId,
+            appName: formattedAppName,
+            dependentPlugins,
+            shouldAutoImportPlugin: Boolean(dependentPlugins?.length),
+          },
+          {
+            onError: (error) => {
+              // this.setState({ showAIOnboardingLoadingScreen: false });
+              toast.error(error?.error ?? '');
+              // this.eraseAIOnboardingRelatedCookies();
+
+              if (error.statusCode === 409) {
+                handle409Error(error);
+                return;
+              }
+
+              onClose();
+            },
+            onSuccess: (response) => {
+              // this.setState({ showAIOnboardingLoadingScreen: false });
+              toast.success(`${appTypeDisplayName} created successfully!`, { position: 'top-center' });
+              posthogHelper.captureEvent('app_created', { entry_source: 'template' });
+
+              navigate(`/${getWorkspaceId()}/apps/${response.app[0].id}`, {
+                state: { commitEnabled: false }, // TODO: false should not be hardcoded
+              });
+
+              // this.eraseAIOnboardingRelatedCookies();
+            },
+          }
+        );
+
+        break;
+      }
       default:
         break;
     }
@@ -194,9 +263,11 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
     isCreatingApp ||
     isRenamingApp ||
     isDeletingApp ||
+    isCloningApp ||
     isInstallingDependentPlugins ||
     isImportingResource ||
-    isUninstallingPlugins;
+    isUninstallingPlugins ||
+    isDeployingTemplateApp;
   const isCancelBtnDisabled = isFormBeingSubmitted;
   const isSubmitBtnDisabled = isNameInvalid || isFormBeingSubmitted || (isNameChangeRequired && !isNameChanged);
 
@@ -218,7 +289,7 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
         },
       ]}
     >
-      {['create', 'rename', 'import'].includes(actionType) ? (
+      {['create', 'rename', 'import', 'clone'].includes(actionType) ? (
         <CreateRenameCloneImportBody
           appType={appType}
           appName={name}

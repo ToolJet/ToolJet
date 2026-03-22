@@ -35,11 +35,16 @@ function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissi
         });
         break;
       case 'rename':
-      case 'clone':
       case 'delete':
       case 'change-icon':
       case 'export':
         setAppDialogState({ type: actionType, appDetails });
+        break;
+      case 'clone':
+        setAppDialogState({
+          type: actionType,
+          appDetails: { ...appDetails, name: appDetails?.name ? `${appDetails.name.slice(0, 45)}_Copy` : '' },
+        });
         break;
       default:
         break;
