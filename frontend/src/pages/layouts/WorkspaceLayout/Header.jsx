@@ -21,6 +21,7 @@ export default function Header() {
 
   useEffect(
     () => () => {
+      setSearchTerm('');
       setAppSearchQuery('');
     },
     []

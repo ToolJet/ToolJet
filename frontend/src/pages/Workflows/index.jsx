@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 import { getWorkspaceId } from '@/_helpers/utils';
+import { Button } from '@/components/ui/Button/Button';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -13,7 +14,7 @@ import { canUserPerformWorkflowAction } from './workflowPermissions';
 import { useAppsStore } from '../shared/store';
 import { useFetchFolders } from '../shared/hooks/folderServiceHooks';
 import { useFetchFeatureAccess } from '../shared/hooks/licenseServiceHooks';
-import { useFetchApps, useFetchAppsLimit, useFetchWorkflowLimit } from '../shared/hooks/appsServiceHooks';
+import { useFetchApps, useFetchWorkflowLimit } from '../shared/hooks/appsServiceHooks';
 
 import AppList from '../shared/AppList';
 import EmptyState from '../shared/EmptyState';
@@ -32,6 +33,7 @@ export default function Workflows() {
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
+  const setAppSearchQuery = useAppsStore((state) => state.setAppSearchQuery);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -78,6 +80,10 @@ export default function Workflows() {
     const newSelectedFolderLabel = folders?.find((folder) => folder.value === folderId)?.label ?? '';
 
     setSearchParams({ folder: newSelectedFolderLabel }, { replace: true });
+  };
+
+  const handleClearSearchTerm = () => {
+    setAppSearchQuery('');
   };
 
   const hasWorkflowLimitReached = () => {
@@ -160,13 +166,31 @@ export default function Workflows() {
               ) : (
                 <EmptyState
                   resourceType="workflows"
-                  title="You don’t have any workflows yet"
-                  description="Create a workflow to start automating your tasks."
+                  title={
+                    selectedFolderId && !appSearchQuery?.length
+                      ? 'No workflows found in this folder'
+                      : appSearchQuery?.length
+                      ? `No results found for "${appSearchQuery}"`
+                      : 'You don’t have any workflows yet'
+                  }
+                  description={
+                    appSearchQuery?.length || selectedFolderId
+                      ? ''
+                      : 'Create a workflow to start automating your tasks.'
+                  }
                 >
-                  <CreateWorkflowBtn
-                    label={t('workflowsDashboard.header.createNewApplication')}
-                    disabled={isCreationDisabled}
-                  />
+                  {selectedFolderId && !appSearchQuery?.length ? (
+                    <></>
+                  ) : appSearchQuery?.length ? (
+                    <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
+                      Clear search
+                    </Button>
+                  ) : (
+                    <CreateWorkflowBtn
+                      label={t('workflowsDashboard.header.createNewApplication')}
+                      disabled={isCreationDisabled}
+                    />
+                  )}
                 </EmptyState>
               )
             ) : (
@@ -180,8 +204,8 @@ export default function Workflows() {
 
       <WorkflowDialogs
         appType="workflow"
-        workflowLimitsDetails={workflowLimitsDetails}
-        isLimitNearingOrReached={isInstanceLimitNearingOrReached || isWorkspaceLimitNearingOrReached}
+        limits={workflowLimitsDetails}
+        showLimitBanner={isInstanceLimitNearingOrReached || isWorkspaceLimitNearingOrReached}
       />
     </WorkspaceLayout>
   );

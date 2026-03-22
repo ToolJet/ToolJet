@@ -13,7 +13,7 @@ export default function SearchBar({ searchTerm, onSearchTermChange, placeholder 
         value={searchTerm}
         placeholder={placeholder}
         onChange={onSearchTermChange}
-        className="tw-pl-20 tw-pr-4 tw-py-1 tw-h-8 tw-text-xs tw-bg-background-surface-layer-01 tw-border-transparent focus-visible:tw-outline-0 hover:tw-bg-interactive-hover focus:tw-border-border-accent-strong focus:tw-pl-7 tw-transition-all tw-duration-200"
+        className="tw-pl-20 tw-pr-4 tw-py-1 tw-h-8 !tw-font-body-default tw-bg-background-surface-layer-01 tw-border-transparent focus-visible:tw-outline-0 hover:tw-bg-interactive-hover focus:tw-border-border-accent-strong focus:tw-pl-7 tw-transition-all tw-duration-200"
       />
       <Search
         size={14}

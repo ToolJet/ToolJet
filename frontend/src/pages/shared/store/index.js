@@ -13,12 +13,6 @@ const appDialogInitialState = {
 };
 
 const initialState = {
-  openFolderDialogType: '',
-  openWorkflowDialogType: '',
-  fileToImportName: '',
-  fileToImportContent: null,
-  dependentPlugins: [],
-  dependentPluginsDetail: {},
   pageSize: 9,
   currentPage: 1,
   appSearchQuery: '',
@@ -30,19 +24,6 @@ const initialState = {
 export const useAppsStore = createZustandStoreWithImmer(
   (set) => ({
     ...initialState,
-    setOpenWorkflowDialogType: (type) =>
-      set((state) => {
-        state.openWorkflowDialogType = type;
-      }),
-    setFileToImportDetails: (details) => {
-      set((state) => {
-        state.openWorkflowDialogType = 'import';
-        state.fileToImportName = details.fileName;
-        state.fileToImportContent = details.fileContent;
-        state.dependentPlugins = details.dependentPlugins;
-        state.dependentPluginsDetail = details.dependentPluginsDetail;
-      });
-    },
     setCurrentPage: (page) =>
       set((state) => {
         state.currentPage = page;

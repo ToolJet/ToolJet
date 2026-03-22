@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { Button } from '@/components/ui/Button/Button';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import { useAppsStore } from '../shared/store';
@@ -27,12 +28,15 @@ export default function Apps({ appType = 'front-end' }) {
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
+  const setAppSearchQuery = useAppsStore((state) => state.setAppSearchQuery);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
 
   // TODO: Discuss with team that folder search param should have id and not name
+  const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
   const folderQueryParam = searchParams.get('folder') || '';
   const currentSelectedFolder =
     folders?.find((folder) => folder.label?.toLowerCase() === folderQueryParam?.toLowerCase()) ?? null;
@@ -43,7 +47,13 @@ export default function Apps({ appType = 'front-end' }) {
     { enabled: isFoldersSuccess }
   );
   const { data: featureAccess } = useFetchFeatureAccess();
-  useFetchAppsLimit();
+  const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
+
+  useEffect(() => {
+    if (hasFromTemplateSearchParam) {
+      setAppDialogState({ type: 'choose-from-template' });
+    }
+  }, [hasFromTemplateSearchParam]);
 
   const setSelectedFolder = (folderId) => {
     if (folderId === 'all') {
@@ -56,6 +66,10 @@ export default function Apps({ appType = 'front-end' }) {
     setSearchParams({ folder: newSelectedFolderLabel }, { replace: true });
   };
 
+  const handleClearSearchTerm = () => {
+    setAppSearchQuery('');
+  };
+
   const checkUserPermissions = () => ({
     hasCreatePermission: true,
     hasUpdatePermission: true,
@@ -65,7 +79,7 @@ export default function Apps({ appType = 'front-end' }) {
 
   const totalAppCount = selectedFolderId ? workflows?.meta?.folder_count : workflows?.meta?.total_count;
 
-  const isCreationDisabled = false;
+  const isCreationDisabled = isAppsLimitFetchedSuccessfully ? appsLimit?.appsCount?.percentage >= 100 : true;
 
   const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
   // Only exclude env param if license is invalid/expired (basic plan)
@@ -76,25 +90,31 @@ export default function Apps({ appType = 'front-end' }) {
   return (
     <WorkspaceLayout>
       <main className="tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
-        <PageHeader title="Applications">
-          {/* {isWorkflowLimitReached ? (
+        <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
+          {appType === 'front-end' ? (
             <LicenseBanner
               type="apps"
               size="small"
               showNewBanner
               bannerVariant="inline"
-              limits={workflowLimitsDetails}
-            />
-          ) : ( */}
-          <div className="tw-flex tw-items-center tw-gap-2">
-            <CreateWorkflowBtn
-              label={t('homePage.header.createNewApplication', 'Create new app')}
-              disabled={isCreationDisabled}
-            />
+              limits={appsLimit?.appsCount ?? {}}
+            >
+              <div className="tw-flex tw-items-center tw-gap-2">
+                <CreateWorkflowBtn
+                  label={t('homePage.header.createNewApplication', 'Create new app')}
+                  disabled={isCreationDisabled}
+                />
 
-            <MoreActionsMenu disabled={isCreationDisabled} />
-          </div>
-          {/* )} */}
+                <MoreActionsMenu disabled={isCreationDisabled} />
+              </div>
+            </LicenseBanner>
+          ) : (
+            <div className="tw-flex tw-items-center tw-gap-2">
+              <CreateWorkflowBtn label={'Create new module'} disabled={isCreationDisabled} />
+
+              <MoreActionsMenu disabled={isCreationDisabled} />
+            </div>
+          )}
         </PageHeader>
 
         <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
@@ -118,9 +138,25 @@ export default function Apps({ appType = 'front-end' }) {
               ) : (
                 <EmptyState
                   resourceType={appType}
-                  title="You don’t have any apps yet"
-                  description="You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow"
-                />
+                  title={
+                    selectedFolderId && !appSearchQuery?.length
+                      ? 'No apps found in this folder'
+                      : appSearchQuery?.length
+                      ? `No results found for "${appSearchQuery}"`
+                      : 'You don’t have any apps yet'
+                  }
+                  description={
+                    appSearchQuery?.length || selectedFolderId
+                      ? ''
+                      : 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
+                  }
+                >
+                  {Boolean(appSearchQuery?.length) && (
+                    <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
+                      Clear search
+                    </Button>
+                  )}
+                </EmptyState>
               )
             ) : (
               <></>
@@ -133,8 +169,8 @@ export default function Apps({ appType = 'front-end' }) {
 
       <WorkflowDialogs
         appType={appType}
-        isLimitNearingOrReached={false}
-        // workflowLimitsDetails={workflowLimitsDetails}
+        limits={appsLimit?.appsCount ?? {}}
+        showLimitBanner={appType === 'front-end'}
       />
     </WorkspaceLayout>
   );
