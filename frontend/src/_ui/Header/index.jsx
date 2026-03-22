@@ -71,6 +71,14 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
+  const isWorkspaceGitPage = (pathname) => {
+  const parts = pathname.split('/').filter(Boolean);
+    return (
+      parts.length === 1 ||
+      (parts.length === 2 && ['data-sources'].includes(parts[1]))
+    );
+  };
+  const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -161,7 +169,7 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
-              {featureAccess?.gitSync && isBranchStoreInitialized && pathname !== 'Workspace constants' && (
+              {featureAccess?.gitSync && isBranchStoreInitialized && pathname !== 'Workspace constants' && isGitSupportedPage &&(
                 <>
                   <WorkspaceBranchDropdown />
                   <WorkspaceGitCTA />

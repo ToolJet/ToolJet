@@ -61,7 +61,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
 
     if (branch?.isDefault) {
-      throw new BadRequestException('Constants must be created on a branch');
+        throw new BadRequestException('Constants cannot be added directly on master branch and must go through PR approval flow.')
     }
   }
 

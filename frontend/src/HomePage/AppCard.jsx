@@ -259,7 +259,7 @@ export default function AppCard({
       AppName
     );
   }
-
+  const isStub = app?.app_versions?.[0]?.is_stub;
   return (
     <ToolTip
       message="Modules are not available on your current plan."
@@ -320,7 +320,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {app?.app_versions?.[0]?.is_stub ? (
+            {/* {app?.app_versions?.[0]?.is_stub ? (
               <div>
                 <ToolTip message="Sync app from git">
                   <Link
@@ -341,7 +341,8 @@ export default function AppCard({
                   </Link>
                 </ToolTip>
               </div>
-            ) : (canUpdate || appType === 'module') ? (
+            ) :  */}
+            {(canUpdate || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -357,7 +358,7 @@ export default function AppCard({
                         folder_id: currentFolder?.id,
                       });
                     }}
-                    reloadDocument
+                    reloadDocument={isStub}  
                   >
                     <button
                       type="button"
@@ -371,9 +372,11 @@ export default function AppCard({
                   </Link>
                 </ToolTip>
               </div>
-            ) : null}
+            // ) : null}
+            )}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
-            {!app?.app_versions?.[0]?.is_stub && appType !== 'module' && LaunchButton}
+            {/* {!app?.app_versions?.[0]?.is_stub && appType !== 'module' && LaunchButton} */}
+            {appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>

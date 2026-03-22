@@ -1914,15 +1914,16 @@ class HomePageComponent extends React.Component {
           <Modal
             show={showAddToFolderModal && !!appOperations.selectedApp}
             closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-            title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+            title={this.props.t('homePage.appCard.updateFolder', 'Update folder')}
           >
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
-                  <p>
-                    {this.props.t('homePage.appCard.move', 'Move')}
-                    <span>{` "${appOperations?.selectedApp?.name}" `}</span>
-                  </p>
+                <p>
+                  {this.props.t('homePage.appCard.update', 'Update')}{' '}
+                  <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
+                  {this.props.t('homePage.appCard.folder', 'folder')}
+                </p>
 
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
@@ -2145,7 +2146,11 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} />
+              {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
+              {this.props.appType !== 'workflow' && (
+                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps' }
+                />
+              )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
