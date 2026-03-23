@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { useAppsStore } from '@/pages/shared/store';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -11,7 +12,6 @@ import FolderActionDialog from '../../shared/FolderBreadcrumb/FolderActionDialog
 import TemplateLibraryModal from '../../../HomePage/TemplateLibraryModal';
 
 // TODO: Add isAppCreationDisabled permission check in parent and pass as prop
-
 export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits, showLimitBanner }) {
   const appDialogState = useAppsStore((state) => state.appDialogState);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -20,6 +20,7 @@ export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits
   const folderDialogState = useAppsStore((state) => state.folderDialogState);
   const resetFolderDialogState = useAppsStore((state) => state.resetFolderDialogState);
 
+  const [setSearchParams] = useSearchParams();
   const [templateToCreate, setTemplateToCreate] = useState(null);
 
   const { data: dependentPluginsInTemplate, error: dependentPluginsInTemplateError } = useFetchTemplateDependentPlugins(
@@ -58,6 +59,11 @@ export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits
     setTemplateToCreate(templateToCreate);
   };
 
+  const handleCloseTemplateDialog = () => {
+    resetAppDialogState();
+    setSearchParams({}, { replace: true });
+  };
+
   const isExportAppDialogOpen = appDialogState.type === 'export';
   const isChangeIconDialogOpen = appDialogState.type === 'change-icon';
   const isChooseFromTemplateDialogOpen = appDialogState.type === 'choose-from-template';
@@ -82,6 +88,7 @@ export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits
 
       {isCRUDDialogOpen && (
         <CRUDActionDialog
+          limits={limits}
           open={isCRUDDialogOpen}
           onClose={resetAppDialogState}
           actionType={appDialogState.type}
@@ -114,9 +121,9 @@ export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits
         <TemplateLibraryModal
           darkMode={darkMode}
           show={isChooseFromTemplateDialogOpen}
-          onCloseButtonClick={resetAppDialogState}
-          openCreateAppFromTemplateModal={openCreateAppFromTemplateModal}
           appCreationDisabled={isAppCreationDisabled}
+          onCloseButtonClick={handleCloseTemplateDialog}
+          openCreateAppFromTemplateModal={openCreateAppFromTemplateModal}
         />
       )}
 

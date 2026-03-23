@@ -66,7 +66,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
           label: t('homePage.change', 'Change'),
           disabled: isSubmitBtnDisabled,
           isLoading: isFormBeingSubmitted,
-          'data-cy': 'change-button',
+          'data-cy': 'submit-button',
           onClick: handleChangeIcon,
         },
       ]}

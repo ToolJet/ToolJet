@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/Rocket/input';
 import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/field';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { authenticationService } from '@/_services/authentication.service';
-import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 import { useAppsStore } from '../store';
 import { appTypeToDisplayNameMapping } from '../helper';
@@ -29,7 +28,7 @@ import { useInstallDependentPlugins, useUninstallPlugins } from '../hooks/plugin
 import ActionDialog from '../ActionDialog';
 import { useDeployTemplateApp } from '../../../_services/hooks/libraryAppServiceHooks';
 
-export default function CRUDActionDialog({ open, onClose, actionType, appDetails, appType }) {
+export default function CRUDActionDialog({ open, onClose, actionType, appDetails, appType, limits }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
 
   const navigate = useNavigate();
@@ -96,11 +95,10 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
         deleteApp({ appId: appDetails?.id, appType }, { onSuccess: handleResetState });
         break;
       case 'clone': {
-        // TODO:
-        // if (appType === !canAddUnlimited && current >= total) {
-        //   toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
-        //   return;
-        // }
+        if (!limits?.canAddUnlimited && (limits?.current ?? 0) >= (limits?.total ?? 0)) {
+          toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
+          return;
+        }
 
         cloneApp(
           {
@@ -215,30 +213,17 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
             appName: formattedAppName,
             dependentPlugins,
             shouldAutoImportPlugin: Boolean(dependentPlugins?.length),
+            appTypeDisplayName,
+            isCommitEnabled: false, // TODO: This should not be hardcoded
           },
           {
             onError: (error) => {
-              // this.setState({ showAIOnboardingLoadingScreen: false });
-              toast.error(error?.error ?? '');
-              // this.eraseAIOnboardingRelatedCookies();
-
               if (error.statusCode === 409) {
                 handle409Error(error);
                 return;
               }
 
               onClose();
-            },
-            onSuccess: (response) => {
-              // this.setState({ showAIOnboardingLoadingScreen: false });
-              toast.success(`${appTypeDisplayName} created successfully!`, { position: 'top-center' });
-              posthogHelper.captureEvent('app_created', { entry_source: 'template' });
-
-              navigate(`/${getWorkspaceId()}/apps/${response.app[0].id}`, {
-                state: { commitEnabled: false }, // TODO: false should not be hardcoded
-              });
-
-              // this.eraseAIOnboardingRelatedCookies();
             },
           }
         );
