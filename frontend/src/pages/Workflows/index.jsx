@@ -23,7 +23,7 @@ import PageHeader from '../shared/PageHeader';
 import ContentToolbar from '../shared/ContentToolbar';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import CreateWorkflowBtn from './components/CreateWorkflowBtn';
-import MoreActionsMenu from './components/MoreActionsMenu';
+import MoreAppsActionMenu from '../shared/MoreAppsActionMenu';
 import WorkflowDialogs from './components/WorkflowDialogs';
 
 export default function Workflows() {
@@ -140,7 +140,7 @@ export default function Workflows() {
                 disabled={isCreationDisabled}
               />
 
-              <MoreActionsMenu disabled={isCreationDisabled} />
+              <MoreAppsActionMenu appType="workflow" disabled={isCreationDisabled} />
             </div>
           )}
         </PageHeader>

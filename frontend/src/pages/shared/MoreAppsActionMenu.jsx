@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { toast } from 'react-hot-toast';
-import { FileDown } from 'lucide-react';
+import { FileDown, AppWindow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
@@ -12,9 +12,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/Rocket/dropdown-menu';
 import { Button } from '@/components/ui/Button/Button';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
-import { useAppsStore } from '../../shared/store';
-import { useFindDependentPlugins } from '../../shared/hooks/pluginsServiceHooks';
+import { useAppsStore } from './store';
+import { useFindDependentPlugins } from './hooks/pluginsServiceHooks';
 
 const useReadAndImportFile = () => {
   const { mutateAsync: findDependentPlugins } = useFindDependentPlugins();
@@ -86,10 +87,18 @@ const useReadAndImportFile = () => {
   return { handleFileChange };
 };
 
-export default function MoreActionsMenu({ disabled }) {
+function MoreAppsActionMenu(props) {
+  return <BaseMoreAppsActionMenu {...props} />;
+}
+
+export default withEditionSpecificComponent(MoreAppsActionMenu, 'common');
+
+export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems = null }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const { t } = useTranslation();
+
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const hiddenFileInput = useRef(null);
 
@@ -99,36 +108,51 @@ export default function MoreActionsMenu({ disabled }) {
     hiddenFileInput.current?.click();
   };
 
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            isLucid
-            iconOnly
-            variant="outline"
-            data-cy="import-dropdown-menu"
-            leadingIcon="ellipsis-vertical"
-            disabled={disabled}
-          />
-        </DropdownMenuTrigger>
+  const handleChooseFromTemplate = () => {
+    setAppDialogState({ type: 'choose-from-template' });
+  };
 
-        <DropdownMenuContent
-          className={cn('tw-min-w-52 tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}
-          align="end"
-        >
-          <DropdownMenuGroup>
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          isLucid
+          iconOnly
+          variant="outline"
+          data-cy="import-dropdown-menu"
+          leadingIcon="ellipsis-vertical"
+          disabled={disabled}
+        />
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        className={cn('tw-min-w-52 tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}
+      >
+        <DropdownMenuGroup>
+          {appType === 'front-end' && (
             <DropdownMenuItem
-              data-cy="import-option-label"
+              data-cy="choose-from-template-button"
               className="tw-text-text-default tw-font-body-default"
-              onClick={handleOpenFilePicker}
+              onClick={handleChooseFromTemplate}
             >
-              <FileDown size={16} color="var(--icon-weak)" />
-              {t('homePage.header.import', 'Import from device')}
+              <AppWindow size={16} color="var(--icon-weak)" />
+              {t('homePage.header.chooseFromTemplate', 'Choose from template')}
             </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          )}
+
+          <DropdownMenuItem
+            data-cy="import-option-label"
+            className="tw-text-text-default tw-font-body-default"
+            onClick={handleOpenFilePicker}
+          >
+            <FileDown size={16} color="var(--icon-weak)" />
+            {t('homePage.header.import', 'Import from device')}
+          </DropdownMenuItem>
+
+          {eeSpecificMenuItems}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
 
       <input
         type="file"
@@ -138,6 +162,6 @@ export default function MoreActionsMenu({ disabled }) {
         ref={hiddenFileInput}
         onChange={handleFileChange}
       />
-    </>
+    </DropdownMenu>
   );
 }

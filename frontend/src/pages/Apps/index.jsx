@@ -16,8 +16,8 @@ import AppsFooter from '../shared/AppsFooter';
 import PageHeader from '../shared/PageHeader';
 import ContentToolbar from '../shared/ContentToolbar';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
+import MoreAppsActionMenu from '../shared/MoreAppsActionMenu';
 // TODO: Move these components to shared folder
-import MoreActionsMenu from '../Workflows/components/MoreActionsMenu';
 import WorkflowDialogs from '../Workflows/components/WorkflowDialogs';
 import CreateWorkflowBtn from '../Workflows/components/CreateWorkflowBtn';
 
@@ -105,14 +105,14 @@ export default function Apps({ appType = 'front-end' }) {
                   disabled={isCreationDisabled}
                 />
 
-                <MoreActionsMenu disabled={isCreationDisabled} />
+                <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
               </div>
             </LicenseBanner>
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
               <CreateWorkflowBtn label={'Create new module'} disabled={isCreationDisabled} />
 
-              <MoreActionsMenu disabled={isCreationDisabled} />
+              <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
             </div>
           )}
         </PageHeader>
