@@ -151,6 +151,7 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -185,15 +186,10 @@ const useAppData = (
 
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      isPageSwitchRef.current = true;
       setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        // Rebuild all suggestion segments for the new page's components/queries/variables
-        mode === 'edit' && initSuggestions(moduleId);
-      }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -526,9 +522,7 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
-        const p1 = performance.now();
         initDependencyGraph(moduleId);
-        console.log('here--- Time taken to initDependencyGraph: ', performance.now() - p1);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
@@ -544,10 +538,8 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
-        const p2 = performance.now();
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
-        console.log('here--- Time taken to load app data and set up the editor: ', performance.now() - p2);
         initialLoadRef.current = false;
 
         return () => {
@@ -564,14 +556,19 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
-      const p2 = performance.now();
       flushExposedValueBatch();
-      console.log('here--- Time taken to flush the batched exposed values: ', performance.now() - p2);
       mode === 'edit' && initSuggestions(moduleId);
-      runOnLoadQueries(moduleId).then(() => {
-        const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      if (isPageSwitchRef.current) {
+        // Page switch: skip runOnLoadQueries, just fire onPageLoad
+        isPageSwitchRef.current = false;
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      } else {
+        // Initial page load: run on-load queries first, then fire onPageLoad
+        runOnLoadQueries(moduleId).then(() => {
+          handleEvent('onPageLoad', currentPageEvents, {});
+        });
+      }
     }
   }, [isComponentLayoutReady, moduleId, mode]);
 

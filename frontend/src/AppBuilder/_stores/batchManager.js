@@ -2,8 +2,15 @@
  * Creates a ref-counted batch manager for Zustand stores with Immer.
  * Buffers mutations and dependency paths, applies them in a single set() on flush.
  * Supports nested start/flush — only the outermost flush applies.
+ *
+ * Options:
+ *   useShallowReturn {boolean} — when true, the flush set() returns { ...state } after
+ *     applying mutations. Required when mutations touch class instances (e.g. DependencyGraph)
+ *     that Immer cannot track, so Zustand must be notified via a returned object rather than
+ *     draft patches. Dep path cascade is skipped when this is set (graph construction only).
  */
-export function createBatchManager(set, get) {
+export function createBatchManager(set, get, options = {}) {
+  const { useShallowReturn = false } = options;
   let _depth = 0;
   let _mutations = [];
   let _depPaths = [];
@@ -39,10 +46,13 @@ export function createBatchManager(set, get) {
       set(
         (state) => {
           mutations.forEach((m) => m(state));
+          if (useShallowReturn) return { ...state };
         },
         false,
         actionName
       );
+
+      if (useShallowReturn) return;
 
       const seen = new Set();
       depPaths.forEach(({ path, moduleId }) => {
@@ -54,3 +64,8 @@ export function createBatchManager(set, get) {
     },
   };
 }
+
+export const yieldToMain = () =>
+  typeof scheduler !== 'undefined' && 'yield' in scheduler
+    ? scheduler.yield()
+    : new Promise(resolve => setTimeout(resolve, 0));

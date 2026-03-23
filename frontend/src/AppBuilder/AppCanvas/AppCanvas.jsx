@@ -60,6 +60,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const pageKey = useStore((state) => state.pageKey);
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
+  const pageLoader = useStore((state) => state.pageLoader, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -110,8 +111,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -225,25 +226,29 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   >
                     {environmentLoadingState !== 'loading' && (
                       <SuspenseCountProvider
+                        key={pageLoader ? 'loading' : currentPageId}
+                        disabled={pageLoader}
                         onAllResolved={handleAllSuspenseResolved}
                         deferCheck={isModuleMode || appType === 'module'}
                       >
                         <div key={pageKey} className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
-                          {currentMode === 'view' && appType !== 'module' && (
+                          {pageLoader || (currentMode === 'view' && appType !== 'module') && (
                             <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
                           )}
-                          <Container
-                            id={moduleId}
-                            gridWidth={gridWidth}
-                            canvasWidth={canvasWidth}
-                            canvasHeight={canvasHeight}
-                            darkMode={isAppDarkMode}
-                            canvasMaxWidth={canvasMaxWidth}
-                            isViewerSidebarPinned={isViewerSidebarPinned}
-                            pageSidebarStyle={pageSidebarStyle}
-                            pagePositionType={position}
-                            appType={appType}
-                          />
+                          {!pageLoader &&
+                            <Container
+                              id={moduleId}
+                              gridWidth={gridWidth}
+                              canvasWidth={canvasWidth}
+                              canvasHeight={canvasHeight}
+                              darkMode={isAppDarkMode}
+                              canvasMaxWidth={canvasMaxWidth}
+                              isViewerSidebarPinned={isViewerSidebarPinned}
+                              pageSidebarStyle={pageSidebarStyle}
+                              pagePositionType={position}
+                              appType={appType}
+                            />
+                          }
                           {currentMode === 'edit' && (
                             <>
                               <DragResizeGhostWidget />

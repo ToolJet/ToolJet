@@ -40,12 +40,8 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
   general: {},
 };
 
-// Exposed value batching — buffers mutations during initial mount / page navigation
-// and flushes in a single set() call. Uses createBatchManager for ref-counted nesting.
-let _exposedValueBatch = null;
-
 export const createResolvedSlice = (set, get) => {
-  _exposedValueBatch = createBatchManager(set, get);
+  const _exposedValueBatch = createBatchManager(set, get);
 
   return {
   ...initialState,
@@ -822,7 +818,6 @@ export const createResolvedSlice = (set, get) => {
           return new_array;
         } else if (!_.isEmpty(object)) {
           Object.keys(object).forEach((key) => {
-            console.log({ key, object });
             const resolved_object = get().resolveReferences(moduleId, object[key], state);
             object[key] = resolved_object;
           });

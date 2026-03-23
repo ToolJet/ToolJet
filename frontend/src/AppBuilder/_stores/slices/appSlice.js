@@ -9,12 +9,14 @@ import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';
+import {yieldToMain} from '../batchManager';
 
 const initialState = {
   isSaving: false,
   globalSettings: {
     theme: baseTheme,
   },
+  pageLoader: false,
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
@@ -231,95 +233,106 @@ export const createAppSlice = (set, get) => ({
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
 
-    // reset stores
     if (get().pageSwitchInProgress) {
       toast('Please wait, page switch in progress', {
         icon: '⚠️',
       });
       return;
     }
-    const {
-      setCurrentPageId,
-      setComponentNameIdMapping,
-      initDependencyGraph,
-      setQueryMapping,
-      cleanUpStore,
-      setResolvedGlobals,
-      setResolvedPageConstants,
-      setPageSwitchInProgress,
-      getCurrentPageId,
-      startExposedValueBatch,
-      license,
-      modules: {
-        canvas: { pages },
-      },
-      getCurrentMode,
-    } = get();
-    const isPreview = getCurrentMode(moduleId) !== 'edit';
 
-    // Start batching exposed value writes — new page's components will call
-    // setExposedValue during mount, these get buffered and flushed in a single
-    // set() when isComponentLayoutReady becomes true.
-    startExposedValueBatch();
-
-    //!TODO clear all queued tasks
-    cleanUpStore(true);
-    get().clearTemporaryLayouts();
-    setCurrentPageId(pageId, moduleId);
-    setComponentNameIdMapping(moduleId);
-    setQueryMapping(moduleId);
-
-    const isLicenseValid =
-      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
-
-    const appId = get().appStore.modules[moduleId].app.appId;
-    const filteredQueryParams = queryParams.filter(([key, value]) => {
-      if (!value) return false;
-      if (key === 'env' && !isLicenseValid) return false;
-      return true;
-    });
-    const currentPageId = getCurrentPageId(moduleId);
-    const isSamePage = currentPageId === pageId;
-
-    if (isSamePage) {
-      set((state) => {
-        state.pageKey = uuidv4();
-      });
-    }
-
-    const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
-    const slug = get().appStore.modules[moduleId].app.slug;
-    const subpath = getSubpath();
-    let toNavigate = '';
-
-    if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
-        }/${handle}?${queryParamsString}`;
-      navigate(toNavigate, {
-        state: {
-          isSwitchingPage: true,
-          id: pageId,
-          handle: handle,
+    const doSwitch = async () => {
+      const {
+        setCurrentPageId,
+        setComponentNameIdMapping,
+        initDependencyGraph,
+        setQueryMapping,
+        cleanUpStore,
+        setResolvedGlobals,
+        setResolvedPageConstants,
+        setPageSwitchInProgress,
+        setIsComponentLayoutReady,
+        getCurrentPageId,
+        startExposedValueBatch,
+        license,
+        modules: {
+          canvas: { pages },
         },
-      });
-    }
+        getCurrentMode,
+        setPageLoader,
+      } = get();
+      const isPreview = getCurrentMode(moduleId) !== 'edit';
 
-    const newPage = pages.find((p) => p.id === pageId);
-    setResolvedPageConstants(
-      {
-        id: newPage?.id,
-        handle: newPage?.handle,
-        name: newPage?.name,
-      },
-      moduleId
-    );
-    setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
-    initDependencyGraph('canvas');
-    setPageSwitchInProgress(true);
+      setPageLoader(true);
+      await yieldToMain(); // Paint the loader before doing heavy work
+
+      cleanUpStore(true);
+      get().clearTemporaryLayouts();
+      setCurrentPageId(pageId, moduleId);
+      setComponentNameIdMapping(moduleId);
+      setQueryMapping(moduleId);
+
+      const isLicenseValid =
+        !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+        _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
+      const appId = get().appStore.modules[moduleId].app.appId;
+      const filteredQueryParams = queryParams.filter(([key, value]) => {
+        if (!value) return false;
+        if (key === 'env' && !isLicenseValid) return false;
+        return true;
+      });
+      const currentPageId = getCurrentPageId(moduleId);
+      const isSamePage = currentPageId === pageId;
+
+      if (isSamePage) {
+        set((state) => {
+          state.pageKey = uuidv4();
+        });
+      }
+
+      const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
+      const slug = get().appStore.modules[moduleId].app.slug;
+      const subpath = getSubpath();
+
+      if (!isBackOrForward) {
+        const toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId}/${handle}?${queryParamsString}`;
+        navigate(toNavigate, {
+          state: {
+            isSwitchingPage: true,
+            id: pageId,
+            handle: handle,
+          },
+        });
+      }
+
+      const newPage = pages.find((p) => p.id === pageId);
+      setResolvedPageConstants(
+        {
+          id: newPage?.id,
+          handle: newPage?.handle,
+          name: newPage?.name,
+        },
+        moduleId
+      );
+      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
+      initDependencyGraph('canvas');
+      setPageSwitchInProgress(true);
+      setIsComponentLayoutReady(false, moduleId);
+      await yieldToMain(); // Let React commit all state changes before showing the Container
+
+      startExposedValueBatch();
+      setPageLoader(false);
+    };
+
+    doSwitch().catch((error) => {
+      console.error('Page switch failed:', error);
+      get().setPageLoader(false);
+    });
   },
   setPageSwitchInProgress: (isInProgress) =>
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
+  setPageLoader: (isInProgress) =>
+    set(() => ({ pageLoader: isInProgress }), false, 'setPageLoader'),
 
   cleanUpStore: (isPageSwitch = false, moduleId) => {
     const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();

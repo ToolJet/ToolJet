@@ -808,8 +808,8 @@ export const createComponentsSlice = (set, get) => ({
     moduleId
   ) => {
     const { updateResolvedValues, generateDependencyGraphForRefs } = get();
-    const updatedPropertyValue = cloneDeep(value);
     if (Array.isArray(value)) {
+      const updatedPropertyValue = cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
@@ -935,15 +935,25 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
+    const {
+      getCurrentPageComponents,
+      addToDependencyGraph,
+      setResolvedComponents,
+      resolveOthers,
+      startDependencyBatch,
+      flushDependencyBatch,
+    } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
     let resolvedComponentValues = {};
 
+    startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
     });
+    flushDependencyBatch();
+
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
 
@@ -2176,7 +2186,6 @@ export const createComponentsSlice = (set, get) => ({
     const dependecies = getDependencies(path, moduleId);
 
     if (dependecies?.length) {
-      const p1 = performance.now();
       dependecies.forEach((dependency) => {
         const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
@@ -2266,7 +2275,6 @@ export const createComponentsSlice = (set, get) => ({
         }
       });
 
-      console.log('here--- dependecies--- ', performance.now() - p1);
     }
   },
   computePageSettings: (currentPageSettings) => {
