@@ -267,7 +267,12 @@ export default class RestapiQueryService implements QueryService {
           knownLength: fileBuffer.length,
         });
       } else if (value != null) {
-        form.append(key, value);
+        // Stringify Arrays and Objects before appending to form
+        if (Array.isArray(value) || Object.prototype.toString.call(value) === '[object Object]') {
+          form.append(key, JSON.stringify(value));
+        } else {
+          form.append(key, value);
+        }
       }
     });
     requestOptions.body = form;
