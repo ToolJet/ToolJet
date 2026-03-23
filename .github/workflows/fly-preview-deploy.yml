@@ -63,7 +63,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
@@ -86,7 +86,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly volumes create pg_data \
+          flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
             --size 1 \
             --region ${{ env.FLY_REGION }} \
@@ -96,7 +96,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
@@ -256,8 +256,8 @@ jobs:
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
-          fly machine update $MACHINE_ID \
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
+          flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
             --yes
@@ -296,12 +296,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine stop $MACHINE_ID --app $APP_NAME
+          flyctl machine stop $MACHINE_ID --app $APP_NAME
           echo "✅ Machine stopped"
 
       - name: Update Labels
@@ -338,12 +338,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine start $MACHINE_ID --app $APP_NAME
+          flyctl machine start $MACHINE_ID --app $APP_NAME
           echo "✅ Machine started — https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
 
       - name: Update Labels
@@ -379,8 +379,8 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
-            fly apps destroy $APP_NAME --yes
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
             echo "✅ App destroyed"
           else
             echo "ℹ️ App not found, skipping"
@@ -439,7 +439,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
@@ -465,7 +465,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly volumes create pg_data \
+          flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
             --size 1 \
             --region ${{ env.FLY_REGION }} \
@@ -475,7 +475,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
@@ -646,8 +646,8 @@ jobs:
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
-          fly machine update $MACHINE_ID \
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
+          flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
             --yes
@@ -686,12 +686,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine stop $MACHINE_ID --app $APP_NAME
+          flyctl machine stop $MACHINE_ID --app $APP_NAME
           echo "✅ Machine stopped"
 
       - name: Update Labels
@@ -728,12 +728,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine start $MACHINE_ID --app $APP_NAME
+          flyctl machine start $MACHINE_ID --app $APP_NAME
           echo "✅ Machine started — https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
 
       - name: Update Labels
@@ -769,8 +769,8 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
-            fly apps destroy $APP_NAME --yes
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
             echo "✅ App destroyed"
           else
             echo "ℹ️ App not found, skipping"
@@ -831,7 +831,7 @@ jobs:
           # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
           # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
@@ -857,7 +857,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly volumes create pg_data \
+          flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
             --size 1 \
             --region ${{ env.FLY_REGION }} \
@@ -867,7 +867,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
@@ -1038,8 +1038,8 @@ jobs:
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
-          fly machine update $MACHINE_ID \
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
+          flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
             --yes
@@ -1078,12 +1078,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine stop $MACHINE_ID --app $APP_NAME
+          flyctl machine stop $MACHINE_ID --app $APP_NAME
           echo "✅ Machine stopped"
 
       - name: Update Labels
@@ -1120,12 +1120,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
           if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
             echo "❌ Machine not found"
             exit 1
           fi
-          fly machine start $MACHINE_ID --app $APP_NAME
+          flyctl machine start $MACHINE_ID --app $APP_NAME
           echo "✅ Machine started — https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
 
       - name: Update Labels
@@ -1161,8 +1161,8 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
-            fly apps destroy $APP_NAME --yes
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
             echo "✅ App destroyed"
           else
             echo "ℹ️ App not found, skipping"
