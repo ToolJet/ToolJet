@@ -56,6 +56,7 @@ export function renderCustomStyles(
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Button' ||
+    componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
@@ -177,6 +178,7 @@ export function renderElement(
     componentConfig.component == 'CircularProgressBar' ||
     componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput'
   ) {

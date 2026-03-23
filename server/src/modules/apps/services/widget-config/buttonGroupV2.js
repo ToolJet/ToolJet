@@ -206,6 +206,61 @@ export const buttonGroupV2Config = {
       },
       accordian: 'Buttons',
     },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'Buttons',
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'Buttons',
+    },
+    contentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'Buttons',
+    },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      accordian: 'Container',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'hoverBackgroundMode',
+        value: 'manual',
+      },
+      accordian: 'Container',
+    },
     iconColor: {
       type: 'colorSwatches',
       displayName: 'Icon',
@@ -384,6 +439,11 @@ export const buttonGroupV2Config = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
+      contentAlignment: { value: 'center' },
+      hoverBackgroundMode: { value: 'auto' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
