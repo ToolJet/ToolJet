@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Folder } from '@entities/folder.entity';
+import { FolderDataSource } from '@entities/folder_data_source.entity';
+import { DataSource } from '@entities/data_source.entity';
 import { decamelizeKeys } from 'humps';
-import { CreateDsFolderDto, UpdateDsFolderDto } from './dto';
+import { AddDsToFolderDto, BulkMoveDsDto, CreateDsFolderDto, UpdateDsFolderDto } from './dto';
 import { IFolderDataSourcesService } from './interfaces/IService';
 import { catchDbException } from '@helpers/utils.helper';
-import { DeleteResult, EntityManager } from 'typeorm';
+import { DeleteResult, EntityManager, In } from 'typeorm';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 
@@ -66,6 +68,92 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
         where: { id, organizationId: user.organizationId, type: 'data_source' },
       });
       return manager.delete(Folder, { id: folder.id, organizationId: user.organizationId });
+    });
+  }
+
+  async addDataSourceToFolder(user, folderId: string, dto: AddDsToFolderDto) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Verify folder belongs to user's org
+      await manager.findOneOrFail(Folder, {
+        where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
+      });
+
+      // Verify data source exists, belongs to same org, and is global scope
+      const dataSource = await manager.findOne(DataSource, {
+        where: { id: dto.dataSourceId, organizationId: user.organizationId },
+      });
+
+      if (!dataSource) {
+        throw new NotFoundException('Data source not found');
+      }
+
+      if (dataSource.scope !== 'global') {
+        throw new BadRequestException('Only global-scope data sources can be added to folders');
+      }
+
+      // Remove existing folder membership if any (a DS can be in at most one folder)
+      await manager.delete(FolderDataSource, { dataSourceId: dto.dataSourceId });
+
+      // Create new folder membership
+      const folderDs = manager.create(FolderDataSource, {
+        folderId,
+        dataSourceId: dto.dataSourceId,
+      });
+      const saved = await manager.save(folderDs);
+      return decamelizeKeys(saved);
+    });
+  }
+
+  async removeDataSourceFromFolder(user, folderId: string, dataSourceId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Verify folder belongs to user's org
+      await manager.findOneOrFail(Folder, {
+        where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
+      });
+
+      const result = await manager.delete(FolderDataSource, { folderId, dataSourceId });
+
+      if (result.affected === 0) {
+        throw new NotFoundException('Data source not found in this folder');
+      }
+
+      return result;
+    });
+  }
+
+  async bulkMoveDataSources(user, folderId: string, dto: BulkMoveDsDto) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Verify folder belongs to user's org
+      await manager.findOneOrFail(Folder, {
+        where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
+      });
+
+      // Verify all data sources exist, belong to same org, and are global scope
+      const dataSources = await manager.find(DataSource, {
+        where: { id: In(dto.dataSourceIds), organizationId: user.organizationId },
+      });
+
+      if (dataSources.length !== dto.dataSourceIds.length) {
+        throw new NotFoundException('One or more data sources not found');
+      }
+
+      const nonGlobal = dataSources.filter((ds) => ds.scope !== 'global');
+      if (nonGlobal.length > 0) {
+        throw new BadRequestException('Only global-scope data sources can be added to folders');
+      }
+
+      // Remove all existing folder memberships for these data sources
+      await manager.delete(FolderDataSource, { dataSourceId: In(dto.dataSourceIds) });
+
+      // Create new folder memberships
+      const folderDataSources = dto.dataSourceIds.map((dsId) =>
+        manager.create(FolderDataSource, {
+          folderId,
+          dataSourceId: dsId,
+        })
+      );
+      const saved = await manager.save(folderDataSources);
+      return decamelizeKeys(saved);
     });
   }
 }

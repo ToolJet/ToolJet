@@ -1,6 +1,6 @@
 import { Controller, Post, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
-import { CreateDsFolderDto, UpdateDsFolderDto } from './dto';
+import { AddDsToFolderDto, BulkMoveDsDto, CreateDsFolderDto, UpdateDsFolderDto } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { FolderDataSourcesService } from './service';
 import { IFolderDataSourcesController } from './interfaces/IController';
@@ -34,5 +34,26 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
   @Delete(':id')
   async delete(@User() user, @Param('id') id) {
     return await this.folderDataSourcesService.deleteFolder(user, id);
+  }
+
+  @InitFeature(FEATURE_KEY.ADD_DS_TO_FOLDER)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post(':id/data-sources')
+  async addDataSource(@User() user, @Param('id') id, @Body() dto: AddDsToFolderDto) {
+    return await this.folderDataSourcesService.addDataSourceToFolder(user, id, dto);
+  }
+
+  @InitFeature(FEATURE_KEY.REMOVE_DS_FROM_FOLDER)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Delete(':id/data-sources/:dsId')
+  async removeDataSource(@User() user, @Param('id') id, @Param('dsId') dsId) {
+    return await this.folderDataSourcesService.removeDataSourceFromFolder(user, id, dsId);
+  }
+
+  @InitFeature(FEATURE_KEY.BULK_MOVE_DS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Put(':id/data-sources')
+  async bulkMoveDataSources(@User() user, @Param('id') id, @Body() dto: BulkMoveDsDto) {
+    return await this.folderDataSourcesService.bulkMoveDataSources(user, id, dto);
   }
 }

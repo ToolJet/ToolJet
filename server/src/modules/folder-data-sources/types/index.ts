@@ -6,6 +6,9 @@ interface Features {
   [FEATURE_KEY.CREATE_DS_FOLDER]: FeatureConfig;
   [FEATURE_KEY.UPDATE_DS_FOLDER]: FeatureConfig;
   [FEATURE_KEY.DELETE_DS_FOLDER]: FeatureConfig;
+  [FEATURE_KEY.ADD_DS_TO_FOLDER]: FeatureConfig;
+  [FEATURE_KEY.REMOVE_DS_FROM_FOLDER]: FeatureConfig;
+  [FEATURE_KEY.BULK_MOVE_DS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

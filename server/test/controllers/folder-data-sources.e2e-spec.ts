@@ -330,4 +330,254 @@ describe('folder-data-sources controller', () => {
     });
   });
 
+  describe('POST /api/data-source-folders/:folderId/data-sources', () => {
+    it('should require authentication', async () => {
+      await request(nestApp.getHttpServer())
+        .post('/api/data-source-folders/some-folder-id/data-sources')
+        .expect(401);
+    });
+
+    it('should add a data source to a folder', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+      const ds = await createGlobalDataSource(organization.id, 'My DS');
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ dataSourceId: ds.id });
+
+      expect(response.statusCode).toBe(201);
+
+      // Verify FolderDataSource row was created
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      const fds = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds.id } });
+      expect(fds).toBeDefined();
+      expect(fds.folderId).toEqual(folder.id);
+      expect(fds.dataSourceId).toEqual(ds.id);
+    });
+
+    it('should move a DS from one folder to another (old membership removed)', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folderA = await createDsFolder(organization.id, 'Folder A');
+      const folderB = await createDsFolder(organization.id, 'Folder B');
+      const ds = await createGlobalDataSource(organization.id, 'Shared DS');
+
+      // Place DS in folder A first
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folderA.id, dataSourceId: ds.id }));
+
+      // Move DS to folder B via API
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-source-folders/${folderB.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ dataSourceId: ds.id });
+
+      expect(response.statusCode).toBe(201);
+
+      // Old membership in folder A should be gone
+      const oldMembership = await fdsRepo.findOne({ where: { folderId: folderA.id, dataSourceId: ds.id } });
+      expect(oldMembership).toBeNull();
+
+      // New membership in folder B should exist
+      const newMembership = await fdsRepo.findOne({ where: { folderId: folderB.id, dataSourceId: ds.id } });
+      expect(newMembership).toBeDefined();
+    });
+
+    it('should reject adding an app-scoped DS to a folder', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+
+      // Create an app-scoped DS
+      const dsRepo = defaultDataSource.getRepository(DataSource);
+      const appScopedDs = await dsRepo.save(
+        dsRepo.create({
+          name: 'App DS',
+          kind: 'restapi',
+          organizationId: organization.id,
+          scope: 'local',
+          type: 'default',
+        })
+      );
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ dataSourceId: appScopedDs.id });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('should deny users without dataSourceFolderCRUD permission', async () => {
+      const { organization } = await setupAdminUser();
+      const { auth: viewerAuth } = await setupViewerUser(organization.id);
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+      const ds = await createGlobalDataSource(organization.id, 'My DS');
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', viewerAuth.tokenCookie)
+        .send({ dataSourceId: ds.id });
+
+      expect(response.statusCode).toBe(403);
+    });
+  });
+
+  describe('DELETE /api/data-source-folders/:folderId/data-sources/:dsId', () => {
+    it('should require authentication', async () => {
+      await request(nestApp.getHttpServer())
+        .delete('/api/data-source-folders/some-folder-id/data-sources/some-ds-id')
+        .expect(401);
+    });
+
+    it('should remove a data source from a folder without deleting the DS', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+      const ds = await createGlobalDataSource(organization.id, 'My DS');
+
+      // Place DS into the folder
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/data-source-folders/${folder.id}/data-sources/${ds.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+
+      // FolderDataSource row should be gone
+      const fds = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds.id } });
+      expect(fds).toBeNull();
+
+      // The data source itself should still exist
+      const dsRepo = defaultDataSource.getRepository(DataSource);
+      const existingDs = await dsRepo.findOne({ where: { id: ds.id } });
+      expect(existingDs).toBeDefined();
+    });
+
+    it('should deny users without dataSourceFolderCRUD permission', async () => {
+      const { organization } = await setupAdminUser();
+      const { auth: viewerAuth } = await setupViewerUser(organization.id);
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+      const ds = await createGlobalDataSource(organization.id, 'My DS');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/data-source-folders/${folder.id}/data-sources/${ds.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', viewerAuth.tokenCookie);
+
+      expect(response.statusCode).toBe(403);
+    });
+  });
+
+  describe('PUT /api/data-source-folders/:folderId/data-sources (bulk move)', () => {
+    it('should require authentication', async () => {
+      await request(nestApp.getHttpServer())
+        .put('/api/data-source-folders/some-folder-id/data-sources')
+        .expect(401);
+    });
+
+    it('should bulk move multiple data sources to a folder', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'Target Folder');
+      const ds1 = await createGlobalDataSource(organization.id, 'DS One');
+      const ds2 = await createGlobalDataSource(organization.id, 'DS Two');
+      const ds3 = await createGlobalDataSource(organization.id, 'DS Three');
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ dataSourceIds: [ds1.id, ds2.id, ds3.id] });
+
+      expect(response.statusCode).toBe(200);
+
+      // All three FolderDataSource rows should exist
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      const fds1 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds1.id } });
+      const fds2 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds2.id } });
+      const fds3 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds3.id } });
+
+      expect(fds1).toBeDefined();
+      expect(fds2).toBeDefined();
+      expect(fds3).toBeDefined();
+    });
+
+    it('should atomically move DS from various folders to target (old memberships removed)', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folderA = await createDsFolder(organization.id, 'Source Folder A');
+      const folderB = await createDsFolder(organization.id, 'Source Folder B');
+      const targetFolder = await createDsFolder(organization.id, 'Target Folder');
+
+      const ds1 = await createGlobalDataSource(organization.id, 'DS One');
+      const ds2 = await createGlobalDataSource(organization.id, 'DS Two');
+      const ds3 = await createGlobalDataSource(organization.id, 'DS Three');
+
+      // Pre-populate: ds1 and ds2 in folder A, ds3 in folder B
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folderA.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folderA.id, dataSourceId: ds2.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folderB.id, dataSourceId: ds3.id }));
+
+      // Bulk move all three to target folder
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/data-source-folders/${targetFolder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ dataSourceIds: [ds1.id, ds2.id, ds3.id] });
+
+      expect(response.statusCode).toBe(200);
+
+      // Old memberships should be gone
+      const oldFdsA1 = await fdsRepo.findOne({ where: { folderId: folderA.id, dataSourceId: ds1.id } });
+      const oldFdsA2 = await fdsRepo.findOne({ where: { folderId: folderA.id, dataSourceId: ds2.id } });
+      const oldFdsB3 = await fdsRepo.findOne({ where: { folderId: folderB.id, dataSourceId: ds3.id } });
+
+      expect(oldFdsA1).toBeNull();
+      expect(oldFdsA2).toBeNull();
+      expect(oldFdsB3).toBeNull();
+
+      // New memberships in target folder should exist
+      const newFds1 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds1.id } });
+      const newFds2 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds2.id } });
+      const newFds3 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds3.id } });
+
+      expect(newFds1).toBeDefined();
+      expect(newFds2).toBeDefined();
+      expect(newFds3).toBeDefined();
+    });
+
+    it('should deny users without dataSourceFolderCRUD permission', async () => {
+      const { organization } = await setupAdminUser();
+      const { auth: viewerAuth } = await setupViewerUser(organization.id);
+
+      const folder = await createDsFolder(organization.id, 'Target Folder');
+      const ds1 = await createGlobalDataSource(organization.id, 'DS One');
+      const ds2 = await createGlobalDataSource(organization.id, 'DS Two');
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', viewerAuth.tokenCookie)
+        .send({ dataSourceIds: [ds1.id, ds2.id] });
+
+      expect(response.statusCode).toBe(403);
+    });
+  });
 });
