@@ -282,6 +282,10 @@ export const colorPickerConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
+    validation: {
+      mandatory: { value: '{{false}}' },
+      customRule: { value: null },
+    },
     properties: {
       label: { value: 'Label' },
       placeholder: { value: 'Enter text' },
