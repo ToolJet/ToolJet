@@ -120,6 +120,11 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               dataSource: true,
             },
           },
+          dsFoldersGroupPermission: {
+            groupDsFolders: {
+              folder: true,
+            },
+          },
         },
         where: {
           group: {
@@ -173,6 +178,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           group: true,
           appsGroupPermissions: true,
           dataSourcesGroupPermission: true,
+          dsFoldersGroupPermission: true,
         },
       });
     }, manager || this.manager);

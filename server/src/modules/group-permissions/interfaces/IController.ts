@@ -45,4 +45,15 @@ export interface IGranularPermissionsController {
   ): Promise<void>;
   deleteGranularAppPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
   deleteGranularDataPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
+  createGranularDsFolderPermissions(
+    user: UserEntity,
+    groupId: string,
+    createGranularPermissionsDto: CreateGranularPermissionDto
+  ): Promise<any>;
+  updateGranularDsFolderPermissions(
+    user: UserEntity,
+    granularPermissionsId: string,
+    updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ): Promise<void>;
+  deleteGranularDsFolderPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
 }
