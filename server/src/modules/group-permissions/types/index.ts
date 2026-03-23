@@ -11,6 +11,7 @@ export interface CreateDefaultGroupObject {
   workflowCreate?: boolean;
   workflowDelete?: boolean;
   folderCRUD?: boolean;
+  dataSourceFolderCRUD?: boolean;
   orgConstantCRUD?: boolean;
   dataSourceCreate?: boolean;
   dataSourceDelete?: boolean;

@@ -29,6 +29,10 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  dataSourceFolderCRUD: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   orgConstantCRUD: boolean;
 
   @IsBoolean()

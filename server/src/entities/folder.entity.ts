@@ -11,6 +11,7 @@ import {
   Unique,
 } from 'typeorm';
 import { FolderApp } from './folder_app.entity';
+import { FolderDataSource } from './folder_data_source.entity';
 import { App } from './app.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
@@ -29,6 +30,9 @@ export class Folder {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ name: 'creator_id', nullable: true })
+  creatorId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -37,6 +41,9 @@ export class Folder {
 
   @OneToMany(() => FolderApp, (folderApp) => folderApp.folder, { eager: true })
   folderApps: FolderApp[];
+
+  @OneToMany(() => FolderDataSource, (fds) => fds.folder)
+  folderDataSources: FolderDataSource[];
 
   @ManyToMany((type) => App)
   @JoinTable({

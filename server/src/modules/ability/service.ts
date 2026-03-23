@@ -53,6 +53,7 @@ export class AbilityService extends IAbilityService {
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
           folderCRUD: acc.folderCRUD || group.folderCRUD,
+          dataSourceFolderCRUD: acc.dataSourceFolderCRUD || group.dataSourceFolderCRUD,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,

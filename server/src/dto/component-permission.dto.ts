@@ -44,6 +44,7 @@ export interface GroupPermissionsData {
   workflowCreate: boolean;
   workflowDelete: boolean;
   folderCRUD: boolean;
+  dataSourceFolderCRUD: boolean;
   orgConstantCRUD: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
