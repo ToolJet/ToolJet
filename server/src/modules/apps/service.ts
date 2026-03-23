@@ -48,7 +48,6 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { AbilityService } from '@modules/ability/interfaces/IService';
 
 @Injectable()
 export class AppsService implements IAppsService {
