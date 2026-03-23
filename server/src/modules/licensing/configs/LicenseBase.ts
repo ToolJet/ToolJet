@@ -152,6 +152,9 @@ export default class LicenseBase {
     if (!this._features || this._features[key] === false) {
       return false;
     }
+    if (key === 'selfhostAI' && this._features[key] === undefined) {
+      return false;
+    }
     if (this._isFlexiblePlan && !this._features[key]) {
       return false;
     }
