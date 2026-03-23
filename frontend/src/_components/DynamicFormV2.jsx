@@ -557,6 +557,7 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        // eslint-disable-next-line no-case-declarations
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
           checked: isEnabled,
@@ -663,7 +664,7 @@ const DynamicFormV2 = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >

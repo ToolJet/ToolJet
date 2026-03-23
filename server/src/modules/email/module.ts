@@ -3,6 +3,7 @@ import { getImportPath } from '@modules/app/constants';
 import { WhiteLabellingModule } from '@modules/white-labelling/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { SMTPModule } from '@modules/smtp/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { SubModule } from '@modules/app/sub-module';
 
 export class EmailModule extends SubModule {
@@ -16,6 +17,7 @@ export class EmailModule extends SubModule {
         await WhiteLabellingModule.register(configs),
         await DataSourcesModule.register(configs),
         await SMTPModule.register(configs),
+        await CustomDomainsModule.register(configs),
       ],
       providers: [EmailService, EmailUtilService],
       exports: [EmailUtilService, EmailService],

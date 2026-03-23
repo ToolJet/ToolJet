@@ -8,7 +8,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
-import { isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
+import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
@@ -56,6 +56,20 @@ export class SessionUtilService {
     return this.jwtService.sign(JWTPayload);
   }
 
+  getClearCookieOptions(): CookieOptions {
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: isHttpsEnabled(),
+      sameSite: 'strict',
+    };
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+    applyCustomDomainCookieOptions(cookieOptions, this.configService);
+    return cookieOptions;
+  }
+
   async generateLoginResultPayload(
     response: Response,
     user: User,
@@ -100,7 +114,11 @@ export class SessionUtilService {
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
-      if (organization) user.organizationId = organization.id;
+      if (organization) {
+        user.organizationId = organization.id;
+        // Unconditional update on login — low frequency event
+        await manager.update(Organization, { id: organization.id }, { lastAccessedAt: new Date() });
+      }
 
       const cookieOptions: CookieOptions = {
         secure: isHttpsEnabled(),
@@ -114,6 +132,8 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
+
+      applyCustomDomainCookieOptions(cookieOptions, this.configService);
       let signedPat;
       if (isPatLogin) {
         signedPat = this.sign(JWTPayload);
@@ -341,6 +361,8 @@ export class SessionUtilService {
       cookieOptions.sameSite = 'none';
       cookieOptions.secure = true;
     }
+
+    applyCustomDomainCookieOptions(cookieOptions, this.configService);
     response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
@@ -478,7 +500,7 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string): Promise<void> {
+  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -529,6 +551,11 @@ export class SessionUtilService {
       manager.save(session).catch((err) => {
         console.error('error while extending session expiry', err);
       });
+
+      // Fire-and-forget: update workspace last_accessed_at at most once per interval
+      if (organizationId) {
+        this.organizationRepository.touchLastAccessedAt(organizationId);
+      }
     });
   }
 

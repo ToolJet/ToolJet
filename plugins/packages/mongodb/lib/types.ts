@@ -13,6 +13,7 @@ export type SourceOptions = {
   use_ssl: boolean;
   query_params: string
   connection_string: string;
+  connection_options: string[][]; 
   ssh_enabled: 'enabled' | 'disabled';
   ssh_host: string;
   ssh_port: number;

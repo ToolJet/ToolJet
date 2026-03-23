@@ -4,6 +4,7 @@ import * as Icons from '@tabler/icons-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
+import { getHostURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
@@ -191,7 +192,7 @@ export const PageMenuItem = withRouter(
 
         if (page?.type === 'app') {
           if (page?.appId) {
-            const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+            const baseUrl = `${getHostURL()}/applications/${page.appId}`;
             if (page.openIn === 'new_tab') {
               window.open(baseUrl, '_blank');
             } else {
@@ -276,8 +277,9 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${(showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-              }`}
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
+              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            }`}
             style={{
               position: 'relative',
               width: '100%',
@@ -457,7 +459,9 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                                  message={
+                                    "You don't have access to page permissions. Upgrade your plan to access this feature."
+                                  }
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"
