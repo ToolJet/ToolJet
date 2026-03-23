@@ -704,9 +704,9 @@ export const createCompleteWorkflow = async (
 export const createWorkflowBundle = async (
   nestApp: INestApplication,
   appVersionId: string,
-  dependencies: Record<string, string>
+  dependencies: string
 ): Promise<void> => {
-  const bundleGenerationService = nestApp.get<BundleGenerationService>(BundleGenerationService);
+  const bundleGenerationService = nestApp.get<PythonBundleGenerationService>(PythonBundleGenerationService);
 
   await bundleGenerationService.generateBundle(appVersionId, dependencies);
 
