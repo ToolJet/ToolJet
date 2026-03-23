@@ -120,9 +120,7 @@ export const fileButtonConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 1,
       },
-      conditionallyRender: [
-        { key: 'enableMultiple', value: true, parentObjectKey: 'properties' },
-      ],
+      conditionallyRender: [{ key: 'enableMultiple', value: true, parentObjectKey: 'properties' }],
     },
     maxFileCount: {
       type: 'code',
@@ -131,9 +129,7 @@ export const fileButtonConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 2,
       },
-      conditionallyRender: [
-        { key: 'enableMultiple', value: true, parentObjectKey: 'properties' },
-      ],
+      conditionallyRender: [{ key: 'enableMultiple', value: true, parentObjectKey: 'properties' }],
     },
   },
   events: {
@@ -233,12 +229,12 @@ export const fileButtonConfig = {
       },
       accordian: 'button',
     },
-    hoverBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Hover background',
-      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
-      accordian: 'button',
-    },
+    // hoverBackgroundColor: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Hover background',
+    //   validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+    //   accordian: 'button',
+    // },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -341,7 +337,7 @@ export const fileButtonConfig = {
       contentAlignment: { value: 'center' },
       buttonType: { value: 'solid' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
-      hoverBackgroundColor: { value: 'auto' },
+      // hoverBackgroundColor: { value: 'auto' },
       borderRadius: { value: '6' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
