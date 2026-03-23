@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   closeSearchPanel,
@@ -17,6 +17,16 @@ import { ToolTip } from '@/_components/ToolTip';
 import { SelectionRange } from '@codemirror/state';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+const MATCH_COUNT_LIMIT = 1000;
+const MATCH_COUNT_TOOLTIP = `Only the first ${MATCH_COUNT_LIMIT} results are counted, but all find operations work on the entire text.`;
+
+const createEmptySearchInfo = () => ({
+  current: 0,
+  total: 0,
+  hasOverflow: false,
+  matchesByCursor: new Map(),
+});
+
 export const handleSearchPanel = (view) => {
   const dom = document.createElement('div');
   createRoot(dom).render(<SearchPanel view={view} />);
@@ -26,29 +36,116 @@ export const handleSearchPanel = (view) => {
 function SearchPanel({ view }) {
   const [searchText, setSearchText] = useState('');
   const [replaceText, setReplaceText] = useState('');
+  const [searchInfo, setSearchInfo] = useState(createEmptySearchInfo);
 
-  const handleSearch = (replaceTerm) => {
-    const query = new SearchQuery({
-      search: searchText,
-      caseSensitive: false,
-      literal: true,
-      regexp: false,
-      replace: replaceTerm,
-    });
+  const createQuery = useCallback(
+    () =>
+      new SearchQuery({
+        search: searchText,
+        caseSensitive: false,
+        literal: true,
+        regexp: false,
+        replace: replaceText,
+      }),
+    [replaceText, searchText]
+  );
+
+  const getCurrentMatchIndex = useCallback(
+    (matchesByFrom, hasOverflow) => {
+      const { from, to } = view.state.selection.main;
+      const currentMatch = matchesByFrom.get(from);
+
+      return currentMatch?.to === to ? currentMatch.index : hasOverflow ? null : 0;
+    },
+    [view]
+  );
+
+  const buildSearchInfo = useCallback(
+    (query) => {
+      if (!view || !query.valid) return createEmptySearchInfo();
+
+      const matchesByCursor = new Map();
+      const cursor = query.getCursor(view.state);
+      let total = 0;
+      let hasOverflow = false;
+
+      for (let next = cursor.next(); !next.done; next = cursor.next()) {
+        total += 1;
+        if (total > MATCH_COUNT_LIMIT) {
+          hasOverflow = true;
+          total = MATCH_COUNT_LIMIT;
+          break;
+        }
+
+        matchesByCursor.set(next.value.from, { to: next.value.to, index: total });
+      }
+
+      if (!total) return createEmptySearchInfo();
+
+      return {
+        current: getCurrentMatchIndex(matchesByCursor, hasOverflow),
+        total,
+        hasOverflow,
+        matchesByCursor,
+      };
+    },
+    [view, getCurrentMatchIndex]
+  );
+
+  const handleSearch = useCallback(() => {
+    const query = createQuery();
     view.dispatch({ effects: setSearchQuery.of(query) });
 
     const currentPos = view.state.selection.main.head;
     view.dispatch({
       selection: SelectionRange.create(currentPos, currentPos),
     });
-  };
+
+    setSearchInfo(buildSearchInfo(query));
+  }, [view, createQuery, buildSearchInfo]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      handleSearch(replaceText);
+      handleSearch();
     }, 300);
     return () => clearTimeout(handler);
-  }, [searchText, replaceText]);
+  }, [searchText, replaceText, handleSearch]);
+
+  const refreshCurrentMatch = useCallback(() => {
+    setSearchInfo((prev) => {
+      if (!prev.total) return prev;
+
+      return {
+        ...prev,
+        current: getCurrentMatchIndex(prev.matchesByCursor, prev.hasOverflow),
+      };
+    });
+  }, [getCurrentMatchIndex]);
+
+  const refreshMatchInfo = useCallback(() => {
+    const query = createQuery();
+    setSearchInfo(buildSearchInfo(query));
+  }, [buildSearchInfo, createQuery]);
+
+  const handleFindNext = () => {
+    findNext(view);
+    refreshCurrentMatch();
+  };
+
+  const handleFindPrevious = () => {
+    findPrevious(view);
+    refreshCurrentMatch();
+  };
+
+  const handleReplaceNext = () => {
+    replaceNext(view);
+    refreshMatchInfo();
+  };
+
+  const handleReplaceAll = () => {
+    replaceAll(view);
+    refreshMatchInfo();
+  };
 
   const [shortcutEnabled, setShortcutEnabled] = useState(false);
 
@@ -56,8 +153,8 @@ function SearchPanel({ view }) {
   useHotkeys(
     ['shift+enter', 'enter'],
     (event, handler) => {
-      if (handler.shift && handler.keys[0] === 'enter') findPrevious(view);
-      else if (handler.keys[0] === 'enter') findNext(view);
+      if (handler.shift && handler.keys[0] === 'enter') handleFindPrevious();
+      else if (handler.keys[0] === 'enter') handleFindNext();
     },
     {
       enabled: shortcutEnabled,
@@ -76,18 +173,44 @@ function SearchPanel({ view }) {
         size="small"
         value={searchText}
         aria-label="Find text"
+        name="search"
       />
       <InputComponent
         leadingIcon="arrowreturn01"
         onChange={(e) => setReplaceText(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && replaceNext(view)}
+        onKeyDown={(e) => e.key === 'Enter' && handleReplaceNext()}
         placeholder="Replace"
         size="small"
         value={replaceText}
-        aria-label="Replace text"
+        name="replace"
       />
     </div>
   );
+
+  const displaySearchCount = () => {
+    if (!searchText) return null;
+
+    if (searchInfo.total === 0) {
+      return <span className="search-match-count">No results</span>;
+    }
+
+    const currentLabel = searchInfo.current === null ? '?' : searchInfo.current;
+    const totalLabel = searchInfo.hasOverflow ? `${MATCH_COUNT_LIMIT}+` : searchInfo.total;
+    const visibleCountLabel = `${currentLabel} of ${totalLabel}`;
+    const ariaLabel = searchInfo.hasOverflow
+      ? `${visibleCountLabel}. ${MATCH_COUNT_TOOLTIP}`
+      : visibleCountLabel;
+
+    return (
+      <span
+        className="search-match-count"
+        title={searchInfo.hasOverflow ? MATCH_COUNT_TOOLTIP : undefined}
+        aria-label={ariaLabel}
+      >
+        {visibleCountLabel}
+      </span>
+    );
+  };
 
   const displaySearchButtons = () => (
     <div className="search-buttons">
@@ -95,7 +218,7 @@ function SearchPanel({ view }) {
         <ButtonComponent
           iconOnly
           leadingIcon="arrowup01"
-          onClick={() => findPrevious(view)}
+          onClick={handleFindPrevious}
           size="medium"
           variant="ghost"
           aria-label="Previous match"
@@ -106,7 +229,7 @@ function SearchPanel({ view }) {
         <ButtonComponent
           iconOnly
           leadingIcon="arrowdown01"
-          onClick={() => findNext(view)}
+          onClick={handleFindNext}
           size="medium"
           variant="ghost"
           aria-label="Next match"
@@ -121,7 +244,7 @@ function SearchPanel({ view }) {
         <ButtonComponent
           iconOnly
           leadingIcon="replace"
-          onClick={() => replaceNext(view)}
+          onClick={handleReplaceNext}
           size="medium"
           variant="ghost"
           aria-label="Replace"
@@ -132,7 +255,7 @@ function SearchPanel({ view }) {
         <ButtonComponent
           iconOnly
           leadingIcon="replaceall"
-          onClick={() => replaceAll(view)}
+          onClick={handleReplaceAll}
           size="medium"
           variant="ghost"
           aria-label="Replace all"
@@ -156,6 +279,7 @@ function SearchPanel({ view }) {
       <div className="search-panel">
         {displaySearchField()}
         {displaySearchButtons()}
+        {displaySearchCount()}
       </div>
       {displayReplaceButtons()}
     </div>
