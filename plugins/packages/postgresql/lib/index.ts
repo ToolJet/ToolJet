@@ -752,7 +752,7 @@ export default class PostgresqlQueryService implements QueryService {
       const connPass = decodeURIComponent(parsedUrl.password || '');
       const connHost = parsedUrl.hostname || '';
       const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
-      const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
+      const connDb =decodeURIComponent( parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '');
       const sslmode = parsedUrl.searchParams.get('sslmode') || parsedUrl.searchParams.get('ssl') || '';
 
       let connSslEnabled: boolean | undefined;
@@ -763,19 +763,15 @@ export default class PostgresqlQueryService implements QueryService {
         connSslEnabled = false;
       }
       // Explicit UI values override connection string values
-      resolvedUser = sourceOptions.username || connUser;
-      resolvedPass = sourceOptions.password || connPass;
+      resolvedUser = sourceOptions.username;
+      resolvedPass = sourceOptions.password;
       // Only override if user explicitly changed away from the default
-      resolvedHost = sourceOptions.host && sourceOptions.host !== 'localhost' ? sourceOptions.host : connHost;
+      resolvedHost = sourceOptions.host;
 
-      resolvedPort = sourceOptions.port && Number(sourceOptions.port) !== 5432 ? Number(sourceOptions.port) : connPort;
+      resolvedPort = Number(sourceOptions.port);
 
-      resolvedDb = sourceOptions.database || connDb;
+      resolvedDb = sourceOptions.database;
 
-      // SSL Autofill
-      if (!sourceOptions.ssl_enabled && connSslEnabled) {
-        sourceOptions.ssl_enabled = connSslEnabled;
-      }
     }
 
     // --- SSL config ---

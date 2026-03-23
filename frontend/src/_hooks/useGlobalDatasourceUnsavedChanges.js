@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import useRouter from '@/_hooks/use-router';
 import { useGlobalDataSourcesStatus, useDataSourcesActions } from '@/_stores/dataSourcesStore';
@@ -6,16 +6,14 @@ import { useGlobalDataSourcesStatus, useDataSourcesActions } from '@/_stores/dat
 const useGlobalDatasourceUnsavedChanges = () => {
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { setGlobalDataSourceStatus } = useDataSourcesActions();
-  const { isEditing, isSaving, unSavedModalVisible, action, saveAction } = globalDataSourcesStatus;
-  const [nextRoute, setNextRoute] = useState('');
+  const { isEditing, isSaving, unSavedModalVisible, action, saveAction, nextRoute } = globalDataSourcesStatus;
   const router = useRouter();
 
   const checkForUnsavedChanges = useCallback(
-    (nextRoute, e) => {
+    (targetRoute, e) => {
       if (isEditing) {
         e.preventDefault();
-        setNextRoute(nextRoute);
-        setGlobalDataSourceStatus({ unSavedModalVisible: true });
+        setGlobalDataSourceStatus({ unSavedModalVisible: true, nextRoute: targetRoute });
       } else if (isSaving) {
         toast.error('Cannot perform operation until changes are saved');
       }
@@ -30,7 +28,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
       } else if (isSaving) {
         toast.error('Cannot perform operation until changes are saved', { style: { minWidth: '400px' } });
       } else {
-        setGlobalDataSourceStatus({ unSavedModalVisible: false, isEditing: false, action: null });
+        setGlobalDataSourceStatus({ unSavedModalVisible: false, isEditing: false, action: null, nextRoute: null });
         typeof action === 'function' && action();
       }
     },
@@ -38,18 +36,21 @@ const useGlobalDatasourceUnsavedChanges = () => {
   );
 
   const resetUnsavedChangesModal = () => {
-    setGlobalDataSourceStatus({ unSavedModalVisible: false, action: null, isEditing: false });
+    setGlobalDataSourceStatus({ unSavedModalVisible: false, action: null, isEditing: false, nextRoute: null });
   };
 
   const handleDiscardChanges = useCallback(
-    (nextRoute) => {
-      if (!nextRoute) {
+    (passedRoute) => {
+      const routeToNavigate = typeof passedRoute === 'string' && passedRoute ? passedRoute : nextRoute;
+      
+      if (!routeToNavigate) {
         action && action();
+      } else {
+        router.history(routeToNavigate);
       }
-      router.history(nextRoute);
-      setGlobalDataSourceStatus({ unSavedModalVisible: false, isEditing: false, action: null });
+      setGlobalDataSourceStatus({ unSavedModalVisible: false, isEditing: false, action: null, nextRoute: null });
     },
-    [action]
+    [action, nextRoute, router]
   );
 
   const handleSaveChanges = () => {
@@ -58,7 +59,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
   };
 
   const handleContinueEditing = () => {
-    setGlobalDataSourceStatus({ unSavedModalVisible: false, action: null });
+    setGlobalDataSourceStatus({ unSavedModalVisible: false, action: null, nextRoute: null });
   };
 
   return {

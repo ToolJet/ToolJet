@@ -93,25 +93,24 @@ const DynamicSelector = ({
 
     if (isLoadMoreRef.current) {
       setIsLoadingMore(true);
-    } 
-    else if(isSearchRef.current) {
+    } else if (isSearchRef.current) {
       setIsSearching(true);
-    }
-    else {
+    } else {
       setIsLoading(true);
     }
-  
+
     setError(null);
 
     try {
       const effectiveSearch = typeof searchOverride === 'string' ? searchOverride : searchTerm;
-      const args = depKeys.length || pagination || effectiveSearch
-      ? {
-          ...(depKeys.length ? { values: depValues } : {}),
-          ...(pagination ? { page: currentPage, limit: pageSize } : {}),
-          ...(effectiveSearch ? { search: effectiveSearch } : {}),
-        }
-      : undefined;
+      const args =
+        depKeys.length || pagination || effectiveSearch
+          ? {
+              ...(depKeys.length ? { values: depValues } : {}),
+              ...(pagination ? { page: currentPage, limit: pageSize } : {}),
+              ...(effectiveSearch ? { search: effectiveSearch } : {}),
+            }
+          : undefined;
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
       if (response?.status === 'failed') {
         setError(response?.errorMessage || 'Failed to fetch data');
@@ -126,16 +125,14 @@ const DynamicSelector = ({
         if (isLoadMoreRef.current) {
           setFetchedData((prev) => [...prev, ...items]);
           isLoadMoreRef.current = false;
-        }
-        else if (isSearchRef.current) {
+        } else if (isSearchRef.current) {
           setFetchedData(items);
           isSearchRef.current = false;
-        }
-        else {
+        } else {
           setFetchedData(items);
         }
       } else {
-        items = Array.isArray(payload) ? payload : (payload?.data || []);
+        items = Array.isArray(payload) ? payload : payload?.data || [];
         setFetchedData(items);
       }
       // Skip access validation for autoFetch fields (e.g. gRPC services discovered from proto files)
@@ -231,7 +228,7 @@ const DynamicSelector = ({
       setIsLoading(false);
       setIsLoadingMore(false);
       setIsSearching(false);
-      isSearchRef.current = false;   
+      isSearchRef.current = false;
       isLoadMoreRef.current = false;
     }
   };
@@ -390,7 +387,6 @@ const DynamicSelector = ({
     handleFetch(searchTerm);
   }, [searchTerm]);
 
-
   const handleSelectionChange = (selectedOption) => {
     // Clear no access error since user is making a new valid selection
     setNoAccessError(false);
@@ -430,11 +426,13 @@ const DynamicSelector = ({
     setCurrentPage((p) => p + 1);
   };
 
-  const debouncedSearchRef = useRef(debounce((val) => {
-    isSearchRef.current = true;
-    setSearchTerm(val);
-    setCurrentPage(1);
-  }, 300));
+  const debouncedSearchRef = useRef(
+    debounce((val) => {
+      isSearchRef.current = true;
+      setSearchTerm(val);
+      setCurrentPage(1);
+    }, 300)
+  );
   const handleFxChange = () => {
     const newFxMode = !isFxMode;
     setIsFxMode(newFxMode);
@@ -518,7 +516,7 @@ const DynamicSelector = ({
 
   const paginationRef = useRef({});
   paginationRef.current = { handleLoadMore, isLoadingMore, fetchedData, totalCount, pageSize, pagination, isLoading };
-  
+
   const CustomMenu = useMemo(
     () =>
       function MenuWithLoadMore({ children, ...props }) {
@@ -530,26 +528,31 @@ const DynamicSelector = ({
           pageSize: size,
           pagination: paginated,
         } = paginationRef.current;
-        
+
         if (!paginated) return <RSComponents.Menu {...props}>{children}</RSComponents.Menu>;
-        
+
         const hasMore = total > 0 ? data.length < total : data.length > 0 && data.length % size === 0;
-        
+
         return (
           <RSComponents.Menu {...props}>
             {children}
             {hasMore && (
-              <div style={{ 
-                padding: '6px 12px', 
-                borderTop: '1px solid var(--slate5)', 
-                display: 'flex', 
-                justifyContent: 'center',
-                backgroundColor: localStorage.getItem('darkMode') === 'true' ? 'rgb(31,40,55)' : 'white',
-                borderBottomLeftRadius: '4px',
-                borderBottomRightRadius: '4px',
-              }}>
-               <button
-                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              <div
+                style={{
+                  padding: '6px 12px',
+                  borderTop: '1px solid var(--slate5)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  backgroundColor: localStorage.getItem('darkMode') === 'true' ? 'rgb(31,40,55)' : 'white',
+                  borderBottomLeftRadius: '4px',
+                  borderBottomRightRadius: '4px',
+                }}
+              >
+                <button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
                   onClick={onLoadMore}
                   disabled={loading}
                   style={{
@@ -689,7 +692,15 @@ const DynamicSelector = ({
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
                 placeholder={
-                  pagination ? (isLoading ? 'Discovering...' : `Search or Select ${label ?? ''}`) : isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`
+                  pagination
+                    ? isLoading
+                      ? 'Discovering...'
+                      : `Search or Select ${label ?? ''}`
+                    : isMulti
+                    ? isLoading
+                      ? 'Discovering...'
+                      : `Select ${label ?? ''}`
+                    : `Select ${label ?? ''}`
                 }
                 isDisabled={disabled || (isDependentField && !depsReady)}
                 isLoading={isMulti ? isLoading && getCurrentValue().length === 0 : isLoading}
@@ -702,7 +713,9 @@ const DynamicSelector = ({
                   ...(isMulti ? { DropdownIndicator: null, ClearIndicator: null } : {}),
                   ...(pagination ? { Menu: CustomMenu } : {}),
                 }}
-                onInputChange={(val) => { if (pagination) debouncedSearchRef.current(val); }}
+                onInputChange={(val) => {
+                  if (pagination) debouncedSearchRef.current(val);
+                }}
                 filterOption={pagination ? () => true : undefined}
               />
             </div>

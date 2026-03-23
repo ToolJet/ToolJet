@@ -29,6 +29,17 @@ export const validatePostgresConnectionString = (connectionString) => {
       }
     }
 
+    try {
+      if (url.username) decodeURIComponent(url.username);
+      if (url.password) decodeURIComponent(url.password);
+      if (url.pathname) decodeURIComponent(url.pathname.replace(/^\//, ''));
+    } catch {
+      return {
+        valid: false,
+        error: 'Invalid URL encoding in connection string credentials',
+      };
+    }
+
     return { valid: true, error: '' };
   } catch {
     return { valid: false, error: 'Malformed PostgreSQL connection string' };
@@ -52,17 +63,28 @@ export const parsePostgresConnectionString = (connectionString) => {
       sslmode === 'verify-ca' ||
       sslmode === 'prefer' ||
       sslmode === 'allow' ||
+      sslmode === 'on' ||
+      sslmode === 'yes' ||
       ssl === 'true' ||
+      ssl === 'on' ||
+      ssl === 'yes' ||
       ssl === '1';
 
-    const isSslOff = sslmode === 'disable' || ssl === 'false' || ssl === '0';
+    const isSslOff =
+      sslmode === 'disable' ||
+      sslmode === 'off' ||
+      sslmode === 'no' ||
+      ssl === 'false' ||
+      ssl === 'off' ||
+      ssl === 'no' ||
+      ssl === '0';
 
     return {
       host: url.hostname || '',
       port: url.port || '5432',
       username: decodeURIComponent(url.username || ''),
       password: decodeURIComponent(url.password || ''),
-      database: url.pathname.replace(/^\//, '') || '',
+      database: decodeURIComponent(url.pathname.replace(/^\//, '') || ''),
       ssl_enabled: isSslOn ? true : isSslOff ? false : undefined,
       query_params: url.search || '',
       protocol: url.protocol.replace(':', ''),
