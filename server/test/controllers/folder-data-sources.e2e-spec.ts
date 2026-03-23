@@ -9,16 +9,23 @@ import { getDataSourceToken } from '@nestjs/typeorm';
 import { Folder } from '@entities/folder.entity';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { App } from '@entities/app.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { DsFoldersGroupPermissions } from '@entities/ds_folders_group_permissions.entity';
+import { GroupDsFolders } from '@entities/group_ds_folder.entity';
 import {
   createNestAppInstance,
   createUser,
   authenticateUser,
   clearDB,
   setupOrganizationAndUser,
+  createDefaultAppEnvironments,
 } from '../workflows.helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
 
 describe('folder-data-sources controller', () => {
   let nestApp: INestApplication;
@@ -1129,6 +1136,201 @@ describe('folder-data-sources controller', () => {
         'should merge folder and DS permissions — higher wins ' +
           '(requires Phase 5 query-run permission resolver to be implemented)'
       );
+    });
+  });
+
+  describe('Phase 6: restrictQueryRun runtime enforcement', () => {
+    // Helper: create a minimal non-public app with a version and data query linked to a data source
+    async function createAppWithQuery(orgId: string, userId: string, dataSourceId: string) {
+      const appRepo = defaultDataSource.getRepository(App);
+      const versionRepo = defaultDataSource.getRepository(AppVersion);
+      const queryRepo = defaultDataSource.getRepository(DataQuery);
+
+      const app = await appRepo.save(
+        appRepo.create({
+          name: 'Test App',
+          slug: `test-app-${Date.now()}`,
+          isPublic: false,
+          organizationId: orgId,
+          userId,
+          icon: '',
+        })
+      );
+
+      const version = await versionRepo.save(
+        versionRepo.create({
+          name: `v1-${Date.now()}`,
+          appId: app.id,
+          definition: {},
+        })
+      );
+
+      app.currentVersionId = version.id;
+      await appRepo.save(app);
+
+      const query = await queryRepo.save(
+        queryRepo.create({
+          name: 'test_query',
+          options: { method: 'get', url: 'https://example.com' },
+          dataSourceId,
+          appVersionId: version.id,
+        })
+      );
+
+      return { app, version, query };
+    }
+
+    // Helper: set up restrictQueryRun permission for a group on a folder directly in DB
+    async function setupRestriction(groupId: string, folderId: string, restrict: boolean) {
+      const gpRepo = defaultDataSource.getRepository(GranularPermissions);
+      const dsfgpRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
+      const gdfRepo = defaultDataSource.getRepository(GroupDsFolders);
+
+      const granularPerm = await gpRepo.save(
+        gpRepo.create({
+          groupId,
+          name: 'DS folder restrict test',
+          type: ResourceType.DATA_SOURCE_FOLDER,
+          isAll: false,
+        })
+      );
+
+      const dsFolderPerm = await dsfgpRepo.save(
+        dsfgpRepo.create({
+          granularPermissionId: granularPerm.id,
+          canEditFolder: false,
+          canConfigureDs: false,
+          canUseDs: true,
+          restrictQueryRun: restrict,
+        })
+      );
+
+      await gdfRepo.save(
+        gdfRepo.create({
+          dsFoldersGroupPermissionsId: dsFolderPerm.id,
+          folderId,
+        })
+      );
+
+      return { granularPerm, dsFolderPerm };
+    }
+
+    it('should block query run when restrictQueryRun is true for the DS folder', async () => {
+      const { user, organization, auth } = await setupAdminUser();
+
+      // Create DS, folder, and put DS in folder
+      const ds = await createGlobalDataSource(organization.id, 'Restricted DS');
+      const folder = await createDsFolder(organization.id, 'Restricted Folder');
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+      // Create app with query
+      const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
+
+      // Create a custom group with restrictQueryRun=true
+      const groupRepo = defaultDataSource.getRepository(GroupPermissions);
+      const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+      const restrictedGroup = await groupRepo.save(
+        groupRepo.create({
+          organizationId: organization.id,
+          name: 'restricted-runners',
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          appCreate: false,
+          appDelete: false,
+          folderCRUD: false,
+          dataSourceFolderCRUD: false,
+          orgConstantCRUD: false,
+          dataSourceCreate: false,
+          dataSourceDelete: false,
+        })
+      );
+
+      // Add user to restricted group
+      await groupUsersRepo.save(
+        groupUsersRepo.create({ userId: user.id, groupId: restrictedGroup.id })
+      );
+
+      // Set up restrictQueryRun=true for the folder
+      await setupRestriction(restrictedGroup.id, folder.id, true);
+
+      // Try to run the query — should be blocked
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-queries/${query.id}/run`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ options: {}, resolvedOptions: {} });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow query run when restrictQueryRun is false', async () => {
+      const { user, organization, auth } = await setupAdminUser();
+
+      // Create DS, folder, and put DS in folder
+      const ds = await createGlobalDataSource(organization.id, 'Allowed DS');
+      const folder = await createDsFolder(organization.id, 'Allowed Folder');
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+      // Create app with query
+      const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
+
+      // Create a custom group with restrictQueryRun=false
+      const groupRepo = defaultDataSource.getRepository(GroupPermissions);
+      const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+      const allowedGroup = await groupRepo.save(
+        groupRepo.create({
+          organizationId: organization.id,
+          name: 'allowed-runners',
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          appCreate: false,
+          appDelete: false,
+          folderCRUD: false,
+          dataSourceFolderCRUD: false,
+          orgConstantCRUD: false,
+          dataSourceCreate: false,
+          dataSourceDelete: false,
+        })
+      );
+
+      await groupUsersRepo.save(
+        groupUsersRepo.create({ userId: user.id, groupId: allowedGroup.id })
+      );
+
+      // Set up restrictQueryRun=false for the folder
+      await setupRestriction(allowedGroup.id, folder.id, false);
+
+      // Try to run the query — should NOT be blocked (may fail with other errors but not 403)
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-queries/${query.id}/run`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ options: {}, resolvedOptions: {} });
+
+      // Should not be 403 — the restriction should not block
+      expect(response.statusCode).not.toBe(403);
+    });
+
+    it('should allow query run when DS is not in any folder', async () => {
+      const { user, organization, auth } = await setupAdminUser();
+
+      // Create DS NOT in any folder
+      const ds = await createGlobalDataSource(organization.id, 'Unfoldered DS');
+
+      // Create app with query
+      const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
+
+      // Try to run the query — should NOT be blocked
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-queries/${query.id}/run`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ options: {}, resolvedOptions: {} });
+
+      // Should not be 403 — no folder restriction applies
+      expect(response.statusCode).not.toBe(403);
     });
   });
 
