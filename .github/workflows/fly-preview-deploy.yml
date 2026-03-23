@@ -7,7 +7,7 @@ on:
 env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-  FLY_REGION: sjc  # US West (closest to Render's Oregon)
+  FLY_REGION: sjc
 
 permissions:
   pull-requests: write
