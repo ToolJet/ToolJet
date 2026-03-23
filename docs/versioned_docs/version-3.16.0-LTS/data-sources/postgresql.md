@@ -130,9 +130,6 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 | `inet_server_port()` | Returns the server port                                               | `5432`                                      |
 | `pg_backend_pid()`   | Returns the process ID of the current backend                         | `56789`                                     |
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ### PostgreSQL Dynamic Connection 
 
