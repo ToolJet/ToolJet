@@ -97,16 +97,11 @@ export function useCreateApp() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (body) => appsService.createApp(body),
+    mutationFn: ({ body }) => appsService.createApp(body),
     onError: (error) => {
-      // TODO: Required for apps page
-      // this.eraseAIOnboardingRelatedCookies();
-      // _self.setState({ showAIOnboardingLoadingScreen: false });
       handleError(error);
     },
     onSuccess: (response, variables) => {
-      console.log('create app', response, variables);
-
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
@@ -115,23 +110,18 @@ export function useCreateApp() {
         button_name: 'click_new_app_button',
       });
 
-      variables?.type === 'front-end' &&
+      variables?.body?.type === 'front-end' &&
         posthogHelper.captureEvent('app_created', {
-          entry_source: variables?.prompt ? 'prompt' : 'create_button',
-          prompt: variables?.prompt,
+          entry_source: variables.body.prompt ? 'prompt' : 'create_button',
+          prompt: variables.body.prompt,
         });
 
       navigate(`/${getWorkspaceId()}/apps/${response.id}`, {
-        // TODO: Pass actual commit Enabled value later on, for timebeing have passed as false
-        state: { commitEnabled: false, prompt: variables?.prompt },
+        state: { commitEnabled: variables?.isCommitEnabled ?? false, prompt: variables?.body?.prompt },
       });
 
-      // TODO: Required for apps page
-      // this.eraseAIOnboardingRelatedCookies();
-      // _self.setState({ showAIOnboardingLoadingScreen: false });
-
-      variables?.type !== 'front-end' &&
-        toast.success(`${appTypeToDisplayNameMapping[variables.type]} created successfully!`);
+      variables?.body?.type !== 'front-end' &&
+        toast.success(`${appTypeToDisplayNameMapping[variables.body.type]} created successfully!`);
     },
   });
 }

@@ -79,7 +79,10 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
       case 'create':
         // TODO: Icon to be random from tabler icons & prompt required for app case
         createNewApp(
-          { name: formattedAppName, type: appType, icon: 'share', prompt: undefined },
+          {
+            body: { name: formattedAppName, type: appType, icon: 'share', prompt: undefined },
+            isCommitEnabled: false, // TODO: This should not be hardcoded
+          },
           { onError: handle409Error, onSuccess: handleResetState }
         );
         break;

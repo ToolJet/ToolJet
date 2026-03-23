@@ -20,6 +20,7 @@ import MoreAppsActionMenu from '../shared/MoreAppsActionMenu';
 // TODO: Move these components to shared folder
 import WorkflowDialogs from '../Workflows/components/WorkflowDialogs';
 import CreateWorkflowBtn from '../Workflows/components/CreateWorkflowBtn';
+import BuildWithAIAssistant from './components/BuildWithAIAssistant';
 
 export default function Apps({ appType = 'front-end' }) {
   const navigate = useNavigate();
@@ -104,6 +105,8 @@ export default function Apps({ appType = 'front-end' }) {
                   label={t('homePage.header.createNewApplication', 'Create new app')}
                   disabled={isCreationDisabled}
                 />
+
+                <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
 
                 <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
               </div>
