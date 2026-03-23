@@ -46,6 +46,12 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="home-page-icon"]', { timeout: 20000 }).click();
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
+        cy.get('[data-cy="ui_url-constant-visibility"]').click();
+        cy.get('[data-cy="ui_url-workspace-constant-value"]').then(($value) => {
+            cy.get('[data-cy="ui_url-workspace-constant-value"]').should("contain", "130.131.160.149");
+            cy.log("UI URL:", $value.text());
+            console.log("UI URL:", $value.text());
+        });
 
  /*       // Show envconstant details
         cy.get('[data-cy="envconstant-constant-visibility"]').click();
@@ -93,6 +99,7 @@ describe("Workspace constants", () => {
         cy.wait(2000);
         cy.get('[data-cy="list-query-datasource_restapi_secret"]').should("exist").click();
         cy.get('[data-cy="query-preview-button"]').click();
+        cy.wait(10000);
         cy.get('[data-cy="query-runy-button"]').should("exist");
         //cy.get('[data-cy="query-manager-toggle-button"]').click();
 
@@ -190,3 +197,5 @@ describe("Workspace constants", () => {
         // );
     });
 });
+
+
