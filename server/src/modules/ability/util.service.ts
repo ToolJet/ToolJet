@@ -160,6 +160,8 @@ export class AbilityUtilService {
 
   async createUserAppsPermissions(
     appsGranularPermissions: GranularPermissions[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _foldersGranularPermissions: GranularPermissions[] | undefined,
     user: User,
     manager: EntityManager
   ): Promise<UserAppsPermissions> {

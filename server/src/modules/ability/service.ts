@@ -80,6 +80,7 @@ export class AbilityService extends IAbilityService {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
             appsGranularPermissions,
+            undefined,
             user,
             manager
           );

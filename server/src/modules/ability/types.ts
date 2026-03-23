@@ -62,3 +62,12 @@ export interface UserDataSourcePermissions {
   configurableDataSourceId: string[];
   isAllConfigurable: boolean;
 }
+
+export interface UserFolderPermissions {
+  editableFoldersId: string[];
+  isAllEditable: boolean;
+  viewableFoldersId: string[];
+  isAllViewable: boolean;
+  editAppsInFoldersId: string[];
+  isAllEditApps: boolean;
+}
