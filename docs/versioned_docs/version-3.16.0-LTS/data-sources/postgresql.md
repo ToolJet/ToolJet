@@ -28,7 +28,7 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **SSL Certificate**
 - **SSH Tunnelling**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgs-conn-v3.png" alt="PG connection data source"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-conn-ux-v5.png" alt="PG connection-manual"/>
 
 ### Connection String
 
