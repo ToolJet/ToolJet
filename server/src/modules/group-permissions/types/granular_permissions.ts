@@ -33,8 +33,6 @@ export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsOb
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
 }
 
-export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {}
-
 export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.WORKFLOWS>;
 }
@@ -97,10 +95,6 @@ export interface WorkflowsPermissionAddResourceItem extends BaseAppsPermissionAd
 interface BaseAppsGroupPermissionsActions {
   canEdit: boolean;
   canView: boolean;
-}
-
-interface BaseAppsPermissionAddResourceItem {
-  appId: string;
 }
 
 export interface DataSourcesPermissionResourceItem {

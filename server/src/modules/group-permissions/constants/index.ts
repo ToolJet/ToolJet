@@ -93,11 +93,6 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
-    [ResourceType.FOLDER]: {
-      canEditFolder: true,
-      canEditApps: false,
-      canViewApps: false,
-    },
     [ResourceType.DATA_SOURCE_FOLDER]: {
       action: {
         canEditFolder: true,
@@ -128,11 +123,6 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canAccessProduction: false,
       canAccessReleased: true,
     },
-    [ResourceType.FOLDER]: {
-      canEditFolder: false,
-      canEditApps: false,
-      canViewApps: true,
-    },
     [ResourceType.WORKFLOWS]: {
       canEdit: false,
       canView: true,
@@ -158,11 +148,6 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canConfigure: true,
         canUse: false,
       },
-    },
-    [ResourceType.FOLDER]: {
-      canEditFolder: true,
-      canEditApps: false,
-      canViewApps: false,
     },
     [ResourceType.DATA_SOURCE_FOLDER]: {
       action: {
