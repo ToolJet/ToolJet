@@ -89,8 +89,8 @@ export const BaseInput = ({
   const computedIconColor = shouldUsePlaceholderTextColorForIcon
     ? placeholderTextColor
     : iconColor !== '#CFD3D859'
-      ? iconColor
-      : 'var(--icons-weak-disabled)';
+    ? iconColor
+    : 'var(--icons-weak-disabled)';
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)

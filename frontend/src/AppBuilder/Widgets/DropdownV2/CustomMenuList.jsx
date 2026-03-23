@@ -21,7 +21,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     showSearchInput,
     menuBackgroundColor,
     menuWidthStyle,
-    placeholderTextColor, 
+    placeholderTextColor,
     iconColor,
   } = selectProps;
 
