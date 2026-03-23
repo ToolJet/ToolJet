@@ -226,6 +226,7 @@ import BooleanCol from './BooleanCol.jsx';
 import SerialCol from './SerialCol.jsx';
 import DatetimeCol from './DatetimeCol';
 import AITag from './AITag.jsx';
+import AITripleSparkles from './AITripleSparkles.jsx';
 import SectionCollapse from './SectionCollapse.jsx';
 import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
@@ -796,6 +797,8 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'ai-triple-sparkles':
+      return <AITripleSparkles {...props} />;
     case 'clearhistory':
       return <ClearHistory {...props} />;
     case 'pagedownload':
