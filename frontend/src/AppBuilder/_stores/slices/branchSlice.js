@@ -335,9 +335,6 @@ export const createBranchSlice = (set, get) => ({
 
       // If no version found, error
       if (!targetVersion) {
-        console.error('switchToDefaultBranch - no versions found!');
-        console.error('switchToDefaultBranch - developmentVersions:', developmentVersions);
-        console.error('switchToDefaultBranch - defaultBranchVersions:', defaultBranchVersions);
         throw new Error('No versions found for the default branch. Please create a version first.');
       }
 
