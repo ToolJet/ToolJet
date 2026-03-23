@@ -9,9 +9,11 @@ import { catchDbException } from '@helpers/utils.helper';
 import { DeleteResult, EntityManager, In } from 'typeorm';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { FolderDataSourcesUtilService } from './util.service';
 
 @Injectable()
 export class FolderDataSourcesService implements IFolderDataSourcesService {
+  constructor(protected folderDataSourcesUtilService: FolderDataSourcesUtilService) {}
   async createFolder(user, createDsFolderDto: CreateDsFolderDto) {
     const folderName = createDsFolderDto.name;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -155,5 +157,13 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
       const saved = await manager.save(folderDataSources);
       return decamelizeKeys(saved);
     });
+  }
+
+  async getFolders(user: any, searchKey?: string) {
+    return this.folderDataSourcesUtilService.allFoldersWithDsCount(user.organizationId, searchKey);
+  }
+
+  async getDataSourcesInFolder(user: any, folderId: string) {
+    return this.folderDataSourcesUtilService.getDataSourcesForFolder(folderId);
   }
 }
