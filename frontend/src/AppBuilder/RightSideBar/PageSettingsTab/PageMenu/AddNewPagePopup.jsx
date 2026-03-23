@@ -12,6 +12,7 @@ import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { appService } from '@/_services';
 import { ToolTip } from '@/_components';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
@@ -94,6 +95,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.showOnMobile,
     shallow
   );
+  const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
 
   const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
@@ -394,12 +396,24 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               </div>
               <div className="section-header pb-2 pt-2">Page header</div>
               <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Show page header on desktop</label>
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show page header on desktop
+                  <LicenseTooltip
+                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageHeaderEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
                 <label className={`form-switch`}>
                   <input
                     className="form-check-input"
                     type="checkbox"
                     checked={showPageHeaderOnDesktop ?? false}
+                    disabled={!hasCanvasPageHeaderEnabled}
                     onChange={(e) => {
                       const checked = e.target.checked;
                       togglePageHeader(page?.id, checked, 'desktop');
@@ -408,12 +422,24 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 </label>
               </div>
               <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Show page header on mobile</label>
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show page header on mobile
+                  <LicenseTooltip
+                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageHeaderEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
                 <label className={`form-switch`}>
                   <input
                     className="form-check-input"
                     type="checkbox"
                     checked={showPageHeaderOnMobile ?? false}
+                    disabled={!hasCanvasPageHeaderEnabled}
                     onChange={(e) => {
                       const checked = e.target.checked;
                       togglePageHeader(page?.id, checked, 'mobile');
