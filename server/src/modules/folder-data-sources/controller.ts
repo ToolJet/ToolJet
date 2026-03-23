@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Delete, Param, Put, Get, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { AddDsToFolderDto, BulkMoveDsDto, CreateDsFolderDto, UpdateDsFolderDto } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
@@ -14,6 +14,13 @@ import { FeatureAbilityGuard } from './ability/guard';
 @Controller('data-source-folders')
 export class FolderDataSourcesController implements IFolderDataSourcesController {
   constructor(protected folderDataSourcesService: FolderDataSourcesService) {}
+
+  @InitFeature(FEATURE_KEY.GET_DS_FOLDERS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get()
+  async getFolders(@User() user, @Query('search') search?: string) {
+    return await this.folderDataSourcesService.getFolders(user, search);
+  }
 
   @InitFeature(FEATURE_KEY.CREATE_DS_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -34,6 +41,13 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
   @Delete(':id')
   async delete(@User() user, @Param('id') id) {
     return await this.folderDataSourcesService.deleteFolder(user, id);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_DS_IN_FOLDER)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get(':id/data-sources')
+  async getDataSourcesInFolder(@User() user, @Param('id') id) {
+    return await this.folderDataSourcesService.getDataSourcesInFolder(user, id);
   }
 
   @InitFeature(FEATURE_KEY.ADD_DS_TO_FOLDER)

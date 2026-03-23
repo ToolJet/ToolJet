@@ -580,4 +580,118 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).toBe(403);
     });
   });
+
+  describe('GET /api/data-source-folders', () => {
+    it('should require authentication', async () => {
+      await request(nestApp.getHttpServer()).get('/api/data-source-folders').expect(401);
+    });
+
+    it('should return empty array when no folders exist', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual([]);
+    });
+
+    it('should list folders alphabetically with DS counts', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      // Create folders out of alphabetical order
+      const folderB = await createDsFolder(organization.id, 'Beta');
+      const folderA = await createDsFolder(organization.id, 'Alpha');
+
+      // Add 2 DS to Alpha, 1 DS to Beta
+      const ds1 = await createGlobalDataSource(organization.id, 'DS One');
+      const ds2 = await createGlobalDataSource(organization.id, 'DS Two');
+      const ds3 = await createGlobalDataSource(organization.id, 'DS Three');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folderA.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folderA.id, dataSourceId: ds2.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folderB.id, dataSourceId: ds3.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(2);
+
+      // Verify alphabetical order
+      expect(response.body[0].name).toEqual('Alpha');
+      expect(response.body[1].name).toEqual('Beta');
+
+      // Verify DS counts
+      expect(response.body[0].count).toEqual(2);
+      expect(response.body[1].count).toEqual(1);
+    });
+
+    it('should filter folders by search query', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      await createDsFolder(organization.id, 'Finance');
+      await createDsFolder(organization.id, 'Marketing');
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders?search=Fin')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].name).toEqual('Finance');
+    });
+  });
+
+  describe('GET /api/data-source-folders/:folderId/data-sources', () => {
+    it('should require authentication', async () => {
+      await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders/some-folder-id/data-sources')
+        .expect(401);
+    });
+
+    it('should list data sources within a folder', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'My Folder');
+      const ds1 = await createGlobalDataSource(organization.id, 'DS One');
+      const ds2 = await createGlobalDataSource(organization.id, 'DS Two');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds2.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(2);
+
+      const returnedIds = response.body.map((ds: any) => ds.id);
+      expect(returnedIds).toContain(ds1.id);
+      expect(returnedIds).toContain(ds2.id);
+    });
+
+    it('should return empty array for folder with no data sources', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'Empty Folder');
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/data-source-folders/${folder.id}/data-sources`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual([]);
+    });
+  });
 });

@@ -10,5 +10,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.ADD_DS_TO_FOLDER]: {},
     [FEATURE_KEY.REMOVE_DS_FROM_FOLDER]: {},
     [FEATURE_KEY.BULK_MOVE_DS]: {},
+    [FEATURE_KEY.GET_DS_FOLDERS]: {},
+    [FEATURE_KEY.GET_DS_IN_FOLDER]: {},
   },
 };
