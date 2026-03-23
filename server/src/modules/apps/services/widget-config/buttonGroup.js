@@ -75,29 +75,6 @@ export const buttonGroupConfig = {
         defaultValue: false,
       },
     },
-    hoverBackgroundMode: {
-      type: 'switch',
-      displayName: 'Hover background',
-      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
-      options: [
-        { displayName: 'Auto', value: 'auto' },
-        { displayName: 'Manual', value: 'manual' },
-      ],
-      isFxNotRequired: true,
-    },
-    hoverBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: '',
-      showLabel: false,
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: false,
-      },
-      conditionallyRender: {
-        key: 'hoverBackgroundMode',
-        value: 'manual',
-      },
-    },
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text color',
@@ -105,25 +82,6 @@ export const buttonGroupConfig = {
         schema: { type: 'string' },
         defaultValue: false,
       },
-    },
-    textSize: {
-      type: 'numberInput',
-      displayName: 'Font size',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 14,
-      },
-    },
-    fontWeight: {
-      type: 'select',
-      displayName: 'Font Weight',
-      options: [
-        { name: 'normal', value: 'normal' },
-        { name: 'medium', value: 'medium' },
-        { name: 'bold', value: 'bold' },
-        { name: 'lighter', value: 'lighter' },
-        { name: 'bolder', value: 'bolder' },
-      ],
     },
     visibility: {
       type: 'toggle',
@@ -212,11 +170,7 @@ export const buttonGroupConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      hoverBackgroundMode: { value: 'auto' },
-      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       textColor: { value: 'var(--cc-primary-text)' },
-      textSize: { value: '{{14}}' },
-      fontWeight: { value: 'normal' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },

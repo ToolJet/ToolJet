@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import _ from 'lodash';
-import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const ButtonGroup = function Button({
   height,
@@ -20,11 +19,7 @@ export const ButtonGroup = function Button({
 
   const {
     backgroundColor,
-    hoverBackgroundMode,
-    hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
-    textSize = 14,
-    fontWeight,
     borderRadius,
     visibility,
     disabledState,
@@ -33,18 +28,10 @@ export const ButtonGroup = function Button({
     boxShadow,
     alignment,
   } = styles;
-  const normalizedTextSize = Number(textSize);
-  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
-  const computedLineHeight = computedFontSize * 1.42;
-  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
-  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
 
   const computedStyles = {
     backgroundColor,
     color: textColor,
-    fontWeight: computedFontWeight,
-    fontSize: `${computedFontSize}px`,
-    lineHeight: `${computedLineHeight}px`,
     borderRadius: `${borderRadius}px`,
     display: visibility ? '' : 'none',
   };
@@ -57,7 +44,6 @@ export const ButtonGroup = function Button({
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(values);
-  const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
@@ -168,43 +154,28 @@ export const ButtonGroup = function Button({
           </p>
         )}
         <div>
-          {data?.map((item, index) => {
-            const isSelected = defaultActive?.includes(values[index]);
-            const buttonBackgroundColor = isSelected ? selectedBackgroundColor : backgroundColor;
-            const buttonHoverBackgroundColor =
-              hoverBackgroundMode === 'manual'
-                ? hoverBackgroundColor || getModifiedColor(buttonBackgroundColor, 'hover')
-                : getModifiedColor(buttonBackgroundColor, 'hover');
-
-            return (
-              <button
-                data-cy={`${dataCy}-button-${index}`}
-                style={{
-                  ...computedStyles,
-                  backgroundColor: hoveredButtonIndex === index ? buttonHoverBackgroundColor : buttonBackgroundColor,
-                  color: isSelected ? selectedTextColor : textColor,
-                  transition: 'all .1s ease',
-                  boxShadow,
-                  ...(disabledState && disabledStyles),
-                }}
-                key={index}
-                disabled={disabledState}
-                className={'group-button overflow-hidden'}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  buttonClick(index);
-                }}
-                onMouseEnter={() => {
-                  setHoveredButtonIndex(index);
-                }}
-                onMouseLeave={() => {
-                  setHoveredButtonIndex(null);
-                }}
-              >
-                {item}
-              </button>
-            );
-          })}
+          {data?.map((item, index) => (
+            <button
+              data-cy={`${dataCy}-button-${index}`}
+              style={{
+                ...computedStyles,
+                backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
+                color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
+                transition: 'all .1s ease',
+                boxShadow,
+                ...(disabledState && disabledStyles),
+              }}
+              key={index}
+              disabled={disabledState}
+              className={'group-button overflow-hidden'}
+              onClick={(event) => {
+                event.stopPropagation();
+                buttonClick(index);
+              }}
+            >
+              {item}
+            </button>
+          ))}
         </div>
       </div>
     </div>
