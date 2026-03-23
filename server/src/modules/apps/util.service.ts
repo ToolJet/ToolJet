@@ -50,7 +50,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) { }
+  ) {}
   async create(
     name: string,
     user: User,
@@ -79,9 +79,27 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      //create default app version — v1 is the base version, does NOT get branchId
+      // Determine if we're on a non-default branch before creating the base version.
+      // Base version name is 'v1' only for the default branch (or no git sync).
+      // On any sub-branch it must be a UUID — user-visible version names only apply
+      // to default-branch versions; sub-branch versions are never shown in version manager.
+      let baseVersionName = 'v1';
+      let workspaceBranch: WorkspaceBranch | null = null;
+      if (branchId) {
+        workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+        if (workspaceBranch && !workspaceBranch.isDefault) {
+          baseVersionName = uuidv4();
+        }
+      }
+
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
-      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
+      const appVersion = await this.versionRepository.createOne(
+        baseVersionName,
+        app.id,
+        firstPriorityEnv.id,
+        null,
+        manager
+      );
 
       const defaultHomePage = await manager.save(
         manager.create(Page, {
@@ -155,12 +173,14 @@ export class AppsUtilService implements IAppsUtilService {
       // When created on a workspace branch, set co_relation_id and
       // optionally create a branch-type version for per-app branch switching.
       if (branchId) {
-        // Set co_relation_id early so it stays consistent for git push
-        await manager.update(App, { id: app.id }, { co_relation_id: app.id });
-        app.co_relation_id = app.id;
+        // co_relation_id must be a fresh UUID — never the same as app.id.
+        // It is used by git sync to identify the canonical app across branches.
+        const coRelationId = uuidv4();
+        await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
+        app.co_relation_id = coRelationId;
 
         try {
-          const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+          // workspaceBranch already fetched above for base version name decision
           if (workspaceBranch && !workspaceBranch.isDefault) {
             const branchVersion = await manager.save(
               AppVersion,
@@ -717,10 +737,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-            .distinct(true)
-            .getMany()
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
           : [];
       return modules;
     });
