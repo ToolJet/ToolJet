@@ -184,9 +184,7 @@ export default function AppCard({
             disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
               if (app?.current_version_id && canAccessReleased) {
-                window.open(
-                  urlJoin(getHostURL(), `/applications/${app.slug}`)
-                );
+                window.open(urlJoin(getHostURL(), `/applications/${app.slug}`));
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
               }
@@ -320,7 +318,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {/* {app?.app_versions?.[0]?.is_stub ? (
+            {isStub ? (
               <div>
                 <ToolTip message="Sync app from git">
                   <Link
@@ -341,42 +339,40 @@ export default function AppCard({
                   </Link>
                 </ToolTip>
               </div>
-            ) :  */}
-            {(canUpdate || appType === 'module') && (
-              <div>
-                <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
-                  <Link
-                    to={getPrivateRoute('editor', {
-                      slug: isValidSlug(app.slug) ? app.slug : app.id,
-                    })}
-                    onClick={() => {
-                      posthogHelper.captureEvent('click_edit_button_on_card', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                        app_id: app?.id,
-                        folder_id: currentFolder?.id,
-                      });
-                    }}
-                    reloadDocument={isStub}  
-                  >
-                    <button
-                      type="button"
-                      className="tj-primary-btn tj-text-xsm edit-button"
-                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
-                      data-cy="edit-button"
+            ) : (
+              (canUpdate || appType === 'module') && (
+                <div>
+                  <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                    <Link
+                      to={getPrivateRoute('editor', {
+                        slug: isValidSlug(app.slug) ? app.slug : app.id,
+                      })}
+                      onClick={() => {
+                        posthogHelper.captureEvent('click_edit_button_on_card', {
+                          workspace_id:
+                            authenticationService?.currentUserValue?.organization_id ||
+                            authenticationService?.currentSessionValue?.current_organization_id,
+                          app_id: app?.id,
+                          folder_id: currentFolder?.id,
+                        });
+                      }}
                     >
-                      <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
-                      &nbsp;{t('globals.edit', 'Edit')}
-                    </button>
-                  </Link>
-                </ToolTip>
-              </div>
-            // ) : null}
+                      <button
+                        type="button"
+                        className="tj-primary-btn tj-text-xsm edit-button"
+                        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                        data-cy="edit-button"
+                      >
+                        <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                        &nbsp;{t('globals.edit', 'Edit')}
+                      </button>
+                    </Link>
+                  </ToolTip>
+                </div>
+              )
             )}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
-            {/* {!app?.app_versions?.[0]?.is_stub && appType !== 'module' && LaunchButton} */}
-            {appType !== 'module' && LaunchButton}
+            {!isStub && appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>
