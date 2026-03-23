@@ -21,6 +21,7 @@ import './fileInput.scss';
 const { ClearIndicator } = components;
 export const CustomClearIndicator = (props) => {
   return (
+    // eslint-disable-next-line react/jsx-no-undef
     <ClearIndicator {...props}>
       <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </ClearIndicator>

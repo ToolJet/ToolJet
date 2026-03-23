@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const Google = (props) => {
   const { width = 24, height = 24, ...restProps } = props;
@@ -35,20 +35,10 @@ const Google = (props) => {
       </g>
       <defs>
         <clipPath id="clip0_139_4388">
-          <rect
-            width="24"
-            height="24"
-            fill="white"
-            transform="translate(8 8)"
-          />
+          <rect width="24" height="24" fill="white" transform="translate(8 8)" />
         </clipPath>
         <clipPath id="clip1_139_4388">
-          <rect
-            width="23.49"
-            height="24"
-            fill="white"
-            transform="translate(8.255 8)"
-          />
+          <rect width="23.49" height="24" fill="white" transform="translate(8.255 8)" />
         </clipPath>
       </defs>
     </svg>

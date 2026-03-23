@@ -43,12 +43,15 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           Preview settings
         </span>
         {editingVersion && appType !== 'module' && (
-          <Suspense fallback={
-            <div className="d-flex justify-content-center" style={{ width: '304px' }}>
-              <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
-                <Loader width={16} height={16} />
+          <Suspense
+            fallback={
+              <div className="d-flex justify-content-center" style={{ width: '304px' }}>
+                <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
+                  <Loader width={16} height={16} />
+                </div>
               </div>
-            </div>}>
+            }
+          >
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} />

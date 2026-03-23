@@ -4,14 +4,13 @@ import { Tooltip } from 'react-tooltip';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
-import { Button } from '@/components/ui/Button/Button';
+import { Button, Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { Monitor, Smartphone, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
-const HeaderActions = function HeaderActions ({ darkMode, showFullWidth, showPreviewBtn = true }) {
+const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
     canUndo,
@@ -60,8 +59,6 @@ const HeaderActions = function HeaderActions ({ darkMode, showFullWidth, showPre
         />
       )}
       {showPreviewBtn && (
-
-
         <Link
           title="Preview"
           to={appPreviewLink}
@@ -77,9 +74,8 @@ const HeaderActions = function HeaderActions ({ darkMode, showFullWidth, showPre
             variant="outline"
             leadingIcon="play"
             data-cy="editor-preview-button"
-            style={{ padding: "7px 12px" }}
+            style={{ padding: '7px 12px' }}
           >
-
             Preview
           </ButtonComponent>
         </Link>

@@ -24,7 +24,7 @@ export const Item = React.memo(
         parentRef = null,
         isDragActive = false,
         isFirstItem = false,
-        setShowModal = () => { },
+        setShowModal = () => {},
         cardDataAsObj = {},
         setLastSelectedCard,
         cardData,

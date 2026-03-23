@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { baseComponentProperties } from '../DefaultComponent';
 import Select from '@/_ui/Select';
-import useStore from '@/AppBuilder/_stores/store';
+// eslint-disable-next-line import/no-unresolved
 import flags from 'react-phone-number-input/flags';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';

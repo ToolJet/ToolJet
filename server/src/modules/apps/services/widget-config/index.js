@@ -78,6 +78,7 @@ import { jsonEditorConfig } from './jsonEditor';
 import { fileinputConfig } from './fileinput';
 import { navigationConfig } from './navigation';
 import { fileButtonConfig } from './fileButton';
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 const widgets = {
   buttonConfig,
@@ -136,7 +137,7 @@ const widgets = {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
   pdfConfig,
   stepsConfig,
   kanbanConfig,
@@ -160,6 +161,7 @@ const widgets = {
   jsonEditorConfig,
   navigationConfig,
   fileButtonConfig,
+  buttonGroupV2Config,
 };
 
 const universalProps = {

@@ -475,12 +475,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-              ? { valid: null, message: '' }
-              : validationMessages[key]
-                ? { valid: false, message: validationMessages[key] }
-                : isRequired
-                  ? { valid: true, message: '' }
-                  : { valid: null, message: '' };
+            ? { valid: null, message: '' }
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -557,6 +557,7 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        // eslint-disable-next-line no-case-declarations
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
           checked: isEnabled,
