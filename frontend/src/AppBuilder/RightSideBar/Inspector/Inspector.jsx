@@ -148,6 +148,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'TreeSelect',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
 ];
 
 export const Inspector = ({

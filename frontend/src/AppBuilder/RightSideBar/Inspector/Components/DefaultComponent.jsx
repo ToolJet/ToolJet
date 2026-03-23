@@ -54,6 +54,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'IFrame',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -83,6 +84,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
+  ColorPicker: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -198,6 +200,7 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'ColorPicker',
     ],
     Layout: [],
   };
