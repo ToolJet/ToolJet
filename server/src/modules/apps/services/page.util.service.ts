@@ -96,6 +96,12 @@ export class PageHelperService implements IPageHelperService {
       headerbackgroundColor: 'var(--cc-surface1-surface)',
       border: 'var(--cc-default-border)',
     };
+    page.pageFooter = {
+      showOnDesktop: false,
+      showOnMobile: false,
+      footerbackgroundColor: 'var(--cc-surface1-surface)',
+      border: 'var(--cc-default-border)',
+    };
     return page;
   }
 

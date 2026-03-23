@@ -42,7 +42,6 @@
     }
 
     &.canvas-footer-slot--edit {
-        &:hover,
         &.canvas-footer-slot--selected {
             .canvas-footer-tooltip {
                 display: flex !important;
@@ -142,10 +141,15 @@
     overflow: visible !important;
 }
 
-#main-editor-canvas.disable-moveable-line .canvas-header-slot + .canvas-wrapper {
-    position: relative;
-    z-index: 11;
-}
+// #main-editor-canvas.disable-moveable-line .canvas-header-slot + .canvas-wrapper {
+//     position: relative;
+//     z-index: 11;
+// }
+
+// #main-editor-canvas.disable-moveable-line .canvas-wrapper + .canvas-footer-slot {
+//     position: relative;
+//     z-index: 11;
+// }
 
 
 // This is required to maintain the height of the subcontainer when dragging a widget inside it

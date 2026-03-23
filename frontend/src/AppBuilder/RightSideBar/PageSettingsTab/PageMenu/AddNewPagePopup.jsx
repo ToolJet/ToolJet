@@ -97,6 +97,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   );
   const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
 
+  const hasCanvasPageFooterEnabled = useStore((state) => state.license?.featureAccess?.canvasPageFooterEnabled);
+
   const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
@@ -449,12 +451,24 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               </div>
               <div className="section-header pb-2 pt-2">Page footer</div>
               <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Show page footer on desktop</label>
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show page footer on desktop
+                  <LicenseTooltip
+                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageFooterEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
                 <label className={`form-switch`}>
                   <input
                     className="form-check-input"
                     type="checkbox"
                     checked={showPageFooterOnDesktop ?? false}
+                    disabled={!hasCanvasPageFooterEnabled}
                     onChange={(e) => {
                       const checked = e.target.checked;
                       togglePageFooter(page?.id, checked, 'desktop');
@@ -463,12 +477,24 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 </label>
               </div>
               <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Show page footer on mobile</label>
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show page footer on mobile
+                  <LicenseTooltip
+                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageFooterEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
                 <label className={`form-switch`}>
                   <input
                     className="form-check-input"
                     type="checkbox"
                     checked={showPageFooterOnMobile ?? false}
+                    disabled={!hasCanvasPageFooterEnabled}
                     onChange={(e) => {
                       const checked = e.target.checked;
                       togglePageFooter(page?.id, checked, 'mobile');

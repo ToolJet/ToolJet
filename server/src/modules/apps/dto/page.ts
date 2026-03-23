@@ -51,6 +51,9 @@ export class CreatePageDto {
   pageHeader: Record<string, any>;
 
   @IsOptional()
+  pageFooter: Record<string, any>;
+
+  @IsOptional()
   isPageGroup: boolean;
 
   @IsOptional()

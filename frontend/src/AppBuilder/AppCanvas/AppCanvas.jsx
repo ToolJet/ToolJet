@@ -257,6 +257,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         <MobileLayout
                           pageKey={pageKey}
                           showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
                           isMobileLayout={isMobileLayout}
                           currentMode={currentMode}
                           appType={appType}
@@ -274,6 +275,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           isModuleMode={isModuleMode}
                           isMobileLayout={isMobileLayout}
                           showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
                           position={position}
                           isPagesSidebarHidden={isPagesSidebarHidden}
                           appType={appType}

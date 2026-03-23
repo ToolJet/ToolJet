@@ -110,7 +110,7 @@ export const createInspectorSlice = (set, get) => ({
       .filter(([key]) => {
         const component = getComponentDefinition(key, moduleId);
         const parent = component?.component?.parent;
-        return !parent || parent === 'canvas-header';
+        return !parent || parent === 'canvas-header' || parent === 'canvas-footer';
       })
       .map(([key, name]) => {
         const component = getComponentDefinition(key, moduleId);

@@ -90,6 +90,9 @@ export class Page {
   @Column('jsonb', { name: 'page_header', nullable: true })
   pageHeader;
 
+  @Column('jsonb', { name: 'page_footer', nullable: true })
+  pageFooter;
+
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;
 

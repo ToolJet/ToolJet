@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 import { PAGE_CANVAS_HEADER_HEIGHT } from '../appCanvasConstants';
 import { PageCanvasHeader } from './PageCanvasHeader';
+import { PageCanvasFooter } from './PageCanvasFooter';
 import MobileNavigationHeader from '../../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
 import { CanvasContentTail } from './CanvasContentTail';
 
@@ -11,6 +12,7 @@ export const MobileLayout = ({
   //   mobileCanvasFrameRef,
   //   mobileNavSheetContainerRef,
   showCanvasHeader,
+  showCanvasFooter,
   isMobileLayout,
   currentMode,
   appType,
@@ -62,6 +64,7 @@ export const MobileLayout = ({
       <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
         {mainCanvasContainer}
       </CanvasContentTail>
+      <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
     </div>
   );
 };
