@@ -46,6 +46,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -64,7 +65,8 @@ export class AppsService implements IAppsService {
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly abilityService?: AbilityService,
+    protected readonly organizationGitRepository?: OrganizationGitSyncRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;

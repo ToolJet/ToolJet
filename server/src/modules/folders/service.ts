@@ -11,9 +11,14 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { FoldersUtilService } from './util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 @Injectable()
 export class FoldersService implements IFoldersService {
-  constructor(protected foldersUtilService: FoldersUtilService) {}
+  constructor(
+    protected foldersUtilService: FoldersUtilService,
+    // Optional: provided by EE subclass
+    protected abilityService?: AbilityService
+  ) {}
   async createFolder(user, createFolderDto: CreateFolderDto) {
     return this.foldersUtilService.createFolder(user, createFolderDto);
   }

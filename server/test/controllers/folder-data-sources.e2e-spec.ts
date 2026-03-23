@@ -488,6 +488,7 @@ describe('folder-data-sources controller', () => {
     it('should require authentication', async () => {
       await request(nestApp.getHttpServer())
         .put('/api/data-source-folders/some-folder-id/data-sources')
+        .send({ dataSourceIds: [] })
         .expect(401);
     });
 
