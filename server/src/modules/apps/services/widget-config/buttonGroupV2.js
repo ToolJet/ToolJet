@@ -331,6 +331,10 @@ export const buttonGroupV2Config = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
+    validation: {
+      mandatory: { value: '{{false}}' },
+      customRule: { value: null },
+    },
     properties: {
       label: { value: `Label` },
       advanced: { value: '{{false}}' },
