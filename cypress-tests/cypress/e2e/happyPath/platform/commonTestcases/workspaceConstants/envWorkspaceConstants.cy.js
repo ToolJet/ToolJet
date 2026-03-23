@@ -47,7 +47,13 @@ describe("Workspace constants", () => {
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
         cy.get('[data-cy="ui_url-constant-visibility"]').click();
+        cy.get('[data-cy="ui_url-workspace-constant-value"]')
+            .invoke('text')
+            .should((text) => {
+                expect(text, `UI URL is: ${text}`).to.contain('130.131.160.149');
+            });
         cy.get('[data-cy="ui_url-workspace-constant-value"]').then(($value) => {
+            cy.log("value:", $value.text());
             cy.get('[data-cy="ui_url-workspace-constant-value"]').should("contain", "130.131.160.149");
             cy.log("UI URL:", $value.text());
             console.log("UI URL:", $value.text());
