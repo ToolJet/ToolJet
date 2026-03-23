@@ -1,0 +1,1186 @@
+name: Fly.io Preview Deploy
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, closed, synchronize]
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+  FLY_REGION: sjc  # US West (closest to Render's Oregon)
+
+permissions:
+  pull-requests: write
+  issues: write
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECRETS REQUIRED (add to GitHub repo secrets):
+#   FLY_API_TOKEN       — from `fly tokens create deploy` or Fly dashboard
+#   FLY_ORG             — your Fly.io org slug (e.g. "tooljet")
+#   CUSTOM_GITHUB_TOKEN — same as before (for EE submodule clones)
+#   SMTP_USERNAME       — same as RENDER_SMTP_USERNAME
+#   SMTP_PASSWORD       — same as RENDER_SMTP_PASSWORD
+#   MARKETPLACE_BUCKET  — same as before
+#
+# VM SIZE: shared-cpu-2x, 4GB RAM ($0.0297/hr)
+# Auto-stops when idle → auto-starts on first request (pay only for review time)
+# ─────────────────────────────────────────────────────────────────────────────
+
+jobs:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMMUNITY EDITION (CE)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/ce-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ce-pr-${{ env.PR_NUMBER }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:80/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13/main \
+            --region ${{ env.FLY_REGION }} \
+            --autostop stop \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ce" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ce-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=80 \
+            --env "TOOLJET_HOST=https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}"
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting for $APP_URL to be healthy..."
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 CE Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ce-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ce-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ce-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if CE is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app');
+            core.setOutput('is_active', hasLabel);
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Authenticate Docker with Fly Registry
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Updated Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/ce-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/tooljet-ce-pr-${{ env.PR_NUMBER }}:${{ github.event.pull_request.head.sha }}
+          platforms: linux/amd64
+
+      - name: Update Machine with New Image
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          SHA="${{ github.event.pull_request.head.sha }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          fly machine update $MACHINE_ID \
+            --image registry.fly.io/$APP_NAME:$SHA \
+            --app $APP_NAME \
+            --yes
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 CE Review App Rebuilding\n\nNew commit \`${sha}\` pushed. Image updated.\n\n_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Suspend (manual stop to save cost)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Stop Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine stop $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine stopped"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ce-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Start Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine start $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine started — https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ce:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ce-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
+            fly apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['destroy-ce-review-app', 'suspend-ce-review-app', 'active-ce-review-app'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - LTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee-lts:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:80/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13/main \
+            --region ${{ env.FLY_REGION }} \
+            --autostop stop \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ee-lts" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ee-lts-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-lts-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=80 \
+            --env "TOOLJET_HOST=https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env REDIS_HOST=localhost \
+            --env REDIS_PORT=6379 \
+            --env REDIS_DB=0 \
+            --env REDIS_TLS_ENABLED=false \
+            --env REDIS_PASSWORD= \
+            --env WORKER=true \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting for $APP_URL to be healthy..."
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE LTS Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-lts-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ee-lts-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-lts-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ee-lts:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE LTS is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ee-lts-review-app');
+            core.setOutput('is_active', hasLabel);
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Authenticate Docker with Fly Registry
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Updated Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/tooljet-ee-lts-pr-${{ env.PR_NUMBER }}:${{ github.event.pull_request.head.sha }}
+          platforms: linux/amd64
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Update Machine with New Image
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          SHA="${{ github.event.pull_request.head.sha }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          fly machine update $MACHINE_ID \
+            --image registry.fly.io/$APP_NAME:$SHA \
+            --app $APP_NAME \
+            --yes
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 EE LTS Review App Rebuilding\n\nNew commit \`${sha}\` pushed. Image updated.\n\n_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ee-lts:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Stop Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine stop $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine stopped"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-lts-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ee-lts:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Start Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine start $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine started — https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-lts-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ee-lts:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-lts-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
+            fly apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['destroy-ee-lts-review-app', 'suspend-ee-lts-review-app', 'active-ee-lts-review-app'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - PRE-RELEASE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
+          # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          fly apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          fly machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:80/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13/main \
+            --region ${{ env.FLY_REGION }} \
+            --autostop stop \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ee-pre-release" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ee-pre-release-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-pre-release-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=80 \
+            --env "TOOLJET_HOST=https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env REDIS_HOST=localhost \
+            --env REDIS_PORT=6379 \
+            --env REDIS_DB=0 \
+            --env REDIS_TLS_ENABLED=false \
+            --env REDIS_PASSWORD= \
+            --env WORKER=true \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting for $APP_URL to be healthy..."
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE Pre-release Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-pre-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-pre-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ee-pre-release-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-pre-release-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE Pre-release is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ee-pre-release-review-app');
+            core.setOutput('is_active', hasLabel);
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Authenticate Docker with Fly Registry
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl auth docker
+
+      - name: Build and Push Updated Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/tooljet-ee-pre-pr-${{ env.PR_NUMBER }}:${{ github.event.pull_request.head.sha }}
+          platforms: linux/amd64
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Update Machine with New Image
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          SHA="${{ github.event.pull_request.head.sha }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          fly machine update $MACHINE_ID \
+            --image registry.fly.io/$APP_NAME:$SHA \
+            --app $APP_NAME \
+            --yes
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 EE Pre-release Review App Rebuilding\n\nNew commit \`${sha}\` pushed. Image updated.\n\n_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Stop Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine stop $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine stopped"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-pre-release-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Start Fly Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          MACHINE_ID=$(fly machine list --app $APP_NAME --json | jq -r '.[0].id')
+          if [ -z "$MACHINE_ID" ] || [ "$MACHINE_ID" = "null" ]; then
+            echo "❌ Machine not found"
+            exit 1
+          fi
+          fly machine start $MACHINE_ID --app $APP_NAME
+          echo "✅ Machine started — https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-pre-release-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ee-pre-release:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ee-pre-release-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          if fly apps show $APP_NAME --json > /dev/null 2>&1; then
+            fly apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['destroy-ee-pre-release-review-app', 'suspend-ee-pre-release-review-app', 'active-ee-pre-release-review-app'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
