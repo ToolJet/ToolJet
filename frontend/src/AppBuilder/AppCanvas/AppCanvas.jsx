@@ -111,8 +111,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -232,10 +232,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         deferCheck={isModuleMode || appType === 'module'}
                       >
                         <div key={pageKey} className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
-                          {pageLoader || (currentMode === 'view' && appType !== 'module') && (
-                            <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
-                          )}
-                          {!pageLoader &&
+                          {pageLoader ||
+                            (currentMode === 'view' && appType !== 'module' && (
+                              <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
+                            ))}
+                          {!pageLoader && (
                             <Container
                               id={moduleId}
                               gridWidth={gridWidth}
@@ -248,13 +249,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                               pagePositionType={position}
                               appType={appType}
                             />
-                          }
+                          )}
                           {currentMode === 'edit' && (
                             <>
                               <DragResizeGhostWidget />
                             </>
                           )}
-                          <div id="component-portal" />
                           {appType !== 'module' && <div id="component-portal" />}
                         </div>
                       </SuspenseCountProvider>

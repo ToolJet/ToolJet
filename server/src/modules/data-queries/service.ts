@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
 import { decamelizeKeys } from 'humps';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from './dto';
+import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -308,11 +308,11 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
+    async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
-    } catch (error) {
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, listTablesOptions);   
+     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',

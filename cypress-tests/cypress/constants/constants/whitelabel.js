@@ -13,7 +13,7 @@ export const emailVerificationConfig = {
 
 export const smtpConfig = {
   smtpEnabled: true,
-  host: "20.29.40.108",
+  host: "130.131.160.149",
   port: "1025",
   user: "user",
   password: "user",
