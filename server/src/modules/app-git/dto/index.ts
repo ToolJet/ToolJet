@@ -86,6 +86,14 @@ export class AppGitPullDto {
   @IsString()
   @IsOptional()
   commitHash?: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
+
+  @IsString()
+  @IsOptional()
+  workspaceBranchId?: string;
 }
 
 export class AppGitPullUpdateDto {

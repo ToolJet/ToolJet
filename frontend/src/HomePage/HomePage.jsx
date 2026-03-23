@@ -890,7 +890,7 @@ class HomePageComponent extends React.Component {
   };
 
   importGitApp = () => {
-    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName, selectedVersionOption, tags } = this.state;
+    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName, selectedVersionOption, tags, selectedImportBranch } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
     const {
       git_app_name,
@@ -925,6 +925,7 @@ class HomePageComponent extends React.Component {
     }
 
     this.setState({ importingApp: true });
+    const currentWorkspaceBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
     const body = {
       gitAppId: selectedAppRepo,
       gitAppName: git_app_name,
@@ -933,6 +934,8 @@ class HomePageComponent extends React.Component {
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
+      ...(selectedImportBranch && { gitBranchName: selectedImportBranch }),
+      ...(currentWorkspaceBranchId && { workspaceBranchId: currentWorkspaceBranchId }),
       ...(commitHash && { commitHash, appCoRelationId: app_co_relation_id }),
       ...(commitMessage && { lastCommitMessage: commitMessage }),
       ...(commitUser && { lastCommitUser: commitUser }),

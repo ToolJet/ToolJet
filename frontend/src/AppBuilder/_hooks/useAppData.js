@@ -303,7 +303,7 @@ const useAppData = (
           }
         }
 
-        if (mode === 'edit') {
+        if (mode === 'edit' && editorEnvironment?.id) {
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
@@ -549,8 +549,8 @@ const useAppData = (
         };
       })
       .catch((error) => {
+        setEditorLoading(false, moduleId);
         if (moduleMode) {
-          setEditorLoading(false, moduleId);
           toast.error('Error fetching module data');
         }
       });

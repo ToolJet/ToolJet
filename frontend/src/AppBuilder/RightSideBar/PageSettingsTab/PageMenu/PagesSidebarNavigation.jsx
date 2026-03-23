@@ -326,21 +326,21 @@ export const PagesSidebarNavigation = ({
   }
 
   const computedStyles = {
-    '--nav-item-label-color': !styles.textColor.isDefault ? styles.textColor.value : 'var(--text-placeholder, #6A727C)',
-    '--nav-item-icon-color': !styles.iconColor.isDefault ? styles.iconColor.value : 'var(--cc-default-icon, #6A727C)',
-    '--selected-nav-item-label-color': !styles.selectedTextColor.isDefault
-      ? styles.selectedTextColor.value
+    '--nav-item-label-color': !styles.textColor?.isDefault ? styles.textColor?.value : 'var(--text-placeholder, #6A727C)',
+    '--nav-item-icon-color': !styles.iconColor?.isDefault ? styles.iconColor?.value : 'var(--cc-default-icon, #6A727C)',
+    '--selected-nav-item-label-color': !styles.selectedTextColor?.isDefault
+      ? styles.selectedTextColor?.value
       : 'var(--cc-primary-text, #1B1F24)',
-    '--selected-nav-item-icon-color': !styles.selectedIconColor.isDefault
-      ? styles.selectedIconColor.value
+    '--selected-nav-item-icon-color': !styles.selectedIconColor?.isDefault
+      ? styles.selectedIconColor?.value
       : 'var(--cc-default-icon, #6A727C)',
-    '--hovered-nav-item-pill-bg': !styles.pillHoverBackgroundColor.isDefault
-      ? styles.pillHoverBackgroundColor.value
+    '--hovered-nav-item-pill-bg': !styles.pillHoverBackgroundColor?.isDefault
+      ? styles.pillHoverBackgroundColor?.value
       : 'var(--cc-surface2-surface, #F6F8FA)',
-    '--selected-nav-item-pill-bg': !styles.pillSelectedBackgroundColor.isDefault
-      ? styles.pillSelectedBackgroundColor.value
+    '--selected-nav-item-pill-bg': !styles.pillSelectedBackgroundColor?.isDefault
+      ? styles.pillSelectedBackgroundColor?.value
       : 'var(--cc-appBackground-surface, #F6F6F6)',
-    '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
+    '--nav-item-pill-radius': `${styles.pillRadius?.value}px`,
   };
 
   const handleSidebarClick = (e) => {
