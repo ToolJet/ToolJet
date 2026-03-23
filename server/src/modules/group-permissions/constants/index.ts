@@ -18,6 +18,7 @@ export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
+  DATA_SOURCE_FOLDER = 'data_source_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -88,6 +89,14 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
+      action: {
+        canEditFolder: true,
+        canConfigureDs: true,
+        canUseDs: true,
+        restrictQueryRun: false,
+      },
+    },
     [ResourceType.WORKFLOWS]: {
       canEdit: true,
       canView: false,
@@ -124,6 +133,14 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
+      action: {
+        canEditFolder: true,
+        canConfigureDs: true,
+        canUseDs: true,
+        restrictQueryRun: false,
+      },
+    },
     [ResourceType.WORKFLOWS]: {
       canEdit: true,
       canView: false,
@@ -151,5 +168,9 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_DATA_PERMISSIONS = 'update_granular_data_permissions',
   DELETE_GRANULAR_APP_PERMISSIONS = 'delete_granular_app_permissions',
   DELETE_GRANULAR_DATA_PERMISSIONS = 'delete_granular_data_permissions',
+  CREATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'create_granular_ds_folder_permissions',
+  UPDATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'update_granular_ds_folder_permissions',
+  DELETE_GRANULAR_DS_FOLDER_PERMISSIONS = 'delete_granular_ds_folder_permissions',
+  GET_ADDABLE_DS_FOLDERS = 'get_addable_ds_folders',
   USER_ROLE_CHANGE = 'change_user_role',
 }
