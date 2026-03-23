@@ -54,6 +54,7 @@ export default class LicenseBase {
   private _isGithub: boolean;
   private _isObservability: object;
   private _isSelfhostAI: boolean;
+  private _isByok: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -82,6 +83,7 @@ export default class LicenseBase {
       this._isMultiEnvironment = true;
       this._isAi = true;
       this._isSelfhostAI = false;
+      this._isByok = false;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -146,6 +148,7 @@ export default class LicenseBase {
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
     this._isSelfhostAI = this.getFeatureValue('selfhostAI');
+    this._isByok = this.getFeatureValue('byok');
   }
 
   private getFeatureValue(key: string) {
@@ -153,6 +156,9 @@ export default class LicenseBase {
       return false;
     }
     if (key === 'selfhostAI' && this._features[key] === undefined) {
+      return false;
+    }
+    if (key === 'byok' && this._features[key] === undefined) {
       return false;
     }
     if (this._isFlexiblePlan && !this._features[key]) {
@@ -519,6 +525,13 @@ export default class LicenseBase {
     return this._isSelfhostAI;
   }
 
+  public get byok(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.byok;
+    }
+    return this._isByok;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -546,6 +559,7 @@ export default class LicenseBase {
       comments: this.comments,
       ai: this.aiFeature,
       selfhostAI: this.selfhostAI,
+      byok: this.byok,
       appWhiteLabelling: this.appWhiteLabelling,
       modulesEnabled: this.moduleEnabled,
       customGroups: this.customGroups,

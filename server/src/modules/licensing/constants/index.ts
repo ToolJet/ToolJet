@@ -122,6 +122,7 @@ export enum LICENSE_FIELD {
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   SELFHOST_AI = 'selfhostAIEnabled',
+  BYOK = 'byokEnabled',
   EXTERNAL_API = 'externalApiEnabled',
   APP_HISTORY = 'appHistoryEnabled',
   SCIM = 'scimEnabled',
