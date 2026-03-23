@@ -73,6 +73,15 @@ export const listviewConfig = {
         value: 'rawJson',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -211,6 +220,7 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
       showBorder: { value: '{{true}}' },

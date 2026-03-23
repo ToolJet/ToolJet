@@ -11,6 +11,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
+import Spinner from '@/_ui/Spinner';
 
 export const Listview = function Listview({
   id,
@@ -53,6 +54,7 @@ export const Listview = function Listview({
     columns = 1,
     dataSourceSelector,
     dynamicHeight,
+    loadingState = false,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
@@ -165,65 +167,73 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`)}
+      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+        'jet-container-loading': loadingState,
+      })}
       id={id}
       ref={parentRef}
       style={computedStyles}
     >
-      <div
-        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
-          isDynamicHeightEnabled ? 'flex-grow-1' : ''
-        }`}
-      >
-        {filteredData.map((listItem, index) => (
-          <ListviewSubcontainer
-            key={index}
-            id={id}
-            index={index}
-            mode={mode}
-            rowHeight={rowHeight}
-            positiveColumns={positiveColumns}
-            showBorder={showBorder}
-            onRecordOrRowClicked={onRecordOrRowClicked}
-            computeCanvasBackgroundColor={computeCanvasBackgroundColor}
-            darkMode={darkMode}
-            width={width}
-            isDynamicHeightEnabled={isDynamicHeightEnabled}
-            adjustComponentPositions={adjustComponentPositions}
-            data={data}
-            currentLayout={currentLayout}
-            visibility={visibility}
-            parentHeight={height}
-            dataCy={dataCy}
-            componentType={componentType}
-          />
-        ))}
-      </div>
-      {enablePagination && _.isArray(data) && (
-        <div
-          className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
-          style={{
-            border: '1px solid',
-            borderColor,
-            margin: '1px',
-            borderTop: 0,
-            ...(isDynamicHeightEnabled ? {} : { left: '1px', right: '1px' }),
-          }}
-        >
-          <div style={{ backgroundColor }}>
-            {data?.length > 0 ? (
-              <Pagination
+      {loadingState ? (
+        <Spinner />
+      ) : (
+        <>
+          <div
+            className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
+              isDynamicHeightEnabled ? 'flex-grow-1' : ''
+            }`}
+          >
+            {filteredData.map((listItem, index) => (
+              <ListviewSubcontainer
+                key={index}
+                id={id}
+                index={index}
+                mode={mode}
+                rowHeight={rowHeight}
+                positiveColumns={positiveColumns}
+                showBorder={showBorder}
+                onRecordOrRowClicked={onRecordOrRowClicked}
+                computeCanvasBackgroundColor={computeCanvasBackgroundColor}
                 darkMode={darkMode}
-                currentPage={currentPage}
-                pageChanged={pageChanged}
-                count={data?.length}
-                itemsPerPage={rowPerPageValue}
+                width={width}
+                isDynamicHeightEnabled={isDynamicHeightEnabled}
+                adjustComponentPositions={adjustComponentPositions}
+                data={data}
+                currentLayout={currentLayout}
+                visibility={visibility}
+                parentHeight={height}
+                dataCy={dataCy}
+                componentType={componentType}
               />
-            ) : (
-              <div style={{ height: '61px' }}></div>
-            )}
+            ))}
           </div>
-        </div>
+          {enablePagination && _.isArray(data) && (
+            <div
+              className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
+              style={{
+                border: '1px solid',
+                borderColor,
+                margin: '1px',
+                borderTop: 0,
+                ...(isDynamicHeightEnabled ? {} : { left: '1px', right: '1px' }),
+              }}
+            >
+              <div style={{ backgroundColor }}>
+                {data?.length > 0 ? (
+                  <Pagination
+                    darkMode={darkMode}
+                    currentPage={currentPage}
+                    pageChanged={pageChanged}
+                    count={data?.length}
+                    itemsPerPage={rowPerPageValue}
+                  />
+                ) : (
+                  <div style={{ height: '61px' }}></div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
