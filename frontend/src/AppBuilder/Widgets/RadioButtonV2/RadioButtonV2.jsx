@@ -22,7 +22,7 @@ export const RadioButtonV2 = ({
   validation,
   id,
   subContainerIndex,
-  dataCy
+  dataCy,
 }) => {
   const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
@@ -197,8 +197,8 @@ export const RadioButtonV2 = ({
         data-disabled={isDisabled}
         className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) ||
-              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : '']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -250,8 +250,9 @@ export const RadioButtonV2 = ({
             <div className="">
               {selectOptions.map((option, index) => {
                 const isChecked = checkedValue == option.value;
-                const inputId = `${id}${subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-                  }-option-${index}`;
+                const inputId = `${id}${
+                  subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
+                }-option-${index}`;
 
                 return (
                   <label key={index} className="radio-button-container" htmlFor={inputId}>
@@ -262,8 +263,8 @@ export const RadioButtonV2 = ({
                           optionsTextColor !== '#1B1F24'
                             ? optionsTextColor
                             : isDisabled || isLoading
-                              ? 'var(--text-disabled)'
-                              : 'var(--text-primary)',
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
                       }}
                     >
                       {String(option.label)}

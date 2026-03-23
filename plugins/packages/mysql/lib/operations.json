@@ -85,6 +85,8 @@
             "invokeMethod": "getTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "lineNumbers": false,
           "description": "Select a table from the dropdown",
           "width": "320px",
