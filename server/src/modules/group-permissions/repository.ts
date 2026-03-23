@@ -120,6 +120,11 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               dataSource: true,
             },
           },
+          foldersGroupPermissions: {
+            groupFolders: {
+              folder: true,
+            },
+          },
           dsFoldersGroupPermission: {
             groupDsFolders: {
               folder: true,
@@ -177,6 +182,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           group: true,
           appsGroupPermissions: true,
           dataSourcesGroupPermission: true,
+          foldersGroupPermissions: true,
           dsFoldersGroupPermission: true,
         },
       });

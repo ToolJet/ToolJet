@@ -18,6 +18,7 @@ export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
+  FOLDER = 'folder',
   DATA_SOURCE_FOLDER = 'data_source_folder',
 }
 
@@ -89,6 +90,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
+    [ResourceType.FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
     [ResourceType.DATA_SOURCE_FOLDER]: {
       action: {
         canEditFolder: true,
@@ -112,6 +118,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canAccessProduction: false,
       canAccessReleased: true,
     },
+    [ResourceType.FOLDER]: {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
+    },
     [ResourceType.WORKFLOWS]: {
       canEdit: false,
       canView: true,
@@ -132,6 +143,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canConfigure: true,
         canUse: false,
       },
+    },
+    [ResourceType.FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
     },
     [ResourceType.DATA_SOURCE_FOLDER]: {
       action: {
@@ -168,6 +184,10 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_DATA_PERMISSIONS = 'update_granular_data_permissions',
   DELETE_GRANULAR_APP_PERMISSIONS = 'delete_granular_app_permissions',
   DELETE_GRANULAR_DATA_PERMISSIONS = 'delete_granular_data_permissions',
+  CREATE_GRANULAR_FOLDER_PERMISSIONS = 'create_granular_folder_permissions',
+  UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
+  DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
+  GET_ADDABLE_FOLDERS = 'get_addable_folders',
   CREATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'create_granular_ds_folder_permissions',
   UPDATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'update_granular_ds_folder_permissions',
   DELETE_GRANULAR_DS_FOLDER_PERMISSIONS = 'delete_granular_ds_folder_permissions',

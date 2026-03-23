@@ -12,6 +12,7 @@ type CreateResourcePermissionMap = {
   [ResourceType.APP]: CreateAppsPermissionsObject;
   [ResourceType.DATA_SOURCE]: CreateDataSourcePermissionsObject;
   [ResourceType.WORKFLOWS]: CreateWorkflowPermissionsObject;
+  [ResourceType.FOLDER]: CreateFolderPermissionsObject;
   [ResourceType.DATA_SOURCE_FOLDER]: CreateDsFolderPermissionsObject;
 };
 
@@ -43,6 +44,19 @@ export interface CreateDataSourcePermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.DATA_SOURCE>;
 }
 
+export interface CreateFolderPermissionsObject {
+  canEditFolder?: boolean;
+  canEditApps?: boolean;
+  canViewApps?: boolean;
+  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
+}
+
+export interface FoldersGroupPermissionsActions {
+  canEditFolder?: boolean;
+  canEditApps?: boolean;
+  canViewApps?: boolean;
+}
+
 export interface CreateDsFolderPermissionsObject {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
@@ -72,6 +86,7 @@ type ResourceToPermissionItemMap = {
   [ResourceType.APP]: AppsPermissionAddResourceItem[];
   [ResourceType.DATA_SOURCE]: DataSourcesPermissionResourceItem[];
   [ResourceType.WORKFLOWS]: WorkflowsPermissionAddResourceItem[];
+  [ResourceType.FOLDER]: FoldersPermissionResourceItem[];
   [ResourceType.DATA_SOURCE_FOLDER]: DsFoldersPermissionResourceItem[];
 };
 
@@ -96,6 +111,10 @@ interface BaseAppsPermissionAddResourceItem {
 
 export interface DataSourcesPermissionResourceItem {
   dataSourceId: string;
+}
+
+export interface FoldersPermissionResourceItem {
+  folderId: string;
 }
 
 export interface DsFoldersPermissionResourceItem {
@@ -130,7 +149,7 @@ export interface UpdateGranularPermissionObject {
 }
 
 export interface UpdateResourceGroupPermissionsObject<
-  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS | ResourceType.DATA_SOURCE_FOLDER,
+  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS | ResourceType.FOLDER | ResourceType.DATA_SOURCE_FOLDER,
 > {
   group: GroupPermissions;
   granularPermissions: GranularPermissions;
@@ -150,6 +169,7 @@ type ResourceActionMap = {
   [ResourceType.APP]: AppsGroupPermissionsActions;
   [ResourceType.DATA_SOURCE]: DataSourcesGroupPermissionsActions;
   [ResourceType.WORKFLOWS]: WorkflowsGroupPermissionsActions;
+  [ResourceType.FOLDER]: FoldersGroupPermissionsActions;
   [ResourceType.DATA_SOURCE_FOLDER]: DsFoldersGroupPermissionsActions;
 };
 
