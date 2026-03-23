@@ -7,5 +7,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_DS_FOLDER]: {},
     [FEATURE_KEY.UPDATE_DS_FOLDER]: {},
     [FEATURE_KEY.DELETE_DS_FOLDER]: {},
+    [FEATURE_KEY.ADD_DS_TO_FOLDER]: {},
+    [FEATURE_KEY.REMOVE_DS_FROM_FOLDER]: {},
+    [FEATURE_KEY.BULK_MOVE_DS]: {},
   },
 };
