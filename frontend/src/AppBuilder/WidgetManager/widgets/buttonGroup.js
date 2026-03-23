@@ -1,6 +1,6 @@
 export const buttonGroupConfig = {
-  name: 'ButtonGroup',
-  displayName: 'Button Group',
+  name: 'ButtonGroupLegacy',
+  displayName: 'Button Group (Legacy)',
   description: 'Group of buttons',
   component: 'ButtonGroup',
   properties: {

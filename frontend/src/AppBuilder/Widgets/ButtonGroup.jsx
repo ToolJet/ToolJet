@@ -61,6 +61,8 @@ export const ButtonGroup = function Button({
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
+    const filteredItems = defaultSelected.filter((item) => values.includes(item));
+    setExposedVariable('selected', filteredItems);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(defaultSelected)]);
 
