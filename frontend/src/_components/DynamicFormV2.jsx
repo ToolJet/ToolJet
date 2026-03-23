@@ -422,6 +422,8 @@ const DynamicFormV2 = ({
     const isFieldDisabledByBranchLock = isWorkspaceBranchLocked && !isEncrypted;
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText ? 'Encrypted values are not pushed to git and are updated directly in Tooljet': helpText;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -455,7 +457,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -501,7 +503,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
