@@ -79,148 +79,175 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      // Determine if we're on a non-default branch before creating the base version.
-      // Base version name is 'v1' only for the default branch (or no git sync).
-      // On any sub-branch it must be a UUID — user-visible version names only apply
-      // to default-branch versions; sub-branch versions are never shown in version manager.
-      let baseVersionName = 'v1';
+      const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
+
+      // Resolve workspace branch once — used for both version creation and co_relation_id.
       let workspaceBranch: WorkspaceBranch | null = null;
       if (branchId) {
         workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
-        if (workspaceBranch && !workspaceBranch.isDefault) {
-          baseVersionName = uuidv4();
+      }
+      const isNonDefaultBranch = !!(branchId && workspaceBranch && !workspaceBranch.isDefault);
+
+      if (isNonDefaultBranch) {
+        // Non-default workspace branch: create ONLY the branch-specific version.
+        // No base version (branch_id=NULL) should exist for sub-branch apps —
+        // it would incorrectly appear in the default branch's version dropdown.
+        // The default branch gets its version via git pull/hydration.
+        const defaultSettings = {
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: 'var(--cc-appBackground-surface)',
+          backgroundFxQuery: '',
+          appMode: 'light',
+        };
+        const branchVersion = await manager.save(
+          AppVersion,
+          manager.create(AppVersion, {
+            name: uuidv4(),
+            appId: app.id,
+            definition: {},
+            currentEnvironmentId: firstPriorityEnv.id,
+            status: AppVersionStatus.DRAFT,
+            versionType: AppVersionType.BRANCH,
+            branchId: branchId,
+            showViewerNavigation: type === 'module' ? false : true,
+            globalSettings: defaultSettings,
+            pageSettings: {},
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+
+        const branchHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: branchVersion.id,
+            index: 1,
+            autoComputeLayout: true,
+            appId: app.id,
+          })
+        );
+
+        if (type === 'module') {
+          const moduleContainer = await manager.save(
+            manager.create(Component, {
+              name: 'ModuleContainer',
+              type: 'ModuleContainer',
+              pageId: branchHomePage.id,
+              properties: {
+                inputItems: { value: [] },
+                outputItems: { value: [] },
+                visibility: { value: '{{true}}' },
+              },
+              styles: { backgroundColor: { value: '#fff' } },
+              displayPreferences: {
+                showOnDesktop: { value: '{{true}}' },
+                showOnMobile: { value: '{{true}}' },
+              },
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'desktop',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'mobile',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
         }
+
+        branchVersion.homePageId = branchHomePage.id;
+        await manager.save(branchVersion);
+      } else {
+        // Default branch or no git sync: standard creation flow.
+        // Base version gets 'v1' — user-visible, renameable via version manager.
+        const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
+
+        const defaultHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: appVersion.id,
+            index: 1,
+            autoComputeLayout: true,
+            appId: app.id,
+          })
+        );
+
+        if (type === 'module') {
+          const moduleContainer = await manager.save(
+            manager.create(Component, {
+              name: 'ModuleContainer',
+              type: 'ModuleContainer',
+              pageId: defaultHomePage.id,
+              properties: {
+                inputItems: { value: [] },
+                outputItems: { value: [] },
+                visibility: { value: '{{true}}' },
+              },
+              styles: { backgroundColor: { value: '#fff' } },
+              displayPreferences: {
+                showOnDesktop: { value: '{{true}}' },
+                showOnMobile: { value: '{{true}}' },
+              },
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'desktop',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'mobile',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+        }
+
+        appVersion.showViewerNavigation = type === 'module' ? false : true;
+        appVersion.homePageId = defaultHomePage.id;
+        appVersion.globalSettings = {
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: 'var(--cc-appBackground-surface)',
+          backgroundFxQuery: '',
+          appMode: 'light',
+        };
+        await manager.save(appVersion);
       }
 
-      const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
-      const appVersion = await this.versionRepository.createOne(
-        baseVersionName,
-        app.id,
-        firstPriorityEnv.id,
-        null,
-        manager
-      );
-
-      const defaultHomePage = await manager.save(
-        manager.create(Page, {
-          name: 'Home',
-          handle: 'home',
-          appVersionId: appVersion.id,
-          index: 1,
-          autoComputeLayout: true,
-          appId: app.id,
-        })
-      );
-
-      if (type === 'module') {
-        const moduleContainer = await manager.save(
-          manager.create(Component, {
-            name: 'ModuleContainer',
-            type: 'ModuleContainer',
-            pageId: defaultHomePage.id,
-            properties: {
-              inputItems: { value: [] },
-              outputItems: { value: [] },
-              visibility: { value: '{{true}}' },
-            },
-            styles: {
-              backgroundColor: { value: '#fff' },
-            },
-            displayPreferences: {
-              showOnDesktop: { value: '{{true}}' },
-              showOnMobile: { value: '{{true}}' },
-            },
-          })
-        );
-
-        await manager.save(
-          manager.create(Layout, {
-            component: moduleContainer,
-            type: 'desktop',
-            top: 50,
-            left: 6,
-            height: 400,
-            width: 38,
-          })
-        );
-
-        await manager.save(
-          manager.create(Layout, {
-            component: moduleContainer,
-            type: 'mobile',
-            top: 50,
-            left: 6,
-            height: 400,
-            width: 38,
-          })
-        );
-      }
-
-      // Set default values for app version
-      appVersion.showViewerNavigation = type === 'module' ? false : true;
-      appVersion.homePageId = defaultHomePage.id;
-      appVersion.globalSettings = {
-        appInMaintenance: false,
-        canvasMaxWidth: 100,
-        canvasMaxWidthType: '%',
-        canvasMaxHeight: 2400,
-        canvasBackgroundColor: 'var(--cc-appBackground-surface)',
-        backgroundFxQuery: '',
-        appMode: 'light',
-      };
-      await manager.save(appVersion);
-
-      // When created on a workspace branch, set co_relation_id and
-      // optionally create a branch-type version for per-app branch switching.
+      // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
       if (branchId) {
-        // co_relation_id must be a fresh UUID — never the same as app.id.
-        // It is used by git sync to identify the canonical app across branches.
         const coRelationId = uuidv4();
         await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
         app.co_relation_id = coRelationId;
-
-        try {
-          // workspaceBranch already fetched above for base version name decision
-          if (workspaceBranch && !workspaceBranch.isDefault) {
-            const branchVersion = await manager.save(
-              AppVersion,
-              manager.create(AppVersion, {
-                // UUID: BRANCH-type versions are never user-visible, so use a
-                // unique placeholder that can never conflict with user-named versions.
-                name: uuidv4(),
-                appId: app.id,
-                definition: appVersion.definition,
-                currentEnvironmentId: firstPriorityEnv.id,
-                status: AppVersionStatus.DRAFT,
-                versionType: AppVersionType.BRANCH,
-                parentVersionId: appVersion.id,
-                branchId: branchId,
-                globalSettings: appVersion.globalSettings,
-                showViewerNavigation: appVersion.showViewerNavigation,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              })
-            );
-
-            // Create default page for branch version (same as v1's default page)
-            const branchHomePage = await manager.save(
-              manager.create(Page, {
-                name: 'Home',
-                handle: 'home',
-                appVersionId: branchVersion.id,
-                index: 1,
-                autoComputeLayout: true,
-                appId: app.id,
-              })
-            );
-
-            branchVersion.homePageId = branchHomePage.id;
-            await manager.save(branchVersion);
-          }
-        } catch (error) {
-          // Non-fatal: app still works on default branch if branch version creation fails
-          console.warn('Auto-create branch version failed:', error?.message);
-        }
       }
 
       return app;

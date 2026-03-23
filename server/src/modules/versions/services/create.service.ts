@@ -261,6 +261,18 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       // Create version-specific DSVs for global data sources
       for (const globalDs of globalDataSources) {
+        const dsvName = globalDs.name || 'v1';
+
+        // The idx_unique_active_name_branch constraint enforces one active non-default
+        // DSV per (name, branch_id). DSVs are branch-scoped, not app-version-scoped,
+        // so skip creation if one already exists for this datasource+name+branch.
+        const existingDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
+        });
+        if (existingDsv) {
+          continue;
+        }
+
         let sourceDsv = await manager.findOne(DataSourceVersion, {
           where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
         });
@@ -273,7 +285,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         const newDsv = await manager.save(
           manager.create(DataSourceVersion, {
             dataSourceId: globalDs.id,
-            name: globalDs.name || 'v1',
+            name: dsvName,
             isDefault: false,
             isActive: true,
             appVersionId: appVersion.id,

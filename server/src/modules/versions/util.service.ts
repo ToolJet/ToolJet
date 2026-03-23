@@ -225,7 +225,16 @@ export class VersionUtilService implements IVersionUtilService {
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const numVersions = await this.versionRepository.getCount(app.id);
+      const versionToDelete = app.appVersions[0];
+      const branchId = versionToDelete?.branchId ?? null;
+
+      // For platform git sync apps, count only versions on the same branch so that
+      // versions on other branches don't inflate the count and bypass the guard.
+      // For all other apps (branchId=null), fall back to the original count across
+      // all versions — behaviour is unchanged.
+      const numVersions = branchId
+        ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
+        : await this.versionRepository.getCount(app.id);
 
       if (numVersions <= 1) {
         throw new ForbiddenException('Cannot delete only version of app');
