@@ -315,6 +315,7 @@ export {
   AppEnvironment,
   AppPermissionsDto,
   DataSourcePermissionsDto,
+  FolderPermissionsDto,
   WorkspacePermissionsDto,
   WorkflowPermissionsDto,
 } from './groups.dto';

@@ -30,6 +30,7 @@ export enum GranularPermissionResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
   WORKFLOW = 'workflow',
+  FOLDER = 'folder',
 }
 
 // Custom validator for hideFromDashboard - can only be true when canEdit is false (view mode)
@@ -73,6 +74,36 @@ export class WorkflowPermissionsDto {
   @IsBoolean()
   @IsNotEmpty()
   canEdit: boolean;
+}
+
+@ValidatorConstraint({ name: 'mutuallyExclusiveFolder', async: false })
+class FolderMutuallyExclusiveConstraint implements ValidatorConstraintInterface {
+  validate(_: any, args: ValidationArguments) {
+    const obj = args.object as FolderPermissionsDto;
+    const trueCount = [obj.canEditFolder, obj.canEditApps, obj.canViewApps].filter(Boolean).length;
+    return trueCount === 1;
+  }
+
+  defaultMessage() {
+    return 'canEditFolder, canEditApps, and canViewApps are mutually exclusive - exactly one must be true';
+  }
+}
+
+export class FolderPermissionsDto {
+  @IsBoolean()
+  @IsNotEmpty()
+  @Validate(FolderMutuallyExclusiveConstraint)
+  canEditFolder: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @Validate(FolderMutuallyExclusiveConstraint)
+  canEditApps: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @Validate(FolderMutuallyExclusiveConstraint)
+  canViewApps: boolean;
 }
 
 @ValidatorConstraint({ name: 'mutuallyExclusive', async: false })
@@ -158,10 +189,13 @@ export class GranularPermissionDto {
     if (type === GranularPermissionResourceType.WORKFLOW) {
       return WorkflowPermissionsDto;
     }
+    if (type === GranularPermissionResourceType.FOLDER) {
+      return FolderPermissionsDto;
+    }
     return AppPermissionsDto;
   })
   @IsNotEmpty()
-  permissions: AppPermissionsDto | WorkflowPermissionsDto | DataSourcePermissionsDto;
+  permissions: AppPermissionsDto | WorkflowPermissionsDto | DataSourcePermissionsDto | FolderPermissionsDto;
 }
 
 // Workspace-level permissions
@@ -176,7 +210,11 @@ export class WorkspacePermissionsDto {
 
   @IsBoolean()
   @IsOptional()
-  folderCRUD?: boolean;
+  folderCreate?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  folderDelete?: boolean;
 
   @IsBoolean()
   @IsOptional()
