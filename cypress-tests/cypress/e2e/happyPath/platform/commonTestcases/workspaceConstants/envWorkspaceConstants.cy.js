@@ -46,20 +46,8 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="home-page-icon"]', { timeout: 20000 }).click();
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        cy.get('[data-cy="ui_url-constant-visibility"]').click();
-        cy.get('[data-cy="ui_url-workspace-constant-value"]')
-            .invoke('text')
-            .should((text) => {
-                expect(text, `UI URL is: ${text}`).to.contain('130.131.160.149');
-            });
-        cy.get('[data-cy="ui_url-workspace-constant-value"]').then(($value) => {
-            cy.log("value:", $value.text());
-            cy.get('[data-cy="ui_url-workspace-constant-value"]').should("contain", "130.131.160.149");
-            cy.log("UI URL:", $value.text());
-            console.log("UI URL:", $value.text());
-        });
 
- /*       // Show envconstant details
+       // Show envconstant details
         cy.get('[data-cy="envconstant-constant-visibility"]').click();
 
         // Validate the value for the envConstant entry
@@ -88,26 +76,16 @@ describe("Workspace constants", () => {
 
         // Check tooltip text on hover (strip HTML for Cypress match)
         assertTooltipText(
-            '[data-cy="headervalue-edit-buttons"]',
+            '[data-cy="headervalue-edit-button"]',
             "Constants created from environment variables cannot be edited or deleted"
         );
-*/
+
         cy.get(commonSelectors.dashboardIcon).click();
 
         importConstantsApp("cypress/fixtures/templates/env_constants-export.json");
         cy.wait(2000);
-        cy.reload();
         
-        cy.get('[data-cy="version-switcher-button"]').click();
-        cy.get('[data-cy="create-draft-version-button"]').click();
-        cy.get('[data-cy="version-name-input-field"]').clear().type("v2");
-        cy.get('[data-cy="create-draft-version-create-button"]').click();
-        cy.wait(2000);
-        cy.get('[data-cy="list-query-datasource_restapi_secret"]').should("exist").click();
-        cy.get('[data-cy="query-preview-button"]').click();
-        cy.wait(10000);
-        cy.get('[data-cy="query-runy-button"]').should("exist");
-        //cy.get('[data-cy="query-manager-toggle-button"]').click();
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         //******Workflow bug*************************//
 
@@ -203,5 +181,3 @@ describe("Workspace constants", () => {
         // );
     });
 });
-
-
