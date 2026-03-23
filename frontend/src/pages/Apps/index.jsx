@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button/Button';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import { useAppsStore } from '../shared/store';
@@ -21,6 +22,8 @@ import MoreAppsActionMenu from '../shared/MoreAppsActionMenu';
 import WorkflowDialogs from '../Workflows/components/WorkflowDialogs';
 import CreateWorkflowBtn from '../Workflows/components/CreateWorkflowBtn';
 import BuildWithAIAssistant from './components/BuildWithAIAssistant';
+import PermissionDeniedDialog from './components/PermissionDeniedDialog';
+import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
 
 export default function Apps({ appType = 'front-end' }) {
   const navigate = useNavigate();
@@ -33,6 +36,9 @@ export default function Apps({ appType = 'front-end' }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
+    useHandleAppCreationFromLandingPage();
 
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
 
@@ -87,6 +93,10 @@ export default function Apps({ appType = 'front-end' }) {
   // If license is valid but multi-environment feature is not available, still include env param
   const shouldExcludeEnvParam = invalidLicense;
   const moduleEnabled = featureAccess?.modulesEnabled || false;
+
+  if (showAIOnboardingLoadingScreen) {
+    return <TJLoader />;
+  }
 
   return (
     <WorkspaceLayout>
@@ -169,6 +179,10 @@ export default function Apps({ appType = 'front-end' }) {
       </main>
 
       <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
+
+      {showInsufficentPermissionModalstate && (
+        <PermissionDeniedDialog open={showInsufficentPermissionModalstate} onClose={handleClosePermissionDeniedModal} />
+      )}
 
       <WorkflowDialogs
         appType={appType}

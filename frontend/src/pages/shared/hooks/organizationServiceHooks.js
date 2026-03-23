@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { organizationService } from '@/_services/organization.service';
 
@@ -21,5 +21,11 @@ export function useFetchWorkspacesLimit() {
     queryKey: ['workspacesLimit'],
     queryFn: organizationService.getWorkspacesLimit,
     select: fetchWorkspacesLimitSelector,
+  });
+}
+
+export function useCreateOrganization() {
+  return useMutation({
+    mutationFn: (body) => organizationService.createOrganization(body),
   });
 }
