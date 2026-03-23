@@ -36,7 +36,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ce-review-app'
+      github.event.label.name == 'fly-ce-create'
     runs-on: ubuntu-latest
 
     steps:
@@ -176,14 +176,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ce-review-app'
+                name: 'fly-ce-create'
               });
             } catch (e) { console.log('Label not found:', e.message); }
             await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app']
+              labels: ['fly-ce-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -208,7 +208,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app');
+            const hasLabel = labels.data.some(l => l.name === 'fly-ce-active');
             core.setOutput('is_active', hasLabel);
 
       - name: Free up disk space
@@ -284,7 +284,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ce-review-app'
+      github.event.label.name == 'fly-ce-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -314,7 +314,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ce-review-app'
+                name: 'fly-ce-active'
               });
             } catch (e) { console.log('Label not found:', e.message); }
 
@@ -326,7 +326,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ce-review-app'
+      github.event.label.name == 'fly-ce-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -355,7 +355,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app']
+              labels: ['fly-ce-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -366,7 +366,7 @@ jobs:
     if: |
       (github.event.pull_request.head.repo.fork == false &&
        github.event.action == 'labeled' &&
-       github.event.label.name == 'destroy-ce-review-app') ||
+       github.event.label.name == 'fly-ce-destroy') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -391,7 +391,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labelsToRemove = ['destroy-ce-review-app', 'suspend-ce-review-app', 'active-ce-review-app'];
+            const labelsToRemove = ['fly-ce-destroy', 'fly-ce-suspend', 'fly-ce-active'];
             for (const label of labelsToRemove) {
               try {
                 await github.rest.issues.removeLabel({
@@ -412,7 +412,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ee-lts-review-app'
+      github.event.label.name == 'fly-ee-lts-create'
     runs-on: ubuntu-latest
 
     steps:
@@ -563,14 +563,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ee-lts-review-app'
+                name: 'fly-ee-lts-create'
               });
             } catch (e) { console.log('Label not found:', e.message); }
             await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-lts-review-app']
+              labels: ['fly-ee-lts-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -595,7 +595,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const hasLabel = labels.data.some(l => l.name === 'active-ee-lts-review-app');
+            const hasLabel = labels.data.some(l => l.name === 'fly-ee-lts-active');
             core.setOutput('is_active', hasLabel);
 
       - name: Free up disk space
@@ -674,7 +674,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ee-lts-review-app'
+      github.event.label.name == 'fly-ee-lts-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -704,7 +704,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ee-lts-review-app'
+                name: 'fly-ee-lts-active'
               });
             } catch (e) { console.log('Label not found:', e.message); }
 
@@ -716,7 +716,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ee-lts-review-app'
+      github.event.label.name == 'fly-ee-lts-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -745,7 +745,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-lts-review-app']
+              labels: ['fly-ee-lts-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -756,7 +756,7 @@ jobs:
     if: |
       (github.event.pull_request.head.repo.fork == false &&
        github.event.action == 'labeled' &&
-       github.event.label.name == 'destroy-ee-lts-review-app') ||
+       github.event.label.name == 'fly-ee-lts-destroy') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -781,7 +781,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labelsToRemove = ['destroy-ee-lts-review-app', 'suspend-ee-lts-review-app', 'active-ee-lts-review-app'];
+            const labelsToRemove = ['fly-ee-lts-destroy', 'fly-ee-lts-suspend', 'fly-ee-lts-active'];
             for (const label of labelsToRemove) {
               try {
                 await github.rest.issues.removeLabel({
@@ -802,7 +802,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ee-pre-release-review-app'
+      github.event.label.name == 'fly-ee-pre-create'
     runs-on: ubuntu-latest
 
     steps:
@@ -955,14 +955,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ee-pre-release-review-app'
+                name: 'fly-ee-pre-create'
               });
             } catch (e) { console.log('Label not found:', e.message); }
             await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-pre-release-review-app']
+              labels: ['fly-ee-pre-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -987,7 +987,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const hasLabel = labels.data.some(l => l.name === 'active-ee-pre-release-review-app');
+            const hasLabel = labels.data.some(l => l.name === 'fly-ee-pre-active');
             core.setOutput('is_active', hasLabel);
 
       - name: Free up disk space
@@ -1066,7 +1066,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ee-pre-release-review-app'
+      github.event.label.name == 'fly-ee-pre-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -1096,7 +1096,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ee-pre-release-review-app'
+                name: 'fly-ee-pre-active'
               });
             } catch (e) { console.log('Label not found:', e.message); }
 
@@ -1108,7 +1108,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ee-pre-release-review-app'
+      github.event.label.name == 'fly-ee-pre-suspend'
     runs-on: ubuntu-latest
 
     steps:
@@ -1137,7 +1137,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-pre-release-review-app']
+              labels: ['fly-ee-pre-active']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -1148,7 +1148,7 @@ jobs:
     if: |
       (github.event.pull_request.head.repo.fork == false &&
        github.event.action == 'labeled' &&
-       github.event.label.name == 'destroy-ee-pre-release-review-app') ||
+       github.event.label.name == 'fly-ee-pre-destroy') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -1173,7 +1173,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labelsToRemove = ['destroy-ee-pre-release-review-app', 'suspend-ee-pre-release-review-app', 'active-ee-pre-release-review-app'];
+            const labelsToRemove = ['fly-ee-pre-destroy', 'fly-ee-pre-suspend', 'fly-ee-pre-active'];
             for (const label of labelsToRemove) {
               try {
                 await github.rest.issues.removeLabel({
