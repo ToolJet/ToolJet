@@ -6,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
@@ -97,6 +97,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     showCanvasFooter,
     appType,
     PAGE_CANVAS_HEADER_HEIGHT,
+    PAGE_CANVAS_FOOTER_HEIGHT,
     position,
     isPagesSidebarHidden
   );
