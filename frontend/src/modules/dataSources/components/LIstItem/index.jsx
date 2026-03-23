@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import cx from 'classnames';
+import { useNavigate } from 'react-router-dom';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { DataSourceTypes } from '../../../common/components/DataSourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -7,7 +8,7 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { decodeEntities } from '@/_helpers/utils';
+import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
 
 export const ListItem = ({
   dataSource,
@@ -27,6 +28,8 @@ export const ListItem = ({
     canDeleteDataSource,
   } = useContext(GlobalDataSourcesContext);
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
+  const navigate = useNavigate();
+  const workspaceId = getWorkspaceId();
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -59,6 +62,7 @@ export const ListItem = ({
     toggleDataSourceManagerModal(true);
     focusModal();
     updateSelectedDatasource(dataSource?.name);
+    navigate(`/${workspaceId}/data-sources/${dataSource.id}`, { replace: true });
   };
 
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
