@@ -1,5 +1,11 @@
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions, UserDataSourcePermissions, UserFolderPermissions, UserPermissions, UserWorkflowPermissions } from './types';
+import {
+  UserAppsPermissions,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions,
+  UserWorkflowPermissions,
+} from './types';
 import { APP_TYPES } from '@modules/apps/constants';
 
 export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
@@ -15,7 +21,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   appRelease: false,
   dataSourceCreate: false,
   dataSourceDelete: false,
-  folderCRUD: false,
+  folderCreate: false,
+  folderDelete: false,
   dataSourceFolderCRUD: false,
   orgConstantCRUD: false,
   orgVariableCRUD: false,

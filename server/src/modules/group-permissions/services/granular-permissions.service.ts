@@ -79,6 +79,10 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     return [];
   }
 
+  async getAddableFolders(organizationId: string): Promise<{ AddableResourceItem }[]> {
+    return [];
+  }
+
   async getAll(
     groupId: string,
     organizationId: string,

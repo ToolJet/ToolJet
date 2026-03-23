@@ -57,13 +57,9 @@ export class GranularPermissions extends BaseEntity {
   )
   dataSourcesGroupPermission: DataSourcesGroupPermissions;
 
-  @OneToOne(
-    () => FoldersGroupPermissions,
-    (foldersGroupPermissions) => foldersGroupPermissions.granularPermissions,
-    {
-      onDelete: 'CASCADE',
-    }
-  )
+  @OneToOne(() => FoldersGroupPermissions, (foldersGroupPermission) => foldersGroupPermission.granularPermissions, {
+    onDelete: 'CASCADE',
+  })
   foldersGroupPermissions: FoldersGroupPermissions;
 
   @OneToOne(

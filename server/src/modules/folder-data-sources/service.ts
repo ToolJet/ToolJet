@@ -26,7 +26,7 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
               createdAt: new Date(),
               updatedAt: new Date(),
               organizationId: user?.organizationId,
-              creatorId: user?.id,
+              createdBy: user?.id,
             })
           );
         },

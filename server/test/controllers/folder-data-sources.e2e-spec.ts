@@ -59,14 +59,14 @@ describe('folder-data-sources controller', () => {
   }
 
   // Helper: create a DS folder directly in the DB
-  async function createDsFolder(orgId: string, name: string, creatorId?: string) {
+  async function createDsFolder(orgId: string, name: string, createdBy?: string) {
     const repo = defaultDataSource.getRepository(Folder);
     return repo.save(
       repo.create({
         name,
         organizationId: orgId,
         type: 'data_source',
-        ...(creatorId ? { creatorId } : {}),
+        ...(createdBy ? { createdBy } : {}),
       })
     );
   }
@@ -90,7 +90,8 @@ describe('folder-data-sources controller', () => {
       type: GROUP_PERMISSIONS_TYPE.DEFAULT,
       appCreate: true,
       appDelete: true,
-      folderCRUD: true,
+      folderCreate: true,
+      folderDelete: true,
       dataSourceFolderCRUD: true,
       orgConstantCRUD: true,
       dataSourceCreate: true,
@@ -127,7 +128,8 @@ describe('folder-data-sources controller', () => {
       type: GROUP_PERMISSIONS_TYPE.DEFAULT,
       appCreate: false,
       appDelete: false,
-      folderCRUD: false,
+      folderCreate: false,
+      folderDelete: false,
       dataSourceFolderCRUD: false,
       orgConstantCRUD: false,
       dataSourceCreate: false,
@@ -166,7 +168,7 @@ describe('folder-data-sources controller', () => {
       const folder = await folderRepo.findOne({ where: { id: response.body.id } });
       expect(folder).toBeDefined();
       expect(folder.type).toEqual('data_source');
-      expect(folder.creatorId).toEqual(user.id);
+      expect(folder.createdBy).toEqual(user.id);
     });
 
     it('should reject empty folder name', async () => {
@@ -728,7 +730,8 @@ describe('folder-data-sources controller', () => {
         type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
         appCreate: false,
         appDelete: false,
-        folderCRUD: false,
+        folderCreate: false,
+      folderDelete: false,
         dataSourceFolderCRUD: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
@@ -746,7 +749,8 @@ describe('folder-data-sources controller', () => {
         type: GROUP_PERMISSIONS_TYPE.DEFAULT,
         appCreate: false,
         appDelete: false,
-        folderCRUD: false,
+        folderCreate: false,
+      folderDelete: false,
         dataSourceFolderCRUD: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
@@ -1238,7 +1242,8 @@ describe('folder-data-sources controller', () => {
           type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
           appCreate: false,
           appDelete: false,
-          folderCRUD: false,
+          folderCreate: false,
+      folderDelete: false,
           dataSourceFolderCRUD: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
@@ -1287,7 +1292,8 @@ describe('folder-data-sources controller', () => {
           type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
           appCreate: false,
           appDelete: false,
-          folderCRUD: false,
+          folderCreate: false,
+      folderDelete: false,
           dataSourceFolderCRUD: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,

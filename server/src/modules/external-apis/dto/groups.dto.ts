@@ -176,7 +176,11 @@ export class WorkspacePermissionsDto {
 
   @IsBoolean()
   @IsOptional()
-  folderCRUD?: boolean;
+  folderCreate?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  folderDelete?: boolean;
 
   @IsBoolean()
   @IsOptional()

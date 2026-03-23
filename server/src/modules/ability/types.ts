@@ -23,13 +23,15 @@ export interface UserPermissions {
   appRelease: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
-  folderCRUD: boolean;
+  folderCreate: boolean;
+  folderDelete: boolean;
   dataSourceFolderCRUD: boolean;
   orgConstantCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
+  [MODULES.FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];

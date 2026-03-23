@@ -1,10 +1,12 @@
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
 import { DsFoldersGroupPermissions } from '@entities/ds_folders_group_permissions.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { GroupApps } from '@entities/group_apps.entity';
 import { GroupDataSources } from '@entities/group_data_source.entity';
 import { GroupDsFolders } from '@entities/group_ds_folder.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { Injectable } from '@nestjs/common';
@@ -55,6 +57,7 @@ export class GroupPermissionsDuplicateService implements IGroupPermissionsDuplic
         'group',
         'appsGroupPermissions',
         'dataSourcesGroupPermission',
+        'foldersGroupPermissions',
         'dsFoldersGroupPermission',
       ];
       keysToDelete.forEach((key) => {
@@ -90,6 +93,13 @@ export class GroupPermissionsDuplicateService implements IGroupPermissionsDuplic
         case ResourceType.DATA_SOURCE:
           await this.duplicationDataSourcePermissions(
             granularPermissionsToDuplicate.dataSourcesGroupPermission,
+            newGranularPermissionsId,
+            manager
+          );
+          break;
+        case ResourceType.FOLDER:
+          await this.duplicationFolderPermissions(
+            granularPermissionsToDuplicate.foldersGroupPermissions,
             newGranularPermissionsId,
             manager
           );
@@ -150,6 +160,37 @@ export class GroupPermissionsDuplicateService implements IGroupPermissionsDuplic
         dataSourceId: groupDs.dataSourceId,
       }))
     );
+  }
+
+  async duplicationFolderPermissions(
+    folderPermissions: FoldersGroupPermissions,
+    granularPermissionId: string,
+    manager: EntityManager
+  ) {
+    const groupFolders = folderPermissions.groupFolders;
+    const keysToDelete = [
+      'id',
+      'createdAt',
+      'updatedAt',
+      'granularPermissionId',
+      'groupFolders',
+      'granularPermissions',
+    ];
+    keysToDelete.forEach((key) => {
+      delete folderPermissions[key];
+    });
+    const newFolderPermissions = await manager.save(
+      manager.create(FoldersGroupPermissions, { granularPermissionId, ...instanceToPlain(folderPermissions) })
+    );
+    if (groupFolders?.length) {
+      await manager.insert(
+        GroupFolders,
+        groupFolders.map((groupFolder) => ({
+          foldersGroupPermissionsId: newFolderPermissions.id,
+          folderId: groupFolder.folderId,
+        }))
+      );
+    }
   }
 
   async duplicationDsFolderPermissions(

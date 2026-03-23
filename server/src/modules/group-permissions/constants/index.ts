@@ -28,7 +28,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: true,
     appDelete: true,
-    folderCRUD: true,
+    folderCreate: true,
+    folderDelete: true,
     dataSourceFolderCRUD: true,
     workflowCreate: true,
     workflowDelete: true,
@@ -44,7 +45,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: true,
     appDelete: true,
-    folderCRUD: true,
+    folderCreate: true,
+    folderDelete: true,
     dataSourceFolderCRUD: true,
     workflowCreate: true,
     workflowDelete: true,
@@ -62,7 +64,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: false,
     workflowCreate: false,
     workflowDelete: false,
-    folderCRUD: false,
+    folderCreate: false,
+    folderDelete: false,
     dataSourceFolderCRUD: false,
     orgConstantCRUD: false,
     dataSourceCreate: false,
@@ -107,6 +110,13 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
     },
+    [ResourceType.FOLDER]: {
+      // Radio button selection: Admin has "Edit folder" permission
+      // Only set the selected permission level to true; implied permissions are derived at runtime
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -126,6 +136,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
     [ResourceType.WORKFLOWS]: {
       canEdit: false,
       canView: true,
+    },
+    [ResourceType.FOLDER]: {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
     },
   },
   [USER_ROLE.BUILDER]: {
@@ -160,6 +175,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
     [ResourceType.WORKFLOWS]: {
       canEdit: true,
       canView: false,
+    },
+    [ResourceType.FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
     },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;

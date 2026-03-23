@@ -51,12 +51,6 @@ export interface CreateFolderPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
 }
 
-export interface FoldersGroupPermissionsActions {
-  canEditFolder?: boolean;
-  canEditApps?: boolean;
-  canViewApps?: boolean;
-}
-
 export interface CreateDsFolderPermissionsObject {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
@@ -86,7 +80,7 @@ type ResourceToPermissionItemMap = {
   [ResourceType.APP]: AppsPermissionAddResourceItem[];
   [ResourceType.DATA_SOURCE]: DataSourcesPermissionResourceItem[];
   [ResourceType.WORKFLOWS]: WorkflowsPermissionAddResourceItem[];
-  [ResourceType.FOLDER]: FoldersPermissionResourceItem[];
+  [ResourceType.FOLDER]: FolderPermissionAddResourceItem[];
   [ResourceType.DATA_SOURCE_FOLDER]: DsFoldersPermissionResourceItem[];
 };
 
@@ -113,7 +107,7 @@ export interface DataSourcesPermissionResourceItem {
   dataSourceId: string;
 }
 
-export interface FoldersPermissionResourceItem {
+export interface FolderPermissionAddResourceItem {
   folderId: string;
 }
 
@@ -130,6 +124,12 @@ export interface AppsGroupPermissionsActions extends BaseAppsGroupPermissionsAct
 }
 
 export interface WorkflowsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {}
+
+export interface FoldersGroupPermissionsActions {
+  canEditFolder: boolean;
+  canEditApps: boolean;
+  canViewApps: boolean;
+}
 
 export interface ResourcePermissionMetaData {
   granularPermissions: GranularPermissions;
