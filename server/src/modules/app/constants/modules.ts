@@ -20,6 +20,7 @@ export enum MODULES {
   AUTH = 'Auth',
   METADATA = 'Metadata',
   FOLDER_APPS = 'FolderApp',
+  FOLDER_DATA_SOURCES = 'FolderDataSources',
   CUSTOM_STYLES = 'CustomStyles',
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',

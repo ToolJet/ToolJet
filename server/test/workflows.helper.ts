@@ -135,6 +135,7 @@ export const createUserWorkflowPermissions = async (
         appCreate: false,
         appDelete: false,
         folderCRUD: false,
+        dataSourceFolderCRUD: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
         dataSourceDelete: false,

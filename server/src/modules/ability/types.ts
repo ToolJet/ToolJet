@@ -24,6 +24,7 @@ export interface UserPermissions {
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
   folderCRUD: boolean;
+  dataSourceFolderCRUD: boolean;
   orgConstantCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
