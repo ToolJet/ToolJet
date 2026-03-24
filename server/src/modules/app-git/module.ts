@@ -25,6 +25,9 @@ export class AppGitModule extends SubModule {
       HTTPSAppGitUtilityService,
       GitLabAppGitUtilityService,
       AppVersionRenameListener,
+      AppGitOperationsUtil,
+      AppGitFileOperationsUtil,
+      GitOperationsUtil,
     } = await this.getProviders(configs, 'app-git', [
       'controller',
       'service',
@@ -36,6 +39,9 @@ export class AppGitModule extends SubModule {
       'providers/github-ssh/util.service',
       'providers/gitlab/util.service',
       'listener',
+      'shared/app-git-operations.util',
+      'shared/app-git-file-operations.util',
+      'shared/git-operations.util',
     ]);
     return {
       module: AppGitModule,
@@ -61,6 +67,9 @@ export class AppGitModule extends SubModule {
         SSHAppGitUtilityService,
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
+        AppGitOperationsUtil,
+        AppGitFileOperationsUtil,
+        GitOperationsUtil,
         VersionRepository,
         FeatureAbilityFactory,
         ...(isMainImport ? [AppVersionRenameListener] : []),
