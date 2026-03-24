@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect, useLayoutEffect } from 'react';
 
-export function useCalculateOverflow({ containerRef, measurementContainerRef, visibleMenuItems, orientation, padding, width }) {
+export function useCalculateOverflow({
+  containerRef,
+  measurementContainerRef,
+  visibleMenuItems,
+  orientation,
+  padding,
+  width,
+}) {
   const [links, setLinks] = useState({
     visible: visibleMenuItems,
     overflow: [],

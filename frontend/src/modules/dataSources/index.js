@@ -20,6 +20,18 @@ const getDataSourcesRoutes = (props) => [
       </DesktopOnlyRoute>
     }
   />,
+  <Route
+    exact
+    key="data-sources-selected"
+    path="/:workspaceId/data-sources/:selectedId"
+    element={
+      <DesktopOnlyRoute darkMode={props.darkMode}>
+        <PrivateRoute>
+          <GlobalDataSourcesPage {...props} />
+        </PrivateRoute>
+      </DesktopOnlyRoute>
+    }
+  />,
 ];
 
 export default getDataSourcesRoutes;
