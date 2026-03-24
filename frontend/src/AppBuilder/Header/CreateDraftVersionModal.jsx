@@ -1,4 +1,4 @@
-import React, { useEffect, useState ,useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -11,7 +11,14 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
-const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
+const CreateDraftVersionModal = ({
+  showCreateAppVersion,
+  setShowCreateAppVersion,
+  handleCommitEnableChange,
+  canCommit,
+  fetchingOrgGit,
+  handleCommitOnVersionCreation = () => {},
+}) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
@@ -48,10 +55,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
-    const gitSyncEnabled =
-      appGit?.org_git?.git_ssh?.is_enabled ||
-      appGit?.org_git?.git_https?.is_enabled ||
-      appGit?.org_git?.git_lab?.is_enabled;
+    const gitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
   }, [appGit]);
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);

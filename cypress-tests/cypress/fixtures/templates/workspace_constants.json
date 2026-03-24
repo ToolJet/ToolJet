@@ -2805,7 +2805,7 @@
                             "name": "static_restapi_constants_combination",
                             "options": {
                                 "method": "get",
-                                "url": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
+                                "url": "http://130.131.160.149:4000/{{constants.gconstEndpoint}}",
                                 "url_params": [
                                     [
                                         "",
@@ -2915,7 +2915,7 @@
                             "name": "static_restapi_url_secret_combination",
                             "options": {
                                 "method": "get",
-                                "url": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
+                                "url": "http://130.131.160.149:4000/{{secrets.sconstEndpoint}}",
                                 "url_params": [
                                     [
                                         "",
@@ -3911,7 +3911,7 @@
                             "environmentId": "88d47f73-325a-486c-8892-580d14264811",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{secrets.sconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -4032,7 +4032,7 @@
                             "environmentId": "6f59fad7-10bc-4047-999d-f0ba0cb169cb",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{secrets.sconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -4153,7 +4153,7 @@
                             "environmentId": "1c081858-b668-4d7c-ab05-31df0bc0becc",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{secrets.sconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -5363,7 +5363,7 @@
                             "environmentId": "88d47f73-325a-486c-8892-580d14264811",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{constants.gconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -5484,7 +5484,7 @@
                             "environmentId": "6f59fad7-10bc-4047-999d-f0ba0cb169cb",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{constants.gconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -5605,7 +5605,7 @@
                             "environmentId": "1c081858-b668-4d7c-ab05-31df0bc0becc",
                             "options": {
                                 "url": {
-                                    "value": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
+                                    "value": "http://130.131.160.149:4000/{{constants.gconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {

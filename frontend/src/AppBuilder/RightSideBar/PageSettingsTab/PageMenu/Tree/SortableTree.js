@@ -22,32 +22,34 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
   const treeItems = useMemo(() => buildTree(allpages, PROPERTY_NAMES), [allpages]);
 
   // When reorder happens, flatten and persist via debounced store action
-  const handleReorder = useCallback((newTreeItems) => {
-    const flatItems = flattenTree(newTreeItems, PROPERTY_NAMES);
-    debouncedReorderPages(flatItems);
-  }, [debouncedReorderPages]);
+  const handleReorder = useCallback(
+    (newTreeItems) => {
+      const flatItems = flattenTree(newTreeItems, PROPERTY_NAMES);
+      debouncedReorderPages(flatItems);
+    },
+    [debouncedReorderPages]
+  );
 
-  const renderItem = useCallback((item, props) => {
-    if (!item?.isPageGroup) {
+  const renderItem = useCallback(
+    (item, props) => {
+      if (!item?.isPageGroup) {
+        return <PageMenuItem darkMode={darkMode} page={item} treeRef={treeRef} />;
+      }
       return (
-        <PageMenuItem darkMode={darkMode} page={item} treeRef={treeRef} />
+        <PageGroupItem
+          darkMode={darkMode}
+          highlight={props.isHighlighted}
+          collapsed={props.collapsed}
+          onCollapse={props.onCollapse}
+          page={item}
+          treeRef={treeRef}
+        />
       );
-    }
-    return (
-      <PageGroupItem
-        darkMode={darkMode}
-        highlight={props.isHighlighted}
-        collapsed={props.collapsed}
-        onCollapse={props.onCollapse}
-        page={item}
-        treeRef={treeRef}
-      />
-    );
-  }, [darkMode, treeRef]);
+    },
+    [darkMode, treeRef]
+  );
 
-  const renderGhost = useCallback((item) => (
-    <PageMenuItemGhost darkMode={darkMode} page={item} />
-  ), [darkMode]);
+  const renderGhost = useCallback((item) => <PageMenuItemGhost darkMode={darkMode} page={item} />, [darkMode]);
 
   return (
     <SharedSortableTree

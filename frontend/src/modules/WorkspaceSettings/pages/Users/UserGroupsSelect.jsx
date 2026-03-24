@@ -16,14 +16,7 @@ export function UserGroupsSelect(props) {
         {children}
         <div className="add-group-btn">
           <ButtonSolid
-            onClick={() =>
-              window.open(
-                urlJoin(
-                  getHostURL(),
-                  `/${workspaceId}/workspace-settings/groups`
-                )
-              )
-            }
+            onClick={() => window.open(urlJoin(getHostURL(), `/${workspaceId}/workspace-settings/groups`))}
             iconCustomClass="rectangle-add-icon"
             className="create-group"
             fill="var(--indigo9)"

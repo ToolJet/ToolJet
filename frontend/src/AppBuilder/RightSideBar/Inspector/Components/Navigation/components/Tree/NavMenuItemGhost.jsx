@@ -9,7 +9,13 @@ const GhostMenuItem = ({ item, getResolvedValue }) => {
     <div className="page-menu-item" style={{ width: '100%' }}>
       <div className="left">
         <div className="main-page-icon-wrapper">
-          <TablerIcon iconName={item?.icon?.value || 'IconFile'} fallbackIcon="IconFile" size={20} stroke={1.5} className="nav-item-icon" />
+          <TablerIcon
+            iconName={item?.icon?.value || 'IconFile'}
+            fallbackIcon="IconFile"
+            size={20}
+            stroke={1.5}
+            className="nav-item-icon"
+          />
         </div>
         <OverflowTooltip childrenClassName="page-name">
           {getSafeRenderableValue(getResolvedValue?.(item?.label) ?? item?.label)}

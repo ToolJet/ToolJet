@@ -567,7 +567,7 @@ export function BranchDropdown({ appId, organizationId }) {
                   <span>Create new branch</span>
                 </button>
                 {console.log('BranchDropdown - allBranches:', allBranches, 'length:', allBranches.length) ||
-                  (true && allBranches.length > 0 && (
+                  (allBranches.length > 0 && (
                     <button
                       className="switch-branch-btn"
                       onClick={() => {
