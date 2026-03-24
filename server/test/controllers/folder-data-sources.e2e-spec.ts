@@ -71,7 +71,7 @@ describe('folder-data-sources controller', () => {
     );
   }
 
-  // Helper: setup a user with admin permissions (including dataSourceFolderCRUD)
+  // Helper: setup a user with admin permissions (including dataSourceFolderCreate/Delete)
   async function setupAdminUser() {
     const { user, organization } = await setupOrganizationAndUser(nestApp, {
       email: 'admin@tooljet.io',
@@ -80,7 +80,7 @@ describe('folder-data-sources controller', () => {
       lastName: 'User',
     });
 
-    // Create admin group with dataSourceFolderCRUD permission
+    // Create admin group with dataSourceFolderCreate/Delete permissions
     const groupRepo = defaultDataSource.getRepository(GroupPermissions);
     const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -92,7 +92,8 @@ describe('folder-data-sources controller', () => {
       appDelete: true,
       folderCreate: true,
       folderDelete: true,
-      dataSourceFolderCRUD: true,
+      dataSourceFolderCreate: true,
+      dataSourceFolderDelete: true,
       orgConstantCRUD: true,
       dataSourceCreate: true,
       dataSourceDelete: true,
@@ -108,7 +109,7 @@ describe('folder-data-sources controller', () => {
     return { user, organization, auth };
   }
 
-  // Helper: setup a non-admin user (no dataSourceFolderCRUD)
+  // Helper: setup a non-admin user (no dataSourceFolderCreate/Delete)
   async function setupViewerUser(organizationId: string) {
     const viewer = await createUser(nestApp, {
       email: 'viewer@tooljet.io',
@@ -118,7 +119,7 @@ describe('folder-data-sources controller', () => {
       organizationId,
     });
 
-    // Create end-user group without dataSourceFolderCRUD
+    // Create end-user group without dataSourceFolderCreate/Delete
     const groupRepo = defaultDataSource.getRepository(GroupPermissions);
     const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -130,7 +131,8 @@ describe('folder-data-sources controller', () => {
       appDelete: false,
       folderCreate: false,
       folderDelete: false,
-      dataSourceFolderCRUD: false,
+      dataSourceFolderCreate: false,
+      dataSourceFolderDelete: false,
       orgConstantCRUD: false,
       dataSourceCreate: false,
       dataSourceDelete: false,
@@ -209,7 +211,7 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).toBe(409);
     });
 
-    it('should deny users without dataSourceFolderCRUD permission', async () => {
+    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -423,7 +425,7 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).toBe(400);
     });
 
-    it('should deny users without dataSourceFolderCRUD permission', async () => {
+    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -474,7 +476,7 @@ describe('folder-data-sources controller', () => {
       expect(existingDs).toBeDefined();
     });
 
-    it('should deny users without dataSourceFolderCRUD permission', async () => {
+    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -573,7 +575,7 @@ describe('folder-data-sources controller', () => {
       expect(newFds3).toBeDefined();
     });
 
-    it('should deny users without dataSourceFolderCRUD permission', async () => {
+    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -706,21 +708,20 @@ describe('folder-data-sources controller', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Phase 5: Folder-Level Granular Permissions
+  // Folder-Level Granular Permissions
   //
   // Routes (all under /api/v2/group-permissions):
   //   POST   /:groupId/granular-permissions/data-source-folder   → create
   //   PUT    /:groupId/granular-permissions/data-source-folder/:id → update
   //   DELETE /:groupId/granular-permissions/data-source-folder/:id → delete
   //
-  // NOTE: These routes are gated behind the EE license and are expected to
-  // return 403/404 until Phase 5 implementation is complete.  Tests that
-  // exercise complex internal logic (hierarchy cascade, license feature-flag
-  // checks) are marked `.todo()` because they require deep service mocking
-  // that is outside the scope of black-box e2e testing.
+  // NOTE: These routes are gated behind the EE license. Tests that exercise
+  // complex internal logic (hierarchy cascade, license feature-flag checks)
+  // are marked `.todo()` because they require deep service mocking that is
+  // outside the scope of black-box e2e testing.
   // ---------------------------------------------------------------------------
 
-  describe('Phase 5: Folder-Level Granular Permissions', () => {
+  describe('Folder-Level Granular Permissions', () => {
     // Helper: create a custom (non-default) group with admin-level master permissions
     async function setupCustomGroup(organizationId: string) {
       const groupRepo = defaultDataSource.getRepository(GroupPermissions);
@@ -732,7 +733,8 @@ describe('folder-data-sources controller', () => {
         appDelete: false,
         folderCreate: false,
       folderDelete: false,
-        dataSourceFolderCRUD: false,
+        dataSourceFolderCreate: false,
+        dataSourceFolderDelete: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
@@ -751,7 +753,8 @@ describe('folder-data-sources controller', () => {
         appDelete: false,
         folderCreate: false,
       folderDelete: false,
-        dataSourceFolderCRUD: false,
+        dataSourceFolderCreate: false,
+        dataSourceFolderDelete: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
@@ -794,8 +797,6 @@ describe('folder-data-sources controller', () => {
         const group = await setupCustomGroup(organization.id);
 
         // First create a permission, then update it.
-        // If the create endpoint is not yet implemented the test is vacuously
-        // unblocked via the .todo() path — here we guard against 404.
         const createRes = await request(nestApp.getHttpServer())
           .post(`/api/v2/group-permissions/${group.id}/granular-permissions/data-source-folder`)
           .set('tj-workspace-id', organization.id)
@@ -1121,29 +1122,213 @@ describe('folder-data-sources controller', () => {
     });
 
     describe('folder visibility', () => {
-      // These tests require the permission-based folder filtering to be wired into
-      // the listing endpoint. Until Phase 5 implementation is complete, they are
-      // marked .todo() to avoid false failures.
-      it.todo(
-        'should hide folders without granular access from folder listing'
-        // When implemented: non-admin viewer with no granular access sees 0 folders
-      );
+      it('should hide folders without granular access from folder listing', async () => {
+        const { organization, auth: adminAuth } = await setupAdminUser();
 
-      it.todo(
-        'should show folders to their creator even without explicit granular access'
-        // When implemented: owner-bypass rule — creator + Create master perm = always visible
-      );
+        // Admin creates two folders
+        const visibleFolder = await createDsFolder(organization.id, 'Visible');
+        await createDsFolder(organization.id, 'Hidden');
+
+        // Create a custom group with granular access to only "Visible" folder
+        const customGroup = await setupCustomGroup(organization.id);
+
+        const gpRepo = defaultDataSource.getRepository(GranularPermissions);
+        const dsFolderPermRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
+        const groupDsFolderRepo = defaultDataSource.getRepository(GroupDsFolders);
+        const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+        const granularPerm = await gpRepo.save(
+          gpRepo.create({
+            groupId: customGroup.id,
+            name: 'Visible folder access',
+            type: ResourceType.DATA_SOURCE_FOLDER,
+            isAll: false,
+          })
+        );
+
+        const dsFolderPerm = await dsFolderPermRepo.save(
+          dsFolderPermRepo.create({
+            granularPermissionId: granularPerm.id,
+            canEditFolder: false,
+            canConfigureDs: false,
+            canUseDs: true,
+            restrictQueryRun: false,
+          })
+        );
+
+        await groupDsFolderRepo.save(
+          groupDsFolderRepo.create({
+            dsFoldersGroupPermissionsId: dsFolderPerm.id,
+            folderId: visibleFolder.id,
+          })
+        );
+
+        // Create a non-admin user and add to the custom group only
+        const viewer = await createUser(nestApp, {
+          email: 'filtered-viewer@tooljet.io',
+          password: 'password',
+          firstName: 'Filtered',
+          lastName: 'Viewer',
+          organizationId: organization.id,
+        });
+
+        // End-user group so they have a valid role
+        const endUserGroup = await setupEndUserGroup(organization.id);
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: viewer.id, groupId: endUserGroup.id })
+        );
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: viewer.id, groupId: customGroup.id })
+        );
+
+        const viewerAuth = await authenticateUser(nestApp, viewer.email, organization.id);
+
+        const response = await request(nestApp.getHttpServer())
+          .get('/api/data-source-folders')
+          .set('tj-workspace-id', organization.id)
+          .set('Cookie', viewerAuth.tokenCookie);
+
+        expect(response.statusCode).toBe(200);
+        const folderNames = response.body.map((f: any) => f.name);
+        expect(folderNames).toContain('Visible');
+        expect(folderNames).not.toContain('Hidden');
+      });
+
+      it('should show folders to their creator even without explicit granular access', async () => {
+        const { organization } = await setupAdminUser();
+
+        const groupRepo = defaultDataSource.getRepository(GroupPermissions);
+        const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+        // Create a builder-like group with dataSourceFolderCreate but no admin role
+        const builderGroup = groupRepo.create({
+          organizationId: organization.id,
+          name: 'ds-folder-creators',
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          appCreate: false,
+          appDelete: false,
+          folderCreate: false,
+          folderDelete: false,
+          dataSourceFolderCreate: true,
+          dataSourceFolderDelete: false,
+          orgConstantCRUD: false,
+          dataSourceCreate: false,
+          dataSourceDelete: false,
+        });
+        await groupRepo.save(builderGroup);
+
+        // Create user and assign to builder group + end-user group
+        const creator = await createUser(nestApp, {
+          email: 'creator@tooljet.io',
+          password: 'password',
+          firstName: 'Creator',
+          lastName: 'User',
+          organizationId: organization.id,
+        });
+
+        const endUserGroup = await setupEndUserGroup(organization.id);
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: creator.id, groupId: endUserGroup.id })
+        );
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: creator.id, groupId: builderGroup.id })
+        );
+
+        // Create two folders — one by this user, one by someone else
+        const ownedFolder = await createDsFolder(organization.id, 'My Folder', creator.id);
+        await createDsFolder(organization.id, 'Not My Folder');
+
+        const creatorAuth = await authenticateUser(nestApp, creator.email, organization.id);
+
+        const response = await request(nestApp.getHttpServer())
+          .get('/api/data-source-folders')
+          .set('tj-workspace-id', organization.id)
+          .set('Cookie', creatorAuth.tokenCookie);
+
+        expect(response.statusCode).toBe(200);
+        const folderNames = response.body.map((f: any) => f.name);
+        expect(folderNames).toContain('My Folder');
+        expect(folderNames).not.toContain('Not My Folder');
+      });
     });
 
     describe('DS x folder permission resolution', () => {
-      it.todo(
-        'should merge folder and DS permissions — higher wins ' +
-          '(requires Phase 5 query-run permission resolver to be implemented)'
-      );
+      it('should grant folder-level DS access even without direct DS granular permission', async () => {
+        const { organization, auth: adminAuth } = await setupAdminUser();
+
+        // Create a DS and put it in a folder
+        const ds = await createGlobalDataSource(organization.id, 'Folder-Scoped DS');
+        const folder = await createDsFolder(organization.id, 'Configured Folder');
+        const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+        await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+        // Create a custom group with folder-level canConfigureDs (no DS-level perm)
+        const customGroup = await setupCustomGroup(organization.id);
+
+        const gpRepo = defaultDataSource.getRepository(GranularPermissions);
+        const dsFolderPermRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
+        const groupDsFolderRepo = defaultDataSource.getRepository(GroupDsFolders);
+        const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+        const granularPerm = await gpRepo.save(
+          gpRepo.create({
+            groupId: customGroup.id,
+            name: 'Folder configure access',
+            type: ResourceType.DATA_SOURCE_FOLDER,
+            isAll: false,
+          })
+        );
+
+        const dsFolderPerm = await dsFolderPermRepo.save(
+          dsFolderPermRepo.create({
+            granularPermissionId: granularPerm.id,
+            canEditFolder: false,
+            canConfigureDs: true,
+            canUseDs: true,
+            restrictQueryRun: false,
+          })
+        );
+
+        await groupDsFolderRepo.save(
+          groupDsFolderRepo.create({
+            dsFoldersGroupPermissionsId: dsFolderPerm.id,
+            folderId: folder.id,
+          })
+        );
+
+        // Create user in custom group + end-user group
+        const viewer = await createUser(nestApp, {
+          email: 'folder-ds-viewer@tooljet.io',
+          password: 'password',
+          firstName: 'FolderDS',
+          lastName: 'Viewer',
+          organizationId: organization.id,
+        });
+
+        const endUserGroup = await setupEndUserGroup(organization.id);
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: viewer.id, groupId: endUserGroup.id })
+        );
+        await groupUsersRepo.save(
+          groupUsersRepo.create({ userId: viewer.id, groupId: customGroup.id })
+        );
+
+        const viewerAuth = await authenticateUser(nestApp, viewer.email, organization.id);
+
+        // User should be able to see the DS in the folder listing
+        const folderDsResponse = await request(nestApp.getHttpServer())
+          .get(`/api/data-source-folders/${folder.id}/data-sources`)
+          .set('tj-workspace-id', organization.id)
+          .set('Cookie', viewerAuth.tokenCookie);
+
+        expect(folderDsResponse.statusCode).toBe(200);
+        const dsIds = folderDsResponse.body.map((d: any) => d.id);
+        expect(dsIds).toContain(ds.id);
+      });
     });
   });
 
-  describe('Phase 6: restrictQueryRun runtime enforcement', () => {
+  describe('restrictQueryRun runtime enforcement', () => {
     // Helper: create a minimal non-public app with a version and data query linked to a data source
     async function createAppWithQuery(orgId: string, userId: string, dataSourceId: string) {
       const appRepo = defaultDataSource.getRepository(App);
@@ -1244,7 +1429,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
       folderDelete: false,
-          dataSourceFolderCRUD: false,
+          dataSourceFolderCreate: false,
+          dataSourceFolderDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,
@@ -1294,7 +1480,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
       folderDelete: false,
-          dataSourceFolderCRUD: false,
+          dataSourceFolderCreate: false,
+          dataSourceFolderDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,

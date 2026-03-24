@@ -58,8 +58,11 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'data_source_delete', default: false })
   dataSourceDelete: boolean;
 
-  @Column({ name: 'data_source_folder_crud', default: false })
-  dataSourceFolderCRUD: boolean;
+  @Column({ name: 'data_source_folder_create', default: false })
+  dataSourceFolderCreate: boolean;
+
+  @Column({ name: 'data_source_folder_delete', default: false })
+  dataSourceFolderDelete: boolean;
 
   @Column({ name: 'app_promote', default: false })
   appPromote: boolean;

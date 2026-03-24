@@ -33,7 +33,11 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
-  dataSourceFolderCRUD: boolean;
+  dataSourceFolderCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  dataSourceFolderDelete: boolean;
 
   @IsBoolean()
   @IsOptional()
