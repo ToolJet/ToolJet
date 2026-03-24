@@ -63,7 +63,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
@@ -439,7 +439,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
@@ -831,7 +831,7 @@ jobs:
           # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
           # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create $APP_NAME --org ${{ secrets.FLY_ORG }}
+          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
