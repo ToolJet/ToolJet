@@ -9,10 +9,11 @@ ToolJet has the capability to connect to PostgreSQL databases for data retrieval
 
 To establish a connection with the PostgreSQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose PostgreSQL as the data source.
 
-ToolJet offers two connection types to connect to your PostgreSQL database:
+ToolJet offers following connection types to connect to your PostgreSQL database:
 
 - **[Manual connection](#manual-connection)**
 - **[Connection string](#connection-string)**
+- **[Dynamic Connection](#dynamic-connection)**
 
 ### Manual Connection
 
@@ -27,13 +28,21 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **SSL Certificate**
 - **SSH Tunnelling**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgs-conn-v3.png" alt="PG connection data source"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-conn-ux-v5.png" alt="PG connection-manual"/>
 
 ### Connection String
 
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/postgresql/connection-string-v4.png" alt="PG connection string"/>
+:::info
+If your connection string (username, password, database) contains any special characters, you need to URL-encode them. 
+
+You can use this tool to encode or decode values:  [URL Encoder/Decoder](https://meyerweb.com/eric/tools/dencoder/).
+
+For example, const POSTGRES_URL = `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}`;
+:::
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/postgresql/connection-string-encoded.png" alt="PG connection string"/>
 
 <br/><br/>
 
@@ -67,7 +76,7 @@ To securely connect to a private PostgreSQL database using SSH tunnelling:
 
 Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL queries are routed through this encrypted tunnel.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgs-query-host.png" alt="PG dynamic host"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="SSH tunnelling PostgreSQL connection"/>
 
 ## Querying in SQL Mode
 
@@ -122,6 +131,13 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 | `inet_server_addr()` | Returns the IP address of the server                                  | `192.168.1.10`                              |
 | `inet_server_port()` | Returns the server port                                               | `5432`                                      |
 | `pg_backend_pid()`   | Returns the process ID of the current backend                         | `56789`                                     |
+
+
+### Dynamic Connection 
+
+ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at **query runtime** when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-dynamic-conn.png" alt="PG dynamic host"/>
 
 ## Querying in GUI Mode
 
