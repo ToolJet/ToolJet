@@ -17,7 +17,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
   const previewQuery = useStore((state) => state.queryPanel.previewQuery);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
@@ -27,7 +27,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const showCreateQuery = useStore((state) => state.queryPanel.showCreateQuery);
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     if (selectedQuery?.name) {
@@ -154,7 +154,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
 });
 
 const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const { isModuleEditor } = useModuleContext();
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isFocused = useStore((state) => state.queryPanel.nameInputFocused, shallow);
   const setIsFocused = useStore((state) => state.queryPanel.setNameInputFocused, shallow);
   const [name, setName] = useState(value);
