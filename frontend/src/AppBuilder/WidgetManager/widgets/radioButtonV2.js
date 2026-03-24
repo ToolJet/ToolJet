@@ -54,6 +54,20 @@ export const radiobuttonV2Config = {
       },
       accordian: 'Options',
     },
+    layout: {
+      type: 'select',
+      displayName: 'Layout',
+      options: [
+        { name: 'Row', value: 'row' },
+        { name: 'Column', value: 'column' },
+        { name: 'Wrap', value: 'wrap' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'row',
+      },
+      accordian: 'Options',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -298,6 +312,7 @@ export const radiobuttonV2Config = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
+      layout: { value: 'row' },
       optionsLoadingState: { value: '{{false}}' },
       optionVisibility: { value: '{{[true, true, true]}}' },
       optionDisable: { value: '{{[false, false, false]}}' },

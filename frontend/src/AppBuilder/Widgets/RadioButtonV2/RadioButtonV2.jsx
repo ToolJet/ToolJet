@@ -24,7 +24,7 @@ export const RadioButtonV2 = ({
   subContainerIndex,
   dataCy,
 }) => {
-  const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
+  const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
 
   const {
     activeColor,
@@ -191,6 +191,12 @@ export const RadioButtonV2 = ({
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
+  const computedLayoutStyles = {
+    flexDirection: layout === 'wrap' ? 'row' : layout,
+    ...(layout === 'wrap' && { flexWrap: 'wrap' }),
+    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+  };
+
   return (
     <>
       <div
@@ -209,6 +215,7 @@ export const RadioButtonV2 = ({
         style={{
           position: 'relative',
           width: '100%',
+          height: '100%',
           paddingLeft: '0px',
         }}
         role="radiogroup"
@@ -237,74 +244,73 @@ export const RadioButtonV2 = ({
           inputId={`component-${id}`}
         />
 
-        <div
-          className="px-0 h-100"
-          ref={radioBtnRef}
-          style={{
-            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
-          }}
-        >
-          {isLoading || optionsLoadingState ? (
-            <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
-          ) : (
-            <div className="">
-              {selectOptions.map((option, index) => {
-                const isChecked = checkedValue == option.value;
-                const inputId = `${id}${
-                  subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-                }-option-${index}`;
+        {isLoading || optionsLoadingState ? (
+          <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
+        ) : (
+          <div
+            className="d-flex px-0 h-100"
+            ref={radioBtnRef}
+            style={{
+              ...computedLayoutStyles,
+              ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+            }}
+          >
+            {selectOptions.map((option, index) => {
+              const isChecked = checkedValue == option.value;
+              const inputId = `${id}${
+                subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
+              }-option-${index}`;
 
-                return (
-                  <label key={index} className="radio-button-container" htmlFor={inputId}>
-                    <span
-                      data-cy={`${dataCy}-option-label-${index}`}
-                      style={{
-                        color:
-                          optionsTextColor !== '#1B1F24'
-                            ? optionsTextColor
-                            : isDisabled || isLoading
-                            ? 'var(--text-disabled)'
-                            : 'var(--text-primary)',
-                      }}
-                    >
-                      {String(option.label)}
-                    </span>
-                    <input
-                      data-cy={`${dataCy}-option-input-${index}`}
-                      style={{
-                        marginTop: '1px',
-                        backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-                      }}
-                      checked={checkedValue == option.value}
-                      type="radio"
-                      value={option.value}
-                      onChange={() => {
-                        onSelect(option.value);
-                        fireEvent('onSelectionChange');
-                      }}
-                      disabled={option.isDisabled}
-                      id={inputId}
-                    />
-                    <span
-                      className="checkmark"
-                      style={{
-                        backgroundColor:
-                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
-                        '--selected-background-color': option.isDisabled
-                          ? 'var(--surfaces-surface-03)'
-                          : switchOnBackgroundColor,
-                        '--selected-border-color': borderColor,
-                        '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
-                        border:
-                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
-                      }}
-                    ></span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </div>
+              return (
+                <label key={index} className="radio-button-container" htmlFor={inputId}>
+                  <span
+                    data-cy={`${dataCy}-option-label-${index}`}
+                    style={{
+                      color:
+                        optionsTextColor !== '#1B1F24'
+                          ? optionsTextColor
+                          : isDisabled || isLoading
+                          ? 'var(--text-disabled)'
+                          : 'var(--text-primary)',
+                    }}
+                  >
+                    {String(option.label)}
+                  </span>
+                  <input
+                    data-cy={`${dataCy}-option-input-${index}`}
+                    style={{
+                      marginTop: '1px',
+                      backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                    }}
+                    checked={checkedValue == option.value}
+                    type="radio"
+                    value={option.value}
+                    onChange={() => {
+                      onSelect(option.value);
+                      fireEvent('onSelectionChange');
+                    }}
+                    disabled={option.isDisabled}
+                    id={inputId}
+                  />
+                  <span
+                    className="checkmark"
+                    style={{
+                      backgroundColor:
+                        !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
+                      '--selected-background-color': option.isDisabled
+                        ? 'var(--surfaces-surface-03)'
+                        : switchOnBackgroundColor,
+                      '--selected-border-color': borderColor,
+                      '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
+                      border:
+                        !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
+                    }}
+                  ></span>
+                </label>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div
         className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}
