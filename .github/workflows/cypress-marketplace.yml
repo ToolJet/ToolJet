@@ -359,6 +359,22 @@ jobs:
               "password": "password"
             }'
 
+          # Authenticate to get a session cookie
+          curl -c /tmp/tj_cookies.txt 'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
+          # Complete the onboarding (sets onboarding_status = onboarding_completed)
+          # Without this the frontend always redirects to /setup, breaking all UI tests
+          curl -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{"region": "us"}'
+
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
