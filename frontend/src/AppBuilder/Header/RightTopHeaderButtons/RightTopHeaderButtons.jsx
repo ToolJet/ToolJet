@@ -6,24 +6,34 @@ import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import GitSyncManager from '../GitSyncManager';
+import LifecycleCTAButton from '../LifecycleCTAButton';
 import useStore from '@/AppBuilder/_stores/store';
 import PromoteReleaseButton from '@/modules/Appbuilder/components/PromoteReleaseButton';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
+  const { selectedVersion, selectedEnvironment } = useStore((state) => ({
+    selectedVersion: state.selectedVersion,
+    selectedEnvironment: state.selectedEnvironment,
+  }));
+
+  const isNotPromotedOrReleased = selectedEnvironment?.name === 'development' && !selectedVersion?.isReleased;
+
   return (
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
         <GitSyncManager />
         <div className="tw-hidden navbar-seperator" />
-        <PreviewAndShareIcons />
+        {/* <PreviewAndShareIcons /> */}
+        {isNotPromotedOrReleased && <LifecycleCTAButton />}
+        {/* need to review if we need this or not */}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
     </div>
   );
 };
 
-const PreviewAndShareIcons = () => {
+export const PreviewAndShareIcons = () => {
   const { moduleId } = useModuleContext();
   const {
     featureAccess,
@@ -73,7 +83,7 @@ const PreviewAndShareIcons = () => {
 
   return (
     <>
-      <div className="preview-share-wrap navbar-nav flex-row tw-mr-1">
+      <div className="preview-share-wrap navbar-nav flex-row">
         <div className="nav-item">
           {appId && (
             <ManageAppUsers

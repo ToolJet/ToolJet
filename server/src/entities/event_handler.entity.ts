@@ -49,4 +49,7 @@ export class EventHandler {
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
 }

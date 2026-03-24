@@ -54,39 +54,47 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
       versionIdToPromote,
       async (response) => {
         toast.success(`${versionToPromote.name} has been promoted to ${data.target.name}!`);
-        if (
-          data?.current?.name == 'development' &&
-          (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
-        ) {
-          try {
-            const gitData = await gitSyncService.getAppConfig(current_organization_id, versionToPromote?.id);
-            const appGit = gitData?.app_git;
-            if (appGit && appGit?.org_git?.auto_commit) {
-              const body = {
-                gitAppName: appGit?.git_app_name,
-                versionId: versionToPromote?.id,
-                lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-                gitVersionName: versionToPromote?.name,
-              };
-              await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
-              toast.success('Changes committed successfully');
-            }
-          } catch (err) {
-            const status = err?.statusCode;
-            const error = err?.error;
-            if (
-              !(status === 404 && error === 'Git Configuration not found') &&
-              !(error === 'No Git Provider is enabled for the workspace')
-            ) {
-              toast.error(error, {
-                style: {
-                  width: 'auto',
-                  maxWidth: '339px',
-                },
-              });
-            }
-          }
+        setPromotingEnvironment(false);
+        onClose();
+
+        {
+          /* Can clean when autoCommit is removed completely */
         }
+        // if (
+        //   data?.current?.name == 'development' &&
+        //   (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
+        // ) {
+        //   try {
+        //     const gitData = await gitSyncService.getAppConfig(current_organization_id, versionToPromote?.id);
+        //     const appGit = gitData?.app_git;
+        //     if (appGit && appGit?.org_git?.auto_commit) {
+        //       const body = {
+        //         gitAppName: appGit?.git_app_name,
+        //         versionId: versionToPromote?.id,
+        //         lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+        //         gitVersionName: versionToPromote?.name,
+        //         allowMasterPush: true,
+        //       };
+        //       await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
+        //       toast.success('Changes committed successfully');
+        //     }
+        //   } catch (err) {
+        //     const status = err?.statusCode;
+        //     const error = err?.error;
+        //     if (
+        //       !(status === 404 && error === 'Git Configuration not found') &&
+        //       !(error === 'No Git Provider is enabled for the workspace')
+        //     ) {
+        //       toast.error(error, {
+        //         style: {
+        //           width: 'auto',
+        //           maxWidth: '339px',
+        //         },
+        //       });
+        //     }
+        //   }
+        // }
+
         // setSelectedEnvironment(response);
         // set env id here-----> state update
         // appEnvironmentChanged(response, true);
