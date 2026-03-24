@@ -13,8 +13,8 @@ import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { DsFoldersGroupPermissions } from '@entities/ds_folders_group_permissions.entity';
-import { GroupDsFolders } from '@entities/group_ds_folder.entity';
+import { DataSourceFoldersGroupPermissions } from '@entities/data_source_folders_group_permissions.entity';
+import { GroupDataSourceFolders } from '@entities/group_data_source_folders.entity';
 import {
   createNestAppInstance,
   createUser,
@@ -301,7 +301,7 @@ describe('folder-data-sources controller', () => {
       expect(deletedFolder).toBeNull();
     });
 
-    it('should cascade delete folder_data_sources but not the data sources themselves', async () => {
+    it('should cascade delete data_source_folders but not the data sources themselves', async () => {
       const { organization, auth } = await setupAdminUser();
 
       const folder = await createDsFolder(organization.id, 'To Delete');
@@ -316,7 +316,7 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie)
         .expect(200);
 
-      // folder_data_sources row should be gone
+      // data_source_folders row should be gone
       const fds = await fdsRepo.findOne({ where: { folderId: folder.id } });
       expect(fds).toBeNull();
 
@@ -1133,8 +1133,8 @@ describe('folder-data-sources controller', () => {
         const customGroup = await setupCustomGroup(organization.id);
 
         const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-        const dsFolderPermRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
-        const groupDsFolderRepo = defaultDataSource.getRepository(GroupDsFolders);
+        const dataSourceFolderPermRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
+        const groupDataSourceFolderRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
         const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
         const granularPerm = await gpRepo.save(
@@ -1146,8 +1146,8 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        const dsFolderPerm = await dsFolderPermRepo.save(
-          dsFolderPermRepo.create({
+        const dataSourceFolderPerm = await dataSourceFolderPermRepo.save(
+          dataSourceFolderPermRepo.create({
             granularPermissionId: granularPerm.id,
             canEditFolder: false,
             canConfigureDs: false,
@@ -1156,9 +1156,9 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        await groupDsFolderRepo.save(
-          groupDsFolderRepo.create({
-            dsFoldersGroupPermissionsId: dsFolderPerm.id,
+        await groupDataSourceFolderRepo.save(
+          groupDataSourceFolderRepo.create({
+            dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
             folderId: visibleFolder.id,
           })
         );
@@ -1266,8 +1266,8 @@ describe('folder-data-sources controller', () => {
         const customGroup = await setupCustomGroup(organization.id);
 
         const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-        const dsFolderPermRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
-        const groupDsFolderRepo = defaultDataSource.getRepository(GroupDsFolders);
+        const dataSourceFolderPermRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
+        const groupDataSourceFolderRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
         const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
         const granularPerm = await gpRepo.save(
@@ -1279,8 +1279,8 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        const dsFolderPerm = await dsFolderPermRepo.save(
-          dsFolderPermRepo.create({
+        const dataSourceFolderPerm = await dataSourceFolderPermRepo.save(
+          dataSourceFolderPermRepo.create({
             granularPermissionId: granularPerm.id,
             canEditFolder: false,
             canConfigureDs: true,
@@ -1289,9 +1289,9 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        await groupDsFolderRepo.save(
-          groupDsFolderRepo.create({
-            dsFoldersGroupPermissionsId: dsFolderPerm.id,
+        await groupDataSourceFolderRepo.save(
+          groupDataSourceFolderRepo.create({
+            dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
             folderId: folder.id,
           })
         );
@@ -1373,8 +1373,8 @@ describe('folder-data-sources controller', () => {
     // restrict=true means canRunQuery=false (blocked), restrict=false means canRunQuery=true (allowed)
     async function setupRestriction(groupId: string, folderId: string, restrict: boolean) {
       const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-      const dsfgpRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
-      const gdfRepo = defaultDataSource.getRepository(GroupDsFolders);
+      const dataSourceFoldersGpRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
+      const gdfRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
 
       const granularPerm = await gpRepo.save(
         gpRepo.create({
@@ -1385,8 +1385,8 @@ describe('folder-data-sources controller', () => {
         })
       );
 
-      const dsFolderPerm = await dsfgpRepo.save(
-        dsfgpRepo.create({
+      const dataSourceFolderPerm = await dataSourceFoldersGpRepo.save(
+        dataSourceFoldersGpRepo.create({
           granularPermissionId: granularPerm.id,
           canEditFolder: false,
           canConfigureDs: false,
@@ -1397,12 +1397,12 @@ describe('folder-data-sources controller', () => {
 
       await gdfRepo.save(
         gdfRepo.create({
-          dsFoldersGroupPermissionsId: dsFolderPerm.id,
+          dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
           folderId,
         })
       );
 
-      return { granularPerm, dsFolderPerm };
+      return { granularPerm, dataSourceFolderPerm };
     }
 
     it('should block query run when canRunQuery is false for the DS folder', async () => {

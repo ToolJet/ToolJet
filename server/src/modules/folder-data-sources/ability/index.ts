@@ -16,36 +16,36 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], userAllPermissions: UserAllPermissions): void {
     const { superAdmin, userPermission, isAdmin } = userAllPermissions;
-    const canCreateDsFolder = userPermission.dataSourceFolderCreate;
-    const canDeleteDsFolder = userPermission.dataSourceFolderDelete;
+    const canCreateDataSourceFolder = userPermission.dataSourceFolderCreate;
+    const canDeleteDataSourceFolder = userPermission.dataSourceFolderDelete;
 
     if (superAdmin || isAdmin) {
       can(
         [
-          FEATURE_KEY.CREATE_DS_FOLDER,
-          FEATURE_KEY.UPDATE_DS_FOLDER,
-          FEATURE_KEY.DELETE_DS_FOLDER,
-          FEATURE_KEY.ADD_DS_TO_FOLDER,
-          FEATURE_KEY.REMOVE_DS_FROM_FOLDER,
-          FEATURE_KEY.BULK_MOVE_DS,
+          FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER,
+          FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER,
+          FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER,
+          FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER,
+          FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER,
+          FEATURE_KEY.BULK_MOVE_DATA_SOURCES,
         ],
         Folder
       );
     } else {
-      if (canCreateDsFolder) {
-        can([FEATURE_KEY.CREATE_DS_FOLDER], Folder);
+      if (canCreateDataSourceFolder) {
+        can([FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER], Folder);
       }
-      if (canDeleteDsFolder) {
-        can([FEATURE_KEY.DELETE_DS_FOLDER], Folder);
+      if (canDeleteDataSourceFolder) {
+        can([FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER], Folder);
       }
-      if (canCreateDsFolder || canDeleteDsFolder) {
+      if (canCreateDataSourceFolder || canDeleteDataSourceFolder) {
         can(
-          [FEATURE_KEY.UPDATE_DS_FOLDER, FEATURE_KEY.ADD_DS_TO_FOLDER, FEATURE_KEY.REMOVE_DS_FROM_FOLDER, FEATURE_KEY.BULK_MOVE_DS],
+          [FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER, FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER, FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER, FEATURE_KEY.BULK_MOVE_DATA_SOURCES],
           Folder
         );
       }
     }
     // Listing is available to all authenticated users
-    can([FEATURE_KEY.GET_DS_FOLDERS, FEATURE_KEY.GET_DS_IN_FOLDER], Folder);
+    can([FEATURE_KEY.GET_DATA_SOURCE_FOLDERS, FEATURE_KEY.GET_DATA_SOURCES_IN_FOLDER], Folder);
   }
 }

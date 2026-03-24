@@ -196,9 +196,9 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
   DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
   GET_ADDABLE_FOLDERS = 'get_addable_folders',
-  CREATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'create_granular_ds_folder_permissions',
-  UPDATE_GRANULAR_DS_FOLDER_PERMISSIONS = 'update_granular_ds_folder_permissions',
-  DELETE_GRANULAR_DS_FOLDER_PERMISSIONS = 'delete_granular_ds_folder_permissions',
-  GET_ADDABLE_DS_FOLDERS = 'get_addable_ds_folders',
+  CREATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'create_granular_data_source_folder_permissions',
+  UPDATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'update_granular_data_source_folder_permissions',
+  DELETE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'delete_granular_data_source_folder_permissions',
+  GET_ADDABLE_DATA_SOURCE_FOLDERS = 'get_addable_data_source_folders',
   USER_ROLE_CHANGE = 'change_user_role',
 }

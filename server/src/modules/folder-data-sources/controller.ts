@@ -15,56 +15,56 @@ import { FeatureAbilityGuard } from './ability/guard';
 export class FolderDataSourcesController implements IFolderDataSourcesController {
   constructor(protected folderDataSourcesService: FolderDataSourcesService) {}
 
-  @InitFeature(FEATURE_KEY.GET_DS_FOLDERS)
+  @InitFeature(FEATURE_KEY.GET_DATA_SOURCE_FOLDERS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   async getFolders(@User() user, @Query('search') search?: string) {
     return await this.folderDataSourcesService.getFolders(user, search);
   }
 
-  @InitFeature(FEATURE_KEY.CREATE_DS_FOLDER)
+  @InitFeature(FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post()
   async create(@User() user, @Body() createDsFolderDto: CreateDsFolderDto) {
     return await this.folderDataSourcesService.createFolder(user, createDsFolderDto);
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE_DS_FOLDER)
+  @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id')
   async update(@User() user, @Param('id') id, @Body() updateDsFolderDto: UpdateDsFolderDto) {
     return await this.folderDataSourcesService.renameFolder(user, id, updateDsFolderDto);
   }
 
-  @InitFeature(FEATURE_KEY.DELETE_DS_FOLDER)
+  @InitFeature(FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') id) {
     return await this.folderDataSourcesService.deleteFolder(user, id);
   }
 
-  @InitFeature(FEATURE_KEY.GET_DS_IN_FOLDER)
+  @InitFeature(FEATURE_KEY.GET_DATA_SOURCES_IN_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get(':id/data-sources')
   async getDataSourcesInFolder(@User() user, @Param('id') id) {
     return await this.folderDataSourcesService.getDataSourcesInFolder(user, id);
   }
 
-  @InitFeature(FEATURE_KEY.ADD_DS_TO_FOLDER)
+  @InitFeature(FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/data-sources')
   async addDataSource(@User() user, @Param('id') id, @Body() dto: AddDsToFolderDto) {
     return await this.folderDataSourcesService.addDataSourceToFolder(user, id, dto);
   }
 
-  @InitFeature(FEATURE_KEY.REMOVE_DS_FROM_FOLDER)
+  @InitFeature(FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Delete(':id/data-sources/:dsId')
   async removeDataSource(@User() user, @Param('id') id, @Param('dsId') dsId) {
     return await this.folderDataSourcesService.removeDataSourceFromFolder(user, id, dsId);
   }
 
-  @InitFeature(FEATURE_KEY.BULK_MOVE_DS)
+  @InitFeature(FEATURE_KEY.BULK_MOVE_DATA_SOURCES)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id/data-sources')
   async bulkMoveDataSources(@User() user, @Param('id') id, @Body() dto: BulkMoveDsDto) {

@@ -13,7 +13,7 @@ type CreateResourcePermissionMap = {
   [ResourceType.DATA_SOURCE]: CreateDataSourcePermissionsObject;
   [ResourceType.WORKFLOWS]: CreateWorkflowPermissionsObject;
   [ResourceType.FOLDER]: CreateFolderPermissionsObject;
-  [ResourceType.DATA_SOURCE_FOLDER]: CreateDsFolderPermissionsObject;
+  [ResourceType.DATA_SOURCE_FOLDER]: CreateDataSourceFolderPermissionsObject;
 };
 
 export type CreateResourcePermissionObject<T extends ResourceType> = CreateResourcePermissionMap[T];
@@ -49,7 +49,7 @@ export interface CreateFolderPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
 }
 
-export interface CreateDsFolderPermissionsObject {
+export interface CreateDataSourceFolderPermissionsObject {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
@@ -57,7 +57,7 @@ export interface CreateDsFolderPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.DATA_SOURCE_FOLDER>;
 }
 
-export interface DsFoldersGroupPermissionsActions {
+export interface DataSourceFoldersGroupPermissionsActions {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
@@ -79,7 +79,7 @@ type ResourceToPermissionItemMap = {
   [ResourceType.DATA_SOURCE]: DataSourcesPermissionResourceItem[];
   [ResourceType.WORKFLOWS]: WorkflowsPermissionAddResourceItem[];
   [ResourceType.FOLDER]: FolderPermissionAddResourceItem[];
-  [ResourceType.DATA_SOURCE_FOLDER]: DsFoldersPermissionResourceItem[];
+  [ResourceType.DATA_SOURCE_FOLDER]: DataSourceFoldersPermissionResourceItem[];
 };
 
 export type GranularPermissionAddResourceItems<T extends ResourceType> = ResourceToPermissionItemMap[T];
@@ -105,7 +105,7 @@ export interface FolderPermissionAddResourceItem {
   folderId: string;
 }
 
-export interface DsFoldersPermissionResourceItem {
+export interface DataSourceFoldersPermissionResourceItem {
   folderId: string;
 }
 
@@ -164,7 +164,7 @@ type ResourceActionMap = {
   [ResourceType.DATA_SOURCE]: DataSourcesGroupPermissionsActions;
   [ResourceType.WORKFLOWS]: WorkflowsGroupPermissionsActions;
   [ResourceType.FOLDER]: FoldersGroupPermissionsActions;
-  [ResourceType.DATA_SOURCE_FOLDER]: DsFoldersGroupPermissionsActions;
+  [ResourceType.DATA_SOURCE_FOLDER]: DataSourceFoldersGroupPermissionsActions;
 };
 
 export type ResourceGroupActions<T extends ResourceType> = ResourceActionMap[T];

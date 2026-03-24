@@ -11,10 +11,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { GranularPermissions } from './granular_permissions.entity';
-import { GroupDsFolders } from './group_ds_folder.entity';
+import { GroupDataSourceFolders } from './group_data_source_folders.entity';
 
-@Entity({ name: 'ds_folders_group_permissions' })
-export class DsFoldersGroupPermissions extends BaseEntity {
+@Entity({ name: 'data_source_folders_group_permissions' })
+export class DataSourceFoldersGroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -44,8 +44,8 @@ export class DsFoldersGroupPermissions extends BaseEntity {
   @JoinColumn({ name: 'granular_permission_id' })
   granularPermissions: GranularPermissions;
 
-  @OneToMany(() => GroupDsFolders, (groupDsFolder) => groupDsFolder.dsFoldersGroupPermissions, {
+  @OneToMany(() => GroupDataSourceFolders, (groupDataSourceFolder) => groupDataSourceFolder.dataSourceFoldersGroupPermissions, {
     onDelete: 'CASCADE',
   })
-  groupDsFolders: GroupDsFolders[];
+  groupDataSourceFolders: GroupDataSourceFolders[];
 }

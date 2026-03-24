@@ -5,6 +5,8 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';
+import { GroupExistenceGuard } from './guards/group-existance.guard';
+import { GroupPermissionsUtilService as GroupPermissionsUtilServiceCE } from './util.service';
 import { SubModule } from '@modules/app/sub-module';
 
 export class GroupPermissionsModule extends SubModule {
@@ -40,13 +42,17 @@ export class GroupPermissionsModule extends SubModule {
         GroupPermissionsUtilService,
         GranularPermissionsUtilService,
         GroupPermissionLicenseUtilService,
+        // Alias CE class token to the dynamically loaded (possibly EE) instance
+        // so guards imported statically can resolve their dependencies
+        { provide: GroupPermissionsUtilServiceCE, useExisting: GroupPermissionsUtilService },
+        GroupExistenceGuard,
         OrganizationUsersRepository,
         RolesRepository,
         UserRepository,
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService],
+      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupExistenceGuard],
     };
   }
 }

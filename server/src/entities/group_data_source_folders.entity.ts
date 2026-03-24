@@ -9,15 +9,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Folder } from './folder.entity';
-import { DsFoldersGroupPermissions } from './ds_folders_group_permissions.entity';
+import { DataSourceFoldersGroupPermissions } from './data_source_folders_group_permissions.entity';
 
-@Entity({ name: 'group_ds_folders' })
-export class GroupDsFolders extends BaseEntity {
+@Entity({ name: 'group_data_source_folders' })
+export class GroupDataSourceFolders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'ds_folders_group_permissions_id' })
-  dsFoldersGroupPermissionsId: string;
+  @Column({ name: 'data_source_folders_group_permissions_id' })
+  dataSourceFoldersGroupPermissionsId: string;
 
   @Column({ name: 'folder_id' })
   folderId: string;
@@ -28,9 +28,9 @@ export class GroupDsFolders extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => DsFoldersGroupPermissions, (dsFolderPermissions) => dsFolderPermissions.id)
-  @JoinColumn({ name: 'ds_folders_group_permissions_id' })
-  dsFoldersGroupPermissions: DsFoldersGroupPermissions;
+  @ManyToOne(() => DataSourceFoldersGroupPermissions, (dataSourceFolderPermissions) => dataSourceFolderPermissions.id)
+  @JoinColumn({ name: 'data_source_folders_group_permissions_id' })
+  dataSourceFoldersGroupPermissions: DataSourceFoldersGroupPermissions;
 
   @ManyToOne(() => Folder, (folder) => folder.id)
   @JoinColumn({ name: 'folder_id' })
