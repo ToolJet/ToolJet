@@ -61,14 +61,16 @@ jobs:
       - name: Create Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
+          flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
@@ -85,6 +87,7 @@ jobs:
       - name: Create Postgres Volume
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
@@ -95,6 +98,7 @@ jobs:
       - name: Deploy Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
@@ -237,6 +241,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Updated Image
@@ -253,6 +258,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
@@ -294,6 +300,7 @@ jobs:
       - name: Stop Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -336,6 +343,7 @@ jobs:
       - name: Start Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -377,6 +385,7 @@ jobs:
       - name: Destroy Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
@@ -437,14 +446,16 @@ jobs:
       - name: Create Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
+          flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
@@ -464,6 +475,7 @@ jobs:
       - name: Create Postgres Volume
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
@@ -474,6 +486,7 @@ jobs:
       - name: Deploy Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
@@ -624,6 +637,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Updated Image
@@ -643,6 +657,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
@@ -684,6 +699,7 @@ jobs:
       - name: Stop Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -726,6 +742,7 @@ jobs:
       - name: Start Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -767,6 +784,7 @@ jobs:
       - name: Destroy Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
@@ -827,16 +845,18 @@ jobs:
       - name: Create Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
           # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          flyctl apps create --name $APP_NAME -o ${{ secrets.FLY_ORG }}
+          flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Authenticate Docker with Fly Registry
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
@@ -856,6 +876,7 @@ jobs:
       - name: Create Postgres Volume
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl volumes create pg_data \
             --app ${{ env.APP_NAME }} \
@@ -866,6 +887,7 @@ jobs:
       - name: Deploy Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
@@ -1016,6 +1038,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Updated Image
@@ -1035,6 +1058,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           SHA="${{ github.event.pull_request.head.sha }}"
@@ -1076,6 +1100,7 @@ jobs:
       - name: Stop Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -1118,6 +1143,7 @@ jobs:
       - name: Start Fly Machine
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           MACHINE_ID=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].id')
@@ -1159,6 +1185,7 @@ jobs:
       - name: Destroy Fly App
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
