@@ -18,8 +18,12 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
   @InitFeature(FEATURE_KEY.GET_DATA_SOURCE_FOLDERS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  async getFolders(@User() user, @Query('search') search?: string) {
-    return await this.folderDataSourcesService.getFolders(user, search);
+  async getFolders(
+    @User() user,
+    @Query('search') search?: string,
+    @Query('include_data_sources') includeDataSources?: string
+  ) {
+    return await this.folderDataSourcesService.getFolders(user, search, includeDataSources === 'true');
   }
 
   @InitFeature(FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER)
@@ -46,8 +50,13 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
   @InitFeature(FEATURE_KEY.GET_DATA_SOURCES_IN_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get(':id/data-sources')
-  async getDataSourcesInFolder(@User() user, @Param('id') id) {
-    return await this.folderDataSourcesService.getDataSourcesInFolder(user, id);
+  async getDataSourcesInFolder(
+    @User() user,
+    @Param('id') id,
+    @Query('page') page = '1',
+    @Query('per_page') perPage = '25'
+  ) {
+    return await this.folderDataSourcesService.getDataSourcesInFolder(user, id, parseInt(page), parseInt(perPage));
   }
 
   @InitFeature(FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER)

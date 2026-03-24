@@ -15,6 +15,9 @@ import { AppVersion } from '@entities/app_version.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { DataSourceFoldersGroupPermissions } from '@entities/data_source_folders_group_permissions.entity';
 import { GroupDataSourceFolders } from '@entities/group_data_source_folders.entity';
+import { Organization } from '@entities/organization.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { User } from '@entities/user.entity';
 import {
   createNestAppInstance,
   createUser,
@@ -196,6 +199,12 @@ describe('folder-data-sources controller', () => {
 
       expect(response.statusCode).toBe(400);
     });
+
+    // GAP: License-off → 451. These routes use FeatureAbilityGuard (CASL), not
+    // FeatureGuard (license). A @UseGuards(FeatureGuard) + @InitFeature(...) decorator
+    // must be added to the controller before license-off can be tested. The pattern
+    // for that test is in workflow-webhook.e2e-spec.ts using
+    // createNestAppInstanceWithServiceMocks({ shouldMockLicenseService: true }).
 
     it('should reject duplicate folder name in same organization', async () => {
       const { organization, auth } = await setupAdminUser();
@@ -659,6 +668,143 @@ describe('folder-data-sources controller', () => {
       expect(response.body).toHaveLength(1);
       expect(response.body[0].name).toEqual('Finance');
     });
+
+    it('should return folders with nested data_sources when include_data_sources=true', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder1 = await createDsFolder(organization.id, 'Finance');
+      const folder2 = await createDsFolder(organization.id, 'Marketing');
+
+      const ds1 = await createGlobalDataSource(organization.id, 'Postgres Prod');
+      const ds2 = await createGlobalDataSource(organization.id, 'Stripe API');
+      const ds3 = await createGlobalDataSource(organization.id, 'Redis Cache');
+      const dsUngrouped = await createGlobalDataSource(organization.id, 'Ungrouped DS');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder1.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder1.id, dataSourceId: ds2.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder2.id, dataSourceId: ds3.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders?include_data_sources=true')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      // 2 folders + 1 ungrouped bucket
+      expect(response.body).toHaveLength(3);
+
+      const finance = response.body.find((f: any) => f.name === 'Finance');
+      expect(finance.data_sources).toHaveLength(2);
+      expect(finance.count).toBe(2);
+
+      const marketing = response.body.find((f: any) => f.name === 'Marketing');
+      expect(marketing.data_sources).toHaveLength(1);
+      expect(marketing.count).toBe(1);
+
+      const ungrouped = response.body.find((f: any) => f.id === null);
+      expect(ungrouped).toBeDefined();
+      expect(ungrouped.name).toEqual('Ungrouped');
+      expect(ungrouped.data_sources.some((ds: any) => ds.id === dsUngrouped.id)).toBe(true);
+    });
+
+    it('should sort data sources alphabetically within folders', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'Test Folder');
+
+      const dsZ = await createGlobalDataSource(organization.id, 'Zebra');
+      const dsA = await createGlobalDataSource(organization.id, 'Alpha');
+      const dsM = await createGlobalDataSource(organization.id, 'Middle');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: dsZ.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: dsA.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: dsM.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders?include_data_sources=true')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+
+      const testFolder = response.body.find((f: any) => f.name === 'Test Folder');
+      expect(testFolder.data_sources).toHaveLength(3);
+      expect(testFolder.data_sources[0].name).toEqual('Alpha');
+      expect(testFolder.data_sources[1].name).toEqual('Middle');
+      expect(testFolder.data_sources[2].name).toEqual('Zebra');
+    });
+
+    it('should filter by DS name when searching with include_data_sources=true', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder1 = await createDsFolder(organization.id, 'Finance');
+      const folder2 = await createDsFolder(organization.id, 'Marketing');
+
+      const ds1 = await createGlobalDataSource(organization.id, 'Postgres Prod');
+      const ds2 = await createGlobalDataSource(organization.id, 'Redis Cache');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder1.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder2.id, dataSourceId: ds2.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders?include_data_sources=true&search=postgres')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+
+      // Finance folder included (has matching DS), Marketing excluded
+      const folderNames = response.body.filter((f: any) => f.id !== null).map((f: any) => f.name);
+      expect(folderNames).toContain('Finance');
+      expect(folderNames).not.toContain('Marketing');
+
+      const finance = response.body.find((f: any) => f.name === 'Finance');
+      expect(finance.data_sources).toHaveLength(1);
+      expect(finance.data_sources[0].name).toEqual('Postgres Prod');
+    });
+
+    it('should return all DS in folder when folder name matches search', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'Finance');
+
+      const ds1 = await createGlobalDataSource(organization.id, 'Postgres Prod');
+      const ds2 = await createGlobalDataSource(organization.id, 'Stripe API');
+
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds1.id }));
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds2.id }));
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders?include_data_sources=true&search=Finance')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+
+      const finance = response.body.find((f: any) => f.name === 'Finance');
+      expect(finance).toBeDefined();
+      // All DS returned since folder name matches
+      expect(finance.data_sources).toHaveLength(2);
+    });
+
+    it('should not include data_sources key without include_data_sources param', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      await createDsFolder(organization.id, 'Finance');
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).not.toHaveProperty('data_sources');
+    });
   });
 
   describe('GET /api/data-source-folders/:folderId/data-sources', () => {
@@ -685,14 +831,78 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveLength(2);
+      expect(response.body.data_sources).toHaveLength(2);
 
-      const returnedIds = response.body.map((ds: any) => ds.id);
+      const returnedIds = response.body.data_sources.map((ds: any) => ds.id);
       expect(returnedIds).toContain(ds1.id);
       expect(returnedIds).toContain(ds2.id);
+
+      // Verify meta
+      expect(response.body.meta).toEqual({
+        total_count: 2,
+        total_pages: 1,
+        current_page: 1,
+        per_page: 25,
+      });
     });
 
-    it('should return empty array for folder with no data sources', async () => {
+    it('should paginate data sources within a folder', async () => {
+      const { organization, auth } = await setupAdminUser();
+
+      const folder = await createDsFolder(organization.id, 'Paginated Folder');
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+
+      // Create 5 data sources in the folder
+      for (let i = 1; i <= 5; i++) {
+        const ds = await createGlobalDataSource(organization.id, `DS ${i}`);
+        await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+      }
+
+      // Page 1 with per_page=2 → expect 2 items
+      const page1 = await request(nestApp.getHttpServer())
+        .get(`/api/data-source-folders/${folder.id}/data-sources?page=1&per_page=2`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(page1.statusCode).toBe(200);
+      expect(page1.body.data_sources).toHaveLength(2);
+      expect(page1.body.meta).toEqual({
+        total_count: 5,
+        total_pages: 3,
+        current_page: 1,
+        per_page: 2,
+      });
+
+      // Page 2 → expect 2 items
+      const page2 = await request(nestApp.getHttpServer())
+        .get(`/api/data-source-folders/${folder.id}/data-sources?page=2&per_page=2`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(page2.statusCode).toBe(200);
+      expect(page2.body.data_sources).toHaveLength(2);
+      expect(page2.body.meta.current_page).toBe(2);
+
+      // Page 3 → expect 1 item (remainder)
+      const page3 = await request(nestApp.getHttpServer())
+        .get(`/api/data-source-folders/${folder.id}/data-sources?page=3&per_page=2`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie);
+
+      expect(page3.statusCode).toBe(200);
+      expect(page3.body.data_sources).toHaveLength(1);
+      expect(page3.body.meta.current_page).toBe(3);
+
+      // No overlap between pages
+      const allIds = [
+        ...page1.body.data_sources.map((ds: any) => ds.id),
+        ...page2.body.data_sources.map((ds: any) => ds.id),
+        ...page3.body.data_sources.map((ds: any) => ds.id),
+      ];
+      expect(new Set(allIds).size).toBe(5);
+    });
+
+    it('should return empty data_sources for folder with no data sources', async () => {
       const { organization, auth } = await setupAdminUser();
 
       const folder = await createDsFolder(organization.id, 'Empty Folder');
@@ -703,7 +913,8 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual([]);
+      expect(response.body.data_sources).toEqual([]);
+      expect(response.body.meta.total_count).toBe(0);
     });
   });
 
@@ -1322,7 +1533,7 @@ describe('folder-data-sources controller', () => {
           .set('Cookie', viewerAuth.tokenCookie);
 
         expect(folderDsResponse.statusCode).toBe(200);
-        const dsIds = folderDsResponse.body.map((d: any) => d.id);
+        const dsIds = folderDsResponse.body.data_sources.map((d: any) => d.id);
         expect(dsIds).toContain(ds.id);
       });
     });
@@ -1507,6 +1718,85 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).not.toBe(403);
     });
 
+    it('should block query run when canRunQuery=false even with full folder edit access', async () => {
+      const { user, organization, auth } = await setupAdminUser();
+
+      // Create DS, folder, and put DS in folder
+      const ds = await createGlobalDataSource(organization.id, 'Full Access DS');
+      const folder = await createDsFolder(organization.id, 'Full Access Folder');
+      const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
+      await fdsRepo.save(fdsRepo.create({ folderId: folder.id, dataSourceId: ds.id }));
+
+      // Create app with query
+      const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
+
+      // Create custom group with all master-level permissions disabled
+      const groupRepo = defaultDataSource.getRepository(GroupPermissions);
+      const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+      const customGroup = await groupRepo.save(
+        groupRepo.create({
+          organizationId: organization.id,
+          name: 'full-access-no-run',
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          appCreate: false,
+          appDelete: false,
+          folderCreate: false,
+          folderDelete: false,
+          dataSourceFolderCreate: false,
+          dataSourceFolderDelete: false,
+          orgConstantCRUD: false,
+          dataSourceCreate: false,
+          dataSourceDelete: false,
+        })
+      );
+
+      await groupUsersRepo.save(
+        groupUsersRepo.create({ userId: user.id, groupId: customGroup.id })
+      );
+
+      // Set canEditFolder=true, canConfigureDs=true, canUseDs=true, but canRunQuery=false
+      // This validates canRunQuery is independent of the permission hierarchy at runtime
+      const gpRepo = defaultDataSource.getRepository(GranularPermissions);
+      const dataSourceFoldersGpRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
+      const gdfRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
+
+      const granularPerm = await gpRepo.save(
+        gpRepo.create({
+          groupId: customGroup.id,
+          name: 'Full edit no run test',
+          type: ResourceType.DATA_SOURCE_FOLDER,
+          isAll: false,
+        })
+      );
+
+      const dataSourceFolderPerm = await dataSourceFoldersGpRepo.save(
+        dataSourceFoldersGpRepo.create({
+          granularPermissionId: granularPerm.id,
+          canEditFolder: true,
+          canConfigureDs: true,
+          canUseDs: true,
+          canRunQuery: false,
+        })
+      );
+
+      await gdfRepo.save(
+        gdfRepo.create({
+          dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
+          folderId: folder.id,
+        })
+      );
+
+      // Try to run the query — should be blocked despite full folder edit access
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-queries/${query.id}/run`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', auth.tokenCookie)
+        .send({ options: {}, resolvedOptions: {} });
+
+      expect(response.statusCode).toBe(403);
+    });
+
     it('should allow query run when DS is not in any folder', async () => {
       const { user, organization, auth } = await setupAdminUser();
 
@@ -1525,6 +1815,125 @@ describe('folder-data-sources controller', () => {
 
       // Should not be 403 — no folder restriction applies
       expect(response.statusCode).not.toBe(403);
+    });
+
+    // GAP: DS-level restrictQueryRun + folder-level canRunQuery interplay.
+    // canRunQuery only exists on DataSourceFoldersGroupPermissions (folder level).
+    // DataSourcesGroupPermissions (individual DS) has canConfigure/canUse only — no
+    // canRunQuery field. There is no cross-level interplay to test in the current schema.
+  });
+
+  describe('cross-organization isolation', () => {
+    // Helper: create a second org with its own admin (unique slug to avoid conflicts)
+    async function setupSecondOrgAdmin() {
+      const orgRepo = defaultDataSource.getRepository(Organization);
+      const userRepo = defaultDataSource.getRepository(User);
+      const orgUserRepo = defaultDataSource.getRepository(OrganizationUser);
+      const groupRepo = defaultDataSource.getRepository(GroupPermissions);
+      const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
+
+      const orgB = await orgRepo.save(
+        orgRepo.create({ name: 'Org B', slug: 'org-b', status: 'active' })
+      );
+
+      await createDefaultAppEnvironments(nestApp, orgB.id);
+
+      const userB = await userRepo.save(
+        userRepo.create({
+          email: 'admin-orgb@tooljet.io',
+          firstName: 'Admin',
+          lastName: 'OrgB',
+          password: 'password',
+          organizationId: orgB.id,
+          defaultOrganizationId: orgB.id,
+          status: 'active',
+        })
+      );
+
+      await orgUserRepo.save(
+        orgUserRepo.create({ userId: userB.id, organizationId: orgB.id, role: 'admin', status: 'active' })
+      );
+
+      const adminGroup = await groupRepo.save(
+        groupRepo.create({
+          organizationId: orgB.id,
+          name: 'admin',
+          type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+          appCreate: true,
+          appDelete: true,
+          folderCreate: true,
+          folderDelete: true,
+          dataSourceFolderCreate: true,
+          dataSourceFolderDelete: true,
+          orgConstantCRUD: true,
+          dataSourceCreate: true,
+          dataSourceDelete: true,
+        })
+      );
+
+      await groupUsersRepo.save(
+        groupUsersRepo.create({ userId: userB.id, groupId: adminGroup.id })
+      );
+
+      const authB = await authenticateUser(nestApp, userB.email, orgB.id);
+
+      return { user: userB, organization: orgB, auth: authB };
+    }
+
+    it('should not expose org A folders when org B admin lists their own folders', async () => {
+      // Org A: create admin and a folder
+      const { organization: orgA, auth: authA } = await setupAdminUser();
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-source-folders')
+        .set('tj-workspace-id', orgA.id)
+        .set('Cookie', authA.tokenCookie)
+        .send({ name: 'Org A Secret Folder' });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      // Org B: separate org with its own admin
+      const { auth: authB, organization: orgB } = await setupSecondOrgAdmin();
+
+      // Org B admin lists folders in their own workspace → should NOT see org A's folder
+      const listResponse = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders')
+        .set('tj-workspace-id', orgB.id)
+        .set('Cookie', authB.tokenCookie);
+
+      expect(listResponse.statusCode).toBe(200);
+      expect(listResponse.body).toEqual([]);
+    });
+
+    it('should not allow org B admin to delete org A folder', async () => {
+      // Org A: create admin and a folder
+      const { organization: orgA, auth: authA } = await setupAdminUser();
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-source-folders')
+        .set('tj-workspace-id', orgA.id)
+        .set('Cookie', authA.tokenCookie)
+        .send({ name: 'Org A Protected Folder' });
+
+      expect(createResponse.statusCode).toBe(201);
+      const orgAFolderId = createResponse.body.id;
+
+      // Org B: separate org with its own admin
+      const { auth: authB } = await setupSecondOrgAdmin();
+
+      // Org B admin tries to delete org A's folder using org A's workspace ID
+      const deleteResponse = await request(nestApp.getHttpServer())
+        .delete(`/api/data-source-folders/${orgAFolderId}`)
+        .set('tj-workspace-id', orgA.id)
+        .set('Cookie', authB.tokenCookie);
+
+      // Should be rejected — user doesn't belong to org A
+      expect([401, 403, 404]).toContain(deleteResponse.statusCode);
+
+      // Verify folder still exists in org A
+      const folderRepo = defaultDataSource.getRepository(Folder);
+      const folder = await folderRepo.findOne({ where: { id: orgAFolderId } });
+      expect(folder).toBeDefined();
     });
   });
 

@@ -7,6 +7,6 @@ export interface IFolderDataSourcesController {
   addDataSource(user: any, folderId: string, dto: AddDsToFolderDto): Promise<void | object>;
   removeDataSource(user: any, folderId: string, dataSourceId: string): Promise<void | object>;
   bulkMoveDataSources(user: any, folderId: string, dto: BulkMoveDsDto): Promise<void | object>;
-  getFolders(user: any, search?: string): Promise<void | object>;
-  getDataSourcesInFolder(user: any, id: string): Promise<void | object>;
+  getFolders(user: any, search?: string, includeDataSources?: string): Promise<void | object>;
+  getDataSourcesInFolder(user: any, id: string, page?: string, perPage?: string): Promise<void | object>;
 }

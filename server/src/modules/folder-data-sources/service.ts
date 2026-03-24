@@ -159,11 +159,14 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     });
   }
 
-  async getFolders(user: any, searchKey?: string) {
+  async getFolders(user: any, searchKey?: string, includeDataSources?: boolean) {
+    if (includeDataSources) {
+      return this.folderDataSourcesUtilService.allFoldersWithDataSources(user.organizationId, searchKey);
+    }
     return this.folderDataSourcesUtilService.allFoldersWithDsCount(user.organizationId, searchKey);
   }
 
-  async getDataSourcesInFolder(user: any, folderId: string) {
-    return this.folderDataSourcesUtilService.getDataSourcesForFolder(folderId);
+  async getDataSourcesInFolder(user: any, folderId: string, page = 1, perPage = 25) {
+    return this.folderDataSourcesUtilService.getDataSourcesForFolder(folderId, page, perPage);
   }
 }
