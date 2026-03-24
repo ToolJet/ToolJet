@@ -195,7 +195,12 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`} data-cy={`${dataCy}-upload-files-label`}>
+            <h3
+              className="file-picker-title"
+              style={{ color: 'var(--file-picker-text-primary)' }}
+              id={`${id}-label`}
+              data-cy={`${dataCy}-upload-files-label`}
+            >
               {labelText}
             </h3>
             <ValidationBar
@@ -269,9 +274,9 @@ FilePicker.defaultProps = {
   darkMode: false,
   styles: {},
   properties: {},
-  fireEvent: () => { },
-  setExposedVariable: () => { },
-  setExposedVariables: () => { },
+  fireEvent: () => {},
+  setExposedVariable: () => {},
+  setExposedVariables: () => {},
 };
 
 export default FilePicker;
