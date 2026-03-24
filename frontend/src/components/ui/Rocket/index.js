@@ -112,3 +112,15 @@ export {
   DialogClose,
   DialogPortal,
 } from './Dialog/Dialog';
+export {
+  Empty,
+  emptyVariants,
+  EmptyHeader,
+  EmptyMedia,
+  emptyMediaVariants,
+  EmptyTitle,
+  emptyTitleVariants,
+  EmptyDescription,
+  emptyDescriptionVariants,
+  EmptyContent,
+} from './Empty/Empty';
