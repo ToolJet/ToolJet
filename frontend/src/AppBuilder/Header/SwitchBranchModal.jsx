@@ -17,6 +17,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   const {
     allBranches,
     selectedVersion,
+    appName,
     currentBranch,
     fetchBranches,
     switchBranch,
@@ -30,6 +31,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   } = useStore((state) => ({
     allBranches: state.allBranches,
     selectedVersion: state.selectedVersion,
+    appName: state.appStore?.modules?.canvas?.app?.appName,
     currentBranch: state.currentBranch,
     fetchBranches: state.fetchBranches,
     switchBranch: state.switchBranch,
@@ -123,7 +125,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
           } else {
             // App doesn't exist on target branch — go to dashboard
-            sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
+            sessionStorage.setItem('git_sync_toast', `${appName || 'This app'} does not exist on this branch`);
             window.location.href = `/${pathParts[1]}`;
           }
           return;
