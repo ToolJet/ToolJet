@@ -3,7 +3,7 @@ import { Folder } from '@entities/folder.entity';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { decamelizeKeys } from 'humps';
-import { AddDsToFolderDto, BulkMoveDsDto, CreateDsFolderDto, UpdateDsFolderDto } from './dto';
+import { AddDataSourceToFolderDto, BulkMoveDataSourcesDto, CreateFolderDataSourceDto, UpdateFolderDataSourceDto } from './dto';
 import { IFolderDataSourcesService } from './interfaces/IService';
 import { catchDbException } from '@helpers/utils.helper';
 import { DeleteResult, EntityManager, In } from 'typeorm';
@@ -14,8 +14,8 @@ import { FolderDataSourcesUtilService } from './util.service';
 @Injectable()
 export class FolderDataSourcesService implements IFolderDataSourcesService {
   constructor(protected folderDataSourcesUtilService: FolderDataSourcesUtilService) {}
-  async createFolder(user, createDsFolderDto: CreateDsFolderDto) {
-    const folderName = createDsFolderDto.name;
+  async createFolder(user, dto: CreateFolderDataSourceDto) {
+    const folderName = dto.name;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const folder = await catchDbException(
         async () => {
@@ -42,8 +42,8 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     });
   }
 
-  async renameFolder(user, id: string, updateDsFolderDto: UpdateDsFolderDto) {
-    const folderName = updateDsFolderDto.name;
+  async renameFolder(user, id: string, dto: UpdateFolderDataSourceDto) {
+    const folderName = dto.name;
     return dbTransactionWrap(async (manager: EntityManager) => {
       const folder = await catchDbException(
         async () => {
@@ -73,7 +73,7 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     });
   }
 
-  async addDataSourceToFolder(user, folderId: string, dto: AddDsToFolderDto) {
+  async addDataSourceToFolder(user, folderId: string, dto: AddDataSourceToFolderDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Verify folder belongs to user's org
       await manager.findOneOrFail(Folder, {
@@ -123,7 +123,7 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     });
   }
 
-  async bulkMoveDataSources(user, folderId: string, dto: BulkMoveDsDto) {
+  async bulkMoveDataSources(user, folderId: string, dto: BulkMoveDataSourcesDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Verify folder belongs to user's org
       await manager.findOneOrFail(Folder, {
@@ -167,6 +167,12 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
   }
 
   async getDataSourcesInFolder(user: any, folderId: string, page = 1, perPage = 25) {
+    // Verify folder belongs to user's org before listing data sources
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.findOneOrFail(Folder, {
+        where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
+      });
+    });
     return this.folderDataSourcesUtilService.getDataSourcesForFolder(folderId, page, perPage);
   }
 }

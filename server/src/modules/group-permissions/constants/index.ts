@@ -19,7 +19,7 @@ export enum ResourceType {
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
   FOLDER = 'folder',
-  DATA_SOURCE_FOLDER = 'data_source_folder',
+  FOLDER_DATA_SOURCE = 'folder_data_source',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -30,8 +30,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: true,
     folderCreate: true,
     folderDelete: true,
-    dataSourceFolderCreate: true,
-    dataSourceFolderDelete: true,
+    folderDataSourceCreate: true,
+    folderDataSourceDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     orgConstantCRUD: true,
@@ -48,8 +48,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: true,
     folderCreate: true,
     folderDelete: true,
-    dataSourceFolderCreate: true,
-    dataSourceFolderDelete: true,
+    folderDataSourceCreate: true,
+    folderDataSourceDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     orgConstantCRUD: true,
@@ -68,8 +68,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     workflowDelete: false,
     folderCreate: false,
     folderDelete: false,
-    dataSourceFolderCreate: false,
-    dataSourceFolderDelete: false,
+    folderDataSourceCreate: false,
+    folderDataSourceDelete: false,
     orgConstantCRUD: false,
     dataSourceCreate: false,
     dataSourceDelete: false,
@@ -96,7 +96,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
-    [ResourceType.DATA_SOURCE_FOLDER]: {
+    [ResourceType.FOLDER_DATA_SOURCE]: {
       action: {
         canEditFolder: true,
         canConfigureDs: true,
@@ -152,7 +152,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
-    [ResourceType.DATA_SOURCE_FOLDER]: {
+    [ResourceType.FOLDER_DATA_SOURCE]: {
       action: {
         canEditFolder: true,
         canConfigureDs: true,
@@ -196,9 +196,9 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
   DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
   GET_ADDABLE_FOLDERS = 'get_addable_folders',
-  CREATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'create_granular_data_source_folder_permissions',
-  UPDATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'update_granular_data_source_folder_permissions',
-  DELETE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'delete_granular_data_source_folder_permissions',
-  GET_ADDABLE_DATA_SOURCE_FOLDERS = 'get_addable_data_source_folders',
+  CREATE_GRANULAR_FOLDER_DATA_SOURCE_PERMISSIONS = 'create_granular_folder_data_source_permissions',
+  UPDATE_GRANULAR_FOLDER_DATA_SOURCE_PERMISSIONS = 'update_granular_folder_data_source_permissions',
+  DELETE_GRANULAR_FOLDER_DATA_SOURCE_PERMISSIONS = 'delete_granular_folder_data_source_permissions',
+  GET_ADDABLE_FOLDER_DATA_SOURCES = 'get_addable_folder_data_sources',
   USER_ROLE_CHANGE = 'change_user_role',
 }

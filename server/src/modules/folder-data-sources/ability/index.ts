@@ -16,15 +16,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], userAllPermissions: UserAllPermissions): void {
     const { superAdmin, userPermission, isAdmin } = userAllPermissions;
-    const canCreateDataSourceFolder = userPermission.dataSourceFolderCreate;
-    const canDeleteDataSourceFolder = userPermission.dataSourceFolderDelete;
+    const canCreateFolderDataSource = userPermission.folderDataSourceCreate;
+    const canDeleteFolderDataSource = userPermission.folderDataSourceDelete;
 
     if (superAdmin || isAdmin) {
       can(
         [
-          FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER,
-          FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER,
-          FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER,
+          FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE,
+          FEATURE_KEY.UPDATE_FOLDER_DATA_SOURCE,
+          FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE,
           FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER,
           FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER,
           FEATURE_KEY.BULK_MOVE_DATA_SOURCES,
@@ -32,20 +32,23 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         Folder
       );
     } else {
-      if (canCreateDataSourceFolder) {
-        can([FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER], Folder);
-      }
-      if (canDeleteDataSourceFolder) {
-        can([FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER], Folder);
-      }
-      if (canCreateDataSourceFolder || canDeleteDataSourceFolder) {
+      if (canCreateFolderDataSource) {
         can(
-          [FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER, FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER, FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER, FEATURE_KEY.BULK_MOVE_DATA_SOURCES],
+          [
+            FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE,
+            FEATURE_KEY.UPDATE_FOLDER_DATA_SOURCE,
+            FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER,
+            FEATURE_KEY.REMOVE_DATA_SOURCE_FROM_FOLDER,
+            FEATURE_KEY.BULK_MOVE_DATA_SOURCES,
+          ],
           Folder
         );
       }
+      if (canDeleteFolderDataSource) {
+        can([FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE], Folder);
+      }
     }
     // Listing is available to all authenticated users
-    can([FEATURE_KEY.GET_DATA_SOURCE_FOLDERS, FEATURE_KEY.GET_DATA_SOURCES_IN_FOLDER], Folder);
+    can([FEATURE_KEY.GET_FOLDER_DATA_SOURCES, FEATURE_KEY.GET_DATA_SOURCES_IN_FOLDER], Folder);
   }
 }

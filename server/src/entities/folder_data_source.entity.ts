@@ -11,8 +11,9 @@ import {
   Unique,
 } from 'typeorm';
 
-@Entity({ name: 'data_source_folders' })
-@Unique('data_source_folder_unique', ['folderId', 'dataSourceId'])
+@Entity({ name: 'folder_data_sources' })
+@Unique('folder_data_source_unique', ['folderId', 'dataSourceId'])
+@Unique('folder_data_sources_data_source_id_unique', ['dataSourceId'])
 export class FolderDataSource {
   @PrimaryGeneratedColumn('uuid')
   id: string;

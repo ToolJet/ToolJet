@@ -5,5 +5,5 @@ export const DEFAULT_GRANULAR_PERMISSIONS_NAME = {
   [ResourceType.DATA_SOURCE]: 'Data sources',
   [ResourceType.WORKFLOWS]: 'Workflows',
   [ResourceType.FOLDER]: 'Folders',
-  [ResourceType.DATA_SOURCE_FOLDER]: 'Data source folders',
+  [ResourceType.FOLDER_DATA_SOURCE]: 'Data source folders',
 };

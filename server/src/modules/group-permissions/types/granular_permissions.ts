@@ -13,7 +13,7 @@ type CreateResourcePermissionMap = {
   [ResourceType.DATA_SOURCE]: CreateDataSourcePermissionsObject;
   [ResourceType.WORKFLOWS]: CreateWorkflowPermissionsObject;
   [ResourceType.FOLDER]: CreateFolderPermissionsObject;
-  [ResourceType.DATA_SOURCE_FOLDER]: CreateDataSourceFolderPermissionsObject;
+  [ResourceType.FOLDER_DATA_SOURCE]: CreateFolderDataSourcePermissionsObject;
 };
 
 export type CreateResourcePermissionObject<T extends ResourceType> = CreateResourcePermissionMap[T];
@@ -49,15 +49,15 @@ export interface CreateFolderPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
 }
 
-export interface CreateDataSourceFolderPermissionsObject {
+export interface CreateFolderDataSourcePermissionsObject {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
   canRunQuery?: boolean;
-  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.DATA_SOURCE_FOLDER>;
+  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER_DATA_SOURCE>;
 }
 
-export interface DataSourceFoldersGroupPermissionsActions {
+export interface FolderDataSourcesGroupPermissionsActions {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
@@ -79,7 +79,7 @@ type ResourceToPermissionItemMap = {
   [ResourceType.DATA_SOURCE]: DataSourcesPermissionResourceItem[];
   [ResourceType.WORKFLOWS]: WorkflowsPermissionAddResourceItem[];
   [ResourceType.FOLDER]: FolderPermissionAddResourceItem[];
-  [ResourceType.DATA_SOURCE_FOLDER]: DataSourceFoldersPermissionResourceItem[];
+  [ResourceType.FOLDER_DATA_SOURCE]: FolderDataSourcesPermissionResourceItem[];
 };
 
 export type GranularPermissionAddResourceItems<T extends ResourceType> = ResourceToPermissionItemMap[T];
@@ -105,7 +105,7 @@ export interface FolderPermissionAddResourceItem {
   folderId: string;
 }
 
-export interface DataSourceFoldersPermissionResourceItem {
+export interface FolderDataSourcesPermissionResourceItem {
   folderId: string;
 }
 
@@ -143,7 +143,7 @@ export interface UpdateGranularPermissionObject {
 }
 
 export interface UpdateResourceGroupPermissionsObject<
-  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS | ResourceType.FOLDER | ResourceType.DATA_SOURCE_FOLDER,
+  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS | ResourceType.FOLDER | ResourceType.FOLDER_DATA_SOURCE,
 > {
   group: GroupPermissions;
   granularPermissions: GranularPermissions;
@@ -164,7 +164,7 @@ type ResourceActionMap = {
   [ResourceType.DATA_SOURCE]: DataSourcesGroupPermissionsActions;
   [ResourceType.WORKFLOWS]: WorkflowsGroupPermissionsActions;
   [ResourceType.FOLDER]: FoldersGroupPermissionsActions;
-  [ResourceType.DATA_SOURCE_FOLDER]: DataSourceFoldersGroupPermissionsActions;
+  [ResourceType.FOLDER_DATA_SOURCE]: FolderDataSourcesGroupPermissionsActions;
 };
 
 export type ResourceGroupActions<T extends ResourceType> = ResourceActionMap[T];

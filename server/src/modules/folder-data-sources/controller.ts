@@ -1,6 +1,6 @@
 import { Controller, Post, UseGuards, Body, Delete, Param, Put, Get, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
-import { AddDsToFolderDto, BulkMoveDsDto, CreateDsFolderDto, UpdateDsFolderDto } from './dto';
+import { AddDataSourceToFolderDto, BulkMoveDataSourcesDto, CreateFolderDataSourceDto, UpdateFolderDataSourceDto } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { FolderDataSourcesService } from './service';
 import { IFolderDataSourcesController } from './interfaces/IController';
@@ -15,7 +15,7 @@ import { FeatureAbilityGuard } from './ability/guard';
 export class FolderDataSourcesController implements IFolderDataSourcesController {
   constructor(protected folderDataSourcesService: FolderDataSourcesService) {}
 
-  @InitFeature(FEATURE_KEY.GET_DATA_SOURCE_FOLDERS)
+  @InitFeature(FEATURE_KEY.GET_FOLDER_DATA_SOURCES)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   async getFolders(
@@ -26,21 +26,21 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
     return await this.folderDataSourcesService.getFolders(user, search, includeDataSources === 'true');
   }
 
-  @InitFeature(FEATURE_KEY.CREATE_DATA_SOURCE_FOLDER)
+  @InitFeature(FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post()
-  async create(@User() user, @Body() createDsFolderDto: CreateDsFolderDto) {
-    return await this.folderDataSourcesService.createFolder(user, createDsFolderDto);
+  async create(@User() user, @Body() dto: CreateFolderDataSourceDto) {
+    return await this.folderDataSourcesService.createFolder(user, dto);
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE_FOLDER)
+  @InitFeature(FEATURE_KEY.UPDATE_FOLDER_DATA_SOURCE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id')
-  async update(@User() user, @Param('id') id, @Body() updateDsFolderDto: UpdateDsFolderDto) {
-    return await this.folderDataSourcesService.renameFolder(user, id, updateDsFolderDto);
+  async update(@User() user, @Param('id') id, @Body() dto: UpdateFolderDataSourceDto) {
+    return await this.folderDataSourcesService.renameFolder(user, id, dto);
   }
 
-  @InitFeature(FEATURE_KEY.DELETE_DATA_SOURCE_FOLDER)
+  @InitFeature(FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') id) {
@@ -56,13 +56,13 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
     @Query('page') page = '1',
     @Query('per_page') perPage = '25'
   ) {
-    return await this.folderDataSourcesService.getDataSourcesInFolder(user, id, parseInt(page), parseInt(perPage));
+    return await this.folderDataSourcesService.getDataSourcesInFolder(user, id, parseInt(page) || 1, parseInt(perPage) || 25);
   }
 
   @InitFeature(FEATURE_KEY.ADD_DATA_SOURCE_TO_FOLDER)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/data-sources')
-  async addDataSource(@User() user, @Param('id') id, @Body() dto: AddDsToFolderDto) {
+  async addDataSource(@User() user, @Param('id') id, @Body() dto: AddDataSourceToFolderDto) {
     return await this.folderDataSourcesService.addDataSourceToFolder(user, id, dto);
   }
 
@@ -76,7 +76,7 @@ export class FolderDataSourcesController implements IFolderDataSourcesController
   @InitFeature(FEATURE_KEY.BULK_MOVE_DATA_SOURCES)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id/data-sources')
-  async bulkMoveDataSources(@User() user, @Param('id') id, @Body() dto: BulkMoveDsDto) {
+  async bulkMoveDataSources(@User() user, @Param('id') id, @Body() dto: BulkMoveDataSourcesDto) {
     return await this.folderDataSourcesService.bulkMoveDataSources(user, id, dto);
   }
 }

@@ -125,8 +125,8 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               folder: true,
             },
           },
-          dataSourceFoldersGroupPermission: {
-            groupDataSourceFolders: {
+          folderDataSourcesGroupPermission: {
+            groupFolderDataSources: {
               folder: true,
             },
           },
@@ -183,7 +183,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           appsGroupPermissions: true,
           dataSourcesGroupPermission: true,
           foldersGroupPermissions: true,
-          dataSourceFoldersGroupPermission: true,
+          folderDataSourcesGroupPermission: true,
         },
       });
     }, manager || this.manager);

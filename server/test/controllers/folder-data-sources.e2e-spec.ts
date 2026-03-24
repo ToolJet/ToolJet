@@ -13,8 +13,8 @@ import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { DataSourceFoldersGroupPermissions } from '@entities/data_source_folders_group_permissions.entity';
-import { GroupDataSourceFolders } from '@entities/group_data_source_folders.entity';
+import { FolderDataSourcesGroupPermissions } from '@entities/folder_data_sources_group_permissions.entity';
+import { GroupFolderDataSources } from '@entities/group_folder_data_sources.entity';
 import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { User } from '@entities/user.entity';
@@ -74,7 +74,7 @@ describe('folder-data-sources controller', () => {
     );
   }
 
-  // Helper: setup a user with admin permissions (including dataSourceFolderCreate/Delete)
+  // Helper: setup a user with admin permissions (including folderDataSourceCreate/Delete)
   async function setupAdminUser() {
     const { user, organization } = await setupOrganizationAndUser(nestApp, {
       email: 'admin@tooljet.io',
@@ -83,7 +83,7 @@ describe('folder-data-sources controller', () => {
       lastName: 'User',
     });
 
-    // Create admin group with dataSourceFolderCreate/Delete permissions
+    // Create admin group with folderDataSourceCreate/Delete permissions
     const groupRepo = defaultDataSource.getRepository(GroupPermissions);
     const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -95,8 +95,8 @@ describe('folder-data-sources controller', () => {
       appDelete: true,
       folderCreate: true,
       folderDelete: true,
-      dataSourceFolderCreate: true,
-      dataSourceFolderDelete: true,
+      folderDataSourceCreate: true,
+      folderDataSourceDelete: true,
       orgConstantCRUD: true,
       dataSourceCreate: true,
       dataSourceDelete: true,
@@ -112,7 +112,7 @@ describe('folder-data-sources controller', () => {
     return { user, organization, auth };
   }
 
-  // Helper: setup a non-admin user (no dataSourceFolderCreate/Delete)
+  // Helper: setup a non-admin user (no folderDataSourceCreate/Delete)
   async function setupViewerUser(organizationId: string) {
     const viewer = await createUser(nestApp, {
       email: 'viewer@tooljet.io',
@@ -122,7 +122,7 @@ describe('folder-data-sources controller', () => {
       organizationId,
     });
 
-    // Create end-user group without dataSourceFolderCreate/Delete
+    // Create end-user group without folderDataSourceCreate/Delete
     const groupRepo = defaultDataSource.getRepository(GroupPermissions);
     const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -134,8 +134,8 @@ describe('folder-data-sources controller', () => {
       appDelete: false,
       folderCreate: false,
       folderDelete: false,
-      dataSourceFolderCreate: false,
-      dataSourceFolderDelete: false,
+      folderDataSourceCreate: false,
+      folderDataSourceDelete: false,
       orgConstantCRUD: false,
       dataSourceCreate: false,
       dataSourceDelete: false,
@@ -153,7 +153,9 @@ describe('folder-data-sources controller', () => {
 
   describe('POST /api/data-source-folders', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer()).post('/api/data-source-folders').expect(401);
+      const response = await request(nestApp.getHttpServer()).post('/api/data-source-folders');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should create a new data source folder', async () => {
@@ -166,14 +168,17 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'Finance team' });
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toEqual('Finance team');
+      expect(response.body).toMatchObject({
+        name: 'Finance team',
+        type: 'data_source',
+        organization_id: organization.id,
+        created_by: user.id,
+      });
 
       // Verify in DB
       const folderRepo = defaultDataSource.getRepository(Folder);
       const folder = await folderRepo.findOne({ where: { id: response.body.id } });
       expect(folder).toBeDefined();
-      expect(folder.type).toEqual('data_source');
-      expect(folder.createdBy).toEqual(user.id);
     });
 
     it('should reject empty folder name', async () => {
@@ -186,6 +191,7 @@ describe('folder-data-sources controller', () => {
         .send({ name: '' });
 
       expect(response.statusCode).toBe(400);
+      expect(response.body.message).toEqual(expect.arrayContaining([expect.stringContaining('Folder name cannot be empty')]));
     });
 
     it('should reject folder name longer than 50 characters', async () => {
@@ -198,6 +204,7 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'a'.repeat(51) });
 
       expect(response.statusCode).toBe(400);
+      expect(response.body.message).toEqual(expect.arrayContaining([expect.stringContaining('exceeded 50 characters')]));
     });
 
     // GAP: License-off → 451. These routes use FeatureAbilityGuard (CASL), not
@@ -218,9 +225,10 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'Existing Folder' });
 
       expect(response.statusCode).toBe(409);
+      expect(response.body.message).toEqual('This folder name is already taken.');
     });
 
-    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
+    it('should return 403 for users without folder management permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -231,12 +239,15 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'my folder' });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('PUT /api/data-source-folders/:id', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer()).put('/api/data-source-folders/some-id').expect(401);
+      const response = await request(nestApp.getHttpServer()).put('/api/data-source-folders/some-id');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should rename an existing folder', async () => {
@@ -270,6 +281,7 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'Folder B' });
 
       expect(response.statusCode).toBe(409);
+      expect(response.body.message).toEqual('This folder name is already taken.');
     });
 
     it('should deny users without permission', async () => {
@@ -285,12 +297,15 @@ describe('folder-data-sources controller', () => {
         .send({ name: 'Renamed' });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('DELETE /api/data-source-folders/:id', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer()).delete('/api/data-source-folders/some-id').expect(401);
+      const response = await request(nestApp.getHttpServer()).delete('/api/data-source-folders/some-id');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should delete an existing folder', async () => {
@@ -310,7 +325,7 @@ describe('folder-data-sources controller', () => {
       expect(deletedFolder).toBeNull();
     });
 
-    it('should cascade delete data_source_folders but not the data sources themselves', async () => {
+    it('should cascade delete folder_data_sources but not the data sources themselves', async () => {
       const { organization, auth } = await setupAdminUser();
 
       const folder = await createDsFolder(organization.id, 'To Delete');
@@ -325,7 +340,7 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie)
         .expect(200);
 
-      // data_source_folders row should be gone
+      // folder_data_sources row should be gone
       const fds = await fdsRepo.findOne({ where: { folderId: folder.id } });
       expect(fds).toBeNull();
 
@@ -347,14 +362,16 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', viewerAuth.tokenCookie);
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('POST /api/data-source-folders/:folderId/data-sources', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer())
-        .post('/api/data-source-folders/some-folder-id/data-sources')
-        .expect(401);
+      const response = await request(nestApp.getHttpServer())
+        .post('/api/data-source-folders/some-folder-id/data-sources');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should add a data source to a folder', async () => {
@@ -374,9 +391,7 @@ describe('folder-data-sources controller', () => {
       // Verify FolderDataSource row was created
       const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
       const fds = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds.id } });
-      expect(fds).toBeDefined();
-      expect(fds.folderId).toEqual(folder.id);
-      expect(fds.dataSourceId).toEqual(ds.id);
+      expect(fds).toMatchObject({ folderId: folder.id, dataSourceId: ds.id });
     });
 
     it('should move a DS from one folder to another (old membership removed)', async () => {
@@ -432,9 +447,10 @@ describe('folder-data-sources controller', () => {
         .send({ dataSourceId: appScopedDs.id });
 
       expect(response.statusCode).toBe(400);
+      expect(response.body.message).toEqual('Only global-scope data sources can be added to folders');
     });
 
-    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
+    it('should return 403 for users without folder management permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -448,14 +464,16 @@ describe('folder-data-sources controller', () => {
         .send({ dataSourceId: ds.id });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('DELETE /api/data-source-folders/:folderId/data-sources/:dsId', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer())
-        .delete('/api/data-source-folders/some-folder-id/data-sources/some-ds-id')
-        .expect(401);
+      const response = await request(nestApp.getHttpServer())
+        .delete('/api/data-source-folders/some-folder-id/data-sources/some-ds-id');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should remove a data source from a folder without deleting the DS', async () => {
@@ -485,7 +503,7 @@ describe('folder-data-sources controller', () => {
       expect(existingDs).toBeDefined();
     });
 
-    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
+    it('should return 403 for users without folder management permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -501,15 +519,17 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', viewerAuth.tokenCookie);
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('PUT /api/data-source-folders/:folderId/data-sources (bulk move)', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer())
+      const response = await request(nestApp.getHttpServer())
         .put('/api/data-source-folders/some-folder-id/data-sources')
-        .send({ dataSourceIds: [] })
-        .expect(401);
+        .send({ dataSourceIds: [] });
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should bulk move multiple data sources to a folder', async () => {
@@ -530,13 +550,9 @@ describe('folder-data-sources controller', () => {
 
       // All three FolderDataSource rows should exist
       const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
-      const fds1 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds1.id } });
-      const fds2 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds2.id } });
-      const fds3 = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds3.id } });
-
-      expect(fds1).toBeDefined();
-      expect(fds2).toBeDefined();
-      expect(fds3).toBeDefined();
+      const remaining = await fdsRepo.find({ where: { folderId: folder.id } });
+      expect(remaining).toHaveLength(3);
+      expect(remaining.map(r => r.dataSourceId).sort()).toEqual([ds1.id, ds2.id, ds3.id].sort());
     });
 
     it('should atomically move DS from various folders to target (old memberships removed)', async () => {
@@ -575,16 +591,12 @@ describe('folder-data-sources controller', () => {
       expect(oldFdsB3).toBeNull();
 
       // New memberships in target folder should exist
-      const newFds1 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds1.id } });
-      const newFds2 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds2.id } });
-      const newFds3 = await fdsRepo.findOne({ where: { folderId: targetFolder.id, dataSourceId: ds3.id } });
-
-      expect(newFds1).toBeDefined();
-      expect(newFds2).toBeDefined();
-      expect(newFds3).toBeDefined();
+      const remaining = await fdsRepo.find({ where: { folderId: targetFolder.id } });
+      expect(remaining).toHaveLength(3);
+      expect(remaining.map(r => r.dataSourceId).sort()).toEqual([ds1.id, ds2.id, ds3.id].sort());
     });
 
-    it('should deny users without dataSourceFolderCreate/Delete permission', async () => {
+    it('should return 403 for users without folder management permission', async () => {
       const { organization } = await setupAdminUser();
       const { auth: viewerAuth } = await setupViewerUser(organization.id);
 
@@ -599,12 +611,15 @@ describe('folder-data-sources controller', () => {
         .send({ dataSourceIds: [ds1.id, ds2.id] });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({ statusCode: 403, message: 'You do not have permission to access this resource' });
     });
   });
 
   describe('GET /api/data-source-folders', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer()).get('/api/data-source-folders').expect(401);
+      const response = await request(nestApp.getHttpServer()).get('/api/data-source-folders');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should return empty array when no folders exist', async () => {
@@ -643,14 +658,10 @@ describe('folder-data-sources controller', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveLength(2);
-
-      // Verify alphabetical order
-      expect(response.body[0].name).toEqual('Alpha');
-      expect(response.body[1].name).toEqual('Beta');
-
-      // Verify DS counts
-      expect(response.body[0].count).toEqual(2);
-      expect(response.body[1].count).toEqual(1);
+      expect(response.body).toMatchObject([
+        { name: 'Alpha', count: 2 },
+        { name: 'Beta', count: 1 },
+      ]);
     });
 
     it('should filter folders by search query', async () => {
@@ -693,19 +704,15 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).toBe(200);
       // 2 folders + 1 ungrouped bucket
       expect(response.body).toHaveLength(3);
-
-      const finance = response.body.find((f: any) => f.name === 'Finance');
-      expect(finance.data_sources).toHaveLength(2);
-      expect(finance.count).toBe(2);
-
-      const marketing = response.body.find((f: any) => f.name === 'Marketing');
-      expect(marketing.data_sources).toHaveLength(1);
-      expect(marketing.count).toBe(1);
-
+      expect(response.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Finance', count: 2, data_sources: expect.arrayContaining([expect.objectContaining({ id: ds1.id }), expect.objectContaining({ id: ds2.id })]) }),
+          expect.objectContaining({ name: 'Marketing', count: 1 }),
+          expect.objectContaining({ id: null, name: 'Ungrouped' }),
+        ])
+      );
       const ungrouped = response.body.find((f: any) => f.id === null);
-      expect(ungrouped).toBeDefined();
-      expect(ungrouped.name).toEqual('Ungrouped');
-      expect(ungrouped.data_sources.some((ds: any) => ds.id === dsUngrouped.id)).toBe(true);
+      expect(ungrouped.data_sources.some((d: any) => d.id === dsUngrouped.id)).toBe(true);
     });
 
     it('should sort data sources alphabetically within folders', async () => {
@@ -731,9 +738,8 @@ describe('folder-data-sources controller', () => {
 
       const testFolder = response.body.find((f: any) => f.name === 'Test Folder');
       expect(testFolder.data_sources).toHaveLength(3);
-      expect(testFolder.data_sources[0].name).toEqual('Alpha');
-      expect(testFolder.data_sources[1].name).toEqual('Middle');
-      expect(testFolder.data_sources[2].name).toEqual('Zebra');
+      const dsNames = testFolder.data_sources.map((d: any) => d.name);
+      expect(dsNames).toEqual(['Alpha', 'Middle', 'Zebra']);
     });
 
     it('should filter by DS name when searching with include_data_sources=true', async () => {
@@ -809,9 +815,10 @@ describe('folder-data-sources controller', () => {
 
   describe('GET /api/data-source-folders/:folderId/data-sources', () => {
     it('should require authentication', async () => {
-      await request(nestApp.getHttpServer())
-        .get('/api/data-source-folders/some-folder-id/data-sources')
-        .expect(401);
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/data-source-folders/some-folder-id/data-sources');
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({ statusCode: 401, message: 'Unauthorized' });
     });
 
     it('should list data sources within a folder', async () => {
@@ -831,19 +838,14 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.data_sources).toHaveLength(2);
-
-      const returnedIds = response.body.data_sources.map((ds: any) => ds.id);
-      expect(returnedIds).toContain(ds1.id);
-      expect(returnedIds).toContain(ds2.id);
-
-      // Verify meta
-      expect(response.body.meta).toEqual({
-        total_count: 2,
-        total_pages: 1,
-        current_page: 1,
-        per_page: 25,
+      expect(response.body).toMatchObject({
+        data_sources: expect.arrayContaining([
+          expect.objectContaining({ id: ds1.id }),
+          expect.objectContaining({ id: ds2.id }),
+        ]),
+        meta: { total_count: 2, total_pages: 1, current_page: 1, per_page: 25 },
       });
+      expect(response.body.data_sources).toHaveLength(2);
     });
 
     it('should paginate data sources within a folder', async () => {
@@ -865,13 +867,11 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie);
 
       expect(page1.statusCode).toBe(200);
-      expect(page1.body.data_sources).toHaveLength(2);
-      expect(page1.body.meta).toEqual({
-        total_count: 5,
-        total_pages: 3,
-        current_page: 1,
-        per_page: 2,
+      expect(page1.body).toMatchObject({
+        data_sources: expect.any(Array),
+        meta: { total_count: 5, total_pages: 3, current_page: 1, per_page: 2 },
       });
+      expect(page1.body.data_sources).toHaveLength(2);
 
       // Page 2 → expect 2 items
       const page2 = await request(nestApp.getHttpServer())
@@ -944,8 +944,8 @@ describe('folder-data-sources controller', () => {
         appDelete: false,
         folderCreate: false,
       folderDelete: false,
-        dataSourceFolderCreate: false,
-        dataSourceFolderDelete: false,
+        folderDataSourceCreate: false,
+        folderDataSourceDelete: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
@@ -964,8 +964,8 @@ describe('folder-data-sources controller', () => {
         appDelete: false,
         folderCreate: false,
       folderDelete: false,
-        dataSourceFolderCreate: false,
-        dataSourceFolderDelete: false,
+        folderDataSourceCreate: false,
+        folderDataSourceDelete: false,
         orgConstantCRUD: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
@@ -986,7 +986,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Finance folder permission',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -996,11 +996,7 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return; // Route not yet implemented
-        }
-
-        expect([200, 201]).toContain(response.statusCode);
+        expect(response.statusCode).toBe(201);
       });
 
       it('should update granular permission', async () => {
@@ -1015,7 +1011,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Perm to update',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -1024,10 +1020,7 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        // If the route does not exist yet, skip the update assertion.
-        if (createRes.statusCode === 404 || createRes.statusCode === 405) {
-          return;
-        }
+        expect(createRes.statusCode).toBe(201);
 
         const permId = createRes.body?.id;
         expect(permId).toBeDefined();
@@ -1040,8 +1033,7 @@ describe('folder-data-sources controller', () => {
             actions: { canConfigureDs: true, canUseDs: true },
           });
 
-        expect(updateRes.statusCode).not.toBe(404);
-        expect(updateRes.statusCode).not.toBe(405);
+        expect(updateRes.statusCode).toBe(200);
       });
 
       it('should delete granular permission', async () => {
@@ -1055,7 +1047,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Perm to delete',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -1064,9 +1056,7 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (createRes.statusCode === 404 || createRes.statusCode === 405) {
-          return;
-        }
+        expect(createRes.statusCode).toBe(201);
 
         const permId = createRes.body?.id;
         expect(permId).toBeDefined();
@@ -1076,8 +1066,6 @@ describe('folder-data-sources controller', () => {
           .set('tj-workspace-id', organization.id)
           .set('Cookie', auth.tokenCookie);
 
-        expect(deleteRes.statusCode).not.toBe(404);
-        expect(deleteRes.statusCode).not.toBe(405);
         expect([200, 204]).toContain(deleteRes.statusCode);
       });
 
@@ -1093,15 +1081,11 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Unauthorized attempt',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canUseDs: true,
             },
           });
-
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return; // Route not yet implemented
-        }
 
         // Non-admin users must be rejected.  Accept 401/403 — not 200/201.
         expect([401, 403]).toContain(response.statusCode);
@@ -1109,7 +1093,7 @@ describe('folder-data-sources controller', () => {
     });
 
     describe('permission hierarchy', () => {
-      it('should auto-set canConfigureDs and canUseDs when canEditFolder is true', async () => {
+      it('canEditFolder=true auto-elevates canConfigureDs and canUseDs to true', async () => {
         const { organization, auth } = await setupAdminUser();
         const group = await setupCustomGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Folder Alpha');
@@ -1121,7 +1105,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Full edit permission',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: true,
               canConfigureDs: false, // should be auto-elevated to true
@@ -1131,20 +1115,15 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          // Route not yet implemented — mark as pending
-          return;
-        }
-
         expect(response.statusCode).toBe(201);
-        // The stored permission should have all three hierarchy flags set
-        const perm = response.body;
-        expect(perm.canEditFolder).toBe(true);
-        expect(perm.canConfigureDs).toBe(true);
-        expect(perm.canUseDs).toBe(true);
+        expect(response.body).toMatchObject({
+          canEditFolder: true,
+          canConfigureDs: true,
+          canUseDs: true,
+        });
       });
 
-      it('should auto-set canUseDs when canConfigureDs is true', async () => {
+      it('canConfigureDs=true auto-elevates canUseDs to true', async () => {
         const { organization, auth } = await setupAdminUser();
         const group = await setupCustomGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Folder Beta');
@@ -1156,7 +1135,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Configure permission',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: true,
@@ -1166,17 +1145,15 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         expect(response.statusCode).toBe(201);
-        expect(response.body.canConfigureDs).toBe(true);
-        expect(response.body.canUseDs).toBe(true);
-        expect(response.body.canEditFolder).toBe(false);
+        expect(response.body).toMatchObject({
+          canEditFolder: false,
+          canConfigureDs: true,
+          canUseDs: true,
+        });
       });
 
-      it('should allow canRunQuery independently of hierarchy', async () => {
+      it('canRunQuery=false is independent of the edit/configure/use hierarchy', async () => {
         const { organization, auth } = await setupAdminUser();
         const group = await setupCustomGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Folder Gamma');
@@ -1188,7 +1165,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'Use with query restriction',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -1198,21 +1175,18 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         expect(response.statusCode).toBe(201);
-        expect(response.body.canUseDs).toBe(true);
-        expect(response.body.canRunQuery).toBe(false);
-        // canRunQuery should not force-set canEditFolder or canConfigureDs
-        expect(response.body.canEditFolder).toBe(false);
-        expect(response.body.canConfigureDs).toBe(false);
+        expect(response.body).toMatchObject({
+          canEditFolder: false,
+          canConfigureDs: false,
+          canUseDs: true,
+          canRunQuery: false,
+        });
       });
     });
 
     describe('end-user constraints', () => {
-      it('should reject canEditFolder for end-user groups', async () => {
+      it('end-user groups cannot be granted canEditFolder', async () => {
         const { organization, auth } = await setupAdminUser();
         const endUserGroup = await setupEndUserGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Restricted Folder');
@@ -1224,7 +1198,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'End user edit attempt',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: true,
               canConfigureDs: false,
@@ -1234,15 +1208,12 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         // End-user groups must not be granted canEditFolder
         expect([400, 403, 422]).toContain(response.statusCode);
+        expect(response.body.message).toBeDefined();
       });
 
-      it('should reject canConfigureDs for end-user groups', async () => {
+      it('end-user groups cannot be granted canConfigureDs', async () => {
         const { organization, auth } = await setupAdminUser();
         const endUserGroup = await setupEndUserGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Restricted Folder 2');
@@ -1254,7 +1225,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'End user configure attempt',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: true,
@@ -1264,14 +1235,11 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         expect([400, 403, 422]).toContain(response.statusCode);
+        expect(response.body.message).toBeDefined();
       });
 
-      it('should reject canUseDs for end-user groups', async () => {
+      it('end-user groups cannot be granted canUseDs', async () => {
         const { organization, auth } = await setupAdminUser();
         const endUserGroup = await setupEndUserGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Restricted Folder 3');
@@ -1283,7 +1251,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'End user use attempt',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -1293,14 +1261,11 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         expect([400, 403, 422]).toContain(response.statusCode);
+        expect(response.body.message).toBeDefined();
       });
 
-      it('should allow setting canRunQuery to false for end-user groups', async () => {
+      it('end-user groups can restrict canRunQuery to false', async () => {
         const { organization, auth } = await setupAdminUser();
         const endUserGroup = await setupEndUserGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Restricted Folder 4');
@@ -1312,7 +1277,7 @@ describe('folder-data-sources controller', () => {
           .send({
             name: 'End user query restriction',
             isAll: false,
-            type: 'data_source_folder',
+            type: 'folder_data_source',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
@@ -1322,10 +1287,6 @@ describe('folder-data-sources controller', () => {
             },
           });
 
-        if (response.statusCode === 404 || response.statusCode === 405) {
-          return;
-        }
-
         // canRunQuery is the only permission end-user groups may set to false
         expect([200, 201]).toContain(response.statusCode);
         expect(response.body.canRunQuery).toBe(false);
@@ -1333,7 +1294,7 @@ describe('folder-data-sources controller', () => {
     });
 
     describe('folder visibility', () => {
-      it('should hide folders without granular access from folder listing', async () => {
+      it('non-admin user sees only folders granted via granular permissions', async () => {
         const { organization, auth: adminAuth } = await setupAdminUser();
 
         // Admin creates two folders
@@ -1344,21 +1305,21 @@ describe('folder-data-sources controller', () => {
         const customGroup = await setupCustomGroup(organization.id);
 
         const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-        const dataSourceFolderPermRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
-        const groupDataSourceFolderRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
+        const folderDataSourcePermRepo = defaultDataSource.getRepository(FolderDataSourcesGroupPermissions);
+        const groupFolderDataSourceRepo = defaultDataSource.getRepository(GroupFolderDataSources);
         const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
         const granularPerm = await gpRepo.save(
           gpRepo.create({
             groupId: customGroup.id,
             name: 'Visible folder access',
-            type: ResourceType.DATA_SOURCE_FOLDER,
+            type: ResourceType.FOLDER_DATA_SOURCE,
             isAll: false,
           })
         );
 
-        const dataSourceFolderPerm = await dataSourceFolderPermRepo.save(
-          dataSourceFolderPermRepo.create({
+        const folderDataSourcePerm = await folderDataSourcePermRepo.save(
+          folderDataSourcePermRepo.create({
             granularPermissionId: granularPerm.id,
             canEditFolder: false,
             canConfigureDs: false,
@@ -1367,9 +1328,9 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        await groupDataSourceFolderRepo.save(
-          groupDataSourceFolderRepo.create({
-            dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
+        await groupFolderDataSourceRepo.save(
+          groupFolderDataSourceRepo.create({
+            folderDataSourcesGroupPermissionsId: folderDataSourcePerm.id,
             folderId: visibleFolder.id,
           })
         );
@@ -1400,18 +1361,16 @@ describe('folder-data-sources controller', () => {
           .set('Cookie', viewerAuth.tokenCookie);
 
         expect(response.statusCode).toBe(200);
-        const folderNames = response.body.map((f: any) => f.name);
-        expect(folderNames).toContain('Visible');
-        expect(folderNames).not.toContain('Hidden');
+        expect(response.body).toEqual([expect.objectContaining({ name: 'Visible' })]);
       });
 
-      it('should show folders to their creator even without explicit granular access', async () => {
+      it('folder creator sees own folders without explicit granular permission', async () => {
         const { organization } = await setupAdminUser();
 
         const groupRepo = defaultDataSource.getRepository(GroupPermissions);
         const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
-        // Create a builder-like group with dataSourceFolderCreate but no admin role
+        // Create a builder-like group with folderDataSourceCreate but no admin role
         const builderGroup = groupRepo.create({
           organizationId: organization.id,
           name: 'ds-folder-creators',
@@ -1420,8 +1379,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
           folderDelete: false,
-          dataSourceFolderCreate: true,
-          dataSourceFolderDelete: false,
+          folderDataSourceCreate: true,
+          folderDataSourceDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,
@@ -1477,21 +1436,21 @@ describe('folder-data-sources controller', () => {
         const customGroup = await setupCustomGroup(organization.id);
 
         const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-        const dataSourceFolderPermRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
-        const groupDataSourceFolderRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
+        const folderDataSourcePermRepo = defaultDataSource.getRepository(FolderDataSourcesGroupPermissions);
+        const groupFolderDataSourceRepo = defaultDataSource.getRepository(GroupFolderDataSources);
         const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
         const granularPerm = await gpRepo.save(
           gpRepo.create({
             groupId: customGroup.id,
             name: 'Folder configure access',
-            type: ResourceType.DATA_SOURCE_FOLDER,
+            type: ResourceType.FOLDER_DATA_SOURCE,
             isAll: false,
           })
         );
 
-        const dataSourceFolderPerm = await dataSourceFolderPermRepo.save(
-          dataSourceFolderPermRepo.create({
+        const folderDataSourcePerm = await folderDataSourcePermRepo.save(
+          folderDataSourcePermRepo.create({
             granularPermissionId: granularPerm.id,
             canEditFolder: false,
             canConfigureDs: true,
@@ -1500,9 +1459,9 @@ describe('folder-data-sources controller', () => {
           })
         );
 
-        await groupDataSourceFolderRepo.save(
-          groupDataSourceFolderRepo.create({
-            dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
+        await groupFolderDataSourceRepo.save(
+          groupFolderDataSourceRepo.create({
+            folderDataSourcesGroupPermissionsId: folderDataSourcePerm.id,
             folderId: folder.id,
           })
         );
@@ -1584,20 +1543,20 @@ describe('folder-data-sources controller', () => {
     // restrict=true means canRunQuery=false (blocked), restrict=false means canRunQuery=true (allowed)
     async function setupRestriction(groupId: string, folderId: string, restrict: boolean) {
       const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-      const dataSourceFoldersGpRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
-      const gdfRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
+      const folderDataSourcesGpRepo = defaultDataSource.getRepository(FolderDataSourcesGroupPermissions);
+      const gdfRepo = defaultDataSource.getRepository(GroupFolderDataSources);
 
       const granularPerm = await gpRepo.save(
         gpRepo.create({
           groupId,
           name: 'DS folder restrict test',
-          type: ResourceType.DATA_SOURCE_FOLDER,
+          type: ResourceType.FOLDER_DATA_SOURCE,
           isAll: false,
         })
       );
 
-      const dataSourceFolderPerm = await dataSourceFoldersGpRepo.save(
-        dataSourceFoldersGpRepo.create({
+      const folderDataSourcePerm = await folderDataSourcesGpRepo.save(
+        folderDataSourcesGpRepo.create({
           granularPermissionId: granularPerm.id,
           canEditFolder: false,
           canConfigureDs: false,
@@ -1608,15 +1567,15 @@ describe('folder-data-sources controller', () => {
 
       await gdfRepo.save(
         gdfRepo.create({
-          dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
+          folderDataSourcesGroupPermissionsId: folderDataSourcePerm.id,
           folderId,
         })
       );
 
-      return { granularPerm, dataSourceFolderPerm };
+      return { granularPerm, folderDataSourcePerm };
     }
 
-    it('should block query run when canRunQuery is false for the DS folder', async () => {
+    it('canRunQuery=false blocks query execution on folder data sources', async () => {
       const { user, organization, auth } = await setupAdminUser();
 
       // Create DS, folder, and put DS in folder
@@ -1641,8 +1600,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
       folderDelete: false,
-          dataSourceFolderCreate: false,
-          dataSourceFolderDelete: false,
+          folderDataSourceCreate: false,
+          folderDataSourceDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,
@@ -1665,6 +1624,7 @@ describe('folder-data-sources controller', () => {
         .send({ options: {}, resolvedOptions: {} });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body.message).toEqual('You do not have permission to run queries on this data source');
     });
 
     it('should allow query run when canRunQuery is true', async () => {
@@ -1692,8 +1652,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
       folderDelete: false,
-          dataSourceFolderCreate: false,
-          dataSourceFolderDelete: false,
+          folderDataSourceCreate: false,
+          folderDataSourceDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,
@@ -1718,7 +1678,7 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).not.toBe(403);
     });
 
-    it('should block query run when canRunQuery=false even with full folder edit access', async () => {
+    it('canRunQuery=false blocks query even when canEditFolder, canConfigureDs, canUseDs are all true', async () => {
       const { user, organization, auth } = await setupAdminUser();
 
       // Create DS, folder, and put DS in folder
@@ -1743,8 +1703,8 @@ describe('folder-data-sources controller', () => {
           appDelete: false,
           folderCreate: false,
           folderDelete: false,
-          dataSourceFolderCreate: false,
-          dataSourceFolderDelete: false,
+          folderDataSourceCreate: false,
+          folderDataSourceDelete: false,
           orgConstantCRUD: false,
           dataSourceCreate: false,
           dataSourceDelete: false,
@@ -1758,20 +1718,20 @@ describe('folder-data-sources controller', () => {
       // Set canEditFolder=true, canConfigureDs=true, canUseDs=true, but canRunQuery=false
       // This validates canRunQuery is independent of the permission hierarchy at runtime
       const gpRepo = defaultDataSource.getRepository(GranularPermissions);
-      const dataSourceFoldersGpRepo = defaultDataSource.getRepository(DataSourceFoldersGroupPermissions);
-      const gdfRepo = defaultDataSource.getRepository(GroupDataSourceFolders);
+      const folderDataSourcesGpRepo = defaultDataSource.getRepository(FolderDataSourcesGroupPermissions);
+      const gdfRepo = defaultDataSource.getRepository(GroupFolderDataSources);
 
       const granularPerm = await gpRepo.save(
         gpRepo.create({
           groupId: customGroup.id,
           name: 'Full edit no run test',
-          type: ResourceType.DATA_SOURCE_FOLDER,
+          type: ResourceType.FOLDER_DATA_SOURCE,
           isAll: false,
         })
       );
 
-      const dataSourceFolderPerm = await dataSourceFoldersGpRepo.save(
-        dataSourceFoldersGpRepo.create({
+      const folderDataSourcePerm = await folderDataSourcesGpRepo.save(
+        folderDataSourcesGpRepo.create({
           granularPermissionId: granularPerm.id,
           canEditFolder: true,
           canConfigureDs: true,
@@ -1782,7 +1742,7 @@ describe('folder-data-sources controller', () => {
 
       await gdfRepo.save(
         gdfRepo.create({
-          dataSourceFoldersGroupPermissionsId: dataSourceFolderPerm.id,
+          folderDataSourcesGroupPermissionsId: folderDataSourcePerm.id,
           folderId: folder.id,
         })
       );
@@ -1795,6 +1755,7 @@ describe('folder-data-sources controller', () => {
         .send({ options: {}, resolvedOptions: {} });
 
       expect(response.statusCode).toBe(403);
+      expect(response.body.message).toEqual('You do not have permission to run queries on this data source');
     });
 
     it('should allow query run when DS is not in any folder', async () => {
@@ -1818,7 +1779,7 @@ describe('folder-data-sources controller', () => {
     });
 
     // GAP: DS-level restrictQueryRun + folder-level canRunQuery interplay.
-    // canRunQuery only exists on DataSourceFoldersGroupPermissions (folder level).
+    // canRunQuery only exists on FolderDataSourcesGroupPermissions (folder level).
     // DataSourcesGroupPermissions (individual DS) has canConfigure/canUse only — no
     // canRunQuery field. There is no cross-level interplay to test in the current schema.
   });
@@ -1863,8 +1824,8 @@ describe('folder-data-sources controller', () => {
           appDelete: true,
           folderCreate: true,
           folderDelete: true,
-          dataSourceFolderCreate: true,
-          dataSourceFolderDelete: true,
+          folderDataSourceCreate: true,
+          folderDataSourceDelete: true,
           orgConstantCRUD: true,
           dataSourceCreate: true,
           dataSourceDelete: true,

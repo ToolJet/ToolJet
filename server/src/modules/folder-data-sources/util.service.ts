@@ -57,7 +57,7 @@ export class FolderDataSourcesUtilService {
 
       if (folderIds.length > 0) {
         ungroupedQuery = ungroupedQuery.andWhere(
-          'ds.id NOT IN (SELECT dsf.data_source_id FROM data_source_folders dsf WHERE dsf.folder_id IN (:...folderIds))',
+          'ds.id NOT IN (SELECT dsf.data_source_id FROM folder_data_sources dsf WHERE dsf.folder_id IN (:...folderIds))',
           { folderIds }
         );
       }
