@@ -357,6 +357,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
           encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
           instanceName: finalOptions.instanceName,
           trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          requestTimeout: this.STATEMENT_TIMEOUT,
           ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },

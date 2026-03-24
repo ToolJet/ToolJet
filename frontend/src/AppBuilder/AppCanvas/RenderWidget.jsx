@@ -54,6 +54,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Accordion',
   'ReorderableList',
   'KeyValuePair',
+  'FileButton',
+  'ButtonGroupV2',
 ];
 
 const RenderWidget = ({

@@ -1,0 +1,152 @@
+name: Render Review App Suspend (Conflict-Safe)
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  RENDER_OWNER_ID: tea-caeo4bj19n072h3dddc0
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CE: Suspend
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  suspend-ce:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ CE Service not found for PR #${{ env.PR_NUMBER }}"
+            exit 1
+          fi
+
+          echo "Found CE service: $SERVICE_ID"
+
+          SUSPEND_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+
+          echo "✅ CE Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ce-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # EE LTS: Suspend
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  suspend-ee-lts:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ EE LTS Service not found for PR #${{ env.PR_NUMBER }}"
+            exit 1
+          fi
+
+          echo "Found EE LTS service: $SERVICE_ID"
+
+          SUSPEND_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+
+          echo "✅ EE LTS Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-lts-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # EE Pre-release: Suspend
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  suspend-ee-pre-release:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ EE Pre-release Service not found for PR #${{ env.PR_NUMBER }}"
+            exit 1
+          fi
+
+          echo "Found EE Pre-release service: $SERVICE_ID"
+
+          SUSPEND_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+
+          echo "✅ EE Pre-release Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-pre-release-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }

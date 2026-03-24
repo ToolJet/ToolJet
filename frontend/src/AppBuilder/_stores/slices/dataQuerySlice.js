@@ -332,6 +332,7 @@ export const createDataQuerySlice = (set, get) => ({
             const eventsToCreate = events
               .filter((event) => event?.event && event?.target && event?.index != null)
               .map((event) => ({
+                name: event.name,
                 event: {
                   ...event.event,
                 },
