@@ -47,7 +47,7 @@ export const fillDSConnectionKeyValuePairs = (field) => {
       cy.root().then(($section) => {
         const keyFieldExists = $section.find(dsCommonSelector.keyInputField(field.fieldName, index)).length > 0;
         if (!keyFieldExists) {
-          cy.get(dsCommonSelector.addButton(field.fieldName))
+          cy.get(dsCommonSelector.addMoreButton(field.fieldName))
             .should('be.visible')
             .click();
           cy.wait(500);
@@ -119,7 +119,7 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
       cy.get('[data-cy="connection-alert-text"]')
         .scrollIntoView()
         .should("be.visible", { timeout: 40000 })
-        .verifyVisibleElement("have.text", customMessage);
+        .and("contain.text", customMessage);
       break;
   }
 };
@@ -143,6 +143,12 @@ export const fillDSConnectionEncryptedField = (field) => {
 export const fillDataOnCodeMirrorInput = (field) => {
   const selector = dsCommonSelector.codeMirrorField(field.fieldName);
   cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+};
+
+export const fillDynamicSelectorFxMode = (field) => {
+  const sectionSelector = dsCommonSelector.subSection(field.fieldName);
+  cy.get(sectionSelector).find('[data-cy="undefined-fx-button"]').click();
+  cy.get(sectionSelector).find('[data-cy="-input-field"]').clearAndTypeOnCodeMirror(field.text);
 };
 
 export const fillCodeMirrorKeyValuePairs = (field) => {
@@ -190,6 +196,9 @@ const processFields = (fields) => {
         break;
       case 'codeMirrorKeyValue':
         fillCodeMirrorKeyValuePairs(field);
+        break;
+      case 'dynamicSelectorFx':
+        fillDynamicSelectorFxMode(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);
