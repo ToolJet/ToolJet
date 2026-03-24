@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mongodbUIConfig, mongodbFormConfig } from "Constants/constants/marketplace/datasources/mongodb";
 
 const data = {};
