@@ -115,6 +115,9 @@ module.exports = {
         'elevation-600': '0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-700': '0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
       },
+      ringOffsetColor: {
+        DEFAULT: 'var(--background-surface-layer-01)',
+      },
       borderRadius: {
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',

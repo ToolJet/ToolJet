@@ -51,9 +51,10 @@ const [name]Variants = cva(
         // add more variants…
       },
       size: {
-        sm:      'tw-h-7 tw-px-3 tw-text-sm tw-rounded-md',
-        default: 'tw-h-8 tw-px-4 tw-text-base tw-rounded-md',
-        lg:      'tw-h-9 tw-px-5 tw-text-lg tw-rounded-lg',
+        large:   'tw-h-10 tw-px-4 tw-text-lg tw-rounded-md',
+        default: 'tw-h-8 tw-px-3 tw-text-base tw-rounded-md',
+        medium:  'tw-h-7 tw-px-3 tw-text-base tw-rounded-md',
+        small:   'tw-h-5 tw-px-2 tw-text-sm tw-rounded-md',
       },
     },
     defaultVariants: { variant: '[default]', size: 'default' },
@@ -77,7 +78,7 @@ const [Name] = forwardRef(function [Name](
 
 [Name].propTypes = {
   variant: PropTypes.oneOf([/* list variants */]),
-  size: PropTypes.oneOf(['sm', 'default', 'lg']),
+  size: PropTypes.oneOf(['large', 'default', 'medium', 'small']),
   className: PropTypes.string,
 };
 
@@ -135,9 +136,9 @@ const [name]Variants = cva(
   {
     variants: {
       size: {
-        sm:      'tw-h-6 tw-w-6',
+        large:   'tw-h-10 tw-w-10',
         default: 'tw-h-8 tw-w-8',
-        lg:      'tw-h-10 tw-w-10',
+        small:   'tw-h-6 tw-w-6',
       },
     },
     defaultVariants: { size: 'default' },
@@ -158,7 +159,7 @@ const [Name] = forwardRef(function [Name](
 });
 
 [Name].propTypes = {
-  size: PropTypes.oneOf(['sm', 'default', 'lg']),
+  size: PropTypes.oneOf(['large', 'default', 'medium', 'small']),
   className: PropTypes.string,
 };
 ```
@@ -232,9 +233,10 @@ const [name]PartVariants = cva(
   {
     variants: {
       size: {
-        large: '...',
+        large:   '...',
         default: '...',
-        small: '...',
+        medium:  '...',
+        small:   '...',
       },
     },
     defaultVariants: { size: 'default' },

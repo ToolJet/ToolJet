@@ -54,6 +54,28 @@ digraph workflow {
 
 ---
 
+## Sizing Standard
+
+Rocket uses four canonical size names. Not every component must expose all four — use only the sizes that exist in Figma. But when a component does have sizes, **use these names**.
+
+| Size name | Typical height | Tailwind height | Common font |
+|---|---|---|---|
+| `large` | 40px | `tw-h-10` | `tw-text-lg` (14px/20px) |
+| `default` | 32px | `tw-h-8` | `tw-text-base` (12px/18px) |
+| `medium` | 28px | `tw-h-7` | `tw-text-base` (12px/18px) |
+| `small` | 20px | `tw-h-5` | `tw-text-sm` (11px/16px) |
+
+**Rules:**
+- **Naming:** Always `small`, `medium`, `default`, `large` — never `sm`, `md`, `lg`, `xs`, `xl`. The only exception is Avatar, which uses an extended scale (`xs` through `2xl`).
+- **Ordering in code:** Props, CVA keys, and PropTypes list sizes **largest first**: `large | default | medium | small`.
+- **Default:** Always `default`. Never `medium` or `large`.
+- **3-size components** (e.g. Input, Select): Use `large | default | small` — skip `medium`. Their `small` = 28px (same height as `medium` in 4-size components). This is intentional — these components don't need the 20px size.
+- **4-size components** (e.g. Button, Toggle): Use `large | default | medium | small` — all four.
+- **Heights are not mandated** — some components deviate (e.g. ToggleGroup items are 36/28/24/20px because they sit inside a padded container). The table above is a guide, not a rule. Always follow Figma measurements.
+- **Font sizes track the size name**, not the pixel height. `large` always gets `tw-text-lg`, `default`/`medium` get `tw-text-base`, `small` gets `tw-text-sm`.
+
+---
+
 ## Step 1 — Always install shadcn primitive
 
 **Rule:** EVERY Rocket component MUST use a shadcn primitive as its structural base. This ensures the 3-layer architecture is consistent — shadcn handles structure (Slot, forwardRef, Radix primitives), Rocket HOC handles ToolJet token styling via CVA.
@@ -217,12 +239,13 @@ After collecting answers, write the spec file (see format below) and show it to 
 | Prop | Type | Values | Default |
 |---|---|---|---|
 | variant | string | primary \| secondary \| ghost \| outline | primary |
-| size | string | large \| default \| medium \| small | default |
+| size | string | large \| default \| medium \| small | default |  <!-- see Sizing Standard -->
 | danger | boolean | — | false |
 | disabled | boolean | — | false |
 | loading | boolean | — | false |
 
 ## Sizes
+<!-- Follow Sizing Standard — use only sizes that exist in Figma -->
 
 | Value | Height | Tailwind |
 |---|---|---|
