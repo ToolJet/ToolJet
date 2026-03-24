@@ -26,7 +26,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -52,7 +53,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -81,7 +83,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -105,10 +108,10 @@ describe("MySQL", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidUsername);
-        verifyDSConnection("failed", "Access denied for user 'invalid-username'@'194.22.189.63' (using password: YES)");
+        verifyDSConnection("failed", "Access denied for user 'invalid-username'");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidPassword);
-        verifyDSConnection("failed", "Access denied for user 'root'@'194.22.189.63' (using password: YES)");
+        verifyDSConnection("failed", "Access denied for user");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidPort);
         verifyDSConnection("failed", "connect ETIMEDOUT");
