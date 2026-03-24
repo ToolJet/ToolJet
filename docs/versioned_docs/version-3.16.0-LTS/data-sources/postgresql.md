@@ -35,7 +35,7 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
 
 :::info
-If you connection string (username,password, database) has any special characters, then you have to URL Encode them. 
+If you connection string (username,password, database) has any special characters, then you have to URL Encode them. For encoding or decoding the URL, use this link [URL encoder/decoder](https://meyerweb.com/eric/tools/dencoder/).
 
 const POSTGRES_URL = `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}`;
 :::
