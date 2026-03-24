@@ -320,7 +320,7 @@ const DynamicForm = ({
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
     const helpText = helpTextProp || help_text;
-    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && encrypted;
     const finalHelpText = showEncryptedLockedHelpText ? 'Encrypted values are not pushed to git and are updated directly in Tooljet': helpText;
 
     switch (type) {
