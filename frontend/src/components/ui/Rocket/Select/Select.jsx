@@ -32,7 +32,7 @@ const selectTriggerVariants = cva(
     // Error (via aria-invalid)
     'aria-[invalid=true]:tw-border-border-danger-strong aria-[invalid=true]:tw-bg-background-error-weak',
     // Disabled
-    'disabled:tw-bg-switch-tag disabled:tw-text-text-disabled disabled:tw-border-transparent disabled:tw-shadow-none',
+    'disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled disabled:tw-border-transparent disabled:tw-shadow-none',
   ],
   {
     variants: {

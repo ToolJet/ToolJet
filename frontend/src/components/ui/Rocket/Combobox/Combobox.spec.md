@@ -16,10 +16,15 @@ Wraps shadcn Combobox (`@base-ui/react` Combobox primitive).
 | `ComboboxInput` | shadcn `ComboboxInput` | Same tokens as Select trigger — bg, border, focus, hover, disabled, error, sizes |
 | `ComboboxContent` | shadcn `ComboboxContent` | `bg-surface-layer-01`, `border-weak`, `rounded-lg` (10px), `elevation-300` |
 | `ComboboxItem` | shadcn `ComboboxItem` | 32px height, `text-default`, hover → `interactive-hover`, `rounded-md` |
-| `ComboboxEmpty` | shadcn `ComboboxEmpty` | `text-placeholder`, centered |
+| `ComboboxEmpty` | plain `div` (peer-based) | `text-placeholder`, centered, hides when list has items |
+| `ComboboxList` | shadcn `ComboboxList` | Adds `tw-peer` for empty state detection |
+| `ComboboxTrigger` | shadcn `ComboboxTrigger` | Icon colour `icon-default` |
+| `ComboboxLabel` | shadcn `ComboboxLabel` | `text-placeholder`, `text-xs`, `font-semibold` |
+| `ComboboxSeparator` | shadcn `ComboboxSeparator` | `bg-border-weak` |
+| `Combobox` (root) | shadcn `Combobox` | Provides `ComboboxAnchorContext` for positioning |
 
 ### Re-exported from shadcn (no token overrides)
-`Combobox` (root), `ComboboxValue`, `ComboboxGroup`, `ComboboxLabel`, `ComboboxSeparator`, `ComboboxList`, `ComboboxCollection`
+`ComboboxValue`, `ComboboxGroup`, `ComboboxCollection`
 
 ## Props (ComboboxInput)
 
@@ -54,7 +59,7 @@ Wraps shadcn Combobox (`@base-ui/react` Combobox primitive).
 | focus ring | focus | `--interactive-focus-outline` | `focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-1` |
 | border | error | `--border-danger-strong` | `aria-[invalid=true]:tw-border-border-danger-strong` |
 | background | error | `--background-error-weak` | `aria-[invalid=true]:tw-bg-background-error-weak` |
-| background | disabled | `--switch-tag` | `disabled:tw-bg-[var(--switch-tag)]` |
+| background | disabled | `--background-surface-layer-02` | `disabled:tw-bg-background-surface-layer-02` |
 | text | disabled | `--text-disabled` | `disabled:tw-text-text-disabled` |
 | border | disabled | none (no border) | `disabled:tw-border-transparent` |
 

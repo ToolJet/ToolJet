@@ -12,7 +12,7 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from '@/components/ui/Rocket/shadcn/input-group';
-import { func } from 'superstruct';
+
 
 // ── Wrapped (border/focus token override to match Rocket Input) ───────────
 
@@ -51,7 +51,7 @@ InputGroup.propTypes = {
 
 function InputGroupAddon({ className, align = 'inline-start', children, ...props }) {
   return (
-    <ShadcnInputGroupAddon className={cn('tw-max-h-full tw-py-0.5', className)} {...props}>
+    <ShadcnInputGroupAddon align={align} className={cn('tw-max-h-full tw-py-0.5 tw-gap-1 empty:tw-hidden', className)} {...props}>
       {children}
     </ShadcnInputGroupAddon>
   );

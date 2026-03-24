@@ -49,7 +49,7 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 | chevron icon | default | `--icon-default` | `tw-text-icon-default` |
 | border | error | `--border-danger-strong` | `aria-[invalid=true]:tw-border-border-danger-strong` |
 | background | error | `--background-error-weak` | `aria-[invalid=true]:tw-bg-background-error-weak` |
-| background | disabled | `--switch-tag` | `disabled:tw-bg-[var(--switch-tag)]` |
+| background | disabled | `--background-surface-layer-02` | `disabled:tw-bg-background-surface-layer-02` |
 | text | disabled | `--text-disabled` | `disabled:tw-text-text-disabled` |
 | border | disabled | none (no border) | `disabled:tw-border-transparent` |
 
@@ -111,4 +111,4 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 - `allowClearSelection` from Figma is not in v1 — can be added later as an enhancement.
 - Leading visual on trigger (icon before placeholder) from Figma — supported via children composition inside SelectTrigger.
 - Leading/trailing visuals on items — supported via custom content inside SelectItem children.
-- Disabled state uses `--switch-tag` bg token (same as Figma's `controls/switch-tag`).
+- Disabled state uses `--background-surface-layer-02` bg token (consistent with Input).

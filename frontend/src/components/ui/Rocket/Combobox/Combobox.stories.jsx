@@ -190,26 +190,53 @@ export const States = {
 
 // ── With Groups ───────────────────────────────────────────────────────────
 export const WithGroups = {
-  render: () => {
-    const allCountries = Object.values(countriesByRegion).flat();
-    return (
-      <div className="tw-w-72 tw-p-4">
-        <Combobox items={allCountries}>
-          <ComboboxInput placeholder="Search country..." />
-          <ComboboxContent>
-            <ComboboxList>
-              {(item) => (
-                <ComboboxItem key={item} value={item}>
-                  {item}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-            <ComboboxEmpty>No countries found.</ComboboxEmpty>
-          </ComboboxContent>
-        </Combobox>
-      </div>
-    );
-  },
+  render: () => (
+    <div className="tw-w-72 tw-p-4">
+      <Combobox>
+        <ComboboxInput placeholder="Search country..." />
+        <ComboboxContent>
+          <ComboboxList>
+            {Object.entries(countriesByRegion).map(([region, countries], i) => (
+              <React.Fragment key={region}>
+                {i > 0 && <ComboboxSeparator />}
+                <ComboboxGroup>
+                  <ComboboxLabel>{region}</ComboboxLabel>
+                  {countries.map((country) => (
+                    <ComboboxItem key={country} value={country}>
+                      {country}
+                    </ComboboxItem>
+                  ))}
+                </ComboboxGroup>
+              </React.Fragment>
+            ))}
+          </ComboboxList>
+          <ComboboxEmpty>No countries found.</ComboboxEmpty>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── With Clear ───────────────────────────────────────────────────────────
+export const WithClear = {
+  render: () => (
+    <div className="tw-w-72 tw-p-4">
+      <Combobox items={frameworks}>
+        <ComboboxInput placeholder="Search framework..." showClear />
+        <ComboboxContent>
+          <ComboboxList>
+            {(item) => (
+              <ComboboxItem key={item} value={item}>
+                {item}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+          <ComboboxEmpty>No results found.</ComboboxEmpty>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
   parameters: { layout: 'padded' },
 };
 

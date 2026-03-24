@@ -113,7 +113,7 @@ const ComboboxInput = forwardRef(function ComboboxInput(
           comboboxInputVariants({ size }),
           // Disabled
           disabled && [
-            'tw-bg-switch-tag',
+            'tw-bg-background-surface-layer-02',
             'tw-text-text-disabled',
             'tw-border-transparent',
             'tw-shadow-none',
@@ -159,7 +159,7 @@ ComboboxContent.displayName = 'ComboboxContent';
 // ── ComboboxList ──────────────────────────────────────────────────────────
 
 const ComboboxList = forwardRef(function ComboboxList({ className, ...props }, ref) {
-  return <ShadcnComboboxList ref={ref} className={cn('tw-peer', className)} {...props} />;
+  return <ShadcnComboboxList ref={ref} className={cn('tw-peer tw-p-0', className)} {...props} />;
 });
 ComboboxList.displayName = 'ComboboxList';
 
@@ -170,8 +170,10 @@ const ComboboxItem = forwardRef(function ComboboxItem({ className, ...props }, r
     <ShadcnComboboxItem
       ref={ref}
       className={cn(
-        'tw-h-8 tw-text-base tw-text-text-default tw-rounded-md tw-px-2 tw-py-1.5',
+        'tw-h-8 tw-text-base tw-text-text-default tw-rounded-md tw-pl-[30px] tw-pr-2 tw-py-1.5',
         'data-[highlighted]:tw-bg-interactive-hover data-[highlighted]:tw-text-text-default',
+        // Move check indicator from right → left (match Select pattern)
+        '[&_[data-slot=combobox-item-indicator]]:tw-left-2 [&_[data-slot=combobox-item-indicator]]:tw-right-auto',
         '[&_[data-slot=combobox-item-indicator]_svg]:tw-text-text-brand',
         className
       )}
