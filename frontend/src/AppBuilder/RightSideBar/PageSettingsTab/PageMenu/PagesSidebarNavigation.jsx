@@ -496,7 +496,7 @@ export const PagesSidebarNavigation = ({
         })}
         style={{
           position: 'relative',
-          height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
+          height: currentMode === 'edit' ? '100%' : `calc(100% - var(--preview-header-height, 0px))`,
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           borderRight: (() => {

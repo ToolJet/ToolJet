@@ -49,7 +49,7 @@ export const PageCanvasFooter = ({ showCanvasFooter, isMobileLayout, currentMode
       }}
       style={{
         position: 'sticky',
-        bottom: 0,
+        bottom: 'var(--preview-header-height, 0px)',
         zIndex: 10,
         flexShrink: 0,
         padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
