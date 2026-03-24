@@ -56,6 +56,7 @@ export class FolderAppsService implements IFolderAppsService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const type = query.type;
       const searchKey = query.searchKey;
+      const branchId = query.branchId;
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
         resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
@@ -73,7 +74,8 @@ export class FolderAppsService implements IFolderAppsService {
         userAppPermissions,
         manager,
         type,
-        searchKey
+        searchKey,
+        branchId
       );
       allFolderList.forEach((folder, index) => {
         const currentFolder = folders.find((f) => f.id === folder.id);
@@ -94,7 +96,12 @@ export class FolderAppsService implements IFolderAppsService {
         userFolderPermissions
       );
 
-      return decamelizeKeys({ folders: visibleFolders });
+      // When branch filtering is active, hide folders with 0 visible apps
+      const result = branchId
+        ? visibleFolders.filter((folder) => folder.folderApps && folder.folderApps.length > 0)
+        : visibleFolders;
+
+      return decamelizeKeys({ folders: result });
     });
   }
 

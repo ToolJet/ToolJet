@@ -548,7 +548,7 @@ const useAppData = (
           document.title = retrieveWhiteLabelText();
         };
       })
-      .catch((error) => {
+      .catch((_error) => {
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');

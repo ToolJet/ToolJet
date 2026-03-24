@@ -15,7 +15,9 @@ export const workspaceBranchesService = {
 
 function list() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/workspace-branches`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workspace-branches`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
 }
 
 function create(name, sourceBranchId, commitSha) {

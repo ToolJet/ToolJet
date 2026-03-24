@@ -61,7 +61,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
 
     if (branch?.isDefault) {
-        throw new BadRequestException('Constants cannot be added directly on master branch and must go through PR approval flow.')
+      throw new BadRequestException(
+        'Constants cannot be added directly on master branch and must go through PR approval flow.'
+      );
     }
   }
 
@@ -546,14 +548,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             }
             parsedOptions[key].workspace_constant = credentialValue;
           } else {
-            if (
-              existingCredentialId &&
-              credentialValue !== undefined &&
-              credentialValue !== (await this.credentialService.getValue(existingCredentialId))
-            ) {
-              if (parsedOptions[key]) {
-                delete parsedOptions[key].workspace_constant;
-              }
+            // The new value is not a constant reference — always clear workspace_constant
+            // if it was previously set. The old check compared against the stored credential
+            // value, but in multi-environment loops the credential gets updated on the first
+            // iteration, making subsequent comparisons see equal values and skip the delete.
+            if (parsedOptions[key]?.workspace_constant && credentialValue !== undefined) {
+              delete parsedOptions[key].workspace_constant;
             }
           }
 

@@ -372,7 +372,8 @@ export class AppsService implements IAppsService {
           folder,
           parseInt(page || '1'),
           searchKey,
-          type as APP_TYPES
+          type as APP_TYPES,
+          branchId
         );
         apps = viewableApps;
         totalFolderCount = totalCount;

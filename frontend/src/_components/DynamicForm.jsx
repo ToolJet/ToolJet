@@ -320,8 +320,10 @@ const DynamicForm = ({
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
     const helpText = helpTextProp || help_text;
-    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
-    const finalHelpText = showEncryptedLockedHelpText ? 'Encrypted values are not pushed to git and are updated directly in Tooljet': helpText;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && encrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     switch (type) {
       case 'password':
@@ -524,8 +526,8 @@ const DynamicForm = ({
           cyLabel: label
             ? generateCypressDataCy(label)
             : key
-              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
-              : '',
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,

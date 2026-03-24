@@ -108,13 +108,13 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  index(@User() user, @Query() query) {
+  index(@User() user, @Query() query, @Headers('x-branch-id') headerBranchId?: string) {
     const AppListDto: AppListDto = {
       page: query.page,
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
-      branchId: query.branch_id,
+      branchId: query.branch_id || headerBranchId,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }

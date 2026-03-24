@@ -95,7 +95,9 @@ function getGitStatus(workspaceId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/${workspaceId}/status`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/git-sync/${workspaceId}/status`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
 }
 
 function syncAppVersion(appGitId, versionId) {
