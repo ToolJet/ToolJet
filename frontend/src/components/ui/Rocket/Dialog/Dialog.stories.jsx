@@ -52,7 +52,7 @@ export const Default = {
 export const Sizes = {
   render: () => (
     <div className="tw-flex tw-flex-wrap tw-gap-3">
-      {['sm', 'default', 'lg', 'xl'].map((size) => (
+      {['small', 'default', 'large', 'extraLarge'].map((size) => (
         <Dialog key={size}>
           <DialogTrigger asChild>
             <Button variant="outline">{size}</Button>
@@ -113,7 +113,7 @@ export const WithDescription = {
       <DialogTrigger asChild>
         <Button variant="primary">Delete Item</Button>
       </DialogTrigger>
-      <DialogContent size="sm">
+      <DialogContent size="small">
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
         </DialogHeader>
@@ -199,7 +199,7 @@ export const Scrollable = {
       <DialogTrigger asChild>
         <Button variant="outline">Scrollable</Button>
       </DialogTrigger>
-      <DialogContent size="sm">
+      <DialogContent size="small">
         <DialogHeader>
           <DialogTitle>Terms of Service</DialogTitle>
         </DialogHeader>

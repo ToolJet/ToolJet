@@ -13,9 +13,9 @@ const labelVariants = cva(
   {
     variants: {
       size: {
-        sm: 'tw-text-xs tw-leading-[18px]',
+        large: 'tw-text-sm tw-leading-5',
         default: 'tw-text-[13px] tw-leading-[18px]',
-        lg: 'tw-text-sm tw-leading-5',
+        small: 'tw-text-xs tw-leading-[18px]',
       },
     },
     defaultVariants: { size: 'default' },
@@ -55,7 +55,7 @@ const Label = forwardRef(function Label(
 Label.displayName = 'Label';
 
 Label.propTypes = {
-  size: PropTypes.oneOf(['sm', 'default', 'lg']),
+  size: PropTypes.oneOf(['large', 'default', 'small']),
   required: PropTypes.bool,
   disabled: PropTypes.bool,
   className: PropTypes.string,

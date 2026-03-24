@@ -9,7 +9,7 @@ export default {
   argTypes: {
     size: {
       control: 'select',
-      options: ['sm', 'default', 'lg'],
+      options: ['large', 'default', 'small'],
     },
     required: { control: 'boolean' },
     disabled: { control: 'boolean' },
@@ -35,7 +35,7 @@ export const DisabledRequired = {
 export const Sizes = {
   render: () => (
     <div className="tw-flex tw-flex-col tw-gap-3">
-      {['sm', 'default', 'lg'].map((size) => (
+      {['large', 'default', 'small'].map((size) => (
         <div key={size} className="tw-flex tw-items-center tw-gap-3">
           <span className="tw-w-20 tw-text-xs tw-text-text-medium">{size}</span>
           <Label size={size}>Label text</Label>

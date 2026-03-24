@@ -123,7 +123,7 @@ export const AllSides = {
       ].map(({ side, align, label }) => (
         <Tooltip key={label} defaultOpen>
           <TooltipTrigger asChild>
-            <Button variant="secondary" size="sm">{label}</Button>
+            <Button variant="secondary" size="small">{label}</Button>
           </TooltipTrigger>
           <TooltipContent side={side} align={align}>
             {label}

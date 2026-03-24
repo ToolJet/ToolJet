@@ -6,7 +6,7 @@
 
 | Prop | Type | Values | Default |
 |---|---|---|---|
-| size | string | sm \| default \| lg | default |
+| size | string | large \| default \| small | default |
 | required | boolean | — | false |
 | disabled | boolean | — | false |
 
@@ -14,9 +14,9 @@
 
 | Value | Font size | Line height | Figma name |
 |---|---|---|---|
-| lg | 14px | 20px | large |
+| large | 14px | 20px | large |
 | default | 13px | 18px | default - new |
-| sm | 12px | 18px | default |
+| small | 12px | 18px | default |
 
 ## Token Mapping
 

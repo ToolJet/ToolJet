@@ -6,7 +6,7 @@
 
 | Prop | Type | Values | Default |
 |---|---|---|---|
-| size | string | sm \| default \| lg \| xl \| fullscreen | default |
+| size | string | small \| default \| large \| extraLarge \| fullscreen | default |
 | showCloseButton | boolean | — | true |
 | preventClose | boolean | — | false |
 | noPadding | boolean | — | false |
@@ -16,10 +16,10 @@
 
 | Value | Max-width | Tailwind |
 |---|---|---|
-| sm | 400px | tw-max-w-[400px] |
+| small | 400px | tw-max-w-[400px] |
 | default | 480px | tw-max-w-[480px] |
-| lg | 640px | tw-max-w-[640px] |
-| xl | 768px | tw-max-w-[768px] |
+| large | 640px | tw-max-w-[640px] |
+| extraLarge | 768px | tw-max-w-[768px] |
 | fullscreen | 100vw/100vh | tw-max-w-none tw-w-screen tw-h-screen tw-rounded-none |
 
 ## Token Mapping

@@ -37,10 +37,10 @@ const dialogContentVariants = cva(
   {
     variants: {
       size: {
-        sm: 'tw-max-w-[400px]',
+        small: 'tw-max-w-[400px]',
         default: 'tw-max-w-[480px]',
-        lg: 'tw-max-w-[640px]',
-        xl: 'tw-max-w-[768px]',
+        large: 'tw-max-w-[640px]',
+        extraLarge: 'tw-max-w-[768px]',
         fullscreen:
           'tw-max-w-none tw-w-screen tw-h-screen tw-rounded-none tw-border-0',
       },
@@ -102,7 +102,7 @@ const DialogContent = forwardRef(function DialogContent(
 });
 DialogContent.displayName = 'DialogContent';
 DialogContent.propTypes = {
-  size: PropTypes.oneOf(['sm', 'default', 'lg', 'xl', 'fullscreen']),
+  size: PropTypes.oneOf(['small', 'default', 'large', 'extraLarge', 'fullscreen']),
   showCloseButton: PropTypes.bool,
   preventClose: PropTypes.bool,
   noPadding: PropTypes.bool,
@@ -137,7 +137,7 @@ function DialogHeader({ className, ...props }) {
         'tw-flex tw-flex-row tw-items-center',
         'tw-h-14 tw-px-6 tw-py-0',
         'tw-gap-0',
-        size !== 'sm' && 'tw-border-solid tw-border-0 tw-border-b tw-border-border-weak',
+        size !== 'small' && 'tw-border-solid tw-border-0 tw-border-b tw-border-border-weak',
         className
       )}
       {...props}
@@ -186,7 +186,7 @@ function DialogFooter({ className, ...props }) {
       className={cn(
         'tw-px-6 tw-py-4',
         'tw-flex tw-flex-row tw-items-center tw-justify-end tw-gap-2',
-        size !== 'sm' && 'tw-border-solid tw-border-0 tw-border-t tw-border-border-weak',
+        size !== 'small' && 'tw-border-solid tw-border-0 tw-border-t tw-border-border-weak',
         className
       )}
       {...props}

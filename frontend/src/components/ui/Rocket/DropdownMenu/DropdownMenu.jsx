@@ -30,17 +30,9 @@ const contentClasses = [
   'tw-text-text-default',
 ].join(' ');
 
-const DropdownMenuContent = forwardRef(function DropdownMenuContent(
-  { className, sideOffset = 4, ...props },
-  ref
-) {
+const DropdownMenuContent = forwardRef(function DropdownMenuContent({ className, sideOffset = 4, ...props }, ref) {
   return (
-    <ShadcnDropdownMenuContent
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(contentClasses, className)}
-      {...props}
-    />
+    <ShadcnDropdownMenuContent ref={ref} sideOffset={sideOffset} className={cn(contentClasses, className)} {...props} />
   );
 });
 DropdownMenuContent.displayName = 'DropdownMenuContent';
@@ -58,19 +50,12 @@ const itemClasses = [
   'data-[disabled]:tw-opacity-50 data-[disabled]:tw-pointer-events-none',
 ].join(' ');
 
-const DropdownMenuItem = forwardRef(function DropdownMenuItem(
-  { className, inset, destructive, ...props },
-  ref
-) {
+const DropdownMenuItem = forwardRef(function DropdownMenuItem({ className, inset, destructive, ...props }, ref) {
   return (
     <ShadcnDropdownMenuItem
       ref={ref}
       inset={inset}
-      className={cn(
-        itemClasses,
-        destructive && 'tw-text-text-danger focus:tw-text-text-danger',
-        className
-      )}
+      className={cn(itemClasses, destructive && 'tw-text-text-danger focus:tw-text-text-danger', className)}
       {...props}
     />
   );
@@ -92,42 +77,21 @@ const checkRadioClasses = [
   '[&>span]:tw-text-text-default',
 ].join(' ');
 
-const DropdownMenuCheckboxItem = forwardRef(function DropdownMenuCheckboxItem(
-  { className, ...props },
-  ref
-) {
-  return (
-    <ShadcnDropdownMenuCheckboxItem
-      ref={ref}
-      className={cn(checkRadioClasses, className)}
-      {...props}
-    />
-  );
+const DropdownMenuCheckboxItem = forwardRef(function DropdownMenuCheckboxItem({ className, ...props }, ref) {
+  return <ShadcnDropdownMenuCheckboxItem ref={ref} className={cn(checkRadioClasses, className)} {...props} />;
 });
 DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
 // ── RadioItem ────────────────────────────────────────────────────────────────
 
-const DropdownMenuRadioItem = forwardRef(function DropdownMenuRadioItem(
-  { className, ...props },
-  ref
-) {
-  return (
-    <ShadcnDropdownMenuRadioItem
-      ref={ref}
-      className={cn(checkRadioClasses, className)}
-      {...props}
-    />
-  );
+const DropdownMenuRadioItem = forwardRef(function DropdownMenuRadioItem({ className, ...props }, ref) {
+  return <ShadcnDropdownMenuRadioItem ref={ref} className={cn(checkRadioClasses, className)} {...props} />;
 });
 DropdownMenuRadioItem.displayName = 'DropdownMenuRadioItem';
 
 // ── Label ────────────────────────────────────────────────────────────────────
 
-const DropdownMenuLabel = forwardRef(function DropdownMenuLabel(
-  { className, inset, ...props },
-  ref
-) {
+const DropdownMenuLabel = forwardRef(function DropdownMenuLabel({ className, inset, ...props }, ref) {
   return (
     <ShadcnDropdownMenuLabel
       ref={ref}
@@ -145,38 +109,21 @@ DropdownMenuLabel.propTypes = {
 
 // ── Separator ────────────────────────────────────────────────────────────────
 
-const DropdownMenuSeparator = forwardRef(function DropdownMenuSeparator(
-  { className, ...props },
-  ref
-) {
-  return (
-    <ShadcnDropdownMenuSeparator
-      ref={ref}
-      className={cn('tw-bg-border-default', className)}
-      {...props}
-    />
-  );
+const DropdownMenuSeparator = forwardRef(function DropdownMenuSeparator({ className, ...props }, ref) {
+  return <ShadcnDropdownMenuSeparator ref={ref} className={cn('tw-bg-border-weak', className)} {...props} />;
 });
 DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
 
 // ── Shortcut ─────────────────────────────────────────────────────────────────
 
 function DropdownMenuShortcut({ className, ...props }) {
-  return (
-    <ShadcnDropdownMenuShortcut
-      className={cn('tw-text-text-placeholder tw-opacity-100', className)}
-      {...props}
-    />
-  );
+  return <ShadcnDropdownMenuShortcut className={cn('tw-text-text-placeholder tw-opacity-100', className)} {...props} />;
 }
 DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';
 
 // ── SubTrigger ───────────────────────────────────────────────────────────────
 
-const DropdownMenuSubTrigger = forwardRef(function DropdownMenuSubTrigger(
-  { className, inset, ...props },
-  ref
-) {
+const DropdownMenuSubTrigger = forwardRef(function DropdownMenuSubTrigger({ className, inset, ...props }, ref) {
   return (
     <ShadcnDropdownMenuSubTrigger
       ref={ref}
@@ -198,17 +145,8 @@ DropdownMenuSubTrigger.propTypes = {
 
 // ── SubContent ───────────────────────────────────────────────────────────────
 
-const DropdownMenuSubContent = forwardRef(function DropdownMenuSubContent(
-  { className, ...props },
-  ref
-) {
-  return (
-    <ShadcnDropdownMenuSubContent
-      ref={ref}
-      className={cn(contentClasses, className)}
-      {...props}
-    />
-  );
+const DropdownMenuSubContent = forwardRef(function DropdownMenuSubContent({ className, ...props }, ref) {
+  return <ShadcnDropdownMenuSubContent ref={ref} className={cn(contentClasses, className)} {...props} />;
 });
 DropdownMenuSubContent.displayName = 'DropdownMenuSubContent';
 
