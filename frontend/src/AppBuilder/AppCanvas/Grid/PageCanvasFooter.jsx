@@ -15,14 +15,13 @@ export const PageCanvasFooter = ({ showCanvasFooter, isMobileLayout, currentMode
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && isMobileLayout && currentMode === 'view';
 
-  const footerBackgroundColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.backgroundColor,
-    shallow
-  );
-  const footerBorderColor = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.borderColor,
-    shallow
-  );
+  const { footerBackgroundColor, footerBorderColor } = useStore((state) => {
+    const pageFooter = state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter;
+    return {
+      footerBackgroundColor: pageFooter?.backgroundColor,
+      footerBorderColor: pageFooter?.borderColor,
+    };
+  }, shallow);
 
   const setCanvasFooterSelected = useStore((state) => state.setCanvasFooterSelected, shallow);
   const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
@@ -79,8 +78,8 @@ export const PageCanvasFooter = ({ showCanvasFooter, isMobileLayout, currentMode
       )}
       <Container
         id={`${moduleId}-footer`}
-        canvasHeight={PAGE_CANVAS_FOOTER_HEIGHT / 10}
-        canvasWidth={window.innerWidth}
+        // canvasHeight={PAGE_CANVAS_FOOTER_HEIGHT / 10}
+        // canvasWidth={window.innerWidth}
         darkMode={isAppDarkMode}
         allowContainerSelect={false}
         styles={{
