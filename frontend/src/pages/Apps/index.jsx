@@ -18,9 +18,9 @@ import PageHeader from '../shared/PageHeader';
 import ContentToolbar from '../shared/ContentToolbar';
 import WorkspaceLayout from '../layouts/WorkspaceLayout';
 import MoreAppsActionMenu from '../shared/MoreAppsActionMenu';
-// TODO: Move these components to shared folder
 import WorkflowDialogs from '../Workflows/components/WorkflowDialogs';
 import CreateWorkflowBtn from '../Workflows/components/CreateWorkflowBtn';
+import AppsAndModulesTab from './components/AppsAndModulesTab';
 import BuildWithAIAssistant from './components/BuildWithAIAssistant';
 import PermissionDeniedDialog from './components/PermissionDeniedDialog';
 import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
@@ -135,6 +135,8 @@ export default function Apps({ appType = 'front-end' }) {
             folderList={folders ?? []}
             selectedFolder={selectedFolderId || 'all'}
             onChangeSelectedFolder={setSelectedFolder}
+            leadingSlot={<AppsAndModulesTab />}
+            showFolderBreadcrumb={appType === 'front-end'}
           />
 
           <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
@@ -156,12 +158,16 @@ export default function Apps({ appType = 'front-end' }) {
                       ? 'No apps found in this folder'
                       : appSearchQuery?.length
                       ? `No results found for "${appSearchQuery}"`
-                      : 'You don’t have any apps yet'
+                      : appType === 'front-end'
+                      ? 'You don’t have any apps yet'
+                      : 'You don’t have any modules yet'
                   }
                   description={
                     appSearchQuery?.length || selectedFolderId
                       ? ''
-                      : 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
+                      : appType === 'front-end'
+                      ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
+                      : 'Create reusable groups of components and queries via modules.'
                   }
                 >
                   {Boolean(appSearchQuery?.length) && (

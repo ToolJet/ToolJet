@@ -364,6 +364,17 @@ class AppComponent extends React.Component {
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
+                        <Apps appType="module" />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/module"
+                  element={
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute darkMode={darkMode}>
                         <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
                       </PrivateRoute>
                     </DesktopOnlyRoute>

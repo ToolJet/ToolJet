@@ -147,6 +147,7 @@ export default function Workflows() {
 
         <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
           <ContentToolbar
+            showFolderBreadcrumb
             folderList={folders ?? []}
             selectedFolder={selectedFolderId || 'all'}
             onChangeSelectedFolder={setSelectedFolder}

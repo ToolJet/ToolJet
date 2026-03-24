@@ -179,6 +179,7 @@ export default function EmptyState({
         return <WorkflowsEmptyStateSVG />;
       // return darkMode ? 'workflows-empty-state-dark' : 'workflows-empty-state';
       case 'front-end':
+      case 'module':
         return <AppsEmptyStateSVG />;
       case 'datasources':
         return darkMode ? 'data-sources-empty-state-dark' : 'data-sources-empty-state';
