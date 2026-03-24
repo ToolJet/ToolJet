@@ -22,7 +22,7 @@ You'll find the Secret Key and other credentials on your Appwrite's project sett
 You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
 :::
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/appwrite/appwrite-connection.png" alt="Appwrite intro"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/appwrite/appwrite-connection-ux.png" alt="Appwrite intro"/>
 
 ## Querying Appwrite
 

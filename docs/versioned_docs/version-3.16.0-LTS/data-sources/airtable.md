@@ -14,7 +14,7 @@ ToolJet requires the following to connect to your Airtable:
 
 You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-connection.png" alt="Airtable Data Source Connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-connection-ux.png" alt="Airtable Data Source Connection" />
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
