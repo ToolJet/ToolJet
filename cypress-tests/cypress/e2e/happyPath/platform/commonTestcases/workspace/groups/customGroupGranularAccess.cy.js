@@ -589,7 +589,7 @@ describe("Custom Group Granular Access", () => {
 
         cy.apiCreateApp(appName2)
             .then((res) => {
-                appId1 = res.body.id;
+                appId2 = res.body.id;
                 cy.apiAddComponentToApp(appName2, "text1", {}, "Text", `{{globals.environment.name}}`);
                 cy.visit("/");
                 cy.get(commonSelectors.appCard(appName2)).within(() => {

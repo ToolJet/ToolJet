@@ -43,7 +43,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
-
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
@@ -259,6 +258,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             eventMetaDefinition={queryComponent.componentMeta}
             callerQueryId={selectedQueryId}
             popoverPlacement="auto"
+            callerQueryName={selectedQuery?.name}
           />
         </div>
       </div>

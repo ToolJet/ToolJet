@@ -10,7 +10,7 @@ import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/components/ui/sidebar';
-import { RenderPageAndPageGroup } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/PageGroup';
+import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
 import { shallow } from 'zustand/shallow';
 import Header from '@/AppBuilder/Viewer/Header';
 
