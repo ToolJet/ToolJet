@@ -21,7 +21,7 @@ ToolJet requires the following to connect to your Athena.
 You can also configure for **[additional optional parameters](https://github.com/ghdna/athena-express)**.
 :::
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-connection-v3.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/connection-ux-athena.png" alt="Athena connection" />
 
 ## Querying Amazon Athena
 
