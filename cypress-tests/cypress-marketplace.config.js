@@ -18,14 +18,15 @@ module.exports = defineConfig({
       return require("./cypress/plugins/index.js")(on, config);
     },
 
-    baseUrl: "http://localhost:8082",
+    baseUrl: "http://localhost:8082/",
     specPattern: [
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
       "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/*.cy.js",
     ],
 
     testIsolation: true,
     retries: {
-      runMode: 2,
+      runMode: 0,
       openMode: 0,
     },
     redirectionLimit: 7,
