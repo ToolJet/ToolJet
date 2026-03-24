@@ -468,6 +468,7 @@ export const MultiselectV2 = ({
       marginTop: '5px',
       borderRadius: '8px',
     }),
+    menuPortal: (base) => ({ ...base, zIndex: 1040 }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
   return (

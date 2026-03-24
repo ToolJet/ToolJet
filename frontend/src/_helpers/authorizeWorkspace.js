@@ -29,7 +29,6 @@ function setRedirectAttempt() {
   sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
 }
 
-
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -233,7 +232,9 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
         setRedirectAttempt();
         try {
           const { token } = await sessionTransferService.createTransferToken();
-          const redirect = encodeURIComponent(`/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`);
+          const redirect = encodeURIComponent(
+            `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+          );
           window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;
         } catch (e) {

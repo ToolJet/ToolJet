@@ -184,9 +184,7 @@ export default function AppCard({
             disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
               if (app?.current_version_id && canAccessReleased) {
-                window.open(
-                  urlJoin(getHostURL(), `/applications/${app.slug}`)
-                );
+                window.open(urlJoin(getHostURL(), `/applications/${app.slug}`));
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
               }
