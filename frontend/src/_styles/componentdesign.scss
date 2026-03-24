@@ -110,6 +110,46 @@
     --upgrade-default: #FFAF41;
     --upgrade-weak: #FFAF4140;
 
+    // Radius
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+
+    // Overlay
+    --overlay-backdrop: rgba(0, 0, 0, 0.5);
+
+    // shadcn semantic bridges — point to ToolJet tokens so Radix internals get correct colours
+    --background: var(--background-surface-layer-01);
+    --foreground: var(--text-default);
+    --primary: var(--button-primary);
+    --primary-foreground: var(--text-on-solid);
+    --secondary: var(--background-surface-layer-02);
+    --secondary-foreground: var(--text-default);
+    --muted: var(--background-surface-layer-02);
+    --muted-foreground: var(--text-placeholder);
+    --accent: var(--background-accent-weak);
+    --accent-foreground: var(--text-brand);
+    --destructive: var(--background-error-strong);
+    --destructive-foreground: var(--text-on-solid);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--interactive-focus-outline);
+    --radius: var(--radius-md);
+    --popover: var(--background-surface-layer-01);
+    --popover-foreground: var(--text-default);
+    --card: var(--background-surface-layer-01);
+    --card-foreground: var(--text-default);
+    --sidebar: var(--background-surface-layer-02);
+    --sidebar-foreground: var(--text-default);
+    --sidebar-primary: var(--button-primary);
+    --sidebar-primary-foreground: var(--text-on-solid);
+    --sidebar-accent: var(--background-accent-weak);
+    --sidebar-accent-foreground: var(--text-brand);
+    --sidebar-border: var(--border-default);
+    --sidebar-ring: var(--interactive-focus-outline);
+
     // Shadows
     --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
     --elevation-100-box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05), 0px 1px 1px 0px rgba(48, 50, 51, 0.10);    
@@ -235,6 +275,35 @@
     --upgrade-default: #FFAF41;
     --upgrade-weak: #FFAF4140;
 
+    // shadcn semantic bridges — dark overrides
+    --background: var(--background-surface-layer-01);
+    --foreground: var(--text-default);
+    --primary: var(--button-primary);
+    --primary-foreground: var(--text-on-solid);
+    --secondary: var(--background-surface-layer-02);
+    --secondary-foreground: var(--text-default);
+    --muted: var(--background-surface-layer-02);
+    --muted-foreground: var(--text-placeholder);
+    --accent: var(--background-accent-weak);
+    --accent-foreground: var(--icon-brand);
+    --destructive: var(--background-error-strong);
+    --destructive-foreground: var(--text-on-solid);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--interactive-focus-outline);
+    --popover: var(--background-surface-layer-01);
+    --popover-foreground: var(--text-default);
+    --card: var(--background-surface-layer-01);
+    --card-foreground: var(--text-default);
+    --sidebar: var(--background-surface-layer-02);
+    --sidebar-foreground: var(--text-default);
+    --sidebar-primary: var(--button-primary);
+    --sidebar-primary-foreground: var(--text-on-solid);
+    --sidebar-accent: var(--background-accent-weak);
+    --sidebar-accent-foreground: var(--icon-brand);
+    --sidebar-border: var(--border-default);
+    --sidebar-ring: var(--interactive-focus-outline);
+
     //box-shadow
     --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.40);
     --elevation-100-box-shadow: 0px 1px 1px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
@@ -244,5 +313,11 @@
     --elevation-500-box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.99), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
     --elevation-600-box-shadow: 0px 24px 40px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
     --elevation-700-box-shadow: 0px 32px 50px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
-    
+
+}
+
+// Rocket resets — override legacy theme.scss `input[type="text"] { outline-color: !important }`
+// Specificity: input.tw-appearance-none[type="text"] (0-1-2) > input[type="text"] (0-1-1)
+input.tw-appearance-none[type="text"] {
+  outline: none !important;
 }
