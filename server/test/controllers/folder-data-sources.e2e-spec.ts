@@ -780,7 +780,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: true,
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -809,7 +809,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: true,
-              restrictQueryRun: false,
+              canRunQuery: true,
             },
           });
 
@@ -849,7 +849,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: true,
-              restrictQueryRun: false,
+              canRunQuery: true,
             },
           });
 
@@ -915,7 +915,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: true,
               canConfigureDs: false, // should be auto-elevated to true
               canUseDs: false,       // should be auto-elevated to true
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -950,7 +950,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: true,
               canUseDs: false, // should be auto-elevated to true
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -965,7 +965,7 @@ describe('folder-data-sources controller', () => {
         expect(response.body.canEditFolder).toBe(false);
       });
 
-      it('should allow restrictQueryRun independently of hierarchy', async () => {
+      it('should allow canRunQuery independently of hierarchy', async () => {
         const { organization, auth } = await setupAdminUser();
         const group = await setupCustomGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Folder Gamma');
@@ -975,14 +975,14 @@ describe('folder-data-sources controller', () => {
           .set('tj-workspace-id', organization.id)
           .set('Cookie', auth.tokenCookie)
           .send({
-            name: 'Use with restrict',
+            name: 'Use with query restriction',
             isAll: false,
             type: 'data_source_folder',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: true,
-              restrictQueryRun: true,
+              canRunQuery: false,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -993,8 +993,8 @@ describe('folder-data-sources controller', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.canUseDs).toBe(true);
-        expect(response.body.restrictQueryRun).toBe(true);
-        // restrictQueryRun should not force-set canEditFolder or canConfigureDs
+        expect(response.body.canRunQuery).toBe(false);
+        // canRunQuery should not force-set canEditFolder or canConfigureDs
         expect(response.body.canEditFolder).toBe(false);
         expect(response.body.canConfigureDs).toBe(false);
       });
@@ -1018,7 +1018,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: true,
               canConfigureDs: false,
               canUseDs: false,
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -1048,7 +1048,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: true,
               canUseDs: false,
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -1077,7 +1077,7 @@ describe('folder-data-sources controller', () => {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: true,
-              restrictQueryRun: false,
+              canRunQuery: true,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -1089,7 +1089,7 @@ describe('folder-data-sources controller', () => {
         expect([400, 403, 422]).toContain(response.statusCode);
       });
 
-      it('should allow restrictQueryRun for end-user groups', async () => {
+      it('should allow setting canRunQuery to false for end-user groups', async () => {
         const { organization, auth } = await setupAdminUser();
         const endUserGroup = await setupEndUserGroup(organization.id);
         const folder = await createDsFolder(organization.id, 'Restricted Folder 4');
@@ -1099,14 +1099,14 @@ describe('folder-data-sources controller', () => {
           .set('tj-workspace-id', organization.id)
           .set('Cookie', auth.tokenCookie)
           .send({
-            name: 'End user restrict query run',
+            name: 'End user query restriction',
             isAll: false,
             type: 'data_source_folder',
             createResourcePermissionObject: {
               canEditFolder: false,
               canConfigureDs: false,
               canUseDs: false,
-              restrictQueryRun: true,
+              canRunQuery: false,
               resourcesToAdd: [{ folderId: folder.id }],
             },
           });
@@ -1115,9 +1115,9 @@ describe('folder-data-sources controller', () => {
           return;
         }
 
-        // restrictQueryRun is the only permission end-user groups may hold
+        // canRunQuery is the only permission end-user groups may set to false
         expect([200, 201]).toContain(response.statusCode);
-        expect(response.body.restrictQueryRun).toBe(true);
+        expect(response.body.canRunQuery).toBe(false);
       });
     });
 
@@ -1152,7 +1152,7 @@ describe('folder-data-sources controller', () => {
             canEditFolder: false,
             canConfigureDs: false,
             canUseDs: true,
-            restrictQueryRun: false,
+            canRunQuery: true,
           })
         );
 
@@ -1285,7 +1285,7 @@ describe('folder-data-sources controller', () => {
             canEditFolder: false,
             canConfigureDs: true,
             canUseDs: true,
-            restrictQueryRun: false,
+            canRunQuery: true,
           })
         );
 
@@ -1328,7 +1328,7 @@ describe('folder-data-sources controller', () => {
     });
   });
 
-  describe('restrictQueryRun runtime enforcement', () => {
+  describe('canRunQuery runtime enforcement', () => {
     // Helper: create a minimal non-public app with a version and data query linked to a data source
     async function createAppWithQuery(orgId: string, userId: string, dataSourceId: string) {
       const appRepo = defaultDataSource.getRepository(App);
@@ -1369,7 +1369,8 @@ describe('folder-data-sources controller', () => {
       return { app, version, query };
     }
 
-    // Helper: set up restrictQueryRun permission for a group on a folder directly in DB
+    // Helper: set up canRunQuery permission for a group on a folder directly in DB
+    // restrict=true means canRunQuery=false (blocked), restrict=false means canRunQuery=true (allowed)
     async function setupRestriction(groupId: string, folderId: string, restrict: boolean) {
       const gpRepo = defaultDataSource.getRepository(GranularPermissions);
       const dsfgpRepo = defaultDataSource.getRepository(DsFoldersGroupPermissions);
@@ -1390,7 +1391,7 @@ describe('folder-data-sources controller', () => {
           canEditFolder: false,
           canConfigureDs: false,
           canUseDs: true,
-          restrictQueryRun: restrict,
+          canRunQuery: !restrict,
         })
       );
 
@@ -1404,7 +1405,7 @@ describe('folder-data-sources controller', () => {
       return { granularPerm, dsFolderPerm };
     }
 
-    it('should block query run when restrictQueryRun is true for the DS folder', async () => {
+    it('should block query run when canRunQuery is false for the DS folder', async () => {
       const { user, organization, auth } = await setupAdminUser();
 
       // Create DS, folder, and put DS in folder
@@ -1416,7 +1417,7 @@ describe('folder-data-sources controller', () => {
       // Create app with query
       const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
 
-      // Create a custom group with restrictQueryRun=true
+      // Create a custom group with canRunQuery=false (restricted)
       const groupRepo = defaultDataSource.getRepository(GroupPermissions);
       const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -1442,7 +1443,7 @@ describe('folder-data-sources controller', () => {
         groupUsersRepo.create({ userId: user.id, groupId: restrictedGroup.id })
       );
 
-      // Set up restrictQueryRun=true for the folder
+      // Set up canRunQuery=false for the folder (restrict queries)
       await setupRestriction(restrictedGroup.id, folder.id, true);
 
       // Try to run the query — should be blocked
@@ -1455,7 +1456,7 @@ describe('folder-data-sources controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it('should allow query run when restrictQueryRun is false', async () => {
+    it('should allow query run when canRunQuery is true', async () => {
       const { user, organization, auth } = await setupAdminUser();
 
       // Create DS, folder, and put DS in folder
@@ -1467,7 +1468,7 @@ describe('folder-data-sources controller', () => {
       // Create app with query
       const { query } = await createAppWithQuery(organization.id, user.id, ds.id);
 
-      // Create a custom group with restrictQueryRun=false
+      // Create a custom group with canRunQuery=true (allowed)
       const groupRepo = defaultDataSource.getRepository(GroupPermissions);
       const groupUsersRepo = defaultDataSource.getRepository(GroupUsers);
 
@@ -1492,7 +1493,7 @@ describe('folder-data-sources controller', () => {
         groupUsersRepo.create({ userId: user.id, groupId: allowedGroup.id })
       );
 
-      // Set up restrictQueryRun=false for the folder
+      // Set up canRunQuery=true for the folder (allow queries)
       await setupRestriction(allowedGroup.id, folder.id, false);
 
       // Try to run the query — should NOT be blocked (may fail with other errors but not 403)

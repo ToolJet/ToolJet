@@ -15,7 +15,7 @@ export class AddDsFolderGranularPermissions1774255110000 implements MigrationInt
         can_edit_folder BOOLEAN NOT NULL DEFAULT false,
         can_configure_ds BOOLEAN NOT NULL DEFAULT false,
         can_use_ds BOOLEAN NOT NULL DEFAULT false,
-        restrict_query_run BOOLEAN NOT NULL DEFAULT false,
+        can_run_query BOOLEAN NOT NULL DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_ds_folders_gp_granular_permission FOREIGN KEY (granular_permission_id)

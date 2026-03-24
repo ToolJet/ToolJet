@@ -53,7 +53,7 @@ export interface CreateDsFolderPermissionsObject {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
-  restrictQueryRun?: boolean;
+  canRunQuery?: boolean;
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.DATA_SOURCE_FOLDER>;
 }
 
@@ -61,7 +61,7 @@ export interface DsFoldersGroupPermissionsActions {
   canEditFolder?: boolean;
   canConfigureDs?: boolean;
   canUseDs?: boolean;
-  restrictQueryRun?: boolean;
+  canRunQuery?: boolean;
 }
 
 export interface DataSourcesGroupPermissionsActions {

@@ -101,7 +101,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canEditFolder: true,
         canConfigureDs: true,
         canUseDs: true,
-        restrictQueryRun: false,
+        canRunQuery: true,
       },
     },
     [ResourceType.WORKFLOWS]: {
@@ -157,7 +157,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canEditFolder: true,
         canConfigureDs: true,
         canUseDs: true,
-        restrictQueryRun: false,
+        canRunQuery: true,
       },
     },
     [ResourceType.WORKFLOWS]: {

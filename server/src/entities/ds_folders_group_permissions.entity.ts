@@ -31,8 +31,8 @@ export class DsFoldersGroupPermissions extends BaseEntity {
   @Column({ name: 'can_use_ds', nullable: false, default: false })
   canUseDs: boolean;
 
-  @Column({ name: 'restrict_query_run', nullable: false, default: false })
-  restrictQueryRun: boolean;
+  @Column({ name: 'can_run_query', nullable: false, default: true })
+  canRunQuery: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
