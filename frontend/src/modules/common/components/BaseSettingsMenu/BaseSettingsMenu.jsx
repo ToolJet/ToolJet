@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import cx from 'classnames';
+import { Bolt } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { cn } from '@/lib/utils';
 import { authenticationService, appService, sessionService } from '@/_services';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -161,9 +162,12 @@ function BaseSettingsMenu({
 
   return (
     <OverlayTrigger onToggle={setShowOverlay} rootClose={true} trigger="click" placement="top" overlay={getOverlay()}>
-      <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
-        <div className="d-xl-block">
-          <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
+      <div
+        className={cn('tj-leftsidebar-icon-items tw-cursor-pointer !tw-mb-0', { active: showOverlay })}
+        data-cy="settings-icon"
+      >
+        <div className="tw-flex tw-justify-center tw-items-center">
+          <Bolt size={16} />
         </div>
       </div>
     </OverlayTrigger>

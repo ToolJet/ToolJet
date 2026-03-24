@@ -266,11 +266,12 @@ export const generateInviteURL = (
   organizationToken?: string,
   organizationId?: string,
   source?: string,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const baseURL = `${effectiveHost}${subpath ? subpath : '/'}`;
   const inviteSupath = `invitations/${invitationToken}`;
   const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
   let queryString = new URLSearchParams({
@@ -286,11 +287,12 @@ export const generateOrgInviteURL = (
   organizationToken: string,
   organizationId?: string,
   fullUrl = true,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${effectiveHost}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
@@ -307,6 +309,17 @@ export function extractFirstAndLastName(fullName: string) {
     };
   }
 }
+
+export const getHostForOrganization = async (
+  organizationId: string | undefined,
+  cacheService?: { getActiveDomainForOrg(orgId: string): Promise<string | null> }
+): Promise<string> => {
+  if (organizationId && cacheService) {
+    const domain = await cacheService.getActiveDomainForOrg(organizationId);
+    if (domain) return `https://${domain}`;
+  }
+  return process.env.TOOLJET_HOST;
+};
 
 export const getServerURL = () => {
   const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
@@ -589,6 +602,21 @@ export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
 };
 
+/**
+ * Applies SameSite=None; Secure cookie options when custom domains are enabled over HTTPS.
+ * Custom domains require cross-origin cookie support. SameSite=None requires Secure=true,
+ * which browsers reject on plain HTTP — hence the isHttpsEnabled() guard.
+ */
+export const applyCustomDomainCookieOptions = (
+  cookieOptions: { sameSite?: string | boolean; secure?: boolean },
+  configService: { get<T>(key: string): T }
+) => {
+  if (configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
+    cookieOptions.sameSite = 'none';
+    cookieOptions.secure = true;
+  }
+};
+
 export function areAllUnique(array) {
   const set = new Set(array);
   return set.size === array.length;
@@ -766,4 +794,75 @@ export async function validatePasswordDomain(
     instanceSettings?.PASSWORD_ALLOWED_DOMAINS,
     instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
   );
+}
+
+/**
+ * Resolves workspace constants in an options array for OAuth token exchange.
+ * Options come as array of { key: string, value: string, encrypted: boolean }
+ */
+export async function resolveOptionsArrayForOAuth(
+  options: Array<object>,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<Array<object>> {
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions: Array<object> = [];
+
+  for (const option of options) {
+    const value = option['value'];
+    if (typeof value === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(value)) {
+        const resolved = await resolveConstantsFn(value);
+        resolvedOptions.push({ ...option, value: resolved });
+      } else {
+        resolvedOptions.push(option);
+      }
+    } else {
+      resolvedOptions.push(option);
+    }
+  }
+
+  return resolvedOptions;
+}
+
+/**
+ * Resolves workspace constants in source options for OAuth flows (generating auth URLs).
+ * Source options come as an object with key-value structure.
+ */
+export async function resolveSourceOptionsForOAuth(
+  sourceOptions: any,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<any> {
+  if (!sourceOptions || typeof sourceOptions !== 'object') {
+    return sourceOptions;
+  }
+
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions = { ...sourceOptions };
+
+  for (const key of Object.keys(resolvedOptions)) {
+    const option = resolvedOptions[key];
+
+    // Handle options in { value: '...' } format
+    if (option && typeof option === 'object' && 'value' in option) {
+      const value = option.value;
+      if (typeof value === 'string') {
+        constantMatcher.lastIndex = 0;
+        if (constantMatcher.test(value)) {
+          const resolved = await resolveConstantsFn(value);
+          resolvedOptions[key] = { ...option, value: resolved };
+        }
+      }
+    }
+    // Handle direct string values
+    else if (typeof option === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(option)) {
+        const resolved = await resolveConstantsFn(option);
+        resolvedOptions[key] = resolved;
+      }
+    }
+  }
+
+  return resolvedOptions;
 }

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
+import { getHostURL } from '@/_helpers/routes';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import Input from '@/_ui/Input';
 import cx from 'classnames';
+import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const Sharepoint = ({
   optionchanged,
@@ -15,14 +18,13 @@ const Sharepoint = ({
   currentAppEnvironmentId,
   workspaceConstants,
   isDisabled,
+  optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
-  const hostUrl = window.public_config?.TOOLJET_HOST;
-  const subPathUrl = window.public_config?.SUB_PATH;
-  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
-  const redirectUri = fullUrl;
+  const redirectUri = `${getHostURL()}/oauth2/authorize`;
+  const docLink = 'https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-sharepoint';
 
   function authSharepoint() {
     const provider = 'sharepoint';
@@ -83,16 +85,22 @@ const Sharepoint = ({
         />
       </div>
       <div>
-        <label className="form-label mt-3">Client secret</label>
-        <Input
-          type="password"
-          className="form-control dynamic-form-encrypted-field"
-          onChange={(e) => optionchanged('sp_client_secret', e.target.value)}
-          value={options?.sp_client_secret?.value || ''}
-          placeholder="**************"
-          workspaceConstants={workspaceConstants}
-          encrypted={true}
-        />
+        <EncryptedFieldWrapper
+          options={options}
+          selectedDataSource={selectedDataSource}
+          optionchanged={optionchanged}
+          optionsChanged={optionsChanged}
+          name="sp_client_secret"
+          label="Client secret"
+        >
+          <Input
+            type="password"
+            className="form-control"
+            onChange={(e) => optionchanged('sp_client_secret', e.target.value)}
+            value={options?.sp_client_secret?.value || ''}
+            workspaceConstants={workspaceConstants}
+          />
+        </EncryptedFieldWrapper>
       </div>
       <div>
         <label className="form-label mt-3">Tenant ID</label>
@@ -115,18 +123,30 @@ const Sharepoint = ({
           className="form-control"
         />
       </div>
-      <div className="row mt-3">
-        <center>
+      <div className="row mt-3 align-items-center">
+        <div className="col">
+          <div className="d-flex align-items-center">
+            <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+            <a
+              className="color-primary tj-docs-link tj-text-sm"
+              href={docLink}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="link-read-documentation"
+            >
+              {t('globals.readDocumentation', 'Read documentation')}
+            </a>
+          </div>
+        </div>
+        <div className="col-auto">
           {authStatus === 'waiting_for_token' && (
-            <div>
-              <Button
-                className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving || isDisabled}
-                onClick={() => saveDataSource()}
-              >
-                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
-              </Button>
-            </div>
+            <Button
+              className={`m2 ${isSaving ? ' loading' : ''}`}
+              disabled={isSaving || isDisabled}
+              onClick={() => saveDataSource()}
+            >
+              {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+            </Button>
           )}
 
           {(!authStatus || authStatus === 'waiting_for_url') && (
@@ -138,7 +158,7 @@ const Sharepoint = ({
               {t('globals.connect', 'Connect')} {t('sharepoint.toSharepoint', 'to Sharepoint')}
             </Button>
           )}
-        </center>
+        </div>
       </div>
     </div>
   );

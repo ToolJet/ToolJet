@@ -6,8 +6,17 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
-  const { properties, height, width, id, adjustComponentPositions, currentLayout, currentMode, subContainerIndex } =
-    props;
+  const {
+    properties,
+    height,
+    width,
+    id,
+    adjustComponentPositions,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
+  } = props;
   const { inputRef, value } = inputLogic;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
@@ -37,6 +46,7 @@ export const TextArea = (props) => {
     width,
     visibility: inputLogic.visibility,
     subContainerIndex,
+    componentType,
   });
 
   return (

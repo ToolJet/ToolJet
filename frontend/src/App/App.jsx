@@ -50,6 +50,10 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import Apps from '@/pages/Apps';
+
+import WorkflowsNew from '../pages/Workflows';
+import ReactQueryClientProvider from './ReactQueryClientProvider';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -65,14 +69,17 @@ const AppWrapper = (props) => {
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
-    <Suspense fallback={null}>
-      <AppWithRouter
-        props={props}
-        isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
-        darkMode={isTJDarkMode} // This is the dark mode of entire platform
-        updateIsTJDarkMode={updateIsTJDarkMode}
-      />
-    </Suspense>
+    // As we are not using react-query for end user, so have added provider here. In future we can move it higher if required for end user apps
+    <ReactQueryClientProvider>
+      <Suspense fallback={null}>
+        <AppWithRouter
+          props={props}
+          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+          darkMode={isTJDarkMode} // This is the dark mode of entire platform
+          updateIsTJDarkMode={updateIsTJDarkMode}
+        />
+      </Suspense>
+    </ReactQueryClientProvider>
   );
 };
 
@@ -301,6 +308,20 @@ class AppComponent extends React.Component {
                     element={
                       <DesktopOnlyRoute darkMode={darkMode}>
                         <PrivateRoute darkMode={darkMode}>
+                          <WorkflowsNew />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                )}
+                {/* TODO: remove below route later on */}
+                {isWorkflowsFeatureEnabled() && (
+                  <Route
+                    exact
+                    path="/:workspaceId/workflow/*"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
                           <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                         </PrivateRoute>
                       </DesktopOnlyRoute>
@@ -340,6 +361,17 @@ class AppComponent extends React.Component {
                 <Route
                   exact
                   path="/:workspaceId/modules"
+                  element={
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute darkMode={darkMode}>
+                        <Apps appType="module" />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/module"
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
@@ -453,6 +485,15 @@ class AppComponent extends React.Component {
                 <Route
                   exact
                   path="/:workspaceId"
+                  element={
+                    <PrivateRoute darkMode={darkMode}>
+                      <Apps />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/apps"
                   element={
                     <PrivateRoute darkMode={darkMode}>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />

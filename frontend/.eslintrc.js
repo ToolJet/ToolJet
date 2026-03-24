@@ -17,6 +17,7 @@ module.exports = {
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:prettier/recommended',
+        'plugin:@tanstack/query/recommended',
       ],
       parser: '@babel/eslint-parser',
       parserOptions: {
@@ -72,6 +73,14 @@ module.exports = {
           version: 'detect',
         },
         'import/resolver': 'webpack',
+        // 'import/resolver': {
+        //   webpack: {
+        //     config: 'webpack.config.js',
+        //   },
+        //   node: {
+        //     extensions: ['.js', '.jsx'],
+        //   },
+        // },
       },
       globals: {
         path: true,
