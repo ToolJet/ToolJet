@@ -28,19 +28,19 @@ const buttonVariants = cva(
           'disabled:tw-bg-button-secondary-disabled',
         ],
         ghost: [
-          'tw-bg-transparent',
-          'tw-text-text-medium',
+          'tw-bg-transparent tw-shadow-elevation-none',
+          'tw-text-text-default',
           'hover:tw-bg-interactive-hover',
           'active:tw-bg-interactive-selected',
         ],
         ghostBrand: [
-          'tw-bg-transparent',
+          'tw-bg-transparent tw-shadow-elevation-none',
           'tw-text-text-brand',
           'hover:tw-bg-interactive-hover',
           'active:tw-bg-interactive-selected',
         ],
         outline: [
-          'tw-bg-button-outline tw-text-text-medium tw-border tw-border-border-weak',
+          'tw-bg-button-outline tw-text-text-default tw-border tw-border-border-weak tw-shadow-elevation-none',
           'hover:tw-bg-button-outline-hover',
           'active:tw-bg-button-outline-pressed',
         ],
@@ -74,7 +74,12 @@ const buttonVariants = cva(
       {
         variant: 'secondary',
         danger: true,
-        class: 'tw-border-border-danger-weak tw-text-text-danger',
+        class: [
+          'tw-bg-button-danger-secondary tw-border-border-danger-weak tw-text-text-danger',
+          'hover:tw-bg-button-danger-secondary-hover',
+          'active:tw-bg-button-danger-secondary-pressed',
+          'disabled:tw-bg-button-danger-secondary-disabled',
+        ],
       },
       // iconOnly — square dimensions per size
       { iconOnly: true, size: 'large', class: 'tw-w-10' },
@@ -113,9 +118,9 @@ const Button = forwardRef(function Button(
         <Loader2 className="tw-h-4 tw-w-4 tw-animate-spin" />
       ) : (
         <>
-          {leadingVisual && <span className="tw-shrink-0">{leadingVisual}</span>}
+          {leadingVisual && <span className="tw-shrink-0 tw-contents">{leadingVisual}</span>}
           {children}
-          {trailingVisual && <span className="tw-shrink-0">{trailingVisual}</span>}
+          {trailingVisual && <span className="tw-shrink-0 tw-contents">{trailingVisual}</span>}
         </>
       )}
     </ShadcnButton>
