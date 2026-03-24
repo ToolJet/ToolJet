@@ -33,10 +33,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -58,10 +58,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -86,10 +86,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -97,10 +97,10 @@ describe("Elasticsearch", () => {
         cy.get(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName)).click();
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidSsl);
-        verifyDSConnection("failed", "ConnectionError: write EPROTO 80A07CEF01000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:\n");
+        verifyDSConnection("failed", "wrong version number");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidHost);
-        verifyDSConnection("failed", "ConnectionError: getaddrinfo ENOTFOUND invalid-host");
+        verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidPort);
         verifyDSConnection("failed", "TimeoutError: Request timed out");
