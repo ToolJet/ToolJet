@@ -342,6 +342,7 @@ jobs:
 
   suspend-ce:
     if: |
+      (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
@@ -824,6 +825,7 @@ jobs:
 
   suspend-ee-lts:
     if: |
+      (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ee-lts-review-app'
     runs-on: ubuntu-latest
@@ -1306,6 +1308,7 @@ jobs:
 
   suspend-ee-pre-release:
     if: |
+      (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') &&
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ee-pre-release-review-app'
     runs-on: ubuntu-latest
