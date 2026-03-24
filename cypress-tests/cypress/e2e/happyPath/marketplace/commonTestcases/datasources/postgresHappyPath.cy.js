@@ -13,6 +13,7 @@ describe("PostgreSQL", () => {
         .toLowerCase()
         .replaceAll("[^A-Za-z]", "");
     data.appName = `${fake.companyName}-App`;
+    data.appCreated = false;
     const postgresqlDataSourceName = `cypress-${data.dataSourceName}-postgresql`;
     beforeEach(() => {
         cy.apiLogin();
@@ -20,6 +21,10 @@ describe("PostgreSQL", () => {
     });
 
     afterEach(() => {
+        if (data.appCreated) {
+            cy.apiDeleteApp();
+            data.appCreated = false;
+        }
         cy.apiDeleteDataSource(postgresqlDataSourceName);
     });
 
@@ -114,7 +119,7 @@ describe("PostgreSQL", () => {
         verifyDSConnection("failed", `password authentication failed for user "postgres"`);
 
         fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidPort);
-        verifyDSConnection("failed", "Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?");
+        verifyDSConnection("failed", "Connection test failed: Database connection timeout. Please check host/port/firewall");
     });
 
     it("4. PostgreSQL - Verify query editor", () => {
@@ -140,7 +145,27 @@ describe("PostgreSQL", () => {
             true
         );
 
-        cy.apiCreateApp(data.appName);
+        cy.getAuthHeaders().then((headers) => {
+            cy.request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps`,
+                headers,
+                failOnStatusCode: false,
+            }).then((response) => {
+                const app = response.body?.apps?.find((a) => a.name === data.appName);
+                if (app?.id) {
+                    cy.request({
+                        method: "DELETE",
+                        url: `${Cypress.env("server_host")}/api/apps/${app.id}`,
+                        headers,
+                        failOnStatusCode: false,
+                    });
+                }
+            });
+        });
+        cy.apiCreateApp(data.appName).then(() => {
+            data.appCreated = true;
+        });
         cy.apiAddQueryToApp({
             queryName: "table-creation",
             options: {
@@ -176,7 +201,6 @@ describe("PostgreSQL", () => {
         cy.forceClickOnCanvas();
         cy.wait(5000);
         verifyPreviewData("Bob Smith Updated");
-        cy.apiDeleteApp();
 
     });
 });
