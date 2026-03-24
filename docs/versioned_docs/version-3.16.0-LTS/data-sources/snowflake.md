@@ -58,7 +58,7 @@ From the output, copy the following values:
 ### Basic Authentication
 Authenticates to Snowflake using a username and password to establish a direct connection with the specified account, role, and warehouse.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth.png" alt="ToolJet - Snowflake connection" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth-ux.png" alt="ToolJet - Snowflake connection" />
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -71,6 +71,10 @@ ToolJet requires the following to connect to Snowflake database.
 - **Account**
 - **Username**
 - **Password**
+
+Use your Snowflake **Account Identifier** as the value for the **Account** field.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/snowflake/accounts-snowflake.png" alt="ToolJet - Snowflake" />
 
 :::info
 You can also configure for **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
@@ -85,6 +89,11 @@ Uses credentials from your own OAuth application to authenticate and authorize a
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/oauth-custom-app.png" alt="ToolJet - Snowflake connection" />
 
+:::info
+Snowflake provides multiple OAuth endpoint URLs, including account-level and profile-level endpoints.  
+
+Ensure that you use at least one valid set of Authorization and Token URLs (preferably from the same source) when configuring the data source. Mixing endpoints from different sources may lead to authentication issues.
+:::
 
 ### OAuth2.0 - ToolJet App
 Uses ToolJet’s preconfigured OAuth application to simplify authentication without requiring you to create and manage your own OAuth app.
@@ -106,6 +115,11 @@ Multi-Factor Authentication (MFA) adds an extra layer of security to your Snowfl
 4. Complete the setup.
 Once enabled, MFA will automatically be enforced during login.
 
+:::info
+- Snowflake does not support Basic Authentication (username + password) when MFA is enabled.
+- Additionally, Programmatic Access Tokens (PAT) cannot be used as a replacement for passwords in Basic Auth.
+:::
+
 ## Programmatic Access Tokens (PAT) in Snowflake
 
 Programmatic Access Tokens (PAT) allow secure, token-based authentication to Snowflake without using a password. These can be used as an alternative to password-based authentication. 
@@ -118,7 +132,11 @@ Programmatic Access Tokens (PAT) allow secure, token-based authentication to Sno
 3. Provide required details (name, expiration, etc.)
 4. Copy and store the token securely.
 
-**Note:** The token is shown only once. Store it securely.
+:::info
+- The token is shown only once. Store it securely. 
+- Programmatic Access Tokens (PAT) cannot be used as a password
+:::
+
 
 ## Querying Snowflake
 
