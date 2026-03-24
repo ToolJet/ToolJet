@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
-import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto } from './dto';
+import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto, EnsureDraftDto } from './dto';
 import { IWorkspaceBranchController } from './interfaces/IController';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -63,6 +63,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @Post('pull')
   async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
     return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.ENSURE_DRAFT)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('ensure-draft')
+  async ensureAppDraft(@User() user: any, @Body() dto: EnsureDraftDto) {
+    return this.workspaceBranchService.ensureAppDraft(user.organizationId, dto.appId, dto.branchId, user);
   }
 
   @InitFeature(FEATURE_KEY.LIST_REMOTE_BRANCHES)

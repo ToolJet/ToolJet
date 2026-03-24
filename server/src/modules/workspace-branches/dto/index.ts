@@ -43,3 +43,13 @@ export class WorkspacePullDto {
   @IsUUID()
   branchId?: string;
 }
+
+export class EnsureDraftDto {
+  @IsNotEmpty()
+  @IsUUID()
+  appId: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+}

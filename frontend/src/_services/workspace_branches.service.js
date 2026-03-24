@@ -8,6 +8,7 @@ export const workspaceBranchesService = {
   deleteBranch,
   pushWorkspace,
   pullWorkspace,
+  ensureAppDraft,
   checkForUpdates,
   listRemoteBranches,
   fetchPullRequests,
@@ -58,7 +59,10 @@ function pushWorkspace(commitMessage, targetBranch, branchId) {
 }
 
 function pullWorkspace(sourceBranch, branchId) {
-  const body = { ...(sourceBranch && { sourceBranch }), ...(branchId && { branchId }) };
+  const body = {
+    ...(sourceBranch && { sourceBranch }),
+    ...(branchId && { branchId }),
+  };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -66,6 +70,17 @@ function pullWorkspace(sourceBranch, branchId) {
     ...(Object.keys(body).length > 0 && { body: JSON.stringify(body) }),
   };
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
+}
+
+function ensureAppDraft(appId, branchId) {
+  const body = { appId, ...(branchId && { branchId }) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/ensure-draft`, requestOptions).then(handleResponse);
 }
 
 function checkForUpdates(branch) {
@@ -83,4 +98,3 @@ function fetchPullRequests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
 }
-

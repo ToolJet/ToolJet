@@ -12,6 +12,7 @@ interface Features {
   [FEATURE_KEY.CHECK_UPDATES]: FeatureConfig;
   [FEATURE_KEY.LIST_REMOTE_BRANCHES]: FeatureConfig;
   [FEATURE_KEY.FETCH_PULL_REQUESTS]: FeatureConfig;
+  [FEATURE_KEY.ENSURE_DRAFT]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
