@@ -97,9 +97,9 @@ describe("Redis", () => {
         cy.get(dsCommonSelector.dataSourceNameButton(redisDataSourceName)).click();
 
         fillDSConnectionForm(redisFormConfig, redisFormConfig.invalidHost);
-        verifyDSConnection("failed", "Connection could not be established");
+        verifyDSConnection("failed", 'Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details.');
 
         fillDSConnectionForm(redisFormConfig, redisFormConfig.invalidPort);
-        verifyDSConnection("failed", "Connection could not be established");
+        verifyDSConnection("failed", 'Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details.');
     });
 });
