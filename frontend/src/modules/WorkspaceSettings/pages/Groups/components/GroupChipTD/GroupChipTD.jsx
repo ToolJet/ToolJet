@@ -20,7 +20,7 @@ const GroupChipTD = ({ groups = [] }) => {
     };
   }, [showAllGroups]);
 
-  function moveValuesToLast (arr, valuesToMove) {
+  function moveValuesToLast(arr, valuesToMove) {
     const validValuesToMove = valuesToMove.filter((value) => arr.includes(value));
 
     validValuesToMove.forEach((value) => {

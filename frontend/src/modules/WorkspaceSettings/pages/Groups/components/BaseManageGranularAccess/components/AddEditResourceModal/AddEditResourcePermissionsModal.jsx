@@ -275,9 +275,7 @@ function AddEditResourcePermissionsModal({
               <input
                 className="form-check-input"
                 type="radio"
-                disabled={
-                  !addableApps || disableBuilderLevelUpdate || groupName === 'builder'
-                }
+                disabled={!addableApps || disableBuilderLevelUpdate || groupName === 'builder'}
                 checked={isCustom}
                 onClick={() => {
                   !isCustom &&

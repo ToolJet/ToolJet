@@ -1,5 +1,5 @@
 import React, { createContext, useMemo, useState, useEffect, useContext, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
@@ -33,8 +33,10 @@ export const GlobalDataSourcesPage = (props) => {
   const [environmentLoading, setEnvironmentLoading] = useState(false);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
+  const { selectedId: selectedIdFromUrl } = useParams();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
+  const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
   const prevBranchIdRef = useRef(activeBranchId);
@@ -63,11 +65,38 @@ export const GlobalDataSourcesPage = (props) => {
       : !activeDatasourceList && updateSidebarNAV('Commonly used');
 
     //if user selected a new datasource to create one. switch to development env
-    if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
+    if (!selectedDataSource) {
+      setCurrentEnvironment(returnDevelopmentEnv(environments));
+      // Update URL when datasource is deselected (but not on initial load)
+      if (initialUrlSelectionHandled.current) {
+        navigate(`/${getWorkspaceId()}/data-sources`, { replace: true });
+      }
+    }
 
     fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource), activeDatasourceList]);
+
+  // Auto-select datasource from URL param on initial load
+  useEffect(() => {
+    if (selectedIdFromUrl && !initialUrlSelectionHandled.current && dataSources.length > 0 && environments.length > 0) {
+      const dsFromUrl = dataSources.find((ds) => ds.id === selectedIdFromUrl);
+      if (dsFromUrl) {
+        initialUrlSelectionHandled.current = true;
+        setActiveDatasourceList('');
+        setSelectedDataSource(dsFromUrl);
+        setCurrentEnvironment(environments[0]);
+        toggleDataSourceManagerModal(true);
+        updateSidebarNAV(dsFromUrl.name);
+      } else {
+        initialUrlSelectionHandled.current = true;
+      }
+    }
+    if (!selectedIdFromUrl) {
+      initialUrlSelectionHandled.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, environments, selectedIdFromUrl]);
 
   useEffect(() => {
     if (!_.isEmpty(featureAccess)) {
@@ -175,6 +204,7 @@ export const GlobalDataSourcesPage = (props) => {
           setActiveDatasourceList('');
           toggleDataSourceManagerModal(true);
           fetchDataSourceByEnvironment(ds?.id, currentEnvironment?.id);
+          navigate(`/${getWorkspaceId()}/data-sources/${ds.id}`, { replace: true });
         }
         if (orderedDataSources.length && resetSelection) {
           if (!canCreateDataSource()) {
@@ -184,6 +214,7 @@ export const GlobalDataSourcesPage = (props) => {
             setSelectedDataSource(orderedDataSources[0]);
             toggleDataSourceManagerModal(true);
             setActiveDatasourceList('');
+            navigate(`/${getWorkspaceId()}/data-sources/${orderedDataSources[0].id}`, { replace: true });
           } else {
             setActiveDatasourceList('#databases');
             setSelectedDataSource(null);

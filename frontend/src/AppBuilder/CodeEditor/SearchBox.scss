@@ -3,22 +3,36 @@
     height: 44px;
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border-weak);
     padding: 8px;
     background-color: var(--background-surface-layer-01);
-    border-radius: 4px 4px 0 0;
+    border-radius: 8px 8px 0 0;
 
     .search-panel {
         display: flex;
-        width: 309px;
         height: 28px;
         gap: 4px;
 
         .search-replace-inputs {
             height: 28px;
-            width: 245px;
             display: flex;
-            gap: 5px;
+
+            // Using :focus-within + z-index to prevent sibling input from overlapping the focus ring due to DOM paint order
+            &> div:first-child > div:nth-child(2):focus-within {
+                z-index: 1;
+            }
+            
+            input[name="search"] {
+                width: 120px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border-right: none;
+            }
+            
+            input[name="replace"] {
+                width: 120px;
+                border-top-left-radius: 0px;
+                border-bottom-left-radius: 0px;
+            }
         }
 
         .search-buttons {
@@ -30,6 +44,16 @@
                 margin: 0 2px;
             }
         }
+    }
+
+    .search-match-count {
+        display: flex;
+        align-items: center;
+        font-family: 'IBM Plex Sans';
+        font-size: 11px;
+        line-height: 16px;
+        font-weight: 400;
+        color: var(--text-placeholder);
     }
 
     .replace-buttons {
@@ -45,4 +69,9 @@
 
 .code-hinter-wrapper .codehinter-search-btn {
     z-index: 1000;
+}
+
+.cm-panels.cm-panels-top {
+    border-bottom-color: var(--border-weak) !important;
+    border-radius: 8px 8px 0 0;
 }

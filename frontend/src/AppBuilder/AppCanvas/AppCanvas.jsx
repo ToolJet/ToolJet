@@ -14,8 +14,8 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
-import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
+import PagesSidebarNavigation from '@/AppBuilder/AppCanvas/PageMenu/PagesSidebarNavigation';
+import MobileNavigationHeader from '@/AppBuilder/AppCanvas/PageMenu/MobileNavigationHeader';
 import { DragResizeGhostWidget } from './GhostWidgets';
 
 import { Container } from './Container';
@@ -110,8 +110,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -249,7 +249,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                               <DragResizeGhostWidget />
                             </>
                           )}
-                          <div id="component-portal" />
                           {appType !== 'module' && <div id="component-portal" />}
                         </div>
                       </SuspenseCountProvider>

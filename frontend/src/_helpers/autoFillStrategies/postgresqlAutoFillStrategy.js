@@ -11,14 +11,7 @@ export const postgresqlAutoFillStrategy = {
   connectionTypeKey: 'connection_type',
   activeConnectionTypeValue: 'string',
 
-  autoFillableFields: [
-    'host',
-    'port',
-    'username',
-    'password',
-    'database',
-    'ssl_enabled',
-  ],
+  autoFillableFields: ['host', 'port', 'username', 'password', 'database', 'ssl_enabled'],
 
   parse(connectionString) {
     return parsePostgresConnectionString(connectionString);

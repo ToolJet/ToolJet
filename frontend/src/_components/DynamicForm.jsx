@@ -308,6 +308,8 @@ const DynamicForm = ({
     columnSelectorOperation,
     columnSelectorDependsOn,
     tabs,
+    pagination,
+    pageSize,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -622,6 +624,8 @@ const DynamicForm = ({
           fxEnabled: fxEnabled || fx_enabled,
           isMulti: isMulti || false,
           autoFetch: autoFetch || false,
+          pagination: pagination || false,
+          pageSize: pageSize || 25,
         };
       case 'react-component-sql-filters':
         return {

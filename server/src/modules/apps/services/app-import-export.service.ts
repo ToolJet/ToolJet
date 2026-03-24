@@ -68,7 +68,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
 
 type NewRevampedComponent =
   | 'Text'
@@ -152,7 +152,13 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'TreeSelect',
 ];
 
-const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
+const PartialRevampedComponents: PartialRevampedComponent[] = [
+  'CodeEditor',
+  'PDF',
+  'Calendar',
+  'CustomComponent',
+  'RadioButtonV2',
+];
 
 const INPUT_WIDGET_TYPES = [
   'TextInput',
@@ -207,6 +213,18 @@ export class AppImportExportService {
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
   ) {}
+
+  private getEventHandlerName(event: any): string {
+    if (typeof event?.name === 'string' && event.name.trim()) {
+      return event.name.trim();
+    }
+
+    if (typeof event?.eventId === 'string' && event.eventId.trim()) {
+      return event.eventId.trim();
+    }
+
+    return '';
+  }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -1104,7 +1122,7 @@ export class AppImportExportService {
               await Promise.all(
                 pageEvents.map(async (event, index) => {
                   const newEvent = {
-                    name: event.eventId,
+                    name: this.getEventHandlerName(event),
                     sourceId: pageCreated.id,
                     target: Target.page,
                     event: event,
@@ -1124,7 +1142,7 @@ export class AppImportExportService {
                 await Promise.all(
                   eventObj.event.map(async (event, index) => {
                     const newEvent = manager.create(EventHandler, {
-                      name: event.eventId,
+                      name: this.getEventHandlerName(event),
                       sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                       target: Target.component,
                       event: event,
@@ -1151,7 +1169,7 @@ export class AppImportExportService {
 
                     actionEvents.forEach((event, index) => {
                       tableActionAndColumnEvents.push({
-                        name: event.eventId,
+                        name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableAction,
                         event: { ...event, ref: action.name },
@@ -1167,7 +1185,7 @@ export class AppImportExportService {
 
                     columnEvents.forEach((event, index) => {
                       tableActionAndColumnEvents.push({
-                        name: event.eventId,
+                        name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableColumn,
                         event: { ...event, ref: column.name },
@@ -1635,7 +1653,7 @@ export class AppImportExportService {
             await Promise.all(
               queryEvents.map(async (event, index) => {
                 const newEvent = await manager.create(EventHandler, {
-                  name: event.eventId,
+                  name: this.getEventHandlerName(event),
                   sourceId: mappedNewDataQuery.id,
                   target: Target.dataQuery,
                   event: event,
@@ -2715,7 +2733,7 @@ export class AppImportExportService {
       await Promise.all(
         queryEvents.map(async (event, index) => {
           const newEvent = {
-            name: event.eventId,
+            name: this.getEventHandlerName(event),
             sourceId: newQuery.id,
             target: Target.dataQuery,
             event: event,
@@ -3067,6 +3085,13 @@ function migrateProperties(
         if (!styles[key]) {
           styles[key] = value;
         }
+      }
+    }
+
+    // Radio Button V2
+    if (componentType === 'RadioButtonV2') {
+      if (properties.layout === undefined) {
+        properties.layout = { value: 'wrap' };
       }
     }
   }
