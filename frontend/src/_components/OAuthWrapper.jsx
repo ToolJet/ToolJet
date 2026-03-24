@@ -1,5 +1,5 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getHostURL } from '@/_helpers/routes';
 import { datasourceService, authenticationService } from '@/_services';
@@ -36,7 +36,7 @@ const OAuthWrapper = ({
 
   const hasFieldsChanged = () => {
     if (!selectedDataSource?.id || !initialOptions) {
-      return true; 
+      return true;
     }
 
     const optionKeys = Object.keys(options || {});
@@ -71,8 +71,8 @@ const OAuthWrapper = ({
     setAuthStatus('waiting_for_url');
 
     // Pass envId, orgId to resolve workspace constants on the backend
-    const fetchArgs = plugin_id 
-      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId] 
+    const fetchArgs = plugin_id
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId]
       : [provider, null, source_options, currentAppEnvironmentId, organizationId];
 
     datasourceService

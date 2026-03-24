@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap, tooltips } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -35,6 +35,8 @@ const langSupport = Object.freeze({
   jsx: javascript({ jsx: true }),
   css: sass(),
 });
+
+const lineWrappingExtension = EditorView.lineWrapping;
 
 const MultiLineCodeEditor = (props) => {
   const {
@@ -299,6 +301,7 @@ const MultiLineCodeEditor = (props) => {
                 theme={theme}
                 extensions={[
                   langExtention,
+                  lineWrappingExtension,
                   search({
                     createPanel: handleSearchPanel,
                   }),

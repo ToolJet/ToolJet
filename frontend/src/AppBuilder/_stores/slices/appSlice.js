@@ -287,8 +287,9 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
-        }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,

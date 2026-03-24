@@ -30,7 +30,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
-        pasteComponents(focusedParentId, JSON.parse(cliptext));
+        await pasteComponents(focusedParentId, JSON.parse(cliptext));
       } catch (err) {
         console.log(err);
       }

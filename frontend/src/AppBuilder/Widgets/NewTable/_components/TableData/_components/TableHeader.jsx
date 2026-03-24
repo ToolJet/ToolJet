@@ -80,10 +80,11 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
       >
         <div
-          className={`d-flex thead-editable-icon-header-text-wrapper ${column.columnType === 'selector'
-            ? 'justify-content-center'
-            : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
-            } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+          className={`d-flex thead-editable-icon-header-text-wrapper ${
+            column.columnType === 'selector'
+              ? 'justify-content-center'
+              : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
+          } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
           <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
@@ -126,9 +127,17 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         {header.column.getIsSorted() && (
           <div className="tw-flex-shrink-0">
             {header.column.getIsSorted() === 'desc' ? (
-              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`} />
+              <IconSortDescending
+                size={16}
+                color="var(--cc-secondary-icon, var(--icon-default))"
+                data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`}
+              />
             ) : (
-              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`} />
+              <IconSortAscending
+                size={16}
+                color="var(--cc-secondary-icon, var(--icon-default))"
+                data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`}
+              />
             )}
           </div>
         )}

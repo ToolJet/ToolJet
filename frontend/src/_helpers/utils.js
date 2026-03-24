@@ -1256,29 +1256,50 @@ export const humanizeifDefaultGroupName = (groupName) => {
 };
 
 // This function is written only to handle diff colors W.R.T button types
-export const computeColor = (styleDefinition, value, meta) => {
-  if (styleDefinition.type?.value == 'primary') return value;
-  else {
-    if (meta?.displayName == 'Background') {
-      value = value == '#4368E3' ? '#FFFFFF' : value;
-      return value;
+export const computeColor = (styleDefinition, value, meta, component) => {
+  // Determine variant: Button uses `type` with 'primary', FileButton uses `buttonType` with 'solid'
+  const isSolid =
+    component === 'FileButton'
+      ? styleDefinition.buttonType?.value === 'solid'
+      : styleDefinition.type?.value == 'primary';
+
+  if (isSolid) return value;
+
+  if (component === 'FileButton') {
+    const DEFAULT_SURFACE = 'var(--cc-surface1-surface)';
+    // Check the raw (unresolved) value from styleDefinition since CSS variables get resolved before reaching here
+    if (meta?.displayName === 'Label color') {
+      return styleDefinition.labelColor?.value === DEFAULT_SURFACE ? 'var(--cc-primary-text)' : value;
     }
-    if (meta?.displayName == 'Text color') {
-      value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
-      return value;
+    if (meta?.displayName === 'Icon color') {
+      return styleDefinition.iconColor?.value === DEFAULT_SURFACE ? 'var(--cc-primary-text)' : value;
     }
-    if (meta?.displayName == 'Icon color') {
-      value = value == '#FFFFFF' ? '#CCD1D5' : value;
-      return value;
+    if (meta?.displayName === 'Loader color') {
+      return styleDefinition.loaderColor?.value === DEFAULT_SURFACE ? 'var(--cc-primary-brand)' : value;
     }
-    if (meta?.displayName == 'Border color') {
-      value = value == '#4368E3' ? '#CCD1D5' : value;
-      return value;
-    }
-    if (meta?.displayName == 'Loader color') {
-      value = value == '#FFFFFF' ? '#4368E3' : value;
-      return value;
-    }
+    return value;
+  }
+
+  // Button widget
+  if (meta?.displayName == 'Background') {
+    value = value == '#4368E3' ? '#FFFFFF' : value;
+    return value;
+  }
+  if (meta?.displayName == 'Text color') {
+    value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
+    return value;
+  }
+  if (meta?.displayName == 'Icon color') {
+    value = value == '#FFFFFF' ? '#CCD1D5' : value;
+    return value;
+  }
+  if (meta?.displayName == 'Border color') {
+    value = value == '#4368E3' ? '#CCD1D5' : value;
+    return value;
+  }
+  if (meta?.displayName == 'Loader color') {
+    value = value == '#FFFFFF' ? '#4368E3' : value;
+    return value;
   }
 };
 

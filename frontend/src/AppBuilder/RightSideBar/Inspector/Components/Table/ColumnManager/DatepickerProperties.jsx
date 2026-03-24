@@ -78,9 +78,11 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
   const { t } = useTranslation();
   const items = [];
   const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
   );
   const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
   );
 

@@ -24,6 +24,7 @@ import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2'
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/AppBuilder/Widgets/Divider';
 import { FileInput } from '@/AppBuilder/Widgets/FileInput';
+import { FileButton } from '@/AppBuilder/Widgets/FileButton/FileButton';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
@@ -41,6 +42,7 @@ import { Timeline } from '@/AppBuilder/Widgets/Timeline';
 import { SvgImage } from '@/AppBuilder/Widgets/SvgImage';
 import { Html } from '@/AppBuilder/Widgets/Html';
 import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
+import { ButtonGroupV2 } from '@/AppBuilder/Widgets/ButtonGroupV2/ButtonGroupV2';
 import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
 import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
 import { Steps } from '@/AppBuilder/Widgets/Steps';
@@ -136,6 +138,7 @@ export const AllComponents = {
   Divider,
   FilePicker,
   FileInput,
+  FileButton,
   PasswordInput,
   EmailInput,
   PhoneInput,
@@ -154,6 +157,7 @@ export const AllComponents = {
   SvgImage,
   Html,
   ButtonGroup,
+  ButtonGroupV2,
   CustomComponent,
   VerticalDivider,
   ColorPicker,

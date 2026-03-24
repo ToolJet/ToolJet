@@ -49,17 +49,20 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   useEffect(() => {
     if (options.workflowId) {
-      appVersionService.getAll(options.workflowId).then((data) => {
-        const versions = (data?.versions || [])
-          .filter((v) => v.status === 'PUBLISHED')
-          .map((v) => ({
-            value: v.id,
-            name: v.name,
-          }));
-        setVersionOptions(versions);
-      }).catch(() => {
-        setVersionOptions([]);
-      });
+      appVersionService
+        .getAll(options.workflowId)
+        .then((data) => {
+          const versions = (data?.versions || [])
+            .filter((v) => v.status === 'PUBLISHED')
+            .map((v) => ({
+              value: v.id,
+              name: v.name,
+            }));
+          setVersionOptions(versions);
+        })
+        .catch(() => {
+          setVersionOptions([]);
+        });
     } else {
       setVersionOptions([]);
     }

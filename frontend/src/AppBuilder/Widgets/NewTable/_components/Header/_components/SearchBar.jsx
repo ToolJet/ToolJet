@@ -16,11 +16,16 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter, componentNa
 
   return (
     <div
-      className="d-flex align-items-center table-global-search" data-cy={`${componentName}-search-bar`}
+      className="d-flex align-items-center table-global-search"
+      data-cy={`${componentName}-search-bar`}
       style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}
     >
       <div className="d-flex align-items-center">
-        <IconSearch size="16" color={'var(--cc-weak-icon, var(--cc-default-icon))'} data-cy={`${componentName}-search-input-icon`} />
+        <IconSearch
+          size="16"
+          color={'var(--cc-weak-icon, var(--cc-default-icon))'}
+          data-cy={`${componentName}-search-input-icon`}
+        />
         <input
           type="text"
           className={`tw-w-full align-self-center bg-transparent tj-text tj-text-sm tw-mx-[4px] tw-rounded-none`}

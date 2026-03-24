@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
-import { libraryAppService } from '@/_services';
+import { libraryAppService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
     id: categoryId,

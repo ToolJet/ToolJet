@@ -37,3 +37,5 @@
 
 .idea/*
 ti-*
+.claude/
+.worktrees/

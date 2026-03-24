@@ -6,7 +6,9 @@ const TagsInputChip = (props) => {
   const { getChipColor } = selectProps || {};
 
   // Get the chip colors using the getChipColor function (returns { bg, text })
-  const chipColors = getChipColor ? getChipColor(data.value) : { bg: 'var(--surfaces-surface-03)', text: 'var(--text-primary)' };
+  const chipColors = getChipColor
+    ? getChipColor(data.value)
+    : { bg: 'var(--surfaces-surface-03)', text: 'var(--text-primary)' };
 
   return (
     <div
@@ -16,11 +18,7 @@ const TagsInputChip = (props) => {
         color: chipColors.text,
       }}
     >
-      <span
-        className="tags-input-chip-label"
-      >
-        {data.label}
-      </span>
+      <span className="tags-input-chip-label">{data.label}</span>
       <span
         {...removeProps}
         className="tags-input-chip-remove"

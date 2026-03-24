@@ -423,7 +423,9 @@ const DynamicFormV2 = ({
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
     const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
-    const finalHelpText = showEncryptedLockedHelpText ? 'Encrypted values are not pushed to git and are updated directly in Tooljet': helpText;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -487,12 +489,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-              ? { valid: null, message: '' }
-              : validationMessages[key]
-                ? { valid: false, message: validationMessages[key] }
-                : isRequired
-                  ? { valid: true, message: '' }
-                  : { valid: null, message: '' };
+            ? { valid: null, message: '' }
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -573,6 +575,7 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        // eslint-disable-next-line no-case-declarations
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
           checked: isEnabled,

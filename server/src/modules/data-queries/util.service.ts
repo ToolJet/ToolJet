@@ -21,6 +21,7 @@ import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
 import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { ListTablesDto } from './dto';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -386,7 +387,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string, branchId?: string): Promise<object> {
+  async listTables(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    branchId?: string,
+    listTablesOptions?: ListTablesDto
+  ): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -413,7 +420,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     return await service.listTables(
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
-      dataSourceOptions.updatedAt
+      dataSourceOptions.updatedAt,
+      {
+        schema: listTablesOptions?.schema,
+        search: listTablesOptions?.search,
+        page: listTablesOptions?.page,
+        limit: listTablesOptions?.limit,
+      }
     );
   }
 

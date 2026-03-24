@@ -43,32 +43,6 @@ export const dividerConfig = {
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-      section: 'additionalActions',
-    },
-    tooltip: {
-      type: 'code',
-      displayName: 'Tooltip',
-      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
-      section: 'additionalActions',
-      placeholder: 'Enter tooltip text',
-    },
-  },
-  events: {},
-  styles: {
-    dividerColor: {
-      type: 'colorSwatches',
-      displayName: 'Divider color',
-      validation: {
-        schema: { type: 'string' },
         defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'Divider',
