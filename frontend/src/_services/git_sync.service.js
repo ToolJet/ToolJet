@@ -247,6 +247,7 @@ function testProviderConnection(payload = {}) {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
+    body: JSON.stringify(payload),
   };
 
   return fetch(`${config.apiUrl}/git-sync/test-connection`, requestOptions).then(handleResponse);

@@ -1,5 +1,6 @@
 import { ProviderConfigDTO } from '@modules/git-sync/dto/provider-config.dto';
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
+import { TestConnectionPayloadDTO } from '@ee/git-sync/providers/dto/test-provider-connection.dto';
 
 export interface IGitSyncService {
   deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void>;
@@ -30,4 +31,6 @@ export interface IGitSyncService {
   getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string): Promise<any>;
 
   getOrgGitStatusById(userOrganizationId: string, organizationId: string): Promise<any>;
+
+  testProviderConnection(userId: string, organizationId: string, payload: TestConnectionPayloadDTO): Promise<any>;
 }

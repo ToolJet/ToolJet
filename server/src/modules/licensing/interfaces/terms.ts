@@ -25,6 +25,7 @@ export interface Terms {
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
     gitSync?: boolean;
+    envGitMapping?: boolean;
     comments?: boolean;
     customThemes?: boolean;
     serverSideGlobalResolve?: boolean;
