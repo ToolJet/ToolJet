@@ -11,7 +11,6 @@ import ExportAppModal from '../../shared/CRUDActionDialog/ExportAppModal';
 import FolderActionDialog from '../../shared/FolderBreadcrumb/FolderActionDialog';
 import TemplateLibraryModal from '../../../HomePage/TemplateLibraryModal';
 
-// TODO: Add isAppCreationDisabled permission check in parent and pass as prop
 export default function WorkflowDialogs({ appType, isAppCreationDisabled, limits, showLimitBanner }) {
   const appDialogState = useAppsStore((state) => state.appDialogState);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);

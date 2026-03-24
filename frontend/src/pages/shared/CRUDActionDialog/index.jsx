@@ -277,7 +277,7 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
         },
       ]}
     >
-      {['create', 'rename', 'import', 'clone'].includes(actionType) ? (
+      {['create', 'rename', 'import', 'clone', 'create-from-template'].includes(actionType) ? (
         <CreateRenameCloneImportBody
           appType={appType}
           appName={name}

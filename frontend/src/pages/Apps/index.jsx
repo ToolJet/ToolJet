@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { useAppsStore } from '../shared/store';
 import { useFetchFolders } from '../shared/hooks/folderServiceHooks';
 import { useFetchFeatureAccess } from '../shared/hooks/licenseServiceHooks';
 import { useFetchApps, useFetchAppsLimit } from '../shared/hooks/appsServiceHooks';
+import { canUserPerformAppAction } from './appsAndModulesPermissions';
 
 import AppList from '../shared/AppList';
 import EmptyState from '../shared/EmptyState';
@@ -49,7 +50,7 @@ export default function Apps({ appType = 'front-end' }) {
     folders?.find((folder) => folder.label?.toLowerCase() === folderQueryParam?.toLowerCase()) ?? null;
   const selectedFolderId = currentSelectedFolder?.value ?? '';
 
-  const { data: workflows, isSuccess: isWorkflowsFetchedOnce } = useFetchApps(
+  const { data: apps, isSuccess: isWorkflowsFetchedOnce } = useFetchApps(
     { appType, folderId: selectedFolderId, appSearchQuery, pageNo: currentPage },
     { enabled: isFoldersSuccess }
   );
@@ -77,16 +78,17 @@ export default function Apps({ appType = 'front-end' }) {
     setAppSearchQuery('');
   };
 
-  const checkUserPermissions = () => ({
-    hasCreatePermission: true,
-    hasUpdatePermission: true,
-    hasDeletePermission: true,
-    hasViewPermission: true,
-  });
+  const checkUserPermissions = (app) => canUserPerformAppAction(appType, app);
+  const { hasCreatePermission } = useMemo(() => checkUserPermissions(), []);
 
-  const totalAppCount = selectedFolderId ? workflows?.meta?.folder_count : workflows?.meta?.total_count;
+  const totalAppCount = selectedFolderId ? apps?.meta?.folder_count : apps?.meta?.total_count;
 
-  const isCreationDisabled = isAppsLimitFetchedSuccessfully ? appsLimit?.appsCount?.percentage >= 100 : true;
+  const isCreationDisabled =
+    appType === 'front-end'
+      ? !isAppsLimitFetchedSuccessfully || appsLimit?.appsCount?.percentage >= 100
+      : !featureAccess?.modulesEnabled;
+
+  const canCreateApp = appType === 'front-end' ? hasCreatePermission : true; // always true for modules
 
   const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
   // Only exclude env param if license is invalid/expired (basic plan)
@@ -110,16 +112,18 @@ export default function Apps({ appType = 'front-end' }) {
               bannerVariant="inline"
               limits={appsLimit?.appsCount ?? {}}
             >
-              <div className="tw-flex tw-items-center tw-gap-2">
-                <CreateWorkflowBtn
-                  label={t('homePage.header.createNewApplication', 'Create new app')}
-                  disabled={isCreationDisabled}
-                />
+              {canCreateApp && (
+                <div className="tw-flex tw-items-center tw-gap-2">
+                  <CreateWorkflowBtn
+                    label={t('homePage.header.createNewApplication', 'Create new app')}
+                    disabled={isCreationDisabled}
+                  />
 
-                <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
+                  <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
 
-                <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
-              </div>
+                  <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
+                </div>
+              )}
             </LicenseBanner>
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
@@ -141,9 +145,9 @@ export default function Apps({ appType = 'front-end' }) {
 
           <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
             {isWorkflowsFetchedOnce ? (
-              workflows?.apps?.length ? (
+              apps?.apps?.length ? (
                 <AppList
-                  apps={workflows.apps}
+                  apps={apps.apps}
                   appType={appType}
                   currentFolderId={selectedFolderId}
                   checkUserPermissions={checkUserPermissions}
@@ -194,6 +198,7 @@ export default function Apps({ appType = 'front-end' }) {
         appType={appType}
         limits={appsLimit?.appsCount ?? {}}
         showLimitBanner={appType === 'front-end'}
+        isAppCreationDisabled={!canCreateApp || isCreationDisabled}
       />
     </WorkspaceLayout>
   );
