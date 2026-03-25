@@ -661,6 +661,7 @@ describe("Data source Rest API", () => {
     cy.apiDeleteApp();
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
+  //might be failing due to rate limit error from auth0, need to investigate and fix
   it.skip("Should verify response for authentication code grant type connection", () => {
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
