@@ -38,7 +38,7 @@ export const Default = {
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button variant="primary">Confirm</Button>
         </DialogFooter>
@@ -68,7 +68,7 @@ export const Sizes = {
             </DialogBody>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="ghost">Close</Button>
+                <Button variant="outline">Close</Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
@@ -91,13 +91,11 @@ export const Fullscreen = {
           <DialogTitle>Fullscreen Dialog</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <p className="tw-text-sm tw-text-text-default">
-            This dialog takes up the entire viewport.
-          </p>
+          <p className="tw-text-sm tw-text-text-default">This dialog takes up the entire viewport.</p>
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Close</Button>
+            <Button variant="outline">Close</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
@@ -119,13 +117,12 @@ export const WithDescription = {
         </DialogHeader>
         <DialogBody>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the item
-            and remove all associated data.
+            This action cannot be undone. This will permanently delete the item and remove all associated data.
           </DialogDescription>
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button variant="primary" danger>
             Delete
@@ -177,8 +174,7 @@ export const PreventClose = {
         </DialogHeader>
         <DialogBody>
           <p className="tw-text-sm tw-text-text-default">
-            Clicking the overlay or pressing Escape won&apos;t close this dialog.
-            Only the button below will.
+            Clicking the overlay or pressing Escape won&apos;t close this dialog. Only the button below will.
           </p>
         </DialogBody>
         <DialogFooter>
@@ -207,16 +203,15 @@ export const Scrollable = {
           <div className="tw-flex tw-flex-col tw-gap-4 tw-text-sm tw-text-text-default">
             {Array.from({ length: 20 }, (_, i) => (
               <p key={i}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
               </p>
             ))}
           </div>
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Decline</Button>
+            <Button variant="outline">Decline</Button>
           </DialogClose>
           <Button variant="primary">Accept</Button>
         </DialogFooter>
@@ -239,14 +234,12 @@ export const NoPadding = {
         </DialogHeader>
         <DialogBody noPadding>
           <div className="tw-h-64 tw-bg-background-surface-layer-02 tw-flex tw-items-center tw-justify-center">
-            <span className="tw-text-sm tw-text-text-placeholder">
-              Full-bleed content area
-            </span>
+            <span className="tw-text-sm tw-text-text-placeholder">Full-bleed content area</span>
           </div>
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Close</Button>
+            <Button variant="outline">Close</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

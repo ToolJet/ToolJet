@@ -1,33 +1,42 @@
-import React, { forwardRef, createContext, useContext } from 'react';
+import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cva } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 
-// ── Size context ─────────────────────────────────────────────────────────────
-// DialogContent provides size so Header/Footer can conditionally show borders.
-const DialogSizeContext = createContext('default');
 import {
-  Dialog as ShadcnDialog,
-  DialogContent as ShadcnDialogContent,
-  DialogOverlay as ShadcnDialogOverlay,
-  DialogHeader as ShadcnDialogHeader,
-  DialogFooter as ShadcnDialogFooter,
-  DialogTitle as ShadcnDialogTitle,
-  DialogDescription as ShadcnDialogDescription,
   // Re-exported unchanged
   DialogTrigger,
   DialogClose,
   DialogPortal,
 } from '@/components/ui/Rocket/shadcn/dialog';
 
+// ── DialogOverlay ────────────────────────────────────────────────────────────
+
+const DialogOverlay = forwardRef(function DialogOverlay({ className, ...props }, ref) {
+  return (
+    <DialogPrimitive.Overlay
+      ref={ref}
+      data-slot="dialog-overlay"
+      className={cn(
+        'tw-fixed tw-inset-0 tw-z-50 tw-bg-black/50',
+        'data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0',
+        className
+      )}
+      {...props}
+    />
+  );
+});
+DialogOverlay.displayName = 'DialogOverlay';
+
 // ── DialogContent ────────────────────────────────────────────────────────────
 
 const dialogContentVariants = cva(
   [
     'tw-bg-background-surface-layer-01',
-    'tw-shadow-[var(--elevation-400-box-shadow)]',
+    'tw-shadow-elevation-400',
     'tw-rounded-lg',
     'tw-border-solid tw-border tw-border-border-weak',
     'tw-flex tw-flex-col tw-p-0',
@@ -41,8 +50,7 @@ const dialogContentVariants = cva(
         default: 'tw-max-w-[480px]',
         large: 'tw-max-w-[640px]',
         extraLarge: 'tw-max-w-[768px]',
-        fullscreen:
-          'tw-max-w-none tw-w-screen tw-h-screen tw-rounded-none tw-border-0',
+        fullscreen: 'tw-max-w-none tw-w-screen tw-h-screen tw-rounded-none tw-border-0',
       },
     },
     defaultVariants: { size: 'default' },
@@ -50,16 +58,7 @@ const dialogContentVariants = cva(
 );
 
 const DialogContent = forwardRef(function DialogContent(
-  {
-    className,
-    children,
-    size,
-    showCloseButton = true,
-    preventClose = false,
-    noPadding = false,
-    scrollable = false,
-    ...props
-  },
+  { className, children, size, showCloseButton = true, preventClose = false, ...props },
   ref
 ) {
   const handleInteractOutside = (e) => {
@@ -73,31 +72,37 @@ const DialogContent = forwardRef(function DialogContent(
   };
 
   return (
-    <ShadcnDialogContent
-      ref={ref}
-      showCloseButton={false}
-      onInteractOutside={handleInteractOutside}
-      onEscapeKeyDown={handleEscapeKeyDown}
-      className={cn(dialogContentVariants({ size }), className)}
-      {...props}
-    >
-      <DialogSizeContext.Provider value={size || 'default'}>
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        data-slot="dialog-content"
+        onInteractOutside={handleInteractOutside}
+        onEscapeKeyDown={handleEscapeKeyDown}
+        className={cn(
+          'tw-fixed tw-inset-0 tw-z-50 tw-m-auto tw-h-fit tw-w-full tw-max-w-[calc(100%-2rem)] tw-outline-none',
+          'data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
+          dialogContentVariants({ size }),
+          className
+        )}
+        {...props}
+      >
         {children}
-      </DialogSizeContext.Provider>
-      {showCloseButton && (
-        <DialogClose asChild>
-          <Button
-            variant="ghost"
-            iconOnly
-            size="small"
-            className="tw-absolute tw-right-3 tw-top-3"
-            aria-label="Close"
-          >
-            <X className="tw-size-4" />
-          </Button>
-        </DialogClose>
-      )}
-    </ShadcnDialogContent>
+        {showCloseButton && (
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              iconOnly
+              size="small"
+              className="tw-absolute tw-right-3 tw-top-4"
+              aria-label="Close"
+            >
+              <X className="tw-size-4" />
+            </Button>
+          </DialogClose>
+        )}
+      </DialogPrimitive.Content>
+    </DialogPortal>
   );
 });
 DialogContent.displayName = 'DialogContent';
@@ -105,39 +110,21 @@ DialogContent.propTypes = {
   size: PropTypes.oneOf(['small', 'default', 'large', 'extraLarge', 'fullscreen']),
   showCloseButton: PropTypes.bool,
   preventClose: PropTypes.bool,
-  noPadding: PropTypes.bool,
-  scrollable: PropTypes.bool,
   className: PropTypes.string,
   children: PropTypes.node,
 };
 
-// ── DialogOverlay ────────────────────────────────────────────────────────────
-
-const DialogOverlay = forwardRef(function DialogOverlay(
-  { className, ...props },
-  ref
-) {
-  return (
-    <ShadcnDialogOverlay
-      ref={ref}
-      className={cn('tw-bg-black/50', className)}
-      {...props}
-    />
-  );
-});
-DialogOverlay.displayName = 'DialogOverlay';
-
 // ── DialogHeader ─────────────────────────────────────────────────────────────
 
 function DialogHeader({ className, ...props }) {
-  const size = useContext(DialogSizeContext);
   return (
-    <ShadcnDialogHeader
+    <div
+      data-slot="dialog-header"
       className={cn(
         'tw-flex tw-flex-row tw-items-center',
         'tw-h-14 tw-px-6 tw-py-0',
         'tw-gap-0',
-        size !== 'small' && 'tw-border-solid tw-border-0 tw-border-b tw-border-border-weak',
+        'tw-border-solid tw-border-0 tw-border-b tw-border-border-weak',
         className
       )}
       {...props}
@@ -180,13 +167,13 @@ DialogBody.propTypes = {
 // ── DialogFooter ─────────────────────────────────────────────────────────────
 
 function DialogFooter({ className, ...props }) {
-  const size = useContext(DialogSizeContext);
   return (
-    <ShadcnDialogFooter
+    <div
+      data-slot="dialog-footer"
       className={cn(
         'tw-px-6 tw-py-4',
-        'tw-flex tw-flex-row tw-items-center tw-justify-end tw-gap-2',
-        size !== 'small' && 'tw-border-solid tw-border-0 tw-border-t tw-border-border-weak',
+        'tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-2',
+        'tw-border-solid tw-border-0 tw-border-t tw-border-border-weak',
         className
       )}
       {...props}
@@ -197,17 +184,12 @@ DialogFooter.displayName = 'DialogFooter';
 
 // ── DialogTitle ──────────────────────────────────────────────────────────────
 
-const DialogTitle = forwardRef(function DialogTitle(
-  { className, ...props },
-  ref
-) {
+const DialogTitle = forwardRef(function DialogTitle({ className, ...props }, ref) {
   return (
-    <ShadcnDialogTitle
+    <DialogPrimitive.Title
       ref={ref}
-      className={cn(
-        'tw-text-base tw-font-medium tw-leading-6 tw-text-text-default',
-        className
-      )}
+      data-slot="dialog-title"
+      className={cn('tw-font-title-large tw-text-text-default tw-mb-0', className)}
       {...props}
     />
   );
@@ -216,14 +198,12 @@ DialogTitle.displayName = 'DialogTitle';
 
 // ── DialogDescription ────────────────────────────────────────────────────────
 
-const DialogDescription = forwardRef(function DialogDescription(
-  { className, ...props },
-  ref
-) {
+const DialogDescription = forwardRef(function DialogDescription({ className, ...props }, ref) {
   return (
-    <ShadcnDialogDescription
+    <DialogPrimitive.Description
       ref={ref}
-      className={cn('tw-text-sm tw-text-text-placeholder', className)}
+      data-slot="dialog-description"
+      className={cn('tw-font-body-small tw-text-text-placeholder', className)}
       {...props}
     />
   );
@@ -232,7 +212,7 @@ DialogDescription.displayName = 'DialogDescription';
 
 // ── Dialog (root pass-through) ───────────────────────────────────────────────
 
-const Dialog = ShadcnDialog;
+const Dialog = DialogPrimitive.Root;
 
 // ── Exports ──────────────────────────────────────────────────────────────────
 
