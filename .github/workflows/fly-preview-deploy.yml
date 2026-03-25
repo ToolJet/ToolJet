@@ -138,7 +138,8 @@ jobs:
       - name: Wait for Healthy
         run: |
           APP_URL="https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
-          echo "Waiting for $APP_URL to be healthy..."
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
@@ -541,7 +542,8 @@ jobs:
       - name: Wait for Healthy
         run: |
           APP_URL="https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
-          echo "Waiting for $APP_URL to be healthy..."
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
@@ -949,7 +951,8 @@ jobs:
       - name: Wait for Healthy
         run: |
           APP_URL="https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
-          echo "Waiting for $APP_URL to be healthy..."
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
