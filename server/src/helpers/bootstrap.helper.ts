@@ -396,6 +396,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
       },
       credentials: true,
       maxAge: 86400,
+      exposedHeaders: ['X-SSO-Info-Updated'],
     });
 
     // Get CSP whitelisted domains
