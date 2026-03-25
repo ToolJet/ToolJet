@@ -5,8 +5,8 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useStore from '@/AppBuilder/_stores/store';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { CONTAINER_FORM_CANVAS_PADDING, PAGE_CANVAS_HEADER_HEIGHT } from '../appCanvasConstants';
-import { Container } from '../Container';
+import { CONTAINER_FORM_CANVAS_PADDING, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { Container } from './Container';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 
 export const PageCanvasHeader = ({ showCanvasHeader, isMobileLayout, currentMode }) => {

@@ -19,8 +19,8 @@ import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
 import { SuspenseCountProvider } from './SuspenseTracker';
-import { MobileLayout } from './Grid/MobileLayout';
-import { DesktopLayout } from './Grid/DesktopLayout';
+import { MobileLayout } from './MobileLayout';
+import { DesktopLayout } from './DesktopLayout';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));

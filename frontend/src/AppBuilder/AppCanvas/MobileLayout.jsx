@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
 import cx from 'classnames';
 
-import { PAGE_CANVAS_HEADER_HEIGHT } from '../appCanvasConstants';
+import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
 import { PageCanvasHeader } from './PageCanvasHeader';
 import { PageCanvasFooter } from './PageCanvasFooter';
-import MobileNavigationHeader from '../PageMenu/MobileNavigationHeader';
+import MobileNavigationHeader from './PageMenu/MobileNavigationHeader';
 import { CanvasContentTail } from './CanvasContentTail';
 
 export const MobileLayout = ({

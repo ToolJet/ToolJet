@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { DragResizeGhostWidget } from '../GhostWidgets';
-import { SuspenseLoadingOverlay } from '../SuspenseTracker';
+import { DragResizeGhostWidget } from './GhostWidgets';
+import { SuspenseLoadingOverlay } from './SuspenseTracker';
 
 export const CanvasContentTail = ({ currentMode, appType, isAppDarkMode, children }) => (
   // COMMON DESKTOP AND MOBILE LAYOUT COMPONENT
