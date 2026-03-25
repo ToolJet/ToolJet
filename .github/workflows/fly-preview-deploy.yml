@@ -133,7 +133,7 @@ jobs:
             --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
             --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
-            --restart no
+            --detach
 
       - name: Wait for Healthy
         run: |
@@ -267,7 +267,8 @@ jobs:
           flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
-            --yes
+            --yes \
+            --detach
 
       - name: Comment Rebuild Status
         if: steps.check-active.outputs.is_active == 'true'
@@ -309,8 +310,13 @@ jobs:
             echo "❌ Machine not found"
             exit 1
           fi
-          flyctl machine stop $MACHINE_ID --app $APP_NAME
-          echo "✅ Machine stopped"
+          STATE=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].state')
+          if [ "$STATE" = "stopped" ]; then
+            echo "✅ Machine already stopped"
+          else
+            flyctl machine stop $MACHINE_ID --app $APP_NAME
+            echo "✅ Machine stopped"
+          fi
 
       - name: Update Labels
         uses: actions/github-script@v6
@@ -530,7 +536,7 @@ jobs:
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
             --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
-            --restart no
+            --detach
 
       - name: Wait for Healthy
         run: |
@@ -667,7 +673,8 @@ jobs:
           flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
-            --yes
+            --yes \
+            --detach
 
       - name: Comment Rebuild Status
         if: steps.check-active.outputs.is_active == 'true'
@@ -709,8 +716,13 @@ jobs:
             echo "❌ Machine not found"
             exit 1
           fi
-          flyctl machine stop $MACHINE_ID --app $APP_NAME
-          echo "✅ Machine stopped"
+          STATE=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].state')
+          if [ "$STATE" = "stopped" ]; then
+            echo "✅ Machine already stopped"
+          else
+            flyctl machine stop $MACHINE_ID --app $APP_NAME
+            echo "✅ Machine stopped"
+          fi
 
       - name: Update Labels
         uses: actions/github-script@v6
@@ -932,7 +944,7 @@ jobs:
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
             --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
-            --restart no
+            --detach
 
       - name: Wait for Healthy
         run: |
@@ -1069,7 +1081,8 @@ jobs:
           flyctl machine update $MACHINE_ID \
             --image registry.fly.io/$APP_NAME:$SHA \
             --app $APP_NAME \
-            --yes
+            --yes \
+            --detach
 
       - name: Comment Rebuild Status
         if: steps.check-active.outputs.is_active == 'true'
@@ -1111,8 +1124,13 @@ jobs:
             echo "❌ Machine not found"
             exit 1
           fi
-          flyctl machine stop $MACHINE_ID --app $APP_NAME
-          echo "✅ Machine stopped"
+          STATE=$(flyctl machine list --app $APP_NAME --json | jq -r '.[0].state')
+          if [ "$STATE" = "stopped" ]; then
+            echo "✅ Machine already stopped"
+          else
+            flyctl machine stop $MACHINE_ID --app $APP_NAME
+            echo "✅ Machine stopped"
+          fi
 
       - name: Update Labels
         uses: actions/github-script@v6
