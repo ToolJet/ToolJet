@@ -42,7 +42,7 @@ describe("Data source Rest API", () => {
       "have.text",
       Cypress.env("marketplace_action")
         ? "All data sources (47)"
-        : "All data sources (45)"
+        : "All data sources (47)"
     );
     cy.get('[data-cy="commonlyused-datasource-button"]').should(
       "have.text",
