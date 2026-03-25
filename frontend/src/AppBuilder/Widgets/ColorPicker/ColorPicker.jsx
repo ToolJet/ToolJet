@@ -283,6 +283,15 @@ export const ColorPicker = (props) => {
     },
   };
 
+  const getBackground = (color) => {
+    const size = 6.5;
+    const grid = `repeating-conic-gradient(#cfcfcf 0% 25%, #f2f2f2 0% 50%) ${size / 2}px ${
+      size / 2
+    }px / ${size}px ${size}px`;
+    if (!color) return grid;
+    return `linear-gradient(${color}, ${color}), ${grid}`;
+  };
+
   // ===== MAIN RENDER =====
   return (
     <>
@@ -348,7 +357,9 @@ export const ColorPicker = (props) => {
                   <div className="color-info">
                     <span
                       className="color-preview"
-                      style={{ backgroundColor: exposedVariablesTemporaryState.selectedColorRGBA }}
+                      style={{
+                        background: getBackground(exposedVariablesTemporaryState.selectedColorRGBA),
+                      }}
                     ></span>
                     <span className="color-code">{getSafeRenderableValue(displayedColor || placeholder)}</span>
                   </div>
