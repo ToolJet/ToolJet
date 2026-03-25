@@ -188,6 +188,31 @@ export const buttonGroupV2Config = {
       },
       accordian: 'Buttons',
     },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      accordian: 'Buttons',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'hoverBackgroundMode',
+        value: 'manual',
+      },
+      accordian: 'Buttons',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
@@ -226,40 +251,6 @@ export const buttonGroupV2Config = {
         { name: 'bolder', value: 'bolder' },
       ],
       accordian: 'Buttons',
-    },
-    contentAlignment: {
-      type: 'alignButtons',
-      displayName: 'Content alignment',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'center',
-      },
-      accordian: 'Buttons',
-    },
-    hoverBackgroundMode: {
-      type: 'switch',
-      displayName: 'Hover background',
-      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
-      options: [
-        { displayName: 'Auto', value: 'auto' },
-        { displayName: 'Manual', value: 'manual' },
-      ],
-      accordian: 'Container',
-      isFxNotRequired: true,
-    },
-    hoverBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: '',
-      showLabel: false,
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: false,
-      },
-      conditionallyRender: {
-        key: 'hoverBackgroundMode',
-        value: 'manual',
-      },
-      accordian: 'Container',
     },
     iconColor: {
       type: 'colorSwatches',
@@ -445,7 +436,6 @@ export const buttonGroupV2Config = {
       textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{14}}' },
       fontWeight: { value: 'normal' },
-      contentAlignment: { value: 'center' },
       hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: 'var(--cc-default-icon)' },

@@ -44,7 +44,6 @@ export const ButtonGroupV2 = (props) => {
     textColor,
     textSize = 14,
     fontWeight = 'normal',
-    contentAlignment = 'center',
     iconColor,
     errTextColor,
     selectedBackgroundColor,
@@ -244,13 +243,6 @@ export const ButtonGroupV2 = (props) => {
     ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
   };
 
-  const contentJustificationByAlignment =
-    {
-      left: 'flex-start',
-      center: 'center',
-      right: 'flex-end',
-    }[contentAlignment] ?? 'center';
-
   const commonStyles = {
     backgroundColor,
     color: textColor,
@@ -258,7 +250,6 @@ export const ButtonGroupV2 = (props) => {
     border: `1px solid ${borderColor}`,
     transition: 'all .1s ease',
     boxShadow,
-    justifyContent: contentJustificationByAlignment,
   };
 
   const normalizedTextSize = Number(textSize);
