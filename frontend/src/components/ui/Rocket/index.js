@@ -113,6 +113,20 @@ export {
   DialogPortal,
 } from './Dialog/Dialog';
 export {
+  Breadcrumb,
+  BreadcrumbList,
+  breadcrumbListClasses,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  breadcrumbLinkClasses,
+  BreadcrumbPage,
+  breadcrumbPageClasses,
+  BreadcrumbSeparator,
+  breadcrumbSeparatorClasses,
+  BreadcrumbEllipsis,
+  breadcrumbEllipsisClasses,
+} from './Breadcrumb/Breadcrumb';
+export {
   Empty,
   emptyVariants,
   EmptyHeader,
