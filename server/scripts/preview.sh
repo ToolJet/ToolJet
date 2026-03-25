@@ -7,6 +7,8 @@ chmod 0700 /var/lib/postgresql/13/main
 
 # Initialize DB cluster if needed
 if [ ! -s "/var/lib/postgresql/13/main/PG_VERSION" ]; then
+  # Remove lost+found created by ext4 volume mounts (e.g. Fly.io) — initdb refuses non-empty dirs
+  rm -rf /var/lib/postgresql/13/main/lost+found
   echo "Initializing PostgreSQL..."
   su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 fi

@@ -105,7 +105,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
@@ -493,7 +493,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
@@ -894,7 +894,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
