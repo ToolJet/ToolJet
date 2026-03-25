@@ -248,7 +248,7 @@ export class AppsService implements IAppsService {
     const { name, editingVersionId } = appUpdateDto;
     const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
     const isGitSyncEnabled = Boolean(
-      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
+      orgGit?.isEnabled
     );
 
     // Check if name is being changed - require draft version to exist
