@@ -17,7 +17,7 @@ export const colorPickerConfig = {
       displayName: 'Placeholder',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'Enter text',
+        defaultValue: 'Select a color',
       },
     },
     defaultColor: {
@@ -288,7 +288,7 @@ export const colorPickerConfig = {
     },
     properties: {
       label: { value: 'Label' },
-      placeholder: { value: 'Enter text' },
+      placeholder: { value: 'Select a color' },
       defaultColor: { value: '#4368E3' },
       format: { value: 'hex' },
       showAlpha: { value: '{{false}}' },
