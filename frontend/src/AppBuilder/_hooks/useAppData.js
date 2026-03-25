@@ -114,6 +114,7 @@ const useAppData = (
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
+  const setModulesMeta = useStore((state) => state?.setModulesMeta ?? noop);
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
@@ -729,15 +730,16 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(0, '', '', 'module').then((data) => {
+          appsService.getAll(1, '', '', 'module').then((data) => {
             setModulesIsLoading(false);
             setModulesList(data.apps);
+            if (data.meta) setModulesMeta(data.meta);
           });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [setModulesIsLoading, setModulesList, setModulesMeta, mode, moduleMode]);
 
   return appTypeRef.current;
 };
