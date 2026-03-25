@@ -162,7 +162,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       }
       if (useBranchPath || branchId) {
         // Filter: DS must have at least a DSV (branch-specific or default fallback)
-        query.andWhere('dsv.id IS NOT NULL');
+        // Static data sources don't have DSV entries, so always allow them through                                                                                                              
+         query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {                                                                                                               
+           staticType: DataSourceTypes.STATIC,                                                                                                                                                    
+         }); 
       }
       let result: DataSource[];
       let rawResults: any[] = [];
