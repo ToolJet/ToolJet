@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { EncryptionModule } from '@modules/encryption/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
@@ -45,6 +46,7 @@ export class GitSyncModule extends SubModule {
     return {
       module: GitSyncModule,
       imports: [
+        await EncryptionModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),

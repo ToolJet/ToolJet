@@ -354,18 +354,27 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                   isActive: true,
                 })
               );
-              // Seed DSVOs for all environments from default DSV
+              // Seed DSVOs for all environments from default DSV, cloning credentials
               const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
               const defaultDsv = await manager.findOne(DataSourceVersion, {
                 where: { dataSourceId: dataSource.id, isDefault: true },
               });
               for (const env of allEnvs) {
-                let sourceOptions = {};
+                let sourceOptions: any = {};
                 if (defaultDsv) {
                   const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
                     where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
                   });
-                  sourceOptions = defaultDsvo?.options || {};
+                  sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
+                }
+                // Clone credential rows so branches don't share credential references
+                for (const key of Object.keys(sourceOptions)) {
+                  const opt = sourceOptions[key];
+                  if (opt?.credential_id && opt?.encrypted) {
+                    const originalValue = await this.credentialService.getValue(opt.credential_id);
+                    const newCredential = await this.credentialService.create(originalValue || '', manager);
+                    sourceOptions[key] = { ...opt, credential_id: newCredential.id };
+                  }
                 }
                 await manager.save(
                   manager.create(DataSourceVersionOptions, {
@@ -412,12 +421,21 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               where: { dataSourceId: dataSource.id, isDefault: true },
             });
             for (const env of allEnvs) {
-              let sourceOptions = {};
+              let sourceOptions: any = {};
               if (defaultDsv) {
                 const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
                   where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
                 });
-                sourceOptions = defaultDsvo?.options || {};
+                sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
+              }
+              // Clone credential rows so branches don't share credential references
+              for (const key of Object.keys(sourceOptions)) {
+                const opt = sourceOptions[key];
+                if (opt?.credential_id && opt?.encrypted) {
+                  const originalValue = await this.credentialService.getValue(opt.credential_id);
+                  const newCredential = await this.credentialService.create(originalValue || '', manager);
+                  sourceOptions[key] = { ...opt, credential_id: newCredential.id };
+                }
               }
               await manager.save(
                 manager.create(DataSourceVersionOptions, {
@@ -1338,7 +1356,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       .where('dsv.isActive = true')
       .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
 
-
     const existing = await qb.getMany();
 
     if (!existing.length) return baseName;
@@ -1368,12 +1385,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     currentDsvId: string,
     manager: EntityManager
   ): Promise<void> {
+    const currentDsv = await manager.findOne(DataSourceVersion, {
+      where: { id: currentDsvId },
+      select: ['id', 'branchId'],
+    });
+
     const qb = manager
       .createQueryBuilder(DataSourceVersion, 'dsv')
       .where('LOWER(dsv.name) = LOWER(:name)', { name })
       .andWhere('dsv.isActive = true')
       .andWhere('dsv.id != :currentDsvId', { currentDsvId });
 
+    if (currentDsv?.branchId) {
+      qb.andWhere('dsv.branchId = :branchId', { branchId: currentDsv.branchId });
+    } else {
+      qb.andWhere('dsv.branchId IS NULL');
+    }
 
     const existing = await qb.getOne();
 
