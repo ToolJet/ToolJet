@@ -36,7 +36,6 @@ export const Listview = function Listview({
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
-  const fallbackStyles = { visibility: true, disabledState: false };
   const isWidgetInContainerDragging = useStore(
     (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
     shallow
@@ -59,7 +58,9 @@ export const Listview = function Listview({
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
 
-  const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
+  const { borderRadius, boxShadow } = styles;
+  const visibility = combinedProperties.visibility ?? true;
+  const disabledState = combinedProperties.disabledState ?? false;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';

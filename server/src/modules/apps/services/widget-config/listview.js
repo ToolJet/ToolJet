@@ -91,6 +91,34 @@ export const listviewConfig = {
       },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
     mode: {
       type: 'select',
       displayName: 'Mode',
@@ -173,22 +201,6 @@ export const listviewConfig = {
         defaultValue: 'var(--cc-weak-border)',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
     borderRadius: {
       type: 'number',
       displayName: 'Border radius',
@@ -196,6 +208,11 @@ export const listviewConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
     },
   },
   exposedVariables: {
@@ -223,6 +240,9 @@ export const listviewConfig = {
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
@@ -231,9 +251,8 @@ export const listviewConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-weak-border)' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

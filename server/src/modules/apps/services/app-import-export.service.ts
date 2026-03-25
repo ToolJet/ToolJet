@@ -2910,6 +2910,9 @@ function migrateProperties(
       if (properties.loadingState === undefined) {
         properties.loadingState = { value: '{{false}}' };
       }
+      if (properties.tooltip === undefined) {
+        properties.tooltip = { value: '' };
+      }
     }
   }
 

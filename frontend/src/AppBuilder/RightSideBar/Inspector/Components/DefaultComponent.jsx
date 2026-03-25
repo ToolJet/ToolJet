@@ -198,6 +198,7 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'Listview',
     ],
     Layout: [],
   };
