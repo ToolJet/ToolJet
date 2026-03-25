@@ -138,3 +138,12 @@ export {
   emptyDescriptionVariants,
   EmptyContent,
 } from './Empty/Empty';
+export {
+  Tabs,
+  TabsList,
+  tabsListVariants,
+  TabsTrigger,
+  tabsTriggerVariants,
+  TabsContent,
+  tabsContentClasses,
+} from './Tabs/Tabs';
