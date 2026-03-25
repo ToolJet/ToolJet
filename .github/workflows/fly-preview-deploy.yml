@@ -23,7 +23,7 @@ permissions:
 #   MARKETPLACE_BUCKET  — same as before
 #
 # VM SIZE: shared-cpu-2x, 4GB RAM ($0.0297/hr)
-# Auto-stops when idle → auto-starts on first request (pay only for review time)
+# Auto-suspends when idle → resumes in ~2s on first request (pay only for review time)
 # ─────────────────────────────────────────────────────────────────────────────
 
 jobs:
@@ -107,7 +107,7 @@ jobs:
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop stop \
+            --autostop suspend \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -169,7 +169,7 @@ jobs:
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ce-pr-${prNumber}.fly.dev |\n` +
                     `| **Fly Dashboard** | https://fly.io/apps/tooljet-ce-pr-${prNumber} |\n\n` +
-                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
             });
 
       - name: Update Labels
@@ -503,7 +503,7 @@ jobs:
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop stop \
+            --autostop suspend \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -573,7 +573,7 @@ jobs:
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.fly.dev |\n` +
                     `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-lts-pr-${prNumber} |\n\n` +
-                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
             });
 
       - name: Update Labels
@@ -912,7 +912,7 @@ jobs:
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop stop \
+            --autostop suspend \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -982,7 +982,7 @@ jobs:
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-pre-pr-${prNumber}.fly.dev |\n` +
                     `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-pre-pr-${prNumber} |\n\n` +
-                    `_Deployed on Fly.io — auto-stops when idle, auto-starts on first request_`
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
             });
 
       - name: Update Labels
