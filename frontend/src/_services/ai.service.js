@@ -9,6 +9,7 @@ export const aiService = {
   getCreditBalance,
   fixWithAI,
   updateKey,
+  getKeySettings,
   updateMessageData,
   listConversations,
   createConversation,
@@ -85,6 +86,11 @@ async function fixWithAI(body) {
 async function updateKey(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/update-key`, requestOptions).then(handleResponse);
+}
+
+async function getKeySettings(licenseType) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/key-settings?licenseType=${licenseType}`, requestOptions).then(handleResponse);
 }
 
 async function updateMessageData(messageId, body) {
