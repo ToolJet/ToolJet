@@ -105,7 +105,7 @@ export const colorPickerConfig = {
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   others: {
