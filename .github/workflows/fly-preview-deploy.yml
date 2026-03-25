@@ -66,6 +66,8 @@ jobs:
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
         env:
@@ -469,6 +471,8 @@ jobs:
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
         env:
@@ -888,6 +892,8 @@ jobs:
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
         env:
