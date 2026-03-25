@@ -132,7 +132,8 @@ jobs:
             --env SMTP_PORT=2525 \
             --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
             --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
-            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}"
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
@@ -528,7 +529,8 @@ jobs:
             --env WORKER=true \
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
-            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
@@ -929,7 +931,8 @@ jobs:
             --env WORKER=true \
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
-            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
