@@ -23,7 +23,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB data source connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/connection-ux-v3.png" alt="MariaDB data source connection" />
 
 ## Querying MariaDB
 

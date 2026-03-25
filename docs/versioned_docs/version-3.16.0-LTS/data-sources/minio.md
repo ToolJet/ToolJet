@@ -16,7 +16,7 @@ ToolJet requires the following to connect to your DynamoDB:
 - **Access key**
 - **Secret key**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/minio/minio-connect.png" alt="miniIo data source connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/connection-minio.png" alt="miniIo data source connection" />
 
 ## Querying MinIo
 
