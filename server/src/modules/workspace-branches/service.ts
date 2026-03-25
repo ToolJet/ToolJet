@@ -43,7 +43,9 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     organizationId: string,
     appId: string,
     branchId: string | undefined,
-    user: User
+    user: User,
+    tagSha?: string,
+    tagName?: string
   ): Promise<{ draftVersionId: string | null }> {
     throw new NotFoundException();
   }

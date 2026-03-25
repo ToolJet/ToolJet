@@ -662,7 +662,6 @@ export class AppImportExportService {
     const newDataSourceIds = Object.values(resourceMapping.dataSourceMapping);
     const newDsoIds = Object.values(resourceMapping.dataSourceOptionsMapping);
     const newLayoutIds = Object.values(resourceMapping.layoutMapping);
-    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
 
     // Pages
     if (newPageIds.length > 0) {
@@ -736,22 +735,10 @@ export class AppImportExportService {
       }
     }
 
-    if (appVersionIds.length > 0) {
-      const appVersions = await manager
-        .createQueryBuilder(AppVersion, 'av')
-        .where('av.id IN(:...avIds)', { avIds: appVersionIds })
-        .select(['av.id'])
-        .getMany();
-
-      const toUpdateVersions = appVersions.map((av) => {
-        this.setCoRelationId(av, resourceMapping.appVersionMapping);
-        return av;
-      });
-
-      if (!isEmpty(toUpdateVersions)) {
-        await manager.save(toUpdateVersions);
-      }
-    }
+    // AppVersion.co_relation_id is intentionally NOT updated here.
+    // It is set at creation time to importedApp.co_relation_id (the app's stable cross-workspace
+    // identifier). Using the old source version UUID as the stable identity would be wrong —
+    // all versions of the same app must share the app's co_relation_id.
   }
 
   async updateEntityReferencesForImportedApp(
@@ -2014,7 +2001,7 @@ export class AppImportExportService {
 
         // Set co_relation_id so workspace git sync can identify this DS.
         // Use the imported id (source's co_relation_id) to maintain identity across branches.
-        newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+        newDataSource.co_relation_id = dataSource.id || (null as any);
         await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
         return newDataSource;
@@ -2034,7 +2021,7 @@ export class AppImportExportService {
 
       // Set co_relation_id so workspace git sync can identify this DS.
       // Use the imported id (source's co_relation_id) to maintain identity across branches.
-      newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+      newDataSource.co_relation_id = dataSource.id || (null as any);
       await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
       return newDataSource;
@@ -2450,7 +2437,7 @@ export class AppImportExportService {
           versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: appVersion.id,
+          co_relation_id: importedApp.co_relation_id || null,
           branchId,
         });
       }

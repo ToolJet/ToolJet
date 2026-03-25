@@ -72,8 +72,13 @@ function pullWorkspace(sourceBranch, branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
 }
 
-function ensureAppDraft(appId, branchId) {
-  const body = { appId, ...(branchId && { branchId }) };
+function ensureAppDraft(appId, branchId, tagSha, tagName) {
+  const body = {
+    appId,
+    ...(branchId && { branchId }),
+    ...(tagSha && { tagSha }),
+    ...(tagName && { tagName }),
+  };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

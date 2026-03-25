@@ -52,4 +52,14 @@ export class EnsureDraftDto {
   @IsOptional()
   @IsUUID()
   branchId?: string;
+
+  // Present when the user selected a git tag instead of "Latest commit"
+  @IsOptional()
+  @IsString()
+  tagSha?: string;
+
+  // Full tag name (e.g. "my-app/v1") used to populate source_tag on the version
+  @IsOptional()
+  @IsString()
+  tagName?: string;
 }

@@ -69,7 +69,14 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('ensure-draft')
   async ensureAppDraft(@User() user: any, @Body() dto: EnsureDraftDto) {
-    return this.workspaceBranchService.ensureAppDraft(user.organizationId, dto.appId, dto.branchId, user);
+    return this.workspaceBranchService.ensureAppDraft(
+      user.organizationId,
+      dto.appId,
+      dto.branchId,
+      user,
+      dto.tagSha,
+      dto.tagName
+    );
   }
 
   @InitFeature(FEATURE_KEY.LIST_REMOTE_BRANCHES)

@@ -890,7 +890,15 @@ class HomePageComponent extends React.Component {
   };
 
   importGitApp = () => {
-    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName, selectedVersionOption, tags, selectedImportBranch } = this.state;
+    const {
+      appsFromRepos,
+      selectedAppRepo,
+      orgGit,
+      importedAppName,
+      selectedVersionOption,
+      tags,
+      selectedImportBranch,
+    } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
     const {
       git_app_name,
@@ -1127,10 +1135,11 @@ class HomePageComponent extends React.Component {
   handleCommitEnableChange = (e) => {
     this.setState({ commitEnabled: e.target.checked });
   };
-  toggleGitRepositoryImportModal = async () => {
+  toggleGitRepositoryImportModal = () => {
     if (!this.state.showGitRepositoryImportModal) {
-      // Fetch remote branches when opening modal
+      // Show modal immediately, then fetch branches in the background
       this.setState({
+        showGitRepositoryImportModal: true,
         fetchingRemoteBranches: true,
         selectedImportBranch: null,
         appsFromRepos: {},
@@ -1139,15 +1148,17 @@ class HomePageComponent extends React.Component {
         latestCommitData: null,
         selectedVersionOption: null,
       });
-      try {
-        const branches = await useWorkspaceBranchesStore.getState().actions.fetchRemoteBranches();
-        this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false });
-      } catch (error) {
-        toast.error('Failed to fetch remote branches');
-        this.setState({ fetchingRemoteBranches: false });
-      }
+      useWorkspaceBranchesStore
+        .getState()
+        .actions.fetchRemoteBranches()
+        .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
+        .catch(() => {
+          toast.error('Failed to fetch remote branches');
+          this.setState({ fetchingRemoteBranches: false });
+        });
+    } else {
+      this.setState({ showGitRepositoryImportModal: false });
     }
-    this.setState({ showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal });
   };
 
   openCreateAppFromTemplateModal = async (template) => {
@@ -1854,10 +1865,7 @@ class HomePageComponent extends React.Component {
 
                         {/* VERSION/TAG SELECT */}
                         <div className="form-group">
-                          <label
-                            className="mb-1 info-label tj-text-xsm font-weight-500"
-                            data-cy="version-select-label"
-                          >
+                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
                             Select version to pull from
                           </label>
                           <div className="tj-app-input" data-cy="version-select">
@@ -1922,11 +1930,11 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
-                <p>
-                  {this.props.t('homePage.appCard.update', 'Update')}{' '}
-                  <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
-                  {this.props.t('homePage.appCard.folder', 'folder')}
-                </p>
+                  <p>
+                    {this.props.t('homePage.appCard.update', 'Update')}{' '}
+                    <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
+                    {this.props.t('homePage.appCard.folder', 'folder')}
+                  </p>
 
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
@@ -2151,8 +2159,7 @@ class HomePageComponent extends React.Component {
             <div className={cx('col home-page-content')} data-cy="home-page-content">
               {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
               {this.props.appType !== 'workflow' && (
-                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps' }
-                />
+                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
               )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
@@ -2219,7 +2226,13 @@ class HomePageComponent extends React.Component {
                       readAndImport={this.readAndImport}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
-                      openCreateAppModal={() => { if (this.isWorkspaceBranchLocked()) { this.setState({ showSwitchBranchForCreate: true }); } else { this.openCreateAppModal(); } }}
+                      openCreateAppModal={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                        } else {
+                          this.openCreateAppModal();
+                        }
+                      }}
                       openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}

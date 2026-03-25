@@ -115,6 +115,9 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
   pulledAt: Date;
 
+  @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
+  sourceTag: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
