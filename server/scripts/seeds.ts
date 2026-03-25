@@ -50,18 +50,12 @@ async function bootstrap() {
   const config = getSeedConfig();
   const baseUrl = getBaseUrl();
 
-  // Wait for server to be available
-  console.log(`Waiting for server at ${baseUrl}...`);
   try {
     await waitForServer(baseUrl);
   } catch {
-    console.error(`Server is not running at ${baseUrl}.`);
-    console.error('Start the server first: npm run start:dev');
+    console.error(`Server is not running at ${baseUrl}. Start the server first: npm run start:dev`);
     process.exit(1);
   }
-  console.log('Server is ready.');
-
-  console.log(`Seeding super admin: ${config.email}`);
 
   try {
     await got.post(`${baseUrl}/api/onboarding/setup-super-admin`, {
@@ -74,14 +68,11 @@ async function bootstrap() {
       },
     });
 
-    console.log('Super admin created successfully.');
-    console.log(`  Email: ${config.email}`);
-    console.log(`  Workspace: ${config.workspaceName}`);
+    console.log(`👤 Super admin created successfully. Email: ${config.email}`);
     process.exit(0);
   } catch (error) {
     if (error.response?.statusCode === 403) {
-      console.log('Database already has users — skipping seed.');
-      console.log('⚠️  To re-seed, run `npm run db:reset` first. This will drop and recreate the database — all data will be lost.');
+      console.error('⚠️  Database already has users. To re-seed, run `npm run db:reset` first — all data will be lost.');
       process.exit(0);
     }
 
