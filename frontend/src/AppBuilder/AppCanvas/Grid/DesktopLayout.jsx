@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { PAGE_CANVAS_HEADER_HEIGHT } from '../appCanvasConstants';
 import { PageCanvasHeader } from './PageCanvasHeader';
 import { PageCanvasFooter } from './PageCanvasFooter';
-import PagesSidebarNavigation from '../../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
+import PagesSidebarNavigation from '../PageMenu/PagesSidebarNavigation';
 import { CanvasContentTail } from './CanvasContentTail';
 
 export const DesktopLayout = ({
