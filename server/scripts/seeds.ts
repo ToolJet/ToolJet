@@ -1,7 +1,7 @@
-import * as http from 'http';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
+import got from 'got';
 
 // Load .env the same way other scripts do
 const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
@@ -28,93 +28,74 @@ function getSeedConfig() {
   };
 }
 
-function getPort(): number {
-  return parseInt(process.env.PORT || '3000', 10);
+function getBaseUrl(): string {
+  const port = process.env.PORT || '3000';
+  return `http://localhost:${port}`;
 }
 
-function makeRequest(port: number, path: string, method: string, payload?: string): Promise<{ statusCode: number; body: string }> {
-  return new Promise((resolve, reject) => {
-    const headers: Record<string, string> = {};
-    if (payload) {
-      headers['Content-Type'] = 'application/json';
-      headers['Content-Length'] = String(Buffer.byteLength(payload));
-    }
-
-    const req = http.request({ hostname: 'localhost', port, path, method, headers }, (res) => {
-      let body = '';
-      res.on('data', (chunk) => (body += chunk));
-      res.on('end', () => resolve({ statusCode: res.statusCode, body }));
-    });
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
-}
-
-async function waitForServer(port: number, timeoutMs = 60000): Promise<void> {
+async function waitForServer(baseUrl: string, timeoutMs = 60000): Promise<void> {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const check = () => {
-      const req = http.request({ hostname: 'localhost', port, path: '/api/health', method: 'GET' }, (res) => {
-        if (res.statusCode === 200) return resolve();
-        if (Date.now() - start > timeoutMs) return reject(new Error(`Server not healthy within ${timeoutMs}ms`));
-        setTimeout(check, 1000);
-      });
-      req.on('error', () => {
-        if (Date.now() - start > timeoutMs) return reject(new Error(`Server not reachable on port ${port} within ${timeoutMs}ms`));
-        setTimeout(check, 1000);
-      });
-      req.end();
-    };
-    check();
-  });
+  while (Date.now() - start < timeoutMs) {
+    try {
+      await got.get(`${baseUrl}/api/health`, { timeout: { request: 2000 } });
+      return;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  throw new Error(`Server not reachable at ${baseUrl} within ${timeoutMs}ms`);
 }
 
 async function bootstrap() {
   const config = getSeedConfig();
-  const port = getPort();
+  const baseUrl = getBaseUrl();
 
   // Wait for server to be available
-  console.log(`Waiting for server on port ${port}...`);
+  console.log(`Waiting for server at ${baseUrl}...`);
   try {
-    await waitForServer(port);
+    await waitForServer(baseUrl);
   } catch {
-    console.error(`Server is not running on port ${port}.`);
+    console.error(`Server is not running at ${baseUrl}.`);
     console.error('Start the server first: npm run start:dev');
     process.exit(1);
   }
   console.log('Server is ready.');
 
-  // Hit the setup-super-admin endpoint (same as the curl QA uses)
-  const payload = JSON.stringify({
-    companyName: 'ToolJet',
-    name: config.name,
-    workspaceName: config.workspaceName,
-    email: config.email,
-    password: config.password,
-  });
-
   console.log(`Seeding super admin: ${config.email}`);
 
-  const response = await makeRequest(port, '/api/onboarding/setup-super-admin', 'POST', payload);
+  try {
+    await got.post(`${baseUrl}/api/onboarding/setup-super-admin`, {
+      json: {
+        companyName: 'ToolJet',
+        name: config.name,
+        workspaceName: config.workspaceName,
+        email: config.email,
+        password: config.password,
+      },
+    });
 
-  if (response.statusCode === 201) {
     console.log('Super admin created successfully.');
     console.log(`  Email: ${config.email}`);
     console.log(`  Workspace: ${config.workspaceName}`);
     process.exit(0);
-  } else if (response.statusCode === 403) {
-    console.log('Database already has users — skipping seed.');
-    console.log('To re-seed, run `npm run db:reset && npm run db:migrate` first.');
-    process.exit(0);
-  } else {
-    console.error(`Seed failed with status ${response.statusCode}:`);
-    try {
-      const parsed = JSON.parse(response.body);
-      console.error(parsed.message || response.body);
-    } catch {
-      console.error(response.body);
+  } catch (error) {
+    if (error.response?.statusCode === 403) {
+      console.log('Database already has users — skipping seed.');
+      console.log('⚠️  To re-seed, run `npm run db:reset` first. This will drop and recreate the database — all data will be lost.');
+      process.exit(0);
     }
+
+    const message = error.response?.body
+      ? (() => {
+          try {
+            return JSON.parse(error.response.body).message;
+          } catch {
+            return error.response.body;
+          }
+        })()
+      : error.message;
+
+    console.error(`Seed failed: ${message}`);
     process.exit(1);
   }
 }
