@@ -11,7 +11,7 @@ To establish a connection with the Notion data source, click on the **+ Add new 
 
 For integrating Notion with ToolJet we will need the API token. The API token can be generated from your Notion workspace settings. Read the official Notion docs for [Creating an internal integration with notion API](https://www.notion.so/help/create-integrations-with-the-notion-api).
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/notion/api.png" alt="notion api data source connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/notion/connection-ux.png" alt="notion api data source connection" />
 
 ## Querying Notion
 
