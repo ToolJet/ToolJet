@@ -28,6 +28,7 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'StarRating',
   'TagsInput',
   'ColorPicker',
+  'ButtonGroupV2',
 ];
 
 export const JSON_DIFFERENCE = {

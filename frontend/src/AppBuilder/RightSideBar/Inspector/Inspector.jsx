@@ -50,7 +50,6 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
-import { ReorderableList } from './Components/ReorderableList';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -149,6 +148,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Accordion',
   'ReorderableList',
   'ColorPicker',
+  'FileButton',
+  'ButtonGroupV2',
 ];
 
 export const Inspector = ({
@@ -877,6 +878,7 @@ const GetAccordion = React.memo(
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton': // fall-through to FilePicker
       case 'FilePicker':
       case 'FileInput':
         return <FilePicker {...restProps} />;
@@ -925,10 +927,11 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
       case 'PopoverMenu':
-        return <PopoverMenu {...restProps} />;
       case 'ReorderableList':
-        return <ReorderableList {...restProps} />;
+        return <PopoverMenu {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
       case 'Navigation':
