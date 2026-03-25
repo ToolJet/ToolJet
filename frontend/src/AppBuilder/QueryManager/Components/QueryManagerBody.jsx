@@ -459,11 +459,13 @@ const CustomToggleFlag = ({
   const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
 
-  const isDisabled = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
+  const isHidden = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
 
   useEffect(() => {
-    setFlag(isDisabled ? false : value);
-  }, [value, isDisabled]);
+    setFlag(value);
+  }, [value]);
+
+  if (isHidden) return null;
 
   return (
     <div className="query-manager-settings-toggles">
@@ -471,17 +473,13 @@ const CustomToggleFlag = ({
         dataCy={dataCy}
         isChecked={flag}
         toggleSwitchFunction={(flag) => {
-          if (isDisabled) return;
           setFlag((state) => !state);
           toggleOption(flag);
         }}
         action={action}
         darkMode={darkMode}
         label={t(translatedLabel, label)}
-        subLabel={
-          isDisabled ? `Not available for ${queryKind === 'runpy' ? 'Run Python' : 'Run JavaScript'} queries` : subLabel
-        }
-        disabled={isDisabled}
+        subLabel={subLabel}
       />
     </div>
   );

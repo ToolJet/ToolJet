@@ -44,6 +44,12 @@ export const customToggles = {
     label: 'Run this query on application load',
     translatedLabel: 'editor.queryManager.runQueryOnApplicationLoad',
   },
+  runOnDependencyChange: {
+    dataCy: 'run-on-dependency-change',
+    action: 'runOnDependencyChange',
+    label: 'Run this query on dependency change',
+    translatedLabel: 'editor.queryManager.runOnDependencyChange',
+  },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
@@ -55,12 +61,6 @@ export const customToggles = {
     action: 'showSuccessNotification',
     label: 'Show notification on success',
     translatedLabel: 'editor.queryManager.notificationOnSuccess',
-  },
-  runOnDependencyChange: {
-    dataCy: 'run-on-dependency-change',
-    action: 'runOnDependencyChange',
-    label: 'Run this query on dependency change',
-    translatedLabel: 'editor.queryManager.runOnDependencyChange',
   },
 };
 
