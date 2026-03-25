@@ -1394,7 +1394,7 @@ export const createComponentsSlice = (set, get) => ({
 
     // If no components were added, return early
     if (!diff || Object.keys(diff).length === 0) {
-      return;
+      return false;
     }
 
     // Collect all events from all components for bulk creation
@@ -1405,6 +1405,7 @@ export const createComponentsSlice = (set, get) => ({
         // Only add events that have required fields
         if (event?.event && event?.target && component.id != null && event?.index != null) {
           allEvents.push({
+            name: event?.name,
             event: {
               ...event.event,
             },
@@ -1436,9 +1437,11 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       get().multiplayer.broadcastUpdates(components, 'components', 'create');
+      return true;
     } catch (error) {
       console.error('Error pasting components with events:', error);
       toast.error('Failed to paste components');
+      return false;
     }
   },
 

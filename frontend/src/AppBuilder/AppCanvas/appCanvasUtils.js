@@ -241,6 +241,28 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
+export function resolvePastedComponentName({ isCut, isCloning, originalName, componentType, mergedComponents }) {
+  if (isCut && !isCloning && typeof originalName === 'string' && originalName.length > 0) {
+    const taken = Object.values(mergedComponents).some((c) => c.component.name === originalName);
+    if (!taken) {
+      return originalName;
+    }
+  }
+  return computeComponentName(componentType, mergedComponents);
+}
+
+/** After a successful cut-paste, same payload as cut but `isCut: false` so the next paste allocates new IDs (copy path). */
+function markClipboardAsCopyAfterCutPaste(copiedComponentObj) {
+  if (!navigator.clipboard?.writeText) return;
+  const clip = {
+    ...copiedComponentObj,
+    isCut: false,
+    isCloning: false,
+    pageId: useStore.getState().getCurrentPageId(),
+  };
+  navigator.clipboard.writeText(JSON.stringify(clip)).catch(() => {});
+}
+
 export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
