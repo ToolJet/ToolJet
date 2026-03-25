@@ -1660,7 +1660,7 @@ This endpoint is in beta and may change in future releases.
 :::
 
     - **Description:** Creates a new user group in a workspace with workspace-level permissions and optional granular permissions for applications and datasources.
-    - **URL:** `/ext/workspace/:workspaceId/groups`
+    - **URL:** `/api/ext/workspace/:workspaceId/groups`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
@@ -1702,6 +1702,12 @@ This endpoint is in beta and may change in future releases.
     | `canUse` | boolean | Allow using the datasource in queries |
     | `canConfigure` | boolean | Allow configuring the datasource |
 
+**Permissions for `type: "workflow"`:**
+
+| Field   | Type    | Description |
+|:--------|:--------|:------------|
+| `canEdit` | boolean | Allows the user to create, modify, and execute workflows. When set to `false`, the user can only execute existing workflows. |
+
     ```bash title="cURL Request"
     curl -X POST "https://{your-domain}/ext/workspace/:workspaceId/groups" \
       -H "Authorization: Basic <access_token>" \
@@ -1731,6 +1737,14 @@ This endpoint is in beta and may change in future releases.
               "canUse": true,
               "canConfigure": false
             }
+          },
+          {
+            "type": "workflow",
+            "applyToAll": true,
+            "resources": [],
+            "permissions": {
+              "canEdit": true
+            }
           }
         ]
       }'
@@ -1745,3 +1759,251 @@ This endpoint is in beta and may change in future releases.
     - All IDs in `resources` must be valid UUIDs, exist within the workspace, and match the specified `type` (app IDs for `"app"`, datasource IDs for `"data_source"`).
 
 
+### Get All Groups
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+- **Description**: Retrieves a list of all groups within a workspace. Supports optional search and pagination.
+- **URL**: `/api/ext/workspaces/:workspaceId/groups`
+- **Method**: GET
+- **Authorization**: `Basic <access_token>`
+- **Content-Type**: `application/json`
+- **Query Parameters**:<br /><br />
+  | Parameter  | Type   | Description                |
+  | :--------- | :----- | :------------------------- |
+  | `search`   | string | Filter groups by name      |
+  | `page`     | number | Page number                |
+  | `per_page` | number | Number of results per page |
+
+```bash title="cURL Request"
+curl -X GET "https://{your-domain}/api/ext/workspaces/:workspaceId/groups" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"
+```
+- Response: `200 OK` : Returns list of groups with permissions and granular permissions.
+
+<details id="tj-dropdown">
+<summary>Response Example</summary>
+
+```json
+{
+  "data": [
+    {
+      "id": "grp_12345",
+      "name": "Backend Engineers",
+      "permissions": {
+        "appCreate": true,
+        "appDelete": false,
+        "workflowCreate": true,
+        "workflowDelete": false,
+        "folderCRUD": true,
+        "orgConstantCRUD": false,
+        "dataSourceCreate": true,
+        "dataSourceDelete": false,
+        "appPromote": true,
+        "appRelease": false
+      },
+      "granularPermissions": [
+        {
+          "id": "gp_abc123",
+          "type": "app",
+          "applyToAll": false,
+          "resources": ["app-uuid-1"],
+          "permissions": {
+            "canEdit": true,
+            "hideFromDashboard": false,
+            "environments": ["development", "staging"]
+          }
+        },
+        {
+          "id": "gp_def456",
+          "type": "workflow",
+          "applyToAll": true,
+          "resources": [],
+          "permissions": {
+            "canEdit": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_67890",
+      "name": "Frontend Engineers",
+      "permissions": {
+        "appCreate": true,
+        "appDelete": true,
+        "workflowCreate": true,
+        "workflowDelete": true,
+        "folderCRUD": true,
+        "orgConstantCRUD": true,
+        "dataSourceCreate": true,
+        "dataSourceDelete": true,
+        "appPromote": true,
+        "appRelease": true
+      },
+      "granularPermissions": []
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total_count": 2
+  }
+}
+```
+</details>
+
+### Get Group by ID
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+- **Description**: Retrieves details of a specific group within a workspace, including workspace-level permissions and granular permissions.
+- **URL**: `/api/ext/workspace/:workspaceId/groups/:groupId`
+- **Method**: GET
+- **Authorization**: `Basic <access_token>`
+- **Content-Type**: `application/json`
+- **Path Parameters**:
+| Parameter              | Type   | Required | Description                    |
+|:----------------------|:-------|:---------|:-------------------------------|
+| `workspace_identifier` | string | Yes      | Workspace UUID                 |
+| `group_id`            | string | Yes      | Unique identifier of the group |
+
+```bash title="cURL Request"
+curl -X GET "https://{your-domain}/api/ext/workspace/:workspaceId/groups/:groupId" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"
+```
+
+**Response**
+- Status: `200 OK`
+- Description: Returns the complete group object including workspace-level permissions and granular permissions.
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+```json
+{
+  "id": "grp_12345",
+  "name": "Backend Engineers",
+  "permissions": {
+    "appCreate": true,
+    "appDelete": false,
+    "workflowCreate": true,
+    "workflowDelete": false,
+    "folderCRUD": true,
+    "orgConstantCRUD": false,
+    "dataSourceCreate": true,
+    "dataSourceDelete": false,
+    "appPromote": true,
+    "appRelease": false
+  },
+  "granularPermissions": [
+    {
+      "type": "app",
+      "applyToAll": false,
+      "resources": ["app-uuid-1"],
+      "permissions": {
+        "canEdit": true,
+        "hideFromDashboard": false,
+        "environments": ["development", "staging"]
+      }
+    },
+    {
+      "type": "workflow",
+      "applyToAll": true,
+      "resources": [],
+      "permissions": {
+        "canEdit": true
+      }
+    }
+  ]
+}
+```
+</details>
+
+### Update Group
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+- **Description**: Updates group name, workspace-level permissions, or granular permissions. You can update any combination of fields.
+- **URL**: `/api/ext/workspace/:workspaceId/groups/:groupId`
+- **Method**: PATCH
+- **Authorization**: `Basic <access_token>`
+- **Content-Type**: `application/json`
+- **Body**: <br /><br />
+  | Field                  | Type    | Required | Description                          |
+  |:----------------------|:--------|:---------|:-------------------------------------|
+  | `name`                | string  | No       | Updated group name                   |
+  | `permissions`         | object  | No       | Workspace-level permissions          |
+  | `granularPermissions` | array   | No       | Resource-level permission rules      |
+
+<details id="tj-dropdown">
+<summary>Request Example</summary>
+```bash title="cURL Request"
+curl -X PATCH "https://{your-domain}/api/ext/workspace/:workspaceId/groups/:groupId" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Backend Engineers",
+    "permissions": {
+      "appCreate": true,
+      "appDelete": true,
+      "workflowCreate": true,
+      "workflowDelete": true,
+      "folderCRUD": true,
+      "orgConstantCRUD": true,
+      "dataSourceCreate": true,
+      "dataSourceDelete": true,
+      "appPromote": true,
+      "appRelease": true
+    },
+    "granularPermissions": [
+      {
+        "type": "app",
+        "applyToAll": false,
+        "resources": ["app-uuid-1"],
+        "permissions": {
+          "canEdit": true,
+          "hideFromDashboard": false,
+          "environments": ["development", "staging"]
+        }
+      },
+      {
+        "type": "workflow",
+        "applyToAll": true,
+        "resources": [],
+        "permissions": {
+          "canEdit": true
+        }
+      }
+    ]
+  }'
+```
+</details>
+
+- Response: `200 OK` : Returns updated group object
+
+**Notes**
+- Only provided fields are updated; others remain unchanged
+- *granularPermissions* entries are merged or created based on permission combinations
+- applyToAll: true ignores resources
+
+### Delete Group
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+- **Description**: Deletes a group from the workspace.
+- **URL**: `/api/ext/workspace/:workspaceId/groups/:groupId`
+- **Method**: DELETE
+- **Authorization**: `Basic <access_token>`
+- **Content-Type**: `application/json`
+
+```bash title="cURL Request"
+curl -X DELETE "https://{your-domain}/api/ext/workspace/:workspaceId/groups/:groupId" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"
+```
+- Response: `204 No Content`
