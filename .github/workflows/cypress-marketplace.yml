@@ -349,7 +349,7 @@ jobs:
 
       - name: Seeding (Setup Super Admin)
         run: |
-          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
             --data-raw '{
               "companyName": "ToolJet",
@@ -359,17 +359,23 @@ jobs:
               "password": "password"
             }'
 
-          # Authenticate to get a session cookie
-          curl -c /tmp/tj_cookies.txt 'http://localhost:3000/api/authenticate' \
+      - name: Seeding (Authenticate)
+        run: |
+          curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
             -H 'Content-Type: application/json' \
             --data-raw '{
               "email": "dev@tooljet.io",
               "password": "password"
             }'
 
-          # Complete the onboarding (sets onboarding_status = onboarding_completed)
-          # Without this the frontend always redirects to /setup, breaking all UI tests
-          curl -b /tmp/tj_cookies.txt \
+      - name: Seeding (Complete Onboarding)
+        run: |
+          # Sets onboarding_status = onboarding_completed so the frontend does not
+          # redirect every page visit to /setup, which would break all UI tests
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
             -X POST \
             'http://localhost:3000/api/onboarding/finish' \
             -H 'Content-Type: application/json' \
