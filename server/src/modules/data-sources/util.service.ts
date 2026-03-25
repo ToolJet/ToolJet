@@ -74,7 +74,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const finalName = await this.generateUniqueName(createArgumentsDto.name, branchId || null, manager);
+      const finalName = await this.generateUniqueName(createArgumentsDto.name, manager);
       const newDataSource = manager.create(DataSource, {
         name: finalName,
         kind: createArgumentsDto.kind,
@@ -379,7 +379,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
             // Also update DSV name if DS name changed
             if (name) {
-              await this.ensureUniqueActiveNameForUpdate(name, effectiveBranchId, dsv.id, manager);
+              await this.ensureUniqueActiveNameForUpdate(name, dsv.id, manager);
               await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
             }
           }
@@ -1330,7 +1330,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  async generateUniqueName(baseName: string, branchId: string | null, manager: EntityManager): Promise<string> {
+  async generateUniqueName(baseName: string, manager: EntityManager): Promise<string> {
     const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
 
     const qb = manager
@@ -1338,11 +1338,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       .where('dsv.isActive = true')
       .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
 
-    if (branchId) {
-      qb.andWhere('dsv.branchId = :branchId', { branchId });
-    } else {
-      qb.andWhere('dsv.branchId IS NULL');
-    }
 
     const existing = await qb.getMany();
 
@@ -1370,7 +1365,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   private async ensureUniqueActiveNameForUpdate(
     name: string,
-    branchId: string | null,
     currentDsvId: string,
     manager: EntityManager
   ): Promise<void> {
@@ -1380,11 +1374,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       .andWhere('dsv.isActive = true')
       .andWhere('dsv.id != :currentDsvId', { currentDsvId });
 
-    if (branchId) {
-      qb.andWhere('dsv.branchId = :branchId', { branchId });
-    } else {
-      qb.andWhere('dsv.branchId IS NULL');
-    }
 
     const existing = await qb.getOne();
 

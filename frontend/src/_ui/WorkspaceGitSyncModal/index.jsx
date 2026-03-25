@@ -226,7 +226,6 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const handlePull = async () => {
     try {
       await actions.pullWorkspace();
-      //toast.success('Changes pulled successfully');
       toast.success('Commit pulled successfully!');
       onClose();
       window.location.reload();
@@ -251,7 +250,11 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // ---- Pull section content ----
   const renderPullSection = () => (
     // <div className="pull-section">
-       <div className={cx('pull-section', { 'pull-section--centered': checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE })}>
+    <div
+      className={cx('pull-section', {
+        'pull-section--centered': checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE,
+      })}
+    >
       <form
         noValidate
         className={`d-flex w-100 ${

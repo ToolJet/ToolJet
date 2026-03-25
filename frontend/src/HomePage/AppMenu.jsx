@@ -80,8 +80,6 @@ export const AppMenu = function AppMenu({
     );
   };
 
-  console.log('AppMenu render', { appId, canCreateApp, canDeleteApp, canUpdateApp });
-
   return (
     <OverlayTrigger
       trigger="click"

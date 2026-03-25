@@ -39,6 +39,15 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
+  async ensureAppDraft(
+    organizationId: string,
+    appId: string,
+    branchId: string | undefined,
+    user: User
+  ): Promise<{ draftVersionId: string | null }> {
+    throw new NotFoundException();
+  }
+
   async checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse> {
     throw new NotFoundException();
   }

@@ -29,6 +29,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CHECK_UPDATES,
           FEATURE_KEY.LIST_REMOTE_BRANCHES,
           FEATURE_KEY.FETCH_PULL_REQUESTS,
+          FEATURE_KEY.ENSURE_DRAFT,
         ],
         WorkspaceBranch
       );
@@ -45,6 +46,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CHECK_UPDATES,
           FEATURE_KEY.LIST_REMOTE_BRANCHES,
           FEATURE_KEY.FETCH_PULL_REQUESTS,
+          FEATURE_KEY.ENSURE_DRAFT,
         ],
         WorkspaceBranch
       );

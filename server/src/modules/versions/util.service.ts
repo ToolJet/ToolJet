@@ -4,7 +4,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, Not } from 'typeorm';
+import { EntityManager, IsNull, Not } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { VersionsCreateService } from './services/create.service';
@@ -145,7 +145,7 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription, versionType, branchId } = versionCreateDto;
     if (!versionName || versionName.trim().length === 0) {
       // need to add logic to get the version name -> from the version created at from
       throw new BadRequestException('Version name cannot be empty.');
@@ -156,9 +156,8 @@ export class VersionUtilService implements IVersionUtilService {
       manager
     );
     if (organizationGit && organizationGit.isBranchingEnabled) {
-      // Only allow one draft version of type 'version' (not branch)
-      // Branch versions can have multiple drafts
-      // If versionType is not provided or is not BRANCH, check for existing draft
+      // Only allow one draft version of type 'version' (not branch) per branch.
+      // Scoping by branchId ensures drafts on different branches don't conflict.
       const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
 
       if (!isCreatingBranchVersion) {
@@ -167,6 +166,7 @@ export class VersionUtilService implements IVersionUtilService {
             appId: app.id,
             status: AppVersionStatus.DRAFT,
             versionType: Not(AppVersionType.BRANCH),
+            branchId: branchId ?? IsNull(),
           },
         });
         if (existingDraftVersion) {
@@ -198,6 +198,7 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: versionFrom.co_relation_id,
+          ...(branchId && { branchId }),
         })
       );
 
