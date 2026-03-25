@@ -15,7 +15,25 @@ ToolJet requires the following to connect to a GCS datasource:
 
 You can refer to the [Google Cloud Documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/gcs-connect-v2.png"  alt="gcs connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/connection-gcs-ux-v3.png"  alt="gcs connection" />
+
+:::Info
+**The Private key should look like this:**
+```json
+{
+  "type": "service_account",
+  "project_id": "datasource-350mn",
+  "private_key_id": "e86d7f59d89d2b96c74be4d10b39d881dbc1ed",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC1xW7ah6v8Qqqw\nDtWCHaZEA6O3naDD7nHVWUOJ4k8beT5xBqUUWprqzoRNUJxw6qKR49U2PsYNROdSg8nX7eDbwvvB9KFcb3N2bRxSM5UxRNkGqlMcHFSjelXI9I76NcVzDR8uJIibHFIxWySS4JJVkCt3i0y8of1PK/+i\nsKTuQGTb33mtaYXwQDOIc78SOyKM80pWo0SYyWoH1ZqGKUkzR4VMCx7uyf4\nluCbM3ZDEN9pZZOQgoTkkcpXt7Rg72G9FoFmvTNhAoGBAOC6s16g1f4h67pAiPvN\nN1tKIdb19+MTZyYptT/Du+hpJ5Y5sTu5Nv7GpdkLL0SG8T5XLZV+1RNT8MGV4GsA\nmSdsm4El39sdVqtTzYvEP+5ccSPWpcKYc5tpzVeJpdlK1OwkCShzD5pOLMBqvVlF\nX3DPmXj33a9RkDIa0UK5LuiH\n-----END PRIVATE KEY-----\n",
+  "client_email": "gcs-adminsdk-n8ezk@datasource-350mn.iam.gserviceaccount.com",
+  "client_id": "163394003008404340612",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-n8ezk%40datasource-350mn.iam.gserviceaccount.com"
+}
+```
+:::
 
 ## Querying GCS
 

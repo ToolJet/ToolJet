@@ -13,7 +13,7 @@ ToolJet requires the following to connect to your CouchDB.
 - **Username**
 - **Password**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/connections.png" alt="CouchDB connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/connection-cdb-ux.png" alt="CouchDB connection"/>
 
 ## Querying CouchDB
 

@@ -20,7 +20,7 @@ To connect to your Elasticsearch cluster, the following details are required:
 - **Username**
 - **Password**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/connection-v4.png" alt="Elasticsearch Connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/connection-es-v4.png" alt="Elasticsearch Connection" />
 
 ToolJet also supports SSL certificate-based connections:
 

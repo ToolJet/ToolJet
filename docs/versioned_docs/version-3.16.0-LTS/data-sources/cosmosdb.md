@@ -20,7 +20,7 @@ ToolJet requires the following to connect to your Cosmos DB.
 You can find the endpoint and key in the **[Azure Portal](https://portal.azure.com/)**.
 :::
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/connection-v3.png" alt="Connection - CosmosDB"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/connection-ux-v3.png" alt="Connection - CosmosDB"/>
 
 ## Querying CosmoDB
 
