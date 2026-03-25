@@ -119,7 +119,7 @@ export const States = {
       <div>
         <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block">Focused (simulated)</span>
         <Select>
-          <SelectTrigger className="tw-ring-2 tw-ring-interactive-focus-outline tw-ring-offset-1">
+          <SelectTrigger className="tw-ring-2 tw-ring-interactive-focus-outline">
             <SelectValue placeholder="Placeholder" />
           </SelectTrigger>
           <SelectContent>

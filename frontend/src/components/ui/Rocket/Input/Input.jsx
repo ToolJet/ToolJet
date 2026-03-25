@@ -12,7 +12,7 @@ const inputVariants = cva(
     'tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-elevation-none',
     'placeholder:tw-text-text-placeholder',
     // Override shadcn focus ring with ToolJet token
-    'focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1 !focus-visible:tw-outline-none',
+    'focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline !focus-visible:tw-outline-none',
     // Hover
     'hover:tw-border-border-strong',
     // Error (via aria-invalid)

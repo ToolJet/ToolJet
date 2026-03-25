@@ -9,7 +9,7 @@ const toggleBaseClasses = [
   'tw-inline-flex tw-items-center tw-justify-center',
   'tw-font-medium tw-whitespace-nowrap tw-transition-colors',
   'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
-  'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
+  'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline',
   'disabled:tw-pointer-events-none disabled:tw-opacity-50',
   // Override shadcn leaks
   '!tw-min-w-0', // shadcn forces min-w-9

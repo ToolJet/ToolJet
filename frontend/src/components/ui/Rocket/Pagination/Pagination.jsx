@@ -22,7 +22,7 @@ const paginationLinkVariants = cva(
     'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
     'tw-text-text-default tw-font-normal tw-text-sm',
     'hover:tw-bg-interactive-hover hover:tw-no-underline hover:tw-text-text-default',
-    'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
+    'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline',
   ],
   {
     variants: {
@@ -46,7 +46,7 @@ const paginationNavVariants = cva(
     'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
     'tw-text-text-default tw-text-sm tw-font-medium',
     'hover:tw-bg-interactive-hover hover:tw-no-underline hover:tw-text-text-default',
-    'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
+    'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline',
     '[&_svg]:tw-text-icon-weak',
   ],
   {

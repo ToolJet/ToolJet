@@ -33,7 +33,7 @@ function InputGroup({ className, size = 'default', ...props }) {
         // Size
         inputGroupSizes[size],
         // Focus ring override
-        'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2 has-[[data-slot=input-group-control]:focus-visible]:tw-ring-interactive-focus-outline has-[[data-slot=input-group-control]:focus-visible]:tw-ring-offset-1',
+        'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2 has-[[data-slot=input-group-control]:focus-visible]:tw-ring-interactive-focus-outline',
         // Error state override
         'has-[[data-slot][aria-invalid=true]]:tw-border-border-danger-strong has-[[data-slot][aria-invalid=true]]:tw-bg-background-error-weak',
         '[&_[data-slot=input-group-addon]_button]:tw-rounded-md [&_[data-slot=input-group-addon]_button]:-tw-mr-0.5',
@@ -72,7 +72,7 @@ const InputGroupInput = forwardRef(function InputGroupInput({ className, ...prop
         // Strip standalone Input styling — parent InputGroup owns border/bg/shadow/ring/error
         'tw-h-auto tw-flex-1 tw-rounded-none tw-border-0 tw-bg-transparent tw-shadow-none',
         // Kill focus ring — parent InputGroup shows the ring via has-[...] selector
-        'focus-visible:tw-ring-0 focus-visible:tw-ring-offset-0 focus-visible:tw-shadow-none',
+        'focus-visible:tw-ring-0 focus-visible:tw-shadow-none',
         // Kill error styles — parent InputGroup handles error border/bg
         'aria-[invalid=true]:tw-border-0 aria-[invalid=true]:tw-bg-transparent',
         className
@@ -92,7 +92,7 @@ const inputGroupSelectVariants = cva(
     // No width constraint — shrink to content, let InputGroupInput take remaining space
     'tw-w-auto tw-flex-shrink-0',
     // Kill focus ring — parent InputGroup shows the ring via has-[...] selector
-    'focus:tw-ring-0 focus:tw-ring-offset-0',
+    'focus:tw-ring-0',
     // Kill border hover — parent InputGroup owns border; add ghost-style bg hover + rounded
     'hover:tw-border-0 hover:tw-bg-interactive-hover tw-rounded-md',
     // Kill error styles — parent InputGroup handles error border/bg

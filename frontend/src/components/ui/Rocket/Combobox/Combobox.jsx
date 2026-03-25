@@ -67,7 +67,6 @@ const comboboxInputVariants = cva(
     // InputGroup: has-[…:focus-visible]:tw-ring-ring + tw-ring-1
     'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-2',
     'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-interactive-focus-outline',
-    'has-[[data-slot=input-group-control]:focus-visible]:tw-ring-offset-1',
 
     // ── Error — match InputGroup's EXACT modifier so tw-merge wins ───────
     // InputGroup: has-[[data-slot][aria-invalid=true]]:tw-border-destructive + tw-ring-destructive/20

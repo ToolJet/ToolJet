@@ -26,7 +26,7 @@ const selectTriggerVariants = cva(
     // Chevron icon colour
     '[&>svg]:tw-text-icon-default [&>svg]:tw-opacity-100',
     // Focus ring (override shadcn)
-    'focus:tw-ring-2 focus:tw-ring-interactive-focus-outline focus:tw-ring-offset-1',
+    'focus:tw-ring-2 focus:tw-ring-interactive-focus-outline',
     // Hover
     'hover:tw-border-border-strong',
     // Error (via aria-invalid)
