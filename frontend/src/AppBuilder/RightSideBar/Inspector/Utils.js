@@ -75,7 +75,8 @@ export function renderCustomStyles(
     componentConfig.component == 'ProgressBar' ||
     componentConfig.component == 'TreeSelect' ||
     componentConfig.component == 'FilePicker' ||
-    componentConfig.component == 'FileInput'
+    componentConfig.component == 'FileInput' ||
+    componentConfig.component == 'FileButton'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -180,7 +181,8 @@ export function renderElement(
     componentConfig.component == 'ProgressBar' ||
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
-    componentConfig.component == 'FileInput'
+    componentConfig.component == 'FileInput' ||
+    componentConfig.component == 'FileButton'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
