@@ -4,6 +4,62 @@
     }
 }
 
+.canvas-header-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    // .real-canvas {
+    //     height: 100% !important;
+    //     min-height: unset !important;
+    // }
+
+    &.canvas-header-slot--edit {
+        &.canvas-header-slot--selected {
+            .canvas-header-tooltip {
+                display: flex !important;
+            }
+        }
+    }
+
+    .canvas-header-tooltip {
+        display: none;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
+    }
+}
+
+.canvas-footer-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    .real-canvas {
+        height: 100% !important;
+        min-height: unset !important;
+    }
+
+    &.canvas-footer-slot--edit {
+        &.canvas-footer-slot--selected {
+            .canvas-footer-tooltip {
+                display: flex !important;
+            }
+        }
+    }
+
+    .canvas-footer-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
+    }
+}
+
 .modal-backdrop {
     width: 100% !important;
     height: 100% !important;
@@ -78,6 +134,22 @@
         scrollbar-width: auto;
     }
 }
+
+#main-editor-canvas.disable-moveable-line #real-canvas {
+    transform: none !important;
+    position: relative;
+    overflow: visible !important;
+}
+
+// #main-editor-canvas.disable-moveable-line .canvas-header-slot + .canvas-wrapper {
+//     position: relative;
+//     z-index: 11;
+// }
+
+// #main-editor-canvas.disable-moveable-line .canvas-wrapper + .canvas-footer-slot {
+//     position: relative;
+//     z-index: 11;
+// }
 
 
 // This is required to maintain the height of the subcontainer when dragging a widget inside it

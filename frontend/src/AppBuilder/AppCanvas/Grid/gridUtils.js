@@ -542,7 +542,9 @@ export const getDraggingWidgetWidth = (widgetWidth, gridWidth) => {
 };
 
 /**
- * Positions a ghost/feedback element relative to the main canvas
+ * Positions a ghost/feedback element relative to its offset parent
+ * Uses the ghost's own offsetParent to align correctly with the DOM structure
+ * (header + canvas wrapper are siblings under the same positioned ancestor)
  * @param {HTMLElement} targetElement - The element being dragged/resized
  * @param {string} ghostElementId - The ID of the ghost element to position
  */
@@ -551,15 +553,15 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 
   if (!ghostElement || !targetElement) return;
 
-  const mainCanvas = document.getElementById('real-canvas');
-  if (!mainCanvas) return;
+  const referenceElement = ghostElement.offsetParent;
+  if (!referenceElement) return;
 
-  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const referenceRect = referenceElement.getBoundingClientRect();
   const targetRect = targetElement.getBoundingClientRect();
 
-  // Calculate position relative to main canvas
-  const relativeLeft = targetRect.left - mainCanvasRect.left;
-  const relativeTop = targetRect.top - mainCanvasRect.top;
+  // Calculate position relative to the ghost's offset parent
+  const relativeLeft = targetRect.left - referenceRect.left;
+  const relativeTop = targetRect.top - referenceRect.top;
 
   // Apply the position
   ghostElement.style.left = `${relativeLeft}px`;
@@ -571,15 +573,16 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 /**
  * Calculates the unified bounding box for a group of elements
  * @param {HTMLElement[]} targetElements - Array of elements being dragged as a group
- * @returns {Object} - Bounding box with left, top, width, height relative to main canvas
+ * @param {HTMLElement} ghostElement - The ghost element to use as positioning reference
+ * @returns {Object} - Bounding box with left, top, width, height relative to ghost's offset parent
  */
-export const calculateGroupBoundingBox = (targetElements) => {
+export const calculateGroupBoundingBox = (targetElements, ghostElement) => {
   if (!targetElements || targetElements.length === 0) return null;
 
-  const mainCanvas = document.getElementById('real-canvas');
-  if (!mainCanvas) return null;
+  const referenceElement = ghostElement?.offsetParent || document.getElementById('real-canvas');
+  if (!referenceElement) return null;
 
-  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const referenceRect = referenceElement.getBoundingClientRect();
 
   // Initialize with extreme values
   let minLeft = Infinity;
@@ -592,8 +595,8 @@ export const calculateGroupBoundingBox = (targetElements) => {
     if (!element) return;
 
     const rect = element.getBoundingClientRect();
-    const relativeLeft = rect.left - mainCanvasRect.left;
-    const relativeTop = rect.top - mainCanvasRect.top;
+    const relativeLeft = rect.left - referenceRect.left;
+    const relativeTop = rect.top - referenceRect.top;
     const relativeRight = relativeLeft + rect.width;
     const relativeBottom = relativeTop + rect.height;
 
@@ -619,10 +622,15 @@ export const calculateGroupBoundingBox = (targetElements) => {
 export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => {
   if (!events || events.length === 0) return;
 
-  const boundingBox = calculateGroupBoundingBox(events.map((e) => e.target));
   const ghostElement = document.getElementById(ghostElementId);
+  if (!ghostElement) return;
 
-  if (!ghostElement || !boundingBox) return;
+  const boundingBox = calculateGroupBoundingBox(
+    events.map((e) => e.target),
+    ghostElement
+  );
+
+  if (!boundingBox) return;
   ghostElement.style.width = `${boundingBox.width}px`;
   ghostElement.style.height = `${boundingBox.height}px`;
   ghostElement.style.willChange = 'transform';

@@ -140,6 +140,10 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
       return licenseInstance.appPagesHeaderAndLogoEnabled;
     case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
       return licenseInstance.appPagesAddNavGroupEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_HEADER:
+      return licenseInstance.canvasPageHeaderEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_FOOTER:
+      return licenseInstance.canvasPageFooterEnabled;
 
     case LICENSE_FIELD.CUSTOM_DOMAINS:
       return licenseInstance.customDomains;
