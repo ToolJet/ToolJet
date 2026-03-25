@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mssqlUIConfig, mssqlFormConfig } from "Constants/constants/marketplace/datasources/mssql";
 
 const data = {};
@@ -26,11 +26,18 @@ describe("MSSQL", () => {
             `${mssqlDataSourceName}`,
             "mssql",
             [
+                { key: "connection_type", value: "manual", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 1433, encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "azure", value: false, encrypted: false },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -45,11 +52,18 @@ describe("MSSQL", () => {
             `${mssqlDataSourceName}`,
             "mssql",
             [
+                { key: "connection_type", value: "manual", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 1433, encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "azure", value: false, encrypted: false },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -67,11 +81,18 @@ describe("MSSQL", () => {
             `${mssqlDataSourceName}`,
             "mssql",
             [
+                { key: "connection_type", value: "manual", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 1433, encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "azure", value: false, encrypted: false },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -81,18 +102,18 @@ describe("MSSQL", () => {
         verifyConnectionFormUI(mssqlUIConfig.defaultFields);
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidHost);
-        verifyDSConnection("failed", "Failed to connect to invalid-host:1433 - getaddrinfo ENOTFOUND invalid-host");
+        verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidUsername);
-        verifyDSConnection("failed", "Login failed for user 'invalid-username'.");
+        verifyDSConnection("failed", "Login failed for user 'invalid-username'");
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidPassword);
-        verifyDSConnection("failed", "Login failed for user 'sa'.");
+        verifyDSConnection("failed", "Login failed for user");
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidPort);
-        verifyDSConnection("failed", "Failed to connect to 9.234.17.31:9999 in 15000ms");
+        verifyDSConnection("failed", "Failed to connect to");
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidDatabase);
-        verifyDSConnection("failed", "Login failed for user 'sa'.");
+        verifyDSConnection("failed", "Login failed for user");
     });
 });

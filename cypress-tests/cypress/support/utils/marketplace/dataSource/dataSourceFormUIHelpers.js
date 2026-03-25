@@ -126,7 +126,7 @@ export const verifyToggleFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
+        cy.get(`[data-cy="${cyParamName(fieldName)}-label"], [data-cy="${cyParamName(fieldName)}-toggle-label"]`).should('be.visible');
 
         const toggleSelector = dsCommonSelector.toggleInput(fieldName);
         validateCheckedState(toggleSelector, validations.value);
