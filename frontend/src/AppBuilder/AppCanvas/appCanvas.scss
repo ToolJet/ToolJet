@@ -8,10 +8,10 @@
     flex-shrink: 0;
     position: relative;
 
-    .real-canvas {
-        height: 100% !important;
-        min-height: unset !important;
-    }
+    // .real-canvas {
+    //     height: 100% !important;
+    //     min-height: unset !important;
+    // }
 
     &.canvas-header-slot--edit {
         &.canvas-header-slot--selected {
