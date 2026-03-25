@@ -147,3 +147,4 @@ export {
   TabsContent,
   tabsContentClasses,
 } from './Tabs/Tabs';
+export { Switch, switchClasses } from './Switch/Switch';
