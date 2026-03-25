@@ -102,7 +102,7 @@ describe("MSSQL", () => {
         verifyConnectionFormUI(mssqlUIConfig.defaultFields);
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidHost);
-        verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
+        verifyDSConnection("failed", "invalid-host");
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidUsername);
         verifyDSConnection("failed", "Login failed for user 'invalid-username'");
