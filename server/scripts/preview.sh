@@ -2,6 +2,7 @@
 set -e
 
 # Fix ownership and permissions for PostgreSQL
+mkdir -p /var/lib/postgresql/13/main
 chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
 chmod 0700 /var/lib/postgresql/13/main
 
