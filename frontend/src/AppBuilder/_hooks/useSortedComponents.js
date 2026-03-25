@@ -17,9 +17,7 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
 
   const prevForceUpdateRef = useRef(0);
   // Initialize to empty so the first render always triggers sorting.
-  // Previously initialized to `components` which caused the first-render
-  // componentsChanged check to be false (same reference), skipping sorting.
-  // In viewer mode Grid.jsx is not rendered so setReorderContainerChildren
+  // else in viewer mode Grid.jsx is not rendered so setReorderContainerChildren
   // is never called, leaving components permanently unsorted.
   const prevComponentsOrder = useRef([]);
 
