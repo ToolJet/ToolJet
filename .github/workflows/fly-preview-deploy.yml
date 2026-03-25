@@ -102,7 +102,7 @@ jobs:
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
-            --vm-size shared-cpu-2x \
+            --vm-size shared-cpu-1x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
@@ -497,7 +497,7 @@ jobs:
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
-            --vm-size shared-cpu-2x \
+            --vm-size shared-cpu-1x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
@@ -905,7 +905,7 @@ jobs:
         run: |
           flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
             --app ${{ env.APP_NAME }} \
-            --vm-size shared-cpu-2x \
+            --vm-size shared-cpu-1x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
