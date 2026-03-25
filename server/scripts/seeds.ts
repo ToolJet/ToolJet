@@ -3,7 +3,6 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import got from 'got';
 
-// Load .env the same way other scripts do
 const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
 const fallbackPath = path.resolve(process.cwd(), '../.env');
 if (fs.existsSync(nodeEnvPath)) {
