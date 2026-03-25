@@ -738,12 +738,7 @@ const widgetsWithStyleConditions = {
       {
         definition: 'properties', //expecting properties or styles
         property: 'useDefaultButton', //expecting a property name
-        conditionStyles: [
-          'triggerButtonBackgroundColor',
-          'triggerButtonHoverBackgroundColor',
-          'triggerButtonTextColor',
-          'triggerButtonTextSize',
-        ], //expecting an array of style definitions names
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'], //expecting an array of style definitions names
       },
     ],
   },
