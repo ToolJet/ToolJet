@@ -228,6 +228,7 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         state.selectedComponents = [];
         state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab =
             state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES

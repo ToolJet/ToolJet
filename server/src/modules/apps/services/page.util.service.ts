@@ -93,7 +93,13 @@ export class PageHelperService implements IPageHelperService {
     page.pageHeader = {
       showOnDesktop: false,
       showOnMobile: false,
-      headerbackgroundColor: 'var(--cc-surface1-surface)',
+      backgroundColor: 'var(--cc-surface1-surface)',
+      border: 'var(--cc-default-border)',
+    };
+    page.pageFooter = {
+      showOnDesktop: false,
+      showOnMobile: false,
+      backgroundColor: 'var(--cc-surface1-surface)',
       border: 'var(--cc-default-border)',
     };
     return page;

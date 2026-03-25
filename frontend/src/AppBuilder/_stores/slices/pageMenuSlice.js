@@ -69,6 +69,7 @@ export const createPageMenuSlice = (set, get) => {
   const disableOrEnablePage = createPageUpdateCommand(['disabled']);
 
   const _togglePageHeaderCmd = createPageUpdateCommand(['pageHeader']);
+  const _togglePageFooterCmd = createPageUpdateCommand(['pageFooter']);
 
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
@@ -195,6 +196,22 @@ export const createPageMenuSlice = (set, get) => {
         [styleName]: value,
       };
       _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    togglePageFooter: (pageId, checked, mode) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageFooterStyle: (pageId, styleName, value) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        [styleName]: value,
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
     },
     updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {

@@ -34,8 +34,8 @@ const EditorSelecto = () => {
     const target = e.inputEvent.target;
     const componentId = target.getAttribute('component-id');
 
-    // For canvas header, we don't have a specific canvasStartId to track
-    if (componentId === 'canvas-header') {
+    // For canvas header/footer, we don't have a specific canvasStartId to track
+    if (componentId === 'canvas-header' || componentId === 'canvas-footer') {
       canvasStartId.current = null;
       return;
     }
@@ -124,8 +124,10 @@ const EditorSelecto = () => {
       const isAppCanvas = target.getAttribute('component-id') === 'canvas';
       const isSubContainer = target.getAttribute('component-id') !== 'canvas' || target.getAttribute('data-parentId');
       const isShiftKeyPressed = e.inputEvent.shiftKey;
-      const isPageCanvasHeader = target.getAttribute('component-id') === 'canvas-header';
-      if (isAppCanvas || (isShiftKeyPressed && isSubContainer) || isPageCanvasHeader) {
+      const isPageCanvasHeaderOrFooter =
+        target.getAttribute('component-id') === 'canvas-header' ||
+        target.getAttribute('component-id') === 'canvas-footer';
+      if (isAppCanvas || (isShiftKeyPressed && isSubContainer) || isPageCanvasHeaderOrFooter) {
         return true;
       }
 

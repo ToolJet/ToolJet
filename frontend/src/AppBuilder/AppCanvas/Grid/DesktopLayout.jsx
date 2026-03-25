@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 import { PAGE_CANVAS_HEADER_HEIGHT } from '../appCanvasConstants';
 import { PageCanvasHeader } from './PageCanvasHeader';
+import { PageCanvasFooter } from './PageCanvasFooter';
 import PagesSidebarNavigation from '../../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { CanvasContentTail } from './CanvasContentTail';
 
@@ -11,6 +12,7 @@ export const DesktopLayout = ({
   isModuleMode,
   isMobileLayout,
   showCanvasHeader,
+  showCanvasFooter,
   position,
   isPagesSidebarHidden,
   appType,
@@ -67,5 +69,6 @@ export const DesktopLayout = ({
         {mainCanvasContainer}
       </CanvasContentTail>
     </div>
+    <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
   </div>
 );

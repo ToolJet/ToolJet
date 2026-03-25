@@ -6,11 +6,13 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppHeaderStylesPanel from './AppHeaderStylesPanel';
+import AppFooterStylesPanel from './AppFooterStylesPanel';
 
 export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const activeTab = useStore((state) => state.activeRightSideBarTab, shallow);
   const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
+  const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
@@ -21,6 +23,9 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
   if (!selectedComponentId && activeTab !== RIGHT_SIDE_BAR_TAB.PAGES) {
     if (isCanvasHeaderSelected) {
       return <AppHeaderStylesPanel />;
+    }
+    if (isCanvasFooterSelected) {
+      return <AppFooterStylesPanel />;
     }
     // return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     return (

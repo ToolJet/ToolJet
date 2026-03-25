@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react';
 export default function useAppPageSidebarHeight(
   canvasContentRef,
   showCanvasHeader,
+  showCanvasFooter,
   appType,
-  pageCanvasHeight,
+  pageCanvasHeaderHeight,
+  pageCanvasFooterHeight,
   navigationType,
   isPagesSidebarNavigationHidden
 ) {
@@ -24,7 +26,11 @@ export default function useAppPageSidebarHeight(
 
   if (navigationType === 'top' || isPagesSidebarNavigationHidden) return undefined;
 
-  if (showCanvasHeader && appType !== 'module') return `calc(${height} - ${pageCanvasHeight}px)`;
+  if (appType !== 'module') {
+    const headerHeight = showCanvasHeader ? pageCanvasHeaderHeight : 0;
+    const footerHeight = showCanvasFooter ? pageCanvasFooterHeight : 0;
+    return `calc(${height} - ${headerHeight + footerHeight}px)`;
+  }
 
   return height;
 }

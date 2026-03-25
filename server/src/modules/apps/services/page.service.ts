@@ -221,6 +221,7 @@ export class PageService implements IPageService {
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
+      newPage.pageFooter = pageToClone.pageFooter;
 
       clonedPage = await manager.save(newPage);
 

@@ -6,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
@@ -84,11 +84,20 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       ] ?? false,
     shallow
   );
+  const showCanvasFooter = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.[
+        currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
+      ] ?? false,
+    shallow
+  );
   const sideBarVisibleHeight = useAppPageSidebarHeight(
     canvasContentRef,
     showCanvasHeader,
+    showCanvasFooter,
     appType,
     PAGE_CANVAS_HEADER_HEIGHT,
+    PAGE_CANVAS_FOOTER_HEIGHT,
     position,
     isPagesSidebarHidden
   );
@@ -248,6 +257,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         <MobileLayout
                           pageKey={pageKey}
                           showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
                           isMobileLayout={isMobileLayout}
                           currentMode={currentMode}
                           appType={appType}
@@ -265,6 +275,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           isModuleMode={isModuleMode}
                           isMobileLayout={isMobileLayout}
                           showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
                           position={position}
                           isPagesSidebarHidden={isPagesSidebarHidden}
                           appType={appType}
