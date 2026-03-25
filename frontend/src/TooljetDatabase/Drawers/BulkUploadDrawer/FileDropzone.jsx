@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';

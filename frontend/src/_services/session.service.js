@@ -48,8 +48,9 @@ function logout(avoidRedirection = false, organizationId = null) {
     }
   };
 
-  const logoutCurrentDomain = fetch(`${config.apiUrl}/session/logout`, requestOptions)
-    .then(handleResponseWithoutValidation);
+  const logoutCurrentDomain = fetch(`${config.apiUrl}/session/logout`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 
   // On custom domains, also logout from the base domain to prevent
   // session transfer from re-authenticating the user after logout.
