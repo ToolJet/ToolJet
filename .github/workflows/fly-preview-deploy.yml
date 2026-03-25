@@ -105,7 +105,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
@@ -132,7 +132,8 @@ jobs:
             --env SMTP_PORT=2525 \
             --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
             --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
-            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}"
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
@@ -493,7 +494,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
@@ -528,7 +529,8 @@ jobs:
             --env WORKER=true \
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
-            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
@@ -894,7 +896,7 @@ jobs:
             --vm-size shared-cpu-2x \
             --vm-memory 4096 \
             --port 443:80/tcp:tls:http \
-            --volume pg_data:/var/lib/postgresql/13/main \
+            --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
             --autostop stop \
             --autostart true \
@@ -929,7 +931,8 @@ jobs:
             --env WORKER=true \
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
-            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --restart no
 
       - name: Wait for Healthy
         run: |
