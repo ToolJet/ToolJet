@@ -135,6 +135,16 @@ jobs:
             --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
             --detach
 
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"http","port":80,"path":"/api/health","interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
+
       - name: Wait for Healthy
         run: |
           APP_URL="https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
@@ -538,6 +548,16 @@ jobs:
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
             --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
             --detach
+
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"http","port":80,"path":"/api/health","interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
         run: |
@@ -947,6 +967,16 @@ jobs:
             --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
             --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
             --detach
+
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"http","port":80,"path":"/api/health","interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
         run: |
