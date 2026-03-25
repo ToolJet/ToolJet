@@ -36,5 +36,21 @@ echo "✓ Redis is ready!"
 # Export the PORT variable to be used by the application
 export PORT=${PORT:-80}
 
-# Start Supervisor (manages PostgREST and ToolJet)
-exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Graceful shutdown: stop PostgreSQL and Redis before the volume is unmounted
+shutdown() {
+  echo "Shutting down supervisord..."
+  kill -SIGTERM "$SUPERVISORD_PID" 2>/dev/null
+  wait "$SUPERVISORD_PID" 2>/dev/null
+  echo "Stopping Redis..."
+  redis-cli shutdown nosave 2>/dev/null || true
+  echo "Stopping PostgreSQL..."
+  su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl -D /var/lib/postgresql/13/main stop -m fast" 2>/dev/null || true
+  echo "Shutdown complete."
+}
+
+trap shutdown SIGTERM SIGINT
+
+# Start Supervisor (manages PostgREST and ToolJet) in background so trap works
+supervisord -c /etc/supervisor/conf.d/supervisord.conf &
+SUPERVISORD_PID=$!
+wait "$SUPERVISORD_PID"
