@@ -14,7 +14,7 @@ export default function ContentToolbar({
   showFolderBreadcrumb = false,
 }) {
   return (
-    <div className="tw-flex tw-items-center tw-gap-4 tw-h-10 tw-border-b tw-border-border-weak">
+    <div className="tw-flex tw-items-center tw-gap-4 tw-h-10 tw-border-b tw-border-border-weak" data-cy="content-toolbar">
       {leadingSlot}
 
       <div className="tw-flex-1 tw-flex tw-justify-end tw-items-center tw-gap-3">

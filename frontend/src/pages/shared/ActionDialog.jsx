@@ -4,6 +4,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/Rocket/dialog';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default function ActionDialog({
   open,
@@ -32,10 +33,16 @@ export default function ActionDialog({
           { 'dark-theme theme-dark': darkMode },
           classes?.dialogContent
         )}
+        data-cy="modal-component"
       >
         {title && (
           <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4">
-            <DialogTitle className="tw-font-title-x-large tw-text-text-default">{title}</DialogTitle>
+            <DialogTitle
+              data-cy={`${generateCypressDataCy(title)}-title`}
+              className="tw-font-title-x-large tw-text-text-default"
+            >
+              {title}
+            </DialogTitle>
           </DialogHeader>
         )}
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button/Button';
 import { useAppsStore } from '@/pages/shared/store';
 
-export default function CreateWorkflowBtn({ label, disabled }) {
+export default function CreateWorkflowBtn({ label, disabled, dataCy = 'create-new-workflows-button' }) {
   const { t } = useTranslation();
 
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -18,7 +18,7 @@ export default function CreateWorkflowBtn({ label, disabled }) {
       isLucid
       variant="secondary"
       leadingIcon="plus"
-      data-cy="create-new-workflows-button"
+      data-cy={dataCy}
       disabled={disabled}
       onClick={handleOpenCreateWorkflowDialog}
     >

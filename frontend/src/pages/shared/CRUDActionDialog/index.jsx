@@ -141,8 +141,7 @@ export default function CRUDActionDialog({ open, onClose, actionType, appDetails
 
           if (importJSON.app[0].definition.appV2.type !== appType) {
             toast.error(
-              `${appType === 'module' ? 'App' : 'Module'} could not be imported in ${
-                appType === 'module' ? 'modules' : 'apps'
+              `${appType === 'module' ? 'App' : 'Module'} could not be imported in ${appType === 'module' ? 'modules' : 'apps'
               } section. Switch to ${appType === 'module' ? 'apps' : 'modules'} section and try again.`,
               { style: { maxWidth: '425px' } }
             );
@@ -406,8 +405,8 @@ function DeleteAppBody({ appType, appName }) {
     appType === 'workflow'
       ? 'homePage.deleteWorkflowAndData'
       : appType === 'front-end'
-      ? 'homePage.deleteAppAndData'
-      : 'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?',
+        ? 'homePage.deleteAppAndData'
+        : 'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?',
     { appName }
   );
 
@@ -415,7 +414,9 @@ function DeleteAppBody({ appType, appName }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p className="tw-font-body-default tw-text-text-default">{message}</p>
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
+        {message}
+      </p>
     </div>
   );
 }

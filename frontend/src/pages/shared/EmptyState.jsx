@@ -8,7 +8,7 @@ import {
   EmptyContent,
 } from '@/components/ui/Rocket/empty';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 function WorkflowsEmptyStateSVG() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="175" height="121" viewBox="0 0 175 121" fill="none">
@@ -191,14 +191,16 @@ export default function EmptyState({
   };
 
   return (
-    <Empty className={className}>
+    <Empty className={className} data-cy={`${generateCypressDataCy(resourceType)}-empty-state`}>
       <EmptyHeader>
-        <EmptyMedia variant="default">
+        <EmptyMedia variant="default" data-cy={`${generateCypressDataCy(resourceType)}-empty-state-image`}>
           {resolvedIconName()}
           {/* <SolidIcon name={resolvedIconName()} width="200" height="140" fill="var(--icon-default)" /> */}
         </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
+        <EmptyTitle data-cy={`${generateCypressDataCy(resourceType)}-empty-state-header`}>{title}</EmptyTitle>
+        <EmptyDescription data-cy={`${generateCypressDataCy(resourceType)}-empty-state-description`}>
+          {description}
+        </EmptyDescription>
         <EmptyContent>{children}</EmptyContent>
       </EmptyHeader>
     </Empty>

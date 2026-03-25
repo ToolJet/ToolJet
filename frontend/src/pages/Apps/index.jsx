@@ -114,6 +114,7 @@ export default function Apps({ appType = 'front-end' }) {
                 <CreateWorkflowBtn
                   label={t('homePage.header.createNewApplication', 'Create new app')}
                   disabled={isCreationDisabled}
+                  dataCy="create-new-apps-button"
                 />
 
                 <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
@@ -123,7 +124,11 @@ export default function Apps({ appType = 'front-end' }) {
             </LicenseBanner>
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
-              <CreateWorkflowBtn label={'Create new module'} disabled={isCreationDisabled} />
+              <CreateWorkflowBtn
+                label={'Create new module'}
+                disabled={isCreationDisabled}
+                dataCy="create-new-module-button"
+              />
 
               <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
             </div>
@@ -157,17 +162,17 @@ export default function Apps({ appType = 'front-end' }) {
                     selectedFolderId && !appSearchQuery?.length
                       ? 'No apps found in this folder'
                       : appSearchQuery?.length
-                      ? `No results found for "${appSearchQuery}"`
-                      : appType === 'front-end'
-                      ? 'You don’t have any apps yet'
-                      : 'You don’t have any modules yet'
+                        ? `No results found for "${appSearchQuery}"`
+                        : appType === 'front-end'
+                          ? 'You don’t have any apps yet'
+                          : 'You don’t have any modules yet'
                   }
                   description={
                     appSearchQuery?.length || selectedFolderId
                       ? ''
                       : appType === 'front-end'
-                      ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
-                      : 'Create reusable groups of components and queries via modules.'
+                        ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
+                        : 'Create reusable groups of components and queries via modules.'
                   }
                 >
                   {Boolean(appSearchQuery?.length) && (

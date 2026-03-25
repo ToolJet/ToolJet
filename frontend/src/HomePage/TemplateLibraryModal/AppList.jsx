@@ -13,7 +13,7 @@ export default function AppList(props) {
       <div className="mt-2">
         <SearchBoxContainer onChange={searchFor} queryString={searchText} />
       </div>
-      <ListGroup className="mt-2 template-app-list">
+      <ListGroup className="mt-2 template-app-list" data-cy="app-template-row">
         {filteredApps.length === 0 ? (
           <ListGroup.Item variant="light" className="no-results-item">
             No results

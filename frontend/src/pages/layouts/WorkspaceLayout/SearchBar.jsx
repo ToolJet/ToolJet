@@ -10,6 +10,7 @@ export default function SearchBar({ searchTerm, onSearchTermChange, placeholder 
       <Input
         size="small"
         type="text"
+        data-cy="dashboard-search-bar"
         value={searchTerm}
         placeholder={placeholder}
         onChange={onSearchTermChange}

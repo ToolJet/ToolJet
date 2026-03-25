@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/Button/Button';
 import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default function AppMenu({
   appType,
@@ -48,12 +49,13 @@ export default function AppMenu({
                 icon={AppWindow}
                 label={t('homePage.appCard.renameApp', `Rename ${appType === 'front-end' ? 'app' : appType}`)}
                 onItemClick={() => onMenuItemClick('rename', appDetails)}
+                dataCy="rename-app-card-option"
               />
-
               <AppMenuItem
                 icon={PencilRuler}
                 label={t('homePage.appCard.changeIcon', 'Change Icon')}
                 onItemClick={() => onMenuItemClick('change-icon', appDetails)}
+                dataCy="change-icon-card-option"
               />
             </>
           )}
@@ -99,6 +101,7 @@ export default function AppMenu({
                 icon={FileUp}
                 label={`Export ${appType === 'front-end' ? 'app' : appType}`}
                 onItemClick={() => onMenuItemClick('export', appDetails)}
+                dataCy="export-app-card-option"
               />
             </>
           )}
@@ -110,10 +113,11 @@ export default function AppMenu({
                 appType === 'workflow'
                   ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                   : appType === 'front-end'
-                  ? t('homePage.appCard.deleteApp', 'Delete app')
-                  : 'Delete module'
+                    ? t('homePage.appCard.deleteApp', 'Delete app')
+                    : 'Delete module'
               }
               onItemClick={() => onMenuItemClick('delete', appDetails)}
+              dataCy="delete-app-card-option"
             />
           )}
         </DropdownMenuGroup>

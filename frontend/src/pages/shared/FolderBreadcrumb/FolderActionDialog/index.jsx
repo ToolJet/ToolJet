@@ -21,7 +21,16 @@ import {
 import ActionDialog from '../../ActionDialog';
 import SearchBar, { useSearch } from '../../SearchBar';
 
-export default function FolderActionDialog({ open, onClose, actionType, appId, appType, folderId, initialFolderName }) {
+export default function FolderActionDialog({
+  open,
+  onClose,
+  actionType,
+  appId,
+  appName,
+  appType,
+  folderId,
+  initialFolderName,
+}) {
   const { t } = useTranslation();
 
   const { mutate: createNewFolder, isPending: isCreatingNewFolder } = useCreateFolder();
@@ -203,14 +212,14 @@ function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p className="tw-font-body-default tw-text-text-default">
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
         {actionType === 'remove-app-from-folder'
           ? t('homePage.removeAppFromFolder', 'The app will be removed from this folder, do you want to continue?')
           : t(
-              'homePage.foldersSection.wishToDeleteFolder',
-              `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
-              { folderName }
-            )}
+            'homePage.foldersSection.wishToDeleteFolder',
+            `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
+            { folderName }
+          )}
       </p>
     </div>
   );
@@ -230,11 +239,11 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
     debouncedSearchTerm.trim() === ''
       ? folders.filter((folder) => folder.value !== 'all')
       : folders.filter(
-          (folder) => folder.value !== 'all' && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-        );
+        (folder) => folder.value !== 'all' && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      );
 
   return (
-    <div className="tw-px-6 tw-py-4 tw-border-b tw-border-border-weak">
+    <div data-cy="select-folder" className="tw-px-6 tw-py-4 tw-border-b tw-border-border-weak">
       <SearchBar
         placeholder="Search folders"
         searchTerm={searchTerm}
@@ -242,7 +251,7 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
         classes={{ searchInputContainer: 'tw-mb-4' }}
       />
 
-      <ul className="tw-list-none tw-h-56 tw-overflow-y-auto">
+      <ul data-cy="folder-list" className="tw-list-none tw-h-56 tw-overflow-y-auto">
         {filteredFolder.length ? (
           filteredFolder.map((folder) => (
             <li
