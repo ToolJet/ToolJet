@@ -1029,7 +1029,8 @@ export class AppImportExportService {
       importingComponents,
       importingEvents,
       tooljetVersion,
-      moduleResourceMappings
+      moduleResourceMappings,
+      branchId
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1263,7 +1264,8 @@ export class AppImportExportService {
     importingComponents: Component[],
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
-    moduleResourceMappings?: any
+    moduleResourceMappings?: any,
+    branchId?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1380,10 +1382,10 @@ export class AppImportExportService {
           );
         }
 
-        // For newly created data sources, create branch-aware DSV so workspace
-        // git sync recognizes this DS on the active branch instead of creating a duplicate.
-        if (!this.isExistingDataSource(dataSourceForAppVersion) && !isDefaultDatasource) {
-          await this.createBranchAwareDsvForNewDataSource(manager, dataSourceForAppVersion, user.organizationId);
+        // Ensure branch-scoped DSV exists so the DS appears on the global DS page
+        // for the active branch. This handles both newly created and existing DS.
+        if (!isDefaultDatasource) {
+          await this.ensureBranchDsvForDataSource(manager, dataSourceForAppVersion, user.organizationId, branchId);
         }
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
@@ -2050,23 +2052,26 @@ export class AppImportExportService {
    * so that workspace git sync recognizes it on the active branch.
    * Copies options from the default DSV to the branch DSV.
    */
-  private async createBranchAwareDsvForNewDataSource(
+  private async ensureBranchDsvForDataSource(
     manager: EntityManager,
     dataSource: DataSource,
-    organizationId: string
+    organizationId: string,
+    branchId?: string
   ): Promise<void> {
-    // Only create branch DSV if workspace branching is configured
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch) return;
-
-    const branchId = defaultBranch.id;
+    // Resolve target branch: use explicit branchId, or fall back to default branch
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      if (!defaultBranch) return;
+      targetBranchId = defaultBranch.id;
+    }
 
     // Check if a branch-specific DSV already exists
     const existingBranchDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, branchId },
+      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
     });
     if (existingBranchDsv) return;
 
@@ -2080,7 +2085,7 @@ export class AppImportExportService {
     const branchDsv = await manager.save(
       manager.create(DataSourceVersion, {
         dataSourceId: dataSource.id,
-        branchId,
+        branchId: targetBranchId,
         name: defaultDsv.name,
         isActive: true,
       })
