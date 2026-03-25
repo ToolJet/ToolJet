@@ -41,22 +41,30 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       if (useBranchPath) {
         // Branch-aware: prefer branch-specific DSV, fall back to default DSV
+        // query.leftJoin(
+        //   'data_source_versions',
+        //   'dsv',
+        //   `dsv.data_source_id = data_source.id AND (
+        //     (dsv.branch_id = :branchId AND dsv.is_active = true)
+        //     OR (
+        //       dsv.is_default = true
+        //       AND NOT EXISTS (
+        //         SELECT 1 FROM data_source_versions dsv2
+        //         WHERE dsv2.data_source_id = data_source.id
+        //           AND dsv2.branch_id = :branchId
+        //       )
+        //     )
+        //   )`,
+        //   { branchId }
+        // );
         query.leftJoin(
-          'data_source_versions',
-          'dsv',
-          `dsv.data_source_id = data_source.id AND (
-            (dsv.branch_id = :branchId AND dsv.is_active = true)
-            OR (
-              dsv.is_default = true
-              AND NOT EXISTS (
-                SELECT 1 FROM data_source_versions dsv2
-                WHERE dsv2.data_source_id = data_source.id
-                  AND dsv2.branch_id = :branchId
-              )
-            )
-          )`,
-          { branchId }
-        );
+         'data_source_versions',
+         'dsv',
+         `dsv.data_source_id = data_source.id
+          AND dsv.branch_id = :branchId
+          AND dsv.is_active = true`,
+         { branchId }
+       );
         query.leftJoin(
           'data_source_version_options',
           'dsvo',

@@ -322,7 +322,8 @@ const DynamicForm = ({
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
     const helpText = helpTextProp || help_text;
-    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && encrypted;
+    const isEncrypted = type === 'password' || encrypted === true;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
     const finalHelpText = showEncryptedLockedHelpText
       ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
       : helpText;
@@ -340,7 +341,8 @@ const DynamicForm = ({
           style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
-          ...(helpText && { finalHelpText }),
+          // ...(helpText && { finalHelpText }),
+          ...(finalHelpText && { helpText: finalHelpText }),
           onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
           onblur: () => onBlur(),
           isGDS,
