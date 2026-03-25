@@ -377,7 +377,7 @@ export const ColorPicker = (props) => {
             <Popover.Content
               id={`color-picker-${id}-popover`}
               data-cy={`${dataCy}-popover`}
-              className="color-picker-popover"
+              className="color-picker-widget-popover"
               sideOffset={2}
               align="start"
               side="bottom"
