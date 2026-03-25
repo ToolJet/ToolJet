@@ -326,17 +326,21 @@ Branching version creation moves to shared ops. SSH/GitLab guarded by `supportsB
 
 ### Scope
 - `server/ee/external-apis/service.ts`
-- `server/ee/external-apis/module.ts`
+- `server/ee/app-git/source-control-provider.ts`
+
+### Status: COMPLETE (EE commit 5eb3cb1, 2026-03-25)
 
 ### Assumptions
-- `ExternalApisService` injects `HTTPSAppGitUtilityService` (line ~91) and calls `.createGitApp`, `.pullGitAppChanges`, `.gitPushApp` directly
-- `AppGitService` must expose all 3 methods as public with compatible signatures — verify before switching
-- `ExternalApisModule` must import the module that exports `AppGitService`
+- `ExternalApisService` injected `HTTPSAppGitUtilityService` and called `.createGitApp`, `.pullGitAppChanges`, `.gitPushApp` directly — verified
+- The three main git operation call sites were fixed in the original Phase 12 pass (routing through `SourceControlProviderService`)
+- One remaining direct call existed: `httpsAppGitUtilityService.findOrgGitByOrganizationId(organizationId)` in the `pushVersionToGit` "create appGit if missing" block (line 469)
+- `SourceControlProviderService` already holds `OrganizationGitSyncRepository` internally — exposing `findOrgGit` on it is the minimal fix
 
 ### Changes
-- [ ] Replace `HTTPSAppGitUtilityService` injection with `AppGitService`
-- [ ] Replace 3 call sites: `this.httpsAppGitUtilityService.*` → `this.appGitService.*`
-- [ ] Update module imports; remove `HTTPSAppGitUtilityService` if solely added for this
+- [x] Added `findOrgGit(organizationId)` method to `SourceControlProviderService` — delegates to `organizationGitSyncRepository.findOrgGitByOrganizationId`
+- [x] Replaced `this.httpsAppGitUtilityService.findOrgGitByOrganizationId(organizationId)` with `this.sourceControlProviderService.findOrgGit(organizationId)` in `pushVersionToGit`
+- [x] Replaced `!organizationGit.gitHttps?.isEnabled` check with provider-agnostic: `!gitSsh?.isEnabled && !gitHttps?.isEnabled && !gitLab?.isEnabled`
+- [x] Removed `HTTPSAppGitUtilityService` import and constructor injection from `ExternalApisService`
 
 ### Why
 CI/CD integration path must be provider-agnostic. Hardcoding HTTPS blocks SSH/GitLab users from external API triggers.
@@ -431,13 +435,14 @@ Neither method belongs in its original location: `BranchingBusinessUtil` should 
 - `server/ee/app-git/shared/branching-business.util.ts`
 - `server/ee/app-git/providers/github-https/util.service.ts`
 
-### Status: COMPLETE (EE commit b29a710, 2026-03-25)
+### Status: COMPLETE (EE commits b29a710 + 5eb3cb1, 2026-03-25)
 
 ### Problem
-After Phase 15 extracted `snapshotDataSourcesForVersion` into `DataSourceBranchUtil`, `BranchingBusinessUtil` still held a one-line wrapper that just delegated to `DataSourceBranchUtil.snapshotDataSourcesForVersion`. This is pointless indirection: callers could go directly to `DataSourceBranchUtil`.
+After Phase 15 extracted `snapshotDataSourcesForVersion` into `DataSourceBranchUtil`, `BranchingBusinessUtil` still held a one-line wrapper that just delegated to `DataSourceBranchUtil.snapshotDataSourcesForVersion`. This is pointless indirection: callers could go directly to `DataSourceBranchUtil`. Additionally, the `DataSourceBranchUtil` import and constructor parameter were not removed from `BranchingBusinessUtil` after the wrapper was deleted.
 
 ### Changes
 - [x] Removed `snapshotDataSourcesForVersion` wrapper method from `BranchingBusinessUtil`
+- [x] Removed `DataSourceBranchUtil` import from `BranchingBusinessUtil`
 - [x] Removed `DataSourceBranchUtil` constructor injection from `BranchingBusinessUtil` (no longer needed)
 - [x] Added `DataSourceBranchUtil` constructor injection to `HTTPSAppGitUtilityService`
 - [x] Changed call in `HTTPSAppGitUtilityService.createGitTag()` from `this.branchingBusinessUtil.snapshotDataSourcesForVersion(...)` → `this.dataSourceBranchUtil.snapshotDataSourcesForVersion(...)`
