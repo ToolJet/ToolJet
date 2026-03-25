@@ -99,7 +99,8 @@ type NewRevampedComponent =
   | 'PhoneInput'
   | 'IFrame'
   | 'DropdownV2'
-  | 'TreeSelect';
+  | 'TreeSelect'
+  | 'Listview';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -144,6 +145,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'Listview',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
@@ -2900,6 +2902,13 @@ function migrateProperties(
       }
       if (!styles.menuCustomWidth) {
         styles.menuCustomWidth = { value: '256' };
+      }
+    }
+
+    // Listview
+    if (componentType === 'Listview') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }
