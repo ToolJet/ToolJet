@@ -72,11 +72,8 @@ function Header({
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
   const isWorkspaceGitPage = (pathname) => {
-  const parts = pathname.split('/').filter(Boolean);
-    return (
-      parts.length === 1 ||
-      (parts.length === 2 && ['data-sources'].includes(parts[1]))
-    );
+    const parts = pathname.split('/').filter(Boolean);
+    return parts.length === 1 || (parts.length >= 2 && ['data-sources'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
   return (
@@ -169,12 +166,15 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
-              {featureAccess?.gitSync && isBranchStoreInitialized && pathname !== 'Workspace constants' && isGitSupportedPage &&(
-                <>
-                  <WorkspaceBranchDropdown />
-                  <WorkspaceGitCTA />
-                </>
-              )}
+              {featureAccess?.gitSync &&
+                isBranchStoreInitialized &&
+                pathname !== 'Workspace constants' &&
+                isGitSupportedPage && (
+                  <>
+                    <WorkspaceBranchDropdown />
+                    <WorkspaceGitCTA />
+                  </>
+                )}
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}

@@ -2,11 +2,12 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { Credential } from '@entities/credential.entity';
 import { User } from 'src/entities/user.entity';
 import { EntityManager, In, DeepPartial } from 'typeorm';
 import {
@@ -618,7 +619,14 @@ export class AppImportExportService {
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
-      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importingAppVersions);
+      // When multiple versions are imported, branch-type versions are excluded.
+      // Filter here to match so the editing version is set to a version that was actually created.
+      const importedAppVersions =
+        importingAppVersions.length > 1
+          ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+          : importingAppVersions;
+
+      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
       // hence updating slug explicitly
@@ -943,7 +951,7 @@ export class AppImportExportService {
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
     createNewVersion?: boolean,
-    branchId?: string 
+    branchId?: string
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -979,11 +987,19 @@ export class AppImportExportService {
       importingEvents,
     } = this.extractImportDataFromAppParams(appParams);
 
+    // When importing multiple versions, skip branch-type versions — only import regular versions.
+    // When importing a single branch-type version, allow it through (it will be adapted to
+    // the target branch context inside createAppVersionsForImportedApp).
+    const filteredAppVersions =
+      importingAppVersions.length > 1
+        ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+        : importingAppVersions;
+
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
       user,
       importedApp,
-      importingAppVersions,
+      filteredAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
       createNewVersion,
@@ -1000,7 +1016,7 @@ export class AppImportExportService {
 
     appResourceMappings = await this.setupAppVersionAssociations(
       manager,
-      importingAppVersions,
+      filteredAppVersions,
       user,
       appResourceMappings,
       externalResourceMappings,
@@ -1022,7 +1038,7 @@ export class AppImportExportService {
     }
 
     if (!isNormalizedAppDefinitionSchema) {
-      for (const importingAppVersion of importingAppVersions) {
+      for (const importingAppVersion of filteredAppVersions) {
         const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
           importingAppVersion.definition,
           appResourceMappings.dataQueryMapping
@@ -2070,16 +2086,34 @@ export class AppImportExportService {
       })
     );
 
-    // Copy options from default DSV to branch DSV
+    // Copy options from default DSV to branch DSV, cloning credentials
     const defaultOptions = await manager.find(DataSourceVersionOptions, {
       where: { dataSourceVersionId: defaultDsv.id },
     });
     for (const dOpt of defaultOptions) {
+      const clonedOptions = JSON.parse(JSON.stringify(dOpt.options || {}));
+      for (const key of Object.keys(clonedOptions)) {
+        const opt = clonedOptions[key];
+        if (opt?.credential_id && opt?.encrypted) {
+          const srcCredential = await manager.findOne(Credential, {
+            where: { id: opt.credential_id },
+          });
+          if (srcCredential) {
+            const newCredential = manager.create(Credential, {
+              valueCiphertext: srcCredential.valueCiphertext,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            const savedCred = await manager.save(Credential, newCredential);
+            clonedOptions[key] = { ...opt, credential_id: savedCred.id };
+          }
+        }
+      }
       await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
-          options: dOpt.options,
+          options: clonedOptions,
         })
       );
     }
@@ -2330,6 +2364,17 @@ export class AppImportExportService {
     });
     const isGitSyncConfigured = !!orgGitSync;
 
+    // Determine whether we are importing into a sub-branch (non-default).
+    // Sub-branch versions must use BRANCH type so the canvas stays editable.
+    let isSubBranch = false;
+    if (branchId) {
+      const targetBranch = await manager.findOne(WorkspaceBranch, {
+        where: { id: branchId },
+        select: ['id', 'isDefault'],
+      });
+      isSubBranch = !!targetBranch && !targetBranch.isDefault;
+    }
+
     // Find the latest draft version
     // When git sync is configured, only the latest draft should remain as DRAFT, others become PUBLISHED
     let latestDraftId: string | null = null;
@@ -2377,7 +2422,11 @@ export class AppImportExportService {
         let versionStatus: AppVersionStatus;
         const isDraftVersion = appVersion.status === AppVersionStatus.DRAFT || !appVersion.status;
 
-        if (isGitSyncConfigured && isDraftVersion) {
+        if (isSubBranch) {
+          // On sub-branches, all versions must be DRAFT so the canvas stays editable.
+          // PUBLISHED status would freeze the editor regardless of version type.
+          versionStatus = AppVersionStatus.DRAFT;
+        } else if (isGitSyncConfigured && isDraftVersion) {
           // Only the latest draft should remain as DRAFT, others become PUBLISHED
           versionStatus = appVersion.id === latestDraftId ? AppVersionStatus.DRAFT : AppVersionStatus.PUBLISHED;
         } else {
@@ -2393,7 +2442,7 @@ export class AppImportExportService {
           createdAt: new Date(),
           updatedAt: new Date(),
           status: versionStatus,
-          versionType: appVersion.versionType,
+          versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id,
