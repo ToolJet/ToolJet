@@ -338,6 +338,7 @@ export const ColorPicker = (props) => {
         >
           <Popover.Trigger asChild>
             <button
+              type="button"
               className="color-picker-button"
               style={buttonStyles}
               data-cy={`${dataCy}-button`}
@@ -366,6 +367,7 @@ export const ColorPicker = (props) => {
                   {showClearBtn && (
                     <span
                       role="button"
+                      tabIndex={0}
                       className="tj-input-clear-btn"
                       aria-label="Clear"
                       onClick={(event) => {
