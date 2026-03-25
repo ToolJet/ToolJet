@@ -29,6 +29,7 @@ export class AppGitModule extends SubModule {
       AppGitFileOperationsUtil,
       GitOperationsUtil,
       BranchingBusinessUtil,
+      DataSourceBranchUtil,
     } = await this.getProviders(configs, 'app-git', [
       'controller',
       'service',
@@ -44,6 +45,7 @@ export class AppGitModule extends SubModule {
       'shared/app-git-file-operations.util',
       'shared/git-operations.util',
       'shared/branching-business.util',
+      'shared/datasource-branch.util',
     ]);
     return {
       module: AppGitModule,
@@ -73,6 +75,7 @@ export class AppGitModule extends SubModule {
         AppGitFileOperationsUtil,
         GitOperationsUtil,
         BranchingBusinessUtil,
+        DataSourceBranchUtil,
         VersionRepository,
         FeatureAbilityFactory,
         ...(isMainImport ? [AppVersionRenameListener] : []),
@@ -83,6 +86,7 @@ export class AppGitModule extends SubModule {
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         BranchingBusinessUtil,
+        DataSourceBranchUtil,
       ],
     };
   }
