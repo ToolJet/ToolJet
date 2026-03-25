@@ -63,8 +63,3 @@ export class BulkMoveDataSourcesDto {
   dataSourceIds: string[];
 }
 
-// Backwards-compatible aliases for existing imports
-export { CreateFolderDataSourceDto as CreateDsFolderDto };
-export { UpdateFolderDataSourceDto as UpdateDsFolderDto };
-export { AddDataSourceToFolderDto as AddDsToFolderDto };
-export { BulkMoveDataSourcesDto as BulkMoveDsDto };

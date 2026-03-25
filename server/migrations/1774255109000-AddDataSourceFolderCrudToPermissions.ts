@@ -9,7 +9,6 @@ export class AddFolderDataSourceCreateDeleteToPermissions1774255109000 implement
       `ALTER TABLE permission_groups ADD COLUMN folder_data_source_delete BOOLEAN NOT NULL DEFAULT false`
     );
 
-    // Set true for existing admin groups
     await queryRunner.query(
       `UPDATE permission_groups SET folder_data_source_create = true, folder_data_source_delete = true WHERE name = 'admin'`
     );

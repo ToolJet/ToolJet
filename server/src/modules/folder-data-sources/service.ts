@@ -75,12 +75,10 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
 
   async addDataSourceToFolder(user, folderId: string, dto: AddDataSourceToFolderDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // Verify folder belongs to user's org
       await manager.findOneOrFail(Folder, {
         where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
       });
 
-      // Verify data source exists, belongs to same org, and is global scope
       const dataSource = await manager.findOne(DataSource, {
         where: { id: dto.dataSourceId, organizationId: user.organizationId },
       });
@@ -93,10 +91,9 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
         throw new BadRequestException('Only global-scope data sources can be added to folders');
       }
 
-      // Remove existing folder membership if any (a DS can be in at most one folder)
+      // A data source can belong to at most one folder
       await manager.delete(FolderDataSource, { dataSourceId: dto.dataSourceId });
 
-      // Create new folder membership
       const folderDs = manager.create(FolderDataSource, {
         folderId,
         dataSourceId: dto.dataSourceId,
@@ -108,7 +105,6 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
 
   async removeDataSourceFromFolder(user, folderId: string, dataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // Verify folder belongs to user's org
       await manager.findOneOrFail(Folder, {
         where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
       });
@@ -125,12 +121,10 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
 
   async bulkMoveDataSources(user, folderId: string, dto: BulkMoveDataSourcesDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // Verify folder belongs to user's org
       await manager.findOneOrFail(Folder, {
         where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },
       });
 
-      // Verify all data sources exist, belong to same org, and are global scope
       const dataSources = await manager.find(DataSource, {
         where: { id: In(dto.dataSourceIds), organizationId: user.organizationId },
       });
@@ -144,10 +138,8 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
         throw new BadRequestException('Only global-scope data sources can be added to folders');
       }
 
-      // Remove all existing folder memberships for these data sources
       await manager.delete(FolderDataSource, { dataSourceId: In(dto.dataSourceIds) });
 
-      // Create new folder memberships
       const folderDataSources = dto.dataSourceIds.map((dsId) =>
         manager.create(FolderDataSource, {
           folderId,
@@ -167,7 +159,6 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
   }
 
   async getDataSourcesInFolder(user: any, folderId: string, page = 1, perPage = 25) {
-    // Verify folder belongs to user's org before listing data sources
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.findOneOrFail(Folder, {
         where: { id: folderId, organizationId: user.organizationId, type: 'data_source' },

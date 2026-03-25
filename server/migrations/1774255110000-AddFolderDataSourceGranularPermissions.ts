@@ -2,12 +2,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddFolderDataSourceGranularPermissions1774255110000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Add 'folder_data_source' to the resource_type PG enum
     await queryRunner.query(`
       ALTER TYPE "resource_type" ADD VALUE IF NOT EXISTS 'folder_data_source';
     `);
 
-    // Create folder_data_sources_group_permissions table
     await queryRunner.query(`
       CREATE TABLE folder_data_sources_group_permissions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -16,8 +14,8 @@ export class AddFolderDataSourceGranularPermissions1774255110000 implements Migr
         can_configure_ds BOOLEAN NOT NULL DEFAULT false,
         can_use_ds BOOLEAN NOT NULL DEFAULT false,
         can_run_query BOOLEAN NOT NULL DEFAULT true,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         CONSTRAINT fk_folder_data_sources_gp_granular_permission FOREIGN KEY (granular_permission_id)
           REFERENCES granular_permissions(id) ON DELETE CASCADE
       );
@@ -28,14 +26,13 @@ export class AddFolderDataSourceGranularPermissions1774255110000 implements Migr
         ON folder_data_sources_group_permissions(granular_permission_id);
     `);
 
-    // Create group_folder_data_sources join table
     await queryRunner.query(`
       CREATE TABLE group_folder_data_sources (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         folder_data_sources_group_permissions_id UUID NOT NULL,
         folder_id UUID NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         CONSTRAINT fk_group_folder_data_sources_permissions FOREIGN KEY (folder_data_sources_group_permissions_id)
           REFERENCES folder_data_sources_group_permissions(id) ON DELETE CASCADE,
         CONSTRAINT fk_group_folder_data_sources_folder FOREIGN KEY (folder_id)

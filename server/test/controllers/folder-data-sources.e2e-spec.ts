@@ -175,7 +175,6 @@ describe('folder-data-sources controller', () => {
         created_by: user.id,
       });
 
-      // Verify in DB
       const folderRepo = defaultDataSource.getRepository(Folder);
       const folder = await folderRepo.findOne({ where: { id: response.body.id } });
       expect(folder).toBeDefined();
@@ -340,7 +339,6 @@ describe('folder-data-sources controller', () => {
         .set('Cookie', auth.tokenCookie)
         .expect(200);
 
-      // folder_data_sources row should be gone
       const fds = await fdsRepo.findOne({ where: { folderId: folder.id } });
       expect(fds).toBeNull();
 
@@ -388,7 +386,6 @@ describe('folder-data-sources controller', () => {
 
       expect(response.statusCode).toBe(201);
 
-      // Verify FolderDataSource row was created
       const fdsRepo = defaultDataSource.getRepository(FolderDataSource);
       const fds = await fdsRepo.findOne({ where: { folderId: folder.id, dataSourceId: ds.id } });
       expect(fds).toMatchObject({ folderId: folder.id, dataSourceId: ds.id });
