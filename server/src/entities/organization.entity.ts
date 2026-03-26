@@ -70,6 +70,9 @@ export class Organization extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ default: () => 'now()', name: 'last_accessed_at' })
+  lastAccessedAt: Date;
+
   @OneToMany(() => GroupPermissions, (groupPermissions) => groupPermissions.organization, { onDelete: 'CASCADE' })
   permissionGroups: GroupPermissions[];
 

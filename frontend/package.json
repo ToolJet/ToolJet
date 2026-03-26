@@ -78,8 +78,8 @@
     "i18next-http-backend": "^2.1.1",
     "immer": "^9.0.19",
     "immutability-helper": "^3.1.1",
-    "jspdf": "^3.0.2",
-    "jspdf-autotable": "^4.0.0",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "lodash": "^4.17.21",
     "lucide-react": "^0.525.0",
     "moment": "^2.29.4",
@@ -168,10 +168,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
-    "@babel/eslint-parser": "^7.19.1",
+    "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.28.5",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-links": "^9.1.5",
@@ -182,6 +183,8 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
     "autoprefixer": "^10.4.17",
     "babel-loader": "^9.1.2",
     "babel-plugin-console-source": "^2.0.5",
@@ -191,19 +194,20 @@
     "css-loader": "^6.7.3",
     "css-minimizer-webpack-plugin": "^7.0.2",
     "esbuild": "0.25.9",
-    "eslint": "^8.37.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-import-resolver-webpack": "^0.13.2",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jest": "^27.2.1",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-storybook": "^9.1.5",
+    "@eslint/js": "^9.26.0",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^8.10.2",
+    "eslint-import-resolver-webpack": "^0.13.10",
+    "eslint-plugin-import-x": "^4.15.0",
+    "eslint-plugin-jest": "^28.14.0",
+    "eslint-plugin-prettier": "^4.2.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-storybook": "^0.12.0",
+    "globals": "^15.15.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^29.4.2",
-    "madge": "^8.0.0",
     "mini-css-extract-plugin": "^2.9.4",
     "path": "^0.12.7",
     "postcss": "^8.4.35",
@@ -216,6 +220,7 @@
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.4.1",
     "terser-webpack-plugin": "^5.3.6",
+    "typescript": "^5.9.3",
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
@@ -266,31 +271,31 @@
     "esbuild": "0.25.9",
     "on-headers": "1.1.0",
     "tar-fs": "^3.1.0",
-    "brace-expansion": ">=2.0.2"
+    "minimatch@3": {
+      "brace-expansion": "^1.1.11"
+    }
   },
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
+    "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
     "analyze": "ANALYZE=true webpack --mode=production",
     "analyze:dev": "ANALYZE=true webpack --mode=development",
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
     "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
-    "lint": "eslint . '**/*.{js,jsx}'",
-    "format": "eslint . --fix '**/*.{js,jsx}'",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint-quiet": "eslint --quiet 'src/**/*.{js,jsx,ts,tsx}'",
+    "format": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "npx storybook build",
-    "check:circular": "bash scripts/check-circular-deps.sh",
-    "check:bundle": "node scripts/check-bundle-size.js",
-    "check:all": "npm run check:circular && npm run check:bundle"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "build-storybook": "npx storybook build"
   },
   "jest": {
     "transform": {
       "^.+\\.js?$": "babel-jest",
       "^.+\\.jsx?$": "babel-jest",
+      "^.+\\.tsx?$": "babel-jest",
       "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
     },
     "transformIgnorePatterns": [
@@ -305,6 +310,8 @@
       "src"
     ],
     "moduleFileExtensions": [
+      "ts",
+      "tsx",
       "js",
       "json",
       "jsx"

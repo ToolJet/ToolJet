@@ -85,7 +85,7 @@ export const iframeConfig = {
     {
       handle: 'reload',
       displayName: 'Reload',
-    }
+    },
   ],
   definition: {
     others: {
