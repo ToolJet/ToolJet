@@ -39,3 +39,8 @@
 ti-*
 .claude/
 .worktrees/
+
+.local/
+.tj_env.*
+taskfile.yml
+taskfile.yaml
