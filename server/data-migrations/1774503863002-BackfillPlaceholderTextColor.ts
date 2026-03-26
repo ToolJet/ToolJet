@@ -16,11 +16,12 @@ export class BackfillPlaceholderTextColor1774503863002 implements MigrationInter
       // and is safe when rows share identical created_at timestamps.
       // Filter missing key at DB level to skip already-migrated rows entirely.
       // styles column is json type, so cast to jsonb for the ? operator.
+      // NULL styles must be included explicitly: NOT (NULL::jsonb ? ...) yields NULL, not TRUE.
       const rows = await queryRunner.query(
         `SELECT id FROM components
          WHERE type = ANY($1)
            AND id > $2
-           AND NOT (styles::jsonb ? 'placeholderTextColor')
+           AND (styles IS NULL OR NOT (styles::jsonb ? 'placeholderTextColor'))
          ORDER BY id ASC
          LIMIT $3`,
         [componentTypes, lastId, batchSize]
