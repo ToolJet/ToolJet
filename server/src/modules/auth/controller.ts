@@ -65,7 +65,7 @@ export class AuthController implements IAuthController {
   @Post('/forgot-password')
   @InitFeature(FEATURE_KEY.FORGOT_PASSWORD)
   async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
-    await this.authService.forgotPassword(appAuthDto.email);
+    await this.authService.forgotPassword(appAuthDto.email, appAuthDto.appSlug);
     return {};
   }
 

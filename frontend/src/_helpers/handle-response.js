@@ -50,8 +50,8 @@ export function handleResponse(
         }
       }
       if ([401].indexOf(response.status) !== -1) {
-        // Skip redirect on app-scoped login/signup pages — they handle their own auth
-        const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup)/.test(window.location.pathname);
+        // Skip redirect on app-scoped auth pages — they handle their own auth
+        const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(window.location.pathname);
         if (!isAppAuthPage) {
           // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
           const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;

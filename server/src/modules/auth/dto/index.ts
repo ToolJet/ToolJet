@@ -50,6 +50,10 @@ export class AppForgotPasswordDto {
   @IsNotEmpty()
   @Transform(({ value }) => lowercaseString(value))
   email: string;
+
+  @IsString()
+  @IsOptional()
+  appSlug?: string;
 }
 
 export class AppPasswordResetDto {

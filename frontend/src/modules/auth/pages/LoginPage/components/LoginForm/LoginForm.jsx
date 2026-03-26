@@ -187,6 +187,7 @@ const LoginForm = ({
                     placeholder={t('loginSignupPage.enterPassword', 'Enter your password')}
                     error={errors.password}
                     showForgotPassword={true}
+                    forgotPasswordUrl={appSlug ? `/applications/${appSlug}/forgot-password` : '/forgot-password'}
                     hint={''}
                   />
                   <SubmitButton

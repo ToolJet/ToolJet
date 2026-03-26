@@ -4,6 +4,8 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 // Lazy-load app auth pages — separate chunks, don't pollute viewer bundle
 const AppLoginPage = lazy(() => import('@/modules/auth/pages/AppLoginPage/AppLoginPage'));
 const AppSignupPage = lazy(() => import('@/modules/onboarding/pages/AppSignupPage/AppSignupPage'));
+const AppForgotPasswordPage = lazy(() => import('@/modules/auth/pages/AppForgotPasswordPage/AppForgotPasswordPage'));
+const AppResetPasswordPage = lazy(() => import('@/modules/auth/pages/AppResetPasswordPage/AppResetPasswordPage'));
 import { AppsRoute } from '@/Routes';
 import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
@@ -157,6 +159,22 @@ const ViewerApp = () => {
               element={
                 <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
                   <AppSignupPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/:slug/forgot-password"
+              element={
+                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                  <AppForgotPasswordPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/:slug/reset-password/:token"
+              element={
+                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                  <AppResetPasswordPage />
                 </Suspense>
               }
             />

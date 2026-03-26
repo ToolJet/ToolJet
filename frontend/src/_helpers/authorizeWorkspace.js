@@ -195,8 +195,9 @@ const isThisExistedRoute = () => {
   if (pathnames.includes('login') && pathnames.includes('sso')) {
     return true;
   }
-  // App-scoped login/signup pages handle their own auth
-  if (pathnames[0] === 'applications' && (pathnames[2] === 'login' || pathnames[2] === 'signup')) {
+  // App-scoped auth pages handle their own auth
+  const appAuthPages = ['login', 'signup', 'forgot-password', 'reset-password'];
+  if (pathnames[0] === 'applications' && appAuthPages.includes(pathnames[2])) {
     return true;
   }
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
