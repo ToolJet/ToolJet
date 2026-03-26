@@ -90,15 +90,25 @@ export const verifyDisability = (
   const { csa, jsSet, jsReset } = controls;
   const { attr, assertClass } = options;
 
-  const disabled = {
-    ...(attr && { attr, attrValue: "true" }),
-    ...(assertClass && { assertClass, assertClassState: "have.class" }),
-  };
+  const disabled = {};
+  if (attr) {
+    disabled.attr = attr;
+    disabled.attrValue = "true";
+  }
+  if (assertClass) {
+    disabled.assertClass = assertClass;
+    disabled.assertClassState = "have.class";
+  }
 
-  const enabled = {
-    ...(attr && { attr, attrValue: "false" }),
-    ...(assertClass && { assertClass, assertClassState: "not.have.class" }),
-  };
+  const enabled = {};
+  if (attr) {
+    enabled.attr = attr;
+    enabled.attrValue = "false";
+  }
+  if (assertClass) {
+    enabled.assertClass = assertClass;
+    enabled.assertClassState = "not.have.class";
+  }
 
   if (attr) cy.get(componentSelector).should("have.attr", attr, "false");
   if (assertClass)
