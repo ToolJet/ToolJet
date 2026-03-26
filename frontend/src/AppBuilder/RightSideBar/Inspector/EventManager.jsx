@@ -45,6 +45,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  callerQueryName,
   component,
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -382,7 +383,12 @@ export const EventManager = ({
   function handlerChanged(index, param, value) {
     let newEvents = deepClone(events);
     let updatedEvent = newEvents[index];
-    updatedEvent.event[param] = value;
+
+    if (param === 'name') {
+      updatedEvent.name = value;
+    } else {
+      updatedEvent.event[param] = value;
+    }
 
     // Remove debounce key if it's empty
     if (param === 'debounce' && value === '') {
@@ -395,12 +401,7 @@ export const EventManager = ({
     }
 
     const shouldUpdateEvent = !_.isEmpty(diff(events[index], updatedEvent));
-
     if (!shouldUpdateEvent) return;
-
-    const eventSourceid = updatedEvent?.sourceId;
-
-    newEvents[index] = updatedEvent;
 
     handleLowPriorityWork(() => {
       updateAppVersionEventHandlers(
@@ -416,6 +417,28 @@ export const EventManager = ({
     });
   }
 
+  function getEventSourceName() {
+    if (eventSourceType === 'component') {
+      return components?.[sourceId]?.component?.name || eventMetaDefinition?.name || 'Event';
+    }
+
+    if (eventSourceType === 'page') {
+      return pages?.find((page) => page.id === sourceId)?.name || 'Page';
+    }
+
+    if (eventSourceType === 'data_query') {
+      return callerQueryName || 'Query';
+    }
+
+    return '';
+  }
+
+  function getDefaultEventName(eventId) {
+    const sourceName = getEventSourceName();
+    const eventDisplayName = eventMetaDefinition?.events?.[eventId]?.displayName || eventId || 'event';
+    return `${sourceName} ${eventDisplayName}`.trim();
+  }
+
   function removeHandler(index) {
     const eventsHandler = deepClone(events);
     const eventId = eventsHandler[index].id;
@@ -425,6 +448,7 @@ export const EventManager = ({
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
+    const defaultEventId = Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
 
@@ -448,8 +472,9 @@ export const EventManager = ({
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
+      name: getDefaultEventName(defaultEventId),
       event: {
-        eventId: Object.keys(eventMetaDefinition?.events)[0],
+        eventId: defaultEventId,
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
@@ -519,7 +544,9 @@ export const EventManager = ({
     );
   };
 
-  function eventPopover(event, index) {
+  function eventPopover(eventHandler, index) {
+    const event = eventHandler?.event || {};
+
     return (
       <Popover
         id="popover-basic"
@@ -533,6 +560,37 @@ export const EventManager = ({
           }}
         >
           <div className="row">
+            <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
+              {t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+            </div>
+            <div className="col-9 d-flex align-items-center justify-content-end tw-pr-0">
+              <label className="form-check form-switch my-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={!event.disabled}
+                  onChange={(e) => handlerChanged(index, 'disabled', !e.target.checked)}
+                  data-cy="event-disabled-toggle"
+                />
+              </label>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
+              <span data-cy="event-name-label">{t('editor.inspector.eventManager.eventName', 'Event name')}</span>
+            </div>
+            <div className="col-9" data-cy="event-name-input">
+              <CodeHinter
+                type="basic"
+                initialValue={eventHandler?.name}
+                onChange={(value) => handlerChanged(index, 'name', value)}
+                usePortalEditor={false}
+                component={component}
+                cyLabel={`event-name`}
+              />
+            </div>
+          </div>
+          <div className="row mt-3">
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
             </div>
@@ -1242,7 +1300,7 @@ export const EventManager = ({
                           trigger="click"
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
-                          overlay={eventPopover(event.event, index)}
+                          overlay={eventPopover(event, index)}
                           onToggle={(showing) => {
                             // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
                             if (shouldSkipOnToggle.current) {
@@ -1272,11 +1330,13 @@ export const EventManager = ({
                             {...provided.dragHandleProps}
                           >
                             <ManageEventButton
+                              eventName={event?.name}
                               eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
                               actionName={actionMeta.name}
                               removeHandler={removeHandler}
                               index={index}
                               darkMode={darkMode}
+                              isDisabled={!!event.event.disabled}
                               actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
                               eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
                               eventsDeletedLoader={
