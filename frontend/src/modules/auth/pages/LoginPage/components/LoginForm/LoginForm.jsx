@@ -155,7 +155,7 @@ const LoginForm = ({
                       .
                     </>
                   ) : null}{' '}
-                  {isSignUpCTAEnabled && (
+                  {!appName && isSignUpCTAEnabled && (
                     <>
                       {' '}
                       {signupText}{' '}
