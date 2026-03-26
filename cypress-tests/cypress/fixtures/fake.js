@@ -11,7 +11,7 @@ function firstName() {
   return faker.name.firstName();
 }
 function lastName() {
-  return faker.name.lastName();
+  return faker.name.lastName().replace(/[^a-zA-Z0-9]/g, "");
 }
 function fullName() {
   return `${faker.name.firstName()} ${faker.name.lastName()}`;
