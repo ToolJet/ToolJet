@@ -10,7 +10,7 @@ import { PenLine } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
@@ -28,10 +28,13 @@ function EditAppName() {
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled =
+    !isModuleEditor && (orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
   const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = workspaceActiveBranch
-    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType !== 'branch';
   const isRenameDisabled = !isGitSyncEnabled
     ? false
