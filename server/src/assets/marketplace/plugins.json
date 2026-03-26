@@ -61,7 +61,7 @@
   },
   {
     "name": "PocketBase",
-    "description": "API plugin from pocketbase",
+    "description": "API plugin from PocketBase",
     "version": "1.0.0",
     "id": "pocketbase",
     "author": "Tooljet",
@@ -77,7 +77,7 @@
   },
   {
     "name": "Engagespot",
-    "description": "Plugin for engagespot APIs",
+    "description": "Plugin for Engagespot APIs",
     "version": "1.0.0",
     "id": "engagespot",
     "author": "Tooljet",
@@ -85,7 +85,7 @@
   },
   {
     "name": "Salesforce",
-    "description": "API plugin from salesforce",
+    "description": "API plugin from Salesforce",
     "version": "1.0.0",
     "id": "salesforce",
     "author": "Tooljet",
@@ -100,8 +100,8 @@
     "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
   },
   {
-    "name": "Sharepoint",
-    "description": "Plugin for Sharepoint API",
+    "name": "SharePoint",
+    "description": "Plugin for SharePoint API",
     "version": "1.0.0",
     "id": "sharepoint",
     "author": "Tooljet",

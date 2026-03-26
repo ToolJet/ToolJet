@@ -11,6 +11,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isNumber } from 'lodash';
 import { Alert } from '@/_ui/Alert/Alert';
 import TJDBCodeEditor from './TJDBHinter';
+import { writeCodehinterPopupEditorDimensions } from '@/_helpers/codehinterPortalDimensions';
 
 const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
@@ -64,6 +65,10 @@ const CodeHinter = ({
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
+  const onPortalDimensionsChange = React.useCallback((dims) => {
+    writeCodehinterPopupEditorDimensions(dims);
+  }, []);
+
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
   return (
@@ -78,6 +83,7 @@ const CodeHinter = ({
           setIsOpen,
           handleTogglePopupExapand,
           forceUpdate,
+          onPortalDimensionsChange,
         }}
         componentName={componentName}
         disabled={disabled}
