@@ -25,7 +25,14 @@ export const Kanban = (props) => {
       data-cy={dataCy}
       className="scrollbar-container"
     >
-      <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} id={id} dataCy={dataCy} />
+      <KanbanBoard
+        handle
+        kanbanProps={props}
+        parentRef={parentRef}
+        widgetHeight={widgetHeight}
+        id={id}
+        dataCy={dataCy}
+      />
     </div>
   );
 };

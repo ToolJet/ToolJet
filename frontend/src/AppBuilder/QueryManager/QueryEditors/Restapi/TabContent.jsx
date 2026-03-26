@@ -30,7 +30,11 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container query-manager-border-color" key={index} data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}>
+              <div
+                className="row-container query-manager-border-color"
+                key={index}
+                data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}
+              >
                 <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
