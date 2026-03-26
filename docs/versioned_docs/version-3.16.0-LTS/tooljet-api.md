@@ -37,6 +37,10 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Update User Metadata](#update-user-metadata)
 - [Get User Metadata](#get-user-metadata)
 - [Create Group](#create-group)
+- [Get All Groups](#get-all-groups)
+- [Get Group by ID](#get-group-by-id)
+- [Update Group](#update-group)
+- [Delete Group](#delete-group)
 
 ## Enabling ToolJet API
 
@@ -186,7 +190,7 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
     - **Response:** Array of Workspace objects.
 
     ```bash title="cURL Request"
-    curl -X GET https://{your-domain}/api/ext/workspaces \
+    curl -X GET https://{your-domain}/api/ext/workspace \
       -H "Authorization: Basic <access_token>" \
       -H "Content-Type: application/json"
     ```
@@ -1777,7 +1781,7 @@ This endpoint is in beta and may change in future releases.
   | `per_page` | number | Number of results per page |
 
 ```bash title="cURL Request"
-curl -X GET "https://{your-domain}/api/ext/workspaces/:workspaceId/groups" \
+curl -X GET "https://{your-domain}/api/ext/workspace/:workspaceId/groups" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"
 ```
@@ -1865,6 +1869,7 @@ This endpoint is in beta and may change in future releases.
 - **Authorization**: `Basic <access_token>`
 - **Content-Type**: `application/json`
 - **Path Parameters**:
+
 | Parameter              | Type   | Required | Description                    |
 |:----------------------|:-------|:---------|:-------------------------------|
 | `workspace_identifier` | string | Yes      | Workspace UUID                 |
@@ -1939,8 +1944,6 @@ This endpoint is in beta and may change in future releases.
   | `permissions`         | object  | No       | Workspace-level permissions          |
   | `granularPermissions` | array   | No       | Resource-level permission rules      |
 
-<details id="tj-dropdown">
-<summary>Request Example</summary>
 ```bash title="cURL Request"
 curl -X PATCH "https://{your-domain}/api/ext/workspace/:workspaceId/groups/:groupId" \
   -H "Authorization: Basic <access_token>" \
@@ -1981,7 +1984,6 @@ curl -X PATCH "https://{your-domain}/api/ext/workspace/:workspaceId/groups/:grou
     ]
   }'
 ```
-</details>
 
 - Response: `200 OK` : Returns updated group object
 
