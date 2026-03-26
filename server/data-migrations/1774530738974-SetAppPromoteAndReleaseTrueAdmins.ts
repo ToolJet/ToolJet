@@ -5,7 +5,9 @@ export class SetAppPromoteAndReleaseTrueAdmins1774530738974 implements Migration
     await queryRunner.query(`
       UPDATE permission_groups
       SET app_promote = true, app_release = true
-      WHERE name = 'admin' AND type = 'default'
+      WHERE name = 'admin'
+        AND type = 'default'
+        AND (app_promote = false OR app_release = false)
     `);
   }
 
