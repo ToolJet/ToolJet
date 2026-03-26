@@ -96,6 +96,14 @@ export const validateMongoDBConnectionString = (connectionString, selectedFormat
   return { valid: true, error: '' };
 };
 
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export const parseMongoDBConnectionString = (connectionString) => {
   if (!connectionString || connectionString.trim() === '') {
     return null;
@@ -161,8 +169,8 @@ export const parseMongoDBConnectionString = (connectionString) => {
   return {
     host: primaryHost,
     port: primaryPort,
-    username: username || '',
-    password: password || '',
+    username: safeDecode(username || ''),
+    password: safeDecode(password || ''),
     database: databaseName || '',
     connection_format: isSrvFormat ? 'mongodb+srv' : 'mongodb',
     use_ssl: useSsl,
