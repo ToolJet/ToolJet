@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { deleteAppHistoryForStructuralMigration } from '../src/helpers/migration.helper';
+import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
 const MIGRATION_NAME = 'BackfillPlaceholderTextColor1774503863002';
 
