@@ -8,10 +8,10 @@ function password() {
   return faker.internet.password();
 }
 function firstName() {
-  return faker.name.firstName();
+  return faker.name.firstName().replace(/[^a-z0-9]/g, "");;
 }
 function lastName() {
-  return faker.name.lastName();
+  return faker.name.lastName().replace(/[^a-z0-9]/g, "");;
 }
 function fullName() {
   return `${faker.name.firstName()} ${faker.name.lastName()}`;

@@ -77,6 +77,7 @@ import {
   keyValuePairConfig,
   progressbarConfig,
   navigationConfig,
+  fileButtonConfig,
   buttonGroupV2Config,
 } from '../widgets';
 
@@ -85,6 +86,7 @@ export const widgets = [
   buttonConfig,
   buttonGroupV2Config,
   popoverMenuConfig,
+  fileButtonConfig,
 
   //Data
   tableConfig,

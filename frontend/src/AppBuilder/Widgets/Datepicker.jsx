@@ -20,7 +20,14 @@ export const Datepicker = function Datepicker({
   dataCy,
 }) {
   const isInitialRender = useRef(true);
-  const { enableTime, enableDate, defaultValue, disabledDates, placeholder: placeholderProp, showClearBtn } = properties;
+  const {
+    enableTime,
+    enableDate,
+    defaultValue,
+    disabledDates,
+    placeholder: placeholderProp,
+    showClearBtn,
+  } = properties;
   const placeholder = placeholderProp ?? 'Select date';
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;

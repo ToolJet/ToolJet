@@ -288,25 +288,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
 }
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    let finalOptions: SourceOptions;
-    
-    if (sourceOptions.connection_type === 'string') {
-      const parsedOptions = this.parseConnectionString(sourceOptions.connection_string || '');
-      
-
-       finalOptions = { ...sourceOptions };
-        if (parsedOptions.host) finalOptions.host= finalOptions.host || parsedOptions.host;
-        if (parsedOptions.port) finalOptions.port=finalOptions.port || parsedOptions.port;
-        if (parsedOptions.database) finalOptions.database=finalOptions.database || parsedOptions.database;
-        if (parsedOptions.username) finalOptions.username=finalOptions.username || parsedOptions.username;
-        if (parsedOptions.password) finalOptions.password=finalOptions.password || parsedOptions.password;
-        if (parsedOptions.instanceName) finalOptions.instanceName =finalOptions.instanceName|| parsedOptions.instanceName;
-        if (parsedOptions.azure !== undefined) finalOptions.azure=finalOptions.azure|| parsedOptions.azure;
-
-    } else {
-      finalOptions = sourceOptions;
-    }
-
+    const finalOptions: SourceOptions = sourceOptions;
    // SSL config 
     const shouldUseSSL = finalOptions.ssl_enabled === true;
     let sslObject: any = null;
@@ -357,6 +339,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
           encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
           instanceName: finalOptions.instanceName,
           trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          requestTimeout: this.STATEMENT_TIMEOUT,
           ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },

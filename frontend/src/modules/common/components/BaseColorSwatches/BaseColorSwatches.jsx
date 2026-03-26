@@ -28,8 +28,8 @@ const BaseColorSwatches = ({
   const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
   if (component == 'PopoverMenu') {
     value = computeColorForPopoverMenu(value, meta, componentId);
-  } else if (component == 'Button') {
-    value = computeColor(styleDefinition, value, meta);
+  } else if (component == 'Button' || component == 'FileButton') {
+    value = computeColor(styleDefinition, value, meta, component);
   }
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
