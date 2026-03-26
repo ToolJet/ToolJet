@@ -42,7 +42,7 @@ ToolJet automatically refreshes your OIDC access token in the background when it
 #### How It Works
 
 ToolJet automatically refreshes your OIDC access token in the background when it expires, keeping your session active and `ssoUserInfo` up to date without a page reload.
-If the refresh fails, your session will be invalidated and you will be prompted to log in again.
+If the refresh fails, your session will be invalidated.
 
 #### Binding Recommendations
 
