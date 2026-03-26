@@ -2,7 +2,7 @@ import { handleResponseWithoutValidation, authHeader } from '@/_helpers';
 import config from 'config';
 import queryString from 'query-string';
 import { getWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
-import { getRedirectToWithParams, isCustomDomain } from '@/_helpers/routes';
+import { getRedirectToWithParams, getPathname, isCustomDomain } from '@/_helpers/routes';
 import { getPatToken } from '@/AppBuilder/EmbedApp';
 
 export const sessionService = {
@@ -39,6 +39,16 @@ function logout(avoidRedirection = false, organizationId = null) {
     if (window.self !== window.top) {
       window.parent.postMessage({ type: 'TJ_EMBED_APP_LOGOUT' }, '*');
     }
+
+    // App-scoped logout: redirect to app login page instead of workspace login
+    const currentPath = getPathname(null, true);
+    const appMatch = currentPath.match(/^\/applications\/([^/]+)/);
+    if (appMatch) {
+      const subpath = window.public_config?.SUB_PATH || '/';
+      window.location.href = `${subpath}applications/${appMatch[1]}/login`;
+      return;
+    }
+
     const loginPath = (window.public_config?.SUB_PATH || '/') + 'login' + `${workspaceId ? `/${workspaceId}` : ''}`;
     if (avoidRedirection) {
       window.location.href = loginPath;
