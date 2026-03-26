@@ -34,7 +34,7 @@ done
 echo "✓ Redis is ready!"
 
 # Export the PORT variable to be used by the application
-export PORT=${PORT:-3000}
+export PORT=${PORT:-3001}
 
 # Graceful shutdown: stop PostgreSQL and Redis before the volume is unmounted
 shutdown() {
