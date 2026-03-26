@@ -642,11 +642,13 @@ class HomePageComponent extends React.Component {
     const id = selectedApp.id;
     this.setState({ deploying: true });
     try {
+      const { activeBranchId } = useWorkspaceBranchesStore.getState();
       const data = await libraryAppService.deploy(
         id,
         appName,
         this.state.dependentPlugins,
-        this.state.shouldAutoImportPlugin
+        this.state.shouldAutoImportPlugin,
+        activeBranchId
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
@@ -2241,7 +2243,13 @@ class HomePageComponent extends React.Component {
                           this.openCreateAppModal();
                         }
                       }}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      openCreateAppFromTemplateModal={(template) => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          toast.error('Master is locked. Create a branch to create an app from template.');
+                          return;
+                        }
+                        this.openCreateAppFromTemplateModal(template);
+                      }}
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}
                       showTemplateLibraryModal={this.state.showTemplateLibraryModal}
