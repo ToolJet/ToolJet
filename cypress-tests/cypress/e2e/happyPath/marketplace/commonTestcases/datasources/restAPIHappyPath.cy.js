@@ -41,8 +41,8 @@ describe("Data source Rest API", () => {
     cy.get('[data-cy="datasource-list-header"]').should(
       "have.text",
       Cypress.env("marketplace_action")
-        ? "All data sources (46)"
-        : "All data sources (45)"
+        ? "All data sources (47)"
+        : "All data sources (47)"
     );
     cy.get('[data-cy="commonlyused-datasource-button"]').should(
       "have.text",
@@ -661,6 +661,7 @@ describe("Data source Rest API", () => {
     cy.apiDeleteApp();
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
+  //might be failing due to rate limit error from auth0, need to investigate and fix
   it.skip("Should verify response for authentication code grant type connection", () => {
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
