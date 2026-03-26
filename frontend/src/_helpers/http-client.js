@@ -3,6 +3,7 @@ import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
+import { refreshSsoInfo } from '@/_helpers/refreshSsoInfo';
 
 const HttpVerb = {
   Get: 'GET',
@@ -69,6 +70,13 @@ class HttpClient {
       statusText: response.statusText,
       headers: this.extractResponseHeaders(response),
     };
+
+    // Check if OIDC tokens were refreshed on the backend.
+    // Also checked in handle-response.js to cover both HttpClient and legacy fetch call paths.
+    if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+      refreshSsoInfo(); // Fire-and-forget — don't block the current request
+    }
+
     const text = await response.text();
     try {
       payload.data = isEmpty(text) ? text : JSON.parse(text);
