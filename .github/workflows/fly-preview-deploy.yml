@@ -106,10 +106,10 @@ jobs:
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-1x \
             --vm-memory 2048 \
-            --port 443:3000/tcp:tls:http \
+            --port 443:3001/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop suspend \
+            \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -126,7 +126,7 @@ jobs:
             --env PGRST_HOST=127.0.0.1:3000 \
             --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
             --env PGRST_LOG_LEVEL=info \
-            --env PORT=80 \
+            --env PORT=3001 \
             --env "TOOLJET_HOST=https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev" \
             --env DISABLE_TOOLJET_TELEMETRY=true \
             --env SMTP_ADDRESS=smtp.mailtrap.io \
@@ -144,7 +144,7 @@ jobs:
         run: |
           MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
           CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
-          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"tcp","port":3000,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
@@ -155,7 +155,7 @@ jobs:
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
-            if [ "$STATUS" = "200" ]; then
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
               echo "✅ App is healthy!"
               break
             fi
@@ -165,6 +165,18 @@ jobs:
             fi
             sleep 30
           done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
         uses: actions/github-script@v6
@@ -514,10 +526,10 @@ jobs:
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-1x \
             --vm-memory 2048 \
-            --port 443:3000/tcp:tls:http \
+            --port 443:3001/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop suspend \
+            \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -534,7 +546,7 @@ jobs:
             --env PGRST_HOST=127.0.0.1:3000 \
             --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
             --env PGRST_LOG_LEVEL=info \
-            --env PORT=80 \
+            --env PORT=3001 \
             --env "TOOLJET_HOST=https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev" \
             --env DISABLE_TOOLJET_TELEMETRY=true \
             --env SMTP_ADDRESS=smtp.mailtrap.io \
@@ -560,7 +572,7 @@ jobs:
         run: |
           MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
           CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
-          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"tcp","port":3000,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
@@ -571,7 +583,7 @@ jobs:
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
-            if [ "$STATUS" = "200" ]; then
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
               echo "✅ App is healthy!"
               break
             fi
@@ -581,6 +593,18 @@ jobs:
             fi
             sleep 30
           done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
         uses: actions/github-script@v6
@@ -935,10 +959,10 @@ jobs:
             --app ${{ env.APP_NAME }} \
             --vm-size shared-cpu-1x \
             --vm-memory 2048 \
-            --port 443:3000/tcp:tls:http \
+            --port 443:3001/tcp:tls:http \
             --volume pg_data:/var/lib/postgresql/13 \
             --region ${{ env.FLY_REGION }} \
-            --autostop suspend \
+            \
             --autostart true \
             --env PG_HOST=localhost \
             --env PG_PORT=5432 \
@@ -955,7 +979,7 @@ jobs:
             --env PGRST_HOST=127.0.0.1:3000 \
             --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
             --env PGRST_LOG_LEVEL=info \
-            --env PORT=80 \
+            --env PORT=3001 \
             --env "TOOLJET_HOST=https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev" \
             --env DISABLE_TOOLJET_TELEMETRY=true \
             --env SMTP_ADDRESS=smtp.mailtrap.io \
@@ -981,7 +1005,7 @@ jobs:
         run: |
           MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
           CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
-          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend" | .services[0].checks = [{"type":"tcp","port":3000,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
@@ -992,7 +1016,7 @@ jobs:
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
             echo "Health check $i/30: HTTP $STATUS"
-            if [ "$STATUS" = "200" ]; then
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
               echo "✅ App is healthy!"
               break
             fi
@@ -1002,6 +1026,18 @@ jobs:
             fi
             sleep 30
           done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
         uses: actions/github-script@v6

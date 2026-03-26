@@ -31,7 +31,7 @@ done
 echo "✓ Redis is ready!"
 
 # Export the PORT variable to be used by the application
-export PORT=${PORT:-3000}
+export PORT=${PORT:-3001}
 
 # Start Supervisor (manages PostgREST and ToolJet)
 exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
