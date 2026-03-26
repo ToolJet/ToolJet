@@ -18,12 +18,7 @@ export const BaseUrl = ({ dataSourceURL, theme, className = 'col-auto', style = 
         ...style,
       }}
     >
-      <OverflowTooltip
-        text={dataSourceURL}
-        width="559px"
-        whiteSpace="nowrap"
-        placement="auto"
-      >
+      <OverflowTooltip text={dataSourceURL} width="559px" whiteSpace="nowrap" placement="auto">
         {dataSourceURL}
       </OverflowTooltip>
     </span>

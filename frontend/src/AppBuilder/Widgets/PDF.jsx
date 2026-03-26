@@ -203,8 +203,9 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
-            className={`d-flex ${pageControls ? 'justify-content-between' : 'justify-content-end'
-              } py-3 px-3 align-items-baseline border-top border-light`}
+            className={`d-flex ${
+              pageControls ? 'justify-content-between' : 'justify-content-end'
+            } py-3 px-3 align-items-baseline border-top border-light`}
             style={{ backgroundColor: 'var(--cc-surface1-surface)', color: 'var(--cc-primary-text)' }}
           >
             {pageControls && (
