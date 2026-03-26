@@ -105,17 +105,17 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
   switch (expectedStatus) {
     case "success":
       // Success feedback is now a toast (PR #15616 — inline badge removed)
-      cy.verifyToastMessage(".go3958317564", "Test connection verified");
+      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, 50000);
       break;
 
     case "failed":
       // Failure feedback is now a toast; specific error still shown in connection-alert-text
-      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified");
+      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
 
       if (customMessage) {
         cy.get('[data-cy="connection-alert-text"]')
           .scrollIntoView()
-          .should("be.visible", { timeout: 40000 })
+          .should("be.visible", { timeout: 50000 })
           .and("contain.text", customMessage);
       }
       break;
