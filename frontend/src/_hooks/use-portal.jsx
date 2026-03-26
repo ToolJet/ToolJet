@@ -14,6 +14,7 @@ const usePortal = ({ children, ...restProps }) => {
     dragResizePortal = false,
     callgpt,
     isCopilotEnabled = false,
+    onPortalDimensionsChange,
   } = restProps;
 
   const renderCustomComponent = ({ component, ...restProps }) => {
@@ -41,6 +42,7 @@ const usePortal = ({ children, ...restProps }) => {
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
+          onPortalDimensionsChange={onPortalDimensionsChange}
         >
           <div
             className={`editor-container codehinter-popup ${optionalProps.cls ?? ''}`}

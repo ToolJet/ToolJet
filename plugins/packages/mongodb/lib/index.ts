@@ -117,6 +117,14 @@ function validateSSHOptions(sourceOptions: SourceOptions): void {
   }
 }
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
@@ -509,8 +517,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   if (authPart.includes(":")) {
     const colonIdx = authPart.indexOf(":");
-    connUser = decodeURIComponent(authPart.slice(0, colonIdx));
-    connPass = decodeURIComponent(authPart.slice(colonIdx + 1));
+    connUser = safeDecode(authPart.slice(0, colonIdx));
+    connPass = safeDecode(authPart.slice(colonIdx + 1));
   }
 
   const finalUser = explicitUser || connUser || "";
