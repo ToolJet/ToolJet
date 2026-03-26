@@ -12,7 +12,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
-const noop = () => { };
+const noop = () => {};
 
 const defaultValue = {
   javascript: `// write your code here

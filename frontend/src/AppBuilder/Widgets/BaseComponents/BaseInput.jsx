@@ -75,8 +75,7 @@ export const BaseInput = ({
   const { label, placeholder } = properties;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const hasLabel =
-    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const hasValue = value !== '' && value !== null && value !== undefined;
   const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
 
@@ -84,8 +83,8 @@ export const BaseInput = ({
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
   };
@@ -145,11 +144,12 @@ export const BaseInput = ({
   return (
     <>
       <div
-        className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
+        className={`text-input scrollbar-container d-flex ${
+          defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : ''
-          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+            ? 'flex-column'
+            : ''
+        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -195,30 +195,30 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                  ? accentColor != '4368E3'
-                    ? accentColor
-                    : 'var(--primary-accent-strong)'
-                  : borderColor != '#CCD1D5'
-                    ? borderColor
-                    : disable || loading
-                      ? '1px solid var(--borders-disabled-on-white)'
-                      : 'var(--borders-default)',
+                ? accentColor != '4368E3'
+                  ? accentColor
+                  : 'var(--primary-accent-strong)'
+                : borderColor != '#CCD1D5'
+                ? borderColor
+                : disable || loading
+                ? '1px solid var(--borders-disabled-on-white)'
+                : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                  ? darkMode
-                    ? 'var(--surfaces-app-bg-default)'
-                    : 'var(--surfaces-surface-03)'
-                  : 'var(--surfaces-surface-01)',
+                ? darkMode
+                  ? 'var(--surfaces-app-bg-default)'
+                  : 'var(--surfaces-surface-03)'
+                : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
               label?.length != 0 && {
-              height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
-              flex: 1,
-            }),
+                height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
+                flex: 1,
+              }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
         >

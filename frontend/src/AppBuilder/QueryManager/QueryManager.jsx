@@ -22,7 +22,12 @@ const QueryManager = ({ mode, darkMode }) => {
   const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
-    if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy' || selectedQuery?.kind == 'restapi' || selectedQuery?.kind == 'postgresql') {
+    if (
+      selectedQuery?.kind == 'runjs' ||
+      selectedQuery?.kind == 'runpy' ||
+      selectedQuery?.kind == 'restapi' ||
+      selectedQuery?.kind == 'postgresql'
+    ) {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);

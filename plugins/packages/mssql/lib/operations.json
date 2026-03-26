@@ -21,7 +21,27 @@
           "name": "GUI mode",
           "value": "gui"
         }
-      ]
+      ],
+      "commonFields": {
+        "host": {
+          "label": "Host",
+          "placeholder": "Leave empty to use default",
+          "key": "host",
+          "type": "codehinter",
+          "description": "Enter host",
+          "height": "150px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        },
+        "database": {
+          "label": "Database",
+          "placeholder": "Leave empty to use default",
+          "key": "database",
+          "type": "codehinter",
+          "description": "Enter database name",
+          "height": "150px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        }
+      }
     },
     "sql": {
       "query": {
@@ -65,6 +85,8 @@
             "invokeMethod": "getTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "lineNumbers": false,
           "description": "Select a table from the dropdown",
           "width": "320px",

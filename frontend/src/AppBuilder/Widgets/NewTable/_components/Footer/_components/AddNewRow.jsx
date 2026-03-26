@@ -9,7 +9,7 @@ import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
@@ -33,7 +33,7 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
   }, [updateShouldPersistAddNewRow, clearAddNewRowDetails, id]);
 
   useEffect(() => {
-    function discardNewlyAddedRows () {
+    function discardNewlyAddedRows() {
       clearAddNewRowDetails(id);
       hideAddNewRowPopup();
     }
@@ -69,7 +69,7 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
           tableData: addNewRowDetailsLength > 0 ? [...addNewRowDetails.values()] : [newEmptyRow],
           id,
           darkMode,
-          fireEvent: () => { },
+          fireEvent: () => {},
           tableRef: addRowTableRef,
           handleCellValueChange,
           searchText: '',
@@ -98,33 +98,54 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
     <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy='add-new-rows-header' className="font-weight-500 tj-text-lg">
+          <h4 data-cy="add-new-rows-header" className="font-weight-500 tj-text-lg">
             Add new rows
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy='add-new-rows-close-button' onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
+          <button data-cy="add-new-rows-close-button" onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
             x
           </button>
         </div>
       </div>
       <div className="table-responsive jet-data-table" ref={addRowTableRef}>
-        <table className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`} data-cy='add-new-row-table'>
+        <table
+          className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`}
+          data-cy="add-new-row-table"
+        >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="tr" style={{ display: 'flex' }} >
+              <tr key={headerGroup.id} className="tr" style={{ display: 'flex' }}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="th" style={{ width: header.column.getSize() }} data-cy={`${generateCypressDataCy(typeof header.column.columnDef?.header === 'string' ? header.column.columnDef?.header : header.column.id)}-column-header`}>
-                    <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper" data-cy={`${generateCypressDataCy(typeof header.column.columnDef?.header === 'string' ? header.column.columnDef?.header : header.column.id)}-editable-icon`}>
-                      {header.column.columnDef.meta?.columnType !== 'image' && <div>
-                        <SolidIcon
-                          name="editable"
-                          width="16px"
-                          height="16px"
-                          fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                          vievBox="0 0 16 16"
-                        />
-                      </div>}
+                  <th
+                    key={header.id}
+                    className="th"
+                    style={{ width: header.column.getSize() }}
+                    data-cy={`${generateCypressDataCy(
+                      typeof header.column.columnDef?.header === 'string'
+                        ? header.column.columnDef?.header
+                        : header.column.id
+                    )}-column-header`}
+                  >
+                    <div
+                      className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper"
+                      data-cy={`${generateCypressDataCy(
+                        typeof header.column.columnDef?.header === 'string'
+                          ? header.column.columnDef?.header
+                          : header.column.id
+                      )}-editable-icon`}
+                    >
+                      {header.column.columnDef.meta?.columnType !== 'image' && (
+                        <div>
+                          <SolidIcon
+                            name="editable"
+                            width="16px"
+                            height="16px"
+                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                            vievBox="0 0 16 16"
+                          />
+                        </div>
+                      )}
                       <div className="tj-text-xsm header-text">
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </div>
@@ -140,7 +161,9 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    data-cy={`${generateCypressDataCy(typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id)}-column-${row.index}`}
+                    data-cy={`${generateCypressDataCy(
+                      typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id
+                    )}-column-${row.index}`}
                     className={cx(`table-text-align-${cell.column.columnDef.meta?.horizontalAlignment} td`, {
                       'has-actions':
                         cell.column.columnDef.meta?.position === 'right' ||
@@ -160,8 +183,9 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
                     style={{ width: cell.column.getSize() }}
                   >
                     <div
-                      className={`td-container ${cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
-                        } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
+                      className={`td-container ${
+                        cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
+                      } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
                     >
                       {flexRender(cell.column.columnDef.cell, {
                         ...cell.getContext(),
@@ -189,7 +213,7 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
         <ButtonSolid
           variant="primary"
           className="tj-text-xsm"
-          data-cy='save-button'
+          data-cy="save-button"
           onClick={async () => {
             await fireEvent('onNewRowsAdded');
             hideAddNewRowPopup();
@@ -202,7 +226,7 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
         <ButtonSolid
           variant="tertiary"
           className="tj-text-xsm"
-          data-cy='discard-button'
+          data-cy="discard-button"
           onClick={() => {
             hideAddNewRowPopup();
             clearAddNewRowDetails(id);

@@ -13,8 +13,9 @@ export const CodeHinterBtns = ({ view, isPanelOpen, renderCopilot }) => {
       {!isPanelOpen && (
         <ButtonComponent
           iconOnly
-          trailingIcon="search01"
-          size="small"
+          isLucid
+          leadingIcon="search"
+          size="medium"
           variant="outline"
           ariaLabel="Open search panel"
           className="codehinter-search-btn"
