@@ -158,7 +158,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Redis 7.x from official Redis repository for BullMQ compatibility
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip nginx
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -263,9 +263,13 @@ RUN echo "[supervisord] \n" \
     "stdout_logfile=/dev/stdout \n" \
     "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
+# Configure nginx as reverse proxy: port 80 → NestJS on port 3001
+# nginx starts immediately in preview.sh so Fly.io PM05 check passes within 1s
+RUN printf 'server {\n    listen 80;\n    location / {\n        proxy_pass http://127.0.0.1:3001;\n        proxy_http_version 1.1;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_read_timeout 300s;\n        proxy_connect_timeout 75s;\n    }\n}\n' > /etc/nginx/sites-available/default
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
-    PORT=80 \
+    PORT=3001 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \

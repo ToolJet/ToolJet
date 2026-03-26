@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Start nginx immediately so Fly.io proxy connectivity check passes within 1s
+# Nginx listens on port 80 and proxies to NestJS on port 3001
+nginx
+
 # Fix ownership and permissions for PostgreSQL
 chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
 chmod 0700 /var/lib/postgresql/13/main
