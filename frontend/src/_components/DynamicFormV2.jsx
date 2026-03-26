@@ -815,7 +815,7 @@ const DynamicFormV2 = ({
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
                   {flipComponentDropdown.widget === 'toggle-flip' ? (
-                    <ToggleV2 {...getElementProps(flipComponentDropdown)} />
+                    <ToggleV2 {...getElementProps(flipComponentDropdown)} dataCy={generateCypressDataCy(flipComponentDropdown.label)} />
                   ) : (
                     <Select
                       {...getElementProps(flipComponentDropdown)}
