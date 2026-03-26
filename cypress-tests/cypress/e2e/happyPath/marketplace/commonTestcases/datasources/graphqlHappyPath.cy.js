@@ -123,3 +123,28 @@ describe("GraphQL", () => {
         );
     });
 });
+
+/*
+ * Test Cases for GraphQL
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default graphqlApiOptions (empty url, auth_type "none", ssl "none")
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Base URL (input, placeholder: "https://api.example.com/v1/graphql"),
+ *                       SSL certificate (dropdown, default: "None")
+ *
+ * TC_002: Verify saving data source with valid URL (customTesting - uses Save, not Test Connection)
+ *   - Pre-condition: Data source created via API with default graphqlApiOptions
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid Base URL → Click Save button
+ *   - Expected: Toast message "Data Source Saved" appears
+ *   - Credentials: GraphQl_Url
+ *
+ * TC_003: Verify query execution with valid connection
+ *   - Pre-condition: Data source created via API with valid GraphQl_Url, app created via API, query added via API
+ *   - Steps: Open app → Click on query → Enter GraphQL query in CodeMirror → Click preview button
+ *   - Expected: Toast message "Query (graphql-test-query) completed." appears
+ *   - Query: { allFilms { films { title director } } }
+ *   - Credentials: GraphQl_Url
+ */

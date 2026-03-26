@@ -77,3 +77,26 @@ describe("Amazon SES", () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
     });
 });
+
+/*
+ * Test Cases for Amazon SES
+ * =========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with amazonsesApiOptions
+ *   - Steps: Navigate to data sources page -> Click on amazonses data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Authentication, Access key, Secret key, Region
+ *
+ * TC_002: Verify saving data source with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Click save button
+ *   - Expected: Toast "Data Source Saved" (note: uses save instead of test connection)
+ *   - Credentials: aws_access, aws_secret
+ *
+ * TC_003: Verify UI and save together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Fill valid credentials -> Click save button
+ *   - Expected: UI fields match manifest; save succeeds with toast "Data Source Saved"
+ *   - Note: Amazon SES does not support test connection; verification is done via save only
+ */

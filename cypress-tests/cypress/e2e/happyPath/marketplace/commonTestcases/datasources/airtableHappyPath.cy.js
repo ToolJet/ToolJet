@@ -75,3 +75,28 @@ describe("Airtable", () => {
         verifyDSConnection();
     });
 });
+
+/*
+ * Test Cases for Airtable
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with personal_access_token field
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: personal_access_token
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with personal_access_token field
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses airtableFormConfig valid credentials (personal access token from env)
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with personal_access_token field
+ *   - Steps: Navigate to data sources page → Click on data source → Verify UI → Test invalid token → Test valid credentials
+ *   - Expected:
+ *     - UI elements match manifest specifications
+ *     - Invalid token: Connection fails with "Authentication failed: Invalid personal access token"
+ *     - Valid credentials: Toast message "Test connection verified" appears
+ */

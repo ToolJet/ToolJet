@@ -82,3 +82,25 @@ describe("InfluxDB", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
     });
 });
+
+/*
+ * Test Cases for InfluxDB
+ * =======================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (api_token, host, port, protocol)
+ *   - Steps: Navigate to data sources page -> Click on influxdb data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: API token, Host, Port, Protocol
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: influxdb_token, influxdb_host, influxdb_port
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Fill invalid host -> Test connection
+ *   - Expected: UI fields match manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host"
+ */

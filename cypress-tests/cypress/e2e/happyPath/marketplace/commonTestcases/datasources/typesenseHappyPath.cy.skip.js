@@ -85,3 +85,27 @@ describe("TypeSense", () => {
         verifyDSConnection("failed", "Request failed with HTTP code 401");
     });
 });
+
+/*
+ * Test Cases for TypeSense
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate to data sources page → Click on typesense data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host (input, default "localhost"), Port (input, default "8108"),
+ *     API key (encrypted), Protocol (dropdown, default "HTTP")
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Fill valid credentials → Test connection
+ *   - Expected: Successful connection (verifyDSConnection passes)
+ *   - Credentials: typesense_host, typesense_port, typesense_api_key
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Verify UI → Test with invalid host → Test with invalid API key
+ *   - Expected: UI matches manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host";
+ *     invalid API key returns "Request failed with HTTP code 401"
+ */

@@ -73,3 +73,26 @@ describe("Azure Blob Storage", () => {
         verifyDSConnection("failed", "Invalid URL");
     });
 });
+
+/*
+ * Test Cases for Azure Blob Storage
+ * ==================================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty connection_string
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Connection string (input, placeholder: "Enter connection string")
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with empty connection_string
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: azure_blob_storage_connection_string
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with empty connection_string
+ *   - Steps: Navigate → Verify UI → Fill invalid connection string → Test connection
+ *   - Expected:
+ *     - Invalid Connection string: Connection fails with "Invalid URL"
+ */

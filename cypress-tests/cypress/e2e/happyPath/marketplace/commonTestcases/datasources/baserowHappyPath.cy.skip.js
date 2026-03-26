@@ -83,3 +83,26 @@ describe("Baserow", () => {
             .click();
     });
 });
+
+/*
+ * Test Cases for Baserow
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate to data sources page → Click on baserow data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: API token (encrypted), Host (dropdown, default "Baserow Cloud")
+ *
+ * TC_002: Verify data source save with valid credentials
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Fill valid credentials → Click Save button
+ *   - Expected: Save button is visible and clickable (customTesting - uses Save, not Test Connection)
+ *   - Credentials: baserow API token (via formConfig valid array)
+ *
+ * TC_003: Verify UI and save together
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Verify UI → Fill valid credentials → Click Save button
+ *   - Expected: UI matches manifest; save completes without error
+ *   - Note: No invalid credential tests (customTesting plugin - no Test Connection support)
+ */

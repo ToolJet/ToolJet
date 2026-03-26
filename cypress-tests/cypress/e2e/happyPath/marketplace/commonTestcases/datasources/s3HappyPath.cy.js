@@ -91,3 +91,27 @@ describe("AWS S3", () => {
         verifyDSConnection("failed", "The request signature we calculated does not match the signature you provided.");
     });
 });
+
+/*
+ * Test Cases for AWS S3
+ * =====================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (instance_metadata_credentials, access_key, secret_key, region, endpoint, endpoint_enabled)
+ *   - Steps: Navigate to data sources page -> Click on s3 data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Authentication, Access key, Secret key, Custom Endpoint, Region
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: aws_access, aws_secret
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Test with invalid access key -> Test with invalid secret key
+ *   - Expected: UI fields match manifest; each invalid field produces appropriate error:
+ *     - Invalid access key: "The AWS Access Key Id you provided does not exist in our records."
+ *     - Invalid secret key: "The request signature we calculated does not match the signature you provided."
+ */

@@ -108,3 +108,30 @@ describe("Oracle DB", () => {
         verifyDSConnection("failed", "ORA-12505");
     });
 });
+
+/*
+ * Test Cases for Oracle DB
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate to data sources page → Click on oracledb data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host (input), Port (input), SID / Service name (dropdown),
+ *     Database name (input), SSL (toggle), Username (input), Password (encrypted),
+ *     Client library location (dropdown), Instant client version (dropdown)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Fill valid credentials → Test connection
+ *   - Expected: Successful connection (verifyDSConnection passes)
+ *   - Credentials: oracledb_host, oracledb_port, oracledb_database, oracledb_user, oracledb_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Verify UI → Test invalid host → Test invalid username →
+ *     Test invalid password → Test invalid port → Test invalid database
+ *   - Expected: UI matches manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host";
+ *     invalid username returns "ORA-01017"; invalid password returns "ORA-01017";
+ *     invalid port returns "Failed to connect"; invalid database returns "ORA-12505"
+ */

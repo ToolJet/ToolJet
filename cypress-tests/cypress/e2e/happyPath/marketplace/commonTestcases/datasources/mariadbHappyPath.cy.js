@@ -114,3 +114,30 @@ describe("MariaDB", () => {
         verifyDSConnection("failed", "Unknown database 'nonexistent_database'");
     });
 });
+
+/*
+ * Test Cases for MariaDB
+ * ======================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (host, user, port, database, connectionLimit, ssl_enabled, ssl_certificate, password, ca, cert, key)
+ *   - Steps: Navigate to data sources page -> Click on mariadb data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host, Username, Password, Connection limit, Port, Database, SSL, SSL certificate
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: mariadb_host, mariadb_port, mariadb_database, mariadb_user, mariadb_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Test with invalid host -> Test with invalid username -> Test with invalid password -> Test with invalid port -> Test with invalid database
+ *   - Expected: UI fields match manifest; each invalid field produces appropriate error:
+ *     - Invalid host: "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid username: "Access denied for user 'invalid-username'"
+ *     - Invalid password: "Access denied for user"
+ *     - Invalid port: "connect ETIMEDOUT"
+ *     - Invalid database: "Unknown database 'nonexistent_database'"
+ */

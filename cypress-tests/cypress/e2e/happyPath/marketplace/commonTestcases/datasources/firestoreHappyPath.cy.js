@@ -73,3 +73,26 @@ describe("Firestore", () => {
         verifyDSConnection("failed", "Unexpected token");
     });
 });
+
+/*
+ * Test Cases for Firestore
+ * =========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with null gcp_key (encrypted)
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Private key (encrypted, placeholder: "**************", disabled with edit button)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with null gcp_key
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: firestore_pvt_key (JSON stringified)
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with null gcp_key
+ *   - Steps: Navigate → Verify UI → Fill invalid private key → Test connection
+ *   - Expected:
+ *     - Invalid Private key: Connection fails with "Unexpected token"
+ */

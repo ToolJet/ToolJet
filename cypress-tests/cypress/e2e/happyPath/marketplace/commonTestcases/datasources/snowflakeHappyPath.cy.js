@@ -106,3 +106,26 @@ describe("Snowflake", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND");
     });
 });
+
+/*
+ * Test Cases for Snowflake
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (account, database, schema, warehouse, role, auth_type, username, password)
+ *   - Steps: Navigate to data sources page -> Click on snowflake data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Account, Database, Schema, Warehouse, Role
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Manually fill username and password (non-standard Authentication.jsx fields) -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: snowflake_account, snowflake_database, snowflake_user, snowflake_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Fill invalid account with valid username/password -> Test connection
+ *   - Expected: UI fields match manifest; invalid account returns "getaddrinfo ENOTFOUND"
+ *   - Note: Username and password fields are filled manually outside fillDSConnectionForm due to non-standard data-cy attributes from Authentication.jsx
+ */

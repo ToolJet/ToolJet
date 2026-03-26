@@ -88,3 +88,28 @@ describe("SMTP", () => {
         verifyDSConnection("failed", "Invalid credentials");
     });
 });
+
+/*
+ * Test Cases for SMTP
+ * ===================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (host, port, user, password)
+ *   - Steps: Navigate to data sources page -> Click on smtp data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host, Port, User, Password
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: smtp_host, smtp_port, smtp_user, smtp_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Test with invalid host -> Test with invalid user -> Test with invalid password
+ *   - Expected: UI fields match manifest; each invalid field produces appropriate error:
+ *     - Invalid host: "Invalid credentials"
+ *     - Invalid user: "Invalid credentials"
+ *     - Invalid password: "Invalid credentials"
+ */

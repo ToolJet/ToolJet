@@ -811,3 +811,68 @@ describe("Data source Rest API", () => {
     // });
   });
 });
+
+/*
+ * Test Cases for REST API
+ * ========================
+ *
+ * TC_001: Verify elements on REST API connection form
+ *   - Pre-condition: Data source created via API with auth_type "none"
+ *   - Steps: Navigate to global data sources page → Verify data source category counts → Click on REST API data source → Verify form sections and fields → Cycle through authentication types (None, Basic, Bearer, OAuth 2.0) → Verify authorization code grant type fields → Verify client credentials grant type fields → Verify SSL and general settings → Save data source
+ *   - Expected:
+ *     - Data source list header shows correct count (e.g., "All data sources (47)")
+ *     - Category buttons show correct counts: Commonly used (5), Databases (18/20), APIs (23), Cloud Storages (4)
+ *     - Credentials section, Base URL, Headers, URL Parameters, Body, Cookies sections are visible with key/value inputs, delete buttons, and add more buttons
+ *     - Basic auth: Username and Password fields visible with Edit button
+ *     - Bearer auth: Token field visible
+ *     - OAuth 2.0 Authorization Code: Grant type dropdown, Header prefix (default "Bearer"), Access token URL, Client ID, Client secret, Scope, Add access token to dropdown, Custom query parameters, Custom auth parameters, Access token URL custom headers, Client authentication dropdown (Send as Basic Auth header / Send client credentials in body), Authentication required for all users toggle
+ *     - OAuth 2.0 Client Credentials: All client credentials fields visible
+ *     - SSL certificate dropdown visible
+ *     - General settings: Retry network errors toggle with helper text and documentation link
+ *     - Toast message "Data Source Saved" appears after save
+ *   - Fields verified: data-source-name, credentials section, base URL, headers, URL parameters, body, cookies, authentication type dropdown, basic auth (username, password), bearer auth (token), OAuth 2.0 (grant type, header prefix, access token URL, client ID, client secret, audience, scope, custom headers/params), SSL certificate, retry network errors toggle
+ *
+ * TC_002: Verify connection response for all HTTP methods
+ *   - Pre-condition: Data source created via API with base URL "https://jsonplaceholder.typicode.com", app created via API
+ *   - Steps: Open app → Create and run GET /users query → Create and run POST /users query → Create and run PUT /users/1 query → Create and run PATCH /users/1 query → Create and run GET /users/1 query → Create and run DELETE /users/1 query
+ *   - Expected:
+ *     - GET /users: Response contains id, name, email fields
+ *     - POST /users: Response contains id, name="Test User", email="test@example.com"
+ *     - PUT /users/1: Response contains id=1, name="Fully Updated User", email="updated@example.com"
+ *     - PATCH /users/1: Response contains id=1, email="partially.updated@example.com"
+ *     - GET /users/1: Response contains id=1, email="Sincere@april.biz"
+ *     - DELETE /users/1: Response is empty object
+ *   - Credentials: Base URL configured via API, auth_type=none
+ *
+ * TC_003: Verify response for basic authentication type connection
+ *   - Pre-condition: Data source created via API with base URL "https://httpbin.org", auth_type "basic", username "user", password "pass", app created via API
+ *   - Steps: Create and run GET /basic-auth/user/pass query → Create and run GET /basic-auth/invaliduser/invalidpass query
+ *   - Expected:
+ *     - Valid credentials: Response contains authenticated=true, user="user"
+ *     - Invalid credentials: Query runs (response shape not explicitly validated, implying non-200 status)
+ *   - Credentials: username="user", password="pass"
+ *
+ * TC_004: Verify response for bearer authentication type connection
+ *   - Pre-condition: Data source created via API with base URL "https://httpbin.org", auth_type "bearer", bearer_token "my-token-123", app created via API
+ *   - Steps: Create and run GET /bearer query with valid token → Create second data source with empty bearer token → Create and run GET /bearer query with invalid token
+ *   - Expected:
+ *     - Valid token: Response contains authenticated=true, token="my-token-123"
+ *     - Empty token: Query runs (response shape not explicitly validated, implying non-200 status)
+ *   - Credentials: bearer_token="my-token-123" (valid), bearer_token="" (invalid)
+ *
+ * TC_005: Verify response for authentication code grant type connection (SKIPPED)
+ *   - Pre-condition: Data source created via API with OAuth 2.0 client_credentials grant type targeting Auth0 API
+ *   - Steps: Create app (test body incomplete/skipped)
+ *   - Expected: Skipped due to potential rate limit errors from Auth0
+ *   - Credentials: Auth0 client_id, client_secret, access_token_url, audience
+ *
+ * TC_006: Verify response for content-type variations
+ *   - Pre-condition: App created via API, uses default REST API data source ("restapidefault")
+ *   - Steps: Create and run POST with application/json → Create and run POST with text/plain → Create and run POST with application/x-www-form-urlencoded → Create and run POST with text/xml (SOAP)
+ *   - Expected:
+ *     - JSON: Response contains id, title="foo", body="bar", userId=1
+ *     - Plain text: Response data contains "This is plain text content"
+ *     - URL-encoded form: Response form contains name="Jane", age="30"
+ *     - XML/SOAP: Request succeeds (response shape verified as non-empty)
+ *   - Credentials: No auth (uses default REST API data source)
+ */

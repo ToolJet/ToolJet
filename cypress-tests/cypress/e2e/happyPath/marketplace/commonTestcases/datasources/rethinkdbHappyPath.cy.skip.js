@@ -87,3 +87,27 @@ describe("RethinkDB", () => {
         verifyDSConnection("failed", "connect ECONNREFUSED");
     });
 });
+
+/*
+ * Test Cases for RethinkDB
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate to data sources page → Click on rethinkdb data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Database (input), Host (input), Username (input),
+ *     Password (encrypted), Port (input, default "28015")
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Fill valid credentials → Test connection
+ *   - Expected: Successful connection (verifyDSConnection passes)
+ *   - Credentials: rethinkdb_host, rethinkdb_port, rethinkdb_database, rethinkdb_username, rethinkdb_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Verify UI → Test with invalid host → Test with invalid port
+ *   - Expected: UI matches manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host";
+ *     invalid port returns "connect ECONNREFUSED"
+ */

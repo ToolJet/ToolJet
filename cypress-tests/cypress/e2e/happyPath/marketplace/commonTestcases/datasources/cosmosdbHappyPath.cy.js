@@ -76,3 +76,27 @@ describe("CosmosDB", () => {
         verifyDSConnection("failed", "Invalid URL");
     });
 });
+
+/*
+ * Test Cases for CosmosDB
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty endpoint and null key (encrypted)
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: End point (input, placeholder: "https://your-account.documents.azure.com"),
+ *                       Key (encrypted, placeholder: "**************", disabled with edit button)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with empty endpoint and null key
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: cosmosdb_end_point, cosmosdb_key
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with empty endpoint and null key
+ *   - Steps: Navigate → Verify UI → Fill invalid endpoint → Test connection
+ *   - Expected:
+ *     - Invalid End point: Connection fails with "Invalid URL"
+ */

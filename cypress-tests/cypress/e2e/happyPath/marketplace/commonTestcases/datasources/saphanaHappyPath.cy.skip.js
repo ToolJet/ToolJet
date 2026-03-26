@@ -94,3 +94,29 @@ describe("SAP HANA", () => {
         verifyDSConnection("failed", "authentication failed");
     });
 });
+
+/*
+ * Test Cases for SAP HANA
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate to data sources page → Click on saphana data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host (input, default "localhost"), Port (input, default "443"),
+ *     Database name (input), Username (input), Password (encrypted)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Fill valid credentials → Test connection
+ *   - Expected: Successful connection (verifyDSConnection passes)
+ *   - Credentials: saphana_host, saphana_port, saphana_database, saphana_user, saphana_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with default field values
+ *   - Steps: Navigate → Verify UI → Test invalid host → Test invalid port →
+ *     Test invalid username → Test invalid password
+ *   - Expected: UI matches manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host";
+ *     invalid port returns "Failed to connect"; invalid username returns "authentication failed";
+ *     invalid password returns "authentication failed"
+ */

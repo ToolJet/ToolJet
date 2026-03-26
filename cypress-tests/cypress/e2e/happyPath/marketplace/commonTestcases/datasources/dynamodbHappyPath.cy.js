@@ -87,3 +87,31 @@ describe("DynamoDB", () => {
         verifyDSConnection();
     });
 });
+
+/*
+ * Test Cases for DynamoDB
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty region/access_key, null secret_key, instance_metadata_credentials "iam_access_keys"
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Region (dropdown),
+ *                       Authentication (dropdown, default: "Use IAM Access Keys"),
+ *                       Access key (input, placeholder: "Enter access key"),
+ *                       Secret key (encrypted, placeholder: "**************", disabled with edit button)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with default fields
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: dynamodb_access_key, dynamodb_secret_key (Region: "US West (N. California)")
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with default fields
+ *   - Steps: Navigate → Verify UI → Test invalid access key → Test invalid secret key → Test valid credentials
+ *   - Expected:
+ *     - Invalid Access key: Connection fails with "The security token included in the request is invalid."
+ *     - Invalid Secret key: Connection fails with "The request signature we calculated does not match the signature you provided."
+ *     - Valid credentials: "Test connection verified"
+ */

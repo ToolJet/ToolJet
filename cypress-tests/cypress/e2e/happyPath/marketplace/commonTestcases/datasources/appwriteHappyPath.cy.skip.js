@@ -85,3 +85,26 @@ describe("Appwrite", () => {
         verifyDSConnection("failed", "Missing or unknown project ID");
     });
 });
+
+/*
+ * Test Cases for Appwrite
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate to data sources page → Click on appwrite data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host (input), Project ID (input), Database ID (input), Secret Key (encrypted)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Fill valid credentials → Test connection
+ *   - Expected: Successful connection (verifyDSConnection passes)
+ *   - Credentials: appwrite_host, appwrite_project_id, appwrite_database_id, appwrite_secret_key
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Verify UI → Test with invalid host → Test with invalid secret key
+ *   - Expected: UI matches manifest; invalid host returns "getaddrinfo ENOTFOUND invalid-host";
+ *     invalid secret key returns "Missing or unknown project ID"
+ */

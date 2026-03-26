@@ -91,3 +91,28 @@ describe("Minio", () => {
         verifyDSConnection("failed", "The request signature we calculated does not match");
     });
 });
+
+/*
+ * Test Cases for Minio
+ * ====================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (host, port, ssl_enabled, access_key, secret_key)
+ *   - Steps: Navigate to data sources page -> Click on minio data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host, Port, SSL, Access key, Secret key
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: minio_host, minio_port, minio_accesskey, minio_secretkey
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Test with invalid host -> Test with invalid access key -> Test with invalid secret key
+ *   - Expected: UI fields match manifest; each invalid field produces appropriate error:
+ *     - Invalid host: "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid access key: "does not exist in our records"
+ *     - Invalid secret key: "The request signature we calculated does not match"
+ */

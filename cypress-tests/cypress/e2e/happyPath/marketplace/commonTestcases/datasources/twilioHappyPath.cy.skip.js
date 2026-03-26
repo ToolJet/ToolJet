@@ -84,3 +84,27 @@ describe("Twilio", () => {
             .click();
     });
 });
+
+/*
+ * Test Cases for Twilio
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate to data sources page → Click on twilio data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Auth token (encrypted, hasEyeIcon), Account SID (input),
+ *     Messaging service SID (input)
+ *
+ * TC_002: Verify data source save with valid credentials
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Fill valid credentials → Click Save button
+ *   - Expected: Save button is visible and clickable (customTesting - uses Save, not Test Connection)
+ *   - Credentials: twilio_account_sid, twilio_messaging_service_sid
+ *
+ * TC_003: Verify UI and save together
+ *   - Pre-condition: Data source created via API with empty/null field values
+ *   - Steps: Navigate → Verify UI → Fill valid credentials → Click Save button
+ *   - Expected: UI matches manifest; save completes without error
+ *   - Note: No invalid credential tests (customTesting plugin - no Test Connection support)
+ */

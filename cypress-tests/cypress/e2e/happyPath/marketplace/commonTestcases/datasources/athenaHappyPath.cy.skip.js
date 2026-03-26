@@ -88,3 +88,27 @@ describe("Amazon Athena", () => {
         verifyDSConnection("failed", "The request signature we calculated does not match");
     });
 });
+
+/*
+ * Test Cases for Amazon Athena
+ * ============================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with default options (database, output_location, access_key, secret_key, region)
+ *   - Steps: Navigate to data sources page -> Click on athena data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Database, S3 output location, Access key, Secret key, Region
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Fill valid credentials via fillDSConnectionForm -> Test connection
+ *   - Expected: Toast "Test connection verified"
+ *   - Credentials: amazonathena_DbName, amazonathena_accessKey, amazonathena_secretKey
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API
+ *   - Steps: Navigate -> Verify UI fields -> Test with invalid access key -> Test with invalid secret key
+ *   - Expected: UI fields match manifest; each invalid field produces appropriate error:
+ *     - Invalid access key: "The security token included in the request is invalid"
+ *     - Invalid secret key: "The request signature we calculated does not match"
+ */

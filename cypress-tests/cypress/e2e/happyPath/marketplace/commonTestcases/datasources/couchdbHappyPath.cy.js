@@ -97,3 +97,34 @@ describe("CouchDB", () => {
         verifyDSConnection("failed", "connect ECONNREFUSED");
     });
 });
+
+/*
+ * Test Cases for CouchDB
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with empty username/database/host, null password, port "5984", protocol "http"
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Host (input, no placeholder),
+ *                       Port (input, placeholder: "5984 ", default: "5984"),
+ *                       Username (input, placeholder: "username for couchDB"),
+ *                       Password (encrypted, placeholder: "**************", disabled with edit button),
+ *                       Database name (input, placeholder: "database name"),
+ *                       Protocol (dropdown, default: "HTTP")
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with default fields
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: couchdb_host, couchdb_user, couchdb_password
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with default fields
+ *   - Steps: Navigate → Verify UI → Test invalid host → Test invalid username → Test invalid password → Test invalid port
+ *   - Expected:
+ *     - Invalid Host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid Username: Connection fails with "Response code 401"
+ *     - Invalid Password: Connection fails with "Response code 401"
+ *     - Invalid Port: Connection fails with "connect ECONNREFUSED"
+ */
