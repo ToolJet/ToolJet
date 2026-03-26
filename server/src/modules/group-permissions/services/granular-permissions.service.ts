@@ -24,6 +24,11 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
   ) {}
 
+  async createDsFolderPermission(user: User, createGranularPermissionsDto: CreateGranularPermissionDto) {
+    // Base CE implementation — overridden in EE
+    return await this.create(user, createGranularPermissionsDto);
+  }
+
   async create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto) {
     const organizationId = user.organizationId;
     const { createResourcePermissionObject } = createGranularPermissionsDto;

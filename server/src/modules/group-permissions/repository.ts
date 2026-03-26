@@ -125,6 +125,11 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               folder: true,
             },
           },
+          folderDataSourcesGroupPermission: {
+            groupFolderDataSources: {
+              folder: true,
+            },
+          },
         },
         where: {
           group: {
@@ -178,6 +183,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           appsGroupPermissions: true,
           dataSourcesGroupPermission: true,
           foldersGroupPermissions: true,
+          folderDataSourcesGroupPermission: true,
         },
       });
     }, manager || this.manager);

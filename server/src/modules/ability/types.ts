@@ -23,9 +23,10 @@ export interface UserPermissions {
   appRelease: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
-
   folderCreate: boolean;
   folderDelete: boolean;
+  folderDataSourceCreate: boolean;
+  folderDataSourceDelete: boolean;
   orgConstantCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;

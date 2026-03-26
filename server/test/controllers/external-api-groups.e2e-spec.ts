@@ -45,7 +45,8 @@ async function seedCustomGroup(
     type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
     appCreate: false,
     appDelete: false,
-    folderCRUD: false,
+    folderCreate: false,
+    folderDelete: false,
     orgConstantCRUD: false,
     workflowCreate: false,
     workflowDelete: false,
@@ -239,7 +240,8 @@ describe('External API — Groups endpoints', () => {
     it('updates only the provided workspace permission flags', async () => {
       const group = await seedCustomGroup(organizationId, 'Dev Team', {
         appCreate: false,
-        folderCRUD: true,
+        folderCreate: true,
+        folderDelete: true,
       });
 
       await request(app.getHttpServer())
@@ -252,7 +254,7 @@ describe('External API — Groups endpoints', () => {
       // The provided flag is set
       expect(updated.appCreate).toBe(true);
       // Omitted flag is untouched
-      expect(updated.folderCRUD).toBe(true);
+      expect(updated.folderCreate).toBe(true);
     });
 
     // ---- granularPermissions — app upsert (merge) ----------------------------
@@ -844,7 +846,8 @@ describe('External API — Groups endpoints', () => {
         workflowDelete: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
-        folderCRUD: true,
+        folderCreate: true,
+        folderDelete: true,
         orgConstantCRUD: false,
       });
 

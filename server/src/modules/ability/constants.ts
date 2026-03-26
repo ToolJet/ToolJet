@@ -21,9 +21,10 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   appRelease: false,
   dataSourceCreate: false,
   dataSourceDelete: false,
-
   folderCreate: false,
   folderDelete: false,
+  folderDataSourceCreate: false,
+  folderDataSourceDelete: false,
   orgConstantCRUD: false,
   orgVariableCRUD: false,
   [MODULES.APP]: {

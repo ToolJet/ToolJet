@@ -61,9 +61,10 @@ export class AbilityService extends IAbilityService {
           appRelease: acc.appRelease || group.appRelease,
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
-
           folderCreate: acc.folderCreate || group.folderCreate,
           folderDelete: acc.folderDelete || group.folderDelete,
+          folderDataSourceCreate: acc.folderDataSourceCreate || group.folderDataSourceCreate,
+          folderDataSourceDelete: acc.folderDataSourceDelete || group.folderDataSourceDelete,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,

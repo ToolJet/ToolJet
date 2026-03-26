@@ -15,7 +15,7 @@ export class CreateGranularPermissionDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   groupId: string;
 
   @IsBoolean()
@@ -36,7 +36,7 @@ export class CreateGranularPermissionDto {
   createResourcePermissionObject: CreateResourcePermissionObject<any>;
 }
 
-export class UpdateGranularPermissionDto<T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.FOLDER> {
+export class UpdateGranularPermissionDto<T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.FOLDER | ResourceType.FOLDER_DATA_SOURCE> {
   @IsString()
   @IsOptional()
   name: string;

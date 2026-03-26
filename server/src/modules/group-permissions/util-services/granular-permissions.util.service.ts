@@ -189,7 +189,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     granularPermissions: GranularPermissions,
     createFolderPermissionsObj: CreateResourcePermissionObject<ResourceType.FOLDER>,
     manager: EntityManager
-  ): Promise<void> {
+  ): Promise<FoldersGroupPermissions | void> {
     const { resourcesToAdd, canEditFolder, canEditApps, canViewApps } = createFolderPermissionsObj;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -220,6 +220,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           }))
         );
       }
+
+      return foldersGroupPermissions;
     }, manager);
   }
 

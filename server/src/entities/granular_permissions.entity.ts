@@ -12,6 +12,7 @@ import {
 import { GroupPermissions } from './group_permissions.entity';
 import { AppsGroupPermissions } from './apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from './data_sources_group_permissions.entity';
+import { FolderDataSourcesGroupPermissions } from './folder_data_sources_group_permissions.entity';
 import { FoldersGroupPermissions } from './folders_group_permissions.entity';
 import { ResourceType } from '@modules/group-permissions/constants';
 
@@ -60,4 +61,13 @@ export class GranularPermissions extends BaseEntity {
     onDelete: 'CASCADE',
   })
   foldersGroupPermissions: FoldersGroupPermissions;
+
+  @OneToOne(
+    () => FolderDataSourcesGroupPermissions,
+    (folderDataSourcesGroupPermission) => folderDataSourcesGroupPermission.granularPermissions,
+    {
+      onDelete: 'CASCADE',
+    }
+  )
+  folderDataSourcesGroupPermission: FolderDataSourcesGroupPermissions;
 }
