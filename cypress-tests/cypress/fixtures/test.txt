@@ -1,0 +1,2 @@
+This is a test text file for Cypress testing purposes.
+It contains sample content to verify file upload functionality.
