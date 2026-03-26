@@ -132,11 +132,6 @@ async function bootstrap() {
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
 
-    // Initialize app context before running DB-backed startup tasks.
-    appLogger.log('Initializing application context...'); // TODO: needs to be reviewed
-    await app.init();
-    appLogger.log('✅ Application context initialized');
-
     await initializeEnvConfigRegistry(app, appLogger);
 
     // Initialize Sentry

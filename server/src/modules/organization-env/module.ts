@@ -13,7 +13,7 @@ export class OrganizationEnvModule extends SubModule {
     }
 
     const { OrganizationEnvRegistryService } = await this.getProviders(configs, 'organization-env', [
-      'organization-env-registry.service',
+      'service',
     ]);
 
     this.cachedModule = {

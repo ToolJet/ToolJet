@@ -63,7 +63,7 @@ import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/organization-env-registry.service';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(

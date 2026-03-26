@@ -2,7 +2,7 @@ import { ConflictException, Injectable, Logger, NotAcceptableException, NotImple
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, Transaction } from 'typeorm';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/organizations/dto';
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
@@ -18,12 +18,11 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { CustomDomainRepository } from '@modules/custom-domains/repository';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/organization-env-registry.service';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
-  private readonly logger = new Logger(OrganizationsService.name);
-
   constructor(
     protected organizationRepository: OrganizationRepository,
     protected readonly licenseOrganizationService: LicenseOrganizationService,
@@ -123,7 +122,7 @@ export class OrganizationsService implements IOrganizationsService {
     });
 
     if (shouldReloadEnvConfigs) {
-      await this.reloadEnvConfigs('workspace-slug-update');
+      await this.reloadEnvConfigs(user.organizationId);
     }
 
     return;
@@ -205,15 +204,13 @@ export class OrganizationsService implements IOrganizationsService {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
 
-  protected async reloadEnvConfigs(trigger: string): Promise<void> {
+  protected async reloadEnvConfigs(organizationId: string): Promise<void> {
     if (!this.organizationEnvRegistryService) return;
 
     try {
-      await this.organizationEnvRegistryService.reload();
-      this.logger.debug(`Environment config registry reloaded after ${trigger}`);
+      await this.organizationEnvRegistryService.reload(organizationId);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to reload environment config registry after ${trigger}: ${errorMessage}`);
     }
   }
 }

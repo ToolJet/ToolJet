@@ -48,7 +48,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/organization-env-registry.service';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
 @Injectable()

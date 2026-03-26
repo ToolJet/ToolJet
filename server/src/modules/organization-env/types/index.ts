@@ -23,3 +23,6 @@ export interface GitLabEnvConfig {
   gitlabProjectAccessToken?: string;
   gitlabEnterpriseUrl?: string;
 }
+
+export type EnvProviderState = { isEnabled: boolean; isFinalized: boolean };
+export type ProviderSummary = { mapped: boolean; ready: boolean };

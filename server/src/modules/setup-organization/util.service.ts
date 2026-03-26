@@ -19,7 +19,7 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
 import { OrganizationInputs } from './types/organization-inputs';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/organization-env-registry.service';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {

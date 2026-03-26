@@ -47,7 +47,7 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'use_env_config', type: 'boolean', default: false })
   useEnvConfig: boolean;
 
-  @Column({ name: 'env_git_provider', type: 'varchar', nullable: true })
+  // Not persisted — populated at runtime from OrganizationEnvRegistryService
   envGitProvider: GITConnectionType | null;
 
   @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
