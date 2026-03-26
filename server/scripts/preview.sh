@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-# Start nginx immediately so Fly.io proxy connectivity check passes within 1s
-# Nginx listens on port 80 and proxies to NestJS on port 3001
-nginx
-
 # Fix ownership and permissions for PostgreSQL
 chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
 chmod 0700 /var/lib/postgresql/13/main
@@ -35,7 +31,7 @@ done
 echo "✓ Redis is ready!"
 
 # Export the PORT variable to be used by the application
-export PORT=${PORT:-80}
+export PORT=${PORT:-3000}
 
 # Start Supervisor (manages PostgREST and ToolJet)
 exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
