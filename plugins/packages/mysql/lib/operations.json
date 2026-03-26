@@ -79,24 +79,11 @@
         ]
       },
       "list_rows": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -111,7 +98,7 @@
           "parse_key": "list_rows.where_filters",
           "description": "Filter conditions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "order_filters": {
           "label": "Sort",
@@ -120,7 +107,7 @@
           "parse_key": "list_rows.order_filters",
           "description": "Sort conditions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "aggregates": {
           "label": "Aggregate",
@@ -129,7 +116,7 @@
           "parse_key": "list_rows.aggregates",
           "description": "Aggregate functions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "group_by": {
           "label": "Group by",
@@ -138,7 +125,7 @@
           "parse_key": "list_rows.group_by",
           "description": "Group by columns for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "limit": {
           "label": "Limit",
@@ -162,24 +149,11 @@
         }
       },
       "create_row": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -194,28 +168,15 @@
           "parse_key": "create_row.columns",
           "description": "Column name and value pairs to insert",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         }
       },
       "update_rows": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -230,7 +191,7 @@
           "parse_key": "update_rows.where_filters",
           "description": "Filter conditions to target rows for update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "columns": {
           "label": "Columns",
@@ -239,7 +200,7 @@
           "parse_key": "update_rows.columns",
           "description": "Column name and value pairs to update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "allow_multiple_updates": {
           "label": "Allow this query to update multiple rows",
@@ -255,24 +216,11 @@
         }
       },
       "upsert_rows": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -297,7 +245,7 @@
           "parse_key": "upsert_rows.columns",
           "description": "Column name and value pairs to insert or update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "allow_multiple_updates": {
           "label": "Allow this query to update multiple rows",
@@ -313,24 +261,11 @@
         }
       },
       "delete_rows": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -345,7 +280,7 @@
           "parse_key": "delete_rows.where_filters",
           "description": "Filter conditions to target rows for deletion",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["schema", "table"]
+          "columnSelectorDependsOn": ["table"]
         },
         "limit": {
           "label": "Limit",
@@ -365,24 +300,11 @@
         }
       },
       "bulk_insert": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -401,24 +323,11 @@
         }
       },
       "bulk_update_pkey": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
@@ -447,24 +356,11 @@
         }
       },
       "bulk_upsert_pkey": {
-        "schema": {
-          "label": "Schema",
-          "key": "schema",
-          "type": "dynamic-selector",
-          "fxEnabled": true,
-          "operation": {
-            "invokeMethod": "listSchemas",
-            "label": "Fetch Schemas"
-          },
-          "description": "Select the database schema",
-          "placeholder": "Select schema"
-        },
         "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
           "fxEnabled": true,
-          "dependsOn": ["schema"],
           "operation": {
             "invokeMethod": "listTables",
             "label": "Fetch Tables"

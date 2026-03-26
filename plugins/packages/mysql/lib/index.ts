@@ -170,7 +170,7 @@ export default class MysqlQueryService implements QueryService {
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
-    const { operation, table, schema } = queryOptions;
+    const { operation, table } = queryOptions;
     const queryBuilder = createQueryBuilder('mysql');
 
     switch (operation) {
@@ -178,7 +178,6 @@ export default class MysqlQueryService implements QueryService {
         const { list_rows, limit, offset } = queryOptions;
         const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
         const { query, params } = queryBuilder.listRows(table, {
-          schema,
           where_filters,
           order_filters,
           aggregates,
@@ -192,7 +191,7 @@ export default class MysqlQueryService implements QueryService {
 
       case 'create_row': {
         const { columns } = queryOptions.create_row || {};
-        const { query, params } = queryBuilder.createRow(table, schema, columns) as {
+        const { query, params } = queryBuilder.createRow(table, undefined, columns) as {
           query: string;
           params: unknown[];
         };
@@ -200,7 +199,7 @@ export default class MysqlQueryService implements QueryService {
           knexInstance,
           queryBuilder,
           table,
-          schema,
+          undefined,
           columns,
           query,
           params
@@ -215,12 +214,11 @@ export default class MysqlQueryService implements QueryService {
         if (!hasAtLeastOneFilter) {
           throw new Error('At least one filter condition is required.');
         }
-        const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
+        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
           query: string;
           params: unknown[];
         };
         const { query: selectQuery, params: selectParams } = queryBuilder.listRows(table, {
-          schema,
           where_filters,
         }) as { query: string; params: unknown[] };
         const rows = await this.executeWriteQuery(knexInstance, query, params, selectQuery, selectParams, {
@@ -234,7 +232,7 @@ export default class MysqlQueryService implements QueryService {
       case 'upsert_rows': {
         const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
-        const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
+        const { query, params } = queryBuilder.upsertRows(table, { primary_key_columns, columns }) as {
           query: string;
           params: unknown[];
         };
@@ -254,7 +252,6 @@ export default class MysqlQueryService implements QueryService {
             .filter((entry): entry is [string, any] => entry !== null)
         );
         const { query: selectQuery, params: selectParams } = queryBuilder.listRows(table, {
-          schema,
           where_filters: whereFiltersForSelect,
         }) as { query: string; params: unknown[] };
         const rows = await this.executeWriteQuery(knexInstance, query, params, selectQuery, selectParams, {
@@ -275,7 +272,7 @@ export default class MysqlQueryService implements QueryService {
             'Delete requires at least one filter condition or a limit to prevent deleting all rows unintentionally.'
           );
         }
-        const { query, params } = queryBuilder.deleteRows(table, { schema, where_filters, limit }) as {
+        const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
           query: string;
           params: unknown[];
         };
@@ -291,7 +288,7 @@ export default class MysqlQueryService implements QueryService {
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
+        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
           query: string;
           params: unknown[];
         };
@@ -302,7 +299,6 @@ export default class MysqlQueryService implements QueryService {
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          schema,
           primary_key: primary_key_columns,
           rows_update: records,
         }) as { queries: { query: string; params: unknown[] }[] };
@@ -313,7 +309,6 @@ export default class MysqlQueryService implements QueryService {
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
         const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          schema,
           primary_key: primary_key_columns,
           row_upsert: records,
         }) as { queries: { query: string; params: unknown[] }[] };
@@ -765,38 +760,18 @@ export default class MysqlQueryService implements QueryService {
     }
   }
 
-  private async _fetchDatabases(sourceOptions: SourceOptions): Promise<Array<{ value: string; label: string }>> {
-    let knexInstance;
-    try {
-      knexInstance = await this.buildConnection(sourceOptions);
-      const result = await knexInstance.raw(
-        `SELECT schema_name FROM information_schema.schemata
-         WHERE schema_name NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys')
-         ORDER BY schema_name`
-      );
-      const rows = result[0] || [];
-      return rows.map((row: any) => ({ value: row.schema_name, label: row.schema_name }));
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      throw new QueryError('Could not fetch databases', errorMessage, {});
-    } finally {
-      if (knexInstance) await knexInstance.destroy();
-    }
-  }
-
   private async _fetchTablesForDatabase(
-    sourceOptions: SourceOptions,
-    schema: string
+    sourceOptions: SourceOptions
   ): Promise<Array<{ value: string; label: string }>> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
       const result = await knexInstance.raw(
-        `SELECT table_name FROM information_schema.tables
-         WHERE table_schema = ? AND table_type = 'BASE TABLE'
-         ORDER BY table_name`,
-        [schema]
+        `SELECT table_name as table_name FROM information_schema.tables
+         WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'
+         ORDER BY table_name`
       );
+
       const rows = result[0] || [];
       return rows.map((row: any) => ({ value: row.table_name, label: row.table_name }));
     } catch (err) {
@@ -809,17 +784,16 @@ export default class MysqlQueryService implements QueryService {
 
   private async _fetchColumnsForTable(
     sourceOptions: SourceOptions,
-    schema: string,
     table: string
   ): Promise<Array<{ value: string; label: string }>> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
       const result = await knexInstance.raw(
-        `SELECT column_name FROM information_schema.columns
-         WHERE table_schema = ? AND table_name = ?
+        `SELECT column_name as column_name FROM information_schema.columns
+         WHERE table_schema = DATABASE() AND table_name = ?
          ORDER BY ordinal_position`,
-        [schema, table]
+        [table]
       );
       const rows = result[0] || [];
       return rows.map((row: any) => ({ value: row.column_name, label: row.column_name }));
@@ -842,28 +816,24 @@ export default class MysqlQueryService implements QueryService {
         return await this.listTables(sourceOptions);
       }
 
-      if (methodName === 'listSchemas') {
-        const schemas = await this._fetchDatabases(sourceOptions);
-        return { status: 'ok', data: schemas };
-      }
-
       if (methodName === 'listTables') {
-        const schema = args?.values?.schema || '';
-        if (!schema) return { status: 'ok', data: [] };
-        const tables = await this._fetchTablesForDatabase(sourceOptions, schema);
+        if (!sourceOptions.database)
+          throw new QueryError('Database is required', 'No database specified in source options', {});
+        const tables = await this._fetchTablesForDatabase(sourceOptions);
         return { status: 'ok', data: tables };
       }
 
       if (methodName === 'listColumns') {
-        const schema = args?.values?.schema || '';
+        if (!sourceOptions.database)
+          throw new QueryError('Database is required', 'No database specified in source options', {});
         const table = args?.values?.table || '';
-        if (!schema || !table) return { status: 'ok', data: [] };
-        const columns = await this._fetchColumnsForTable(sourceOptions, schema, table);
+        if (!table) return { status: 'ok', data: [] };
+        const columns = await this._fetchColumnsForTable(sourceOptions, table);
         return { status: 'ok', data: columns };
       }
 
       throw new QueryError('Method not found', `Method ${methodName} is not supported for MySQL plugin`, {
-        availableMethods: ['getTables', 'listSchemas', 'listTables', 'listColumns'],
+        availableMethods: ['getTables', 'listTables', 'listColumns'],
       });
     } catch (err) {
       if (err instanceof QueryError) {
