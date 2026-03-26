@@ -17,16 +17,12 @@ import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
-const RenderNavItem = ({
-  item,
-  isSelected,
-  onItemClick,
-  displayStyle,
-}) => {
+const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
   const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-  const isDisabled = typeof item.disable === 'object'
-    ? item.disable.value === '{{true}}' || item.disable.value === true
-    : item.disable === true;
+  const isDisabled =
+    typeof item.disable === 'object'
+      ? item.disable.value === '{{true}}' || item.disable.value === true
+      : item.disable === true;
 
   if (!isVisible) return null;
 
@@ -71,21 +67,14 @@ const RenderNavItem = ({
 };
 
 // Render nav group (collapsible) - uses page-group-wrapper class like page navigation
-const RenderNavGroup = ({
-  group,
-  selectedItemId,
-  onItemClick,
-  styles,
-  displayStyle,
-  orientation,
-  darkMode,
-}) => {
+const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displayStyle, orientation, darkMode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
-  const isDisabled = typeof group.disable === 'object'
-    ? group.disable.value === '{{true}}' || group.disable.value === true
-    : group.disable === true;
+  const isDisabled =
+    typeof group.disable === 'object'
+      ? group.disable.value === '{{true}}' || group.disable.value === true
+      : group.disable === true;
 
   if (!isVisible) return null;
 
@@ -93,6 +82,7 @@ const RenderNavGroup = ({
   const showLabel = displayStyle !== 'iconOnly';
 
   // Deduplicate children by ID
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const deduplicatedChildren = useMemo(() => {
     if (!group.children) return [];
     const seenIds = new Set();
@@ -120,11 +110,7 @@ const RenderNavGroup = ({
           />
         </div>
       )}
-      {showLabel && (
-        <div className="page-name">
-          {group.label}
-        </div>
-      )}
+      {showLabel && <div className="page-name">{group.label}</div>}
     </div>
   );
 
@@ -168,11 +154,7 @@ const RenderNavGroup = ({
 
   // For vertical orientation, use accordion-style expansion
   return (
-    <div
-      key={group.id}
-      className={cx('accordion-item', { 'dark-theme': darkMode })}
-      data-cy={`nav-group-${group.id}`}
-    >
+    <div key={group.id} className={cx('accordion-item', { 'dark-theme': darkMode })} data-cy={`nav-group-${group.id}`}>
       <button
         className={cx('tw-group page-group-wrapper', {
           'page-group-selected': hasSelectedChild,
@@ -393,15 +375,18 @@ export const Navigation = function Navigation(props) {
   }, []);
 
   // Nav item styles (CSS custom properties) - matches page navigation computedStyles
-  const navItemStyles = useMemo(() => ({
-    '--nav-item-label-color': unselectedTextColor || 'var(--text-placeholder, #6A727C)',
-    '--nav-item-icon-color': styles.unselectedIconColor || 'var(--cc-default-icon, #6A727C)',
-    '--selected-nav-item-label-color': styles.selectedTextColor || 'var(--cc-primary-text, #1B1F24)',
-    '--selected-nav-item-icon-color': styles.selectedIconColor || 'var(--cc-default-icon, #6A727C)',
-    '--hovered-nav-item-pill-bg': hoverPillBackgroundColor || 'var(--cc-surface2-surface, #F6F8FA)',
-    '--selected-nav-item-pill-bg': styles.selectedPillBackgroundColor || 'var(--cc-appBackground-surface, #F6F6F6)',
-    '--nav-item-pill-radius': `${pillBorderRadius}px`,
-  }), [unselectedTextColor, styles, hoverPillBackgroundColor, pillBorderRadius]);
+  const navItemStyles = useMemo(
+    () => ({
+      '--nav-item-label-color': unselectedTextColor || 'var(--text-placeholder, #6A727C)',
+      '--nav-item-icon-color': styles.unselectedIconColor || 'var(--cc-default-icon, #6A727C)',
+      '--selected-nav-item-label-color': styles.selectedTextColor || 'var(--cc-primary-text, #1B1F24)',
+      '--selected-nav-item-icon-color': styles.selectedIconColor || 'var(--cc-default-icon, #6A727C)',
+      '--hovered-nav-item-pill-bg': hoverPillBackgroundColor || 'var(--cc-surface2-surface, #F6F8FA)',
+      '--selected-nav-item-pill-bg': styles.selectedPillBackgroundColor || 'var(--cc-appBackground-surface, #F6F6F6)',
+      '--nav-item-pill-radius': `${pillBorderRadius}px`,
+    }),
+    [unselectedTextColor, styles, hoverPillBackgroundColor, pillBorderRadius]
+  );
 
   // Map alignment values to CSS flex values
   const mapAlignment = (value) => {
@@ -411,11 +396,12 @@ export const Navigation = function Navigation(props) {
 
   // Map alignment values to Tailwind justify/align classes (needed because radix NavigationMenuList
   // uses tw-justify-center internally, and tailwind-merge in cn() resolves class conflicts)
-  const justifyTwClass = {
-    left: 'tw-justify-start',
-    center: 'tw-justify-center',
-    right: 'tw-justify-end',
-  }[horizontalAlignment] || 'tw-justify-start';
+  const justifyTwClass =
+    {
+      left: 'tw-justify-start',
+      center: 'tw-justify-center',
+      right: 'tw-justify-end',
+    }[horizontalAlignment] || 'tw-justify-start';
 
   // In viewer mode, the canvasWidth state can be inflated beyond the actual #real-canvas width
   // (by the sidebar effect in AppCanvas), causing gridWidth and widget widths to be too large.
@@ -470,7 +456,16 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, verticalAlignment, viewerMaxWidth]);
+  }, [
+    exposedVariablesTemporaryState.isVisible,
+    orientation,
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    padding,
+    verticalAlignment,
+    viewerMaxWidth,
+  ]);
 
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {
@@ -493,8 +488,15 @@ export const Navigation = function Navigation(props) {
   const renderContent = () => {
     if (orientation === 'horizontal') {
       return (
-        <NavigationMenu viewport={false} className={`navigation-horizontal-menu ${justifyTwClass}`} style={{ flex: 'none' }}>
-          <NavigationMenuList className={`navigation-horizontal-list ${justifyTwClass}`} style={{ ...navItemStyles, flex: 'none' }}>
+        <NavigationMenu
+          viewport={false}
+          className={`navigation-horizontal-menu ${justifyTwClass}`}
+          style={{ flex: 'none' }}
+        >
+          <NavigationMenuList
+            className={`navigation-horizontal-list ${justifyTwClass}`}
+            style={{ ...navItemStyles, flex: 'none' }}
+          >
             {links.visible.map((item) => {
               if (item.isGroup) {
                 return (
@@ -646,7 +648,9 @@ export const Navigation = function Navigation(props) {
               key={`measure-${item.id}`}
               data-id={item.id}
               style={{
-                padding: `0px ${item.isGroup ? '30px' : '10px'} 0px ${displayStyle === 'textAndIcon' ? '32px' : '10px'}`,
+                padding: `0px ${item.isGroup ? '30px' : '10px'} 0px ${
+                  displayStyle === 'textAndIcon' ? '32px' : '10px'
+                }`,
                 fontWeight: 500,
               }}
             >

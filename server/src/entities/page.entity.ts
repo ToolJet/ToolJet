@@ -22,6 +22,7 @@ export enum PageType {
   GROUP = 'group',
   URL = 'url',
   APP = 'app',
+  CUSTOM = 'custom',
 }
 
 @Entity({ name: 'pages' })
