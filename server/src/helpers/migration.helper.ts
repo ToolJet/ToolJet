@@ -217,8 +217,7 @@ export const deleteAppHistoryForStructuralMigration = async (
         [appVersionIds, batchSize]
       );
 
-      // result.rowCount is the pg driver's row count for DML statements
-      const deleted: number = result.rowCount ?? 0;
+      const deleted: number = result[1] ?? 0;
       if (deleted === 0) break;
 
       totalDeleted += deleted;
