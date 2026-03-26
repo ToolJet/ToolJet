@@ -1,6 +1,7 @@
 import { gitSyncService } from '@/_services';
 import { setActiveBranch } from '@/_helpers/active-branch';
 import useStore from '@/AppBuilder/_stores/store';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const initialState = {
   currentBranch: null,
@@ -36,9 +37,28 @@ export const createBranchSlice = (set, get) => ({
 
       let defaultBranch = get().currentBranch;
       if (isOnBranch) {
-        const matchingBranch = branches.find((b) => b.name === selectedVersion.name);
+        // Branch-type versions use UUID names — match by branchId first, name as fallback.
+        const versionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
+        const matchingBranch =
+          (versionBranchId ? branches.find((b) => b.id === versionBranchId) : null) ||
+          branches.find((b) => b.name === selectedVersion.name);
         if (matchingBranch) {
           defaultBranch = matchingBranch;
+          if (matchingBranch.id) {
+            // matchingBranch already has a workspace branch UUID — persist directly.
+            setActiveBranch(matchingBranch);
+          } else if (versionBranchId) {
+            // Branches from gitSyncService.getAllBranches don't carry the workspace branch UUID.
+            // Calling setActiveBranch with a branch that has no id stores { id: undefined }
+            // in localStorage, which breaks getActiveBranchId() for all subsequent API calls.
+            // Instead, look up the proper workspace branch from the workspace store.
+            const wsBranch = useWorkspaceBranchesStore.getState().branches?.find((b) => b.id === versionBranchId);
+            if (wsBranch) {
+              setActiveBranch(wsBranch);
+            }
+            // If workspace store hasn't loaded yet, leave localStorage unchanged —
+            // workspaceBranchesStore.initialize() will set it correctly when it completes.
+          }
         } else if (!defaultBranch && branches.length) {
           defaultBranch =
             branches.find((b) => b.name === 'main') || branches.find((b) => b.name === 'master') || branches[0];

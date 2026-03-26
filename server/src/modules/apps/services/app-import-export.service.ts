@@ -662,7 +662,6 @@ export class AppImportExportService {
     const newDataSourceIds = Object.values(resourceMapping.dataSourceMapping);
     const newDsoIds = Object.values(resourceMapping.dataSourceOptionsMapping);
     const newLayoutIds = Object.values(resourceMapping.layoutMapping);
-    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
 
     // Pages
     if (newPageIds.length > 0) {
@@ -736,22 +735,10 @@ export class AppImportExportService {
       }
     }
 
-    if (appVersionIds.length > 0) {
-      const appVersions = await manager
-        .createQueryBuilder(AppVersion, 'av')
-        .where('av.id IN(:...avIds)', { avIds: appVersionIds })
-        .select(['av.id'])
-        .getMany();
-
-      const toUpdateVersions = appVersions.map((av) => {
-        this.setCoRelationId(av, resourceMapping.appVersionMapping);
-        return av;
-      });
-
-      if (!isEmpty(toUpdateVersions)) {
-        await manager.save(toUpdateVersions);
-      }
-    }
+    // AppVersion.co_relation_id is intentionally NOT updated here.
+    // It is set at creation time to importedApp.co_relation_id (the app's stable cross-workspace
+    // identifier). Using the old source version UUID as the stable identity would be wrong —
+    // all versions of the same app must share the app's co_relation_id.
   }
 
   async updateEntityReferencesForImportedApp(
@@ -1029,7 +1016,8 @@ export class AppImportExportService {
       importingComponents,
       importingEvents,
       tooljetVersion,
-      moduleResourceMappings
+      moduleResourceMappings,
+      branchId
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1263,7 +1251,8 @@ export class AppImportExportService {
     importingComponents: Component[],
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
-    moduleResourceMappings?: any
+    moduleResourceMappings?: any,
+    branchId?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1380,10 +1369,10 @@ export class AppImportExportService {
           );
         }
 
-        // For newly created data sources, create branch-aware DSV so workspace
-        // git sync recognizes this DS on the active branch instead of creating a duplicate.
-        if (!this.isExistingDataSource(dataSourceForAppVersion) && !isDefaultDatasource) {
-          await this.createBranchAwareDsvForNewDataSource(manager, dataSourceForAppVersion, user.organizationId);
+        // Ensure branch-scoped DSV exists so the DS appears on the global DS page
+        // for the active branch. This handles both newly created and existing DS.
+        if (!isDefaultDatasource) {
+          await this.ensureBranchDsvForDataSource(manager, dataSourceForAppVersion, user.organizationId, branchId);
         }
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
@@ -2012,7 +2001,7 @@ export class AppImportExportService {
 
         // Set co_relation_id so workspace git sync can identify this DS.
         // Use the imported id (source's co_relation_id) to maintain identity across branches.
-        newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+        newDataSource.co_relation_id = dataSource.id || (null as any);
         await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
         return newDataSource;
@@ -2032,7 +2021,7 @@ export class AppImportExportService {
 
       // Set co_relation_id so workspace git sync can identify this DS.
       // Use the imported id (source's co_relation_id) to maintain identity across branches.
-      newDataSource.co_relation_id = dataSource.id || newDataSource.id;
+      newDataSource.co_relation_id = dataSource.id || (null as any);
       await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
       return newDataSource;
@@ -2050,23 +2039,26 @@ export class AppImportExportService {
    * so that workspace git sync recognizes it on the active branch.
    * Copies options from the default DSV to the branch DSV.
    */
-  private async createBranchAwareDsvForNewDataSource(
+  private async ensureBranchDsvForDataSource(
     manager: EntityManager,
     dataSource: DataSource,
-    organizationId: string
+    organizationId: string,
+    branchId?: string
   ): Promise<void> {
-    // Only create branch DSV if workspace branching is configured
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch) return;
-
-    const branchId = defaultBranch.id;
+    // Resolve target branch: use explicit branchId, or fall back to default branch
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      if (!defaultBranch) return;
+      targetBranchId = defaultBranch.id;
+    }
 
     // Check if a branch-specific DSV already exists
     const existingBranchDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, branchId },
+      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
     });
     if (existingBranchDsv) return;
 
@@ -2080,7 +2072,7 @@ export class AppImportExportService {
     const branchDsv = await manager.save(
       manager.create(DataSourceVersion, {
         dataSourceId: dataSource.id,
-        branchId,
+        branchId: targetBranchId,
         name: defaultDsv.name,
         isActive: true,
       })
@@ -2445,7 +2437,7 @@ export class AppImportExportService {
           versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: appVersion.id,
+          co_relation_id: importedApp.co_relation_id || null,
           branchId,
         });
       }

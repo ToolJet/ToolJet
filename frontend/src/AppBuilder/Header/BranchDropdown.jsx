@@ -199,16 +199,28 @@ export function BranchDropdown({ appId, organizationId }) {
     if (initialBranchSwitchDone.current) return;
     if (!branchingEnabled || !appId) return;
     if (!developmentVersions?.length) return;
-    // Already on a branch version — nothing to do
-    if (selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch') return;
+
+    const isBranchTypeVersionForSwitch =
+      selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+
+    // Already on a branch version — no version switch needed, but sync workspace branch context
+    // so the header shows the correct branch name and localStorage is up to date.
+    if (isBranchTypeVersionForSwitch) {
+      const versionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
+      // allBranches from gitSyncService.getAllBranches has no workspace branch UUID field,
+      // so we compare workspaceActiveBranch.id against versionBranchId directly.
+      if (versionBranchId && workspaceActiveBranch?.id !== versionBranchId) {
+        initialBranchSwitchDone.current = true;
+        useWorkspaceBranchesStore.getState().actions.switchBranch(versionBranchId);
+      }
+      return;
+    }
 
     const defaultBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
     const currentVersionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
 
     // Get all branch-type versions
-    const branchVersions = developmentVersions.filter(
-      (v) => v.versionType === 'branch' || v.version_type === 'branch'
-    );
+    const branchVersions = developmentVersions.filter((v) => v.versionType === 'branch' || v.version_type === 'branch');
 
     if (branchVersions.length === 0) return;
 
@@ -219,9 +231,7 @@ export function BranchDropdown({ appId, organizationId }) {
     let targetBranchName = null;
 
     if (currentVersionBranchId) {
-      const matchByBranchId = branchVersions.find(
-        (v) => (v.branchId || v.branch_id) === currentVersionBranchId
-      );
+      const matchByBranchId = branchVersions.find((v) => (v.branchId || v.branch_id) === currentVersionBranchId);
       if (matchByBranchId) {
         targetBranchName = matchByBranchId.name;
       }
@@ -237,7 +247,8 @@ export function BranchDropdown({ appId, organizationId }) {
     // Only fall back to the single branch version when the workspace active branch is
     // a feature branch (non-default). On the default/main workspace branch the user is
     // intentionally on the canonical version — do not auto-switch.
-    const isOnDefaultWorkspaceBranch = !workspaceActiveBranch || workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault;
+    const isOnDefaultWorkspaceBranch =
+      !workspaceActiveBranch || workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault;
     if (!targetBranchName && branchVersions.length === 1 && !isOnDefaultWorkspaceBranch) {
       targetBranchName = branchVersions[0].name;
     }
@@ -247,11 +258,9 @@ export function BranchDropdown({ appId, organizationId }) {
     }
 
     initialBranchSwitchDone.current = true;
-    switchBranch(appId, targetBranchName).catch((err) =>
-      console.error('Branch switch failed:', err?.message || err)
-    );
+    switchBranch(appId, targetBranchName).catch((err) => console.error('Branch switch failed:', err?.message || err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchingEnabled, appId, workspaceActiveBranch, developmentVersions, selectedVersion, orgGit]);
+  }, [branchingEnabled, appId, workspaceActiveBranch, developmentVersions, selectedVersion, orgGit, allBranches]);
 
   // Manual fetch last commit function
   const fetchLastCommit = async () => {
@@ -368,14 +377,19 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Check if current branch is the default branch
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  // Use workspace branch name for platform git sync, otherwise version/branch name for per-app branching
-  const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
+  // Branch-type versions have UUID names (intentional) — never use them as branch display name.
+  // Use workspace branch name first, then AppBuilder currentBranch, then version name only for non-branch versions.
+  const isBranchTypeVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+  const currentBranchName =
+    workspaceActiveBranch?.name || currentBranch?.name || (isBranchTypeVersion ? undefined : selectedVersion?.name);
 
   // Determine if on default branch:
   // For platform git sync: use workspace branch context (all versions have versionType='version')
   // For per-app branching: fall back to versionType check
   const isOnDefaultBranch = workspaceActiveBranch
-    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
   // Display name: use workspace branch name if available, otherwise derive from version/branch state
