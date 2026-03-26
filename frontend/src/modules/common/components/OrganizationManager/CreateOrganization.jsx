@@ -4,7 +4,8 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
-import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
+import { appendWorkspaceId, getBaseHostURL, isCustomDomain } from '@/_helpers/routes';
+import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
 import _ from 'lodash';
 import { FormWrapper } from '@/_components/FormWrapper';
 import { toast } from 'react-hot-toast';
@@ -22,6 +23,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
   const isSlugSet = useRef(false); // Flag to track if slug has been initially set
   const sluginput = useRef('');
+  const redirectWithSessionTransfer = useSessionTransferRedirect('createWorkspace');
   const createOrganization = () => {
     let emptyError = false;
     [name, slug].map((field, index) => {
@@ -53,8 +55,16 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           closeModal();
           setTimeout(() => {
             const newPath = appendWorkspaceId(slugValue, location.pathname, true);
-            window.history.replaceState(null, null, newPath);
-            window.location.reload();
+            if (isCustomDomain()) {
+              redirectWithSessionTransfer(
+                getBaseHostURL(),
+                newPath,
+                data?.organization_id || data?.current_organization_id
+              );
+            } else {
+              window.history.replaceState(null, null, newPath);
+              window.location.reload();
+            }
           }, 950);
         },
         (error) => {
@@ -286,7 +296,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               <label data-cy="workspace-link-label">Workspace link</label>
               <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
                 {!slugProgress ? (
-                  `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
+                  `${getBaseHostURL()}/${slug?.value || '<workspace-slug>'}`
                 ) : (
                   <div className="d-flex gap-2">
                     <div class="spinner-border text-secondary workspace-spinner" role="status">

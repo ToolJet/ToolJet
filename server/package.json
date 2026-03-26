@@ -141,7 +141,7 @@
     "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^8.0.2",
     "openid-client": "^5.4.0",
     "otpauth": "^9.4.1",
     "passport-jwt": "^4.0.0",
@@ -177,8 +177,7 @@
   "overrides": {
     "@nestjs/platform-ws": {
       "ws": "$ws"
-    },
-    "systeminformation": "5.27.14"
+    }
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
@@ -204,7 +203,6 @@
     "@types/ldapjs": "^3.0.0",
     "@types/multer": "^1.4.7",
     "@types/node": "^24.0.1",
-    "@types/nodemailer": "^6.4.15",
     "@types/passport-jwt": "^3.0.6",
     "@types/pg": "^8.11.10",
     "@types/request-ip": "^0.0.37",

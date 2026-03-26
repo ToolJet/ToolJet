@@ -352,7 +352,8 @@ class BaseSSOConfigurationList extends React.Component {
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
     const isEnabled = this.state[isEnabledKey] || false;
-    const isFeatureAvailable = !this.protectedSSO.includes(key) || this.state.featureAccess?.[key === 'git' ? 'github' : key];
+    const isFeatureAvailable =
+      !this.protectedSSO.includes(key) || this.state.featureAccess?.[key === 'git' ? 'github' : key];
 
     // For OIDC, count the number of enabled configs
     const oidcCount =

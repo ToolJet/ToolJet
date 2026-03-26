@@ -32,9 +32,7 @@ export const SidebarItem = forwardRef(
           data-cy={`right-sidebar-${generateCypressDataCy(typeof tip === 'object' ? icon : tip) || 'unknown'}-button`}
         >
           {children && (
-            <div
-              className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}
-            >
+            <div className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}>
               {children}
             </div>
           )}
