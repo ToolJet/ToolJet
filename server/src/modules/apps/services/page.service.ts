@@ -29,7 +29,7 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService
-  ) {}
+  ) { }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -220,6 +220,8 @@ export class PageService implements IPageService {
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
+      newPage.pageHeader = pageToClone.pageHeader;
+      newPage.pageFooter = pageToClone.pageFooter;
 
       clonedPage = await manager.save(newPage);
 

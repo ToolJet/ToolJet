@@ -952,11 +952,11 @@
     position: relative;
     width: 100%;
     height: 100%;
-    z-index: 1000;
+    z-index: 4;
 
     &:hover, &.active {
         .navigation-area.navigation-hover-trigger {
-            box-shadow: 0 0 0 1px #4af !important;
+            box-shadow: inset 0 0 0 1px #4af !important;
         }
         .mobile-nav-container.navigation-hover-trigger {
             border: 1px solid #4af;
