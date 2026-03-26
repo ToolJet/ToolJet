@@ -17,6 +17,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 @Module({})
 export class ModulesModule {
@@ -29,6 +30,7 @@ export class ModulesModule {
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
+    const { ValidAppGuard } = await import(`${importPath}/apps/guards/valid-app.guard`);
 
     return {
       module: ModulesModule,
@@ -60,6 +62,8 @@ export class ModulesModule {
         RolesRepository,
         AppGitRepository,
         GroupPermissionsRepository,
+        ValidAppGuard,
+        OrganizationGitSyncRepository,
       ],
     };
   }
