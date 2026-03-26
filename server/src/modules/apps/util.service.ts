@@ -105,12 +105,14 @@ export class AppsUtilService implements IAppsUtilService {
         const branchVersion = await manager.save(
           AppVersion,
           manager.create(AppVersion, {
-            name: uuidv4(),
+            // name: uuidv4(),
+            name: 'v1',
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
             status: AppVersionStatus.DRAFT,
-            versionType: AppVersionType.BRANCH,
+            // versionType: AppVersionType.BRANCH,
+            versionType: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
@@ -508,9 +510,16 @@ export class AppsUtilService implements IAppsUtilService {
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-      } else if (branchId) {
+      // } else if (branchId) {
+      //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+      //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+      //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+      //     branchId,
+      //   });
+      } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
         // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+        // Modules and workflows are common across all branches - no branch filter applied.
         viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
           branchId,
         });
