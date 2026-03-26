@@ -106,7 +106,7 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: 'v1',
+            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : uuidv4(),
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
