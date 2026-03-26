@@ -18,9 +18,7 @@ export default function GraphqlTabContent({
 
   return (
     <div className="tab-content-wrapper" data-cy={`${generateCypressDataCy(tabType)}-tab-content`}>
-      {options.length === 0 && (
-        <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
-      )}
+      {options.length === 0 && <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />}
       {options.map((option, index) => (
         <div
           className="row-container query-manager-border-color"
