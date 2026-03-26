@@ -26,6 +26,8 @@ const SignupForm = ({
   onSubmit,
   setSignupOrganizationDetails,
   initialData,
+  appName,
+  appSlug,
 }) => {
   const defaultState = checkWhiteLabelsDefaultState();
   const { t } = useTranslation();
@@ -161,28 +163,48 @@ const SignupForm = ({
           <FormHeader>{t('loginSignupPage.signUp', 'Sign up')}</FormHeader>
           {(organizationId || shouldShowSignInCTA) && (
             <p className="signup-info" data-cy="signup-info">
-              {organizationId && (
+              {appName ? (
                 <>
-                  Sign up to the workspace -{' '}
-                  <span className="workspace-name" data-cy="workspace-name">
-                    {configs?.name}
+                  Sign up to application -{' '}
+                  <span className="workspace-name" data-cy="app-name">
+                    {appName}
                   </span>
-                  .
-                </>
-              )}{' '}
-              {shouldShowSignInCTA && (
-                <>
-                  {t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}{' '}
+                  . Already have an account?{' '}
                   <Link
-                    to={`/login${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
-                      redirectTo ? `?redirectTo=${redirectTo}` : ''
-                    }`}
+                    to={`/applications/${appSlug}/login`}
                     className="signin-link"
                     tabIndex="-1"
                     data-cy="signin-link"
                   >
                     {t('loginSignupPage.signIn', 'Sign in')}
                   </Link>
+                </>
+              ) : (
+                <>
+                  {organizationId && (
+                    <>
+                      Sign up to the workspace -{' '}
+                      <span className="workspace-name" data-cy="workspace-name">
+                        {configs?.name}
+                      </span>
+                      .
+                    </>
+                  )}{' '}
+                  {shouldShowSignInCTA && (
+                    <>
+                      {t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}{' '}
+                      <Link
+                        to={`/login${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
+                          redirectTo ? `?redirectTo=${redirectTo}` : ''
+                        }`}
+                        className="signin-link"
+                        tabIndex="-1"
+                        data-cy="signin-link"
+                      >
+                        {t('loginSignupPage.signIn', 'Sign in')}
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </p>
