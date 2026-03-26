@@ -254,7 +254,7 @@ export class AppsService implements IAppsService {
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
       // Block rename if git sync is enabled and app has been pushed
-      if (isGitSyncEnabled) {
+      if (isGitSyncEnabled  && app.type === APP_TYPES.FRONT_END) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
         if (appGitSync) {
           // Check if on default branch (not a feature branch)

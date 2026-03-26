@@ -2050,7 +2050,11 @@ class HomePageComponent extends React.Component {
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() => {
-                            if (this.isWorkspaceBranchLocked()) {
+                            if (
+                              this.isWorkspaceBranchLocked() &&
+                              this.props.appType !== 'module' &&
+                              this.props.appType !== 'workflow'
+                            ) {
                               this.setState({ showSwitchBranchForCreate: true });
                             } else {
                               this.setState({ showCreateAppModal: true });
@@ -2158,8 +2162,8 @@ class HomePageComponent extends React.Component {
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
               {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
-              {this.props.appType !== 'workflow' && (
-                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
+              {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
+                <WorkspaceLockedBanner pageContext="apps" />
               )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
@@ -2227,7 +2231,11 @@ class HomePageComponent extends React.Component {
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
-                        if (this.isWorkspaceBranchLocked()) {
+                        if (
+                          this.isWorkspaceBranchLocked() &&
+                          this.props.appType !== 'module' &&
+                          this.props.appType !== 'workflow'
+                        ) {
                           this.setState({ showSwitchBranchForCreate: true });
                         } else {
                           this.openCreateAppModal();
