@@ -28,6 +28,7 @@ import { qrscannerConfig } from './qrscanner';
 import { starratingConfig } from './starrating';
 import { dividerConfig } from './divider';
 import { filepickerConfig } from './filepicker';
+import { fileinputConfig } from './fileinput';
 import { calendarConfig } from './calendar';
 import { iframeConfig } from './iframe';
 import { codeEditorConfig } from './codeEditor';
@@ -76,6 +77,8 @@ import { jsonEditorConfig } from './jsonEditor';
 import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
+import { fileButtonConfig } from './fileButton';
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 export {
   buttonConfig,
@@ -114,6 +117,7 @@ export {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -131,7 +135,8 @@ export {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
+  buttonGroupV2Config,
   pdfConfig,
   stepsConfig,
   kanbanConfig,
@@ -156,4 +161,5 @@ export {
   keyValuePairConfig,
   progressbarConfig,
   navigationConfig,
+  fileButtonConfig,
 };

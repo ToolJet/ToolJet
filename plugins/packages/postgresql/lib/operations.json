@@ -95,6 +95,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to query",
           "placeholder": "Select table"
         },
@@ -178,6 +180,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to insert into",
           "placeholder": "Select table"
         },
@@ -214,6 +218,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to update",
           "placeholder": "Select table"
         },
@@ -271,6 +277,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to upsert into",
           "placeholder": "Select table"
         },
@@ -329,6 +337,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to delete from",
           "placeholder": "Select table"
         },
@@ -381,6 +391,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to insert into",
           "placeholder": "Select table"
         },
@@ -417,6 +429,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to update",
           "placeholder": "Select table"
         },
@@ -463,6 +477,8 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select the table to upsert into",
           "placeholder": "Select table"
         },

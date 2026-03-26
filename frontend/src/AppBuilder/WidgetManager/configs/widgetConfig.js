@@ -32,6 +32,7 @@ import {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -76,13 +77,16 @@ import {
   keyValuePairConfig,
   progressbarConfig,
   navigationConfig,
+  fileButtonConfig,
+  buttonGroupV2Config,
 } from '../widgets';
 
 export const widgets = [
   // Buttons
   buttonConfig,
-  buttonGroupConfig,
+  buttonGroupV2Config,
   popoverMenuConfig,
+  fileButtonConfig,
 
   //Data
   tableConfig,
@@ -120,6 +124,7 @@ export const widgets = [
   checkboxConfig,
   toggleSwitchV2Config,
   radiobuttonV2Config,
+  fileinputConfig,
   treeSelectConfig,
 
   //Date and time inputs
@@ -179,6 +184,7 @@ export const widgets = [
   dropdownConfig,
   multiselectConfig,
   rangeSliderConfig,
+  buttonGroupConfig,
 
   //Module
   moduleContainerConfig,

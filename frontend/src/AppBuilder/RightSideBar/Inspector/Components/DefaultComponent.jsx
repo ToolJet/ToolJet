@@ -40,6 +40,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RangeSliderV2',
   'Link',
   'FilePicker',
+  'FileInput',
   'Listview',
   'Statistics',
   'StarRating',
@@ -53,6 +54,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'IFrame',
   'Accordion',
   'ReorderableList',
+  'FileButton',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -82,6 +84,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
+  FileButton: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -184,6 +187,7 @@ export const baseComponentProperties = (
       'VerticalDivider',
       'Link',
       'FilePicker',
+      'FileInput',
       'Tabs',
       'Statistics',
       'StarRating',
@@ -196,6 +200,7 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'FileButton',
     ],
     Layout: [],
   };

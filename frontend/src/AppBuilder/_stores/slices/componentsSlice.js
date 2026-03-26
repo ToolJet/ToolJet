@@ -686,13 +686,37 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
+    const isEmpty = Array.isArray(widgetValue) ? widgetValue.length === 0 : !widgetValue && widgetValue !== 0;
 
-    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
+    if (resolvedMandatory == true && isEmpty) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
       };
     }
+
+    // Selection count validations (for array-based widgets like TreeSelect, Multiselect)
+    if (Array.isArray(widgetValue)) {
+      const minSelection = validationObject?.minSelection?.value ?? validationObject?.minSelection;
+      const maxSelection = validationObject?.maxSelection?.value ?? validationObject?.maxSelection;
+
+      const resolvedMinSelection = parseInt(getResolvedValue(minSelection, customResolveObjects)) || 0;
+      if (resolvedMinSelection > 0 && widgetValue.length < resolvedMinSelection) {
+        return {
+          isValid: false,
+          validationError: `Minimum ${resolvedMinSelection} selections required`,
+        };
+      }
+
+      const resolvedMaxSelection = parseInt(getResolvedValue(maxSelection, customResolveObjects)) || 0;
+      if (resolvedMaxSelection > 0 && widgetValue.length > resolvedMaxSelection) {
+        return {
+          isValid: false,
+          validationError: `Maximum ${resolvedMaxSelection} selections allowed`,
+        };
+      }
+    }
+
     return {
       isValid,
       validationError,
@@ -1368,7 +1392,7 @@ export const createComponentsSlice = (set, get) => ({
 
     // If no components were added, return early
     if (!diff || Object.keys(diff).length === 0) {
-      return;
+      return false;
     }
 
     // Collect all events from all components for bulk creation
@@ -1379,6 +1403,7 @@ export const createComponentsSlice = (set, get) => ({
         // Only add events that have required fields
         if (event?.event && event?.target && component.id != null && event?.index != null) {
           allEvents.push({
+            name: event?.name,
             event: {
               ...event.event,
             },
@@ -1410,9 +1435,11 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       get().multiplayer.broadcastUpdates(components, 'components', 'create');
+      return true;
     } catch (error) {
       console.error('Error pasting components with events:', error);
       toast.error('Failed to paste components');
+      return false;
     }
   },
 

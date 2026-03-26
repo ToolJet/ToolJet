@@ -96,6 +96,14 @@ export const validateMongoDBConnectionString = (connectionString, selectedFormat
   return { valid: true, error: '' };
 };
 
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export const parseMongoDBConnectionString = (connectionString) => {
   if (!connectionString || connectionString.trim() === '') {
     return null;
@@ -143,7 +151,7 @@ export const parseMongoDBConnectionString = (connectionString) => {
     }
   }
 
-  let useSsl = 'disabled';
+  let useSsl = false;
 
   if (querySection) {
     const params = new URLSearchParams(querySection.substring(1));
@@ -152,17 +160,17 @@ export const parseMongoDBConnectionString = (connectionString) => {
     const tlsParam = params.get('tls');
 
     if (sslParam !== null) {
-      useSsl = sslParam.toLowerCase() === 'true' ? 'enabled' : 'disabled';
+      useSsl = sslParam.toLowerCase() === 'true';
     } else if (tlsParam !== null) {
-      useSsl = tlsParam.toLowerCase() === 'true' ? 'enabled' : 'disabled';
+      useSsl = tlsParam.toLowerCase() === 'true';
     }
   }
 
   return {
     host: primaryHost,
     port: primaryPort,
-    username: username || '',
-    password: password || '',
+    username: safeDecode(username || ''),
+    password: safeDecode(password || ''),
     database: databaseName || '',
     connection_format: isSrvFormat ? 'mongodb+srv' : 'mongodb',
     use_ssl: useSsl,

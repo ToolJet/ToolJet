@@ -88,8 +88,15 @@
             "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
-          "description": "Select the table to query",
-          "placeholder": "Select table"
+          "pagination": true,
+          "pageSize": 6,
+          "lineNumbers": false,
+          "description": "Select a table from the dropdown",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table",
+          "order": 20
         },
         "where_filters": {
           "label": "Filter",

@@ -28,6 +28,7 @@ export const Container = ({
   currentMode,
   subContainerIndex,
   dataCy,
+  componentType,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -49,6 +50,7 @@ export const Container = ({
     value: JSON.stringify({ headerHeight, showHeader }),
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   const isWidgetInContainerDragging = useStore(

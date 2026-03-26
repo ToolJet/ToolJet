@@ -45,11 +45,10 @@
       "description": "Enter password"
     },
     "ssl_enabled": {
-      "type": "string",
+      "type": "boolean",
       "title": "SSL/TLS",
       "description": "Connect using SSL",
-      "enum": ["enabled", "disabled"],
-      "default": "disabled"
+      "default": true
     },
     "ssl_certificate": {
       "type": "string",
@@ -60,7 +59,7 @@
     },
     "connection_string": {
       "type": "string",
-      "title": "Connection string",
+      "title": "Connection string (encoded)",
       "description": "postgres://username:password@hostname:port/database?sslmode=require"
     },
     "ca_cert": {
@@ -153,7 +152,7 @@
           {
             "if": {
               "properties": {
-                "ssl_enabled": { "const": "enabled" }
+                "ssl_enabled": { "const": true }
               }
             },
             "then": {
@@ -198,7 +197,7 @@
         }
       },
       "then": {
-        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
+        "required": []
       }
     }
   ],
@@ -212,7 +211,7 @@
       "widget": "dropdown-component-flip",
       "list": [
         { "name": "Manual connection", "value": "manual" },
-        { "name": "Connection string", "value": "string" }
+        { "name": "Connection string (encoded)", "value": "string" }
       ]
     },
     "manual": {
@@ -277,8 +276,8 @@
         "description": "Connect using SSL",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to PostgreSQL server",
-        "default": "disabled",
-        "enabled": {
+        "default": true,
+        "true": {
           "ssl_certificate": {
             "order": 80,
             "$ref": "#/properties/ssl_certificate",
@@ -330,7 +329,7 @@
             },
             "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,
@@ -423,11 +422,12 @@
         "order": 2,
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
-        "label": "Connection string",
+        "label": "Connection string (encoded)",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
         "widget": "password-v3-textarea",
-        "required": true
-      },
+        "required": true,
+        "help_text":"e.g., postgresql://admin:p%40ssword@localhost:5432/my%23db. Encode special characters using a <a href=\"https://meyerweb.com/eric/tools/dencoder/\" target=\"_blank\">URL encoder</a>."
+       },
       "host": {
         "order": 10,
         "$ref": "#/properties/host",
@@ -485,8 +485,8 @@
         "description": "Connect using SSL",
         "widget": "toggle-flip",
         "help_text": "Enable encrypted connections to PostgreSQL server",
-        "default": "disabled",
-        "enabled": {
+        "default": true,
+        "true": {
           "ssl_certificate": {
             "order": 80,
             "$ref": "#/properties/ssl_certificate",
@@ -538,7 +538,7 @@
             },
             "none": {}
         },
-        "disabled": {}
+        "false": {}
       },
       "ssh_enabled": {
         "order": 120,

@@ -616,17 +616,6 @@ export default class MysqlQueryService implements QueryService {
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
     const effectiveOptions = { ...sourceOptions };
-    if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
-      const parsed = this.parseConnectionString(sourceOptions.connection_string);
-      effectiveOptions.host = effectiveOptions.host || parsed.host;
-      effectiveOptions.port = effectiveOptions.port || parsed.port;
-      effectiveOptions.database = effectiveOptions.database || parsed.database;
-      effectiveOptions.username = effectiveOptions.username || parsed.username;
-      effectiveOptions.password = effectiveOptions.password || parsed.password;
-      if (parsed.socket_path) effectiveOptions.socket_path = effectiveOptions.socket_path || parsed.socket_path;
-      if (parsed.ssl_enabled !== undefined)
-        effectiveOptions.ssl_enabled = effectiveOptions.ssl_enabled || parsed.ssl_enabled;
-    }
 
     const shouldUseSSL = effectiveOptions.ssl_enabled;
     let sslObject: any = null;
@@ -728,28 +717,50 @@ export default class MysqlQueryService implements QueryService {
 
     return queryText.trim();
   }
-  async listTables(sourceOptions: SourceOptions): Promise<QueryResult> {
+  async listTables(
+    sourceOptions: SourceOptions,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
 
-      const result = await knexInstance.raw(`SHOW TABLES`);
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search}%`;
 
-      const rows = result[0] || [];
+      if (queryOptions?.limit) {
+        const limit = queryOptions.limit;
+        const page = queryOptions.page || 1;
+        const offset = (page - 1) * limit;
 
-      const tables = rows.map((row: any) => {
-        const tableName = Object.values(row)[0] as string;
-        return {
-          key: tableName,
-          value: tableName,
-          label: tableName,
-        };
-      });
+        const [dataResult, countResult] = await Promise.all([
+          knexInstance.raw(
+            `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
+            [searchPattern, limit, offset]
+          ),
+          knexInstance.raw(
+            `SELECT COUNT(*) AS total FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ?`,
+            [searchPattern]
+          ),
+        ]);
 
-      return {
-        status: 'ok',
-        data: tables,
-      };
+        const rows = (dataResult[0] || []).map((row: any) => ({ label: row.TABLE_NAME, value: row.TABLE_NAME }));
+        const totalCount = parseInt(countResult[0]?.[0]?.total ?? '0', 10);
+
+        return { status: 'ok', data: { rows, totalCount } };
+      }
+
+      const result = await knexInstance.raw(
+        `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
+        [searchPattern]
+      );
+
+      const tables = (result[0] || []).map((row: any) => ({
+        label: row.TABLE_NAME,
+        value: row.TABLE_NAME,
+      }));
+
+      return { status: 'ok', data: tables };
     } catch (err) {
       const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
@@ -813,7 +824,23 @@ export default class MysqlQueryService implements QueryService {
   ): Promise<any> {
     try {
       if (methodName === 'getTables') {
-        return await this.listTables(sourceOptions);
+        // return await this.listTables(sourceOptions);
+        const isPaginated = !!args?.limit;
+        const result = await this.listTables(sourceOptions, {
+          search: args?.search,
+          page: args?.page,
+          limit: args?.limit,
+        });
+
+        const payload = (result as any)?.data ?? [];
+
+        if (isPaginated) {
+          const rows = (payload as any)?.rows ?? [];
+          const totalCount = (payload as any)?.totalCount ?? 0;
+          return { items: rows, totalCount };
+        }
+
+        return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
       }
 
       if (methodName === 'listTables') {

@@ -6,6 +6,7 @@ import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
 import { Client as SSHClient } from 'ssh2';
 import net from 'net';
+import { isEmpty } from '@tooljet-plugins/common';
 
 function getAvailablePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -113,6 +114,14 @@ function validateSSHOptions(sourceOptions: SourceOptions): void {
   }
   if (sourceOptions.ssh_auth_type === 'private_key' && !sourceOptions.ssh_private_key) {
     throw new QueryError('Invalid SSH config', 'ssh_private_key is required for key-based SSH auth', {});
+  }
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
   }
 }
 
@@ -271,15 +280,31 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async listCollections(
+  async listTables(
     sourceOptions: SourceOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
 
     try {
-      const collections = await db.listCollections().toArray();
+      const search = queryOptions?.search;
+      const limit = queryOptions?.limit || 0;
+      const page = queryOptions?.page || 1;
+
+      const filter = search ? { name: { $regex: search, $options: 'i' } } : {};
+
+      // ListCollectionsCursor does not support .skip()/.limit(), fetch all matching then slice
+      const allCollections = await db.listCollections(filter).toArray();
+
+      let collections = allCollections;
+      if (limit > 0) {
+        const offset = (page - 1) * limit;
+        collections = allCollections.slice(offset, offset + limit);
+      }
+
+      const totalCount = allCollections.length;
 
       const result = collections.map((col) => ({
         collection_name: col.name,
@@ -288,8 +313,8 @@ export default class MongodbService implements QueryService {
 
       return {
         status: 'ok',
-        data: result,
-      };
+        data: { rows: result, totalCount: limit > 0 ? totalCount : result.length },
+      } as any;
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch collections', errorMessage, {});
@@ -306,24 +331,33 @@ export default class MongodbService implements QueryService {
     if (methodName === 'listCollections') {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+      const isPaginated = !!args?.limit;
 
-      const response = await this.listCollections(
+      const response = await this.listTables(
         sourceOptions,
         dataSourceId,
-        dataSourceUpdatedAt
+        dataSourceUpdatedAt,
+        {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        }
       );
 
-      const collections = (response?.data ?? []) as any[];
+      const payload = (response?.data ?? {}) as any;
+      const rows = payload?.rows ?? [];
+      const totalCount = payload?.totalCount ?? 0;
 
-      const formatted = collections.map((col: any) => ({
+      const formatted = rows.map((col: any) => ({
         label: col.collection_name,
         value: col.collection_name,
       }));
 
-      return {
-        status: 'ok',
-        data: formatted,
-      };
+      if (isPaginated) {
+        return { items: formatted, totalCount };
+      }
+
+      return { status: 'ok', data: formatted };
     }
 
     throw new QueryError(
@@ -347,6 +381,15 @@ export default class MongodbService implements QueryService {
     return {
       status: 'ok',
     };
+  }
+  
+  private connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions.connection_options || []).filter((o) => o.some((e) => !isEmpty(e)));
+    const connectionOptions = Object.fromEntries(_connectionOptions);
+    Object.keys(connectionOptions).forEach((key) =>
+      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
+    );
+    return connectionOptions;
   }
 
 async getConnection(sourceOptions: SourceOptions): Promise<any> {
@@ -435,11 +478,11 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
       };
     }
 
-    if (!clientOptions.tls && sourceOptions.use_ssl === 'enabled') {
+    if (!clientOptions.tls && sourceOptions.use_ssl === true) {
       clientOptions.tls = true;
     }
 
-    client = new MongoClient(uri, clientOptions);
+    client = new MongoClient(uri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
     await client.connect();
     db = client.db(database);
 } else {
@@ -474,8 +517,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   if (authPart.includes(":")) {
     const colonIdx = authPart.indexOf(":");
-    connUser = decodeURIComponent(authPart.slice(0, colonIdx));
-    connPass = decodeURIComponent(authPart.slice(colonIdx + 1));
+    connUser = safeDecode(authPart.slice(0, colonIdx));
+    connPass = safeDecode(authPart.slice(colonIdx + 1));
   }
 
   const finalUser = explicitUser || connUser || "";
@@ -544,12 +587,12 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   const clientOptions: any = {};
   const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
-  if (sourceOptions.use_ssl === 'enabled') {
+  if (sourceOptions.use_ssl === true) {
     clientOptions.tls = true;
   } else if (!hasSSLInParams && isSrvConnection) {
     clientOptions.tls = true;
   }
-  client = new MongoClient(finalUri, clientOptions);
+  client = new MongoClient(finalUri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
   await client.connect();
   db = client.db(finalDb);
 }
