@@ -23,6 +23,7 @@ export const ListviewSubcontainer = ({
   visibility,
   parentHeight,
   dataCy,
+  componentType,
 }) => {
   const parentContext = useSubcontainerContext();
   const contextValue = useMemo(
@@ -43,6 +44,7 @@ export const ListviewSubcontainer = ({
     isContainer: true,
     subContainerIndex: index,
     height: parentHeight,
+    componentType,
   });
 
   return (
