@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+
+// Lazy-load app login page — separate chunk, doesn't pollute viewer bundle
+const AppLoginPage = lazy(() => import('@/modules/auth/pages/AppLoginPage/AppLoginPage'));
 import { AppsRoute } from '@/Routes';
 import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
@@ -139,6 +142,16 @@ const ViewerApp = () => {
         ) : (
           // Viewer routes: /applications/*
           <Routes>
+            {/* App-scoped auth routes — lazy-loaded, separate chunk */}
+            <Route
+              path="/:slug/login"
+              element={
+                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                  <AppLoginPage />
+                </Suspense>
+              }
+            />
+
             {/* Main viewer route: /applications/:slug/:pageHandle? */}
             <Route
               path="/:slug/:pageHandle?"

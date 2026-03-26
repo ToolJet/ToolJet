@@ -159,7 +159,14 @@ export const authorizeWorkspace = async () => {
             authentication_status: false,
           });
         } else if (isApplicationsPath) {
-          /* CASE-4 */
+          /* CASE-4: For app viewer paths, redirect to app-scoped login page */
+          const pathSegments = getPathname(null, true).split('/').filter(Boolean);
+          const appSlug = pathSegments[1]; // /applications/:slug/...
+          if (appSlug) {
+            const subpath = getSubpath() ?? '';
+            window.location.href = `${subpath}/applications/${appSlug}/login`;
+            return;
+          }
           updateCurrentSession({
             authentication_failed: true,
             load_app: true,
@@ -186,6 +193,10 @@ const isThisExistedRoute = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const pathnames = pathnameToArray();
   if (pathnames.includes('login') && pathnames.includes('sso')) {
+    return true;
+  }
+  // App-scoped login/signup pages handle their own auth
+  if (pathnames[0] === 'applications' && (pathnames[2] === 'login' || pathnames[2] === 'signup')) {
     return true;
   }
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
