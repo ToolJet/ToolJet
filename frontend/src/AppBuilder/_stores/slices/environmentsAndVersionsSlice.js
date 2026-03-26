@@ -479,9 +479,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
-    console.log('Calculating promote/release button visibility with:', {
-      authenticationService: authenticationService.currentSessionValue?.user_permissions,
-    });
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
