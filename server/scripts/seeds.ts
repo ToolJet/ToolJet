@@ -10,10 +10,7 @@ import { GroupUsers } from '../src/entities/group_users.entity';
 import { Metadata } from '../src/entities/metadata.entity';
 import { defaultAppEnvironments } from '../src/helpers/utils.helper';
 import { OnboardingStatus } from '../src/modules/onboarding/constants';
-import {
-  DEFAULT_GROUP_PERMISSIONS,
-  GROUP_PERMISSIONS_TYPE,
-} from '../src/modules/group-permissions/constants';
+import { DEFAULT_GROUP_PERMISSIONS } from '../src/modules/group-permissions/constants';
 
 const SEED_DEFAULTS = {
   email: 'dev@tooljet.io',
@@ -109,19 +106,8 @@ async function bootstrap() {
     for (const groupKey of Object.keys(DEFAULT_GROUP_PERMISSIONS)) {
       const groupDef = DEFAULT_GROUP_PERMISSIONS[groupKey];
       const group = txManager.create(GroupPermissions, {
+        ...(groupDef as any),
         organizationId: organization.id,
-        name: groupDef.name,
-        type: groupDef.type as GROUP_PERMISSIONS_TYPE,
-        appCreate: groupDef.appCreate,
-        appDelete: groupDef.appDelete,
-        folderCRUD: groupDef.folderCRUD,
-        workflowCreate: groupDef.workflowCreate,
-        workflowDelete: groupDef.workflowDelete,
-        orgConstantCRUD: groupDef.orgConstantCRUD,
-        dataSourceCreate: groupDef.dataSourceCreate,
-        dataSourceDelete: groupDef.dataSourceDelete,
-        appPromote: groupDef.appPromote,
-        appRelease: groupDef.appRelease,
       });
       await txManager.save(group);
 
