@@ -119,6 +119,7 @@ export enum LICENSE_FIELD {
   META = 'metadata',
   WORKFLOWS = 'workflows',
   GIT_SYNC = 'gitSyncEnabled',
+  ENV_GIT_MAPPING = 'envGitMappingEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',

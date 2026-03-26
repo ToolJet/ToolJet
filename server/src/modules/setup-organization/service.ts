@@ -7,13 +7,19 @@ import { ISetupOrganizationsService } from './interfaces/IService';
 import { OrganizationInputs } from './types/organization-inputs';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class SetupOrganizationsService implements ISetupOrganizationsService {
-  constructor(protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService) {}
+  constructor(
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly organizationEnvRegistryService: OrganizationEnvRegistryService
+  ) { }
 
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     const organization = await this.setupOrganizationsUtilService.create(organizationInputs, user, manager);
+    await this.reloadEnvConfigs(organization.id);
 
     //WORKSPACE_CREATE audit
     const auditLogsData = {
@@ -31,5 +37,15 @@ export class SetupOrganizationsService implements ISetupOrganizationsService {
     };
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     return organization;
+  }
+
+  private async reloadEnvConfigs(organizationId: string): Promise<void> {
+    if (!this.organizationEnvRegistryService) return;
+
+    try {
+      await this.organizationEnvRegistryService.reload(organizationId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+    }
   }
 }

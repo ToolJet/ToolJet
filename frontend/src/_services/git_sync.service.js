@@ -29,6 +29,8 @@ export const gitSyncService = {
   getGitConfigs,
   createGitTag,
   checkTagExists,
+  updateEnvConfigs,
+  testProviderConnection,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -224,6 +226,31 @@ function saveProviderConfigs(body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/git-sync/configs`, requestOptions).then(handleResponse);
+}
+
+function updateEnvConfigs(useEnvConfig, provider) {
+  const body = {
+    useEnvConfig,
+    provider,
+  };
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/git-sync/env-configs`, requestOptions).then(handleResponse);
+}
+
+function testProviderConnection(payload = {}) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  };
+
+  return fetch(`${config.apiUrl}/git-sync/test-connection`, requestOptions).then(handleResponse);
 }
 
 function updateAppEditState(appId, allowEditing) {

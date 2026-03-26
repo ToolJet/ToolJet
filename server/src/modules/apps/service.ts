@@ -48,6 +48,8 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
+import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -67,7 +69,8 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository,
+    protected readonly organizationEnvRegistryService: OrganizationEnvRegistryService
   ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -230,13 +233,24 @@ export class AppsService implements IAppsService {
     return { id: app.id, slug: app.slug };
   }
 
+  private resolveGitSyncEnabled(orgGit: OrganizationGitSync | null | undefined): boolean {
+    if (!orgGit) return false;
+
+    if (orgGit.useEnvConfig) {
+      const providers = [GITConnectionType.GITHUB_SSH, GITConnectionType.GITHUB_HTTPS, GITConnectionType.GITLAB];
+      return providers.some(
+        (provider) => this.organizationEnvRegistryService.getProviderState(orgGit.organizationId, provider).isEnabled
+      );
+    }
+
+    return Boolean(orgGit.gitSsh?.isEnabled || orgGit.gitHttps?.isEnabled || orgGit.gitLab?.isEnabled);
+  }
+
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
     const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
-    const isGitSyncEnabled = Boolean(
-      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
-    );
+    const isGitSyncEnabled = this.resolveGitSyncEnabled(orgGit);
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {

@@ -33,6 +33,7 @@ import {
   logShutdownInfo,
   initSentry,
   initializeOtel,
+  initializeEnvConfigRegistry,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
@@ -130,6 +131,8 @@ async function bootstrap() {
     const guardValidator = app.get(GuardValidator);
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
+
+    await initializeEnvConfigRegistry(app, appLogger);
 
     // Initialize Sentry
     initSentry(appLogger, configService);

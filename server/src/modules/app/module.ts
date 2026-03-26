@@ -57,6 +57,7 @@ import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { OrganizationEnvModule } from '@modules/organization-env/module';
 import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from '@modules/tooljet-db/helper';
 import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 import { EntityManager } from 'typeorm';
@@ -143,6 +144,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await OrganizationEnvModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),

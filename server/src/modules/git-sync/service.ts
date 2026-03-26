@@ -9,7 +9,7 @@ import { IGitSyncService } from './Interfaces/IService';
 
 @Injectable()
 export class GitSyncService implements IGitSyncService {
-  constructor() {}
+  constructor() { }
 
   async deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void> {
     throw new Error('Method not implemented.');
@@ -45,6 +45,10 @@ export class GitSyncService implements IGitSyncService {
   }
 
   async getOrgGitStatusById(userOrganizationId: string, organizationId: string) {
+    throw new Error('Method not implemented.');
+  }
+
+  async testProviderConnection(userId: string, organizationId: string, payload: any) {
     throw new Error('Method not implemented.');
   }
 }
