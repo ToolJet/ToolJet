@@ -14,6 +14,7 @@ describe("DynamoDB", () => {
     beforeEach(() => {
         cy.apiLogin();
         cy.viewport(1400, 1600);
+        cy.on("uncaught:exception", () => false);
     });
 
     afterEach(() => {

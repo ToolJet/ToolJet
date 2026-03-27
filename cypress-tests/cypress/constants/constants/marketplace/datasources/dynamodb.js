@@ -2,21 +2,12 @@ export const dynamodbUIConfig = {
     defaultFields: [
         {
             type: "dropdown",
-            fieldName: "Region",
-            validations: {
-                disabled: false
-            }
-        },
-
-        {
-            type: "dropdown",
             fieldName: "Authentication",
             validations: {
                 defaultValue: "Use IAM Access Keys",
                 disabled: false
             }
         },
-
         {
             type: "input",
             fieldName: "Access key",
@@ -27,7 +18,6 @@ export const dynamodbUIConfig = {
                 disabled: false
             }
         },
-
         {
             type: "encrypted",
             fieldName: "Secret key",
@@ -39,6 +29,13 @@ export const dynamodbUIConfig = {
                 hasEditButton: true,
                 showEncrypted: true,
                 hasEyeIcon: false
+            }
+        },
+        {
+            type: "dropdown",
+            fieldName: "Region",
+            validations: {
+                disabled: false
             }
         }
     ]
