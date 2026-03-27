@@ -4,6 +4,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -99,5 +100,17 @@ export class AppsRepository extends Repository<App> {
         relations: ['appVersions'],
       });
     }, manager || this.manager);
+  }
+
+  // Cross-org lookup — safe because callers are gated by external API key auth.
+  // Known limitation: slug uniqueness is per-org; if two orgs share a slug the first DB match wins.
+  // Will be a non-issue once global slug uniqueness is enforced at DB level.
+  async findByIdOrSlug(idOrSlug: string): Promise<App | null> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (isUUID(idOrSlug)) {
+        return manager.findOne(App, { where: { id: idOrSlug }, relations: ['appVersions'] });
+      }
+      return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
+    }, this.manager);
   }
 }
