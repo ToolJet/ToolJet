@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "lib",
+    "declaration": true,
+    "declarationMap": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "composite": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "__tests__"
+  ]
+}
