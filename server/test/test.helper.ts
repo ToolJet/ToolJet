@@ -113,7 +113,7 @@ let _defaultDataSource: TypeOrmDataSource;
 let _tooljetDbDataSource: TypeOrmDataSource;
 
 export function setDataSources(nestApp: INestApplication) {
-  _defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  _defaultDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   try {
     _tooljetDbDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
   } catch {
@@ -362,7 +362,7 @@ export async function createUser(
 }
 
 export async function createUserGroupPermissions(nestApp, user, groups) {
-  const ds: TypeOrmDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   const groupUsersRepository = ds.getRepository(GroupUsers);
 
@@ -409,7 +409,7 @@ export async function createUserGroupPermissions(nestApp, user, groups) {
 }
 
 export async function createGroupPermission(nestApp, params) {
-  const ds: TypeOrmDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   // Map old property names to new ones
   const mappedParams = { ...params };
@@ -427,7 +427,7 @@ export async function createGroupPermission(nestApp, params) {
 }
 
 export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
-  const ds: TypeOrmDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
 
   const defaultGroups = [
@@ -464,7 +464,7 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
 }
 
 export async function addEndUserGroupToUser(nestApp, user) {
-  const ds: TypeOrmDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   const groupUsersRepository = ds.getRepository(GroupUsers);
 
