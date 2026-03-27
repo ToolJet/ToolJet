@@ -50,7 +50,7 @@ describe('Authentication', () => {
     it('should create new users and organization - user type should instance', async () => {
       const adminResponse = await request(app.getHttpServer())
         .post('/api/onboarding/setup-super-admin')
-        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test', workspaceName: 'test' });
       expect(adminResponse.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -87,7 +87,7 @@ describe('Authentication', () => {
     it('second user should not be a super admin', async () => {
       const adminResponse = await request(app.getHttpServer())
         .post('/api/onboarding/setup-super-admin')
-        .send({ email: 'testsuperadmin@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+        .send({ email: 'testsuperadmin@tooljet.io', name: 'Admin', password: 'password', workspace: 'test', workspaceName: 'test' });
       expect(adminResponse.statusCode).toBe(201);
 
       const response = await request(app.getHttpServer())

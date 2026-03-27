@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('organizations controller', () => {
   let app: INestApplication;

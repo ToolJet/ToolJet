@@ -49,7 +49,7 @@ describe('library apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors', appName: 'Github Contributors' })
+        .send({ identifier: 'release-notes', appName: 'Release Notes App' })
         .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
         .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -57,12 +57,12 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors', appName: 'GitHub Contributor Leaderboard' })
+        .send({ identifier: 'release-notes', appName: 'Release Notes App' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('GitHub Contributor Leaderboard');
+      expect(response.body.app[0].name).toContain('Release Notes App');
     });
 
     it('should return error if template identifier is not found', async () => {
@@ -124,8 +124,8 @@ describe('library apps controller', () => {
 
       let templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-      expect(new Set(templateAppIds)).toContain('github-contributors');
-      expect(new Set(templateAppIds)).toContain('customer-dashboard');
+      expect(new Set(templateAppIds)).toContain('release-notes');
+      expect(new Set(templateAppIds)).toContain('bug-tracker');
 
       response = await request(app.getHttpServer())
         .get('/api/library_apps')
@@ -136,8 +136,8 @@ describe('library apps controller', () => {
 
       templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-      expect(new Set(templateAppIds)).toContain('github-contributors');
-      expect(new Set(templateAppIds)).toContain('customer-dashboard');
+      expect(new Set(templateAppIds)).toContain('release-notes');
+      expect(new Set(templateAppIds)).toContain('bug-tracker');
     });
   });
 

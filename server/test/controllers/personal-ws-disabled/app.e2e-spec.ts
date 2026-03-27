@@ -9,7 +9,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -54,7 +54,7 @@ describe('Authentication', () => {
     it('should create super admin for first sign up', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/onboarding/setup-super-admin')
-        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test', workspaceName: 'test' });
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -183,10 +183,10 @@ describe('Authentication', () => {
 
       const loggedUser = await authenticateUser(app, adminUser.email);
       await request(app.getHttpServer())
-        .post(`/api/organization_users/`)
+        .post(`/api/organization-users/`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
-        .send({ email: 'invited@tooljet.io', first_name: 'signupuser', last_name: 'user' })
+        .send({ email: 'invited@tooljet.io', firstName: 'signupuser', lastName: 'user', role: 'end-user' })
         .expect(201);
 
       const invitedUserDetails = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });

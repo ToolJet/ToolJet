@@ -457,6 +457,11 @@ export async function createGroupPermission(nestApp, params) {
   if (!mappedParams.type) {
     mappedParams.type = GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP;
   }
+  // Ensure organizationId is set explicitly when organization entity is passed
+  if (mappedParams.organization && !mappedParams.organizationId) {
+    mappedParams.organizationId = mappedParams.organization.id;
+    delete mappedParams.organization;
+  }
   let groupPermission = groupPermissionsRepository.create(mappedParams);
   await groupPermissionsRepository.save(groupPermission);
 
@@ -866,7 +871,7 @@ export const createFirstUser = async (app: INestApplication) => {
 
   await request(app.getHttpServer())
     .post('/api/onboarding/setup-super-admin')
-    .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet' });
+    .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet', workspaceName: 'tooljet' });
 
   return await userRepository.findOneOrFail({
     where: { email: 'firstuser@tooljet.com' },

@@ -1,19 +1,16 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
-import { getManager, QueryFailedError } from 'typeorm';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../test.helper';
+import { QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import got from 'got';
-
-jest.mock('got');
-const mockedGot = jest.mocked(got);
 
 /**
  * Tests Tooljet DB controller
  *
  * @group database
  */
-//TODO: this spec will need postgrest instance to run (skipping for now)
+// TODO: this spec will need postgrest instance to run (skipping for now).
+// Also requires rewrite: getDefaultDataSource().manager removed in TypeORM 0.3+, use DataSource manager instead.
 describe.skip('Tooljet DB controller', () => {
   let nestApp: INestApplication;
   let mockConfig;
@@ -30,9 +27,11 @@ describe.skip('Tooljet DB controller', () => {
     jest.resetAllMocks();
     jest.clearAllMocks();
 
-    const internalTables = await getManager().find(InternalTable);
+    const manager = getDefaultDataSource().manager;
+    const internalTables = await manager.find(InternalTable);
     for (const internalTable of internalTables) {
-      await getManager('tooljetDb').query(`TRUNCATE "${internalTable.id}" RESTART IDENTITY CASCADE;`);
+      // NOTE: This would need the tooljetDb data source, not the default one
+      // await tooljetDbDataSource.query(`TRUNCATE "${internalTable.id}" RESTART IDENTITY CASCADE;`);
     }
   });
 
@@ -92,13 +91,13 @@ describe.skip('Tooljet DB controller', () => {
         email: 'admin@tooljet.io',
       });
 
-      const actorsTable = getManager().create(InternalTable, {
+      const actorsTable = getDefaultDataSource().manager.create(InternalTable, {
         tableName: 'actors',
         organizationId: adminUserData.organization.id,
       });
       await actorsTable.save();
 
-      const filmsTable = getManager().create(InternalTable, {
+      const filmsTable = getDefaultDataSource().manager.create(InternalTable, {
         tableName: 'films',
         organizationId: adminUserData.organization.id,
       });
@@ -115,7 +114,7 @@ describe.skip('Tooljet DB controller', () => {
         };
       });
 
-      (mockedGot as unknown as jest.Mock).mockImplementationOnce(postgrestResponse);
+      // TODO: got mock removed - needs proper setup when test is unskipped
 
       const response = await request(nestApp.getHttpServer())
         .get(
@@ -177,14 +176,14 @@ describe.skip('Tooljet DB controller', () => {
 
       expect(statusCode).toBe(201);
 
-      const internalTables = await getManager().find(InternalTable);
+      const internalTables = await getDefaultDataSource().manager.find(InternalTable);
 
       expect(internalTables).toHaveLength(1);
       const [createdInternalTable] = internalTables;
       expect(createdInternalTable.tableName).toEqual('test_table');
 
       await expect(
-        getManager('tooljetDb').query(`SELECT * from "${createdInternalTable.id}"`)
+        getDefaultDataSource().manager /* TODO: should use tooljetDb DataSource */.query(`SELECT * from "${createdInternalTable.id}"`)
       ).resolves.not.toThrowError(QueryFailedError);
     });
 
@@ -239,11 +238,11 @@ describe.skip('Tooljet DB controller', () => {
           columns: [{ column_name: 'id', data_type: 'serial', constraint: 'PRIMARY KEY' }],
         });
 
-      const internalTable = await getManager().findOne(InternalTable, { where: { tableName: 'test_table' } });
+      const internalTable = await getDefaultDataSource().manager.findOne(InternalTable, { where: { tableName: 'test_table' } });
 
       expect(internalTable.tableName).toEqual('test_table');
 
-      await expect(getManager('tooljetDb').query(`SELECT name from "${internalTable.id}"`)).rejects.toThrowError(
+      await expect(getDefaultDataSource().manager /* TODO: should use tooljetDb DataSource */.query(`SELECT name from "${internalTable.id}"`)).rejects.toThrowError(
         QueryFailedError
       );
 
@@ -259,7 +258,7 @@ describe.skip('Tooljet DB controller', () => {
 
       expect(statusCode).toBe(201);
 
-      await expect(getManager('tooljetDb').query(`SELECT name from "${internalTable.id}"`)).resolves.not.toThrowError(
+      await expect(getDefaultDataSource().manager /* TODO: should use tooljetDb DataSource */.query(`SELECT name from "${internalTable.id}"`)).resolves.not.toThrowError(
         QueryFailedError
       );
     });

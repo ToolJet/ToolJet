@@ -102,7 +102,7 @@ describe('folder apps controller', () => {
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('App has been already added to the folder');
+      expect(response.body.message).toBe('App has already been added to the folder');
     });
 
     it('should remove an app from a folder', async () => {

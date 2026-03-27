@@ -16,6 +16,8 @@ import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
+const FOLDER_TYPE = 'front-end';
+
 describe('folders controller', () => {
   let nestApp: INestApplication;
   let defaultDataSource: TypeOrmDataSource;
@@ -29,9 +31,9 @@ describe('folders controller', () => {
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
-  describe('GET /api/folders', () => {
+  describe('GET /api/folder-apps', () => {
     it('should allow only authenticated users to list folders', async () => {
-      await request(nestApp.getHttpServer()).get('/api/folders').expect(401);
+      await request(nestApp.getHttpServer()).get(`/api/folder-apps?type=${FOLDER_TYPE}`).expect(401);
     });
 
     it('should list all folders in an organization', async () => {
@@ -44,18 +46,22 @@ describe('folders controller', () => {
 
       const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder2',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder3',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder4',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
 
@@ -73,11 +79,12 @@ describe('folders controller', () => {
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: anotherUserData.organization.id,
       });
 
       let response = await request(nestApp.getHttpServer())
-        .get(`/api/folders`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie);
 
@@ -97,7 +104,7 @@ describe('folders controller', () => {
       expect(folder1.count).toEqual(1);
 
       response = await request(nestApp.getHttpServer())
-        .get(`/api/folders?searchKey=app in`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}&searchKey=app in`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie);
 
@@ -117,7 +124,7 @@ describe('folders controller', () => {
       expect(folder1.count).toEqual(1);
 
       response = await request(nestApp.getHttpServer())
-        .get(`/api/folders?searchKey=some text`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}&searchKey=some text`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie);
 
@@ -159,18 +166,22 @@ describe('folders controller', () => {
 
       const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder2',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder3',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder4',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
 
@@ -188,11 +199,12 @@ describe('folders controller', () => {
       });
       await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: anotherUserData.organization.id,
       });
 
       let response = await request(nestApp.getHttpServer())
-        .get(`/api/folders`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie']);
 
@@ -212,7 +224,7 @@ describe('folders controller', () => {
       expect(folder1.count).toEqual(1);
 
       response = await request(nestApp.getHttpServer())
-        .get(`/api/folders?searchKey=app in`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}&searchKey=app in`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie']);
 
@@ -232,7 +244,7 @@ describe('folders controller', () => {
       expect(folder1.count).toEqual(1);
 
       response = await request(nestApp.getHttpServer())
-        .get(`/api/folders?searchKey=some text`)
+        .get(`/api/folder-apps?type=${FOLDER_TYPE}&searchKey=some text`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie']);
 
@@ -272,18 +284,22 @@ describe('folders controller', () => {
 
     const folder = await defaultDataSource.manager.save(Folder, {
       name: 'Folder1',
+      type: FOLDER_TYPE,
       organizationId: adminUserData.organization.id,
     });
     const folder2 = await defaultDataSource.manager.save(Folder, {
       name: 'Folder2',
+      type: FOLDER_TYPE,
       organizationId: adminUserData.organization.id,
     });
     await defaultDataSource.manager.save(Folder, {
       name: 'Folder3',
+      type: FOLDER_TYPE,
       organizationId: adminUserData.organization.id,
     });
     await defaultDataSource.manager.save(Folder, {
       name: 'Folder4',
+      type: FOLDER_TYPE,
       organizationId: adminUserData.organization.id,
     });
 
@@ -325,13 +341,14 @@ describe('folders controller', () => {
     });
     await defaultDataSource.manager.save(Folder, {
       name: 'another org folder',
+      type: FOLDER_TYPE,
       organizationId: anotherUserData.organization.id,
     });
     const findFolderAppsIn = (folders, folderName) => folders.find((f) => f.name === folderName)['folder_apps'];
 
     // admin can see all folders
     let response = await request(nestApp.getHttpServer())
-      .get(`/api/folders`)
+      .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie']);
 
@@ -349,7 +366,7 @@ describe('folders controller', () => {
 
     // new user cannot see any folders without having apps with access
     response = await request(nestApp.getHttpServer())
-      .get(`/api/folders`)
+      .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
       .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Cookie', newUserData['tokenCookie']);
 
@@ -374,7 +391,7 @@ describe('folders controller', () => {
     await createUserGroupPermissions(nestApp, newUserData.user, ['folder-handler']);
 
     response = await request(nestApp.getHttpServer())
-      .get(`/api/folders`)
+      .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
       .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Cookie', newUserData['tokenCookie']);
 
@@ -392,7 +409,7 @@ describe('folders controller', () => {
     });
 
     response = await request(nestApp.getHttpServer())
-      .get(`/api/folders`)
+      .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
       .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Cookie', newUserData['tokenCookie']);
 
@@ -524,6 +541,7 @@ describe('folders controller', () => {
 
       const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
 
@@ -601,6 +619,7 @@ describe('folders controller', () => {
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         const folder = await defaultDataSource.manager.save(Folder, {
           name: 'Folder1',
+          type: FOLDER_TYPE,
           organizationId: adminUserData.organization.id,
         });
 
@@ -619,6 +638,7 @@ describe('folders controller', () => {
 
       const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
+        type: FOLDER_TYPE,
         organizationId: adminUserData.organization.id,
       });
 
