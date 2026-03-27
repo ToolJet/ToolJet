@@ -9,8 +9,6 @@ title: DynamoDB
 
 To establish a connection with the **DynamoDB** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img style={{marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/connection-v3.png" alt="DynamoDB data source connection" />
-
 ToolJet supports connecting to DynamoDB using three methods: **IAM Credentials**, **AWS Instance Credentials**, or **AWS ARN Role**.
 
 When using **IAM Credentials**, you will need to provide the following information:
@@ -21,7 +19,7 @@ When using **IAM Credentials**, you will need to provide the following informati
 
 It is recommended to create a dedicated IAM user for the database in order to have granular control over ToolJet's access levels.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/iam-v2.png" alt="dynamo - IAM creds" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/connection-dydb-ux-v3.png" alt="dynamo - IAM creds" />
 
 To connect to DynamoDB using an **AWS Instance Credentials**, select the option to **Use AWS Instance Credentials**. This will utilize the IAM role attached to the EC2 instance where ToolJet is running. The WebIdentityToken parameter obtained from a successful login with an identity provider is used to access the metadata service of an ECS container and the EC2 instance.
 
