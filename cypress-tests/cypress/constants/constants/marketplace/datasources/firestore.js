@@ -21,7 +21,7 @@ export const firestoreFormConfig = {
         {
             type: "encrypted",
             fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('firestore_pvt_key'))}`
+            text: `${JSON.stringify(Cypress.env('firestore_private_key'))}`
         }
     ],
     invalidPrivateKey: [

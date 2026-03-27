@@ -88,7 +88,7 @@ describe("Firestore", () => {
  *   - Pre-condition: Data source created via API with null gcp_key
  *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
  *   - Expected: Toast message "Test connection verified" appears
- *   - Credentials: firestore_pvt_key (JSON stringified)
+ *   - Credentials: firestore_private_key (JSON stringified)
  *
  * TC_003: Verify UI and connection together
  *   - Pre-condition: Data source created via API with null gcp_key
