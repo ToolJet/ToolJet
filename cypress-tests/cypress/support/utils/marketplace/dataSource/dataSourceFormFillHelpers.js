@@ -135,7 +135,12 @@ export const fillDSConnectionEncryptedField = (field) => {
     });
   }
 
-  cy.clearAndType(fieldSelector, field.text);
+  cy.get(fieldSelector)
+    .scrollIntoView()
+    .should("be.visible")
+    .click({ force: true })
+    .type(`{selectall}{backspace}`)
+    .type(field.text, { parseSpecialCharSequences: false });
 };
 
 export const fillDataOnCodeMirrorInput = (field) => {

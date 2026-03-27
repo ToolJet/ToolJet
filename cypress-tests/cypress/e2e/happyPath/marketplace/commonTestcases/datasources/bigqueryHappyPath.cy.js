@@ -70,7 +70,7 @@ describe("BigQuery", () => {
         verifyConnectionFormUI(bigqueryUIConfig.defaultFields);
 
         fillDSConnectionForm(bigqueryFormConfig, bigqueryFormConfig.invalidPrivateKey);
-        verifyDSConnection("failed", "Unexpected token");
+        verifyDSConnection("failed", "JSON5: invalid character");
     });
 });
 
