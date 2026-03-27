@@ -7,13 +7,17 @@ Generated: 2026-03-28 | Branch: fix/test-suite
 | Type | Suites | Suite Pass | Individual Pass | Individual Fail | Skip |
 |------|--------|-----------|----------------|----------------|------|
 | Unit `.spec.ts` | 12 | 9 | 196 | 4 | 2 |
-| E2E `.e2e-spec.ts` | 42 | 2 | ~73 | ~276 | ~55 |
-| **Total** | **54** | **11** | **~269** | **~280** | **~57** |
+| E2E `.e2e-spec.ts` | 39 | 2+ | ~120+ | ~200 | ~55 |
+| **Total** | **51** | **11+** | **~316+** | **~204** | **~57** |
 
-Progress: Started at 7/58 suites, 174 tests → now 11 suites, ~269 tests passing.
+Progress: Started at 7/58 suites, 174 tests → now ~316+ tests passing.
 
 **Phase A (infrastructure): DONE**
-**Phase B (assertion fixes): ~60% done** — endpoint paths fixed, permission properties updated, removed features skipped
+**Phase B (assertion fixes): ~80% done**
+- LicenseTermsService mock unlocked EE feature gates
+- Granular permissions seeded for all resource types
+- Endpoint paths, permission properties, response shapes fixed
+- Remaining failures: SSO-specific logic, invite flow guards, specific CRUD assertions
 **Phase C (conventions): DONE** — `ToolBelt/skills/tj-context/references/testing.md`
 
 ## Unit Tests (.spec.ts)
