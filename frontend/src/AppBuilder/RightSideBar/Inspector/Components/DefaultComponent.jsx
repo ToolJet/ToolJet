@@ -201,6 +201,7 @@ export const baseComponentProperties = (
       'IFrame',
       'Accordion',
       'FileButton',
+      'Listview',
     ],
     Layout: [],
   };

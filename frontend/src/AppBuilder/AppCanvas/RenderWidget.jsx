@@ -56,6 +56,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'KeyValuePair',
   'FileButton',
   'ButtonGroupV2',
+  'Listview',
 ];
 
 const RenderWidget = ({

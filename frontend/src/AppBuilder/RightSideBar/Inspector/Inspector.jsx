@@ -461,7 +461,7 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles) {
+    if (!componentMeta?.definition?.generalStyles || componentMeta?.styles?.boxShadow) {
       return null;
     }
     const items = [];
