@@ -29,7 +29,7 @@ describe('organizations controller', () => {
 
   describe('list organization users', () => {
     it('should allow only authenticated users to list org users', async () => {
-      await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
+      await request(app.getHttpServer()).get('/api/organization-users').expect(401);
     });
 
     it('should list organization users if the user is admin or super admin', async () => {
@@ -49,7 +49,7 @@ describe('organizations controller', () => {
       for (const userData of [adminUserData, superAdminUserData]) {
         const { user, orgUser } = adminUserData;
         const response = await request(app.getHttpServer())
-          .get('/api/organizations/users?page=1')
+          .get('/api/organization-users?page=1')
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie']);
 
