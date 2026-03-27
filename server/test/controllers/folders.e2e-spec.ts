@@ -10,13 +10,15 @@ import {
   createAppGroupPermission,
   authenticateUser,
 } from '../test.helper';
-import { getManager } from 'typeorm';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
 describe('folders controller', () => {
   let nestApp: INestApplication;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -24,6 +26,7 @@ describe('folders controller', () => {
 
   beforeAll(async () => {
     nestApp = await createNestAppInstance();
+    defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('GET /api/folders', () => {
@@ -39,19 +42,19 @@ describe('folders controller', () => {
 
       const loggedUser = await authenticateUser(nestApp);
 
-      const folder = await getManager().save(Folder, {
+      const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder2',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder3',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder4',
         organizationId: adminUserData.organization.id,
       });
@@ -60,7 +63,7 @@ describe('folders controller', () => {
         name: 'App in folder',
         user: adminUserData.user,
       });
-      await getManager().save(FolderApp, {
+      await defaultDataSource.manager.save(FolderApp, {
         app: appInFolder,
         folder: folder,
       });
@@ -68,7 +71,7 @@ describe('folders controller', () => {
       const anotherUserData = await createUser(nestApp, {
         email: 'admin@organization.com',
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: anotherUserData.organization.id,
       });
@@ -154,19 +157,19 @@ describe('folders controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const folder = await getManager().save(Folder, {
+      const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder2',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder3',
         organizationId: adminUserData.organization.id,
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder4',
         organizationId: adminUserData.organization.id,
       });
@@ -175,7 +178,7 @@ describe('folders controller', () => {
         name: 'App in folder',
         user: adminUserData.user,
       });
-      await getManager().save(FolderApp, {
+      await defaultDataSource.manager.save(FolderApp, {
         app: appInFolder,
         folder: folder,
       });
@@ -183,7 +186,7 @@ describe('folders controller', () => {
       const anotherUserData = await createUser(nestApp, {
         email: 'admin@organization.com',
       });
-      await getManager().save(Folder, {
+      await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: anotherUserData.organization.id,
       });
@@ -267,19 +270,19 @@ describe('folders controller', () => {
     loggedUser = await authenticateUser(nestApp, newUserData.user.email);
     newUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const folder = await getManager().save(Folder, {
+    const folder = await defaultDataSource.manager.save(Folder, {
       name: 'Folder1',
       organizationId: adminUserData.organization.id,
     });
-    const folder2 = await getManager().save(Folder, {
+    const folder2 = await defaultDataSource.manager.save(Folder, {
       name: 'Folder2',
       organizationId: adminUserData.organization.id,
     });
-    await getManager().save(Folder, {
+    await defaultDataSource.manager.save(Folder, {
       name: 'Folder3',
       organizationId: adminUserData.organization.id,
     });
-    await getManager().save(Folder, {
+    await defaultDataSource.manager.save(Folder, {
       name: 'Folder4',
       organizationId: adminUserData.organization.id,
     });
@@ -288,7 +291,7 @@ describe('folders controller', () => {
       name: 'App in folder',
       user: adminUserData.user,
     });
-    await getManager().save(FolderApp, {
+    await defaultDataSource.manager.save(FolderApp, {
       app: appInFolder,
       folder: folder,
     });
@@ -302,7 +305,7 @@ describe('folders controller', () => {
       false
     );
 
-    await getManager().save(FolderApp, {
+    await defaultDataSource.manager.save(FolderApp, {
       app: appInFolder2,
       folder: folder2,
     });
@@ -320,7 +323,7 @@ describe('folders controller', () => {
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',
     });
-    await getManager().save(Folder, {
+    await defaultDataSource.manager.save(Folder, {
       name: 'another org folder',
       organizationId: anotherUserData.organization.id,
     });
@@ -362,8 +365,8 @@ describe('folders controller', () => {
       folderCreate: false,
       organization: newUserData.organization,
     });
-    const group = await getManager().findOneOrFail(GroupPermission, {
-      where: { group: 'folder-handler' },
+    const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+      where: { name: 'folder-handler' },
     });
     await createAppGroupPermission(nestApp, appInFolder, group.id, {
       read: true,
@@ -384,7 +387,7 @@ describe('folders controller', () => {
     expect(findFolderAppsIn(folders, 'Folder1')[0]['app_id']).toEqual(appInFolder.id);
 
     // new user can only see all folders with folder create permissions but apps are scoped with read permissions
-    await getManager().update(GroupPermission, group.id, {
+    await defaultDataSource.manager.update(GroupPermissions, group.id, {
       folderCreate: true,
     });
 
@@ -511,15 +514,15 @@ describe('folders controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        folderUpdate: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        folderCreate: true,
       });
 
-      const folder = await getManager().save(Folder, {
+      const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
       });
@@ -533,7 +536,7 @@ describe('folders controller', () => {
           .send({ name })
           .expect(200);
 
-        const updatedFolder = await getManager().findOne(Folder, { where: { id: folder.id } });
+        const updatedFolder = await defaultDataSource.manager.findOne(Folder, { where: { id: folder.id } });
 
         expect(updatedFolder.name).toEqual(name);
       }
@@ -570,11 +573,11 @@ describe('folders controller', () => {
         organization: adminUserData.organization,
       });
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
         folderDelete: true,
       });
 
@@ -596,12 +599,12 @@ describe('folders controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
-        const folder = await getManager().save(Folder, {
+        const folder = await defaultDataSource.manager.save(Folder, {
           name: 'Folder1',
           organizationId: adminUserData.organization.id,
         });
 
-        const preCount = await getManager().count(Folder);
+        const preCount = await defaultDataSource.manager.count(Folder);
 
         await request(nestApp.getHttpServer())
           .delete(`/api/folders/${folder.id}`)
@@ -610,11 +613,11 @@ describe('folders controller', () => {
           .send()
           .expect(200);
 
-        const postCount = await getManager().count(Folder);
+        const postCount = await defaultDataSource.manager.count(Folder);
         expect(postCount).toEqual(preCount - 1);
       }
 
-      const folder = await getManager().save(Folder, {
+      const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
       });

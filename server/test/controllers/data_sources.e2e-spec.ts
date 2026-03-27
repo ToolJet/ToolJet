@@ -14,12 +14,14 @@ import {
   createDatasourceGroupPermission,
 } from '../test.helper';
 import { Credential } from 'src/entities/credential.entity';
-import { getManager, getRepository } from 'typeorm';
-import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -27,6 +29,7 @@ describe('data sources controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   it('should be able to create data sources only if user has admin group or app update permission in same organization or has instance user type', async () => {
@@ -75,9 +78,9 @@ describe('data sources controller', () => {
       isQueryNeeded: false,
     });
 
-    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
+    const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
       where: {
-        group: 'developer',
+        name: 'developer',
       },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
@@ -170,9 +173,9 @@ describe('data sources controller', () => {
       dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       dsKind: 'postgres',
     });
-    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
+    const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
       where: {
-        group: 'developer',
+        name: 'developer',
       },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
@@ -197,7 +200,7 @@ describe('data sources controller', () => {
           options: newOptions,
         });
 
-      const updatedDs = await getManager()
+      const updatedDs = await defaultDataSource.manager
         .createQueryBuilder(DataSource, 'data_source')
         .innerJoinAndSelect('data_source.dataSourceOptions', 'dataSourceOptions')
         .where('data_source.id = :dataSourceId', { dataSourceId: dataSource.id })
@@ -273,9 +276,9 @@ describe('data sources controller', () => {
       isQueryNeeded: false,
     });
 
-    const allUserGroup = await getRepository(GroupPermission).findOneOrFail({
+    const allUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
       where: {
-        group: 'all_users',
+        name: 'all_users',
         organizationId: adminUserData.organization.id,
       },
     });
@@ -358,9 +361,9 @@ describe('data sources controller', () => {
     });
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOne({
       where: {
-        group: 'developer',
+        name: 'developer',
       },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {

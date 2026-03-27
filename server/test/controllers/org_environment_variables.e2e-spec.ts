@@ -2,8 +2,9 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, createGroupPermission, authenticateUser } from '../test.helper';
-import { getManager } from 'typeorm';
-import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { randomInt } from 'crypto';
 
@@ -17,6 +18,7 @@ const createVariable = async (app: INestApplication, adminUserData: any, body: a
 
 describe('organization environment variables controller', () => {
   let app: INestApplication;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -24,6 +26,7 @@ describe('organization environment variables controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('GET /api/organization-variables', () => {
@@ -152,12 +155,12 @@ describe('organization environment variables controller', () => {
         organization: adminUserData.organization,
       });
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentVariableCreate: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
 
       let loggedUser = await authenticateUser(app);
@@ -241,12 +244,12 @@ describe('organization environment variables controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentVariableUpdate: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
 
       const response = await createVariable(app, adminUserData, {
@@ -264,7 +267,7 @@ describe('organization environment variables controller', () => {
           .send({ variable_name: 'secret_email' })
           .expect(200);
 
-        const updatedVariable = await getManager().findOne(OrgEnvironmentVariable, response.body.variable.id);
+        const updatedVariable = await defaultDataSource.manager.findOne(OrgEnvironmentVariable, { where: { id: response.body.variable.id } });
 
         expect(updatedVariable.variableName).toEqual('secret_email');
       }
@@ -317,12 +320,12 @@ describe('organization environment variables controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentVariableDelete: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
 
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
@@ -333,7 +336,7 @@ describe('organization environment variables controller', () => {
           encrypted: true,
         });
 
-        const preCount = await getManager().count(OrgEnvironmentVariable);
+        const preCount = await defaultDataSource.manager.count(OrgEnvironmentVariable);
 
         await request(app.getHttpServer())
           .delete(`/api/organization-variables/${response.body.variable.id}`)
@@ -342,7 +345,7 @@ describe('organization environment variables controller', () => {
           .send()
           .expect(200);
 
-        const postCount = await getManager().count(OrgEnvironmentVariable);
+        const postCount = await defaultDataSource.manager.count(OrgEnvironmentVariable);
         expect(postCount).toEqual(preCount - 1);
       }
 

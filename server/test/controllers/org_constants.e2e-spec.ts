@@ -9,8 +9,9 @@ import {
   authenticateUser,
   createAppEnvironments,
 } from '../test.helper';
-import { getManager } from 'typeorm';
-import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 
 const createConstant = async (app: INestApplication, adminUserData: any, body: any) => {
@@ -23,6 +24,7 @@ const createConstant = async (app: INestApplication, adminUserData: any, body: a
 
 describe('organization environment constants controller', () => {
   let app: INestApplication;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -30,6 +32,7 @@ describe('organization environment constants controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('GET /api/organization-constants', () => {
@@ -144,12 +147,12 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentConstantCreate: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
 
       let loggedUser = await authenticateUser(app);
@@ -225,12 +228,12 @@ describe('organization environment constants controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentConstantCreate: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
       const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
 
@@ -251,7 +254,7 @@ describe('organization environment constants controller', () => {
           })
           .expect(200);
 
-        const updatedVariable = await getManager().findOne(OrgEnvironmentConstantValue, {
+        const updatedVariable = await defaultDataSource.manager.findOne(OrgEnvironmentConstantValue, {
           where: {
             organizationConstantId: response.body.constant.id,
             environmentId: appEnvironments[0].id,
@@ -300,14 +303,14 @@ describe('organization environment constants controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
-        where: { group: 'developer' },
+      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
+        where: { name: 'developer' },
       });
 
       const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
 
-      await getManager().update(GroupPermission, developerGroup.id, {
-        orgEnvironmentConstantDelete: true,
+      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+        orgConstantCRUD: true,
       });
 
       for (const userData of [adminUserData, developerUserData]) {
@@ -317,7 +320,7 @@ describe('organization environment constants controller', () => {
           environments: [appEnvironments[0]?.id],
         });
 
-        const preCount = await getManager().count(OrgEnvironmentConstantValue);
+        const preCount = await defaultDataSource.manager.count(OrgEnvironmentConstantValue);
 
         const x = await request(app.getHttpServer())
           .delete(`/api/organization-constants/${response.body.constant.id}?environmentId=${appEnvironments[0].id}`)
@@ -326,7 +329,7 @@ describe('organization environment constants controller', () => {
           .send()
           .expect(200);
 
-        const postCount = await getManager().count(OrgEnvironmentConstantValue);
+        const postCount = await defaultDataSource.manager.count(OrgEnvironmentConstantValue);
         expect(postCount).toEqual(0);
       }
 
