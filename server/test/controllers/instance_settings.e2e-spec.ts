@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
-import { getManager, Like } from 'typeorm';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 const createSettings = async (app: INestApplication, userData: any, body: any) => {
@@ -36,12 +36,12 @@ describe('instance settings controller', () => {
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       const bodyArray = [
@@ -98,13 +98,13 @@ describe('instance settings controller', () => {
     it('should only be able to create a new settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -143,13 +143,13 @@ describe('instance settings controller', () => {
     it('should only be able to update existing settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -174,7 +174,7 @@ describe('instance settings controller', () => {
         .send([{ value: 'true', id: response.body.setting.id }])
         .expect(200);
 
-      const updatedSetting = await getManager().findOne(InstanceSettings, response.body.setting.id);
+      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, response.body.setting.id);
 
       expect(updatedSetting.value).toEqual('true');
 
@@ -191,13 +191,13 @@ describe('instance settings controller', () => {
     it('should only be able to delete an existing setting if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -215,7 +215,7 @@ describe('instance settings controller', () => {
         value: 'false',
       });
 
-      const preCount = await getManager().count(InstanceSettings);
+      const preCount = await getDefaultDataSource().manager.count(InstanceSettings);
 
       await request(app.getHttpServer())
         .delete(`/api/instance-settings/${response.body.setting.id}`)
@@ -231,13 +231,13 @@ describe('instance settings controller', () => {
         .send()
         .expect(200);
 
-      const postCount = await getManager().count(InstanceSettings);
+      const postCount = await getDefaultDataSource().manager.count(InstanceSettings);
       expect(postCount).toEqual(preCount - 1);
     });
   });
 
   afterAll(async () => {
-    await getManager().delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
+    await getDefaultDataSource().manager.delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
     await app.close();
   });
 });

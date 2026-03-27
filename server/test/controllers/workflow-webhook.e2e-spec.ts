@@ -1,5 +1,4 @@
 import { INestApplication } from '@nestjs/common';
-import { getManager } from 'typeorm';
 import {
   clearDB,
   createUser,
@@ -12,6 +11,7 @@ import {
   triggerWorkflowViaWebhook,
   enableWorkflowStatus,
   createNestAppInstanceWithServiceMocks,
+  getDefaultDataSource,
 } from '../test.helper';
 import { v4 as uuidv4 } from 'uuid';
 import * as request from 'supertest';
@@ -20,7 +20,7 @@ import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 
 const checkIfRunjsQueryCanAccessParamsPassedFromWebhook = async (appId: string, appVersionId: string) => {
-  return await getManager()
+  return await getDefaultDataSource().manager
     .createQueryBuilder(WorkflowExecution, 'we')
     .innerJoinAndSelect(WorkflowExecutionNode, 'wen', 'wen.workflowExecutionId = we.id')
     .where('we.appVersionId = :appVerId and wen.type = :type', {

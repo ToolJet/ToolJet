@@ -307,7 +307,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });
@@ -344,7 +344,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });
@@ -384,7 +384,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'invited',
           });
@@ -423,7 +423,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'invited',
           });
@@ -464,7 +464,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'archivedUser',
             email: 'archiveduser@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
             userStatus: 'archived',

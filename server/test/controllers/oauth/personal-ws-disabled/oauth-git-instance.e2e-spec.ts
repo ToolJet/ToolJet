@@ -56,7 +56,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'invited@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             status: 'invited',
           });
 
@@ -95,7 +95,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'archived@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             status: 'archived',
           });
 

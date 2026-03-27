@@ -211,7 +211,7 @@ describe('organizations controller', () => {
         const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
           organization,
         });
         const loggedUser = await authenticateUser(app, 'developer@tooljet.io');
@@ -300,7 +300,7 @@ describe('organizations controller', () => {
       it('should not change organization configs if changes are not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
         });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
@@ -360,7 +360,7 @@ describe('organizations controller', () => {
       it('should not get organization configs if request not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
         });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())

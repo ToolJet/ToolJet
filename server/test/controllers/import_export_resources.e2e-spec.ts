@@ -1,6 +1,5 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { Organization } from '@entities/organization.entity';
@@ -17,6 +16,7 @@ import {
   authenticateUser,
   logoutUser,
   createNestAppInstanceWithServiceMocks,
+  getDefaultDataSource,
 } from '../test.helper';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -53,7 +53,7 @@ describe('ImportExportResourcesController', () => {
 
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
+      groups: ['end-user', 'admin'],
     });
 
     ({ application } = await generateAppDefaults(app, adminUserData.user, {
@@ -176,7 +176,7 @@ describe('ImportExportResourcesController', () => {
     });
 
     it('should throw Forbidden if user lacks permission', async () => {
-      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['all_users'] });
+      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['end-user'] });
       const regularLoggedUser = await authenticateUser(app, 'regular@tooljet.io');
       const { application } = await generateAppDefaults(app, regularUserData.user, { name: 'Test App' });
 
@@ -305,10 +305,10 @@ describe('ImportExportResourcesController', () => {
       expect(response.body.imports).toBeDefined();
       expect(response.body.imports.app[0].name).toBe('Imported App');
 
-      const importedApp = await getManager().findOne(App, { where: { name: 'Imported App' } });
+      const importedApp = await getDefaultDataSource().manager.findOne(App, { where: { name: 'Imported App' } });
       expect(importedApp).toBeDefined();
 
-      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'users' } });
+      const importedTable = await getDefaultDataSource().manager.findOne(InternalTable, { where: { tableName: 'users' } });
       expect(importedTable).toBeDefined();
     });
 
@@ -337,11 +337,11 @@ describe('ImportExportResourcesController', () => {
       expect(importResponse.body.imports).toBeDefined();
 
       // Verify that the app was actually created
-      const importedApp = await getManager().findOne(App, { where: { name: 'Release notes' } });
+      const importedApp = await getDefaultDataSource().manager.findOne(App, { where: { name: 'Release notes' } });
       expect(importedApp).toBeDefined();
       expect(importedApp.name).toBe('Release notes');
 
-      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'releasenotes' } });
+      const importedTable = await getDefaultDataSource().manager.findOne(InternalTable, { where: { tableName: 'releasenotes' } });
       expect(importedTable).toBeDefined();
       expect(importedTable.tableName).toBe('releasenotes');
 
@@ -593,7 +593,7 @@ describe('ImportExportResourcesController', () => {
       expect(response.body.success).toBe(true);
 
       // Verify that the schema was transformed
-      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'users' } });
+      const importedTable = await getDefaultDataSource().manager.findOne(InternalTable, { where: { tableName: 'users' } });
       expect(importedTable).toBeDefined();
 
       // Export the table to check its structure
@@ -810,10 +810,10 @@ describe('ImportExportResourcesController', () => {
     });
 
     it('should throw ForbiddenException if user lacks permission', async () => {
-      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['all_users'] });
+      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['end-user'] });
       const regularLoggedUser = await authenticateUser(app, regularUserData.user.email);
 
-      const originalApp = await getManager().save(App, {
+      const originalApp = await getDefaultDataSource().manager.save(App, {
         name: 'Original App',
         organizationId: organization.id,
         userId: user.id,

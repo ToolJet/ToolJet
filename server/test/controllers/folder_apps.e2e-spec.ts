@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
-import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization } from '../test.helper';
+import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization, getDefaultDataSource } from '../test.helper';
 import * as request from 'supertest';
-import { getManager } from 'typeorm';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
 
@@ -23,7 +22,7 @@ describe('folder apps controller', () => {
 
     it('should add an app to a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -46,7 +45,7 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to add apps to folders in any organization', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -54,7 +53,7 @@ describe('folder apps controller', () => {
       //super admin
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 
@@ -81,7 +80,7 @@ describe('folder apps controller', () => {
 
     it('should not add an app to a folder more than once', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
 
       // create a new folder
       const folder = await manager.save(
@@ -111,7 +110,7 @@ describe('folder apps controller', () => {
 
       const loggedUser = await authenticateUser(nestApp);
 
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -129,7 +128,7 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -140,7 +139,7 @@ describe('folder apps controller', () => {
       //super admin
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 

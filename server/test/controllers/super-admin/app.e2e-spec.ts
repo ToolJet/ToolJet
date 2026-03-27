@@ -64,30 +64,24 @@ describe('Authentication', () => {
       expect(user.userType).toBe('instance');
       expect(organization.name).toBe('test');
 
-      const groupPermissions = await user.groupPermissions;
-      const groupNames = groupPermissions.map((x) => x.group);
+      const groupPermissions = await user.userPermissions;
+      const groupNames = groupPermissions.map((x) => x.name);
 
-      expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
+      expect(new Set(['end-user', 'admin'])).toEqual(new Set(groupNames));
 
-      const adminGroup = groupPermissions.find((x) => x.group == 'admin');
+      const adminGroup = groupPermissions.find((x) => x.name == 'admin');
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
-      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.orgConstantCRUD).toBeTruthy();
       expect(adminGroup.folderDelete).toBeTruthy();
 
-      const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
-      expect(allUserGroup.appCreate).toBeFalsy();
-      expect(allUserGroup.appDelete).toBeFalsy();
-      expect(allUserGroup.folderCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
-      expect(allUserGroup.folderUpdate).toBeFalsy();
-      expect(allUserGroup.folderDelete).toBeFalsy();
+      const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
+      expect(endUserGroup.appCreate).toBeFalsy();
+      expect(endUserGroup.appDelete).toBeFalsy();
+      expect(endUserGroup.folderCreate).toBeFalsy();
+      expect(endUserGroup.orgConstantCRUD).toBeFalsy();
+      expect(endUserGroup.folderDelete).toBeFalsy();
     });
 
     it('second user should not be a super admin', async () => {
@@ -126,30 +120,24 @@ describe('Authentication', () => {
       expect(user.userType).toBe('workspace');
       expect(organization.name).toContain('My workspace');
 
-      const groupPermissions = await user.groupPermissions;
-      const groupNames = groupPermissions.map((x) => x.group);
+      const groupPermissions = await user.userPermissions;
+      const groupNames = groupPermissions.map((x) => x.name);
 
-      expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
+      expect(new Set(['end-user', 'admin'])).toEqual(new Set(groupNames));
 
-      const adminGroup = groupPermissions.find((x) => x.group == 'admin');
+      const adminGroup = groupPermissions.find((x) => x.name == 'admin');
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
-      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.orgConstantCRUD).toBeTruthy();
       expect(adminGroup.folderDelete).toBeTruthy();
 
-      const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
-      expect(allUserGroup.appCreate).toBeFalsy();
-      expect(allUserGroup.appDelete).toBeFalsy();
-      expect(allUserGroup.folderCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
-      expect(allUserGroup.folderUpdate).toBeFalsy();
-      expect(allUserGroup.folderDelete).toBeFalsy();
+      const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
+      expect(endUserGroup.appCreate).toBeFalsy();
+      expect(endUserGroup.appDelete).toBeFalsy();
+      expect(endUserGroup.folderCreate).toBeFalsy();
+      expect(endUserGroup.orgConstantCRUD).toBeFalsy();
+      expect(endUserGroup.folderDelete).toBeFalsy();
     });
   });
 

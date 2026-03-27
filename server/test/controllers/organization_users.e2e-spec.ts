@@ -23,13 +23,13 @@ describe('organization users controller', () => {
     // setup a pre existing user of different organization
     await createUser(app, {
       email: 'someUser@tooljet.io',
-      groups: ['admin', 'all_users'],
+      groups: ['admin', 'end-user'],
     });
 
     // setup organization and user setup to test against
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
-      groups: ['admin', 'all_users'],
+      groups: ['admin', 'end-user'],
     });
 
     const organization = adminUserData.organization;
@@ -39,13 +39,13 @@ describe('organization users controller', () => {
 
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
-      groups: ['developer', 'all_users'],
+      groups: ['developer', 'end-user'],
       organization,
     });
 
     const superAdminUserData = await createUser(app, {
       email: 'superadmin@tooljet.io',
-      groups: ['developer', 'all_users'],
+      groups: ['developer', 'end-user'],
       userType: 'instance',
     });
 
@@ -57,7 +57,7 @@ describe('organization users controller', () => {
 
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
-      groups: ['viewer', 'all_users'],
+      groups: ['viewer', 'end-user'],
       organization,
     });
 
@@ -119,7 +119,7 @@ describe('organization users controller', () => {
     it('should throw error when trying to remove last active admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
         status: 'active',
       });
 
@@ -129,14 +129,14 @@ describe('organization users controller', () => {
       const organization = adminUserData.organization;
       const anotherAdminUserData = await createUser(app, {
         email: 'another-admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
         status: 'active',
         organization,
       });
 
       const _archivedAdmin = await createUser(app, {
         email: 'archived-admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
         status: 'archived',
         organization,
       });
@@ -159,7 +159,7 @@ describe('organization users controller', () => {
     it('should allow only admin/super admin users to archive org users', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -168,7 +168,7 @@ describe('organization users controller', () => {
       const organization = adminUserData.organization;
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         organization,
       });
 
@@ -177,14 +177,14 @@ describe('organization users controller', () => {
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
-        groups: ['viewer', 'all_users'],
+        groups: ['viewer', 'end-user'],
         organization,
         status: 'invited',
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         userType: 'instance',
       });
 
@@ -237,11 +237,11 @@ describe('organization users controller', () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         status: 'active',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         userType: 'instance',
       });
 
@@ -260,7 +260,7 @@ describe('organization users controller', () => {
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
         status: 'active',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         organization,
       });
 
@@ -270,7 +270,7 @@ describe('organization users controller', () => {
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         status: 'archived',
-        groups: ['viewer', 'all_users'],
+        groups: ['viewer', 'end-user'],
         organization,
       });
 
@@ -335,7 +335,7 @@ describe('organization users controller', () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         status: 'active',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       const loggedUser = await authenticateUser(app);
@@ -345,7 +345,7 @@ describe('organization users controller', () => {
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
         status: 'active',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         organization,
       });
 
@@ -363,13 +363,13 @@ describe('organization users controller', () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         status: 'active',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
       const organization = adminUserData.organization;
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
         status: 'invited',
-        groups: ['developer', 'all_users'],
+        groups: ['developer', 'end-user'],
         organization,
       });
 

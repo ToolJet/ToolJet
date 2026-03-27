@@ -1,8 +1,8 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl, getDefaultDataSource } from '../../test.helper';
 import { Organization } from 'src/entities/organization.entity';
-import { getManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { SAML, Profile } from '@node-saml/node-saml';
 import { SSOResponse } from 'src/entities/sso_response.entity';
@@ -88,8 +88,8 @@ describe('oauth controller', () => {
       });
       current_organization = organization;
       /* store fake SAML response */
-      const response = await getManager().save(
-        getManager().create(SSOResponse, {
+      const response = await getDefaultDataSource().manager.save(
+        getDefaultDataSource().manager.create(SSOResponse, {
           sso: 'saml',
           configId: organization.id,
           response: '<xml></xml>',
@@ -204,7 +204,7 @@ describe('oauth controller', () => {
             firstName: 'Mo',
             lastName: 'Salah',
             email: 'mosalah@lfc.com',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });
@@ -230,7 +230,7 @@ describe('oauth controller', () => {
             firstName: 'Mo',
             lastName: 'Salah',
             email: 'mosalah@lfc.com',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });

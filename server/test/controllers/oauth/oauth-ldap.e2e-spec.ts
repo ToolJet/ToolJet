@@ -235,7 +235,7 @@ describe('oauth controller', () => {
             firstName: 'Galileo',
             lastName: '',
             email: 'galieleo@ldap.forumsys.com',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });
@@ -261,7 +261,7 @@ describe('oauth controller', () => {
             firstName: 'Galileo',
             lastName: '',
             email: 'galieleo@ldap.forumsys.com',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'invited',
           });

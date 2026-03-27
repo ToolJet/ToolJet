@@ -28,14 +28,14 @@ describe('app_users controller', () => {
   it('should be able to create a new app user if admin of same organization', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
+      groups: ['end-user', 'admin'],
     });
 
     const loggedUser = await authenticateUser(app);
 
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',
-      groups: ['all_users', 'developer'],
+      groups: ['end-user', 'developer'],
       organization: adminUserData.organization,
     });
     const { application } = await generateAppDefaults(app, adminUserData.user, {});
@@ -47,7 +47,7 @@ describe('app_users controller', () => {
       .send({
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         role: '',
       });
 
@@ -59,17 +59,17 @@ describe('app_users controller', () => {
   it('should not be able to create new app user if admin of another organization', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
+      groups: ['end-user', 'admin'],
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',
-      groups: ['all_users', 'developer'],
+      groups: ['end-user', 'developer'],
       organization: adminUserData.organization,
     });
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
-      groups: ['all_users', 'admin'],
+      groups: ['end-user', 'admin'],
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -85,7 +85,7 @@ describe('app_users controller', () => {
       .send({
         app_id: application.id,
         org_user_id: adminUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
     expect(response.statusCode).toBe(403);
@@ -96,7 +96,7 @@ describe('app_users controller', () => {
   it('should not allow developers and viewers to create app users', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
+      groups: ['end-user', 'admin'],
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -105,12 +105,12 @@ describe('app_users controller', () => {
 
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',
-      groups: ['all_users', 'developer'],
+      groups: ['end-user', 'developer'],
       organization: adminUserData.organization,
     });
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
-      groups: ['all_users', 'viewer'],
+      groups: ['end-user', 'viewer'],
       organization: adminUserData.organization,
     });
 
@@ -123,7 +123,7 @@ describe('app_users controller', () => {
       .send({
         app_id: application.id,
         org_user_id: viewerUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
     expect(response.statusCode).toBe(403);
 
@@ -136,7 +136,7 @@ describe('app_users controller', () => {
       .send({
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
     await logoutUser(app, loggedDeveloperUser.tokenCookie, viewerUserData.user.defaultOrganizationId);

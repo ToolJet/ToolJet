@@ -17,19 +17,19 @@ describe('library apps controller', () => {
     it('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 
       const organization = adminUserData.organization;
       const nonAdminUserData = await createUser(app, {
         email: 'developer@tooljet.io',
-        groups: ['all_users'],
+        groups: ['end-user'],
         organization,
       });
 
@@ -68,7 +68,7 @@ describe('library apps controller', () => {
     it('should return error if template identifier is not found', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const loggedUser = await authenticateUser(app);
@@ -95,12 +95,12 @@ describe('library apps controller', () => {
     it('should be get app manifests', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 

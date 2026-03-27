@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager, Repository, Not } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -91,30 +91,24 @@ describe('Authentication', () => {
         expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
         expect(organization?.name).toContain('My workspace');
 
-        const groupPermissions = await user.groupPermissions;
-        const groupNames = groupPermissions.map((x) => x.group);
+        const groupPermissions = await user.userPermissions;
+        const groupNames = groupPermissions.map((x) => x.name);
 
-        expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
+        expect(new Set(['end-user', 'admin'])).toEqual(new Set(groupNames));
 
-        const adminGroup = groupPermissions.find((x) => x.group == 'admin');
+        const adminGroup = groupPermissions.find((x) => x.name == 'admin');
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
         expect(adminGroup.folderCreate).toBeTruthy();
-        expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
-        expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
-        expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
-        expect(adminGroup.folderUpdate).toBeTruthy();
+        expect(adminGroup.orgConstantCRUD).toBeTruthy();
         expect(adminGroup.folderDelete).toBeTruthy();
 
-        const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
-        expect(allUserGroup.appCreate).toBeFalsy();
-        expect(allUserGroup.appDelete).toBeFalsy();
-        expect(allUserGroup.folderCreate).toBeFalsy();
-        expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
-        expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
-        expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
-        expect(allUserGroup.folderUpdate).toBeFalsy();
-        expect(allUserGroup.folderDelete).toBeFalsy();
+        const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
+        expect(endUserGroup.appCreate).toBeFalsy();
+        expect(endUserGroup.appDelete).toBeFalsy();
+        expect(endUserGroup.folderCreate).toBeFalsy();
+        expect(endUserGroup.orgConstantCRUD).toBeFalsy();
+        expect(endUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         const response = await request(app.getHttpServer())
@@ -384,7 +378,7 @@ describe('Authentication', () => {
       it('should be able to switch between organizations with user privilege', async () => {
         const { organization: invited_organization } = await createUser(
           app,
-          { groups: ['all_users'], organizationName: 'New Organization' },
+          { groups: ['end-user'], organizationName: 'New Organization' },
           current_user
         );
 
@@ -454,7 +448,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const user = await getManager().findOne(User, {
+      const user = await getDefaultDataSource().manager.findOne(User, {
         where: { email: 'admin@tooljet.io' },
       });
 
@@ -484,7 +478,7 @@ describe('Authentication', () => {
     });
 
     it('should reset password', async () => {
-      const user = await getManager().findOne(User, {
+      const user = await getDefaultDataSource().manager.findOne(User, {
         where: { email: 'admin@tooljet.io' },
       });
 
@@ -532,7 +526,7 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
 
-        const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
+        const organizationUser = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, { where: { userId: user.id } });
         expect(organizationUser.status).toEqual('active');
       });
 
