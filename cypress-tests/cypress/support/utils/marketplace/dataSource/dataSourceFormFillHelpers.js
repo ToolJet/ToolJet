@@ -112,7 +112,7 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
       // Some plugins show a failure toast; others only show inline alert text.
       // Always verify the inline alert when customMessage is provided.
       if (customMessage) {
-        cy.get('[data-cy="connection-alert-text"]')
+        cy.get('[data-cy="connection-alert-text"]',{ timeout: 50000 })
           .scrollIntoView()
           .should("be.visible", { timeout: 50000 })
           .and("contain.text", customMessage);
