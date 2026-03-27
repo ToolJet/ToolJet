@@ -69,7 +69,9 @@ describe('Authentication', () => {
         });
       });
       it('should not create new users', async () => {
-        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/onboarding/signup')
+          .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(403);
       });
     });
@@ -154,7 +156,7 @@ describe('Authentication', () => {
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
-        await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
+        await request(app.getHttpServer()).get('/api/organization-users').expect(401);
       });
       it('throw 401 if user is invited', async () => {
         const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
@@ -169,7 +171,7 @@ describe('Authentication', () => {
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
-        await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
+        await request(app.getHttpServer()).get('/api/organization-users').expect(401);
       });
       it('login to new organization if user is archived', async () => {
         const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
@@ -463,7 +465,9 @@ describe('Authentication', () => {
         where: { email: 'admin@tooljet.io' },
       });
 
-      expect(emailServiceMock).toHaveBeenCalledWith(user.email, user.forgotPasswordToken);
+      expect(emailServiceMock).toHaveBeenCalledWith(
+        expect.objectContaining({ to: user.email, token: user.forgotPasswordToken })
+      );
     });
   });
 
@@ -480,6 +484,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
+        'Password should be Max 100 characters',
         'Password should contain more than 5 letters',
         'password should not be empty',
         'password must be a string',
