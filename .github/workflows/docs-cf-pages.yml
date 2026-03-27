@@ -1,0 +1,50 @@
+name: Deploy Docs to Cloudflare Pages
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - documentation
+    paths:
+      - docs/**
+    types: [closed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: documentation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.18.2
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm install
+
+      - name: Build the project
+        working-directory: docs
+        run: npm run build
+        env:
+          GTM: ${{ secrets.GTM }}
+          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+          NODE_ENV: production
+
+      - name: Add SPA routing redirect rule
+        run: echo "/* /index.html 200" > docs/build/_redirects
+
+      - name: Deploy to Cloudflare Pages
+        run: |
+          npx wrangler pages deploy docs/build \
+            --project-name=${{ secrets.CF_PAGES_PROJECT_NAME_DOCS }} \
+            --branch=documentation \
+            --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID }}
