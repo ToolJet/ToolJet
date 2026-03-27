@@ -20,7 +20,8 @@ export class VersionRepository extends Repository<AppVersion> {
     appId: string,
     firstPriorityEnvId: string,
     definition?: any,
-    manager?: EntityManager
+    manager?: EntityManager,
+    branchId?: string
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return catchDbException(() => {
@@ -34,6 +35,7 @@ export class VersionRepository extends Repository<AppVersion> {
             status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
+            ...(branchId && { branchId }),
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_VERSION_NAME_UNIQUE, message: 'Version name already exists.' }]);

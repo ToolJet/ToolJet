@@ -28,7 +28,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -48,6 +48,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -72,7 +73,19 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
+      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
+      let branchId = appCreateDto.branchId;
+      if (!branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit) {
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+          });
+          branchId = defaultBranch?.id;
+        }
+      }
+
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -241,7 +254,7 @@ export class AppsService implements IAppsService {
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
       // Block rename if git sync is enabled and app has been pushed
-      if (isGitSyncEnabled) {
+      if (isGitSyncEnabled  && app.type === APP_TYPES.FRONT_END) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
         if (appGitSync) {
           // Check if on default branch (not a feature branch)
@@ -349,7 +362,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, branchId } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -359,13 +372,14 @@ export class AppsService implements IAppsService {
           folder,
           parseInt(page || '1'),
           searchKey,
-          type as APP_TYPES
+          type as APP_TYPES,
+          branchId
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
         console.log(`Fetched apps for folder ${folderId}:`, apps);
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
       }
 
       if (isGetAll) {
@@ -406,7 +420,7 @@ export class AppsService implements IAppsService {
         }
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -430,7 +444,7 @@ export class AppsService implements IAppsService {
     return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
-  async getOne(app: App, user: User): Promise<any> {
+  async getOne(app: App, user: User, branchId?: string): Promise<any> {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -493,7 +507,11 @@ export class AppsService implements IAppsService {
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
 
-      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
+      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
+        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+      }
       if (appGit && !isDraft) {
         // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;

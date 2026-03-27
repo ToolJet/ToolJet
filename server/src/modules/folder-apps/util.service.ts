@@ -20,9 +20,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
     manager: EntityManager,
     type = APP_TYPES.FRONT_END,
-    searchKey?: string
+    searchKey?: string,
+    branchId?: string
   ): Promise<Folder[]> {
-    return this.getFolderQuery(user.organizationId, manager, userAppPermissions as UserAppsPermissions, type, searchKey)
+    return this.getFolderQuery(user.organizationId, manager, userAppPermissions as UserAppsPermissions, type, searchKey, branchId)
       .distinct()
       .getMany();
   }
@@ -31,7 +32,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     organizationId: string,
     manager: EntityManager,
     type: APP_TYPES,
-    searchKey?: string
+    searchKey?: string,
+    branchId?: string
   ): SelectQueryBuilder<Folder> {
     const query = manager.createQueryBuilder(Folder, 'folders');
     query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
@@ -60,7 +62,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     manager: EntityManager,
     userAppPermissions: UserAppsPermissions,
     type = APP_TYPES.FRONT_END,
-    searchKey?: string
+    searchKey?: string,
+    branchId?: string
   ): SelectQueryBuilder<Folder> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
 
@@ -84,7 +87,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         ),
       ];
 
-    const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey);
+    const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey, branchId);
 
     if (!isAllEditable) {
       // Not all apps are editable - filter with view privilege
@@ -137,7 +140,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     folder: Folder,
     page: number,
     searchKey: string,
-    type: APP_TYPES
+    type: APP_TYPES,
+    branchId?: string
   ): Promise<{
     viewableApps: AppBase[];
     totalCount: number;
@@ -167,6 +171,24 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey);
       this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
+
+      if (branchId) {
+        viewableAppsInFolder.andWhere(
+          `(
+            NOT EXISTS (
+              SELECT 1 FROM app_versions av
+              WHERE av.app_id = apps.id
+              AND av.branch_id IS NOT NULL
+            )
+            OR EXISTS (
+              SELECT 1 FROM app_versions av
+              WHERE av.app_id = apps.id
+              AND av.branch_id = :folderAppsBranchId
+            )
+          )`,
+          { folderAppsBranchId: branchId }
+        );
+      }
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder

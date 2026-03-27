@@ -2,10 +2,12 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { Credential } from '@entities/credential.entity';
 import { User } from 'src/entities/user.entity';
 import { EntityManager, In, DeepPartial } from 'typeorm';
 import {
@@ -45,6 +47,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -273,7 +276,7 @@ export class AppImportExportService {
         .getMany();
 
       let dataQueries: DataQuery[] = [];
-      let dataSourceOptions: DataSourceOptions[] = [];
+      let dataSourceOptions: any[] = [];
 
       const globalQueries: DataQuery[] = await manager
         .createQueryBuilder(DataQuery, 'data_query')
@@ -305,17 +308,29 @@ export class AppImportExportService {
           .orderBy('data_queries.created_at', 'ASC')
           .getMany();
 
-        dataSourceOptions = await manager
-          .createQueryBuilder(DataSourceOptions, 'data_source_options')
-          .where(
-            'data_source_options.environmentId IN(:...environmentId) AND data_source_options.dataSourceId IN(:...dataSourceId)',
-            {
-              environmentId: appEnvironments.map((v) => v.id),
-              dataSourceId: dataSources.map((v) => v.id),
-            }
-          )
-          .orderBy('data_source_options.createdAt', 'ASC')
-          .getMany();
+        const rawAndEntities = await manager
+          .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
+          .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
+          .where('dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)', {
+            environmentId: appEnvironments.map((v) => v.id),
+            dataSourceId: dataSources.map((v) => v.id),
+          })
+          .addSelect('dsv.dataSourceId', 'dataSourceId')
+          .orderBy('dsvo.createdAt', 'ASC')
+          .getRawAndEntities();
+
+        // Map DSVO records to the legacy export shape (with dataSourceId)
+        dataSourceOptions = rawAndEntities.raw.map((raw, i) => {
+          const entity = rawAndEntities.entities[i];
+          return {
+            id: entity.id,
+            options: entity.options,
+            environmentId: entity.environmentId,
+            dataSourceId: raw.dsv_dataSourceId || raw.dataSourceId,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt,
+          };
+        });
 
         dataSourceOptions?.forEach((dso) => {
           delete dso?.options?.tokenData;
@@ -542,7 +557,8 @@ export class AppImportExportService {
     isGitApp = false,
     tooljetVersion = '',
     cloning = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    branchId?: string
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -594,14 +610,23 @@ export class AppImportExportService {
         externalResourceMappings,
         isNormalizedAppDefinitionSchema,
         currentTooljetVersion,
-        moduleResourceMappings
+        moduleResourceMappings,
+        undefined,
+        branchId
       );
-      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
-      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importingAppVersions);
+      // When multiple versions are imported, branch-type versions are excluded.
+      // Filter here to match so the editing version is set to a version that was actually created.
+      const importedAppVersions =
+        importingAppVersions.length > 1
+          ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+          : importingAppVersions;
+
+      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
       // hence updating slug explicitly
@@ -637,7 +662,6 @@ export class AppImportExportService {
     const newDataSourceIds = Object.values(resourceMapping.dataSourceMapping);
     const newDsoIds = Object.values(resourceMapping.dataSourceOptionsMapping);
     const newLayoutIds = Object.values(resourceMapping.layoutMapping);
-    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
 
     // Pages
     if (newPageIds.length > 0) {
@@ -675,10 +699,10 @@ export class AppImportExportService {
       }
     }
 
-    // DataSourceOptions
+    // DataSourceOptions (now stored in DataSourceVersionOptions)
     if (newDsoIds.length > 0) {
       const dataSourceOptions = await manager
-        .createQueryBuilder(DataSourceOptions, 'dso')
+        .createQueryBuilder(DataSourceVersionOptions, 'dso')
         .where('dso.id IN(:...dsoIds)', { dsoIds: newDsoIds })
         .select(['dso.id'])
         .getMany();
@@ -711,22 +735,10 @@ export class AppImportExportService {
       }
     }
 
-    if (appVersionIds.length > 0) {
-      const appVersions = await manager
-        .createQueryBuilder(AppVersion, 'av')
-        .where('av.id IN(:...avIds)', { avIds: appVersionIds })
-        .select(['av.id'])
-        .getMany();
-
-      const toUpdateVersions = appVersions.map((av) => {
-        this.setCoRelationId(av, resourceMapping.appVersionMapping);
-        return av;
-      });
-
-      if (!isEmpty(toUpdateVersions)) {
-        await manager.save(toUpdateVersions);
-      }
-    }
+    // AppVersion.co_relation_id is intentionally NOT updated here.
+    // It is set at creation time to importedApp.co_relation_id (the app's stable cross-workspace
+    // identifier). Using the old source version UUID as the stable identity would be wrong —
+    // all versions of the same app must share the app's co_relation_id.
   }
 
   async updateEntityReferencesForImportedApp(
@@ -880,7 +892,7 @@ export class AppImportExportService {
     importingDataQueries: DataQuery[];
     importingAppVersions: AppVersion[];
     importingAppEnvironments: AppEnvironment[];
-    importingDataSourceOptions: DataSourceOptions[];
+    importingDataSourceOptions: any[];
     importingDefaultAppEnvironmentId: string;
     importingPages: Page[];
     importingComponents: Component[];
@@ -925,7 +937,8 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    branchId?: string
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -961,14 +974,23 @@ export class AppImportExportService {
       importingEvents,
     } = this.extractImportDataFromAppParams(appParams);
 
+    // When importing multiple versions, skip branch-type versions — only import regular versions.
+    // When importing a single branch-type version, allow it through (it will be adapted to
+    // the target branch context inside createAppVersionsForImportedApp).
+    const filteredAppVersions =
+      importingAppVersions.length > 1
+        ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+        : importingAppVersions;
+
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
       user,
       importedApp,
-      importingAppVersions,
+      filteredAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      createNewVersion
+      createNewVersion,
+      branchId
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -981,7 +1003,7 @@ export class AppImportExportService {
 
     appResourceMappings = await this.setupAppVersionAssociations(
       manager,
-      importingAppVersions,
+      filteredAppVersions,
       user,
       appResourceMappings,
       externalResourceMappings,
@@ -994,7 +1016,8 @@ export class AppImportExportService {
       importingComponents,
       importingEvents,
       tooljetVersion,
-      moduleResourceMappings
+      moduleResourceMappings,
+      branchId
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1003,7 +1026,7 @@ export class AppImportExportService {
     }
 
     if (!isNormalizedAppDefinitionSchema) {
-      for (const importingAppVersion of importingAppVersions) {
+      for (const importingAppVersion of filteredAppVersions) {
         const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
           importingAppVersion.definition,
           appResourceMappings.dataQueryMapping
@@ -1221,14 +1244,15 @@ export class AppImportExportService {
     externalResourceMappings: Record<string, unknown>,
     importingAppEnvironments: AppEnvironment[],
     importingDataSources: DataSource[],
-    importingDataSourceOptions: DataSourceOptions[],
+    importingDataSourceOptions: any[],
     importingDataQueries: DataQuery[],
     importingDefaultAppEnvironmentId: string,
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
-    moduleResourceMappings?: any
+    moduleResourceMappings?: any,
+    branchId?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1289,21 +1313,43 @@ export class AppImportExportService {
                 true,
                 manager
               );
-              const dsOption = manager.create(DataSourceOptions, {
-                environmentId: envId,
-                dataSourceId: dataSourceForAppVersion.id,
-                options: newOptions,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+              // Find-or-create default DSV, then create DSVO
+              let defaultDsv = await manager.findOne(DataSourceVersion, {
+                where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
               });
-              const savedDsOption = await manager.save(dsOption);
+              if (!defaultDsv) {
+                defaultDsv = await manager.save(
+                  manager.create(DataSourceVersion, {
+                    dataSourceId: dataSourceForAppVersion.id,
+                    name: dataSourceForAppVersion.name || importingDataSource.name || 'v1',
+                    isDefault: true,
+                    isActive: true,
+                    branchId: null,
+                  })
+                );
+              }
+              const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+                where: { dataSourceVersionId: defaultDsv.id, environmentId: envId },
+              });
+              let savedDsvo;
+              if (!existingDsvo) {
+                savedDsvo = await manager.save(
+                  manager.create(DataSourceVersionOptions, {
+                    dataSourceVersionId: defaultDsv.id,
+                    environmentId: envId,
+                    options: newOptions,
+                  })
+                );
+              } else {
+                savedDsvo = existingDsvo;
+              }
 
               // Find the matching old dataSourceOption ID for this environment
               const oldDsOption = importingDataSourceOptions.find(
                 (dso) => dso.dataSourceId === importingDataSource.id && dso.environmentId === envId
               );
               if (oldDsOption) {
-                appResourceMappings.dataSourceOptionsMapping[oldDsOption.id] = savedDsOption.id;
+                appResourceMappings.dataSourceOptionsMapping[oldDsOption.id] = savedDsvo.id;
               }
             })
           );
@@ -1321,6 +1367,12 @@ export class AppImportExportService {
             appResourceMappings,
             importingDefaultAppEnvironmentId
           );
+        }
+
+        // Ensure branch-scoped DSV exists so the DS appears on the global DS page
+        // for the active branch. This handles both newly created and existing DS.
+        if (!isDefaultDatasource) {
+          await this.ensureBranchDsvForDataSource(manager, dataSourceForAppVersion, user.organizationId, branchId);
         }
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
@@ -1788,7 +1840,7 @@ export class AppImportExportService {
     manager: EntityManager,
     appVersion: AppVersion,
     dataSourceForAppVersion: DataSource,
-    dataSourceOptions: DataSourceOptions[],
+    dataSourceOptions: any[],
     importingDataSource: DataSource,
     appEnvironments: AppEnvironment[],
     appResourceMappings: AppResourceMappings,
@@ -1810,13 +1862,16 @@ export class AppImportExportService {
         (dso) => dso.environmentId === defaultAppEnvironmentId
       );
       for (const otherEnvironmentId of otherEnvironmentsIds) {
-        const existingDataSourceOptions = await manager.findOne(DataSourceOptions, {
-          where: {
-            dataSourceId: dataSourceForAppVersion.id,
-            environmentId: otherEnvironmentId,
-          },
+        // Check if DSVO already exists for this env
+        const defaultDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
         });
-        if (!existingDataSourceOptions) {
+        const existing = defaultDsv
+          ? await manager.findOne(DataSourceVersionOptions, {
+              where: { dataSourceVersionId: defaultDsv.id, environmentId: otherEnvironmentId },
+            })
+          : null;
+        if (!existing) {
           await this.createDatasourceOption(
             manager,
             defaultEnvDsOption.options,
@@ -1830,18 +1885,21 @@ export class AppImportExportService {
     // create datasource options only for newly created datasources
     for (const importingDataSourceOption of importingDatasourceOptionsForAppVersion) {
       if (importingDataSourceOption?.environmentId in appResourceMappings.appEnvironmentMapping) {
-        const existingDataSourceOptions = await manager.findOne(DataSourceOptions, {
-          where: {
-            dataSourceId: dataSourceForAppVersion.id,
-            environmentId: appResourceMappings.appEnvironmentMapping[importingDataSourceOption.environmentId],
-          },
+        const mappedEnvId = appResourceMappings.appEnvironmentMapping[importingDataSourceOption.environmentId];
+        const defaultDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
         });
+        const existing = defaultDsv
+          ? await manager.findOne(DataSourceVersionOptions, {
+              where: { dataSourceVersionId: defaultDsv.id, environmentId: mappedEnvId },
+            })
+          : null;
 
-        if (!existingDataSourceOptions) {
+        if (!existing) {
           await this.createDatasourceOption(
             manager,
             importingDataSourceOption.options,
-            appResourceMappings.appEnvironmentMapping[importingDataSourceOption.environmentId],
+            mappedEnvId,
             dataSourceForAppVersion.id
           );
         }
@@ -1893,6 +1951,18 @@ export class AppImportExportService {
         },
       });
     };
+    // Git exports replace id with co_relation_id, so the imported dataSource.id
+    // is actually the source's co_relation_id. Look up by co_relation_id to
+    // find existing DS that were previously imported or created locally.
+    const globalDataSourceByCoRelationId = async (dataSource: DataSource) => {
+      return await manager.findOne(DataSource, {
+        where: {
+          co_relation_id: dataSource.id,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
+        },
+      });
+    };
     const globalDataSourceWithSameNameExists = async (dataSource: DataSource) => {
       return await manager.findOne(DataSource, {
         where: {
@@ -1905,7 +1975,9 @@ export class AppImportExportService {
       });
     };
     const existingDatasource =
-      (await globalDataSourceWithSameIdExists(dataSource)) || (await globalDataSourceWithSameNameExists(dataSource));
+      (await globalDataSourceWithSameIdExists(dataSource)) ||
+      (await globalDataSourceByCoRelationId(dataSource)) ||
+      (await globalDataSourceWithSameNameExists(dataSource));
 
     if (existingDatasource) return existingDatasource;
 
@@ -1922,10 +1994,15 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
+          scope: DataSourceScopes.GLOBAL,
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
+
+        // Set co_relation_id so workspace git sync can identify this DS.
+        // Use the imported id (source's co_relation_id) to maintain identity across branches.
+        newDataSource.co_relation_id = dataSource.id || (null as any);
+        await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
         return newDataSource;
       }
@@ -1937,10 +2014,15 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
+        scope: DataSourceScopes.GLOBAL,
         pluginId: null,
       });
       await manager.save(newDataSource);
+
+      // Set co_relation_id so workspace git sync can identify this DS.
+      // Use the imported id (source's co_relation_id) to maintain identity across branches.
+      newDataSource.co_relation_id = dataSource.id || (null as any);
+      await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
 
       return newDataSource;
     };
@@ -1949,6 +2031,83 @@ export class AppImportExportService {
       return await createDsFromPluginInstalled(dataSource);
     } else {
       return await createNewGlobalDs(dataSource);
+    }
+  }
+
+  /**
+   * For a newly created data source, create a branch-specific DSV record
+   * so that workspace git sync recognizes it on the active branch.
+   * Copies options from the default DSV to the branch DSV.
+   */
+  private async ensureBranchDsvForDataSource(
+    manager: EntityManager,
+    dataSource: DataSource,
+    organizationId: string,
+    branchId?: string
+  ): Promise<void> {
+    // Resolve target branch: use explicit branchId, or fall back to default branch
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      if (!defaultBranch) return;
+      targetBranchId = defaultBranch.id;
+    }
+
+    // Check if a branch-specific DSV already exists
+    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
+    });
+    if (existingBranchDsv) return;
+
+    // Find the default DSV to copy from
+    const defaultDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, isDefault: true },
+    });
+    if (!defaultDsv) return;
+
+    // Create branch-specific DSV
+    const branchDsv = await manager.save(
+      manager.create(DataSourceVersion, {
+        dataSourceId: dataSource.id,
+        branchId: targetBranchId,
+        name: defaultDsv.name,
+        isActive: true,
+      })
+    );
+
+    // Copy options from default DSV to branch DSV, cloning credentials
+    const defaultOptions = await manager.find(DataSourceVersionOptions, {
+      where: { dataSourceVersionId: defaultDsv.id },
+    });
+    for (const dOpt of defaultOptions) {
+      const clonedOptions = JSON.parse(JSON.stringify(dOpt.options || {}));
+      for (const key of Object.keys(clonedOptions)) {
+        const opt = clonedOptions[key];
+        if (opt?.credential_id && opt?.encrypted) {
+          const srcCredential = await manager.findOne(Credential, {
+            where: { id: opt.credential_id },
+          });
+          if (srcCredential) {
+            const newCredential = manager.create(Credential, {
+              valueCiphertext: srcCredential.valueCiphertext,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            const savedCred = await manager.save(Credential, newCredential);
+            clonedOptions[key] = { ...opt, credential_id: savedCred.id };
+          }
+        }
+      }
+      await manager.save(
+        manager.create(DataSourceVersionOptions, {
+          dataSourceVersionId: branchDsv.id,
+          environmentId: dOpt.environmentId,
+          options: clonedOptions,
+        })
+      );
     }
   }
 
@@ -2180,7 +2339,8 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    branchId?: string
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2195,6 +2355,17 @@ export class AppImportExportService {
       where: { organizationId: user?.organizationId },
     });
     const isGitSyncConfigured = !!orgGitSync;
+
+    // Determine whether we are importing into a sub-branch (non-default).
+    // Sub-branch versions must use BRANCH type so the canvas stays editable.
+    let isSubBranch = false;
+    if (branchId) {
+      const targetBranch = await manager.findOne(WorkspaceBranch, {
+        where: { id: branchId },
+        select: ['id', 'isDefault'],
+      });
+      isSubBranch = !!targetBranch && !targetBranch.isDefault;
+    }
 
     // Find the latest draft version
     // When git sync is configured, only the latest draft should remain as DRAFT, others become PUBLISHED
@@ -2243,7 +2414,11 @@ export class AppImportExportService {
         let versionStatus: AppVersionStatus;
         const isDraftVersion = appVersion.status === AppVersionStatus.DRAFT || !appVersion.status;
 
-        if (isGitSyncConfigured && isDraftVersion) {
+        if (isSubBranch) {
+          // On sub-branches, all versions must be DRAFT so the canvas stays editable.
+          // PUBLISHED status would freeze the editor regardless of version type.
+          versionStatus = AppVersionStatus.DRAFT;
+        } else if (isGitSyncConfigured && isDraftVersion) {
           // Only the latest draft should remain as DRAFT, others become PUBLISHED
           versionStatus = appVersion.id === latestDraftId ? AppVersionStatus.DRAFT : AppVersionStatus.PUBLISHED;
         } else {
@@ -2259,10 +2434,11 @@ export class AppImportExportService {
           createdAt: new Date(),
           updatedAt: new Date(),
           status: versionStatus,
-          versionType: appVersion.versionType,
+          versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: appVersion.id,
+          co_relation_id: importedApp.co_relation_id || null,
+          branchId,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -2325,14 +2501,41 @@ export class AppImportExportService {
   ) {
     const convertedOptions = this.convertToArrayOfKeyValuePairs(options);
     const newOptions = await this.dataSourcesUtilService.parseOptionsForCreate(convertedOptions, true, manager);
-    const dsOption = manager.create(DataSourceOptions, {
-      options: newOptions,
-      environmentId,
-      dataSourceId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+
+    // Find-or-create default DSV, then create DSVO
+    let defaultDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId, isDefault: true },
     });
-    await manager.save(dsOption);
+    if (!defaultDsv) {
+      const ds = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      defaultDsv = await manager.save(
+        manager.create(DataSourceVersion, {
+          dataSourceId,
+          name: ds?.name || 'v1',
+          isDefault: true,
+          isActive: true,
+          branchId: null,
+        })
+      );
+    }
+    const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+      where: { dataSourceVersionId: defaultDsv.id, environmentId },
+    });
+    if (!existingDsvo) {
+      await manager.save(
+        manager.create(DataSourceVersionOptions, {
+          dataSourceVersionId: defaultDsv.id,
+          environmentId,
+          options: newOptions,
+        })
+      );
+    } else {
+      await manager.update(
+        DataSourceVersionOptions,
+        { id: existingDsvo.id },
+        { options: newOptions, updatedAt: new Date() }
+      );
+    }
   }
 
   convertToArrayOfKeyValuePairs(options: Record<string, unknown>): Array<object> {
@@ -2508,14 +2711,33 @@ export class AppImportExportService {
             newOptions = await this.dataSourcesUtilService.parseOptionsForCreate(convertedOptions, true, manager);
           }
 
-          const dsOption = manager.create(DataSourceOptions, {
-            environmentId: envId,
-            dataSourceId: newSource.id,
-            options: newOptions,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+          // Find-or-create default DSV, then create DSVO
+          let defaultDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: newSource.id, isDefault: true },
           });
-          await manager.save(dsOption);
+          if (!defaultDsv) {
+            defaultDsv = await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: newSource.id,
+                name: newSource.name || source.name || 'v1',
+                isDefault: true,
+                isActive: true,
+                branchId: null,
+              })
+            );
+          }
+          const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: defaultDsv.id, environmentId: envId },
+          });
+          if (!existingDsvo) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: defaultDsv.id,
+                environmentId: envId,
+                options: newOptions,
+              })
+            );
+          }
         })
       );
     }

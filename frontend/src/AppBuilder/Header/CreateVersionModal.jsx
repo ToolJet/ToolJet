@@ -218,7 +218,11 @@ const CreateVersionModal = ({
             versionDescription || `Version ${versionName.trim()} created`
           )
           .catch((error) => {
-            toast.error(error?.data?.message || 'Tag creation failed');
+            const message = error?.data?.message || error?.message || '';
+            // Suppress "already exists" — version was saved successfully and was
+            // already tagged in a previous save. No user action needed.
+            if (message.toLowerCase().includes('already exist')) return;
+            toast.error(message || 'Tag creation failed');
           });
       }
 

@@ -3,7 +3,8 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -33,7 +34,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) { }
+  ) {}
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -211,22 +212,101 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       for (const appEnvironment of appEnvironments) {
         for (const dataSource of dataSources) {
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          // Read source options from the default DataSourceVersion
+          const sourceDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: dataSource.id, isDefault: true },
           });
+          const sourceDsvo = sourceDsv
+            ? await manager.findOne(DataSourceVersionOptions, {
+                where: { dataSourceVersionId: sourceDsv.id, environmentId: appEnvironment.id },
+              })
+            : null;
+          const sourceOptions = sourceDsvo?.options || {};
 
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(sourceOptions);
           const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
           await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: dataSourceMapping[dataSource.id],
-              environmentId: appEnvironment.id,
-              // co_relation_id: dataSourceOption?.co_relation_id, need to review if we need this
-            })
-          );
+          // Create default DSV + DSVO for the new version's data source
+          const newDsId = dataSourceMapping[dataSource.id];
+          let defaultDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: newDsId, isDefault: true },
+          });
+          if (!defaultDsv) {
+            const ds = await manager.findOne(DataSource, { where: { id: newDsId }, select: ['id', 'name'] });
+            defaultDsv = await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: newDsId,
+                name: ds?.name || 'v1',
+                isDefault: true,
+                isActive: true,
+                branchId: null,
+              })
+            );
+          }
+          const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: defaultDsv.id, environmentId: appEnvironment.id },
+          });
+          if (!existingDsvo) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: defaultDsv.id,
+                environmentId: appEnvironment.id,
+                options: newOptions,
+              })
+            );
+          }
+        }
+      }
+
+      // Create version-specific DSVs for global data sources
+      for (const globalDs of globalDataSources) {
+        const dsvName = globalDs.name || 'v1';
+
+        // The idx_unique_active_name_branch constraint enforces one active non-default
+        // DSV per (name, branch_id). DSVs are branch-scoped, not app-version-scoped,
+        // so skip creation if one already exists for this datasource+name+branch.
+        const existingDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
+        });
+        if (existingDsv) {
+          continue;
+        }
+
+        let sourceDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
+        });
+        if (!sourceDsv) {
+          sourceDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: globalDs.id, isDefault: true },
+          });
+        }
+
+        const newDsv = await manager.save(
+          manager.create(DataSourceVersion, {
+            dataSourceId: globalDs.id,
+            name: dsvName,
+            isDefault: false,
+            isActive: true,
+            appVersionId: appVersion.id,
+            branchId: null,
+            versionFromId: sourceDsv?.id || null,
+          })
+        );
+
+        if (sourceDsv) {
+          const sourceDsvos = await manager.find(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: sourceDsv.id },
+          });
+          for (const dsvo of sourceDsvos) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: newDsv.id,
+                environmentId: dsvo.environmentId,
+                options: dsvo.options,
+              })
+            );
+          }
         }
       }
     }
