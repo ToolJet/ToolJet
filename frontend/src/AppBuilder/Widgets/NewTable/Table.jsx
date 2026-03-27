@@ -59,6 +59,7 @@ const Table = memo(
       (state) => state.getTableStyles(id)?.containerBackgroundColor,
       shallow
     );
+    const selectedRowColor = useTableStore((state) => state.getTableStyles(id)?.selectedRowColor, shallow);
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const themeChanged = useStore((state) => state.themeChanged);
@@ -273,6 +274,7 @@ const Table = memo(
           '--cc-table-striped-row-bg-color': stripedBackgroundColor,
           '--cc-table-striped-row-hover': stripedHoverColor,
           '--cc-table-striped-editable-column-hover': stripedEditableColumnColor,
+          '--cc-table-selected-row-bg': selectedRowColor,
         }}
       >
         <TableContainer
