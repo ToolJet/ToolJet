@@ -77,6 +77,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   };
 
   const validateNewOptions = (newOptions) => {
+    // Guard against stale writes: when queries are switched rapidly, child components (e.g. DynamicSelector)
+    // calls optionsChanged after the user has already moved to a different query.
+    // Without this check, the old query's options would be written onto the newly selected query.
+    const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
+    if (currentStoreQueryId !== selectedQuery?.id) return;
     const updatedOptions = cleanFocusedFields(newOptions);
     updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };

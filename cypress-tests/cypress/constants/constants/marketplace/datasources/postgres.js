@@ -42,10 +42,10 @@ export const postgresUIConfig = {
 
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             validations: {
                 isRequired: false,
-                placeholder: "Name of the database",
+                placeholder: "Enter name of the database",
                 defaultValue: "",
                 disabled: false
             }
@@ -64,7 +64,7 @@ export const postgresUIConfig = {
 
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             validations: {
                 defaultValue: true,
                 disabled: false
@@ -118,7 +118,7 @@ export const postgresFormConfig = {
         },
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: false
         },
         {
@@ -170,7 +170,7 @@ export const postgresFormConfig = {
     invalidSsl: [
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: true
         }
     ],
@@ -232,21 +232,15 @@ export const postgresQueryConfig = {
     bulkUpdateUsingPrimaryKey: [
         {
             type: "codeMirror",
-            fieldName: "Table",
+            fieldName: "Primary key column-s",
             assertion: "contain.text",
-            data: "Enter table",
-        },
-        {
-            type: "codeMirror",
-            fieldName: "Primary key column",
-            assertion: "contain.text",
-            data: "Enter primary key column",
+            data: "e.g.",
         },
         {
             type: "codeMirror",
             fieldName: "Records to update",
             assertion: "contain.text",
-            data: "{{ [ ] }}",
+            data: "id: 1",
         },
     ],
 };
@@ -275,13 +269,18 @@ export const postgresQueryFillConfig = {
     ],
     bulkUpdateUsingPrimaryKey: [
         {
-            type: "codeMirrorInput",
+            type: "dynamicSelectorFx",
+            fieldName: "Schema",
+            text: "public",
+        },
+        {
+            type: "dynamicSelectorFx",
             fieldName: "Table",
-            text: ["student_data"],
+            text: "student_data",
         },
         {
             type: "codeMirrorInput",
-            fieldName: "Primary key column",
+            fieldName: "Primary key column-s",
             text: ["id"],
         },
         {

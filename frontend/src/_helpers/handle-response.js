@@ -8,6 +8,7 @@ import { redirectToSwitchOrArchivedAppPage, redirectToErrorPage } from './routes
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
+import { refreshSsoInfo } from './refreshSsoInfo';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -20,6 +21,12 @@ export function handleResponse(
   queryParamToUpdate = null,
   avoidUpgradeModal = false
 ) {
+  // Check if OIDC tokens were refreshed on the backend.
+  // Also checked in http-client.js to cover both legacy fetch and HttpClient call paths.
+  if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+    refreshSsoInfo(); // Fire-and-forget — don't block the current request
+  }
+
   return response.text().then((text) => {
     let modalBody = (
       <>
