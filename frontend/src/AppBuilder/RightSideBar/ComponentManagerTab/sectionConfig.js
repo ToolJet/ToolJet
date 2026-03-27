@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu', 'FileButton']),
+    valueSet: new Set(['Button', 'ButtonGroupV2', 'PopoverMenu', 'FileButton']),
   },
   data: {
     title: 'Data',
@@ -71,6 +71,7 @@ const sectionConfig = {
     title: 'Miscellaneous',
     valueSet: new Set([
       'FilePicker',
+      'FileButton',
       'CodeEditor',
       'ColorPicker',
       'BoundedBox',
