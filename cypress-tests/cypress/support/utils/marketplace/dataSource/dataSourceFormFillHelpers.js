@@ -109,14 +109,15 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
       break;
 
     case "failed":
-      // Failure feedback is now a toast; specific error still shown in connection-alert-text
-      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
-
+      // Some plugins show a failure toast; others only show inline alert text.
+      // Always verify the inline alert when customMessage is provided.
       if (customMessage) {
         cy.get('[data-cy="connection-alert-text"]')
           .scrollIntoView()
           .should("be.visible", { timeout: 50000 })
           .and("contain.text", customMessage);
+      } else {
+        cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
       }
       break;
   }

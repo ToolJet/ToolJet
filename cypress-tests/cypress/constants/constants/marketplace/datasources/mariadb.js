@@ -75,6 +75,7 @@ export const mariadbUIConfig = {
             type: "dropdown",
             fieldName: "SSL certificate",
             validations: {
+                defaultValue: "None",
                 disabled: false
             }
         }
