@@ -19,7 +19,9 @@ echo "Starting PostgreSQL..."
 su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl -D /var/lib/postgresql/13/main -w start"
 
 # Prevent PostgreSQL from killing idle-in-transaction connections during long migrations
-su - postgres -c "psql -c \"ALTER SYSTEM SET idle_in_transaction_session_timeout = 0; ALTER SYSTEM SET statement_timeout = 0;\""
+# Each ALTER SYSTEM must be a separate statement (cannot run inside a transaction block)
+su - postgres -c "psql -c 'ALTER SYSTEM SET idle_in_transaction_session_timeout = 0'"
+su - postgres -c "psql -c 'ALTER SYSTEM SET statement_timeout = 0'"
 su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl reload -D /var/lib/postgresql/13/main"
 
 # Fix ownership and permissions for Redis
