@@ -34,13 +34,13 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
-- [Update User Metadata](#update-user-metadata)
-- [Get User Metadata](#get-user-metadata)
-- [Create Group](#create-group)
-- [Get All Groups](#get-all-groups)
-- [Get Group by ID](#get-group-by-id)
-- [Update Group](#update-group)
-- [Delete Group](#delete-group)
+- [BETA] [Update User Metadata](#update-user-metadata)
+- [BETA] [Get User Metadata](#get-user-metadata)
+- [BETA] [Create Group](#create-group)
+- [BETA] [Get All Groups](#get-all-groups)
+- [BETA] [Get Group by ID](#get-group-by-id)
+- [BETA] [Update Group](#update-group)
+- [BETA] [Delete Group](#delete-group)
 
 ## Enabling ToolJet API
 
