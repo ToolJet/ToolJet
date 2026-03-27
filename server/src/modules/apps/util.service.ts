@@ -15,7 +15,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -28,10 +28,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -52,7 +49,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) {}
+  ) { }
   async create(
     name: string,
     user: User,
@@ -91,6 +88,7 @@ export class AppsUtilService implements IAppsUtilService {
           appVersionId: appVersion.id,
           index: 1,
           autoComputeLayout: true,
+          appId: app.id,
         })
       );
 
@@ -385,7 +383,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
     }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: resourceType }],
+      resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -468,17 +466,29 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    return userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
+    );
+
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
+
+    // hideAll => strict allow-list mode (explicit grants only)
+    if (userAppPermissions.hideAll) {
+      return [null, ...explicitVisibleApps];
+    }
+
+    // normal mode => editable always visible, viewable minus hidden (non-editable)
+    return [
+      null,
+      ...Array.from(
+        new Set([
+          ...userAppPermissions.editableAppsId,
+          ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+        ])
+      ),
+    ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -528,7 +538,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const apps = await this.viewableAppsQueryUsingPermissions(
+      return await this.viewableAppsQueryUsingPermissions(
         user,
         userPermission[resourceType],
         manager,
@@ -536,8 +546,6 @@ export class AppsUtilService implements IAppsUtilService {
         undefined,
         type
       ).getCount();
-
-      return apps;
     });
   }
 
@@ -639,10 +647,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });
@@ -697,5 +705,44 @@ export class AppsUtilService implements IAppsUtilService {
     return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
     }, manager);
+  }
+
+  /**
+   * Determines if the editor should be frozen based on version status, type, and git configuration
+   * @param editingVersion - The app version being edited
+   * @param environmentPriority - The priority of the current environment (> 1 means production-like)
+   * @param appGit - The app's git configuration
+   * @param orgGit - The organization's git configuration
+   * @returns boolean indicating if editor should be frozen
+   */
+  shouldFreezeEditor(editingVersion: AppVersion, appGit: any, orgGit: any): boolean {
+    let shouldFreezeEditor = false;
+    // Check version status and type
+    if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
+      // Published versions are always frozen
+      shouldFreezeEditor = true;
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status === AppVersionStatus.DRAFT &&
+      (!orgGit || !orgGit?.isBranchingEnabled)
+    ) {
+      // Draft versions should never be frozen by git config, only by environment
+      // Keep existing shouldFreezeEditor value from environment priority check
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status !== AppVersionStatus.DRAFT
+    ) {
+      // Non-draft version types are frozen
+      shouldFreezeEditor = true;
+    } else {
+      // For branch versions, check git config
+      if (appGit && editingVersion?.status !== AppVersionStatus.DRAFT) {
+        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
+      } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
+        shouldFreezeEditor = orgGit?.isBranchingEnabled || shouldFreezeEditor;
+      }
+    }
+
+    return shouldFreezeEditor;
   }
 }

@@ -9,8 +9,10 @@ import { Monitor, Smartphone, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
+  const { isModuleEditor } = useModuleContext();
   const {
     currentLayout,
     canUndo,
@@ -24,8 +26,8 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
   } = useStore(
     (state) => ({
       currentLayout: state.currentLayout,
-      canUndo: state.canUndo && !(state.isEditorFreezed || state.isVersionReleased),
-      canRedo: state.canRedo && !(state.isEditorFreezed || state.isVersionReleased),
+      canUndo: state.canUndo && !state.getShouldFreeze(false, isModuleEditor),
+      canRedo: state.canRedo && !state.getShouldFreeze(false, isModuleEditor),
       toggleCurrentLayout: state.toggleCurrentLayout,
       showToggleLayoutBtn: state.showToggleLayoutBtn,
       showUndoRedoBtn: state.showUndoRedoBtn,
