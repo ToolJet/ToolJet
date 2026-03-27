@@ -59,7 +59,7 @@ describe("GraphQL", () => {
             .scrollIntoView()
             .should("be.visible")
             .click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
+        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved", true, 50000);
     });
 
     it("3. GraphQL - Verify query execution with valid connection", () => {

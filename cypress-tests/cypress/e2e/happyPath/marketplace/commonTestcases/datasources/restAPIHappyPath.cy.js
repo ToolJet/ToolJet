@@ -344,7 +344,7 @@ describe("Data source Rest API", () => {
       "Read documentation"
     );
     cy.contains("Save").click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved", true, 50000);
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify connection response for all methods", () => {

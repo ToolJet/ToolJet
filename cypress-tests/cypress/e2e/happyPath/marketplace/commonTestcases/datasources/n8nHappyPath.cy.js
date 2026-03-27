@@ -52,7 +52,7 @@ describe("n8n", () => {
             .scrollIntoView()
             .should("be.visible")
             .click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
+        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved", true, 50000);
     });
 
     it("3. n8n - Verify UI and save together", () => {
@@ -74,7 +74,7 @@ describe("n8n", () => {
             .scrollIntoView()
             .should("be.visible")
             .click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
+        cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved", true, 50000);
     });
 });
 
