@@ -83,8 +83,12 @@ class HttpClient {
       if (!response.ok) {
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
-          // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-          location.reload();
+          // Skip redirect on app-scoped auth pages — they handle their own auth
+          const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(window.location.pathname);
+          if (!isAppAuthPage) {
+            // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+            location.reload();
+          }
         }
 
         throw payload;

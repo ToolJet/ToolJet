@@ -19,6 +19,8 @@ const LoginForm = ({
   onSubmit,
   currentOrganizationName,
   whiteLabelText,
+  appName,
+  appSlug,
 }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
@@ -52,9 +54,11 @@ const LoginForm = ({
   const signupText = workspaceSignUpEnabled
     ? t('loginSignupPage.newToWorkspace', 'New to this workspace?')
     : t('loginSignupPage.newToTooljet', 'New to {whiteLabelText}?', { whiteLabelText });
-  const signUpUrl = `/signup${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
-    redirectTo ? `?redirectTo=${redirectTo}` : ''
-  }`;
+  const signUpUrl = appSlug
+    ? `/applications/${appSlug}/signup`
+    : `/signup${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
+        redirectTo ? `?redirectTo=${redirectTo}` : ''
+      }`;
 
   const checkFormValidity = () => {
     const isValid = email.trim() !== '' && validateEmail(email) && password.trim() !== '' && password.length >= 5;
@@ -131,7 +135,18 @@ const LoginForm = ({
               <FormHeader>{t('loginSignupPage.signIn', 'Sign in')}</FormHeader>
               {organizationId || isSignUpCTAEnabled ? (
                 <p className="signup-info" data-cy="signup-info">
-                  {organizationId && (
+                  {appName ? (
+                    <>
+                      Sign in to application -{' '}
+                      <span className="workspace-name" data-cy="app-name">
+                        {appName}
+                      </span>
+                      . Don&apos;t have an account?{' '}
+                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
+                        Create an account
+                      </Link>
+                    </>
+                  ) : organizationId ? (
                     <>
                       Sign in to the workspace -{' '}
                       <span className="workspace-name" data-cy="workspace-name">
@@ -139,8 +154,8 @@ const LoginForm = ({
                       </span>
                       .
                     </>
-                  )}{' '}
-                  {isSignUpCTAEnabled && (
+                  ) : null}{' '}
+                  {!appName && isSignUpCTAEnabled && (
                     <>
                       {' '}
                       {signupText}{' '}
@@ -172,6 +187,7 @@ const LoginForm = ({
                     placeholder={t('loginSignupPage.enterPassword', 'Enter your password')}
                     error={errors.password}
                     showForgotPassword={true}
+                    forgotPasswordUrl={appSlug ? `/applications/${appSlug}/forgot-password` : '/forgot-password'}
                     hint={''}
                   />
                   <SubmitButton
@@ -188,7 +204,7 @@ const LoginForm = ({
                 setRedirectUrlToCookie={setRedirectUrlToCookie}
                 buttonText="Sign in with"
               />
-              {currentOrganizationName && organizationId && (
+              {currentOrganizationName && organizationId && !appName && (
                 <div
                   className="text-center-onboard mt-3"
                   data-cy={`back-to-${String(currentOrganizationName).toLowerCase().replace(/\s+/g, '-')}`}

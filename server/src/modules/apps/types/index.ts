@@ -15,6 +15,7 @@ interface Features {
   [FEATURE_KEY.GET_ONE]: FeatureConfig;
   [FEATURE_KEY.GET_BY_SLUG]: FeatureConfig;
   [FEATURE_KEY.RELEASE]: FeatureConfig;
+  [FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

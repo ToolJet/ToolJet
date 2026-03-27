@@ -254,11 +254,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email) {
+function forgotPassword(email, appSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, ...(appSlug && { appSlug }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);

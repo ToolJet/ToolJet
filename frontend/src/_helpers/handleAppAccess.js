@@ -80,6 +80,11 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
         }
         case 401: {
           const errorObj = safelyParseJSON(error.data?.message);
+          // For released app URLs, redirect to app-scoped login page
+          if (appSlug && componentType === 'viewer') {
+            window.location = `${getSubpath() ?? ''}/applications/${appSlug}/login`;
+            return;
+          }
           window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
           return;
         }
