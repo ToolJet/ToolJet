@@ -642,11 +642,13 @@ class HomePageComponent extends React.Component {
     const id = selectedApp.id;
     this.setState({ deploying: true });
     try {
+      const { activeBranchId } = useWorkspaceBranchesStore.getState();
       const data = await libraryAppService.deploy(
         id,
         appName,
         this.state.dependentPlugins,
-        this.state.shouldAutoImportPlugin
+        this.state.shouldAutoImportPlugin,
+        activeBranchId
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
@@ -2050,7 +2052,11 @@ class HomePageComponent extends React.Component {
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() => {
-                            if (this.isWorkspaceBranchLocked()) {
+                            if (
+                              this.isWorkspaceBranchLocked() &&
+                              this.props.appType !== 'module' &&
+                              this.props.appType !== 'workflow'
+                            ) {
                               this.setState({ showSwitchBranchForCreate: true });
                             } else {
                               this.setState({ showCreateAppModal: true });
@@ -2158,8 +2164,8 @@ class HomePageComponent extends React.Component {
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
               {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
-              {this.props.appType !== 'workflow' && (
-                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
+              {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
+                <WorkspaceLockedBanner pageContext="apps" />
               )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
@@ -2227,13 +2233,23 @@ class HomePageComponent extends React.Component {
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
-                        if (this.isWorkspaceBranchLocked()) {
+                        if (
+                          this.isWorkspaceBranchLocked() &&
+                          this.props.appType !== 'module' &&
+                          this.props.appType !== 'workflow'
+                        ) {
                           this.setState({ showSwitchBranchForCreate: true });
                         } else {
                           this.openCreateAppModal();
                         }
                       }}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      openCreateAppFromTemplateModal={(template) => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          toast.error('Master is locked. Create a branch to create an app from template.');
+                          return;
+                        }
+                        this.openCreateAppFromTemplateModal(template);
+                      }}
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}
                       showTemplateLibraryModal={this.state.showTemplateLibraryModal}

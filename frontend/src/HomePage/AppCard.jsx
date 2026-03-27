@@ -318,58 +318,35 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {isStub ? (
+            {(canUpdate || appType === 'module' || isStub) && (
               <div>
-                <ToolTip message="Sync app from git">
+                <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
-                    reloadDocument
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_edit_button_on_card', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                        app_id: app?.id,
+                        folder_id: currentFolder?.id,
+                      });
+                    }}
                   >
                     <button
                       type="button"
                       className="tj-primary-btn tj-text-xsm edit-button"
                       style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
-                      data-cy="sync-button"
+                      data-cy="edit-button"
                     >
-                      <SolidIcon name="gitsync" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
-                      &nbsp;Sync
+                      <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                      &nbsp;{t('globals.edit', 'Edit')}
                     </button>
                   </Link>
                 </ToolTip>
               </div>
-            ) : (
-              (canUpdate || appType === 'module') && (
-                <div>
-                  <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
-                    <Link
-                      to={getPrivateRoute('editor', {
-                        slug: isValidSlug(app.slug) ? app.slug : app.id,
-                      })}
-                      onClick={() => {
-                        posthogHelper.captureEvent('click_edit_button_on_card', {
-                          workspace_id:
-                            authenticationService?.currentUserValue?.organization_id ||
-                            authenticationService?.currentSessionValue?.current_organization_id,
-                          app_id: app?.id,
-                          folder_id: currentFolder?.id,
-                        });
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="tj-primary-btn tj-text-xsm edit-button"
-                        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
-                        data-cy="edit-button"
-                      >
-                        <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
-                        &nbsp;{t('globals.edit', 'Edit')}
-                      </button>
-                    </Link>
-                  </ToolTip>
-                </div>
-              )
             )}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
             {!isStub && appType !== 'module' && LaunchButton}
