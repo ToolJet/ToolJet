@@ -123,6 +123,7 @@ export const imageConfig = {
         { name: 'Fill', value: 'fill' },
         { name: 'Cover', value: 'cover' },
         { name: 'Scale down', value: 'scale-down' },
+        { name: 'None', value: 'none' },
       ],
       validation: {
         schema: { type: 'string' },
