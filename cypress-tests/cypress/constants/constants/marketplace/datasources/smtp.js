@@ -1,4 +1,4 @@
-export const minioUIConfig = {
+export const smtpUIConfig = {
     defaultFields: [
         {
             type: "input",
@@ -6,7 +6,7 @@ export const minioUIConfig = {
             validations: {
                 isRequired: false,
                 placeholder: "Enter host",
-                defaultValue: "play.min.io",
+                defaultValue: "localhost",
                 disabled: false
             }
         },
@@ -15,32 +15,24 @@ export const minioUIConfig = {
             fieldName: "Port",
             validations: {
                 isRequired: false,
-                placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
+                placeholder: "Recommended port 465 (Secured)",
+                defaultValue: "465",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "User",
             validations: {
                 isRequired: false,
-                placeholder: "Enter access key",
+                placeholder: "Enter username",
                 defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Password",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -54,32 +46,27 @@ export const minioUIConfig = {
     ]
 };
 
-export const minioFormConfig = {
+export const smtpFormConfig = {
     valid: [
         {
             type: "input",
             fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
+            text: `${Cypress.env('smtp_host')}`
         },
         {
             type: "input",
             fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            text: `${Cypress.env('smtp_port')}`
         },
         {
             type: "input",
-            fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            fieldName: "User",
+            text: `${Cypress.env('smtp_user')}`
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
+            fieldName: "Password",
+            text: `${Cypress.env('smtp_password')}`
         }
     ],
     invalidHost: [
@@ -89,18 +76,18 @@ export const minioFormConfig = {
             text: "invalid-host"
         }
     ],
-    invalidAccessKey: [
+    invalidUser: [
         {
             type: "input",
-            fieldName: "Access key",
-            text: "invalid-access-key"
+            fieldName: "User",
+            text: "invalid-user"
         }
     ],
-    invalidSecretKey: [
+    invalidPassword: [
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: "invalid-secret-key"
+            fieldName: "Password",
+            text: "invalid-password"
         }
     ]
 };

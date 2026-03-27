@@ -1,46 +1,38 @@
-export const minioUIConfig = {
+export const appwriteUIConfig = {
     defaultFields: [
         {
             type: "input",
             fieldName: "Host",
             validations: {
                 isRequired: false,
-                placeholder: "Enter host",
-                defaultValue: "play.min.io",
+                placeholder: "Appwrite database host/endpoint",
+                defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Port",
+            fieldName: "Project ID",
             validations: {
                 isRequired: false,
-                placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
+                placeholder: "Appwrite project id",
+                defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "Database ID",
             validations: {
                 isRequired: false,
-                placeholder: "Enter access key",
+                placeholder: "Appwrite Database id",
                 defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Secret Key",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -54,32 +46,27 @@ export const minioUIConfig = {
     ]
 };
 
-export const minioFormConfig = {
+export const appwriteFormConfig = {
     valid: [
         {
             type: "input",
             fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
+            text: `${Cypress.env('appwrite_host')}`
         },
         {
             type: "input",
-            fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            fieldName: "Project ID",
+            text: `${Cypress.env('appwrite_project_id')}`
         },
         {
             type: "input",
-            fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            fieldName: "Database ID",
+            text: `${Cypress.env('appwrite_database_id')}`
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
+            fieldName: "Secret Key",
+            text: `${Cypress.env('appwrite_secret_key')}`
         }
     ],
     invalidHost: [
@@ -89,17 +76,17 @@ export const minioFormConfig = {
             text: "invalid-host"
         }
     ],
-    invalidAccessKey: [
+    invalidProjectId: [
         {
             type: "input",
-            fieldName: "Access key",
-            text: "invalid-access-key"
+            fieldName: "Project ID",
+            text: "invalid-project-id"
         }
     ],
     invalidSecretKey: [
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Secret Key",
             text: "invalid-secret-key"
         }
     ]

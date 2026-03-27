@@ -1,8 +1,8 @@
-export const gcsUIConfig = {
+export const stripeUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
-            fieldName: "Private key",
+            fieldName: "API key",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -16,19 +16,23 @@ export const gcsUIConfig = {
     ]
 };
 
-export const gcsFormConfig = {
+export const stripeFormConfig = {
     valid: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            fieldName: "API key",
+            text: `${Cypress.env('stripe_api_key')}`
         }
     ],
-    invalidPrivateKey: [
+    invalidApiKey: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: "invalid-private-key"
+            fieldName: "API key",
+            text: "invalid-api-key"
         }
     ]
 };
+
+export const stripeApiOptions = [
+    { key: "api_key", value: null, encrypted: true }
+];

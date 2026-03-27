@@ -1,4 +1,4 @@
-export const gcsUIConfig = {
+export const firestoreUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
@@ -16,12 +16,12 @@ export const gcsUIConfig = {
     ]
 };
 
-export const gcsFormConfig = {
+export const firestoreFormConfig = {
     valid: [
         {
             type: "encrypted",
             fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            text: `${JSON.stringify(Cypress.env('firestore_private_key'))}`
         }
     ],
     invalidPrivateKey: [

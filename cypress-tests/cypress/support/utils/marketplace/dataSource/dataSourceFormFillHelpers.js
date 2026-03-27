@@ -99,24 +99,29 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
     .should("contain.text", "Test connection")
     .click();
 
-  // Wait for the API call to complete
-  cy.wait('@testConnection', { timeout: 60000 });
+  // Wait for the API call to complete (cloud services can be slow in CI)
+  cy.wait('@testConnection', { timeout: 80000 });
+
+  // Toast class .go3958317564 is goober-generated and can be slow to render in CI.
+  // Use 80s timeout to account for CI latency + slow test-connection responses.
+  const toastTimeout = 80000;
 
   switch (expectedStatus) {
     case "success":
       // Success feedback is now a toast (PR #15616 — inline badge removed)
-      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, 50000);
+      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, toastTimeout);
       break;
 
     case "failed":
-      // Failure feedback is now a toast; specific error still shown in connection-alert-text
-      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
-
+      // Some plugins show a failure toast; others only show inline alert text.
+      // Always verify the inline alert when customMessage is provided.
       if (customMessage) {
-        cy.get('[data-cy="connection-alert-text"]')
+        cy.get('[data-cy="connection-alert-text"]', { timeout: toastTimeout })
           .scrollIntoView()
-          .should("be.visible", { timeout: 50000 })
+          .should("be.visible", { timeout: toastTimeout })
           .and("contain.text", customMessage);
+      } else {
+        cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
       }
       break;
   }
@@ -135,9 +140,9 @@ export const fillDSConnectionEncryptedField = (field) => {
     });
   }
 
-  cy.waitForElement(fieldSelector)
+  cy.get(fieldSelector)
     .scrollIntoView()
-    .should("be.visible", { timeout: 10000 })
+    .should("be.visible")
     .click({ force: true })
     .type(`{selectall}{backspace}`)
     .type(field.text, { parseSpecialCharSequences: false });

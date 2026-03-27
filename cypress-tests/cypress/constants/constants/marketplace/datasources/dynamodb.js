@@ -1,30 +1,10 @@
-export const minioUIConfig = {
+export const dynamodbUIConfig = {
     defaultFields: [
         {
-            type: "input",
-            fieldName: "Host",
+            type: "dropdown",
+            fieldName: "Authentication",
             validations: {
-                isRequired: false,
-                placeholder: "Enter host",
-                defaultValue: "play.min.io",
-                disabled: false
-            }
-        },
-        {
-            type: "input",
-            fieldName: "Port",
-            validations: {
-                isRequired: false,
-                placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
+                defaultValue: "Use IAM Access Keys",
                 disabled: false
             }
         },
@@ -50,43 +30,33 @@ export const minioUIConfig = {
                 showEncrypted: true,
                 hasEyeIcon: false
             }
+        },
+        {
+            type: "dropdown",
+            fieldName: "Region",
+            validations: {
+                disabled: false
+            }
         }
     ]
 };
 
-export const minioFormConfig = {
+export const dynamodbFormConfig = {
     valid: [
         {
-            type: "input",
-            fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
-        },
-        {
-            type: "input",
-            fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            type: "dropdown",
+            fieldName: "Region",
+            text: "US West (N. California)"
         },
         {
             type: "input",
             fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            text: `${Cypress.env('dynamodb_access_key')}`
         },
         {
             type: "encrypted",
             fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
-        }
-    ],
-    invalidHost: [
-        {
-            type: "input",
-            fieldName: "Host",
-            text: "invalid-host"
+            text: `${Cypress.env('dynamodb_secret_key')}`
         }
     ],
     invalidAccessKey: [

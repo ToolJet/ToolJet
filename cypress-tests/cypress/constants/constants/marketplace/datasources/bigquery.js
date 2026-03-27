@@ -1,10 +1,10 @@
-export const gcsUIConfig = {
+export const bigqueryUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
             fieldName: "Private key",
             validations: {
-                isRequired: false,
+                isRequired: true,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,
@@ -12,16 +12,31 @@ export const gcsUIConfig = {
                 showEncrypted: true,
                 hasEyeIcon: false
             }
+        },
+        {
+            type: "input",
+            fieldName: "Scope",
+            validations: {
+                isRequired: false,
+                placeholder: "Enter required scopes",
+                defaultValue: "",
+                disabled: false
+            }
         }
     ]
 };
 
-export const gcsFormConfig = {
+export const bigqueryFormConfig = {
     valid: [
         {
             type: "encrypted",
             fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            text: `${JSON.stringify(Cypress.env('bigquery_private_key'))}`
+        },
+        {
+            type: "input",
+            fieldName: "Scope",
+            text: `${Cypress.env('bigquery_scope')}`
         }
     ],
     invalidPrivateKey: [

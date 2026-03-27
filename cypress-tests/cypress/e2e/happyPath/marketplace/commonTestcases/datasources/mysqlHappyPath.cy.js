@@ -120,3 +120,31 @@ describe("MySQL", () => {
         verifyDSConnection("failed", "Unknown database 'nonexistent_database'");
     });
 });
+
+/*
+ * Test Cases for MySQL
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with manual connection type and hostname protocol
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: connection_type, protocol, host, port, database, username, ssl_enabled, ssl_certificate, password, ca_cert, client_key, client_cert, root_cert
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses mysqlFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Verify UI → Test multiple invalid credential scenarios → Verify error messages
+ *   - Expected:
+ *     - UI elements match manifest specifications
+ *     - Invalid host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid username: Connection fails with "Access denied for user 'invalid-username'"
+ *     - Invalid password: Connection fails with "Access denied for user"
+ *     - Invalid port: Connection fails with "connect ETIMEDOUT"
+ *     - Invalid database: Connection fails with "Unknown database 'nonexistent_database'"
+ */
