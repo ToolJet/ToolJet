@@ -14,7 +14,7 @@ import { INestApplication } from '@nestjs/common';
 import { getManager, In } from 'typeorm';
 import { App } from 'src/entities/app.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppImportExportService } from '@services/app_import_export.service';
+import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 describe('AppImportExportService', () => {
@@ -196,11 +196,11 @@ describe('AppImportExportService', () => {
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
-        appId: importedApp.id,
+        where: { appId: importedApp.id },
       });
       const groupPermissionIds = appGroupPermissions.map((agp) => agp.groupPermissionId);
       const groupPermissions = await getManager().find(GroupPermission, {
-        id: In(groupPermissionIds),
+        where: { id: In(groupPermissionIds) },
       });
 
       expect(new Set(groupPermissions.map((gp) => gp.organizationId))).toEqual(new Set([adminUser.organizationId]));
@@ -304,11 +304,11 @@ describe('AppImportExportService', () => {
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
-        appId: importedApp.id,
+        where: { appId: importedApp.id },
       });
       const groupPermissionIds = appGroupPermissions.map((agp) => agp.groupPermissionId);
       const groupPermissions = await getManager().find(GroupPermission, {
-        id: In(groupPermissionIds),
+        where: { id: In(groupPermissionIds) },
       });
 
       expect(new Set(groupPermissions.map((gp) => gp.organizationId))).toEqual(new Set([adminUser.organizationId]));
