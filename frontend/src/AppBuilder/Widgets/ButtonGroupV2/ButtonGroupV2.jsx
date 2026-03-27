@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Label from '@/_ui/Label';
 import './buttonGroupV2.scss';
@@ -38,8 +38,12 @@ export const ButtonGroupV2 = (props) => {
     labelWidth,
     widthType,
     backgroundColor,
+    hoverBackgroundMode = 'auto',
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
     borderColor,
     textColor,
+    textSize = 14,
+    fontWeight = 'normal',
     iconColor,
     errTextColor,
     selectedBackgroundColor,
@@ -95,6 +99,7 @@ export const ButtonGroupV2 = (props) => {
   const [validationStatus, setValidationStatus] = useState(
     validate(exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null)
   );
+  const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
 
@@ -247,6 +252,17 @@ export const ButtonGroupV2 = (props) => {
     boxShadow,
   };
 
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const computedHoverBackgroundColor =
+    hoverBackgroundMode === 'manual'
+      ? hoverBackgroundColor || getModifiedColor(backgroundColor, 'hover')
+      : getModifiedColor(backgroundColor, 'hover');
+
   const selectedStyles = {
     backgroundColor: selectedBackgroundColor,
     color: selectedTextColor,
@@ -338,8 +354,15 @@ export const ButtonGroupV2 = (props) => {
                   data-cy={`${dataCy}-button-${index}`}
                   style={{
                     ...commonStyles,
+                    backgroundColor:
+                      hoveredButtonIndex === index && !exposedVariablesTemporaryState.selected?.includes(option.value)
+                        ? computedHoverBackgroundColor
+                        : backgroundColor,
                     ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
                     ...(option.isDisabled && disabledStyles),
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    fontWeight: computedFontWeight,
                   }}
                   key={index}
                   disabled={option.isDisabled}
@@ -348,14 +371,26 @@ export const ButtonGroupV2 = (props) => {
                     event.stopPropagation();
                     handleButtonClick(option.value);
                   }}
+                  onMouseEnter={() => {
+                    setHoveredButtonIndex(index);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredButtonIndex(null);
+                  }}
                 >
                   {option.iconVisibility && (
-                    <div className="tw-flex tw-w-[16px] tw-h-[16px] tw-shrink-0">
+                    <div
+                      className="tw-flex tw-shrink-0"
+                      style={{
+                        width: `${computedIconSize}px`,
+                        height: `${computedIconSize}px`,
+                      }}
+                    >
                       <TablerIcon
                         iconName={option.icon}
                         style={{
-                          width: '16px',
-                          height: '16px',
+                          width: `${computedIconSize}px`,
+                          height: `${computedIconSize}px`,
                           color: exposedVariablesTemporaryState.selected?.includes(option.value)
                             ? selectedIconColor
                             : iconColor,
