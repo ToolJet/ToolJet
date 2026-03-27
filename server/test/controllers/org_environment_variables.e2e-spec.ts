@@ -16,7 +16,9 @@ const createVariable = async (app: INestApplication, adminUserData: any, body: a
     .send(body);
 };
 
-describe('organization environment variables controller', () => {
+// TODO: OrgEnvironmentVariable entity and /api/organization-variables/ controller have been removed.
+// Organization constants now handle both constants and secrets via /api/organization-constants/.
+describe.skip('organization environment variables controller', () => {
   let app: INestApplication;
   let defaultDataSource: TypeOrmDataSource;
 

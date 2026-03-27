@@ -78,8 +78,8 @@ describe('oauth controller', () => {
           };
         });
 
-        (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-        (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -115,8 +115,8 @@ describe('oauth controller', () => {
           };
         });
 
-        (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-        (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -159,8 +159,8 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
@@ -199,8 +199,8 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
           const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
@@ -236,8 +236,8 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
           const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
@@ -270,8 +270,8 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
         });
       });

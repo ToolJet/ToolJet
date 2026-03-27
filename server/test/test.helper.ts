@@ -24,6 +24,8 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
+import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
+import { GroupApps } from '@entities/group_apps.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
@@ -461,6 +463,128 @@ export async function createGroupPermission(nestApp, params) {
   return groupPermission;
 }
 
+/**
+ * Creates app-level permissions for a group using the new granular permissions system.
+ *
+ * The old system used `app_group_permissions` with `read`, `update`, `delete` flags.
+ * The new system uses `granular_permissions` -> `apps_group_permissions` -> `group_apps`.
+ *
+ * This function:
+ * 1. Finds or creates a GranularPermission of type APP for the given group
+ * 2. Finds or creates an AppsGroupPermissions linked to it
+ * 3. Creates a GroupApps entry linking the specific app to the permission
+ *
+ * @param nestApp - The NestJS application instance
+ * @param application - The App entity
+ * @param groupId - The GroupPermissions id
+ * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
+ */
+export async function createAppGroupPermission(nestApp, application, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  const granularRepo = ds.getRepository(GranularPermissions);
+  const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
+  const groupAppsRepo = ds.getRepository(GroupApps);
+
+  // Find or create a granular permission for APP type on this group
+  let granular = await granularRepo.findOne({
+    where: { groupId, type: ResourceType.APP },
+  });
+
+  if (!granular) {
+    granular = granularRepo.create({
+      groupId,
+      name: 'Apps',
+      type: ResourceType.APP,
+      isAll: false,
+    });
+    granular = await granularRepo.save(granular);
+  }
+
+  // Find or create apps group permissions for the granular permission
+  let appsPerm = await appsGroupRepo.findOne({
+    where: { granularPermissionId: granular.id },
+  });
+
+  if (!appsPerm) {
+    appsPerm = appsGroupRepo.create({
+      granularPermissionId: granular.id,
+      appType: APP_TYPES.FRONT_END,
+      canEdit: permissions.update || false,
+      canView: permissions.read || false,
+      hideFromDashboard: false,
+    });
+    appsPerm = await appsGroupRepo.save(appsPerm);
+  } else {
+    // Update existing permissions
+    await appsGroupRepo.update(appsPerm.id, {
+      canEdit: permissions.update || appsPerm.canEdit,
+      canView: permissions.read || appsPerm.canView,
+    });
+    appsPerm = await appsGroupRepo.findOne({ where: { id: appsPerm.id } });
+  }
+
+  // Create a GroupApps entry linking the specific app
+  const existingGroupApp = await groupAppsRepo.findOne({
+    where: { appId: application.id, appsGroupPermissionsId: appsPerm.id },
+  });
+
+  if (!existingGroupApp) {
+    const groupApp = groupAppsRepo.create({
+      appId: application.id,
+      appsGroupPermissionsId: appsPerm.id,
+    });
+    await groupAppsRepo.save(groupApp);
+  }
+}
+
+/**
+ * Creates data-source-level permissions for a group using the new granular permissions system.
+ *
+ * @param nestApp - The NestJS application instance
+ * @param dataSourceId - The DataSource id (not used for granular perms, but kept for API compat)
+ * @param groupId - The GroupPermissions id
+ * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
+ */
+export async function createDatasourceGroupPermission(nestApp, dataSourceId, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  const granularRepo = ds.getRepository(GranularPermissions);
+  const dsGroupRepo = ds.getRepository(DataSourcesGroupPermissions);
+
+  // Find or create a granular permission for DATA_SOURCE type on this group
+  let granular = await granularRepo.findOne({
+    where: { groupId, type: ResourceType.DATA_SOURCE },
+  });
+
+  if (!granular) {
+    granular = granularRepo.create({
+      groupId,
+      name: 'Data Sources',
+      type: ResourceType.DATA_SOURCE,
+      isAll: false,
+    });
+    granular = await granularRepo.save(granular);
+  }
+
+  // Find or create data sources group permissions for the granular permission
+  let dsPerm = await dsGroupRepo.findOne({
+    where: { granularPermissionId: granular.id },
+  });
+
+  if (!dsPerm) {
+    dsPerm = dsGroupRepo.create({
+      granularPermissionId: granular.id,
+      canConfigure: permissions.update || false,
+      canUse: permissions.read || false,
+    });
+    await dsGroupRepo.save(dsPerm);
+  } else {
+    await dsGroupRepo.update(dsPerm.id, {
+      canConfigure: permissions.update || dsPerm.canConfigure,
+      canUse: permissions.read || dsPerm.canUse,
+    });
+  }
+}
+
 export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
@@ -485,8 +609,7 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         type: GROUP_PERMISSIONS_TYPE.DEFAULT,
         appCreate: isAdmin,
         appDelete: isAdmin,
-        folderCreate: isAdmin,
-        folderDelete: isAdmin,
+        folderCRUD: isAdmin,
         orgConstantCRUD: isAdmin,
         dataSourceCreate: isAdmin,
         dataSourceDelete: isAdmin,
@@ -852,7 +975,7 @@ export const authenticateUser = async (
 export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {
   return await request
     .agent(app.getHttpServer())
-    .get('/api/logout')
+    .get('/api/session/logout')
     .set('tj-workspace-id', organization_id)
     .set('Cookie', tokenCookie)
     .expect(200);

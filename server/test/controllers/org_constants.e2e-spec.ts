@@ -35,9 +35,9 @@ describe('organization environment constants controller', () => {
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
-  describe('GET /api/organization-constants', () => {
+  describe('GET /api/organization-constants/decrypted', () => {
     it('should allow only authenticated users to list org users', async () => {
-      await request(app.getHttpServer()).get('/api/organization-constants/').expect(401);
+      await request(app.getHttpServer()).get('/api/organization-constants/decrypted').expect(401);
     });
 
     it('should list decrypted organization environment variables', async () => {
@@ -66,6 +66,7 @@ describe('organization environment constants controller', () => {
         {
           constant_name: 'user_name',
           value: 'The Dev',
+          type: 'Global',
           environments: appEnvironments.map((env) => env.id),
         },
       ];
@@ -86,21 +87,21 @@ describe('organization environment constants controller', () => {
       }
 
       await request(app.getHttpServer())
-        .get(`/api/organization-constants/`)
+        .get(`/api/organization-constants/decrypted`)
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
         .send()
         .expect(200);
 
       await request(app.getHttpServer())
-        .get(`/api/organization-constants/`)
+        .get(`/api/organization-constants/decrypted`)
         .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Cookie', viewerUserData['tokenCookie'])
         .send()
         .expect(200);
 
       const listResponse = await request(app.getHttpServer())
-        .get(`/api/organization-constants/`)
+        .get(`/api/organization-constants/decrypted`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .send()
@@ -111,6 +112,7 @@ describe('organization environment constants controller', () => {
 
         delete orgConstant.createdAt;
         delete orgConstant.id;
+        delete orgConstant.type;
 
         const expectedConstant = {
           name: bodyArray[index].constant_name,
@@ -119,7 +121,6 @@ describe('organization environment constants controller', () => {
             return {
               environmentName: appEnvironment.name,
               value: bodyArray[index].value,
-              id: appEnvironment.id,
             };
           }),
         };
@@ -173,6 +174,7 @@ describe('organization environment constants controller', () => {
         .send({
           constant_name: 'email',
           value: 'test@tooljet.com',
+          type: 'Global',
           environments: [appEnvironments[0].id],
         })
         .expect(201);
@@ -184,6 +186,7 @@ describe('organization environment constants controller', () => {
         .send({
           constant_name: 'test_token',
           value: 'test_token_value',
+          type: 'Global',
           environments: [appEnvironments[0].id],
         })
         .expect(201);
@@ -195,6 +198,7 @@ describe('organization environment constants controller', () => {
         .send({
           constant_name: 'pi',
           value: '3.14',
+          type: 'Global',
           environments: [appEnvironments[0].id],
         })
         .expect(403);
@@ -240,6 +244,7 @@ describe('organization environment constants controller', () => {
       const response = await createConstant(app, adminUserData, {
         constant_name: 'user_name',
         value: 'The Dev',
+        type: 'Global',
         environments: appEnvironments.map((env) => env.id),
       });
 
@@ -317,6 +322,7 @@ describe('organization environment constants controller', () => {
         const response = await createConstant(app, adminUserData, {
           constant_name: 'user_name',
           value: 'The Dev',
+          type: 'Global',
           environments: [appEnvironments[0]?.id],
         });
 
@@ -336,6 +342,7 @@ describe('organization environment constants controller', () => {
       const response = await createConstant(app, adminUserData, {
         constant_name: 'email',
         value: 'dev@tooljet.io',
+        type: 'Global',
         environments: [appEnvironments[0]?.id],
       });
 
