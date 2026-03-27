@@ -21,7 +21,10 @@ import { PluginsModule } from '@modules/plugins/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -474,7 +477,33 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         workflowCreate: isAdmin,
         workflowDelete: isAdmin,
       });
-      await groupPermissionsRepository.save(groupPermission);
+      const savedGroup = await groupPermissionsRepository.save(groupPermission);
+
+      // Seed granular permissions for apps, data sources, and workflows
+      const granularRepo = ds.getRepository(GranularPermissions);
+      const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
+
+      for (const resourceType of [ResourceType.APP, ResourceType.DATA_SOURCE, ResourceType.WORKFLOWS]) {
+        const granular = granularRepo.create({
+          groupId: savedGroup.id,
+          name: resourceType === ResourceType.APP ? 'Apps' : resourceType === ResourceType.DATA_SOURCE ? 'Data Sources' : 'Workflows',
+          type: resourceType,
+          isAll: isAdmin,
+        });
+        const savedGranular = await granularRepo.save(granular);
+
+        // Create apps group permissions for each app type
+        if (resourceType === ResourceType.APP) {
+          const appsPerm = appsGroupRepo.create({
+            granularPermissionId: savedGranular.id,
+            appType: APP_TYPES.FRONT_END,
+            canEdit: isAdmin,
+            canView: true,
+            hideFromDashboard: false,
+          });
+          await appsGroupRepo.save(appsPerm);
+        }
+      }
     }
   }
 }
