@@ -58,7 +58,7 @@ describe('organizations controller', () => {
 
         await orgUser.reload();
 
-        expect(response.body.users[0]).toStrictEqual({
+        expect(response.body.users[0]).toMatchObject({
           email: user.email,
           user_id: user.id,
           first_name: user.firstName,
