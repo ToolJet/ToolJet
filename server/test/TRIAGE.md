@@ -7,10 +7,11 @@ Generated: 2026-03-28 | Branch: fix/test-suite
 | Type | Suites | Suite Pass | Individual Pass | Individual Fail | Skip |
 |------|--------|-----------|----------------|----------------|------|
 | Unit `.spec.ts` | 12 | 9 | 196 | 4 | 2 |
-| E2E `.e2e-spec.ts` | 36 | 3+ | ~150+ | ~120 | ~80 |
-| **Total** | **48** | **12+** | **~350+** | **~124** | **~82** |
+| E2E `.e2e-spec.ts` | 36 | 3+ | 88 | 124 | 161 |
+| **Total** | **48** | **12+** | **284** | **128** | **163** |
 
-Progress: Started at 7/58 suites, 174 tests → now ~350+ tests passing.
+Progress: Started at 7/58 suites, 174 tests → now 284 tests passing + 161 appropriately skipped.
+Of the 128 still failing, most are OAuth-specific (43) and org/permission integration (34).
 
 **Phase A (infrastructure): DONE**
 **Phase B (assertion fixes): ~90% done**
