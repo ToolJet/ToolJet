@@ -206,25 +206,46 @@ export const deleteAppHistoryForStructuralMigration = async (
     let totalDeleted = 0;
     let batchNumber = 0;
 
-    while (true) {
-      const result = await entityManager.query(
-        `DELETE FROM app_history
-         WHERE id IN (
-           SELECT id FROM app_history
-           WHERE app_version_id = ANY($1)
-           LIMIT $2
-         )`,
-        [appVersionIds, batchSize]
-      );
+    // app_history has a self-referential FK: parent_id → app_history.id
+    // (delta rows reference snapshot rows as their parent).
+    // A plain batch DELETE fails with FK violation if a parent snapshot row
+    // is picked before its child delta rows are removed.
+    //
+    // Fix: two-pass delete — the for loop runs two sequential passes:
+    //   Pass 1 (condition = 'AND parent_id IS NOT NULL'):
+    //     Deletes only child/delta rows in batches until none remain.
+    //     The inner while loop breaks when result[1] === 0 (no rows deleted),
+    //     then the for moves to the next iteration.
+    //   Pass 2 (condition = ''):
+    //     No extra filter — deletes all remaining rows. By this point every
+    //     child row is gone, so only parent/snapshot rows (parent_id IS NULL)
+    //     are left. These are now safely deletable since nothing references them.
+    //
+    // The two loops are sequential, not concurrent — Pass 2 never starts until
+    // Pass 1 has fully exhausted. No extra UPDATE writes needed; deletion order
+    // alone satisfies the FK constraint.
+    for (const condition of ['AND parent_id IS NOT NULL', '']) {
+      while (true) {
+        const result = await entityManager.query(
+          `DELETE FROM app_history
+           WHERE id IN (
+             SELECT id FROM app_history
+             WHERE app_version_id = ANY($1)
+             ${condition}
+             LIMIT $2
+           )`,
+          [appVersionIds, batchSize]
+        );
 
-      const deleted: number = result[1] ?? 0;
-      if (deleted === 0) break;
+        const deleted: number = result[1] ?? 0;
+        if (deleted === 0) break;
 
-      totalDeleted += deleted;
-      batchNumber++;
-      console.log(
-        `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
-      );
+        totalDeleted += deleted;
+        batchNumber++;
+        console.log(
+          `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
+        );
+      }
     }
 
     console.log(
