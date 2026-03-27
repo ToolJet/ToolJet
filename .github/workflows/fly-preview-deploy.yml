@@ -1,0 +1,1256 @@
+name: Fly.io Preview Deploy
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, closed, synchronize]
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+  FLY_REGION: sjc  # US West (closest to Render's Oregon)
+
+permissions:
+  pull-requests: write
+  issues: write
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECRETS REQUIRED (add to GitHub repo secrets):
+#   FLY_API_TOKEN       — from `fly tokens create deploy` or Fly dashboard
+#   FLY_ORG             — your Fly.io org slug (e.g. "tooljet")
+#   CUSTOM_GITHUB_TOKEN — same as before (for EE submodule clones)
+#   SMTP_USERNAME       — same as RENDER_SMTP_USERNAME
+#   SMTP_PASSWORD       — same as RENDER_SMTP_PASSWORD
+#   MARKETPLACE_BUCKET  — same as before
+#
+# VM SIZE: shared-cpu-2x, 4GB RAM ($0.0297/hr)
+# Auto-suspends when idle → resumes in ~2s on first request (pay only for review time)
+# ─────────────────────────────────────────────────────────────────────────────
+
+jobs:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMMUNITY EDITION (CE)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      contains(fromJSON('["fly-ce-appbuilder","fly-ce-platform","fly-ce-marketplace"]'), github.event.label.name)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          flyctl apps create "$APP_NAME"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/ce-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ce-pr-${{ env.PR_NUMBER }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:3001/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13 \
+            --region ${{ env.FLY_REGION }} \
+            \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ce" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ce-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=3001 \
+            --env "TOOLJET_HOST=https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --detach
+
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 CE Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ce-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ce-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const triggerLabel = context.payload.label.name;
+            const activeLabel = triggerLabel.replace(/(fly-(?:ce|ee-lts|ee-pre)-)(.+)/, '$1active-$2');
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: triggerLabel
+              });
+            } catch (e) { console.log('Trigger label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [activeLabel]
+            });
+            console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Suspend (manual stop to save cost)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+
+  destroy-ce:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'fly-ce-destroy') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['fly-ce-destroy', 'fly-ce-active-appbuilder', 'fly-ce-active-platform', 'fly-ce-active-marketplace'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - LTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee-lts:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      contains(fromJSON('["fly-ee-lts-appbuilder","fly-ee-lts-platform","fly-ee-lts-marketplace"]'), github.event.label.name)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          flyctl apps create "$APP_NAME"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:3001/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13 \
+            --region ${{ env.FLY_REGION }} \
+            \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ee-lts" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ee-lts-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-lts-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=3001 \
+            --env "TOOLJET_HOST=https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env REDIS_HOST=localhost \
+            --env REDIS_PORT=6379 \
+            --env REDIS_DB=0 \
+            --env REDIS_TLS_ENABLED=false \
+            --env REDIS_PASSWORD= \
+            --env WORKER=true \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --detach
+
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE LTS Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-lts-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const triggerLabel = context.payload.label.name;
+            const activeLabel = triggerLabel.replace(/(fly-(?:ce|ee-lts|ee-pre)-)(.+)/, '$1active-$2');
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: triggerLabel
+              });
+            } catch (e) { console.log('Trigger label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [activeLabel]
+            });
+            console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE LTS: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+
+  destroy-ee-lts:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'fly-ee-lts-destroy') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['fly-ee-lts-destroy', 'fly-ee-lts-active-appbuilder', 'fly-ee-lts-active-platform', 'fly-ee-lts-active-marketplace'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - PRE-RELEASE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      contains(fromJSON('["fly-ee-pre-appbuilder","fly-ee-pre-platform","fly-ee-pre-marketplace"]'), github.event.label.name)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
+          # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          flyctl apps create "$APP_NAME"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          flyctl ips allocate-v4 --shared --app "$APP_NAME"
+          flyctl ips allocate-v6 --app "$APP_NAME"
+
+      - name: Authenticate Docker with Fly Registry
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: flyctl auth docker
+
+      - name: Build and Push Image to Fly Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          push: true
+          tags: registry.fly.io/${{ env.APP_NAME }}:latest
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Create Postgres Volume
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl volumes create pg_data \
+            --app ${{ env.APP_NAME }} \
+            --size 1 \
+            --region ${{ env.FLY_REGION }} \
+            --yes
+
+      - name: Deploy Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          flyctl machine run registry.fly.io/${{ env.APP_NAME }}:latest \
+            --app ${{ env.APP_NAME }} \
+            --vm-size shared-cpu-2x \
+            --vm-memory 4096 \
+            --port 443:3001/tcp:tls:http \
+            --volume pg_data:/var/lib/postgresql/13 \
+            --region ${{ env.FLY_REGION }} \
+            \
+            --autostart true \
+            --env PG_HOST=localhost \
+            --env PG_PORT=5432 \
+            --env PG_USER=postgres \
+            --env PG_PASS=postgres \
+            --env "PG_DB=${{ env.PR_NUMBER }}-ee-pre-release" \
+            --env "TOOLJET_DB=${{ env.PR_NUMBER }}-ee-pre-release-tjdb" \
+            --env TOOLJET_DB_HOST=localhost \
+            --env TOOLJET_DB_USER=postgres \
+            --env TOOLJET_DB_PASS=postgres \
+            --env TOOLJET_DB_PORT=5432 \
+            --env PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+            --env "PGRST_DB_URI=postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-pre-release-tjdb" \
+            --env PGRST_HOST=127.0.0.1:3000 \
+            --env PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+            --env PGRST_LOG_LEVEL=info \
+            --env PORT=3001 \
+            --env "TOOLJET_HOST=https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev" \
+            --env DISABLE_TOOLJET_TELEMETRY=true \
+            --env SMTP_ADDRESS=smtp.mailtrap.io \
+            --env SMTP_DOMAIN=smtp.mailtrap.io \
+            --env SMTP_PORT=2525 \
+            --env "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" \
+            --env "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --env REDIS_HOST=localhost \
+            --env REDIS_PORT=6379 \
+            --env REDIS_DB=0 \
+            --env REDIS_TLS_ENABLED=false \
+            --env REDIS_PASSWORD= \
+            --env WORKER=true \
+            --env "TOOLJET_MARKETPLACE_URL=${{ secrets.MARKETPLACE_BUCKET }}" \
+            --env "BRANCH_NAME=${{ env.BRANCH_NAME }}" \
+            --env "CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}" \
+            --detach
+
+
+      - name: Configure Machine (suspend + health check)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app $APP_NAME --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].checks = [{"type":"tcp","port":3001,"interval":"15s","timeout":"5s","grace_period":"5m"}])}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
+
+      - name: Wait for Healthy
+        run: |
+          APP_URL="https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
+          echo "Waiting 3 min for app boot, then polling health..."
+          sleep 180
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${APP_URL}/api/health" || echo "000")
+            echo "Health check $i/30: HTTP $STATUS"
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Health check timed out after 15 minutes"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Enable Autostop (suspend on idle)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+          CURRENT=$(curl -s "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN")
+          PAYLOAD=$(echo "$CURRENT" | jq '{config: (.config | .services[0].autostop = "suspend")}')
+          curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE Pre-release Review App Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-pre-pr-${prNumber}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/tooljet-ee-pre-pr-${prNumber} |\n\n` +
+                    `_Deployed on Fly.io — auto-suspends when idle, resumes in ~2s on first request_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const triggerLabel = context.payload.label.name;
+            const activeLabel = triggerLabel.replace(/(fly-(?:ce|ee-lts|ee-pre)-)(.+)/, '$1active-$2');
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: triggerLabel
+              });
+            } catch (e) { console.log('Trigger label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [activeLabel]
+            });
+            console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Rebuild on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+
+
+  destroy-ee-pre-release:
+    if: |
+      (github.event.pull_request.head.repo.fork == false &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'fly-ee-pre-destroy') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Destroy Fly App
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: ${{ secrets.FLY_ORG }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
+            flyctl apps destroy $APP_NAME --yes
+            echo "✅ App destroyed"
+          else
+            echo "ℹ️ App not found, skipping"
+          fi
+
+      - name: Clean up Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = ['fly-ee-pre-destroy', 'fly-ee-pre-active-appbuilder', 'fly-ee-pre-active-platform', 'fly-ee-pre-active-marketplace'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+  # ─── FAST UPDATE JOBS (team-label based, no Docker rebuild) ────────────────
+
+  fast-update-ce:
+    name: Fast Update - CE
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      APP_NAME: tooljet-ce-pr-${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BRANCH_NAME: ${{ github.head_ref }}
+    steps:
+      - name: Check if team label is active
+        id: check
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const names = labels.data.map(l => l.name);
+            const team = names.find(n => ['fly-ce-active-appbuilder','fly-ce-active-platform','fly-ce-active-marketplace'].includes(n)) || '';
+            core.setOutput('team', team);
+            core.setOutput('active', team !== '');
+
+      - name: Checkout
+        if: steps.check.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 2
+
+      - name: Detect changes
+        if: steps.check.outputs.active == 'true'
+        id: detect
+        run: |
+          TEAM="${{ steps.check.outputs.team }}"
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+          B=$(echo "$CHANGED" | grep -c "^server/" || true)
+          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
+          if [[ "$TEAM" == "fly-ce-active-appbuilder" ]]; then
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          elif [[ "$TEAM" == "fly-ce-active-platform" ]]; then
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+          elif [[ "$TEAM" == "fly-ce-active-marketplace" ]]; then
+            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          fi
+          echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
+          echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
+          echo "build_plugins=$BUILD_PLUGINS" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        if: steps.check.outputs.active == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache node_modules
+        if: steps.check.outputs.active == 'true'
+        uses: actions/cache@v3
+        with:
+          path: |
+            frontend/node_modules
+            server/node_modules
+            plugins/node_modules
+          key: node-modules-ce-${{ hashFiles('frontend/package-lock.json', 'server/package-lock.json', 'plugins/package-lock.json') }}
+
+      - name: Build frontend
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_frontend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          TOOLJET_EDITION: ce
+        run: |
+          npm --prefix frontend install
+          npm --prefix frontend run build --production
+
+      - name: Build server
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_backend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_ENV: production
+        run: |
+          npm --prefix server install
+          npm install -g @nestjs/cli copyfiles
+          npm --prefix server run build
+
+      - name: Build plugins
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_plugins == 'true'
+        env:
+          NODE_ENV: production
+        run: |
+          npm --prefix plugins install
+          npm --prefix plugins run build
+
+      - name: Setup flyctl
+        if: steps.check.outputs.active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Wake machine if suspended
+        if: steps.check.outputs.active == 'true'
+        run: |
+          STATE=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].state // "unknown"')
+          if [[ "$STATE" == "suspended" || "$STATE" == "stopped" ]]; then
+            MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+            flyctl machines start "$MACHINE_ID" --app "$APP_NAME"
+            sleep 15
+          fi
+
+      - name: Transfer artifacts
+        if: steps.check.outputs.active == 'true'
+        run: |
+          DIRS=""
+          [[ "${{ steps.detect.outputs.build_frontend }}" == "true" ]] && DIRS="$DIRS frontend/build"
+          [[ "${{ steps.detect.outputs.build_backend }}" == "true" ]] && DIRS="$DIRS server/dist"
+          [[ "${{ steps.detect.outputs.build_plugins }}" == "true" ]] && DIRS="$DIRS plugins/dist"
+          if [[ -n "$DIRS" ]]; then
+            tar -czf /tmp/artifacts.tar.gz $DIRS
+            flyctl sftp put --app "$APP_NAME" /tmp/artifacts.tar.gz /tmp/artifacts.tar.gz
+            flyctl ssh console --app "$APP_NAME" -C "tar -xzf /tmp/artifacts.tar.gz -C /app && rm /tmp/artifacts.tar.gz"
+          else
+            echo "No changed files in team scope — skipping transfer"
+          fi
+
+      - name: Restart NestJS
+        if: steps.check.outputs.active == 'true' && (steps.detect.outputs.build_backend == 'true' || steps.detect.outputs.build_plugins == 'true')
+        run: flyctl ssh console --app "$APP_NAME" -C "supervisorctl restart tooljet"
+
+      - name: Comment status
+        if: steps.check.outputs.active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const team = '${{ steps.check.outputs.team }}'.replace('fly-ce-active-', '');
+            const parts = [];
+            if ('${{ steps.detect.outputs.build_frontend }}' === 'true') parts.push('frontend');
+            if ('${{ steps.detect.outputs.build_backend }}' === 'true') parts.push('server');
+            if ('${{ steps.detect.outputs.build_plugins }}' === 'true') parts.push('plugins');
+            const built = parts.length ? parts.join(', ') : 'nothing (no changes in team scope)';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
+            });
+
+  fast-update-ee-lts:
+    name: Fast Update - EE LTS
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      APP_NAME: tooljet-ee-lts-pr-${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BRANCH_NAME: ${{ github.head_ref }}
+    steps:
+      - name: Check if team label is active
+        id: check
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const names = labels.data.map(l => l.name);
+            const team = names.find(n => ['fly-ee-lts-active-appbuilder','fly-ee-lts-active-platform','fly-ee-lts-active-marketplace'].includes(n)) || '';
+            core.setOutput('team', team);
+            core.setOutput('active', team !== '');
+
+      - name: Checkout
+        if: steps.check.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 2
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          submodules: recursive
+
+      - name: Detect changes
+        if: steps.check.outputs.active == 'true'
+        id: detect
+        run: |
+          TEAM="${{ steps.check.outputs.team }}"
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+          B=$(echo "$CHANGED" | grep -c "^server/" || true)
+          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
+          if [[ "$TEAM" == "fly-ee-lts-active-appbuilder" ]]; then
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          elif [[ "$TEAM" == "fly-ee-lts-active-platform" ]]; then
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+          elif [[ "$TEAM" == "fly-ee-lts-active-marketplace" ]]; then
+            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          fi
+          echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
+          echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
+          echo "build_plugins=$BUILD_PLUGINS" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        if: steps.check.outputs.active == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache node_modules
+        if: steps.check.outputs.active == 'true'
+        uses: actions/cache@v3
+        with:
+          path: |
+            frontend/node_modules
+            server/node_modules
+            plugins/node_modules
+          key: node-modules-ee-lts-${{ hashFiles('frontend/package-lock.json', 'server/package-lock.json', 'plugins/package-lock.json') }}
+
+      - name: Build frontend
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_frontend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix frontend install
+          npm --prefix frontend run build --production
+
+      - name: Build server
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_backend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_ENV: production
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix server install
+          npm install -g @nestjs/cli copyfiles
+          npm --prefix server run build
+
+      - name: Build plugins
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_plugins == 'true'
+        env:
+          NODE_ENV: production
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix plugins install
+          npm --prefix plugins run build
+
+      - name: Setup flyctl
+        if: steps.check.outputs.active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Wake machine if suspended
+        if: steps.check.outputs.active == 'true'
+        run: |
+          STATE=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].state // "unknown"')
+          if [[ "$STATE" == "suspended" || "$STATE" == "stopped" ]]; then
+            MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+            flyctl machines start "$MACHINE_ID" --app "$APP_NAME"
+            sleep 15
+          fi
+
+      - name: Transfer artifacts
+        if: steps.check.outputs.active == 'true'
+        run: |
+          DIRS=""
+          [[ "${{ steps.detect.outputs.build_frontend }}" == "true" ]] && DIRS="$DIRS frontend/build"
+          [[ "${{ steps.detect.outputs.build_backend }}" == "true" ]] && DIRS="$DIRS server/dist"
+          [[ "${{ steps.detect.outputs.build_plugins }}" == "true" ]] && DIRS="$DIRS plugins/dist"
+          if [[ -n "$DIRS" ]]; then
+            tar -czf /tmp/artifacts.tar.gz $DIRS
+            flyctl sftp put --app "$APP_NAME" /tmp/artifacts.tar.gz /tmp/artifacts.tar.gz
+            flyctl ssh console --app "$APP_NAME" -C "tar -xzf /tmp/artifacts.tar.gz -C /app && rm /tmp/artifacts.tar.gz"
+          else
+            echo "No changed files in team scope — skipping transfer"
+          fi
+
+      - name: Restart NestJS
+        if: steps.check.outputs.active == 'true' && (steps.detect.outputs.build_backend == 'true' || steps.detect.outputs.build_plugins == 'true')
+        run: flyctl ssh console --app "$APP_NAME" -C "supervisorctl restart tooljet"
+
+      - name: Comment status
+        if: steps.check.outputs.active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const team = '${{ steps.check.outputs.team }}'.replace('fly-ee-lts-active-', '');
+            const parts = [];
+            if ('${{ steps.detect.outputs.build_frontend }}' === 'true') parts.push('frontend');
+            if ('${{ steps.detect.outputs.build_backend }}' === 'true') parts.push('server');
+            if ('${{ steps.detect.outputs.build_plugins }}' === 'true') parts.push('plugins');
+            const built = parts.length ? parts.join(', ') : 'nothing (no changes in team scope)';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
+            });
+
+  fast-update-ee-pre:
+    name: Fast Update - EE Pre-release
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      APP_NAME: tooljet-ee-pre-pr-${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BRANCH_NAME: ${{ github.head_ref }}
+    steps:
+      - name: Check if team label is active
+        id: check
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const names = labels.data.map(l => l.name);
+            const team = names.find(n => ['fly-ee-pre-active-appbuilder','fly-ee-pre-active-platform','fly-ee-pre-active-marketplace'].includes(n)) || '';
+            core.setOutput('team', team);
+            core.setOutput('active', team !== '');
+
+      - name: Checkout
+        if: steps.check.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 2
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          submodules: recursive
+
+      - name: Detect changes
+        if: steps.check.outputs.active == 'true'
+        id: detect
+        run: |
+          TEAM="${{ steps.check.outputs.team }}"
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+          B=$(echo "$CHANGED" | grep -c "^server/" || true)
+          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
+          if [[ "$TEAM" == "fly-ee-pre-active-appbuilder" ]]; then
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          elif [[ "$TEAM" == "fly-ee-pre-active-platform" ]]; then
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+          elif [[ "$TEAM" == "fly-ee-pre-active-marketplace" ]]; then
+            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          fi
+          echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
+          echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
+          echo "build_plugins=$BUILD_PLUGINS" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        if: steps.check.outputs.active == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache node_modules
+        if: steps.check.outputs.active == 'true'
+        uses: actions/cache@v3
+        with:
+          path: |
+            frontend/node_modules
+            server/node_modules
+            plugins/node_modules
+          key: node-modules-ee-pre-${{ hashFiles('frontend/package-lock.json', 'server/package-lock.json', 'plugins/package-lock.json') }}
+
+      - name: Build frontend
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_frontend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix frontend install
+          npm --prefix frontend run build --production
+
+      - name: Build server
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_backend == 'true'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_ENV: production
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix server install
+          npm install -g @nestjs/cli copyfiles
+          npm --prefix server run build
+
+      - name: Build plugins
+        if: steps.check.outputs.active == 'true' && steps.detect.outputs.build_plugins == 'true'
+        env:
+          NODE_ENV: production
+          TOOLJET_EDITION: ee
+        run: |
+          npm --prefix plugins install
+          npm --prefix plugins run build
+
+      - name: Setup flyctl
+        if: steps.check.outputs.active == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Wake machine if suspended
+        if: steps.check.outputs.active == 'true'
+        run: |
+          STATE=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].state // "unknown"')
+          if [[ "$STATE" == "suspended" || "$STATE" == "stopped" ]]; then
+            MACHINE_ID=$(flyctl machines list --app "$APP_NAME" --json | jq -r '.[0].id')
+            flyctl machines start "$MACHINE_ID" --app "$APP_NAME"
+            sleep 15
+          fi
+
+      - name: Transfer artifacts
+        if: steps.check.outputs.active == 'true'
+        run: |
+          DIRS=""
+          [[ "${{ steps.detect.outputs.build_frontend }}" == "true" ]] && DIRS="$DIRS frontend/build"
+          [[ "${{ steps.detect.outputs.build_backend }}" == "true" ]] && DIRS="$DIRS server/dist"
+          [[ "${{ steps.detect.outputs.build_plugins }}" == "true" ]] && DIRS="$DIRS plugins/dist"
+          if [[ -n "$DIRS" ]]; then
+            tar -czf /tmp/artifacts.tar.gz $DIRS
+            flyctl sftp put --app "$APP_NAME" /tmp/artifacts.tar.gz /tmp/artifacts.tar.gz
+            flyctl ssh console --app "$APP_NAME" -C "tar -xzf /tmp/artifacts.tar.gz -C /app && rm /tmp/artifacts.tar.gz"
+          else
+            echo "No changed files in team scope — skipping transfer"
+          fi
+
+      - name: Restart NestJS
+        if: steps.check.outputs.active == 'true' && (steps.detect.outputs.build_backend == 'true' || steps.detect.outputs.build_plugins == 'true')
+        run: flyctl ssh console --app "$APP_NAME" -C "supervisorctl restart tooljet"
+
+      - name: Comment status
+        if: steps.check.outputs.active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const team = '${{ steps.check.outputs.team }}'.replace('fly-ee-pre-active-', '');
+            const parts = [];
+            if ('${{ steps.detect.outputs.build_frontend }}' === 'true') parts.push('frontend');
+            if ('${{ steps.detect.outputs.build_backend }}' === 'true') parts.push('server');
+            if ('${{ steps.detect.outputs.build_plugins }}' === 'true') parts.push('plugins');
+            const built = parts.length ? parts.join(', ') : 'nothing (no changes in team scope)';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
+            });
