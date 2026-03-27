@@ -697,7 +697,7 @@ export const createFirstUser = async (app: INestApplication) => {
   let userRepository: Repository<User> = app.get('UserRepository');
 
   await request(app.getHttpServer())
-    .post('/api/setup-admin')
+    .post('/api/onboarding/setup-super-admin')
     .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet' });
 
   return await userRepository.findOneOrFail({

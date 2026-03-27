@@ -53,7 +53,7 @@ describe('Authentication', () => {
 
     it('should create super admin for first sign up', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/setup-admin')
+        .post('/api/onboarding/setup-super-admin')
         .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
       expect(response.statusCode).toBe(201);
 
@@ -71,30 +71,22 @@ describe('Authentication', () => {
       expect(user.status).toBe('active');
       expect(organization?.name).toBe('test');
 
-      const groupPermissions = await user.groupPermissions;
-      const groupNames = groupPermissions.map((x) => x.group);
+      const groupPermissions = await user.userPermissions;
+      const groupNames = groupPermissions.map((x) => x.name);
 
-      expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
+      expect(new Set(['end-user', 'admin'])).toEqual(new Set(groupNames));
 
-      const adminGroup = groupPermissions.find((x) => x.group == 'admin');
+      const adminGroup = groupPermissions.find((x) => x.name == 'admin');
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
-      expect(adminGroup.folderCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
-      expect(adminGroup.folderUpdate).toBeTruthy();
-      expect(adminGroup.folderDelete).toBeTruthy();
+      expect(adminGroup.folderCRUD).toBeTruthy();
+      expect(adminGroup.orgConstantCRUD).toBeTruthy();
 
-      const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
-      expect(allUserGroup.appCreate).toBeFalsy();
-      expect(allUserGroup.appDelete).toBeFalsy();
-      expect(allUserGroup.folderCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
-      expect(allUserGroup.folderUpdate).toBeFalsy();
-      expect(allUserGroup.folderDelete).toBeFalsy();
+      const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
+      expect(endUserGroup.appCreate).toBeFalsy();
+      expect(endUserGroup.appDelete).toBeFalsy();
+      expect(endUserGroup.folderCRUD).toBeFalsy();
+      expect(endUserGroup.orgConstantCRUD).toBeFalsy();
     });
   });
 
@@ -146,7 +138,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/verify-invite-token', () => {
+  describe('POST /api/onboarding/verify-invite-token', () => {
     beforeEach(() => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {

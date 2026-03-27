@@ -100,16 +100,14 @@ describe('Authentication', () => {
         const adminGroup = groupPermissions.find((x) => x.name == 'admin');
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
-        expect(adminGroup.folderCreate).toBeTruthy();
+        expect(adminGroup.folderCRUD).toBeTruthy();
         expect(adminGroup.orgConstantCRUD).toBeTruthy();
-        expect(adminGroup.folderDelete).toBeTruthy();
 
         const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
         expect(endUserGroup.appCreate).toBeFalsy();
         expect(endUserGroup.appDelete).toBeFalsy();
-        expect(endUserGroup.folderCreate).toBeFalsy();
+        expect(endUserGroup.folderCRUD).toBeFalsy();
         expect(endUserGroup.orgConstantCRUD).toBeFalsy();
-        expect(endUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         const response = await request(app.getHttpServer())
@@ -361,9 +359,15 @@ describe('Authentication', () => {
             'avatar_id',
             'data_source_group_permissions',
             'group_permissions',
+            'is_current_organization_archived',
+            'metadata',
+            'no_active_workspaces',
             'organization',
             'organization_id',
+            'role',
+            'sso_user_info',
             'super_admin',
+            'user_permissions',
             'current_organization_slug',
           ].sort()
         );
@@ -404,10 +408,16 @@ describe('Authentication', () => {
             'first_name',
             'group_permissions',
             'id',
+            'is_current_organization_archived',
             'last_name',
+            'metadata',
+            'no_active_workspaces',
             'organization',
             'organization_id',
+            'role',
+            'sso_user_info',
             'super_admin',
+            'user_permissions',
             'current_organization_slug',
           ].sort()
         );
@@ -500,7 +510,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/accept-invite', () => {
+  describe('POST /api/onboarding/accept-invite', () => {
     describe('Multi-Workspace Enabled', () => {
       beforeEach(() => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
@@ -551,7 +561,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('GET /api/verify-invite-token', () => {
+  describe('GET /api/onboarding/verify-invite-token', () => {
     describe('Multi-Workspace Enabled', () => {
       beforeEach(async () => {
         const { organization, user, orgUser } = await createUser(app, {
@@ -571,7 +581,7 @@ describe('Authentication', () => {
         });
       });
       it('should return 400 while verifying invalid invitation token', async () => {
-        await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${uuidv4()}`).expect(400);
+        await request(app.getHttpServer()).get(`/api/onboarding/verify-invite-token?token=${uuidv4()}`).expect(400);
       });
 
       it('should return user info while verifying invitation token', async () => {
@@ -583,7 +593,7 @@ describe('Authentication', () => {
         const {
           user: { invitationToken },
         } = userData;
-        const response = await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${invitationToken}`);
+        const response = await request(app.getHttpServer()).get(`/api/onboarding/verify-invite-token?token=${invitationToken}`);
         const {
           body: { email, name, onboarding_details },
           status,
@@ -605,7 +615,7 @@ describe('Authentication', () => {
 
         const { invitationToken } = orgUser;
         const response = await request(app.getHttpServer())
-          .get(`/api/verify-invite-token?token=${uuidv4()}&organizationToken=${invitationToken}`)
+          .get(`/api/onboarding/verify-invite-token?token=${uuidv4()}&organizationToken=${invitationToken}`)
           .expect(200);
         const {
           body: { redirect_url },
@@ -626,7 +636,7 @@ describe('Authentication', () => {
 
         const { invitationToken } = user;
         const response = await request(app.getHttpServer())
-          .get(`/api/verify-invite-token?token=${invitationToken}&organizationToken=${uuidv4()}`)
+          .get(`/api/onboarding/verify-invite-token?token=${invitationToken}&organizationToken=${uuidv4()}`)
           .expect(200);
         const {
           body: { redirect_url },

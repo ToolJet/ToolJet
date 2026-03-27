@@ -166,12 +166,12 @@ describe('oauth controller', () => {
             .send({ token, organizationId: current_organization.id })
             .expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(1); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is invited in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
-            email: 'superadmin@tooljet.io',
+            where: { email: 'superadmin@tooljet.io' },
           });
           await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
@@ -203,12 +203,12 @@ describe('oauth controller', () => {
           (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
-            email: 'superadmin@tooljet.io',
+            where: { email: 'superadmin@tooljet.io' },
           });
           await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
@@ -240,7 +240,7 @@ describe('oauth controller', () => {
           (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 401 when the super admin status is archived', async () => {

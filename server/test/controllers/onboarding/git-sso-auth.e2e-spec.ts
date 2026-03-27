@@ -203,7 +203,7 @@ describe.skip('Git Onboarding', () => {
           invitedUser = user;
 
           const response = await request(app.getHttpServer()).get(
-            `/api/verify-organization-token?token=${invitationToken}`
+            `/api/onboarding/verify-organization-token?token=${invitationToken}`
           );
           const {
             body: { email, name, onboarding_details },
@@ -219,7 +219,7 @@ describe.skip('Git Onboarding', () => {
         });
 
         it('should accept invite and add user to the organization (accept-invite)', async () => {
-          await request(app.getHttpServer()).post(`/api/accept-invite`).send({ token: orgInvitationToken }).expect(201);
+          await request(app.getHttpServer()).post(`/api/onboarding/accept-invite`).send({ token: orgInvitationToken }).expect(201);
         });
 
         it('should allow the new user to view apps', async () => {

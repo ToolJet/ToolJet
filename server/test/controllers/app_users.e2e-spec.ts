@@ -10,7 +10,8 @@ import {
   logoutUser,
 } from '../test.helper';
 
-describe('app_users controller', () => {
+// TODO: app_users controller has been removed from the codebase. Skip until tests are cleaned up.
+describe.skip('app_users controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {

@@ -11,7 +11,8 @@ import {
   logoutUser,
 } from '../test.helper';
 
-describe('comment controller', () => {
+// TODO: Comment feature has been removed from the codebase. Skip until tests are cleaned up.
+describe.skip('comment controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {

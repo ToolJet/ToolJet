@@ -49,7 +49,7 @@ describe('Authentication', () => {
   describe('Multi organization - Super Admin onboarding', () => {
     it('should create new users and organization - user type should instance', async () => {
       const adminResponse = await request(app.getHttpServer())
-        .post('/api/setup-admin')
+        .post('/api/onboarding/setup-super-admin')
         .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
       expect(adminResponse.statusCode).toBe(201);
 
@@ -74,21 +74,19 @@ describe('Authentication', () => {
       const adminGroup = groupPermissions.find((x) => x.name == 'admin');
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
-      expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.folderCRUD).toBeTruthy();
       expect(adminGroup.orgConstantCRUD).toBeTruthy();
-      expect(adminGroup.folderDelete).toBeTruthy();
 
       const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
       expect(endUserGroup.appCreate).toBeFalsy();
       expect(endUserGroup.appDelete).toBeFalsy();
-      expect(endUserGroup.folderCreate).toBeFalsy();
+      expect(endUserGroup.folderCRUD).toBeFalsy();
       expect(endUserGroup.orgConstantCRUD).toBeFalsy();
-      expect(endUserGroup.folderDelete).toBeFalsy();
     });
 
     it('second user should not be a super admin', async () => {
       const adminResponse = await request(app.getHttpServer())
-        .post('/api/setup-admin')
+        .post('/api/onboarding/setup-super-admin')
         .send({ email: 'testsuperadmin@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
       expect(adminResponse.statusCode).toBe(201);
 
@@ -130,16 +128,14 @@ describe('Authentication', () => {
       const adminGroup = groupPermissions.find((x) => x.name == 'admin');
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
-      expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.folderCRUD).toBeTruthy();
       expect(adminGroup.orgConstantCRUD).toBeTruthy();
-      expect(adminGroup.folderDelete).toBeTruthy();
 
       const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
       expect(endUserGroup.appCreate).toBeFalsy();
       expect(endUserGroup.appDelete).toBeFalsy();
-      expect(endUserGroup.folderCreate).toBeFalsy();
+      expect(endUserGroup.folderCRUD).toBeFalsy();
       expect(endUserGroup.orgConstantCRUD).toBeFalsy();
-      expect(endUserGroup.folderDelete).toBeFalsy();
     });
   });
 
@@ -343,9 +339,15 @@ describe('Authentication', () => {
           'avatar_id',
           'data_source_group_permissions',
           'group_permissions',
+          'is_current_organization_archived',
+          'metadata',
+          'no_active_workspaces',
           'organization',
           'organization_id',
+          'role',
+          'sso_user_info',
           'super_admin',
+          'user_permissions',
         ].sort()
       );
 

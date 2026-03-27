@@ -10,7 +10,8 @@ import {
   authenticateUser,
 } from '../test.helper';
 
-describe('thread controller', () => {
+// TODO: Thread feature has been removed from the codebase. Skip until tests are cleaned up.
+describe.skip('thread controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
