@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -21,8 +21,9 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    userRepository = app.get('UserRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
   });
 
   afterEach(() => {

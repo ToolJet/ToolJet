@@ -11,11 +11,12 @@ import {
   createSSOMockConfig,
   createUser,
   generateRedirectUrl,
+  getDefaultDataSource,
   getPathFromUrl,
   setUpAccountFromToken,
   verifyInviteToken,
 } from '../../test.helper';
-import { getManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 jest.mock('got');
 const mockedGot = jest.createMockFromModule('got');
@@ -37,9 +38,10 @@ describe.skip('Git Onboarding', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    userRepository = app.get('UserRepository');
-    orgRepository = app.get('OrganizationRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgRepository = defaultDataSource.getRepository(Organization);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
   });
 
   afterEach(() => {
@@ -86,7 +88,7 @@ describe.skip('Git Onboarding', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
-          const manager = getManager();
+          const manager = getDefaultDataSource().manager;
           const user = await manager.findOneOrFail(User, {
             where: { email: 'ssousergit@tooljet.com' },
             relations: ['organization'],

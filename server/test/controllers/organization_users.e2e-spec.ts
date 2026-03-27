@@ -4,7 +4,7 @@ import { BadRequestException, INestApplication } from '@nestjs/common';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -16,7 +16,8 @@ describe('organization users controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
-    userRepository = app.get('UserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
   });
 
   it('should allow only admin/super admin to be able to invite new users', async () => {

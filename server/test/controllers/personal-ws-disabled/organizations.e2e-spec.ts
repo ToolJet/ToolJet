@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
@@ -19,7 +19,8 @@ describe('organizations controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
 
   afterEach(() => {

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser } from '../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser, getDefaultDataSource } from '../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
@@ -17,8 +17,9 @@ describe('organizations controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
-    userRepository = app.get('UserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    userRepository = defaultDataSource.getRepository(User);
   });
 
   afterEach(() => {

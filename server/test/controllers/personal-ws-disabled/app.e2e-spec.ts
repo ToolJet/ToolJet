@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager, Repository, Not } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser, getDefaultDataSource } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -31,10 +31,11 @@ describe('Authentication', () => {
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
 
-    userRepository = app.get('UserRepository');
-    orgRepository = app.get('OrganizationRepository');
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgRepository = defaultDataSource.getRepository(Organization);
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
 
   afterEach(() => {
@@ -196,9 +197,9 @@ describe('Authentication', () => {
         .send({ email: 'invited@tooljet.io', first_name: 'signupuser', last_name: 'user' })
         .expect(201);
 
-      const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
+      const invitedUserDetails = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
 
-      const organizationUserBeforeUpdate = await getManager().findOneOrFail(OrganizationUser, {
+      const organizationUserBeforeUpdate = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });
 
@@ -222,12 +223,12 @@ describe('Authentication', () => {
       });
 
       expect(response.statusCode).toBe(201);
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
+      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
       expect(updatedUser.defaultOrganizationId).toBe(org.id);
       expect(invitedUserDetails.defaultOrganizationId).toBe(org.id);
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
+      const organizationUser = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });
       expect(organizationUser.status).toEqual('active');

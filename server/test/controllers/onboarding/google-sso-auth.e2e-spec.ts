@@ -11,11 +11,12 @@ import {
   createSSOMockConfig,
   createUser,
   generateRedirectUrl,
+  getDefaultDataSource,
   getPathFromUrl,
   setUpAccountFromToken,
   verifyInviteToken,
 } from '../../test.helper';
-import { getManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
 
 describe.skip('Google SSO Onboarding', () => {
@@ -35,9 +36,10 @@ describe.skip('Google SSO Onboarding', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    userRepository = app.get('UserRepository');
-    orgRepository = app.get('OrganizationRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgRepository = defaultDataSource.getRepository(Organization);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
   });
 
   afterEach(() => {
@@ -67,7 +69,7 @@ describe.skip('Google SSO Onboarding', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
 
-          const manager = getManager();
+          const manager = getDefaultDataSource().manager;
           const user = await manager.findOneOrFail(User, {
             where: { email: 'ssouser@tooljet.com' },
             relations: ['organization'],
@@ -254,7 +256,7 @@ describe.skip('Google SSO Onboarding', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
 
-          const manager = getManager();
+          const manager = getDefaultDataSource().manager;
           const user = await manager.findOneOrFail(User, {
             where: { email: 'admin@tooljet.com' },
             relations: ['organization'],

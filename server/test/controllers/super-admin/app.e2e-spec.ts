@@ -10,6 +10,7 @@ import {
   authHeaderForUser,
   createNestAppInstanceWithEnvMock,
   authenticateUser,
+  getDefaultDataSource,
 } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -33,10 +34,11 @@ describe('Authentication', () => {
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
 
-    userRepository = app.get('UserRepository');
-    orgRepository = app.get('OrganizationRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgRepository = defaultDataSource.getRepository(Organization);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
   });
 
   afterEach(() => {

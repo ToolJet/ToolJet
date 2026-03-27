@@ -60,8 +60,9 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app } = await createNestAppInstanceWithEnvMock());
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
-    orgRepository = app.get('OrganizationRepository');
+    const defaultDataSource = getDefaultDataSource();
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    orgRepository = defaultDataSource.getRepository(Organization);
   });
 
   afterEach(() => {

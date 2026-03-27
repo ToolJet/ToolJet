@@ -10,6 +10,7 @@ import {
   verifyInviteToken,
   setUpAccountFromToken,
   authenticateUser,
+  getDefaultDataSource,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
 
@@ -28,9 +29,10 @@ describe.skip('Form Onboarding', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    userRepository = app.get('UserRepository');
-    orgRepository = app.get('OrganizationRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgRepository = defaultDataSource.getRepository(Organization);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
     await clearDB();
   });
 

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
@@ -25,7 +25,8 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
 
   afterEach(() => {
