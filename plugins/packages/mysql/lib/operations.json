@@ -68,21 +68,24 @@
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for mode",
         "list": [
-          {
-            "name": "Bulk update using primary key",
-            "value": "bulk_update_pkey"
-          }
+          { "name": "List rows", "value": "list_rows" },
+          { "name": "Create row", "value": "create_row" },
+          { "name": "Update rows", "value": "update_rows" },
+          { "name": "Delete rows", "value": "delete_rows" },
+          { "name": "Upsert row", "value": "upsert_rows" },
+          { "name": "Bulk insert", "value": "bulk_insert" },
+          { "name": "Bulk update using primary key", "value": "bulk_update_pkey" },
+          { "name": "Bulk upsert using primary key", "value": "bulk_upsert_pkey" }
         ]
       },
-      "bulk_update_pkey": {
-       "table": {
+      "list_rows": {
+        "table": {
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
-          "fxEnabled": false,
-          "autoFetch": true,
+          "fxEnabled": true,
           "operation": {
-            "invokeMethod": "getTables",
+            "invokeMethod": "listTables",
             "label": "Fetch Tables"
           },
           "pagination": true,
@@ -95,24 +98,301 @@
           "placeholder": "Select table",
           "order": 20
         },
-        "primary_key_column": {
-          "label": "Primary key column",
-          "key": "primary_key_column",
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "list_rows.where_filters",
+          "description": "Filter conditions for the query",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "order_filters": {
+          "label": "Sort",
+          "key": "order_filters",
+          "type": "react-component-sql-sort",
+          "parse_key": "list_rows.order_filters",
+          "description": "Sort conditions for the query",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "aggregates": {
+          "label": "Aggregate",
+          "key": "aggregates",
+          "type": "react-component-sql-aggregate",
+          "parse_key": "list_rows.aggregates",
+          "description": "Aggregate functions for the query",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "group_by": {
+          "label": "Group by",
+          "key": "group_by",
+          "type": "react-component-sql-groupby",
+          "parse_key": "list_rows.group_by",
+          "description": "Group by columns for the query",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter primary key column",
-          "width": "320px",
+          "description": "Maximum number of rows to return",
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Enter primary key column"
+          "placeholder": "Enter limit"
+        },
+        "offset": {
+          "label": "Offset",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Number of rows to skip",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter offset"
+        }
+      },
+      "create_row": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to insert into",
+          "placeholder": "Select table"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "create_row.columns",
+          "description": "Column name and value pairs to insert",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        }
+      },
+      "update_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to update",
+          "placeholder": "Select table"
+        },
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "update_rows.where_filters",
+          "description": "Filter conditions to target rows for update",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "update_rows.columns",
+          "description": "Column name and value pairs to update",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to update multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can modify multiple rows at once"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that updates zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
+        }
+      },
+      "upsert_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to upsert into",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column name or an array for composite keys",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "upsert_rows.columns",
+          "description": "Column name and value pairs to insert or update",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to update multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can modify multiple rows at once"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that updates zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
+        }
+      },
+      "delete_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to delete from",
+          "placeholder": "Select table"
+        },
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "delete_rows.where_filters",
+          "description": "Filter conditions to target rows for deletion",
+          "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
+          "columnSelectorDependsOn": ["table"]
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Maximum number of rows to delete",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter limit"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that deletes zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
+        }
+      },
+      "bulk_insert": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to insert into",
+          "placeholder": "Select table"
         },
         "records": {
-          "label": "Records",
+          "label": "Records to insert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_update_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to update",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column name or an array for composite keys",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to update",
           "key": "records",
           "type": "codehinter",
           "description": "Enter records",
           "height": "150px",
-          "editorType": "extendedSingleLine"
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ ] }}"
+        }
+      },
+      "bulk_upsert_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "description": "Select the table to upsert into",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column name or an array for composite keys",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
         }
       }
     }
