@@ -19,6 +19,19 @@ export default class Bigquery implements QueryService {
           break;
         }
 
+        case 'get_dataset_info': {
+          const [metadata] = await client.dataset(queryOptions.datasetId).getMetadata();
+          result = this.sanitizeResponse(metadata, [
+            'datasetReference',
+            'location',
+            'description',
+            'creationTime',
+            'lastModifiedTime',
+            'labels',
+          ]);
+          break;
+        }
+
         case 'list_tables': {
           const [tables] = await client.dataset(queryOptions.datasetId).getTables();
           result = this.sanitizeResponse(tables, ['metadata.tableReference']);
