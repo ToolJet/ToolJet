@@ -12,7 +12,7 @@ ToolJet includes a built-in PostgreSQL sample data source that allows you to fam
 
 When you create a new application, the empty state will guide you on the next steps for connecting a data source. If you don't have your own data source ready, you can immediately start exploring and building by connecting to our sample data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/canvas-v3.png" alt="Canvas View" />
 
 ## Connecting to Sample Data Sources
 
@@ -26,12 +26,7 @@ This method allows you to add a sample data source to an existing application th
   2. Once you select/create the new application, the empty state guides you through the initial setup for connecting the sample data source.
   3. Click on the **Connect to sample data source** button. This will create a query in the query panel which will retrieve all the tables names from the sample data source.
 
-
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v2.png" alt="Connect via Canvas" />
-</div>
-
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v3.png" alt="Connect via Canvas" />
 
 ### 2. Connect the Sample Data Source to an Existing Application.
 
@@ -41,12 +36,7 @@ This method allows you to connect the sample data source to an existing applicat
   2. In the **Query Panel**, click on the **+Add** button to add a new query, and select **Sample Data Source**.
   3. This will create a new empty query. You can now write your SQL query to retrieved data from the sample data source. You can checkout the sample data source [schema](#sample-data-source-schema) to understand the tables and columns available in the sample data source.
 
-
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager-v2.png" alt="Connect via query manager" />
-</div>
-
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/query-manager-v3.png" alt="Connect via query manager" />
 
 ### 3. Create a Sample Application Using the Sample Data Source.
 
@@ -58,11 +48,9 @@ This method enables the creation of a sample application with a pre-configured c
    4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
    5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app-v2.png" alt="Create Sample App" />
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/sample-app-v3.png" alt="Create Sample App" />
 
- ## Sample Data Source Schema
+## Sample Data Source Schema
 
 The sample data source contains various tables with different data types.
 
@@ -73,3 +61,19 @@ The sample data source contains various tables with different data types.
 | `public.sample_data_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 499              |
 | `public.sample_data_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
 | `public.sample_data_product_cars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
+
+## Sample Use Cases
+
+### 1. Build a dashboard
+- Use `sample_data_orders`
+- Show total sales (Text widget)
+- Add chart grouped by region
+
+### 2. Create a user directory
+- Use `sample_data_users`
+- Display in Table component
+- Add search/filter on name
+
+### 3. Analyze country GDP
+- Use `sample_data_country_gdp`
+- Plot GDP vs population
