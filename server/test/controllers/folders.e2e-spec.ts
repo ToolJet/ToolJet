@@ -362,7 +362,7 @@ describe('folders controller', () => {
     // new user can only see folders having apps with read permissions
     await createGroupPermission(nestApp, {
       group: 'folder-handler',
-      folderCreate: false,
+      folderCRUD: false,
       organization: newUserData.organization,
     });
     const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
@@ -388,7 +388,7 @@ describe('folders controller', () => {
 
     // new user can only see all folders with folder create permissions but apps are scoped with read permissions
     await defaultDataSource.manager.update(GroupPermissions, group.id, {
-      folderCreate: true,
+      folderCRUD: true,
     });
 
     response = await request(nestApp.getHttpServer())
@@ -519,7 +519,7 @@ describe('folders controller', () => {
       });
 
       await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
-        folderCreate: true,
+        folderCRUD: true,
       });
 
       const folder = await defaultDataSource.manager.save(Folder, {
@@ -578,7 +578,7 @@ describe('folders controller', () => {
       });
 
       await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
-        folderDelete: true,
+        folderCRUD: true,
       });
 
       let loggedUser = await authenticateUser(nestApp);

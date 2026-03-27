@@ -174,7 +174,7 @@ describe('instance settings controller', () => {
         .send([{ value: 'true', id: response.body.setting.id }])
         .expect(200);
 
-      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, response.body.setting.id);
+      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { id: response.body.setting.id } });
 
       expect(updatedSetting.value).toEqual('true');
 
