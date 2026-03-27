@@ -98,7 +98,7 @@ describe('data sources controller', () => {
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/api/data_sources`)
+        .post(`/api/data-sources`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(dataSourceParams);
@@ -118,7 +118,7 @@ describe('data sources controller', () => {
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/api/data_sources`)
+        .post(`/api/data-sources`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(dataSourceParams);
@@ -193,7 +193,7 @@ describe('data sources controller', () => {
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
-        .put(`/api/data_sources/${dataSource.id}`)
+        .put(`/api/data-sources/${dataSource.id}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -224,7 +224,7 @@ describe('data sources controller', () => {
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
-        .put(`/api/data_sources/${dataSource.id}`)
+        .put(`/api/data-sources/${dataSource.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -296,7 +296,7 @@ describe('data sources controller', () => {
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/api/data_sources?app_version_id=${appVersion.id}`)
+        .get(`/api/data-sources?app_version_id=${appVersion.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
@@ -306,7 +306,7 @@ describe('data sources controller', () => {
 
     // Forbidden if user of another organization
     const response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_version_id=${appVersion.id}`)
+      .get(`/api/data-sources?app_version_id=${appVersion.id}`)
       .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
@@ -381,7 +381,7 @@ describe('data sources controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/data_sources/${dataSource.id}`)
+        .delete(`/api/data-sources/${dataSource.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send();
@@ -399,7 +399,7 @@ describe('data sources controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/data_sources/${dataSource.id}`)
+        .delete(`/api/data-sources/${dataSource.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send();
@@ -462,7 +462,7 @@ describe('data sources controller', () => {
     const loggedUser = await authenticateUser(app, adminUserData.user.email);
 
     const response = await request(app.getHttpServer())
-      .delete(`/api/data_sources/${dataSource1.id}`)
+      .delete(`/api/data-sources/${dataSource1.id}`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', loggedUser.tokenCookie)
       .send();
@@ -489,7 +489,7 @@ describe('data sources controller', () => {
     });
 
     let response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_version_id=${dataSource.appVersionId}`)
+      .get(`/api/data-sources?app_version_id=${dataSource.appVersionId}`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', loggedUser.tokenCookie);
 
@@ -497,7 +497,7 @@ describe('data sources controller', () => {
     expect(response.body.data_sources.length).toBe(1);
 
     response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .get(`/api/data-sources?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', loggedUser.tokenCookie);
 
@@ -521,7 +521,7 @@ describe('data sources controller', () => {
 
     // Should not update if user of another org
     const response = await request(app.getHttpServer())
-      .post(`/api/data_sources/${dataSource.id}/authorize_oauth2`)
+      .post(`/api/data-sources/${dataSource.id}/authorize_oauth2`)
       .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Cookie', loggedUser.tokenCookie)
       .send({

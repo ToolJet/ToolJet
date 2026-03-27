@@ -64,7 +64,7 @@ describe('organization users controller', () => {
 
     for (const [index, userData] of [adminUserData, superAdminUserData].entries()) {
       const response = await request(app.getHttpServer())
-        .post(`/api/organization_users/`)
+        .post(`/api/organization-users/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({ email: `test${index}@tooljet.io` })
@@ -91,30 +91,30 @@ describe('organization users controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     await request(app.getHttpServer())
-      .post(`/api/organization_users/`)
+      .post(`/api/organization-users/`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie'])
       .send({ email: 'test@tooljet.io' })
       .expect(201);
 
     await request(app.getHttpServer())
-      .post(`/api/organization_users/`)
+      .post(`/api/organization-users/`)
       .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
       .set('Cookie', developerUserData['tokenCookie'])
       .send({ email: 'test2@tooljet.io' })
       .expect(403);
 
     await request(app.getHttpServer())
-      .post(`/api/organization_users/`)
+      .post(`/api/organization-users/`)
       .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
       .set('Cookie', viewerUserData['tokenCookie'])
       .send({ email: 'test3@tooljet.io' })
       .expect(403);
   });
 
-  describe('POST /api/organization_users/:id/archive', () => {
+  describe('POST /api/organization-users/:id/archive', () => {
     it('should allow only authenticated users to archive org users', async () => {
-      await request(app.getHttpServer()).post('/api/organization_users/random-id/archive/').expect(401);
+      await request(app.getHttpServer()).post('/api/organization-users/random-id/archive/').expect(401);
     });
 
     it('should throw error when trying to remove last active admin', async () => {
@@ -143,13 +143,13 @@ describe('organization users controller', () => {
       });
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${anotherAdminUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${anotherAdminUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(201);
 
       const response = await request(app.getHttpServer())
-        .post(`/api/organization_users/${adminUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${adminUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
@@ -193,7 +193,7 @@ describe('organization users controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
         .expect(403);
@@ -202,7 +202,7 @@ describe('organization users controller', () => {
       expect(viewerUserData.orgUser.status).toBe('invited');
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(201);
@@ -212,14 +212,14 @@ describe('organization users controller', () => {
 
       //unarchive the user
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(201);
 
       //archive the user again by super admin
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .expect(201);
@@ -229,9 +229,9 @@ describe('organization users controller', () => {
     });
   });
 
-  describe('POST /api/organization_users/:id/unarchive', () => {
+  describe('POST /api/organization-users/:id/unarchive', () => {
     it('should allow only authenticated users to unarchive org users', async () => {
-      await request(app.getHttpServer()).post('/api/organization_users/random-id/unarchive/').expect(401);
+      await request(app.getHttpServer()).post('/api/organization-users/random-id/unarchive/').expect(401);
     });
 
     it('should allow only admin/super admin users to unarchive org users', async () => {
@@ -279,7 +279,7 @@ describe('organization users controller', () => {
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
         .expect(403);
@@ -288,7 +288,7 @@ describe('organization users controller', () => {
       expect(viewerUserData.orgUser.status).toBe('archived');
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
         .expect(403);
@@ -297,7 +297,7 @@ describe('organization users controller', () => {
       expect(viewerUserData.orgUser.status).toBe('archived');
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(201);
@@ -310,7 +310,7 @@ describe('organization users controller', () => {
 
       //archive the user again
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/archive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(201);
@@ -320,7 +320,7 @@ describe('organization users controller', () => {
 
       //unarchiving by super admin
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .expect(201);
@@ -351,7 +351,7 @@ describe('organization users controller', () => {
       });
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${developerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(400);
@@ -378,7 +378,7 @@ describe('organization users controller', () => {
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       await request(app.getHttpServer())
-        .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .post(`/api/organization-users/${developerUserData.orgUser.id}/unarchive/`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .expect(400);
@@ -388,7 +388,7 @@ describe('organization users controller', () => {
     });
   });
 
-  describe('POST /api/organization_users/:userId/archive-all', () => {
+  describe('POST /api/organization-users/:userId/archive-all', () => {
     it('only superadmins can able to archive all users', async () => {
       const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
       const developerUserData = await createUser(app, {
@@ -405,7 +405,7 @@ describe('organization users controller', () => {
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const adminRequestResponse = await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.user.id}/archive-all`)
+        .post(`/api/organization-users/${viewerUserData.user.id}/archive-all`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .send();
@@ -413,7 +413,7 @@ describe('organization users controller', () => {
       expect(adminRequestResponse.statusCode).toBe(201);
 
       const developerRequestResponse = await request(app.getHttpServer())
-        .post(`/api/organization_users/${viewerUserData.user.id}/archive-all`)
+        .post(`/api/organization-users/${viewerUserData.user.id}/archive-all`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
         .send();

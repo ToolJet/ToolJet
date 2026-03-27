@@ -15,9 +15,9 @@ describe('folder apps controller', () => {
     nestApp = await createNestAppInstance();
   });
 
-  describe('POST /api/folder_apps', () => {
+  describe('POST /api/folder-apps', () => {
     it('should allow only authenticated users to add apps to folders', async () => {
-      await request(nestApp.getHttpServer()).post('/api/folder_apps').expect(401);
+      await request(nestApp.getHttpServer()).post('/api/folder-apps').expect(401);
     });
 
     it('should add an app to a folder', async () => {
@@ -31,7 +31,7 @@ describe('folder apps controller', () => {
       const loggedUser = await authenticateUser(nestApp);
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
@@ -66,7 +66,7 @@ describe('folder apps controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ folder_id: folder.id, app_id: app.id });
@@ -90,13 +90,13 @@ describe('folder apps controller', () => {
       const loggedUser = await authenticateUser(nestApp);
 
       await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
@@ -118,7 +118,7 @@ describe('folder apps controller', () => {
       // add app to folder
       const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/folder_apps/${folderApp.folderId}`)
+        .put(`/api/folder-apps/${folderApp.folderId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ app_id: folderApp.appId });
@@ -152,7 +152,7 @@ describe('folder apps controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/folder_apps/${folderApp.folderId}`)
+        .put(`/api/folder-apps/${folderApp.folderId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ app_id: folderApp.appId });

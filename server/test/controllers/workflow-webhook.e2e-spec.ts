@@ -562,7 +562,7 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
 
       // Add Runjs Data-source with JS Code -> Get the dataQueriesId from response
       const updateRunjsQueryDetailsResponse = await request(app.getHttpServer())
-        .post('/api/data_queries')
+        .post('/api/data-queries')
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({

@@ -191,7 +191,7 @@ describe('Authentication', () => {
       expect(orgCount).toBe(1); // Should not create new workspace
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organization-users')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
@@ -218,7 +218,7 @@ describe('Authentication', () => {
         .expect(201);
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organization-users')
         .set('tj-workspace-id', orgUser.organizationId)
         .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
@@ -245,7 +245,7 @@ describe('Authentication', () => {
       expect(orgCount).toBe(1); // Should not create new workspace
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organization-users')
         .set('tj-workspace-id', current_organization_user.organizationId)
         .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
@@ -272,7 +272,7 @@ describe('Authentication', () => {
         .expect(201);
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organization-users')
         .set('tj-workspace-id', orgUser.organizationId)
         .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();

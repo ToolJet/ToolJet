@@ -92,7 +92,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData]) {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
-        .patch(`/api/data_queries/${dataQuery.id}`)
+        .patch(`/api/data-queries/${dataQuery.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -108,7 +108,7 @@ describe('data queries controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const oldOptions = dataQuery.options;
       const response = await request(app.getHttpServer())
-        .patch(`/api/data_queries/${dataQuery.id}`)
+        .patch(`/api/data-queries/${dataQuery.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -193,7 +193,7 @@ describe('data queries controller', () => {
       const newOptions = { method: userData.user.email };
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/data_queries/${dataQuery.id}`)
+        .delete(`/api/data-queries/${dataQuery.id}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -219,7 +219,7 @@ describe('data queries controller', () => {
       const oldOptions = dataQuery.options;
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/data_queries/${dataQuery.id}`)
+        .delete(`/api/data-queries/${dataQuery.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -301,7 +301,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+        .get(`/api/data-queries?app_version_id=${appVersion.id}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
@@ -310,7 +310,7 @@ describe('data queries controller', () => {
     }
 
     let response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .get(`/api/data-queries?app_version_id=${appVersion.id}`)
       .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
       .set('Cookie', viewerUserData['tokenCookie']);
 
@@ -318,7 +318,7 @@ describe('data queries controller', () => {
 
     // Forbidden if user of another organization
     response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .get(`/api/data-queries?app_version_id=${appVersion.id}`)
       .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
@@ -345,7 +345,7 @@ describe('data queries controller', () => {
     adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     let response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .get(`/api/data-queries?app_version_id=${appVersion.id}`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie']);
 
@@ -353,7 +353,7 @@ describe('data queries controller', () => {
     expect(response.body.data_queries.length).toBe(1);
 
     response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .get(`/api/data-queries?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie']);
 
@@ -425,7 +425,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/api/data_queries`)
+        .post(`/api/data-queries`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
@@ -441,7 +441,7 @@ describe('data queries controller', () => {
     // Forbidden if a viewer or a user of another organization
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/api/data_queries`)
+        .post(`/api/data-queries`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
@@ -487,7 +487,7 @@ describe('data queries controller', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post(`/api/data_queries`)
+        .post(`/api/data-queries`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .send(queryParams);
@@ -500,7 +500,7 @@ describe('data queries controller', () => {
     createdQueries.reverse();
 
     const response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .get(`/api/data-queries?app_version_id=${appVersion.id}`)
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie']);
 
@@ -575,7 +575,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/api/data_queries/${dataQuery.id}/run`)
+        .post(`/api/data-queries/${dataQuery.id}/run`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
@@ -626,7 +626,7 @@ describe('data queries controller', () => {
 
     const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
     const response = await request(app.getHttpServer())
-      .post(`/api/data_queries/${dataQuery.id}/run`)
+      .post(`/api/data-queries/${dataQuery.id}/run`)
       .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
@@ -640,7 +640,7 @@ describe('data queries controller', () => {
     });
     const { dataQuery } = await generateAppDefaults(app, adminUserData.user, { isAppPublic: true });
 
-    const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
+    const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 
     expect(response.statusCode).toBe(201);
     expect(response.body.data.length).toBe(30);
@@ -653,7 +653,7 @@ describe('data queries controller', () => {
     });
     const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
-    const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
+    const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 
     expect(response.statusCode).toBe(401);
   });
