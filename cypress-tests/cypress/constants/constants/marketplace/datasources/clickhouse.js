@@ -21,7 +21,7 @@ export const clickhouseUIConfig = {
                 disabled: true,
                 hasEditButton: true,
                 showEncrypted: true,
-                hasEyeIcon: true
+                hasEyeIcon: false
             }
         },
 

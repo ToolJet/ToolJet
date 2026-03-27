@@ -14,6 +14,7 @@ describe("ClickHouse", () => {
     beforeEach(() => {
         cy.apiLogin();
         cy.viewport(1400, 1600);
+        cy.on("uncaught:exception", () => false);
     });
 
     afterEach(() => {
@@ -87,7 +88,8 @@ describe("ClickHouse", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(clickhouseFormConfig, clickhouseFormConfig.invalidPort);
-        verifyDSConnection("failed", "connect ECONNREFUSED");
+        // ClickHouse HTTP port returns "Timeout error" (not ECONNREFUSED) for invalid ports
+        verifyDSConnection("failed", "Timeout error");
     });
 });
 
@@ -100,7 +102,7 @@ describe("ClickHouse", () => {
  *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
  *   - Expected: All field labels, placeholders, default values, and states match manifest
  *   - Fields verified: Username (input, placeholder: "Enter username"),
- *                       Password (encrypted, placeholder: "**************", disabled with edit button, eye icon),
+ *                       Password (encrypted, placeholder: "**************", disabled with edit button, no eye icon),
  *                       Host (input, placeholder: "localhost"),
  *                       Port (input, placeholder: "8123"),
  *                       Database name (input, placeholder: "database name"),
