@@ -274,7 +274,8 @@ export function WorkspaceBranchDropdown() {
                   <div className="branch-name-title">{displayBranchName}</div>
                   <div className="branch-metadata-feature">
                     <span className="metadata-text">
-                      Created by {currentBranch?.created_by || currentBranch?.author || 'Unknown'}
+                      Created by{' '}
+                      {currentBranch?.createdBy || currentBranch?.created_by || currentBranch?.author || 'Unknown'}
                     </span>
                     {(currentBranch?.createdAt || currentBranch?.created_at) && (
                       <>
@@ -381,8 +382,7 @@ export function WorkspaceBranchDropdown() {
                               {pr.title || 'Untitled PR'}
                             </OverflowTooltip>
                             <div className="pr-metadata">
-                              from {pr.source_branch || pr.sourceBranch} |{' '}
-                              {formatPRDate(pr.created_at || pr.createdAt)}
+                              from {pr.source_branch || pr.sourceBranch} | {formatPRDate(pr.created_at || pr.createdAt)}
                             </div>
                           </div>
                         </div>
@@ -426,12 +426,12 @@ export function WorkspaceBranchDropdown() {
                   {/* Latest Commit Section - for non-default branches with commits */}
                   {lastCommit && !isLoadingCommit && (
                     <div className="latest-commit-section">
-                       <div className="latest-commit-header">
+                      <div className="latest-commit-header">
                         <span className="section-label">LATEST COMMIT</span>
-                       </div> 
+                      </div>
                       <div className="commit-info">
                         <div className="commit-icon">
-                          <SolidIcon name="commit" width="20"/>
+                          <SolidIcon name="commit" width="20" />
                         </div>
                         <div className="commit-content">
                           <div className="commit-title">{lastCommit.message || 'No message'}</div>

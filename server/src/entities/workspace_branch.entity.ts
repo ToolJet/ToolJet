@@ -29,6 +29,9 @@ export class WorkspaceBranch extends BaseEntity {
   @Column({ name: 'source_branch_id', nullable: true })
   sourceBranchId: string;
 
+  @Column({ name: 'created_by', nullable: true, default: null })
+  createdBy: string;
+
   @Column({ name: 'app_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
   appMetaHash: string;
 
