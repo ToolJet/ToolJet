@@ -177,7 +177,7 @@ export const FileButton = (props) => {
               {iconVisibility && <TablerIcon iconName={icon} size={16} color={computedIconColor} />}
               <span
                 className={clsx(
-                  'tw-flex tw-items-center tw-gap-1.5 tw-flex-1 tw-min-w-0 tw-overflow-hidden',
+                  'tw-flex tw-items-center tw-gap-1.5 tw-min-w-0 tw-overflow-hidden',
                   justifyClass[contentAlignment] ?? 'tw-justify-start'
                 )}
               >
