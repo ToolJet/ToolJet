@@ -45,7 +45,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [],
   }).compile();
 
@@ -72,7 +72,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
         provide: ConfigService,
@@ -860,7 +860,7 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
         ...(shouldMockLicenseService && {
