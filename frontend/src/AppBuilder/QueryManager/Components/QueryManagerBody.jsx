@@ -309,6 +309,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 index={index}
                 key={toggle}
                 darkMode={darkMode}
+                queryKind={selectedQuery?.kind}
               />
             ))}
             {selectedQuery?.kind === 'restapi' &&
@@ -461,14 +462,29 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, value, toggleOption, darkMode }) => {
-  const [flag, setFlag] = useState(false);
+const UNSUPPORTED_DEPENDENCY_CHANGE_KINDS = new Set(['runjs', 'runpy']);
 
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  queryKind,
+}) => {
+  const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
+
+  const isHidden = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
 
   useEffect(() => {
     setFlag(value);
   }, [value]);
+
+  if (isHidden) return null;
 
   return (
     <div className="query-manager-settings-toggles">
