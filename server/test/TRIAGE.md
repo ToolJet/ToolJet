@@ -6,8 +6,11 @@ Generated: 2026-03-27 | Branch: fix/test-suite
 
 | Type | Total | Pass | Fail | Skip |
 |------|-------|------|------|------|
-| Unit `.spec.ts` | 16 | 7 | 9 | 0 |
-| E2E `.e2e-spec.ts` | 42 | TBD | TBD | TBD |
+| Unit `.spec.ts` | 13 | 8 | 5 | 0 |
+| E2E `.e2e-spec.ts` | 42 | 2 | 37 | 3 |
+| **Total** | **55** | **10** | **42** | **3** |
+
+Started at 7/58 passing → now at 10/55 passing (3 stale tests deleted, ~210 individual tests pass).
 
 ## Unit Tests (.spec.ts)
 
@@ -44,13 +47,29 @@ Generated: 2026-03-27 | Branch: fix/test-suite
 
 ## E2E Tests (.e2e-spec.ts)
 
-### Known Blockers
+### Passing (2)
 
-1. **Old permission system** — ~20 files directly query `GroupPermission`, `AppGroupPermission`, `UserGroupPermission` entities (old `group_permissions` table doesn't exist)
-2. **Auth flow** — `authenticateUser()` gets 401/404 in some tests (response format may have changed)
-3. **Workflow e2e** — `version_status_enum: "RELEASED"` missing (migration gap)
+| File | Tests | Group |
+|------|-------|-------|
+| `controllers/audit_logs.e2e-spec.ts` | 1 | @e2e |
+| `controllers/tooljetdb_roles.e2e-spec.ts` | 1 | @database |
 
-### E2E triage pending full suite run completion.
+### Skipped (3) — onboarding tests
+
+| File | Tests | Reason |
+|------|-------|--------|
+| `controllers/onboarding/form-auth.e2e-spec.ts` | 26 | Skipped by Jest |
+| `controllers/onboarding/git-sso-auth.e2e-spec.ts` | 21 | Skipped by Jest |
+| `controllers/onboarding/google-sso-auth.e2e-spec.ts` | 21 | Skipped by Jest |
+
+### Failing (37) — dominant blocker: old permission system
+
+Most e2e tests fail because they reference old permission entities (`GroupPermission`, `AppGroupPermission`, `UserGroupPermission`) that map to tables that no longer exist. The new system uses `GroupPermissions` → `permission_groups` table + `GroupUsers` → `group_users` table.
+
+Secondary issues:
+- `authenticateUser()` returns 401/404 in some tests
+- `version_status_enum: "RELEASED"` missing for workflow tests
+- Some tests use `getManager()`/`getConnection()` directly
 
 ## Root Causes (all fixed in Phase A)
 
