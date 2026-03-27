@@ -133,11 +133,27 @@ export async function clearDB() {
   await dropTooljetDbTables();
 
   const ds = getDefaultDataSource();
+  if (!ds.isInitialized) await ds.initialize();
+
+  // Legacy tables removed from DB but still have entity metadata registered
+  const skippedTables = [
+    'app_group_permissions',
+    'data_source_group_permissions',
+    'group_permissions',
+    'user_group_permissions',
+  ];
+
   const entities = ds.entityMetadatas;
   for (const entity of entities) {
+    if (skippedTables.includes(entity.tableName)) continue;
+
     const repository = ds.getRepository(entity.name);
     if (entity.tableName !== 'instance_settings') {
-      await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+      try {
+        await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+      } catch {
+        // Table may not exist in test DB — skip
+      }
     } else {
       await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
     }
@@ -162,7 +178,7 @@ export async function createApplication(
   shouldCreateEnvs = true
 ) {
   let appRepository: Repository<App>;
-  appRepository = nestApp.get('AppRepository');
+  appRepository = getDefaultDataSource().getRepository(App);
 
   user = user || (await (await createUser(nestApp, {})).user);
 
@@ -201,8 +217,8 @@ export async function createApplicationVersion(
 ) {
   let appVersionsRepository: Repository<AppVersion>;
   let appEnvironmentsRepository: Repository<AppEnvironment>;
-  appVersionsRepository = nestApp.get('AppVersionRepository');
-  appEnvironmentsRepository = nestApp.get('AppEnvironmentRepository');
+  appVersionsRepository = getDefaultDataSource().getRepository(AppVersion);
+  appEnvironmentsRepository = getDefaultDataSource().getRepository(AppEnvironment);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -227,7 +243,7 @@ export async function createApplicationVersion(
 }
 export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+  appEnvironmentRepository = getDefaultDataSource().getRepository(AppEnvironment);
 
   return await appEnvironmentRepository.find({
     where: {
@@ -241,7 +257,7 @@ export async function getAllEnvironments(nestApp, organizationId): Promise<AppEn
 
 export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+  appEnvironmentRepository = getDefaultDataSource().getRepository(AppEnvironment);
 
   return await Promise.all(
     defaultAppEnvironments.map(async (env) => {
@@ -294,9 +310,9 @@ export async function createUser(
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
 
-  userRepository = nestApp.get('UserRepository');
-  organizationRepository = nestApp.get('OrganizationRepository');
-  organizationUsersRepository = nestApp.get('OrganizationUserRepository');
+  userRepository = getDefaultDataSource().getRepository(User);
+  organizationRepository = getDefaultDataSource().getRepository(Organization);
+  organizationUsersRepository = getDefaultDataSource().getRepository(OrganizationUser);
 
   organization =
     organization ||
@@ -492,7 +508,7 @@ export async function createDataSource(
   { appVersion, name, kind, type = 'default', options, environmentId = null }: any
 ) {
   let dataSourceRepository: Repository<DataSource>;
-  dataSourceRepository = nestApp.get('DataSourceRepository');
+  dataSourceRepository = getDefaultDataSource().getRepository(DataSource);
 
   const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
@@ -512,7 +528,7 @@ export async function createDataSource(
 
 export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, appVersion, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
-  dataQueryRepository = nestApp.get('DataQueryRepository');
+  dataQueryRepository = getDefaultDataSource().getRepository(DataQuery);
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
@@ -528,7 +544,7 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
 
 export async function createDataSourceOption(nestApp, { dataSource, environmentId, options }: any) {
   let dataSourceOptionsRepository: Repository<DataSourceOptions>;
-  dataSourceOptionsRepository = nestApp.get('DataSourceOptionsRepository');
+  dataSourceOptionsRepository = getDefaultDataSource().getRepository(DataSourceOptions);
 
   const dataSourcesService = nestApp.select(DataSourcesModule).get(DataSourcesService);
 
@@ -543,7 +559,7 @@ export async function createDataSourceOption(nestApp, { dataSource, environmentI
 
 export async function createFile(nestApp: any) {
   let fileRepository: Repository<File>;
-  fileRepository = nestApp.get('FileRepository');
+  fileRepository = getDefaultDataSource().getRepository(File);
   const createFileDto = new CreateFileDto();
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
@@ -552,7 +568,7 @@ export async function createFile(nestApp: any) {
 
 export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
   let pluginRepository: Repository<Plugin>;
-  pluginRepository = nestApp.get('PluginRepository');
+  pluginRepository = getDefaultDataSource().getRepository(Plugin);
   const createPluginDto = new CreatePluginDto();
   createPluginDto.id = id;
   createPluginDto.name = name;
