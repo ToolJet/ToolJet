@@ -99,7 +99,8 @@ type NewRevampedComponent =
   | 'PhoneInput'
   | 'IFrame'
   | 'DropdownV2'
-  | 'TreeSelect';
+  | 'TreeSelect'
+  | 'ColorPicker';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -144,6 +145,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'ColorPicker',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [

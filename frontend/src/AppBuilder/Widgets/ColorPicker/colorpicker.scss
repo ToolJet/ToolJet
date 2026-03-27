@@ -1,0 +1,89 @@
+.color-picker-widget {
+    .color-picker-button {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+
+        .color-info {
+            display: flex;
+            flex: 1;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 8px;
+
+            .color-preview {
+                height: 18px;
+                width: 18px;
+                border-radius: 2px;
+                margin: 0;
+                flex-shrink: 0;
+                border: 1px solid var(--cc-weak-border, #e4e7eb);
+            }
+
+            .color-code {
+                font-family: 'IBM Plex Sans';
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 20px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        .tj-input-clear-btn {
+            flex-shrink: 0;
+        }
+    }
+}
+
+
+.color-picker-widget-popover {
+    width: 280px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--cc-weak-border);
+    background-color: var(--cc-surface1-surface);
+    box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 8px 16px rgba(48, 50, 51, 0.1);
+
+    .sketch-picker {
+        width: 100% !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background-color: var(--cc-surface1-surface) !important;
+        border: none !important;
+
+        // Hack to style the cursor for hue and alpha sliders
+        .flexbox-fix:nth-child(2) {
+            div[style*="left"] > div {
+                height: 14px !important;
+            }
+        }
+
+        input {
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--cc-weak-border) !important;
+            padding: 4px 8px !important;
+            background-color: var(--cc-surface1-surface);
+            font-family: 'IBM Plex Sans';
+            font-weight: 400;
+            font-size: 12px !important;
+            line-height: 20px;
+            color: var(--cc-primary-text);
+            box-shadow: none !important;
+        }
+
+        label {
+            padding: 0px !important;
+            font-family: 'IBM Plex Sans';
+            font-weight: 400;
+            font-size: 12px !important;
+            line-height: 20px;
+            color: var(--cc-primary-text) !important;
+        }
+    }
+}

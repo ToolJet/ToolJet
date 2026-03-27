@@ -78,7 +78,7 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 const Icon = lazy(() => import('@/AppBuilder/Widgets/Icon'));
 const Table = lazy(() => import('@/AppBuilder/Widgets/NewTable/Table'));
 const KanbanBoard = lazy(() => import('@/AppBuilder/Widgets/KanbanBoard/KanbanBoard'));
-const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker'));
+const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker/ColorPicker'));
 const CodeEditor = lazy(() => import('@/AppBuilder/Widgets/CodeEditor'));
 const Calendar = lazy(() => import('@/AppBuilder/Widgets/Calendar/Calendar'));
 const Chart = lazy(() => import('@/AppBuilder/Widgets/Chart'));
