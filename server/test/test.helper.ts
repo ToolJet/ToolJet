@@ -39,6 +39,7 @@ import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
 import { LicenseService } from '@modules/licensing/service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { InternalTable } from '@entities/internal_table.entity';
 import * as fs from 'fs';
 
@@ -47,10 +48,18 @@ globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
 
-  const moduleRef = await Test.createTestingModule({
+  const moduleBuilder = Test.createTestingModule({
     imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [],
-  }).compile();
+  });
+
+  // Mock LicenseTermsService to allow all features in tests
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue({
+    getLicenseTerms: jest.fn().mockResolvedValue(true),
+    getLicenseTermsInstance: jest.fn().mockResolvedValue(true),
+  });
+
+  const moduleRef = await moduleBuilder.compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
@@ -74,7 +83,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
 }> {
   let app: INestApplication;
 
-  const moduleRef = await Test.createTestingModule({
+  const moduleBuilder = Test.createTestingModule({
     imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
@@ -82,7 +91,14 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
         useValue: createMock<ConfigService>(),
       },
     ],
-  }).compile();
+  });
+
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue({
+    getLicenseTerms: jest.fn().mockResolvedValue(true),
+    getLicenseTermsInstance: jest.fn().mockResolvedValue(true),
+  });
+
+  const moduleRef = await moduleBuilder.compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
