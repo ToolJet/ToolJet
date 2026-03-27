@@ -56,14 +56,62 @@
   .modal-body {
     overflow: hidden;
     position: relative;
+    .real-canvas {
+      overflow: auto;
+      scrollbar-width: none;
+
+        &:hover {
+          scrollbar-width: thin;
+          scrollbar-color: var(--cc-table-scroll-bar-color) transparent !important;
+        }
+
+        &::-webkit-scrollbar {
+          width: 6px;
+          background-color: transparent;
+        }
+
+        &::-webkit-scrollbar-track {
+          background-color: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: transparent;
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+          background-color: var(--cc-table-scroll-bar-color) transparent !important;
+        }
+    }
   }
 
   .modal-footer {
     position: relative;
     padding: 0;
     border-top: 1px solid var(--cc-modal-footer-divider-color, var(--cc-default-border));
-    overflow-x: hidden;
+    overflow-x: auto;
     width: 100%;
+    scrollbar-width: none;
+    &:hover {
+        scrollbar-width: thin;
+        scrollbar-color: var(--cc-table-scroll-bar-color) transparent !important;
+      }
+
+      &::-webkit-scrollbar {
+        width: 6px;
+        background-color: transparent;
+      }
+
+      &::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+      }
+
+      &:hover::-webkit-scrollbar-thumb {
+        background-color: var(--cc-table-scroll-bar-color) !important;
+      }
 
   }
 }
