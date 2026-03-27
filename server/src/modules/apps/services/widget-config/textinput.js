@@ -190,6 +190,12 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'field',
+    },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
@@ -318,6 +324,7 @@ export const textinputConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
