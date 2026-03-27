@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
-import { ActionTypes, AuditLog, ResourceTypes } from 'src/entities/audit_log.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 describe('audit logs controller', () => {
   let app: INestApplication;
@@ -47,8 +47,8 @@ describe('audit logs controller', () => {
             organizationId: user.organizationId,
             resourceId: user.id,
             resourceName: user.email,
-            resourceType: ResourceTypes.USER,
-            actionType: ActionTypes.USER_LOGIN,
+            resourceType: 'USER',
+            actionType: 'USER_LOGIN',
             createdAt: date,
           });
 
