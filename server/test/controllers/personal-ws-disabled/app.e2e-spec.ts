@@ -46,7 +46,7 @@ describe('Authentication', () => {
   describe('Multi organization with ALLOW_PERSONAL_WORKSPACE=false : First user setup', () => {
     it('should not create user through sign up', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/signup')
+        .post('/api/onboarding/signup')
         .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password' });
       expect(response.statusCode).toBe(403);
     });
@@ -127,13 +127,13 @@ describe('Authentication', () => {
         });
       });
       it('should not create new users', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
         expect(response.statusCode).toBe(403);
       });
     });
     describe('sign up enabled and authorization', () => {
       it('should not allow signup', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
         expect(response.statusCode).toBe(403);
       });
       it('should not create new organization if login is disabled for default organization', async () => {
@@ -167,12 +167,12 @@ describe('Authentication', () => {
       const { user, organization } = userData;
 
       const verifyResponse = await request(app.getHttpServer())
-        .get('/api/verify-invite-token?token=' + invitationToken)
+        .get('/api/onboarding/verify-invite-token?token=' + invitationToken)
         .send();
 
       expect(verifyResponse.statusCode).toBe(200);
 
-      const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send({
+      const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send({
         first_name: 'signupuser',
         last_name: 'user',
         companyName: 'org1',
@@ -205,7 +205,7 @@ describe('Authentication', () => {
 
       const verifyResponse = await request(app.getHttpServer())
         .get(
-          '/api/verify-invite-token?token=' +
+          '/api/onboarding/verify-invite-token?token=' +
             invitedUserDetails.invitationToken +
             '&organizationToken=' +
             organizationUserBeforeUpdate.invitationToken
@@ -214,7 +214,7 @@ describe('Authentication', () => {
 
       expect(verifyResponse.statusCode).toBe(200);
 
-      const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send({
+      const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send({
         companyName: 'org1',
         password: uuidv4(),
         token: invitedUserDetails.invitationToken,
@@ -233,7 +233,7 @@ describe('Authentication', () => {
       });
       expect(organizationUser.status).toEqual('active');
 
-      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/accept-invite').send({
+      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
         token: organizationUser.invitationToken,
       });
 

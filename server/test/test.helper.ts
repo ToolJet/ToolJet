@@ -674,7 +674,7 @@ export const verifyInviteToken = async (app: INestApplication, user: User, verif
 };
 
 export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload) => {
-  const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
+  const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send(payload);
   const { status } = response;
   expect(status).toBe(201);
 

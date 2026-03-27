@@ -56,7 +56,7 @@ describe.skip('Form Onboarding', () => {
       describe('Signup first user', () => {
         it('should throw error if the user is trying to signup as first user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'admin@tooljet.com', name: 'Admin', password: 'password' });
 
           expect(response.statusCode).toBe(403);
@@ -73,7 +73,7 @@ describe.skip('Form Onboarding', () => {
       describe('Signup user', () => {
         it('should signup organization admin', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'admin@tooljet.com', name: 'Admin', password: 'password' });
           expect(response.statusCode).toBe(201);
 
@@ -235,7 +235,7 @@ describe.skip('Form Onboarding', () => {
         });
         it('should signup user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
           expect(response.statusCode).toBe(201);
 
@@ -301,7 +301,7 @@ describe.skip('Form Onboarding', () => {
         });
         it('should signup user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
           expect(response.statusCode).toBe(201);
 
@@ -396,7 +396,7 @@ describe.skip('Form Onboarding', () => {
 
         it('should not signup the same invited user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
           expect(response.statusCode).toBe(406);
         });
@@ -466,7 +466,7 @@ describe.skip('Form Onboarding', () => {
 
         it('should not signup the same invited user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
             .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
           expect(response.statusCode).toBe(406);

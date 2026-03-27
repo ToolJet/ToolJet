@@ -69,14 +69,14 @@ describe('Authentication', () => {
         });
       });
       it('should not create new users', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
         expect(response.statusCode).toBe(403);
       });
     });
     describe('sign up enabled and authorization', () => {
       it('should create new users', async () => {
         const response = await request(app.getHttpServer())
-          .post('/api/signup')
+          .post('/api/onboarding/signup')
           .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(201);
 
@@ -521,7 +521,7 @@ describe('Authentication', () => {
 
         const { user, orgUser } = userData;
 
-        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+        const response = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
           token: orgUser.invitationToken,
         });
 
@@ -539,7 +539,7 @@ describe('Authentication', () => {
         });
         const { user, orgUser } = userData;
 
-        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+        const response = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
           token: orgUser.invitationToken,
         });
 

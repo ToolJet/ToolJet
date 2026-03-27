@@ -93,7 +93,7 @@ describe('Authentication', () => {
       expect(adminResponse.statusCode).toBe(201);
 
       const response = await request(app.getHttpServer())
-        .post('/api/signup')
+        .post('/api/onboarding/signup')
         .send({ email: 'test@tooljet.io', name: 'admin', password: 'password' });
       expect(response.statusCode).toBe(201);
 

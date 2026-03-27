@@ -223,7 +223,7 @@ describe.skip('Google SSO Onboarding', () => {
         it('should signup a user', async () => {
           await createFirstUser(app);
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
           expect(response.statusCode).toBe(201);
 
@@ -315,7 +315,7 @@ describe.skip('Google SSO Onboarding', () => {
 
         it('should not signup same user', async () => {
           const response = await request(app.getHttpServer())
-            .post('/api/signup')
+            .post('/api/onboarding/signup')
             .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
           expect(response.statusCode).toBe(406);
         });
