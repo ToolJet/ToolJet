@@ -1,7 +1,8 @@
 /* eslint-disable prefer-const */
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { getConnection, getManager, Repository } from 'typeorm';
+import { getConnection, getManager, Repository, DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
@@ -37,19 +38,37 @@ import * as cookieParser from 'cookie-parser';
 import { DataSourceGroupPermission } from '@entities/data_source_group_permission.entity';
 import { LicenseService } from '@modules/licensing/service';
 import { InternalTable } from '@entities/internal_table.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { GROUP_PERMISSIONS_TYPE, DEFAULT_GROUP_PERMISSIONS, USER_ROLE } from '@modules/group-permissions/constants';
 import * as fs from 'fs';
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+
+// Module-level data sources populated by createNestAppInstance*.
+// Used by clearDB() so callers don't need to pass the app instance.
+let _defaultDataSource: TypeOrmDataSource | null = null;
+let _tooljetDbDataSource: TypeOrmDataSource | null = null;
+
+function _captureDataSources(app: INestApplication) {
+  _defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  try {
+    _tooljetDbDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
+  } catch {
+    _tooljetDbDataSource = null;
+  }
+}
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [],
   }).compile();
 
   app = moduleRef.createNestApplication();
+  _captureDataSources(app);
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
@@ -71,7 +90,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
         provide: ConfigService,
@@ -81,6 +100,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   }).compile();
 
   app = moduleRef.createNestApplication();
+  _captureDataSources(app);
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
@@ -108,13 +128,31 @@ export function authHeaderForUser(user: User, organizationId?: string, isPasswor
 
 export async function clearDB() {
   if (process.env.NODE_ENV !== 'test') return;
+  if (!_defaultDataSource) throw new Error('clearDB called before createNestAppInstance — no DataSource available');
+
+  if (!_defaultDataSource.isInitialized) await _defaultDataSource.initialize();
   await dropTooljetDbTables();
 
-  const entities = getConnection().entityMetadatas;
+  // Tables that no longer exist in the DB (replaced by new permissions system)
+  // but still have entity metadata registered
+  const skippedTables = [
+    'app_group_permissions',
+    'data_source_group_permissions',
+    'group_permissions',
+    'user_group_permissions',
+  ];
+
+  const entities = _defaultDataSource.entityMetadatas;
   for (const entity of entities) {
-    const repository = getConnection().getRepository(entity.name);
+    if (skippedTables.includes(entity.tableName)) continue;
+
+    const repository = _defaultDataSource.getRepository(entity.name);
     if (entity.tableName !== 'instance_settings') {
-      await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+      try {
+        await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+      } catch {
+        // Table may not exist in test DB — skip silently
+      }
     } else {
       await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
     }
@@ -122,13 +160,15 @@ export async function clearDB() {
 }
 
 async function dropTooljetDbTables() {
-  const connection = getConnection();
-  const tooljetDbConnection = getConnection('tooljetDb');
+  if (!_defaultDataSource) return;
 
-  const internalTables = (await connection.manager.find(InternalTable, { select: ['id'] })) as InternalTable[];
+  const internalTables = (await _defaultDataSource.manager.find(InternalTable, { select: ['id'] })) as InternalTable[];
 
-  for (const table of internalTables) {
-    await tooljetDbConnection.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
+  if (_tooljetDbDataSource && internalTables.length > 0) {
+    if (!_tooljetDbDataSource.isInitialized) await _tooljetDbDataSource.initialize();
+    for (const table of internalTables) {
+      await _tooljetDbDataSource.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
+    }
   }
 }
 
@@ -138,7 +178,7 @@ export async function createApplication(
   shouldCreateEnvs = true
 ) {
   let appRepository: Repository<App>;
-  appRepository = nestApp.get('AppRepository');
+  appRepository = _defaultDataSource.getRepository(App);
 
   user = user || (await (await createUser(nestApp, {})).user);
 
@@ -180,8 +220,8 @@ export async function createApplicationVersion(
 ) {
   let appVersionsRepository: Repository<AppVersion>;
   let appEnvironmentsRepository: Repository<AppEnvironment>;
-  appVersionsRepository = nestApp.get('AppVersionRepository');
-  appEnvironmentsRepository = nestApp.get('AppEnvironmentRepository');
+  appVersionsRepository = _defaultDataSource.getRepository(AppVersion);
+  appEnvironmentsRepository = _defaultDataSource.getRepository(AppEnvironment);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -206,7 +246,7 @@ export async function createApplicationVersion(
 }
 export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+  appEnvironmentRepository = _defaultDataSource.getRepository(AppEnvironment);
 
   return await appEnvironmentRepository.find({
     where: {
@@ -220,7 +260,7 @@ export async function getAllEnvironments(nestApp, organizationId): Promise<AppEn
 
 export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+  appEnvironmentRepository = _defaultDataSource.getRepository(AppEnvironment);
 
   return await Promise.all(
     defaultAppEnvironments.map(async (env) => {
@@ -273,9 +313,9 @@ export async function createUser(
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
 
-  userRepository = nestApp.get('UserRepository');
-  organizationRepository = nestApp.get('OrganizationRepository');
-  organizationUsersRepository = nestApp.get('OrganizationUserRepository');
+  userRepository = _defaultDataSource.getRepository(User);
+  organizationRepository = _defaultDataSource.getRepository(Organization);
+  organizationUsersRepository = _defaultDataSource.getRepository(OrganizationUser);
 
   organization =
     organization ||
@@ -330,20 +370,51 @@ export async function createUser(
     })
   );
 
-  await maybeCreateDefaultGroupPermissions(nestApp, user.organizationId);
-  await createUserGroupPermissions(
-    nestApp,
-    user,
-    groups || ['all_users', 'admin'] // default groups
-  );
+  // Seed new permission system (permission_groups + group_users)
+  await maybeCreateDefaultPermissionGroups(user.organizationId);
+  await linkUserToPermissionGroup(user.id, user.organizationId, USER_ROLE.ADMIN);
 
   return { organization, user, orgUser };
 }
 
-export async function createUserGroupPermissions(nestApp, user, groups) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
+// New permission system: create default permission groups for an organization if they don't exist
+async function maybeCreateDefaultPermissionGroups(organizationId: string) {
+  const groupPermissionsRepo = _defaultDataSource.getRepository(GroupPermissions);
 
-  const userGroupPermissionRepository: Repository<UserGroupPermission> = nestApp.get('UserGroupPermissionRepository');
+  for (const [, defaults] of Object.entries(DEFAULT_GROUP_PERMISSIONS)) {
+    const existing = await groupPermissionsRepo.findOne({
+      where: { organizationId, name: defaults.name },
+    });
+    if (!existing) {
+      await groupPermissionsRepo.save(
+        groupPermissionsRepo.create({ ...defaults, organizationId })
+      );
+    }
+  }
+}
+
+// New permission system: link a user to a permission group via group_users
+async function linkUserToPermissionGroup(userId: string, organizationId: string, role: string) {
+  const groupPermissionsRepo = _defaultDataSource.getRepository(GroupPermissions);
+  const groupUsersRepo = _defaultDataSource.getRepository(GroupUsers);
+
+  const group = await groupPermissionsRepo.findOne({
+    where: { organizationId, name: role },
+  });
+  if (!group) return;
+
+  const existing = await groupUsersRepo.findOne({
+    where: { userId, groupId: group.id },
+  });
+  if (!existing) {
+    await groupUsersRepo.save(groupUsersRepo.create({ userId, groupId: group.id }));
+  }
+}
+
+export async function createUserGroupPermissions(nestApp, user, groups) {
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
+
+  const userGroupPermissionRepository: Repository<UserGroupPermission> = _defaultDataSource.getRepository(UserGroupPermission);
 
   let userGroupPermissions = [];
 
@@ -384,7 +455,7 @@ export async function createUserGroupPermissions(nestApp, user, groups) {
 }
 
 export async function createAppGroupPermission(nestApp, app, groupId, permissions) {
-  const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
+  const appGroupPermissionRepository: Repository<AppGroupPermission> = _defaultDataSource.getRepository(AppGroupPermission);
 
   const appGroupPermission = appGroupPermissionRepository.create({
     groupPermissionId: groupId,
@@ -397,9 +468,8 @@ export async function createAppGroupPermission(nestApp, app, groupId, permission
 }
 
 export async function createDatasourceGroupPermission(nestApp, dataSourceId, groupId, permissions) {
-  const dsGroupPermissionRepository: Repository<DataSourceGroupPermission> = nestApp.get(
-    'DataSourceGroupPermissionRepository'
-  );
+  const dsGroupPermissionRepository: Repository<DataSourceGroupPermission> =
+    _defaultDataSource.getRepository(DataSourceGroupPermission);
 
   const dsGroupPermission = dsGroupPermissionRepository.create({
     groupPermissionId: groupId,
@@ -412,7 +482,7 @@ export async function createDatasourceGroupPermission(nestApp, dataSourceId, gro
 }
 
 export async function createGroupPermission(nestApp, params) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
   let groupPermission = groupPermissionRepository.create({
     ...params,
   });
@@ -422,7 +492,7 @@ export async function createGroupPermission(nestApp, params) {
 }
 
 export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
 
   const defaultGroups = ['all_users', 'admin'];
 
@@ -457,8 +527,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
 }
 
 export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
-  const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
+  const appGroupPermissionRepository: Repository<AppGroupPermission> = _defaultDataSource.getRepository(AppGroupPermission);
 
   const orgAdminGroupPermissions = await groupPermissionRepository.findOne({
     where: {
@@ -484,8 +554,8 @@ export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
 }
 
 export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
-  const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
+  const appGroupPermissionRepository: Repository<AppGroupPermission> = _defaultDataSource.getRepository(AppGroupPermission);
 
   const allUsersGroup = await groupPermissionRepository.findOne({
     where: {
@@ -511,7 +581,7 @@ export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
 }
 
 export async function addAppToGroupPermission(app: App, groupPermission: GroupPermission, permissions = {}) {
-  getManager().create(AppGroupPermission, {
+  _defaultDataSource.manager.create(AppGroupPermission, {
     groupPermissionId: groupPermission.id,
     appId: app.id,
     ...permissions,
@@ -519,8 +589,8 @@ export async function addAppToGroupPermission(app: App, groupPermission: GroupPe
 }
 
 export async function addAllUsersGroupToUser(nestApp, user) {
-  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
-  const userGroupPermissionRepository: Repository<UserGroupPermission> = nestApp.get('UserGroupPermissionRepository');
+  const groupPermissionRepository: Repository<GroupPermission> = _defaultDataSource.getRepository(GroupPermission);
+  const userGroupPermissionRepository: Repository<UserGroupPermission> = _defaultDataSource.getRepository(UserGroupPermission);
 
   const orgDefaultGroupPermissions = await groupPermissionRepository.findOneOrFail({
     where: {
@@ -543,7 +613,7 @@ export async function createDataSource(
   { appVersion, name, kind, type = 'default', options, environmentId = null }: any
 ) {
   let dataSourceRepository: Repository<DataSource>;
-  dataSourceRepository = nestApp.get('DataSourceRepository');
+  dataSourceRepository = _defaultDataSource.getRepository(DataSource);
 
   const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
@@ -563,7 +633,7 @@ export async function createDataSource(
 
 export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, appVersion, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
-  dataQueryRepository = nestApp.get('DataQueryRepository');
+  dataQueryRepository = _defaultDataSource.getRepository(DataQuery);
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
@@ -579,7 +649,7 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
 
 export async function createDataSourceOption(nestApp, { dataSource, environmentId, options }: any) {
   let dataSourceOptionsRepository: Repository<DataSourceOptions>;
-  dataSourceOptionsRepository = nestApp.get('DataSourceOptionsRepository');
+  dataSourceOptionsRepository = _defaultDataSource.getRepository(DataSourceOptions);
 
   const dataSourcesService = nestApp.select(DataSourcesModule).get(DataSourcesService);
 
@@ -594,7 +664,7 @@ export async function createDataSourceOption(nestApp, { dataSource, environmentI
 
 export async function createFile(nestApp: any) {
   let fileRepository: Repository<File>;
-  fileRepository = nestApp.get('FileRepository');
+  fileRepository = _defaultDataSource.getRepository(File);
   const createFileDto = new CreateFileDto();
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
@@ -603,7 +673,7 @@ export async function createFile(nestApp: any) {
 
 export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
   let pluginRepository: Repository<Plugin>;
-  pluginRepository = nestApp.get('PluginRepository');
+  pluginRepository = _defaultDataSource.getRepository(Plugin);
   const createPluginDto = new CreatePluginDto();
   createPluginDto.id = id;
   createPluginDto.name = name;
@@ -651,7 +721,7 @@ export const generateRedirectUrl = async (
   isOrgInvitation?: boolean,
   isSSO = true
 ) => {
-  const manager = getManager();
+  const manager = _defaultDataSource.manager;
   const user = await manager.findOneOrFail(User, { where: { email: email } });
 
   const organizationToken = user.organizationUsers?.find(
@@ -800,7 +870,7 @@ export const generateAppDefaults = async (
 };
 
 export const getAppWithAllDetails = async (id: string) => {
-  const app = await getManager()
+  const app = await _defaultDataSource.manager
     .createQueryBuilder(App, 'app')
     .where('app.id = :id', { id })
     .innerJoinAndSelect('app.appVersions', 'versions')
@@ -848,18 +918,18 @@ export const logoutUser = async (app: INestApplication, tokenCookie: any, organi
 };
 
 export const getAppEnvironment = async (id: string, priority: number) => {
-  return await getManager().findOneOrFail(AppEnvironment, {
+  return await _defaultDataSource.manager.findOneOrFail(AppEnvironment, {
     where: { ...(id && { id }), ...(priority && { priority }) },
   });
 };
 
 export const getWorkflowWebhookApiToken = async (appId: string) => {
-  const app = await getManager().createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
+  const app = await _defaultDataSource.manager.createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
   return app?.workflowApiToken ?? '';
 };
 
 export const enableWebhookForWorkflows = async (workflowId: string, status = true) => {
-  await getManager()
+  await _defaultDataSource.manager
     .createQueryBuilder()
     .update(App)
     .set({ workflowEnabled: status, workflowApiToken: uuidv4() })
@@ -907,7 +977,7 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
         ...(shouldMockLicenseService && {
@@ -919,6 +989,7 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
   }).compile();
 
   app = moduleRef.createNestApplication();
+  _captureDataSources(app);
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));

@@ -1,5 +1,5 @@
 import { INestApplication, BadRequestException } from '@nestjs/common';
-import { GroupPermissionsService } from '@services/group_permissions.service';
+import { GroupPermissionsService } from '@modules/group-permissions/service';
 import { clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
 
 describe('GroupPermissionsService', () => {

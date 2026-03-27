@@ -1,5 +1,5 @@
 import { INestApplication, UnauthorizedException } from '@nestjs/common';
-import { SessionService } from '@services/session.service';
+import { SessionService } from '@modules/session/service';
 import { clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
 const uuid = require('uuid');
 

@@ -3,7 +3,7 @@ import { clearDB, createNestAppInstance, setupOrganization } from '../test.helpe
 import { INestApplication } from '@nestjs/common';
 import { getManager } from 'typeorm';
 import { FolderApp } from '../../src/entities/folder_app.entity';
-import { FoldersService } from '@services/folders.service';
+import { FoldersService } from '@modules/folders/service';
 
 describe('FolderAppsService', () => {
   let service: FolderAppsService;

@@ -5,7 +5,7 @@ import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 jest.mock('got');
 const mockedGot = mocked(got);

@@ -4,7 +4,7 @@ import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('oauth controller', () => {
   let app: INestApplication;
