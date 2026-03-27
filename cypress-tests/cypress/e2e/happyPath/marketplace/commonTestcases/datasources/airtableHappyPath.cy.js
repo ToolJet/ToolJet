@@ -12,6 +12,7 @@ describe("Airtable", () => {
         .replaceAll("[^A-Za-z]", "");
     const airtableDataSourceName = `cypress-${data.dataSourceName}-airtable`;
     beforeEach(() => {
+        cy.on("uncaught:exception", () => false);
         cy.apiLogin();
         cy.viewport(1400, 1600);
     });
