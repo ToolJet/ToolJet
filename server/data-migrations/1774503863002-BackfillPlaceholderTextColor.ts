@@ -7,10 +7,18 @@ export class BackfillPlaceholderTextColor1774503863002 implements MigrationInter
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 2000;
     const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'DropdownV2'];
+
+    const [{ count }] = await queryRunner.query(
+      `SELECT COUNT(*) FROM components
+       WHERE type = ANY($1)
+         AND (styles IS NULL OR NOT (styles::jsonb ? 'placeholderTextColor'))`,
+      [componentTypes]
+    );
+    const total = parseInt(count, 10);
+    console.log(`${MIGRATION_NAME}: [START] Backfill placeholder text color | Total: ${total}`);
+
     let lastId = '00000000-0000-0000-0000-000000000000';
     let totalUpdated = 0;
-    let batchNumber = 0;
-
     while (true) {
       // Cursor pagination on id — avoids OFFSET degradation on large tables
       // and is safe when rows share identical created_at timestamps.
@@ -42,11 +50,11 @@ export class BackfillPlaceholderTextColor1774503863002 implements MigrationInter
       );
 
       totalUpdated += ids.length;
-      batchNumber++;
-      console.log(`${MIGRATION_NAME}: Batch ${batchNumber} | Updated ${totalUpdated}`);
+      const percentage = total > 0 ? ((totalUpdated / total) * 100).toFixed(1) : '0.0';
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
     }
 
-    console.log(`${MIGRATION_NAME}: Done. Total updated: ${totalUpdated}`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill placeholder text color finished.`);
 
     // Clean up app history for all affected app versions.
     // Query directly by component type — avoids accumulating 500k IDs in memory
