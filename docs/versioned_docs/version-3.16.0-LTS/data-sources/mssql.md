@@ -24,7 +24,7 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet.
 
-<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="MSsql data soruce connection"/>
+<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/connection-mssql-ux.png" alt="MSsql data soruce connection"/>
 
 ### Connection Options
 

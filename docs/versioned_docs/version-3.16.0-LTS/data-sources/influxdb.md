@@ -18,7 +18,7 @@ ToolJet connects to InfluxDB using :
 For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/).
 :::
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/influxauth-v3.png" alt="influx auth" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/connection-ifdb-v3.png" alt="influx connection" />
 
 ## Supported Queries
 

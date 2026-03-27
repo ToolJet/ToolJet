@@ -11,7 +11,7 @@ To establish a connection with the MySQL data source, you can either click on th
 
 ### Static Connection
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/connection-v4.png" alt="MySQL data source"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/mysql/connection-ux-v4.png" alt="MySQL data source"/>
 
 ### Dynamic Connection 
 
