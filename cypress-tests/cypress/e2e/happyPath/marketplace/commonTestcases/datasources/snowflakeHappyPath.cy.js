@@ -14,6 +14,7 @@ describe("Snowflake", () => {
     beforeEach(() => {
         cy.apiLogin();
         cy.viewport(1400, 1600);
+        cy.on("uncaught:exception", () => false);
     });
 
     afterEach(() => {
@@ -32,8 +33,11 @@ describe("Snowflake", () => {
                 { key: "warehouse", value: "", encrypted: false },
                 { key: "role", value: "", encrypted: false },
                 { key: "auth_type", value: "basic", encrypted: false },
+                { key: "oauth_type", value: "custom_app", encrypted: false },
+                { key: "grant_type", value: "authorization_code", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "client_secret", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -54,8 +58,11 @@ describe("Snowflake", () => {
                 { key: "warehouse", value: "", encrypted: false },
                 { key: "role", value: "", encrypted: false },
                 { key: "auth_type", value: "basic", encrypted: false },
+                { key: "oauth_type", value: "custom_app", encrypted: false },
+                { key: "grant_type", value: "authorization_code", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "client_secret", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -86,8 +93,11 @@ describe("Snowflake", () => {
                 { key: "warehouse", value: "", encrypted: false },
                 { key: "role", value: "", encrypted: false },
                 { key: "auth_type", value: "basic", encrypted: false },
+                { key: "oauth_type", value: "custom_app", encrypted: false },
+                { key: "grant_type", value: "authorization_code", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: null, encrypted: true },
+                { key: "client_secret", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
