@@ -5,7 +5,7 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   rootDir: '.',
   testEnvironment: 'node',
-  testRegex: '.spec.ts$',
+  testRegex: '(?<!e2e-)spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
