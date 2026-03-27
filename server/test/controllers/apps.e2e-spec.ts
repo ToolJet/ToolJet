@@ -95,7 +95,7 @@ describe('apps controller', () => {
             .set('Cookie', userData['tokenCookie'])
             .send({
               name: appName,
-              type: 'app',
+              type: 'front-end',
             });
 
           expect(response.statusCode).toBe(403);
@@ -107,7 +107,7 @@ describe('apps controller', () => {
           .set('Cookie', adminUserData['tokenCookie'])
           .send({
             name: appName,
-            type: 'app',
+            type: 'front-end',
           });
 
         expect(response.statusCode).toBe(201);
@@ -136,7 +136,7 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie)
         .send({
           name: appName,
-          type: 'app',
+          type: 'front-end',
         });
 
       expect(response.statusCode).toBe(201);
@@ -177,7 +177,7 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie)
         .send({
           name: 'My app',
-          type: 'app',
+          type: 'front-end',
         });
 
       expect(response.statusCode).toBe(201);
