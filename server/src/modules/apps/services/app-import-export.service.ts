@@ -70,6 +70,7 @@ type NewRevampedComponent =
   | 'PasswordInput'
   | 'NumberInput'
   | 'EmailInput'
+  | 'DropdownV2'
   | 'Table'
   | 'Button'
   | 'Checkbox'
@@ -117,6 +118,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PasswordInput',
   'NumberInput',
   'EmailInput',
+  'DropdownV2',
   'Table',
   'Checkbox',
   'Button',
@@ -189,6 +191,21 @@ const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
   'DatetimePickerV2',
   'TimePicker',
   'DaterangePicker',
+];
+
+const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
+  Datepicker: 'Select date',
+  DatePickerV2: 'Select date',
+  DatetimePickerV2: 'Select date and time',
+  TimePicker: 'Select time',
+  DaterangePicker: 'Select Date Range',
+};
+
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'DropdownV2',
 ];
 
 @Injectable()
@@ -2990,6 +3007,15 @@ function migrateProperties(
       if (styles.hoverBackgroundMode === undefined) {
         styles.hoverBackgroundMode = { value: 'auto' };
       }
+    }
+
+    const placeholderDefault = PLACEHOLDER_DATE_TIME_COMPONENT[componentType];
+    if (placeholderDefault && properties.placeholder === undefined) {
+      properties.placeholder = { value: placeholderDefault };
+    }
+
+    if (PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES.includes(componentType) && styles.placeholderTextColor === undefined) {
+      styles.placeholderTextColor = { value: 'var(--cc-placeholder-text)' };
     }
 
     // DropdownV2
