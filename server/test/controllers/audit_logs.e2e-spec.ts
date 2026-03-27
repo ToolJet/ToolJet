@@ -3,9 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 import { AuditLog } from 'src/entities/audit_log.entity';
 
-// TODO: Audit logs API moved from /api/audit_logs to /api/license/audit-logs.
-// Tests need updating for the new endpoint path and possibly new response shape.
-describe.skip('audit logs controller', () => {
+describe('audit logs controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -70,7 +68,7 @@ describe.skip('audit logs controller', () => {
       for (const userData of [superAdminUserData, adminUserData]) {
         // all audit logs
         let response = await request(app.getHttpServer())
-          .get('/api/audit_logs')
+          .get('/api/license/audit-logs')
           .query({
             timeFrom: startDate.toISOString(),
             timeTo: endDate.toISOString(),
@@ -84,7 +82,7 @@ describe.skip('audit logs controller', () => {
 
         // paginated audit logs
         response = await request(app.getHttpServer())
-          .get('/api/audit_logs')
+          .get('/api/license/audit-logs')
           .query({
             perPage: 3,
             page: 1,
@@ -103,7 +101,7 @@ describe.skip('audit logs controller', () => {
         );
 
         response = await request(app.getHttpServer())
-          .get('/api/audit_logs')
+          .get('/api/license/audit-logs')
           .query({
             perPage: 3,
             page: 2,
@@ -125,7 +123,7 @@ describe.skip('audit logs controller', () => {
 
         // searched auditLog
         response = await request(app.getHttpServer())
-          .get('/api/audit_logs')
+          .get('/api/license/audit-logs')
           .query({
             timeFrom: firstAuditLog.createdAt,
             timeTo: thirdAuditLog.createdAt,

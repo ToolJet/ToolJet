@@ -278,7 +278,7 @@ describe('data sources controller', () => {
 
     const allUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
       where: {
-        name: 'all_users',
+        name: 'end-user',
         organizationId: adminUserData.organization.id,
       },
     });

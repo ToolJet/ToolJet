@@ -6,7 +6,7 @@ import {
   createGroupPermission,
   setupOrganization,
 } from '../test.helper';
-import { UsersService } from '../../src/services/users.service';
+import { UsersService } from '@modules/users/service';
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, In } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -40,7 +40,7 @@ describe('UsersService', () => {
           lastName: 'Wick',
         },
         adminUser.defaultOrganizationId,
-        ['all_users']
+        ['end-user']
       );
 
       const manager = defaultDataSource.manager;
@@ -56,7 +56,7 @@ describe('UsersService', () => {
       const groupPermission = await manager.findOneOrFail(GroupPermissions, {
         where: { id: userGroups[0].groupId },
       });
-      expect(groupPermission.name).toEqual('all_users');
+      expect(groupPermission.name).toEqual('end-user');
       expect(groupPermission.organizationId).toEqual(adminUser.organizationId);
     });
   });
@@ -102,7 +102,7 @@ describe('UsersService', () => {
       await defaultUser.reload();
 
       const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['all_users', 'new-group']));
+      expect(new Set(allUserGroups)).toEqual(new Set(['end-user', 'new-group']));
     });
 
     it('should remove user groups', async () => {
@@ -116,7 +116,7 @@ describe('UsersService', () => {
       await service.update(defaultUser.id, { removeGroups: ['new-group'] });
       await defaultUser.reload();
       const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['all_users']));
+      expect(new Set(allUserGroups)).toEqual(new Set(['end-user']));
     });
 
     it('should remove user groups only if it exists', async () => {
@@ -130,7 +130,7 @@ describe('UsersService', () => {
       await service.update(defaultUser.id, { removeGroups: ['new-group', 'new-group', 'non-existent'] });
       await defaultUser.reload();
       const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['all_users']));
+      expect(new Set(allUserGroups)).toEqual(new Set(['end-user']));
     });
 
     it('should throw error when trying to remove admin user group if there is only one admin', async () => {
@@ -157,10 +157,10 @@ describe('UsersService', () => {
       await defaultUser.reload();
 
       let groupPermissions = (await service.groupPermissions(adminUser)).map((x) => x.name);
-      expect(new Set(groupPermissions)).toEqual(new Set(['all_users', 'admin', 'group1']));
+      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'admin', 'group1']));
 
       groupPermissions = (await service.groupPermissions(defaultUser)).map((x) => x.name);
-      expect(new Set(groupPermissions)).toEqual(new Set(['all_users', 'group2']));
+      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'group2']));
     });
   });
 
@@ -176,7 +176,7 @@ describe('UsersService', () => {
       let userGroupPermissionIds = (
         await defaultDataSource.manager.find(GroupPermissions, {
           where: {
-            name: In(['admin', 'all_users']),
+            name: In(['admin', 'end-user']),
             organizationId: adminUser.organizationId,
           },
         })
@@ -191,7 +191,7 @@ describe('UsersService', () => {
       userGroupPermissionIds = (
         await defaultDataSource.manager.find(GroupPermissions, {
           where: {
-            name: 'all_users',
+            name: 'end-user',
             organizationId: defaultUser.defaultOrganizationId,
           },
         })
@@ -210,7 +210,7 @@ describe('UsersService', () => {
         (x) => x.name
       );
 
-      expect(new Set(groupPermissions)).toEqual(new Set(['all_users', 'admin']));
+      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'admin']));
     });
   });
 
