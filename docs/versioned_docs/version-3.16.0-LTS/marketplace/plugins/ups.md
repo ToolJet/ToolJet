@@ -11,12 +11,13 @@ To connect with UPS you need the following credentials:
 - Client ID
 - Client secret
 - Shipper number
+- Base URL
 
 You can follow the steps in the [Getting Started with UPS APIs](https://developer.ups.com/get-started) guide to generate these credentials.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/ups/connection.png" alt="UPS Install" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/ups/connection-v2.png" alt="UPS datasource configuration" />
 
-## Supported Operations
+## Supported Entities
 
 ### Shipping
 
@@ -96,3 +97,155 @@ You can follow the steps in the [Getting Started with UPS APIs](https://develope
 | DELETE | <div style={{ width:"300px"}}> `/shipments/{deprecatedVersion}/pickup/{CancelBy}` </div> | Cancel a scheduled pickup using a deprecated UPS API version   |
 | POST   | <div style={{ width:"300px"}}> `/pickupcreation/{deprecatedVersion}/pickup` </div>       | Create a new pickup request using a deprecated UPS API version |
 
+## Example Queries
+
+### Rating
+
+Operation: POST `/rating/{version}/{requestoption}`
+
+**Required Parameters**
+
+- version
+- request option
+- request body
+
+**Optional Parameter**
+
+- query
+
+Here's the **Sample Input** query :
+
+```json
+{{ {
+    "Request": {
+        "TransactionReference": {
+            "CustomerContext": "CustomerContext",
+            "TransactionIdentifier": "TransactionIdentifier"
+        }
+    },
+    "Shipment": {
+        "Shipper": {
+            "Name": "ShipperName",
+            "ShipperNumber": "42334B",
+            "Address": {
+                "AddressLine": [
+                    "ShipperAddressLine",
+                    "ShipperAddressLine",
+                    "ShipperAddressLine"
+                ],
+                "City": "TIMONIUM",
+                "StateProvinceCode": "MD",
+                "PostalCode": "21093",
+                "CountryCode": "US"
+            }
+        },
+        "ShipTo": {
+            "Name": "ShipToName",
+            "Address": {
+                "AddressLine": [
+                    "ShipToAddressLine",
+                    "ShipToAddressLine",
+                    "ShipToAddressLine"
+                ],
+                "City": "Alpharetta",
+                "StateProvinceCode": "GA",
+                "PostalCode": "30005",
+                "CountryCode": "US"
+            }
+        },
+        "ShipFrom": {
+            "Name": "ShipFromName",
+            "Address": {
+                "AddressLine": [
+                    "ShipFromAddressLine",
+                    "ShipFromAddressLine",
+                    "ShipFromAddressLine"
+                ],
+                "City": "TIMONIUM",
+                "StateProvinceCode": "MD",
+                "PostalCode": "21093",
+                "CountryCode": "US"
+            }
+        },
+        "PaymentDetails": {
+            "ShipmentCharge": {
+                "Type": "01",
+                "BillShipper": {
+                    "AccountNumber": "42334B"
+                }
+            }
+        },
+        "Service": {
+            "Code": "03",
+            "Description": "Ground"
+        },
+        "NumOfPieces": "1",
+        "Package": {
+            "SimpleRate": {
+                "Description": "SimpleRateDescription",
+                "Code": "XS"
+            },
+            "PackagingType": {
+                "Code": "02",
+                "Description": "Packaging"
+            },
+            "Dimensions": {
+                "UnitOfMeasurement": {
+                    "Code": "IN",
+                    "Description": "Inches"
+                },
+                "Length": "5",
+                "Width": "5",
+                "Height": "5"
+            },
+            "PackageWeight": {
+                "UnitOfMeasurement": {
+                    "Code": "LBS",
+                    "Description": "Pounds"
+                },
+                "Weight": "1"
+            }
+        }
+    }
+} }}
+```
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/ups/rating-example.png" alt="UPS Rating example query" />
+
+<details id="tj-dropdown">
+<summary>**Query Response Example**</summary>
+```
+{
+  "RateResponse": {
+    "Response": {
+      "ResponseStatus": {
+        "Code": "1",
+        "Description": "Success"
+      },
+      "Alert": [
+        {
+          "Code": "111730",
+          "Description": "Changed to today's date"
+        }
+      ],
+      "TransactionReference": {
+        "CustomerContext": "CustomerContext",
+        "TransactionIdentifier": "0ciewsso760Ta342JlB4kH"
+      }
+    },
+    "RatedShipment": {
+      "RatedShipmentAlert": [
+        {
+          "Code": "110971",
+          "Description": "Your invoice may vary from the displayed reference rates"
+        }
+      ],
+      "TransportationCharges": {
+        "CurrencyCode": "USD",
+        "MonetaryValue": "8.90"
+      }
+    }
+  }
+}
+```
+</details>
