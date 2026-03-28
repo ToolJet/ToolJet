@@ -170,50 +170,82 @@ export const deleteAppHistoryForStructuralMigration = async (
   try {
     let appVersionIds = options.appVersionIds;
 
-    // If componentIds are provided but not appVersionIds, get appVersionIds from components
-    if (!appVersionIds && options.componentIds && options.componentIds.length > 0) {
+    // If componentIds are provided but not appVersionIds, resolve appVersionIds from components.
+    // Batch the lookup in chunks of 5000 to avoid passing huge arrays to ANY($1).
+    if (!appVersionIds && options.componentIds?.length > 0) {
       console.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
 
-      // Use raw query for better performance with large datasets
-      const result = await entityManager.query(
-        `
-        SELECT DISTINCT p.app_version_id
-        FROM components c
-        INNER JOIN pages p ON c.page_id = p.id
-        WHERE c.id = ANY($1)
-        `,
-        [options.componentIds]
-      );
+      const LOOKUP_BATCH = 5000;
+      const versionIdSet = new Set<string>();
 
-      appVersionIds = result.map((row: any) => row.app_version_id);
+      for (let i = 0; i < options.componentIds.length; i += LOOKUP_BATCH) {
+        const batch = options.componentIds.slice(i, i + LOOKUP_BATCH);
+        const rows = await entityManager.query(
+          `SELECT DISTINCT p.app_version_id
+           FROM components c
+           INNER JOIN pages p ON c.page_id = p.id
+           WHERE c.id = ANY($1)`,
+          [batch]
+        );
+        rows.forEach((row: any) => versionIdSet.add(row.app_version_id));
+      }
+
+      appVersionIds = [...versionIdSet];
       console.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
     }
 
-    if (!appVersionIds || appVersionIds.length === 0) {
+    if (!appVersionIds?.length) {
       console.log(`[${migrationName}] No app versions to clean up history for`);
       return;
     }
 
-    // Use raw query for better performance when deleting large amounts of data
-    // Process in batches to avoid query timeout and memory issues
-    const batchSize = 1000;
+    // Cursor-based batch DELETE on app_history rows.
+    // Batching by row count (not by appVersionIds count) gives predictable
+    // per-query load — one version could have 1 or 10,000 history entries.
+    const batchSize = 2000;
     let totalDeleted = 0;
+    let batchNumber = 0;
 
-    for (let i = 0; i < appVersionIds.length; i += batchSize) {
-      const batch = appVersionIds.slice(i, i + batchSize);
+    // app_history has a self-referential FK: parent_id → app_history.id
+    // (delta rows reference snapshot rows as their parent).
+    // A plain batch DELETE fails with FK violation if a parent snapshot row
+    // is picked before its child delta rows are removed.
+    //
+    // Fix: two-pass delete — the for loop runs two sequential passes:
+    //   Pass 1 (condition = 'AND parent_id IS NOT NULL'):
+    //     Deletes only child/delta rows in batches until none remain.
+    //     The inner while loop breaks when result[1] === 0 (no rows deleted),
+    //     then the for moves to the next iteration.
+    //   Pass 2 (condition = ''):
+    //     No extra filter — deletes all remaining rows. By this point every
+    //     child row is gone, so only parent/snapshot rows (parent_id IS NULL)
+    //     are left. These are now safely deletable since nothing references them.
+    //
+    // The two loops are sequential, not concurrent — Pass 2 never starts until
+    // Pass 1 has fully exhausted. No extra UPDATE writes needed; deletion order
+    // alone satisfies the FK constraint.
+    for (const condition of ['AND parent_id IS NOT NULL', '']) {
+      while (true) {
+        const result = await entityManager.query(
+          `DELETE FROM app_history
+           WHERE id IN (
+             SELECT id FROM app_history
+             WHERE app_version_id = ANY($1)
+             ${condition}
+             LIMIT $2
+           )`,
+          [appVersionIds, batchSize]
+        );
 
-      const result = await entityManager.query(
-        `
-        DELETE FROM app_history 
-        WHERE app_version_id = ANY($1)
-        `,
-        [batch]
-      );
+        const deleted: number = result[1] ?? 0;
+        if (deleted === 0) break;
 
-      const deleted = result[1] || 0; // PostgreSQL returns [query result, affected rows]
-      totalDeleted += deleted;
-
-      console.log(`[${migrationName}] Batch ${Math.floor(i / batchSize) + 1}: Deleted ${deleted} history entries`);
+        totalDeleted += deleted;
+        batchNumber++;
+        console.log(
+          `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
+        );
+      }
     }
 
     console.log(
