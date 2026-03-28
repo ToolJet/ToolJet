@@ -38,8 +38,30 @@ import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
+import { allManifests } from '@tooljet/plugins/client';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
+
+const getManifestByKind = (kind) =>
+  Object.values(allManifests).find((m) => m['tj:source']?.kind === kind);
+
+const hasEmptyRequiredFields = (schema, options) => {
+  if (!schema || !options) return false;
+
+  const required = schema.required || [];
+  const conditionalRequired = (schema.allOf || []).flatMap((condition) => {
+    if (!condition.if?.properties || !condition.then?.required) return [];
+    const matches = Object.entries(condition.if.properties).every(
+      ([key, val]) => options?.[key]?.value === val.const
+    );
+    return matches ? condition.then.required : [];
+  });
+
+  return [...required, ...conditionalRequired].some((key) => {
+    const val = options?.[key]?.value;
+    return val === undefined || val === null || val === '';
+  });
+};
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -963,6 +985,11 @@ class DataSourceManagerComponent extends React.Component {
         !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
+    const hintKind = selectedDataSource?.kind;
+    const hintManifest = hintKind ? getManifestByKind(hintKind) : null;
+    const showSaveHint = !isSaving && !this.props.isVersionReleased &&
+      hintManifest != null &&
+      hasEmptyRequiredFields(hintManifest, options);
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
@@ -1240,6 +1267,13 @@ class DataSourceManagerComponent extends React.Component {
                           >
                             {this.props.t('globals.save', 'Save')}
                           </ButtonSolid>
+                          {showSaveHint && (
+                            <div className="text-center mt-1">
+                              <span className="text-muted" style={{ fontSize: '11px', fontStyle: 'italic' }}>
+                                Fill all <span style={{ color: 'var(--tomato9)', fontStyle: 'normal' }}>*</span> required fields to save
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </Modal.Footer>
@@ -1284,6 +1318,13 @@ class DataSourceManagerComponent extends React.Component {
                             ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
                             : this.props.t('globals.save', 'Save')}
                         </ButtonSolid>
+                        {showSaveHint && (
+                          <div className="text-center mt-1">
+                            <span className="text-muted" style={{ fontSize: '11px', fontStyle: 'italic' }}>
+                              Fill all <span style={{ color: 'var(--tomato9)', fontStyle: 'normal' }}>*</span> required fields to save
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </Modal.Footer>
                   )}
