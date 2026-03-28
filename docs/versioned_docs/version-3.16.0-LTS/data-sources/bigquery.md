@@ -17,7 +17,7 @@ ToolJet requires the following to connect to your BigQuery:
 :::warning
 When entering multiple scopes, separate them using spaces. Using any other character may cause errors.
 
-Example: `https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/drive`
+Example: `https://www.googleapis.com/auth/cloud-platform or https://www.googleapis.com/auth/drive`
 :::
 
 How to get a Private key?
@@ -27,7 +27,7 @@ How to get a Private key?
 3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
 4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-v3.png" alt="Adding Bigquery Connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/connection-ux-bigquery.png" alt="Adding Bigquery Connection" />
 
 **The JSON file should look like this:**
 

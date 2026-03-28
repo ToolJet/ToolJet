@@ -15,7 +15,25 @@ ToolJet requires the following to connect to your BigQuery:
 
 For generating a private key check out **[Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console)**.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-connection.png"  alt="cloud firestore connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/connection-ux-fs.png"  alt="cloud firestore connection"/>
+
+:::Info
+**The Private key should look like this:**
+```json
+{
+  "type": "service_account",
+  "project_id": "datasource-206ec",
+  "private_key_id": "e8d89d2b6d7f5996c74be4d10b39d881dbc1ed",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC1xW7ah6v8Qqqw\nDtWCHaZEA6O3naDD7nHVWUOJ4k8beT5xBqUUWprqzoRNUJxw6qKR49U2PsYNROdSg8nX7eDbwvvB9KFcb3N2bRxSM5UxRNkGqlMcHFS9YbDN1jelXI9I76NcVzDR8uJIibHFIxWySS4JJVkCt3i0y8of1PK/+i\nsKTuQGTb33mtaYXwQDOIc78SOyKM80pWo0SYyWoH1ZqGKUkzR4VMCx7uyf4\nluCbM3ZDEN9pZZOQgoTkkcpXt7Rg72G9FoFmvTNhAoGBAOC6s16g1f4h67pAiPvN\nN1tKIdb19+MTZyYptT/Du+hpJ5Y5sTu5Nv7GpdkLL0SG8T5XLZV+1RNT8MGV4GsA\nmSdsm4El39sdVqtTzYvEP+5ccSPWpcKYc5tpzVeJpdlK1OwkCShzD5pOLMBqvVlF\nX3DPmXj33a9RkDIa0UK5LuiH\n-----END PRIVATE KEY-----\n",
+  "client_email": "firestore-adminsdk-n8ezk@datasource-206ec.iam.gserviceaccount.com",
+  "client_id": "103063394008404340612",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-n8ezk%40datasource-206ec.iam.gserviceaccount.com"
+}
+```
+:::
 
 ## Querying Firestore
 
