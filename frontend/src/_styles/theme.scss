@@ -6337,6 +6337,34 @@ input.hide-input-arrows {
   }
 }
 
+.theme-dark .custom-checkbox-tree {
+  color: #e0e0e0;
+  background: #1f2936;
+  border-radius: 4px;
+  padding: 8px;
+
+  .rct-title {
+    color: #e0e0e0 !important;
+  }
+
+  .rct-node {
+    background: transparent;
+  }
+
+  .rct-node-selected {
+    background: rgba(99, 102, 241, 0.2);
+  }
+
+  .rct-icon-expand-open::before,
+  .rct-icon-expand-close::before {
+    filter: invert(1);
+  }
+
+  .rct-checkbox input:checked + .rct-checkbox-icon {
+    filter: invert(0.6) sepia(1) saturate(5) hue-rotate(180deg);
+  }
+}
+
 // sso enable/disable box
 .tick-cross-info {
   .main-box {
