@@ -1174,7 +1174,7 @@ class DataSourceManagerComponent extends React.Component {
                       {connectionTestError && (
                         <div className="row w-100">
                           <div className="alert alert-danger" role="alert">
-                            <div className="text-muted" data-cy="connection-alert-text">
+                            <div data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>
                           </div>
@@ -1187,7 +1187,6 @@ class DataSourceManagerComponent extends React.Component {
                             {validationError.map((error, index) => (
                               <div
                                 key={index}
-                                className="text-muted"
                                 data-cy={`${generateCypressDataCy(error)}-field-alert-text`}
                               >
                                 {error}
