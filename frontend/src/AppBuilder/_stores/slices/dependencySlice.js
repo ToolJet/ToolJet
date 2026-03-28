@@ -1,4 +1,5 @@
 import DependencyGraph from './DependencyClass';
+import { createBatchManager } from '../batchManager';
 
 const initialState = {
   dependencyGraph: {
@@ -10,7 +11,13 @@ const initialState = {
   },
 };
 
-export const createDependencySlice = (set, get) => ({
+export const createDependencySlice = (set, get) => {
+  // useShallowReturn: DependencyGraph is a class instance — Immer can't track its mutations,
+  // so flush must return { ...state } to notify Zustand instead of relying on draft patches.
+  // No dep path cascade needed here (this batch is for graph construction, not runtime updates).
+  const _depBatch = createBatchManager(set, get, { useShallowReturn: true });
+
+  return {
   ...initialState,
   initializeDependencySlice: (moduleId) => {
     set(
@@ -24,7 +31,17 @@ export const createDependencySlice = (set, get) => ({
     );
   },
 
+  startDependencyBatch: () => _depBatch.startBatch(),
+
+  flushDependencyBatch: () => _depBatch.flush('flushDependencyBatch'),
+
   addDependency: (fromPath, toPath, nodeData, moduleId = 'canvas') => {
+    if (_depBatch.isBatching()) {
+      _depBatch.bufferMutation((state) => {
+        state.dependencyGraph.modules[moduleId].graph.addDependency(fromPath, toPath, nodeData);
+      });
+      return;
+    }
     if (!get().checkIfDependencyExists(fromPath, toPath, moduleId)) {
       set((state) => {
         state.dependencyGraph.modules[moduleId].graph.addDependency(fromPath, toPath, nodeData);
@@ -33,11 +50,18 @@ export const createDependencySlice = (set, get) => ({
     }
   },
 
-  updateDependency: (newFromPath, toPath, nodeData, moduleId = 'canvas') =>
+  updateDependency: (newFromPath, toPath, nodeData, moduleId = 'canvas') => {
+    if (_depBatch.isBatching()) {
+      _depBatch.bufferMutation((state) => {
+        state.dependencyGraph.modules[moduleId].graph.updateDependency(newFromPath, toPath, nodeData);
+      });
+      return;
+    }
     set((state) => {
       state.dependencyGraph.modules[moduleId].graph.updateDependency(newFromPath, toPath, nodeData);
       return { ...state };
-    }),
+    });
+  },
 
   removeDependency: (toPath, clearToPath = false, moduleId = 'canvas') =>
     set((state) => {
@@ -69,4 +93,5 @@ export const createDependencySlice = (set, get) => ({
     const dependencies = get().getDependencies(fromPath, moduleId);
     return dependencies.includes(toPath);
   },
-});
+  };
+};

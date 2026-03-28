@@ -1,6 +1,7 @@
 import { resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
+import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
 import _ from 'lodash';
 
 const initialState = {
@@ -39,7 +40,10 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
   general: {},
 };
 
-export const createResolvedSlice = (set, get) => ({
+export const createResolvedSlice = (set, get) => {
+  const _exposedValueBatch = createBatchManager(set, get);
+
+  return {
   ...initialState,
   initializeResolvedSlice: (moduleId) => {
     set(
@@ -52,6 +56,15 @@ export const createResolvedSlice = (set, get) => ({
       'initializeResolvedSlice'
     );
   },
+
+  startExposedValueBatch: () => {
+    _exposedValueBatch.startBatch();
+  },
+
+  flushExposedValueBatch: () => {
+    _exposedValueBatch.flush('flushExposedValueBatch');
+  },
+
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -383,6 +396,22 @@ export const createResolvedSlice = (set, get) => ({
     );
   },
   setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
+    // Skip if the value is already set to the same value
+    const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
+    if (existing !== undefined && _.isEqual(existing, value)) return;
+
+    if (_exposedValueBatch.isBatching()) {
+      _exposedValueBatch.bufferMutation(
+        (state) => {
+          if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+            state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+        },
+        typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
+      );
+      return;
+    }
+
     set(
       (state) => {
         if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
@@ -401,6 +430,26 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   setExposedValues: (id, type, values, moduleId = 'canvas') => {
+    if (_exposedValueBatch.isBatching()) {
+      const depPaths = [];
+      Object.entries(values).forEach(([key, value]) => {
+        if (typeof value !== 'function') {
+          depPaths.push({ path: `components.${id}.${key}`, moduleId });
+        }
+      });
+      _exposedValueBatch.bufferMutation(
+        (state) => {
+          Object.entries(values).forEach(([key, value]) => {
+            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          });
+        },
+        depPaths
+      );
+      return;
+    }
+
     const skipKeys = new Set();
     set(
       (state) => {
@@ -771,7 +820,6 @@ export const createResolvedSlice = (set, get) => ({
           return new_array;
         } else if (!_.isEmpty(object)) {
           Object.keys(object).forEach((key) => {
-            console.log({ key, object });
             const resolved_object = get().resolveReferences(moduleId, object[key], state);
             object[key] = resolved_object;
           });
@@ -823,4 +871,5 @@ export const createResolvedSlice = (set, get) => ({
       state.resolvedStore.modules[moduleId].exposedValues.output = {};
     });
   },
-});
+  };
+};

@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
   checkSubstringRegex,
@@ -808,8 +808,8 @@ export const createComponentsSlice = (set, get) => ({
     moduleId
   ) => {
     const { updateResolvedValues, generateDependencyGraphForRefs } = get();
-    const updatedPropertyValue = cloneDeep(value);
     if (Array.isArray(value)) {
+      const updatedPropertyValue = cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
@@ -935,17 +935,60 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
+    const {
+      getCurrentPageComponents,
+      addToDependencyGraph,
+      setResolvedComponents,
+      resolveOthers,
+      startDependencyBatch,
+      flushDependencyBatch,
+    } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
     let resolvedComponentValues = {};
 
+    startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
     });
+    flushDependencyBatch();
+
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+
+    // Pre-populate default exposed values for all components in a single store write.
+    // This prevents 600+ individual set() calls during component mount in RenderWidget
+    // (setDefaultExposedValues will early-return since values already exist).
+    set(
+      (state) => {
+        Object.entries(components).forEach(([componentId, component]) => {
+          const componentType = component.component.component;
+          const parentId = component.component.parent;
+
+          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          if (existing && Object.keys(existing).length > 0) return;
+
+          const compDef = componentTypeDefinitionMap[componentType];
+          if (!compDef) return;
+
+          // Skip Form/Listview children (same logic as setDefaultExposedValues)
+          if (parentId) {
+            const parentComponent = components[parentId];
+            const parentType = parentComponent?.component?.component;
+            if (['Form', 'Listview'].includes(parentType)) return;
+          }
+
+          const exposedVariables = compDef.exposedVariables || {};
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
+            ...exposedVariables,
+            id: componentId,
+          };
+        });
+      },
+      false,
+      'batchSetDefaultExposedValues'
+    );
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components
@@ -2144,6 +2187,7 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
     } = get();
     const dependecies = getDependencies(path, moduleId);
+
     if (dependecies?.length) {
       dependecies.forEach((dependency) => {
         const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
@@ -2233,6 +2277,7 @@ export const createComponentsSlice = (set, get) => ({
           }
         }
       });
+
     }
   },
   computePageSettings: (currentPageSettings) => {

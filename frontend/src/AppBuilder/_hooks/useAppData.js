@@ -111,6 +111,8 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -149,6 +151,7 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -183,15 +186,10 @@ const useAppData = (
 
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      isPageSwitchRef.current = true;
       setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        // Rebuild all suggestion segments for the new page's components/queries/variables
-        mode === 'edit' && initSuggestions(moduleId);
-      }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -540,6 +538,7 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
@@ -557,11 +556,19 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
+      flushExposedValueBatch();
       mode === 'edit' && initSuggestions(moduleId);
-      runOnLoadQueries(moduleId).then(() => {
-        const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      if (isPageSwitchRef.current) {
+        // Page switch: skip runOnLoadQueries, just fire onPageLoad
+        isPageSwitchRef.current = false;
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      } else {
+        // Initial page load: run on-load queries first, then fire onPageLoad
+        runOnLoadQueries(moduleId).then(() => {
+          handleEvent('onPageLoad', currentPageEvents, {});
+        });
+      }
     }
   }, [isComponentLayoutReady, moduleId, mode]);
 
