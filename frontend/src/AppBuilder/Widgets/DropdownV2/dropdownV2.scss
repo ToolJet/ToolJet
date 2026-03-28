@@ -13,4 +13,5 @@
         color: var(--cc-placeholder-text);
     }
     background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface));
+    border-bottom: 1px solid var(--cc-weak-border);
 }
