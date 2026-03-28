@@ -363,6 +363,8 @@ export const createEventsSlice = (set, get) => ({
           'onMarkerClick',
           'onPolygonClick',
           'onPageChanged',
+          'onNextPageClicked',
+          'onPreviousPageClicked',
           'onSearch',
           'onChange',
           'onEnterPressed',
