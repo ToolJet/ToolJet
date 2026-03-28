@@ -37,6 +37,14 @@ We encourage all our users to practice good security habits to enhance security 
 
 ToolJet does not store data returned from your data sources. ToolJet server acts as a proxy and passes the data as it is to the ToolJet client. The credentials for the data sources are handled by the server and never exposed to the client. For example, if you are making an API request, the query is run from the server and not from the frontend.
 
+## ⚠️ Important Notice on Data Filtering
+
+When using certain data sources (like Baserow), ToolJet does not apply any server-side filtering or sanitization to the data. All API data fetched from the source is forwarded as-is to the ToolJet client (your browser or app interface).
+
+It is the developer's responsibility to filter or control the data at the source or within custom logic. This behavior may vary depending on the data source — for example, SQL queries might support server-side conditions, while some APIs (like Baserow) do not.
+
+Please ensure you apply appropriate access control, filtering, and sanitization where needed.
+
 
 ## Datasource Credentials
 All the datasource credentials are securely encrypted using `aes-256-gcm`. The credentials are never exposed to the frontend ( ToolJet client ).
