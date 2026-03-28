@@ -619,7 +619,9 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     let isChild = isParentAlsoCopied ? component.component.parent : targetParentId;
 
     const componentMeta = componentTypes.find((comp) => comp.component === component?.component?.component);
-    const componentData = _.merge({}, componentMeta, component.component);
+    const componentData = _.mergeWith({}, componentMeta, component.component, (objValue, srcValue) => {
+      if (Array.isArray(srcValue)) return srcValue;
+    });
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
