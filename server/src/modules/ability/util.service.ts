@@ -45,6 +45,8 @@ export class AbilityUtilService {
       .leftJoin('granularPermissions.appsGroupPermissions', 'appsGroupPermissions')
       .leftJoin('appsGroupPermissions.groupApps', 'groupApps')
       .addSelect([
+        'appsGroupPermissions.id',
+        'groupApps.id',
         'groupApps.appId',
         'appsGroupPermissions.canEdit',
         'appsGroupPermissions.canView',
@@ -103,7 +105,7 @@ export class AbilityUtilService {
     if (resources?.length) {
       query
         .leftJoin('groupPermissions.groupGranularPermissions', 'granularPermissions')
-        .addSelect(['granularPermissions.isAll', 'granularPermissions.type']);
+        .addSelect(['granularPermissions.id', 'granularPermissions.isAll', 'granularPermissions.type']);
     }
 
     if (resources?.length) {
@@ -132,6 +134,8 @@ export class AbilityUtilService {
       .leftJoin('granularPermissions.dataSourcesGroupPermission', 'dataSourcesGroupPermission')
       .leftJoin('dataSourcesGroupPermission.groupDataSources', 'groupDataSources')
       .addSelect([
+        'dataSourcesGroupPermission.id',
+        'groupDataSources.id',
         'groupDataSources.dataSourceId',
         'dataSourcesGroupPermission.canConfigure',
         'dataSourcesGroupPermission.canUse',
