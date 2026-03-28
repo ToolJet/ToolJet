@@ -55,10 +55,10 @@ export async function createNestAppInstance(): Promise<INestApplication> {
     providers: [],
   });
 
-  // Use plain functions (not jest.fn) so jest.resetAllMocks() doesn't clear them
+  // Mock LicenseTermsService to allow all features in tests
   moduleBuilder.overrideProvider(LicenseTermsService).useValue({
-    getLicenseTerms: async () => true,
-    getLicenseTermsInstance: async () => true,
+    getLicenseTerms: jest.fn().mockResolvedValue(true),
+    getLicenseTermsInstance: jest.fn().mockResolvedValue(true),
   });
 
   const moduleRef = await moduleBuilder.compile();
