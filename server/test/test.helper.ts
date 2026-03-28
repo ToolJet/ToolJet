@@ -56,10 +56,11 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   });
 
   // Mock LicenseTermsService to allow all features in tests
-  // Must return 'UNLIMITED' (not true) because guards compare against LICENSE_LIMIT.UNLIMITED = 'UNLIMITED'
+  // Uses plain functions (NOT jest.fn()) so jest.resetAllMocks() cannot clear them.
+  // Must return 'UNLIMITED' because guards compare against LICENSE_LIMIT.UNLIMITED = 'UNLIMITED'.
   moduleBuilder.overrideProvider(LicenseTermsService).useValue({
-    getLicenseTerms: jest.fn().mockResolvedValue('UNLIMITED'),
-    getLicenseTermsInstance: jest.fn().mockResolvedValue('UNLIMITED'),
+    getLicenseTerms: () => Promise.resolve('UNLIMITED'),
+    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
   });
 
   const moduleRef = await moduleBuilder.compile();
@@ -96,9 +97,10 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
     ],
   });
 
+  // Uses plain functions (NOT jest.fn()) so jest.resetAllMocks() cannot clear them
   moduleBuilder.overrideProvider(LicenseTermsService).useValue({
-    getLicenseTerms: jest.fn().mockResolvedValue('UNLIMITED'),
-    getLicenseTermsInstance: jest.fn().mockResolvedValue('UNLIMITED'),
+    getLicenseTerms: () => Promise.resolve('UNLIMITED'),
+    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
   });
 
   const moduleRef = await moduleBuilder.compile();
