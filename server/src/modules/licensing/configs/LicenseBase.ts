@@ -53,8 +53,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
-  private _isSelfhostAI: boolean;
-  private _isByok: boolean;
+  private _aiPlan: 'byok' | 'selfhostai' | 'credits';
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -82,8 +81,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
-      this._isSelfhostAI = false;
-      this._isByok = false;
+      this._aiPlan = 'credits';
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -147,18 +145,11 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isSelfhostAI = this.getFeatureValue('selfhostAI');
-    this._isByok = this.getFeatureValue('byok');
+    this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
   private getFeatureValue(key: string) {
     if (!this._features || this._features[key] === false) {
-      return false;
-    }
-    if (key === 'selfhostAI' && this._features[key] === undefined) {
-      return false;
-    }
-    if (key === 'byok' && this._features[key] === undefined) {
       return false;
     }
     if (this._isFlexiblePlan && !this._features[key]) {
@@ -518,18 +509,8 @@ export default class LicenseBase {
     return this._isAi;
   }
 
-  public get selfhostAI(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.selfhostAI;
-    }
-    return this._isSelfhostAI;
-  }
-
-  public get byok(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.byok;
-    }
-    return this._isByok;
+  public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
+    return this._aiPlan || 'credits';
   }
 
   public get updatedAt(): Date {
@@ -558,8 +539,6 @@ export default class LicenseBase {
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
-      selfhostAI: this.selfhostAI,
-      byok: this.byok,
       appWhiteLabelling: this.appWhiteLabelling,
       modulesEnabled: this.moduleEnabled,
       customGroups: this.customGroups,
