@@ -9,7 +9,7 @@ ClickUp is a cloud-based project management and collaboration platform designed 
 
 To connect with ClickUp, you will need an API Key, which can be generated from [ClickUp Settings](https://app.clickup.com/settings/apps).
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/clickup/connection.png" alt="Marketplace ClickUp Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/clickup/connection.png" alt="ClickUp Plugin's connection"/>
 
 ## Supported Operations
 
@@ -95,4 +95,4 @@ To create a task using the ClickUp plugin in ToolJet, you’ll need the `list_id
 - **name**: The name/title of the task to be created.
 
 ##### Sample Output:
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/clickup/post-task.png" alt="Marketplace ClickUp Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/clickup/post-query.png" alt="Clickup Querying"/>
