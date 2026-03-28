@@ -14,10 +14,10 @@ export const mysqlAutoFillStrategy = {
     try {
       const url = new URL(trimmed);
       if (url.protocol && url.protocol.startsWith('mysql')) {
-        if (url.username) params.username = decodeURIComponent(url.username);
-        if (url.password) params.password = decodeURIComponent(url.password);
+        if (url.username) params.username = url.username;
+        if (url.password) params.password = url.password;
 
-        if (url.hostname) params.host = decodeURIComponent(url.hostname);
+        if (url.hostname) params.host = url.hostname;
 
         if (url.port) {
           const p = parseInt(url.port, 10);
@@ -25,7 +25,7 @@ export const mysqlAutoFillStrategy = {
         }
 
         if (url.pathname && url.pathname !== '/') {
-          params.database = decodeURIComponent(url.pathname.slice(1));
+          params.database = url.pathname.slice(1);
         }
 
         const queryParams = {};
@@ -95,15 +95,15 @@ export const mysqlAutoFillStrategy = {
       const db = m[5];
       const query = m[6];
 
-      if (user) params.username = decodeURIComponent(user);
-      if (pass !== undefined) params.password = decodeURIComponent(pass);
+      if (user) params.username = user;
+      if (pass !== undefined) params.password = pass;
 
       if (hostRaw) {
         let host = hostRaw;
         if (host.startsWith('[') && host.endsWith(']')) {
           host = host.slice(1, -1);
         }
-        params.host = decodeURIComponent(host);
+        params.host = host;
       }
 
       if (portRaw) {
@@ -112,7 +112,7 @@ export const mysqlAutoFillStrategy = {
       }
 
       if (db) {
-        params.database = decodeURIComponent(db);
+        params.database = db;
       }
 
       if (query) {
@@ -121,11 +121,11 @@ export const mysqlAutoFillStrategy = {
           if (!part) return;
           const idx = part.indexOf('=');
           if (idx === -1) {
-            q[decodeURIComponent(part)] = '';
+            q[part] = '';
           } else {
             const k = part.slice(0, idx);
             const v = part.slice(idx + 1);
-            q[decodeURIComponent(k)] = decodeURIComponent(v);
+            q[k] = v;
           }
         });
 
