@@ -102,9 +102,9 @@ class ManageAppUsersComponent extends React.Component {
         });
 
         if (newState) {
-          toast('Application is now public.');
+          toast('Application is now public');
         } else {
-          toast('Application visibility set to private');
+          toast('App is now private');
         }
       })
       .catch((error) => {
