@@ -193,14 +193,19 @@
       "collapsible": false,
       "items": [
         "build-with-ai/overview",
-        "build-with-ai/generate-applications",
+        {
+          "type": "category",
+          "label": "Building Layouts with AI",
+          "items": [
+            "build-with-ai/layouts/generate-applications"
+          ]
+        },
         "build-with-ai/integrating-data",
-        "build-with-ai/prompting101",
-        "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
-        "build-with-ai/ai-credits",
+        "build-with-ai/ai-docs-assistant",
+        "build-with-ai/prompting101",
         "build-with-ai/tooljet-mcp",
-        "build-with-ai/privacy"
+        "build-with-ai/ai-credits"
       ]
     },
     {
@@ -1039,7 +1044,8 @@
             "security/audit-logs/stream-audit-to-datadog"
           ]
         },
-        "security/compliance"
+        "security/compliance",
+        "build-with-ai/privacy"
       ]
     },
     {
