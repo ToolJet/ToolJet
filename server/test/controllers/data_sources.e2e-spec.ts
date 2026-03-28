@@ -2,111 +2,271 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
   clearDB,
-  createApplication,
   createUser,
   createNestAppInstance,
   createDataSource,
-  createDataQuery,
-  createAppGroupPermission,
+  createDataSourceOption,
   createApplicationVersion,
+  createApplication,
+  createAppEnvironments,
   generateAppDefaults,
   authenticateUser,
-  createDatasourceGroupPermission,
 } from '../test.helper';
-import { Credential } from 'src/entities/credential.entity';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
   let defaultDataSource: TypeOrmDataSource;
 
-  beforeEach(async () => {
-    await clearDB();
-  });
-
   beforeAll(async () => {
     app = await createNestAppInstance();
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
-  // TODO: Skipped - POST /api/data-sources now creates global data sources (no app_version_id).
-  // The old test expected app_version_id in the response body, and the DTO no longer accepts it.
-  // Needs rewrite against the new global data source API.
-  it.skip('should be able to create data sources only if user has admin group or app update permission in same organization or has instance user type', async () => {
-    // Original test body omitted - API contract changed
-  });
-
-  // TODO: Skipped - PUT /api/data-sources/:id now expects ValidateDataSourceGuard which looks up
-  // data source by id + organizationId. Test data sources created via createDataSource() helper
-  // lack organizationId, so the guard returns 404. Needs rewrite for global data sources.
-  it.skip('should be able to update data sources only if user has group admin or app update permission in same organization or has instance user type', async () => {
-    // Original test body omitted - API contract changed
-  });
-
-  // TODO: Skipped - GET /api/data-sources?app_version_id=... endpoint no longer exists.
-  // The new endpoint is GET /api/data-sources/:organizationId for global data sources.
-  // Needs complete rewrite against the new API.
-  it.skip('should be able to list (get) datasources for an app by all users of same organization or has instance user type', async () => {
-    // Original test body omitted - endpoint removed
-  });
-
-  // TODO: Skipped - DELETE /api/data-sources/:id now uses ValidateDataSourceGuard which requires
-  // the data source to have organizationId matching the user's. Test data sources lack organizationId.
-  // Needs rewrite to create global data sources with proper organizationId.
-  it.skip('should be able to delete data sources of an app only if admin/developer of same organization or the user is a super admin', async () => {
-    // Original test body omitted - guard requirements changed
-  });
-
-  // TODO: Skipped - same ValidateDataSourceGuard issue as above, plus the test
-  // relies on data sources being version-scoped (deleted from one version without affecting another).
-  // Global data sources are not version-scoped.
-  it.skip('should be able to a delete data sources from a specific version of an app', async () => {
-    // Original test body omitted - data source scoping changed
-  });
-
-  // TODO: Skipped - GET /api/data-sources?app_version_id=... endpoint removed.
-  // Now GET /api/data-sources/:organizationId. Needs rewrite.
-  it.skip('should be able to search data sources with application version id', async () => {
-    // Original test body omitted - endpoint removed
-  });
-
-  it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
-    const adminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    const anotherOrgAdminUserData = await createUser(app, {
-      email: 'another@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
-      isQueryNeeded: false,
-    });
-
-    // Set organizationId on data source so ValidateDataSourceGuard can find it
-    await defaultDataSource.manager.update(DataSource, dataSource.id, {
-      organizationId: adminUserData.organization.id,
-    });
-
-    const loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
-
-    // Should not update if user of another org
-    const response = await request(app.getHttpServer())
-      .post(`/api/data-sources/${dataSource.id}/authorize_oauth2`)
-      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
-      .set('Cookie', loggedUser.tokenCookie)
-      .send({
-        code: 'oauth-auth-code',
-      });
-
-    // ValidateDataSourceGuard will throw NotFoundException since org doesn't match
-    expect(response.statusCode).toBe(404);
+  beforeEach(async () => {
+    await clearDB();
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  describe('POST /api/data-sources', () => {
+    it('should allow admin to create a data source', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+
+      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'test_data_source', kind: 'restapi', options: [] });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.name).toBe('test_data_source');
+      expect(response.body.kind).toBe('restapi');
+      expect(response.body.organizationId).toBe(adminUserData.organization.id);
+    });
+
+    it('should not allow unauthenticated users to create data sources', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .send({ name: 'test_data_source', kind: 'restapi', options: [] });
+
+      expect(response.statusCode).toBe(401);
+    });
+  });
+
+  describe('GET /api/data-sources/:organizationId', () => {
+    it('should allow admin to list data sources', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+
+      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+
+      // Create a data source via the API so it has the correct organizationId
+      await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'list_test_data_source', kind: 'restapi', options: [] });
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/data-sources/${adminUserData.organization.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data_sources).toBeDefined();
+      expect(Array.isArray(response.body.data_sources)).toBe(true);
+
+      const found = response.body.data_sources.find(
+        (ds: any) => ds.name === 'list_test_data_source'
+      );
+      expect(found).toBeDefined();
+    });
+
+    it('should not allow user from another org to list data sources', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+
+      // Try to list data sources for admin's org using another org's user
+      const response = await request(app.getHttpServer())
+        .get(`/api/data-sources/${adminUserData.organization.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedAnotherUser.tokenCookie);
+
+      // OrganizationValidateGuard rejects cross-org access
+      expect(response.statusCode).toBe(403);
+    });
+  });
+
+  describe('PUT /api/data-sources/:id', () => {
+    it('should allow admin to update a data source', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+
+      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+
+      // Create a data source via the API
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'update_test_data_source', kind: 'restapi', options: [] });
+
+      const dataSourceId = createResponse.body.id;
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/data-sources/${dataSourceId}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'updated_data_source_name' });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should not allow user from another org to update', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      // Create data source using generateAppDefaults, then set organizationId
+      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+
+      // ValidateDataSourceGuard will reject: DS belongs to admin's org, not another's
+      const response = await request(app.getHttpServer())
+        .put(`/api/data-sources/${dataSource.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedAnotherUser.tokenCookie)
+        .send({ name: 'hacked_name' });
+
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('DELETE /api/data-sources/:id', () => {
+    it('should allow admin to delete a data source', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+
+      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+
+      // Create a data source via the API
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'delete_test_data_source', kind: 'restapi', options: [] });
+
+      const dataSourceId = createResponse.body.id;
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/data-sources/${dataSourceId}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should not allow user from another org to delete', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await createAppEnvironments(app, adminUserData.organization.id);
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/data-sources/${dataSource.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedAnotherUser.tokenCookie);
+
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('POST /api/data-sources/:id/authorize_oauth2', () => {
+    it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+
+      // Set organizationId on data source so ValidateDataSourceGuard can find it
+      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+
+      // Should not update if user of another org
+      const response = await request(app.getHttpServer())
+        .post(`/api/data-sources/${dataSource.id}/authorize_oauth2`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          code: 'oauth-auth-code',
+        });
+
+      // ValidateDataSourceGuard will throw NotFoundException since org doesn't match
+      expect(response.statusCode).toBe(404);
+    });
   });
 });

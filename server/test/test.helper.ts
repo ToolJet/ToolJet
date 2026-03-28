@@ -720,11 +720,14 @@ export async function createDataSourceOption(nestApp, { dataSource, environmentI
   let dataSourceOptionsRepository: Repository<DataSourceOptions>;
   dataSourceOptionsRepository = getDefaultDataSource().getRepository(DataSourceOptions);
 
-  const dataSourcesService = nestApp.select(DataSourcesModule).get(DataSourcesService);
+  // Save options directly without parseOptionsForCreate — test data doesn't need encryption
+  const parsedOptions = Array.isArray(options)
+    ? options.reduce((acc, opt) => ({ ...acc, [opt.key]: { value: opt.value, encrypted: opt.encrypted === 'true' } }), {})
+    : options || {};
 
   return await dataSourceOptionsRepository.save(
     dataSourceOptionsRepository.create({
-      options: await dataSourcesService.parseOptionsForCreate(options),
+      options: parsedOptions,
       dataSourceId: dataSource.id,
       environmentId,
     })
