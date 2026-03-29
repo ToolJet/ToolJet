@@ -1,4 +1,6 @@
 /* eslint-disable prefer-const */
+export * from './helpers/bootstrap';
+
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { DataSource as TypeOrmDataSource, Repository } from 'typeorm';
@@ -8,9 +10,7 @@ import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { File } from '@entities/file.entity';
-import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '@modules/app/module';
+import { INestApplication } from '@nestjs/common';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
@@ -22,129 +22,17 @@ import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
 import { GroupApps } from '@entities/group_apps.entity';
 import { APP_TYPES } from '@modules/apps/constants';
-import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
-import { Logger } from 'nestjs-pino';
-import { WsAdapter } from '@nestjs/platform-ws';
-import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@modules/files/dto';
 import * as request from 'supertest';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
-import * as cookieParser from 'cookie-parser';
-import { LicenseService } from '@modules/licensing/service';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
-import * as fs from 'fs';
-import { getEnvVars } from 'scripts/database-config-utils';
-
-globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
-
-// Load env vars from .env.test into process.env so ConfigService works consistently
-// in both NestJS modules and standalone test helpers (createTestSession, authHeaderForUser).
-const _testEnvVars = getEnvVars();
-for (const [key, value] of Object.entries(_testEnvVars)) {
-  if (process.env[key] === undefined && typeof value === 'string') {
-    process.env[key] = value;
-  }
-}
-
-/**
- * Creates a resilient LicenseTermsService mock that cannot be cleared by jest.resetAllMocks().
- * Uses plain functions (NOT jest.fn()) so they survive mock resets.
- *
- * Returns field-appropriate values:
- * - 'UNLIMITED' for simple boolean/string fields
- * - Structured object with UNLIMITED sub-properties for WORKFLOWS
- *   (workflow guards check .workspace/.instance properties)
- */
-function createResilientLicenseTermsMock() {
-  return {
-    getLicenseTerms: (field: string) => {
-      if (field === 'workflows') {
-        return Promise.resolve({
-          execution_timeout: 'UNLIMITED',
-          workspace: {
-            total: 'UNLIMITED',
-            daily_executions: 'UNLIMITED',
-            monthly_executions: 'UNLIMITED',
-          },
-          instance: {
-            total: 'UNLIMITED',
-            daily_executions: 'UNLIMITED',
-            monthly_executions: 'UNLIMITED',
-          },
-        });
-      }
-      return Promise.resolve('UNLIMITED');
-    },
-    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
-  };
-}
-
-export async function createNestAppInstance(): Promise<INestApplication> {
-  let app: INestApplication;
-
-  const moduleBuilder = Test.createTestingModule({
-    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
-    providers: [],
-  });
-
-  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
-
-  const moduleRef = await moduleBuilder.compile();
-
-  app = moduleRef.createNestApplication();
-  app.setGlobalPrefix('api');
-  app.use(cookieParser());
-  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
-  app.useWebSocketAdapter(new WsAdapter(app));
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL,
-  });
-  await app.init();
-  setDataSources(app);
-
-  return app;
-}
-
-export async function createNestAppInstanceWithEnvMock(): Promise<{
-  app: INestApplication;
-  mockConfig: DeepMocked<ConfigService>;
-}> {
-  let app: INestApplication;
-
-  const moduleBuilder = Test.createTestingModule({
-    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
-    providers: [
-      {
-        provide: ConfigService,
-        useValue: createMock<ConfigService>(),
-      },
-    ],
-  });
-
-  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
-
-  const moduleRef = await moduleBuilder.compile();
-
-  app = moduleRef.createNestApplication();
-  app.setGlobalPrefix('api');
-  app.use(cookieParser());
-  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useWebSocketAdapter(new WsAdapter(app));
-  await app.init();
-  setDataSources(app);
-
-  return { app, mockConfig: moduleRef.get(ConfigService) };
-}
+import { getDefaultDataSource, getTooljetDbDataSource } from './helpers/bootstrap';
 
 export function buildAuthHeader(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
@@ -162,26 +50,6 @@ export function buildAuthHeader(user: User, organizationId?: string, isPasswordL
 }
 /** @deprecated Use buildAuthHeader instead */
 export const authHeaderForUser = buildAuthHeader;
-
-// Store a reference to the default DataSource once it's available
-let _defaultDataSource: TypeOrmDataSource;
-let _tooljetDbDataSource: TypeOrmDataSource;
-
-export function setDataSources(nestApp: INestApplication) {
-  _defaultDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
-  try {
-    _tooljetDbDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
-  } catch {
-    // tooljetDb connection may not exist in all test configurations
-  }
-}
-
-export function getDefaultDataSource(): TypeOrmDataSource {
-  if (!_defaultDataSource) {
-    throw new Error('DataSource not initialized. Call setDataSources(app) in beforeAll.');
-  }
-  return _defaultDataSource;
-}
 
 export async function resetDB() {
   if (process.env.NODE_ENV !== 'test') return;
@@ -316,12 +184,13 @@ export const seedInstanceSSOConfigs = ensureInstanceSSOConfigs;
 
 async function dropTooljetDbTables() {
   const ds = getDefaultDataSource();
+  const tooljetDbDs = getTooljetDbDataSource();
 
   const internalTables = (await ds.manager.find(InternalTable, { select: ['id'] })) as InternalTable[];
 
-  if (_tooljetDbDataSource) {
+  if (tooljetDbDs) {
     for (const table of internalTables) {
-      await _tooljetDbDataSource.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
+      await tooljetDbDs.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
     }
   }
 }
@@ -1197,72 +1066,3 @@ export const enableWorkflowStatus = async (
     });
 };
 
-export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseService = false }): Promise<{
-  app: INestApplication;
-  licenseServiceMock?: DeepMocked<LicenseService>;
-  configServiceMock?: DeepMocked<ConfigService>;
-}> {
-  let app: INestApplication;
-
-  // When shouldMockLicenseService is true, create a mock that serves as both
-  // LicenseService AND LicenseTermsService. Uses jest.fn() with sensible defaults
-  // so tests can use jest.spyOn to override specific behavior.
-  // Unlike createMock<LicenseService>() (which returns undefined for all methods),
-  // this provides the same field-aware defaults as createResilientLicenseTermsMock()
-  // but with jest.fn() wrappers so they CAN be overridden by jest.spyOn/mockImplementation.
-  const licenseServiceInstance = shouldMockLicenseService ? {
-    ...createMock<LicenseService>(),
-    getLicenseTerms: jest.fn((field: string) => {
-      if (field === 'workflows') {
-        return Promise.resolve({
-          execution_timeout: 'UNLIMITED',
-          workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-          instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-        });
-      }
-      return Promise.resolve('UNLIMITED');
-    }),
-    getLicenseTermsInstance: jest.fn(() => Promise.resolve('UNLIMITED')),
-  } : null;
-
-  const moduleBuilder = Test.createTestingModule({
-    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
-    providers: [
-      {
-        ...(shouldMockLicenseService && {
-          provide: LicenseService,
-          useValue: licenseServiceInstance,
-        }),
-      },
-    ],
-  });
-
-  if (shouldMockLicenseService) {
-    // When mocking LicenseService, use the same instance for LicenseTermsService
-    // so tests can control guard behavior via jest.spyOn(licenseServiceMock, 'getLicenseTerms')
-    moduleBuilder.overrideProvider(LicenseTermsService).useValue(licenseServiceInstance);
-  } else {
-    // Use the resilient mock that survives jest.resetAllMocks()
-    moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
-  }
-
-  const moduleRef = await moduleBuilder.compile();
-
-  app = moduleRef.createNestApplication();
-  app.setGlobalPrefix('api');
-  app.use(cookieParser());
-  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useWebSocketAdapter(new WsAdapter(app));
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL,
-  });
-  await app.init();
-  setDataSources(app);
-
-  return {
-    app,
-    ...(shouldMockLicenseService && { licenseServiceMock: moduleRef.get(LicenseService) }),
-  };
-}
