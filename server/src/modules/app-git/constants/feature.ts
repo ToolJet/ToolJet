@@ -14,6 +14,10 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GIT_GET_APP]: {
       license: LICENSE_FIELD.GIT_SYNC,
     },
+    // Used to fetch the latest git commit data for syncing the application by app name
+    [FEATURE_KEY.GIT_GET_APP_BY_NAME]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
     // Used for listing all the application from GIT
     [FEATURE_KEY.GIT_GET_APPS]: {
       license: LICENSE_FIELD.GIT_SYNC,
@@ -41,6 +45,18 @@ export const FEATURES: FeaturesConfig = {
     },
     // Used for fetching app configs
     [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: {},
+
+    // Used for fetching all branches from remote repo
+    [FEATURE_KEY.GET_ALL_BRANCHES]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
+
+    [FEATURE_KEY.CREATE_BRANCH]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
+    [FEATURE_KEY.FETCH_PULL_REQUESTS]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
   },
 };
 

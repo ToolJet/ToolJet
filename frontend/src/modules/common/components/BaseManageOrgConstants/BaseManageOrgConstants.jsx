@@ -230,16 +230,27 @@ const BaseManageOrgConstants = ({
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
+  const isWorkspaceBranchLocked = false;
+
   const canCreateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canUpdateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canDeleteVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const fetchEnvironments = () => {
@@ -476,8 +487,8 @@ const BaseManageOrgConstants = ({
           </div>
           <OrganizationList />
         </div>
-        <div className="page-wrapper mt-4">
-          <div className="container-xl" style={{ width: '880px' }}>
+        <div className="page-wrapper" style={{ marginTop: 0 }}>
+          <div className="container-xl mt-4" style={{ width: '880px' }}>
             <div className="align-items-center d-flex justify-content-between">
               <div className="tj-text-sm font-weight-500" data-cy="env-name">
                 {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})

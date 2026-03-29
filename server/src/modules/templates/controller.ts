@@ -23,14 +23,16 @@ export class TemplateAppsController {
     @Body('identifier') identifier,
     @Body('appName') appName,
     @Body('dependentPlugins') dependentPlugins,
-    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
+    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin,
+    @Body('branchId') branchId?: string
   ) {
     const newApp = await this.templatesService.perform(
       user,
       identifier,
       appName,
       dependentPlugins,
-      shouldAutoImportPlugin
+      shouldAutoImportPlugin,
+      branchId
     );
 
     return newApp;

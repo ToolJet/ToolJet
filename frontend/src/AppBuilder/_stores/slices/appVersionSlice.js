@@ -60,12 +60,14 @@ export const createAppVersionSlice = (set, get) => ({
 
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
-  getShouldFreeze: (skipIsEditorFreezedCheck = false) => {
-    return (
-      get().isVersionReleased ||
-      (!skipIsEditorFreezedCheck && get().isEditorFreezed) ||
-      get().selectedVersion?.id === get().releasedVersionId
-    );
+  getShouldFreeze: (skipIsEditorFreezedCheck = false, isModuleEditor = false) => {
+    if (isModuleEditor) return false;
+    const isVersionReleased = get().isVersionReleased;
+    const isEditorFreezed = get().isEditorFreezed;
+    const selectedVersionId = get().selectedVersion?.id;
+    const releasedVersionId = get().releasedVersionId;
+    const result = isVersionReleased || (!skipIsEditorFreezedCheck && isEditorFreezed) || selectedVersionId === releasedVersionId;
+    return result;
   },
 
   setRestoredAppHistoryId: (id) => {

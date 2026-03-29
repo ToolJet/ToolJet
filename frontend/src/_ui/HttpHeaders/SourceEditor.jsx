@@ -95,7 +95,13 @@ export default ({
           style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
           disabled={isDisabled}
         >
-          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          {/* <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" /> */}
+          <AddRectangle
+            width="15"
+            fill={isDisabled ? '#C1C8CD' : '#3E63DD'}
+            opacity={isDisabled ? '0.3' : '1'}           
+            secondaryFill={isDisabled ? '#ffffff' : '#ffffff'} 
+          />
           &nbsp;&nbsp;Add
         </ButtonSolid>
       </div>

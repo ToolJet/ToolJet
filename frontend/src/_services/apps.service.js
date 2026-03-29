@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
 export const appsService = {
@@ -59,10 +60,12 @@ function validatePrivateApp(slug, queryParams) {
 //use default value for type of apps i.e.'front-end'
 function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
+  const branchId = getActiveBranchId();
+  const branchParam = branchId ? `&branch_id=${branchId}` : '';
+  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}${branchParam}`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,
       requestOptions
     ).then(handleResponse);
 }
@@ -70,10 +73,14 @@ function getAll(page, folder, searchKey, type = 'front-end') {
 // get all addable apps
 function getAllAddableApps() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
+  const branchId = getActiveBranchId();
+  const branchParam = branchId ? `?branch_id=${branchId}` : '';
+  return fetch(`${config.apiUrl}/apps/addable${branchParam}`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -221,6 +228,8 @@ function exportResource(body, appType) {
 }
 
 function importResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

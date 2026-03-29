@@ -20,7 +20,8 @@ export class VersionRepository extends Repository<AppVersion> {
     appId: string,
     firstPriorityEnvId: string,
     definition?: any,
-    manager?: EntityManager
+    manager?: EntityManager,
+    branchId?: string
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return catchDbException(() => {
@@ -34,6 +35,7 @@ export class VersionRepository extends Repository<AppVersion> {
             status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
+            ...(branchId && { branchId }),
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_VERSION_NAME_UNIQUE, message: 'Version name already exists.' }]);
@@ -271,6 +273,16 @@ export class VersionRepository extends Repository<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const appVersions = await manager.find(AppVersion, {
         where: { parentVersionId: versionId },
+      });
+      return appVersions;
+    }, manager || this.manager);
+  }
+
+  async getAllVersions(appId: string, manager?: EntityManager): Promise<AppVersion[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersions = await manager.find(AppVersion, {
+        where: { appId: appId },
+        relations: ['user'],
       });
       return appVersions;
     }, manager || this.manager);

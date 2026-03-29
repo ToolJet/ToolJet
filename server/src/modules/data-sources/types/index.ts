@@ -53,6 +53,7 @@ export interface GetQueryVariables {
   environmentId?: string;
   types?: DataSourceTypes[];
   shouldIncludeWorkflows?: boolean;
+  branchId?: string;
 }
 
 export interface UpdateOptions {

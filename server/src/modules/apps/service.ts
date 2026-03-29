@@ -1,4 +1,5 @@
 import { User } from '@entities/user.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   BadRequestException,
@@ -27,6 +28,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
+import { AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -44,6 +46,9 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -61,12 +66,26 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
-  ) {}
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly abilityService: AbilityService,
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
+      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
+      let branchId = appCreateDto.branchId;
+      if (!branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit) {
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+          });
+          branchId = defaultBranch?.id;
+        }
+      }
+
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -105,9 +124,14 @@ export class AppsService implements IAppsService {
       slug: app.slug,
       type: app.type,
     };
-    // Check permissions
-    const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+    // Check permissions - first check app-level, then folder-level
+    let hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+    // If no app-level edit permission, check folder-level edit apps permission
+    if (!hasEditPermission) {
+      hasEditPermission = await this.checkFolderEditPermission(app.id, user);
+    }
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
@@ -137,12 +161,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-            await this.versionRepository.findLatestVersionForEnvironment(
-              app.id,
-              envId,
-              environmentName,
-              app.organizationId
-            );
+          await this.versionRepository.findLatestVersionForEnvironment(
+            app.id,
+            envId,
+            environmentName,
+            app.organizationId
+          );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -157,6 +181,7 @@ export class AppsService implements IAppsService {
 
       // Validate environment access for all users (both builders and viewers)
       // Skip validation only for released environment (everyone with view access can see released)
+      // Also skip validation for module apps - they don't have environment restrictions
       if (environment && app.type !== APP_TYPES.MODULE) {
         const envName = environment.name.toLowerCase();
 
@@ -220,15 +245,54 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    const { name } = appUpdateDto;
+    const { name, editingVersionId } = appUpdateDto;
+    const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
+    const isGitSyncEnabled = Boolean(
+      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
+    );
+
+    // Check if name is being changed - require draft version to exist
+    if (name && name !== app.name) {
+      // Block rename if git sync is enabled and app has been pushed
+      if (isGitSyncEnabled  && app.type === APP_TYPES.FRONT_END) {
+        const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
+        if (appGitSync) {
+          // Check if on default branch (not a feature branch)
+          const editingVersion = editingVersionId
+            ? await this.versionRepository.findById(editingVersionId, app.id)
+            : app.editingVersion;
+
+          const isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+
+          if (isOnDefaultBranch) {
+            throw new BadRequestException(
+              "Renaming isn't allowed on master. Switch branch in app builder to update name."
+            );
+          }
+        }
+      }
+
+      const draftVersion = await this.versionRepository.findOne({
+        where: {
+          appId: app.id,
+          // versionType: AppVersionType.VERSION,
+          status: AppVersionStatus.DRAFT,
+        },
+      });
+
+      if (!draftVersion && isGitSyncEnabled) {
+        throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+      }
+    }
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
-    if (name && app.creationMode != 'GIT' && name != app.name) {
+    if (name && name != app.name) {
       const appRenameDto = {
         user: user,
         organizationId: organizationId,
         app: app,
         appUpdateDto: appUpdateDto,
+        editingVersionId: editingVersionId,
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
@@ -298,7 +362,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, branchId } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -308,12 +372,14 @@ export class AppsService implements IAppsService {
           folder,
           parseInt(page || '1'),
           searchKey,
-          type as APP_TYPES
+          type as APP_TYPES,
+          branchId
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
+        console.log(`Fetched apps for folder ${folderId}:`, apps);
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
       }
 
       if (isGetAll) {
@@ -332,7 +398,29 @@ export class AppsService implements IAppsService {
         );
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
+      // Get folder IDs for all apps to support folder-level permission checks
+      const appIds = apps.map((app) => app.id);
+      if (appIds.length > 0) {
+        const folderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .where('folderApp.appId IN (:...appIds)', { appIds })
+          .getMany();
+
+        // Create a map of app ID to folder IDs
+        const appFolderMap = new Map<string, string[]>();
+        for (const folderApp of folderApps) {
+          const existing = appFolderMap.get(folderApp.appId) || [];
+          existing.push(folderApp.folderId);
+          appFolderMap.set(folderApp.appId, existing);
+        }
+
+        // Add folder IDs to each app
+        for (const app of apps) {
+          app.folderIds = appFolderMap.get(app.id) || [];
+        }
+      }
+
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -356,7 +444,7 @@ export class AppsService implements IAppsService {
     return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
-  async getOne(app: App, user: User): Promise<any> {
+  async getOne(app: App, user: User, branchId?: string): Promise<any> {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -415,8 +503,17 @@ export class AppsService implements IAppsService {
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = shouldFreezeEditor;
-      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
+      // Check if editing version is a draft
+      const editingVersion = response['editing_version'];
+      const isDraft = editingVersion?.status === 'DRAFT';
+
+      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
+      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
+        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+      }
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
       response['editorEnvironment'] = {
@@ -544,6 +641,47 @@ export class AppsService implements IAppsService {
         metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
       });
       return;
+    });
+  }
+
+  /**
+   * Check if user has folder-level edit permission for the app.
+   * This checks if the app belongs to any folder where the user has canEditApps permission.
+   */
+  protected async checkFolderEditPermission(appId: string, user: User): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Get folder permissions from the ability service
+      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: MODULES.FOLDER }],
+        organizationId: user.organizationId,
+      });
+
+      const folderPermissions = userPermissions?.[MODULES.FOLDER];
+      if (!folderPermissions) {
+        return false;
+      }
+
+      // Get the folders this app belongs to
+      const folderApps = await manager
+        .createQueryBuilder(FolderApp, 'folder_apps')
+        .where('folder_apps.app_id = :appId', { appId })
+        .getMany();
+
+      // Apps not in any folder should NOT get folder-level edit permission
+      if (!folderApps || folderApps.length === 0) {
+        return false;
+      }
+
+      // If user can edit apps in all folders AND app is in at least one folder, grant edit
+      if (folderPermissions.isAllEditApps) {
+        return true;
+      }
+
+      // Check if any of the app's folders are in the list of folders where user can edit apps
+      const appFolderIds = folderApps.map((fa) => fa.folderId);
+      const editableFolderIds = folderPermissions.editAppsInFoldersId || [];
+
+      return appFolderIds.some((folderId) => editableFolderIds.includes(folderId));
     });
   }
 }

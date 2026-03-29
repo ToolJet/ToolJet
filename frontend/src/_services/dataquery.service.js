@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 
 export const dataqueryService = {
   create,
@@ -156,8 +157,10 @@ function invoke(dataSourceId, methodName, environmentId, args) {
 
 export function getAllTablesForADataSource(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-
-  return fetch(`${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
+  let url = `${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
+  return fetch(url, requestOptions).then(handleResponse);
 }

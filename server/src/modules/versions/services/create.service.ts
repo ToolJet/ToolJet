@@ -3,7 +3,8 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -33,7 +34,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) { }
+  ) {}
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -41,9 +42,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
-        (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+      appVersion.showViewerNavigation = versionFrom.showViewerNavigation;
+      appVersion.globalSettings = versionFrom.globalSettings;
+      appVersion.pageSettings = versionFrom.pageSettings;
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -126,6 +127,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             name: dataSource.name,
             kind: dataSource.kind,
             type: dataSource.type,
+            co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
@@ -139,6 +141,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               options: dataQuery.options,
               dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
+              co_relation_id: dataQuery?.co_relation_id,
             };
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
 
@@ -154,6 +157,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               newEvent.event = event.event;
               newEvent.index = event.index ?? index;
               newEvent.appVersionId = appVersion.id;
+              newEvent.co_relation_id = event?.co_relation_id;
 
               await manager.save(newEvent);
             });
@@ -171,6 +175,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             options: globalQuery.options,
             dataSourceId: globalQuery.dataSourceId,
             appVersionId: appVersion.id,
+            co_relation_id: globalQuery?.co_relation_id,
           };
 
           const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
@@ -186,6 +191,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             newEvent.event = event.event;
             newEvent.index = event.index ?? index;
             newEvent.appVersionId = appVersion.id;
+            newEvent.co_relation_id = event?.co_relation_id;
 
             await manager.save(newEvent);
           });
@@ -206,21 +212,101 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       for (const appEnvironment of appEnvironments) {
         for (const dataSource of dataSources) {
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          // Read source options from the default DataSourceVersion
+          const sourceDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: dataSource.id, isDefault: true },
           });
+          const sourceDsvo = sourceDsv
+            ? await manager.findOne(DataSourceVersionOptions, {
+                where: { dataSourceVersionId: sourceDsv.id, environmentId: appEnvironment.id },
+              })
+            : null;
+          const sourceOptions = sourceDsvo?.options || {};
 
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(sourceOptions);
           const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
           await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: dataSourceMapping[dataSource.id],
-              environmentId: appEnvironment.id,
-            })
-          );
+          // Create default DSV + DSVO for the new version's data source
+          const newDsId = dataSourceMapping[dataSource.id];
+          let defaultDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: newDsId, isDefault: true },
+          });
+          if (!defaultDsv) {
+            const ds = await manager.findOne(DataSource, { where: { id: newDsId }, select: ['id', 'name'] });
+            defaultDsv = await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: newDsId,
+                name: ds?.name || 'v1',
+                isDefault: true,
+                isActive: true,
+                branchId: null,
+              })
+            );
+          }
+          const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: defaultDsv.id, environmentId: appEnvironment.id },
+          });
+          if (!existingDsvo) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: defaultDsv.id,
+                environmentId: appEnvironment.id,
+                options: newOptions,
+              })
+            );
+          }
+        }
+      }
+
+      // Create version-specific DSVs for global data sources
+      for (const globalDs of globalDataSources) {
+        const dsvName = globalDs.name || 'v1';
+
+        // The idx_unique_active_name_branch constraint enforces one active non-default
+        // DSV per (name, branch_id). DSVs are branch-scoped, not app-version-scoped,
+        // so skip creation if one already exists for this datasource+name+branch.
+        const existingDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
+        });
+        if (existingDsv) {
+          continue;
+        }
+
+        let sourceDsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
+        });
+        if (!sourceDsv) {
+          sourceDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: globalDs.id, isDefault: true },
+          });
+        }
+
+        const newDsv = await manager.save(
+          manager.create(DataSourceVersion, {
+            dataSourceId: globalDs.id,
+            name: dsvName,
+            isDefault: false,
+            isActive: true,
+            appVersionId: appVersion.id,
+            branchId: null,
+            versionFromId: sourceDsv?.id || null,
+          })
+        );
+
+        if (sourceDsv) {
+          const sourceDsvos = await manager.find(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: sourceDsv.id },
+          });
+          for (const dsvo of sourceDsvos) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: newDsv.id,
+                environmentId: dsvo.environmentId,
+                options: dsvo.options,
+              })
+            );
+          }
         }
       }
     }
@@ -423,6 +509,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           disabled: page.disabled,
           hidden: page.hidden,
           appVersionId: appVersion.id,
+          co_relation_id: page.co_relation_id,
         })
       );
       oldPageToNewPageMapping[page.id] = savedPage.id;
@@ -442,6 +529,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         newEvent.event = event.event;
         newEvent.index = event.index ?? index;
         newEvent.appVersionId = appVersion.id;
+        newEvent.co_relation_id = event?.co_relation_id;
 
         await manager.save(newEvent);
       });
@@ -450,6 +538,7 @@ export class VersionsCreateService implements IVersionsCreateService {
       for (const component of page.components) {
         const newComponent = new Component();
         newComponent.id = uuid.v4();
+        newComponent.co_relation_id = component?.co_relation_id;
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
@@ -517,6 +606,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         originalComponent.layouts.forEach((layout) => {
           const newLayout = new Layout();
           newLayout.id = uuid.v4();
+          newLayout.co_relation_id = layout?.co_relation_id;
           newLayout.type = layout.type;
           newLayout.top = layout.top;
           newLayout.left = layout.left;
@@ -533,8 +623,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         const componentEvents = allEvents.filter((event) => event.sourceId === originalComponent.id);
         componentEvents.forEach(async (event, index) => {
           const newEvent = new EventHandler();
-
           newEvent.id = uuid.v4();
+          newEvent.co_relation_id = event?.co_relation_id;
           newEvent.name = event.name;
           newEvent.sourceId = newComponent.id;
           newEvent.target = event.target;
@@ -639,7 +729,6 @@ export class VersionsCreateService implements IVersionsCreateService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
       event.event = eventDefinition;
-
       await manager.save(event);
     }
   }

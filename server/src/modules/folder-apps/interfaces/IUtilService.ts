@@ -11,13 +11,15 @@ export interface IFolderAppsUtilService {
     userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
     manager: EntityManager,
     type?: string,
-    searchKey?: string
+    searchKey?: string,
+    branchId?: string
   ): Promise<Folder[]>;
   getAppsFor(
     user: User,
     folder: Folder,
     page: number,
     searchKey: string,
-    type?: APP_TYPES
+    type?: APP_TYPES,
+    branchId?: string
   ): Promise<{ viewableApps: AppBase[]; totalCount: number }>;
 }

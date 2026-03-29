@@ -34,10 +34,12 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
               name: constant.constantName,
             };
           }
+
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
-              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               let resolvedValue = '';
+
+              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               if (value) {
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
@@ -47,7 +49,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,
                     value.value
-                  ); // Constant type values are always decrypted
+                  );
                 }
               }
 
@@ -68,7 +70,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
         })
       );
 
-      return constantsWithValues;
+      return constantsWithValues.filter(Boolean);
     });
   }
 

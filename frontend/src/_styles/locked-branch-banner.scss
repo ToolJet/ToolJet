@@ -1,0 +1,82 @@
+// LockedBranchBanner - Full-width warning banner for read-only branches
+// Displays below the editor navigation when branch is locked
+
+.locked-branch-banner {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;                                                                                                                                                                                 
+    padding: 12px 20px;                                                                                                                                                                                  
+    background-color: var(--background-surface-layer-03); 
+    margin: 0;
+
+  &-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 1200px;
+    padding: 0 20px;
+  }
+
+  &-icon {
+    flex-shrink: 0;
+    color: #92400e;
+    width: 16px;
+    height: 16px;
+  }
+
+  &-text {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    flex-wrap: wrap;
+    margin-left: -8px;
+  }
+
+  &-message {
+    margin: 0;                                                                                                                                                                                         
+    margin-left: 10px;                                                                                                                                                                                 
+    color: #000000;                                                                                                                                                                                    
+    font-family: "IBM Plex Sans", sans-serif;                                                                                                                                                          
+    font-size: 12px;                                                                                                                                                                                   
+    font-weight: 400;                                                                                                                                                                                  
+    line-height: 10px;                                                                                                                                                                                 
+    text-align: center; 
+  }
+
+  &-branch {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 20px;
+
+    strong {
+      font-weight: 600;
+      color: #451a03;
+    }
+  }
+}
+
+// Dark mode support
+.dark-theme {
+  .locked-branch-banner {
+    background: linear-gradient(90deg, #451a03 0%, #78350f 100%);
+    border-bottom-color: #92400e;
+
+    &-icon {
+      color: #fbbf24;
+    }
+
+    &-message {
+      color: #fde68a;
+    }
+
+    &-branch {
+      color: #fef3c7;
+
+      strong {
+        color: #fef3c7;
+      }
+    }
+  }
+}
