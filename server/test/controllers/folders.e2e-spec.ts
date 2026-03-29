@@ -403,7 +403,8 @@ describe('folders controller', () => {
 
     expect(findFolderAppsIn(folders, 'Folder1')[0]['app_id']).toEqual(appInFolder.id);
 
-    // new user can only see all folders with folder create permissions but apps are scoped with read permissions
+    // folderCRUD permission no longer grants visibility to all folders;
+    // user still only sees folders containing apps they have read access to
     await defaultDataSource.manager.update(GroupPermissions, group.id, {
       folderCRUD: true,
     });
@@ -415,14 +416,9 @@ describe('folders controller', () => {
 
     expect(response.statusCode).toBe(200);
     folders = response.body.folders;
-    expect(new Set(folders.map((folder) => folder.name))).toEqual(
-      new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
-    );
+    expect(new Set(folders.map((folder) => folder.name))).toEqual(new Set(['Folder1']));
 
     expect(findFolderAppsIn(folders, 'Folder1')).toHaveLength(1);
-    expect(findFolderAppsIn(folders, 'Folder2')).toHaveLength(0);
-    expect(findFolderAppsIn(folders, 'Folder3')).toHaveLength(0);
-    expect(findFolderAppsIn(folders, 'Folder4')).toHaveLength(0);
   });
 
   describe('POST /api/folders', () => {

@@ -43,6 +43,8 @@ import * as cookieParser from 'cookie-parser';
 import { LicenseService } from '@modules/licensing/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { InternalTable } from '@entities/internal_table.entity';
+import { Page } from '@entities/page.entity';
+import { Credential } from '@entities/credential.entity';
 import * as fs from 'fs';
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
@@ -269,8 +271,11 @@ export async function createApplicationVersion(
 ) {
   let appVersionsRepository: Repository<AppVersion>;
   let appEnvironmentsRepository: Repository<AppEnvironment>;
-  appVersionsRepository = getDefaultDataSource().getRepository(AppVersion);
-  appEnvironmentsRepository = getDefaultDataSource().getRepository(AppEnvironment);
+  const ds = getDefaultDataSource();
+  appVersionsRepository = ds.getRepository(AppVersion);
+  appEnvironmentsRepository = ds.getRepository(AppEnvironment);
+  const pageRepository = ds.getRepository(Page);
+  const appRepository = ds.getRepository(App);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -284,7 +289,7 @@ export async function createApplicationVersion(
       ? environments.find((env) => env.priority === 1)?.id
       : environments[0].id;
 
-  return await appVersionsRepository.save(
+  const version = await appVersionsRepository.save(
     appVersionsRepository.create({
       appId: application.id,
       name: name + Date.now(),
@@ -292,6 +297,37 @@ export async function createApplicationVersion(
       definition,
     })
   );
+
+  // Create a default page for this version so EE page-level permission checks don't
+  // treat an empty page list as "no accessible pages" (since [].every() === true).
+  const defaultPage = await pageRepository.save(
+    pageRepository.create({
+      name: 'Home',
+      handle: 'home',
+      appVersionId: version.id,
+      index: 1,
+      autoComputeLayout: true,
+    })
+  );
+
+  // Set homePageId, globalSettings, and showViewerNavigation on the version,
+  // matching the production create flow in apps/util.service.ts
+  await appVersionsRepository.update(version.id, {
+    homePageId: defaultPage.id,
+    showViewerNavigation: true,
+    globalSettings: {
+      appInMaintenance: false,
+      canvasMaxWidth: 100,
+      canvasMaxWidthType: '%',
+      canvasMaxHeight: 2400,
+      canvasBackgroundColor: 'var(--cc-appBackground-surface)',
+      backgroundFxQuery: '',
+      appMode: 'light',
+    },
+  });
+  version.homePageId = defaultPage.id;
+
+  return version;
 }
 export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
@@ -747,13 +783,29 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
 }
 
 export async function createDataSourceOption(nestApp, { dataSource, environmentId, options }: any) {
-  let dataSourceOptionsRepository: Repository<DataSourceOptions>;
-  dataSourceOptionsRepository = getDefaultDataSource().getRepository(DataSourceOptions);
+  const ds = getDefaultDataSource();
+  const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
+  const credentialRepository = ds.getRepository(Credential);
 
-  // Save options directly without parseOptionsForCreate — test data doesn't need encryption
-  const parsedOptions = Array.isArray(options)
-    ? options.reduce((acc, opt) => ({ ...acc, [opt.key]: { value: opt.value, encrypted: opt.encrypted === 'true' } }), {})
-    : options || {};
+  // Match production behavior: create Credential records for encrypted options
+  const parsedOptions: Record<string, any> = {};
+  if (Array.isArray(options)) {
+    for (const opt of options) {
+      if (opt.encrypted === 'true' || opt.encrypted === true) {
+        const credential = await credentialRepository.save(
+          credentialRepository.create({ valueCiphertext: opt.value || '' })
+        );
+        parsedOptions[opt.key] = {
+          credential_id: credential.id,
+          encrypted: true,
+        };
+      } else {
+        parsedOptions[opt.key] = { value: opt.value, encrypted: false };
+      }
+    }
+  } else if (options) {
+    Object.assign(parsedOptions, options);
+  }
 
   return await dataSourceOptionsRepository.save(
     dataSourceOptionsRepository.create({

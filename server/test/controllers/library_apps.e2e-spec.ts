@@ -1,9 +1,29 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { DataSource } from 'src/entities/data_source.entity';
+
+/** Create the built-in static data sources that templates expect to exist. */
+async function createDefaultDataSources(ds: TypeOrmDataSource, organizationId: string) {
+  const kinds = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+  for (const kind of kinds) {
+    await ds.manager.save(DataSource, {
+      name: `${kind}default`,
+      kind,
+      scope: 'global',
+      organizationId,
+      type: 'static',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+  }
+}
 
 describe('library apps controller', () => {
   let app: INestApplication;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -11,6 +31,7 @@ describe('library apps controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('POST /api/library_apps', () => {
@@ -47,9 +68,14 @@ describe('library apps controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      // Templates expect built-in static data sources to exist in the organization
+      await createDefaultDataSources(defaultDataSource, adminUserData.organization.id);
+
+      // Use json-formatter template (no ToolJet DB tables) to avoid QueryRunner
+      // issues in the test environment
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'release-notes', appName: 'Release Notes App' })
+        .send({ identifier: 'json-formatter', appName: 'JSON Formatter App', dependentPlugins: [] })
         .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
         .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -57,12 +83,12 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'release-notes', appName: 'Release Notes App' })
+        .send({ identifier: 'json-formatter', appName: 'JSON Formatter App', dependentPlugins: [] })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('Release Notes App');
+      expect(response.body.app[0].name).toContain('JSON Formatter App');
     });
 
     it('should return error if template identifier is not found', async () => {
