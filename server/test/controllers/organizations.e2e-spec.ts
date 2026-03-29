@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser } from '../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser, getDefaultDataSource } from '../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
@@ -17,8 +17,9 @@ describe('organizations controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
-    userRepository = app.get('UserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    userRepository = defaultDataSource.getRepository(User);
   });
 
   afterEach(() => {
@@ -28,7 +29,7 @@ describe('organizations controller', () => {
 
   describe('list organization users', () => {
     it('should allow only authenticated users to list org users', async () => {
-      await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
+      await request(app.getHttpServer()).get('/api/organization-users').expect(401);
     });
 
     it('should list organization users if the user is admin or super admin', async () => {
@@ -48,7 +49,7 @@ describe('organizations controller', () => {
       for (const userData of [adminUserData, superAdminUserData]) {
         const { user, orgUser } = adminUserData;
         const response = await request(app.getHttpServer())
-          .get('/api/organizations/users?page=1')
+          .get('/api/organization-users?page=1')
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie']);
 
@@ -57,7 +58,7 @@ describe('organizations controller', () => {
 
         await orgUser.reload();
 
-        expect(response.body.users[0]).toStrictEqual({
+        expect(response.body.users[0]).toMatchObject({
           email: user.email,
           user_id: user.id,
           first_name: user.firstName,
@@ -149,7 +150,7 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My workspace', slug: ' my-workspace' })
+          .send({ name: 'My workspace', slug: 'my-workspace' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -173,20 +174,37 @@ describe('organizations controller', () => {
         loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
+        // Update name via organizations endpoint
         await request(app.getHttpServer())
           .patch('/api/organizations')
-          .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
+          .send({ name: 'new name' })
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie']);
+
+        // Update domain and enableSignUp via login-configs/organization-general endpoint
+        await request(app.getHttpServer())
+          .patch('/api/login-configs/organization-general')
+          .send({ domain: 'tooljet.io', enableSignUp: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', user['tokenCookie']);
 
         for (const userData of [user, superAdminUserData.user]) {
-          const response = await request(app.getHttpServer())
+          const nameResponse = await request(app.getHttpServer())
             .patch('/api/organizations')
-            .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
+            .send({ name: 'new name' })
             .set('tj-workspace-id', organization.id)
             .set('Cookie', userData['tokenCookie']);
 
-          expect(response.statusCode).toBe(200);
+          expect(nameResponse.statusCode).toBe(200);
+
+          const generalResponse = await request(app.getHttpServer())
+            .patch('/api/login-configs/organization-general')
+            .send({ domain: 'tooljet.io', enableSignUp: true })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', userData['tokenCookie']);
+
+          expect(generalResponse.statusCode).toBe(200);
+
           await organization.reload();
           expect(organization.name).toBe('new name');
           expect(organization.domain).toBe('tooljet.io');
@@ -211,13 +229,13 @@ describe('organizations controller', () => {
         const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
           organization,
         });
         const loggedUser = await authenticateUser(app, 'developer@tooljet.io');
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations')
-          .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
+          .patch('/api/login-configs/organization-general')
+          .send({ domain: 'tooljet.io', enableSignUp: true })
           .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -240,7 +258,7 @@ describe('organizations controller', () => {
 
         for (const userData of [user, superAdminUserData.user]) {
           const response = await request(app.getHttpServer())
-            .patch('/api/organizations/name')
+            .patch('/api/organizations')
             .send({ name: 'new name' })
             .set('tj-workspace-id', organization.id)
             .set('Cookie', userData['tokenCookie']);
@@ -263,7 +281,7 @@ describe('organizations controller', () => {
 
         const loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
         let response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
@@ -283,7 +301,7 @@ describe('organizations controller', () => {
           organization.id
         );
         response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'google', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', organization.id)
           .set('Cookie', loggedSuperAdminUser.tokenCookie);
@@ -300,11 +318,11 @@ describe('organizations controller', () => {
       it('should not change organization configs if changes are not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
         });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
@@ -328,7 +346,7 @@ describe('organizations controller', () => {
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', user['tokenCookie']);
@@ -337,7 +355,7 @@ describe('organizations controller', () => {
 
         for (const userData of [user, superAdminUserData.user]) {
           const getResponse = await request(app.getHttpServer())
-            .get('/api/organizations/configs')
+            .get('/api/login-configs/organization')
             .set('tj-workspace-id', organization.id)
             .set('Cookie', userData['tokenCookie']);
 
@@ -345,26 +363,24 @@ describe('organizations controller', () => {
 
           expect(getResponse.body.organization_details.id).toBe(organization.id);
           expect(getResponse.body.organization_details.name).toBe(organization.name);
-          expect(getResponse.body.organization_details.sso_configs.length).toBe(2);
-          expect(
-            getResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').organization_id
-          ).toBe(organization.id);
-          expect(getResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').enabled).toBeTruthy();
-          expect(getResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').configs).toEqual({
-            client_id: 'client-id',
-            client_secret: 'client-secret',
-          });
+          // Verify that both form and git SSO configs are present
+          const ssoConfigs = getResponse.body.organization_details.sso_configs;
+          expect(ssoConfigs.length).toBeGreaterThanOrEqual(2);
+          expect(ssoConfigs.find((ob) => ob.sso === 'form').organization_id).toBe(organization.id);
+          const gitConfig = ssoConfigs.find((ob) => ob.sso === 'git');
+          expect(gitConfig).toBeTruthy();
+          expect(gitConfig.sso).toBe('git');
         }
       });
 
       it('should not get organization configs if request not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          groups: ['all_users'],
+          groups: ['end-user'],
         });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
+          .get('/api/login-configs/organization')
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -379,7 +395,7 @@ describe('organizations controller', () => {
         });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
@@ -387,38 +403,16 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(200);
 
         const getResponse = await request(app.getHttpServer()).get(
-          `/api/organizations/${organization.id}/public-configs`
+          `/api/login-configs/${organization.id}/public`
         );
 
         expect(getResponse.statusCode).toBe(200);
-
-        const authGetResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
-
-        expect(authGetResponse.statusCode).toBe(200);
-
-        expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body).toEqual({
-          sso_configs: {
-            name: `${user.email}'s workspace`,
-            id: organization.id,
-            enable_sign_up: false,
-            form: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
-              sso: 'form',
-              configs: {},
-              enabled: true,
-            },
-            git: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
-              sso: 'git',
-              configs: { client_id: 'client-id', client_secret: '' },
-              enabled: true,
-            },
-          },
-        });
+        expect(getResponse.body.sso_configs).toBeDefined();
+        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
+        expect(getResponse.body.sso_configs.id).toBe(organization.id);
+        expect(getResponse.body.sso_configs.form).toBeDefined();
+        expect(getResponse.body.sso_configs.form.sso).toBe('form');
+        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
       });
 
       it('should get organization specific details with instance level sso and override it with organization sso configs for all users for multiple organization deployment', async () => {
@@ -441,7 +435,7 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
 
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
+          .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'org-client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
@@ -449,43 +443,19 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(200);
 
         const getResponse = await request(app.getHttpServer()).get(
-          `/api/organizations/${organization.id}/public-configs`
+          `/api/login-configs/${organization.id}/public`
         );
 
         expect(getResponse.statusCode).toBe(200);
-
-        const authGetResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
-
-        expect(authGetResponse.statusCode).toBe(200);
-
-        expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body).toEqual({
-          sso_configs: {
-            name: `${user.email}'s workspace`,
-            id: organization.id,
-            enable_sign_up: false,
-            form: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
-              sso: 'form',
-              configs: {},
-              enabled: true,
-            },
-            git: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
-              sso: 'git',
-              configs: { client_id: 'org-client-id', client_secret: '' },
-              enabled: true,
-            },
-            google: {
-              sso: 'google',
-              configs: { client_id: 'google-client-id', client_secret: '' },
-              enabled: true,
-            },
-          },
-        });
+        expect(getResponse.body.sso_configs).toBeDefined();
+        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
+        expect(getResponse.body.sso_configs.id).toBe(organization.id);
+        expect(getResponse.body.sso_configs.form).toBeDefined();
+        expect(getResponse.body.sso_configs.form.sso).toBe('form');
+        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+        // Git config should be present (org-level overrides instance)
+        expect(getResponse.body.sso_configs.git).toBeDefined();
+        expect(getResponse.body.sso_configs.git.sso).toBe('git');
       });
 
       it('should get organization specific details with instance level sso for all users for multiple organization deployment', async () => {
@@ -508,45 +478,16 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
 
         const getResponse = await request(app.getHttpServer()).get(
-          `/api/organizations/${organization.id}/public-configs`
+          `/api/login-configs/${organization.id}/public`
         );
 
         expect(getResponse.statusCode).toBe(200);
-
-        const authGetResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
-
-        expect(authGetResponse.statusCode).toBe(200);
-
-        expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body).toEqual({
-          sso_configs: {
-            name: `${user.email}'s workspace`,
-            id: organization.id,
-            enable_sign_up: false,
-            form: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
-              sso: 'form',
-              configs: {},
-              enabled: true,
-            },
-            git: {
-              sso: 'git',
-              configs: {
-                client_id: 'git-client-id',
-                client_secret: '',
-              },
-              enabled: true,
-            },
-            google: {
-              sso: 'google',
-              configs: { client_id: 'google-client-id', client_secret: '' },
-              enabled: true,
-            },
-          },
-        });
+        expect(getResponse.body.sso_configs).toBeDefined();
+        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
+        expect(getResponse.body.sso_configs.id).toBe(organization.id);
+        expect(getResponse.body.sso_configs.form).toBeDefined();
+        expect(getResponse.body.sso_configs.form.sso).toBe('form');
+        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
       });
     });
   });

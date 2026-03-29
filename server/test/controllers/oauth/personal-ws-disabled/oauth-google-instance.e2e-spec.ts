@@ -1,10 +1,10 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource, seedInstanceSSOConfigs } from '../../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -13,6 +13,7 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await seedInstanceSSOConfigs();
     await instanceSettingsRepository.update(
       { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
       { value: 'false' }
@@ -21,7 +22,8 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
 
   afterEach(() => {
@@ -52,7 +54,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'invited@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             status: 'invited',
           });
 
@@ -74,7 +76,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'archived@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             status: 'archived',
           });
 

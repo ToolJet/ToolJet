@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource, seedInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
@@ -23,12 +23,14 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await seedInstanceSSOConfigs();
   });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    userRepository = app.get('UserRepository');
-    orgUserRepository = app.get('OrganizationUserRepository');
+    const defaultDataSource = getDefaultDataSource();
+    userRepository = defaultDataSource.getRepository(User);
+    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
   });
 
   afterEach(() => {
@@ -77,13 +79,16 @@ describe('oauth controller', () => {
           };
         });
 
-        (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-        (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        // Production returns a full session — first SSO user is a regular user
+        // (super admin must be set up via /api/onboarding/setup-super-admin)
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -114,13 +119,15 @@ describe('oauth controller', () => {
           };
         });
 
-        (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-        (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+        (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        // Second user gets a session but is not super admin
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
@@ -128,6 +135,9 @@ describe('oauth controller', () => {
         const { organization, user } = await createUser(app, {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
+          ssoConfigs: [
+            { sso: 'git', enabled: true, configScope: 'organization', configs: { clientId: 'git-client-id', clientSecret: '' } },
+          ],
         });
         current_organization = organization;
         current_user = user;
@@ -158,19 +168,19 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
-            .send({ token, organizationId: current_organization.id })
+            .send({ token })
             .expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(1); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is invited in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
-            email: 'superadmin@tooljet.io',
+            where: { email: 'superadmin@tooljet.io' },
           });
           await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
@@ -198,16 +208,16 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
-            email: 'superadmin@tooljet.io',
+            where: { email: 'superadmin@tooljet.io' },
           });
           await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
@@ -235,11 +245,11 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
-          const orgCount = await orgUserRepository.count({ userId: current_user.id });
+          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
           expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 401 when the super admin status is archived', async () => {
@@ -269,8 +279,8 @@ describe('oauth controller', () => {
             };
           });
 
-          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
-          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
         });
       });

@@ -361,7 +361,7 @@ export class AppsUtilService implements IAppsUtilService {
     return manager
       .createQueryBuilder(AppEnvironment, 'app_environments')
       .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
-      .where('app_versions.id = :currentVersionId', {
+      .where('app_versions.id = :versionId', {
         versionId,
       })
       .getOne();

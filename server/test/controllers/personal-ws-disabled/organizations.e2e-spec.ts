@@ -1,9 +1,9 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('organizations controller', () => {
   let app: INestApplication;
@@ -19,7 +19,8 @@ describe('organizations controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    const defaultDataSource = getDefaultDataSource();
+    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
 
   afterEach(() => {
@@ -57,17 +58,17 @@ describe('organizations controller', () => {
     });
 
     describe('update organization', () => {
-      it('should not change organization name if changes are done by user/admin', async () => {
+      it('should allow admin to change organization name even when personal workspace is disabled', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
         const loggedUser = await authenticateUser(app, user.email);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/name')
+          .patch('/api/organizations')
           .send({ name: 'new name' })
           .set('tj-workspace-id', organization.id)
           .set('Cookie', loggedUser.tokenCookie);
-        expect(response.statusCode).toBe(403);
+        expect(response.statusCode).toBe(200);
       });
 
       it('should change organization name if changes are done by super admin', async () => {
@@ -80,7 +81,7 @@ describe('organizations controller', () => {
         });
         const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/name')
+          .patch('/api/organizations')
           .send({ name: 'new name' })
           .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);

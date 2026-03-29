@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../test.helper';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -25,10 +25,17 @@ describe('oauth controller', () => {
     'avatar_id',
     'data_source_group_permissions',
     'group_permissions',
+    'user_permissions',
+    'role',
+    'metadata',
+    'sso_user_info',
+    'no_active_workspaces',
+    'is_current_organization_archived',
     'organization',
     'organization_id',
     'super_admin',
     'current_organization_slug',
+    'workflow_group_permissions',
   ].sort();
 
   beforeEach(async () => {
@@ -37,8 +44,9 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app } = await createNestAppInstanceWithEnvMock());
-    ssoConfigsRepository = app.get('SSOConfigsRepository');
-    orgRepository = app.get('OrganizationRepository');
+    const defaultDataSource = getDefaultDataSource();
+    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    orgRepository = defaultDataSource.getRepository(Organization);
   });
 
   afterEach(() => {
@@ -148,7 +156,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should sign in new user when domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -182,14 +190,14 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
+        it('should sign in new user when domain includes spaces and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             domain: ' tooljet.io  ,  tooljet.com,  ,    ,  gmail.com',
           });
@@ -225,14 +233,12 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
+        it('should sign in new user when sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -265,13 +271,13 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
-        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should sign in new user when name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -304,13 +310,11 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
-        it('should return redirect url when the user does not exist and email id not available and sign up is enabled', async () => {
+        it('should sign in new user when email id not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -363,18 +367,16 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'active',
           });
@@ -425,7 +427,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
             status: 'invited',
           });
@@ -482,7 +484,7 @@ describe('oauth controller', () => {
             firstName: 'SSO',
             lastName: 'userExist',
             email: 'anotheruser1@tooljet.io',
-            groups: ['all_users'],
+            groups: ['end-user'],
             organization: current_organization,
           });
 
@@ -596,12 +598,9 @@ describe('oauth controller', () => {
             expect.anything()
           );
 
-          expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
       });
     });

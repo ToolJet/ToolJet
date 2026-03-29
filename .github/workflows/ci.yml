@@ -2,7 +2,7 @@ name: CI
 # Controls when the workflow will run
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, lts-3.16]
   pull_request:
     types: [labeled, unlabeled, closed]
 
@@ -33,7 +33,7 @@ jobs:
       - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.18.2
+          node-version: 22.15.1
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -127,7 +127,7 @@ jobs:
       - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.18.2
+          node-version: 22.15.1
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -188,7 +188,7 @@ jobs:
       - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.18.2
+          node-version: 22.15.1
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -248,7 +248,7 @@ jobs:
       - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.18.2
+          node-version: 22.15.1
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -301,7 +301,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.18.2-bullseye
+    container: node:22.15.1-bullseye
     services:
       postgres:
         image: postgres
@@ -334,13 +334,13 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test
+      - run: npm --prefix server run test -- --group=working --group=workflows --group=security
 
   e2e-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.18.2-bullseye
+    container: node:22.15.1-bullseye
     services:
       postgres:
         image: postgres
@@ -373,4 +373,4 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000
+      - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000 --group=working

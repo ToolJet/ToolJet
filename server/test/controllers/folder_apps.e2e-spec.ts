@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
-import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization } from '../test.helper';
+import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization, getDefaultDataSource } from '../test.helper';
 import * as request from 'supertest';
-import { getManager } from 'typeorm';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
 
@@ -16,14 +15,14 @@ describe('folder apps controller', () => {
     nestApp = await createNestAppInstance();
   });
 
-  describe('POST /api/folder_apps', () => {
+  describe('POST /api/folder-apps', () => {
     it('should allow only authenticated users to add apps to folders', async () => {
-      await request(nestApp.getHttpServer()).post('/api/folder_apps').expect(401);
+      await request(nestApp.getHttpServer()).post('/api/folder-apps').expect(401);
     });
 
     it('should add an app to a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -32,7 +31,7 @@ describe('folder apps controller', () => {
       const loggedUser = await authenticateUser(nestApp);
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
@@ -46,7 +45,7 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to add apps to folders in any organization', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -54,7 +53,7 @@ describe('folder apps controller', () => {
       //super admin
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 
@@ -67,7 +66,7 @@ describe('folder apps controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ folder_id: folder.id, app_id: app.id });
@@ -81,7 +80,7 @@ describe('folder apps controller', () => {
 
     it('should not add an app to a folder more than once', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
 
       // create a new folder
       const folder = await manager.save(
@@ -91,19 +90,19 @@ describe('folder apps controller', () => {
       const loggedUser = await authenticateUser(nestApp);
 
       await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       const response = await request(nestApp.getHttpServer())
-        .post(`/api/folder_apps`)
+        .post(`/api/folder-apps`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('App has been already added to the folder');
+      expect(response.body.message).toBe('App has already been added to the folder');
     });
 
     it('should remove an app from a folder', async () => {
@@ -111,7 +110,7 @@ describe('folder apps controller', () => {
 
       const loggedUser = await authenticateUser(nestApp);
 
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -119,7 +118,7 @@ describe('folder apps controller', () => {
       // add app to folder
       const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/folder_apps/${folderApp.folderId}`)
+        .put(`/api/folder-apps/${folderApp.folderId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ app_id: folderApp.appId });
@@ -129,7 +128,7 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       // create a new folder
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
@@ -140,7 +139,7 @@ describe('folder apps controller', () => {
       //super admin
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
         userType: 'instance',
       });
 
@@ -153,7 +152,7 @@ describe('folder apps controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/folder_apps/${folderApp.folderId}`)
+        .put(`/api/folder-apps/${folderApp.folderId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ app_id: folderApp.appId });

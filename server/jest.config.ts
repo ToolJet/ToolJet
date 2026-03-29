@@ -5,7 +5,7 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   rootDir: '.',
   testEnvironment: 'node',
-  testRegex: '.spec.ts$',
+  testRegex: '(?<!e2e-)spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
@@ -31,6 +31,8 @@ const config: Config.InitialOptions = {
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
     '@otel/(.*)': '<rootDir>/src/otel/$1',
+    // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
+    '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
   },
   runner: 'groups',
   testTimeout: 30000,

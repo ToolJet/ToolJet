@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
-import { getManager, Like } from 'typeorm';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 const createSettings = async (app: INestApplication, userData: any, body: any) => {
@@ -36,12 +36,12 @@ describe('instance settings controller', () => {
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       const bodyArray = [
@@ -98,13 +98,13 @@ describe('instance settings controller', () => {
     it('should only be able to create a new settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -143,13 +143,13 @@ describe('instance settings controller', () => {
     it('should only be able to update existing settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -162,19 +162,24 @@ describe('instance settings controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await createSettings(app, superAdminUserData, {
-        key: 'SOME_SETTINGS_4',
-        value: 'false',
-      });
+      // Find or create the ENABLE_COMMENTS setting (may already exist from app startup)
+      let createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      if (!createdSetting) {
+        await createSettings(app, superAdminUserData, { key: 'ENABLE_COMMENTS', value: 'false' });
+        createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      } else {
+        // Reset to known state
+        await getDefaultDataSource().manager.update(InstanceSettings, createdSetting.id, { value: 'false' });
+      }
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
         .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
-        .send([{ value: 'true', id: response.body.setting.id }])
+        .send({ settings: [{ value: 'true', id: createdSetting.id, key: 'ENABLE_COMMENTS' }] })
         .expect(200);
 
-      const updatedSetting = await getManager().findOne(InstanceSettings, response.body.setting.id);
+      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { id: createdSetting.id } });
 
       expect(updatedSetting.value).toEqual('true');
 
@@ -182,7 +187,7 @@ describe('instance settings controller', () => {
         .patch(`/api/instance-settings`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
-        .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
+        .send({ allow_personal_workspace: { value: 'true', id: createdSetting.id } })
         .expect(403);
     });
   });
@@ -191,13 +196,13 @@ describe('instance settings controller', () => {
     it('should only be able to delete an existing setting if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
+        groups: ['end-user', 'admin'],
       });
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
         userType: 'instance',
-        groups: ['admin', 'all_users'],
+        groups: ['admin', 'end-user'],
       });
 
       let loggedUser = await authenticateUser(app);
@@ -210,34 +215,37 @@ describe('instance settings controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await createSettings(app, superAdminUserData, {
+      await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_5',
         value: 'false',
       });
 
-      const preCount = await getManager().count(InstanceSettings);
+      // EE create returns empty body — query DB for the created setting
+      const createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'SOME_SETTINGS_5' } });
+
+      const preCount = await getDefaultDataSource().manager.count(InstanceSettings);
 
       await request(app.getHttpServer())
-        .delete(`/api/instance-settings/${response.body.setting.id}`)
+        .delete(`/api/instance-settings/${createdSetting.id}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .send()
         .expect(403);
 
       await request(app.getHttpServer())
-        .delete(`/api/instance-settings/${response.body.setting.id}`)
+        .delete(`/api/instance-settings/${createdSetting.id}`)
         .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send()
         .expect(200);
 
-      const postCount = await getManager().count(InstanceSettings);
+      const postCount = await getDefaultDataSource().manager.count(InstanceSettings);
       expect(postCount).toEqual(preCount - 1);
     });
   });
 
   afterAll(async () => {
-    await getManager().delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
+    await getDefaultDataSource().manager.delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
     await app.close();
   });
 });

@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
-import { getManager } from 'typeorm';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
 
@@ -21,35 +20,7 @@ describe('users controller', () => {
     jest.clearAllMocks();
   });
 
-  describe('GET /api/users/all', () => {
-    it('only superadmins can able to access all users', async () => {
-      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
-      const developerUserData = await createUser(app, { email: 'developer@tooljet.io', userType: 'workspace' });
-
-      let loggedUser = await authenticateUser(app, adminUserData.user.email);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-
-      const adminRequestResponse = await request(app.getHttpServer())
-        .get('/api/users/all')
-        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', adminUserData['tokenCookie'])
-        .send();
-
-      expect(adminRequestResponse.statusCode).toBe(200);
-
-      loggedUser = await authenticateUser(app, developerUserData.user.email);
-      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
-      const developerRequestResponse = await request(app.getHttpServer())
-        .get('/api/users/all')
-        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
-        .set('Cookie', developerUserData['tokenCookie'])
-        .send();
-
-      expect(developerRequestResponse.statusCode).toBe(403);
-    });
-  });
-
-  describe('PATCH /api/users/change_password', () => {
+  describe('PATCH /api/profile/password', () => {
     it('should allow users to update their password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -60,13 +31,13 @@ describe('users controller', () => {
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
-        .patch('/api/users/change_password')
+        .patch('/api/profile/password')
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
       expect(response.statusCode).toBe(200);
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.password).not.toEqual(oldPassword);
     });
 
@@ -80,7 +51,7 @@ describe('users controller', () => {
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
-        .patch('/api/users/change_password')
+        .patch('/api/profile/password')
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
@@ -90,13 +61,13 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.password).toEqual(oldPassword);
     });
   });
 
-  describe('PATCH /api/users/update', () => {
-    it('should allow users to update their firstName, lastName and password', async () => {
+  describe('PATCH /api/profile', () => {
+    it('should allow users to update their firstName and lastName', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
 
@@ -106,20 +77,20 @@ describe('users controller', () => {
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
-        .patch('/api/users/update')
+        .patch('/api/profile')
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({ first_name: firstName, last_name: lastName });
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
     });
   });
 
-  describe('POST /api/users/avatar', () => {
+  describe('PATCH /api/profile/avatar', () => {
     it('should allow users to add a avatar', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 
@@ -130,12 +101,12 @@ describe('users controller', () => {
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
-        .post('/api/users/avatar')
+        .patch('/api/profile/avatar')
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .attach('file', filePath);
 
-      expect(response.statusCode).toBe(201);
+      expect(response.statusCode).toBe(200);
     });
   });
 
