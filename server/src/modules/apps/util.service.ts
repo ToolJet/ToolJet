@@ -799,6 +799,10 @@ export class AppsUtilService implements IAppsUtilService {
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
         if (dq.options?.operation === 'join_tables') {
+          // The primary table is only in join_table.from.name — no top-level table_id for join queries
+          const fromName = dq.options?.join_table?.from?.name;
+          if (fromName) uniqTableIds.add(fromName);
+
           const joinOptions = dq.options?.join_table?.joins ?? [];
           (joinOptions || []).forEach((join) => {
             const { table, conditions } = join;

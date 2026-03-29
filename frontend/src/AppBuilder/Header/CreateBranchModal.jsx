@@ -11,10 +11,11 @@ import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import '@/_styles/create-branch-modal.scss';
 
-const LATEST_MAIN_OPTION = { label: 'Latest (main)', commitSha: null };
-
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
+  const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
+  const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
+  const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null };
   const [selectedOption, setSelectedOption] = useState(LATEST_MAIN_OPTION);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -251,7 +252,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
         {/* Info message */}
         <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
-          Branch can only be created from master
+          Branch can only be created from {defaultGitBranch}
         </Alert>
 
         {/* Footer buttons */}

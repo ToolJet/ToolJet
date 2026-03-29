@@ -6,6 +6,7 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { transformTjdbImportDto } from '@dto/transformers/tjdb-dto-transforms';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
+const { v4: uuidv4 } = require('uuid');
 
 @Injectable()
 export class TooljetDbImportExportService {
@@ -27,6 +28,13 @@ export class TooljetDbImportExportService {
 
     if (!internalTable) throw new NotFoundException('Tooljet database table not found');
 
+    // Ensure co_relation_id exists — generate and persist one if missing
+    if (!internalTable.co_relation_id) {
+      const coRelationId = uuidv4();
+      await this.manager.update(InternalTable, { id: internalTable.id }, { co_relation_id: coRelationId });
+      internalTable.co_relation_id = coRelationId;
+    }
+
     const { configurations = {} } = internalTable;
     const { columns, foreign_keys } = await this.tableOperationsService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
@@ -46,7 +54,7 @@ export class TooljetDbImportExportService {
     }
 
     return {
-      id: internalTable.id,
+      id: internalTable.co_relation_id,
       table_name: internalTable.tableName,
       schema: { columns, foreign_keys },
     };
@@ -130,6 +138,18 @@ export class TooljetDbImportExportService {
     connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
   ) {
     const { appManager } = connectionManagers;
+
+    // For git sync: id in the DTO is the co_relation_id (local IDs are replaced on push).
+    // Look up by co_relation_id first so we don't create duplicate tables in the same workspace.
+    if (tjDbDto.id) {
+      const existingByCoRelationId = await appManager.findOne(InternalTable, {
+        where: { co_relation_id: tjDbDto.id, organizationId },
+      });
+      if (existingByCoRelationId) {
+        return { id: existingByCoRelationId.id, table_name: existingByCoRelationId.tableName };
+      }
+    }
+
     const internalTableWithSameNameExists = await appManager.findOne(InternalTable, {
       where: {
         tableName: tjDbDto.table_name,
@@ -150,7 +170,7 @@ export class TooljetDbImportExportService {
 
     const { columns } = tjDbDto.schema;
 
-    return await this.tableOperationsService.perform(
+    const createdTable = await this.tableOperationsService.perform(
       organizationId,
       'create_table',
       {
@@ -159,6 +179,14 @@ export class TooljetDbImportExportService {
       },
       connectionManagers
     );
+
+    // Store co_relation_id on the newly created table for future lookups.
+    // On git sync pull, tjDbDto.id IS the co_relation_id (local IDs are replaced on push).
+    if (tjDbDto.id && createdTable?.id) {
+      await appManager.update(InternalTable, { id: createdTable.id }, { co_relation_id: tjDbDto.id });
+    }
+
+    return createdTable;
   }
 
   async isTableColumnsSubset(internalTable: InternalTable, tjDbDto: ImportTooljetDatabaseDto): Promise<boolean> {
