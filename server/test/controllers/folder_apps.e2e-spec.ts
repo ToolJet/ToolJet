@@ -1,8 +1,25 @@
 import { INestApplication } from '@nestjs/common';
-import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization, getDefaultDataSource } from '../test.helper';
+import { authenticateUser, clearDB, createNestAppInstance, createUser, createApplication, getDefaultDataSource } from '../test.helper';
 import * as request from 'supertest';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
+
+async function setupOrganization(nestApp) {
+  const adminUserData = await createUser(nestApp, {
+    email: 'admin@tooljet.io',
+    groups: ['end-user', 'admin'],
+  });
+  const adminUser = adminUserData.user;
+  const organization = adminUserData.organization;
+
+  const app = await createApplication(nestApp, {
+    user: adminUser,
+    name: 'sample app',
+    isPublic: false,
+  });
+
+  return { adminUser, app };
+}
 
 describe('folder apps controller', () => {
   let nestApp: INestApplication;

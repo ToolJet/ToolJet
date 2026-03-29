@@ -8,17 +8,12 @@ import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { File } from '@entities/file.entity';
-import { Plugin } from '@entities/plugin.entity';
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@modules/app/module';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
-import { PluginsService } from '@modules/plugins/service';
-import { DataSourcesService } from '@modules/data-sources/service';
-import { PluginsModule } from '@modules/plugins/module';
-import { DataSourcesModule } from '@modules/data-sources/module';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
@@ -30,11 +25,9 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { AppsModule } from '@modules/apps/module';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@modules/files/dto';
-import { CreatePluginDto } from '@modules/plugins/dto';
 import * as request from 'supertest';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
@@ -153,7 +146,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
-export function authHeaderForUser(user: User, organizationId?: string, isPasswordLogin = true): string {
+export function buildAuthHeader(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
@@ -167,6 +160,8 @@ export function authHeaderForUser(user: User, organizationId?: string, isPasswor
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
+/** @deprecated Use buildAuthHeader instead */
+export const authHeaderForUser = buildAuthHeader;
 
 // Store a reference to the default DataSource once it's available
 let _defaultDataSource: TypeOrmDataSource;
@@ -188,7 +183,7 @@ export function getDefaultDataSource(): TypeOrmDataSource {
   return _defaultDataSource;
 }
 
-export async function clearDB() {
+export async function resetDB() {
   if (process.env.NODE_ENV !== 'test') return;
   await dropTooljetDbTables();
 
@@ -268,6 +263,8 @@ export async function clearDB() {
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
   }
 }
+/** @deprecated Use resetDB instead */
+export const clearDB = resetDB;
 
 /**
  * Seeds instance-level SSO configs (git, google, openid) in the DB.
@@ -279,7 +276,7 @@ export async function clearDB() {
  * @param options.gitConfigs - Override git SSO configs
  * @param options.googleConfigs - Override google SSO configs
  */
-export async function seedInstanceSSOConfigs(options?: {
+export async function ensureInstanceSSOConfigs(options?: {
   enabled?: boolean;
   gitConfigs?: Record<string, any>;
   googleConfigs?: Record<string, any>;
@@ -314,6 +311,8 @@ export async function seedInstanceSSOConfigs(options?: {
   // Also ensure ENABLE_SIGNUP is true so SSO can create new users
   await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ENABLE_SIGNUP'`);
 }
+/** @deprecated Use ensureInstanceSSOConfigs instead */
+export const seedInstanceSSOConfigs = ensureInstanceSSOConfigs;
 
 async function dropTooljetDbTables() {
   const ds = getDefaultDataSource();
@@ -338,7 +337,7 @@ export async function createApplication(
   user = user || (await (await createUser(nestApp, {})).user);
 
   if (shouldCreateEnvs) {
-    await createAppEnvironments(nestApp, user.organizationId);
+    await ensureAppEnvironments(nestApp, user.organizationId);
   }
 
   const newApp = await appRepository.save(
@@ -355,14 +354,6 @@ export async function createApplication(
   );
 
   return newApp;
-}
-
-/**
- * @deprecated This function is not implemented - LibraryAppCreationService does not exist in current codebase.
- * If you need to import apps from templates, implement the service first.
- */
-export async function importAppFromTemplates(_nestApp, _user, _identifier) {
-  throw new Error('importAppFromTemplates is not implemented - LibraryAppCreationService does not exist in current codebase');
 }
 
 export async function createApplicationVersion(
@@ -444,7 +435,7 @@ export async function getAllEnvironments(nestApp, organizationId): Promise<AppEn
   });
 }
 
-export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
+export async function ensureAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
   appEnvironmentRepository = getDefaultDataSource().getRepository(AppEnvironment);
 
@@ -461,6 +452,8 @@ export async function createAppEnvironments(nestApp, organizationId): Promise<Ap
     })
   );
 }
+/** @deprecated Use ensureAppEnvironments instead */
+export const createAppEnvironments = ensureAppEnvironments;
 
 export async function createUser(
   nestApp,
@@ -652,7 +645,7 @@ export async function createGroupPermission(nestApp, params) {
  * @param groupId - The GroupPermissions id
  * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
  */
-export async function createAppGroupPermission(nestApp, application, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
+export async function grantAppPermission(nestApp, application, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
@@ -709,6 +702,8 @@ export async function createAppGroupPermission(nestApp, application, groupId, pe
     await groupAppsRepo.save(groupApp);
   }
 }
+/** @deprecated Use grantAppPermission instead */
+export const createAppGroupPermission = grantAppPermission;
 
 /**
  * Creates data-source-level permissions for a group using the new granular permissions system.
@@ -758,7 +753,7 @@ export async function createDatasourceGroupPermission(nestApp, dataSourceId, gro
   }
 }
 
-export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
+async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
 
@@ -820,7 +815,7 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
   }
 }
 
-export async function addEndUserGroupToUser(nestApp, user) {
+async function addEndUserGroupToUser(nestApp, user) {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   const groupUsersRepository = ds.getRepository(GroupUsers);
@@ -842,7 +837,7 @@ export async function addEndUserGroupToUser(nestApp, user) {
 }
 
 // Keep backward-compatible alias
-export const addAllUsersGroupToUser = addEndUserGroupToUser;
+const addAllUsersGroupToUser = addEndUserGroupToUser;
 
 export async function createDataSource(
   nestApp,
@@ -928,88 +923,6 @@ export async function createFile(nestApp: any) {
   return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
-export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
-  let pluginRepository: Repository<Plugin>;
-  pluginRepository = getDefaultDataSource().getRepository(Plugin);
-  const createPluginDto = new CreatePluginDto();
-  createPluginDto.id = id;
-  createPluginDto.name = name;
-  createPluginDto.version = version;
-  createPluginDto.description = description;
-
-  const pluginsService = nestApp.select(PluginsModule).get(PluginsService);
-
-  return await pluginRepository.save(pluginsService.install(createPluginDto));
-}
-
-/**
- * @deprecated This function is not implemented - ThreadRepository does not exist in current codebase.
- */
-export async function createThread(_nestApp, _params: { appId: string; x: number; y: number; userId: string; organizationId: string; appVersionsId: string }) {
-  throw new Error('createThread is not implemented - ThreadRepository does not exist in current codebase');
-}
-
-export async function setupOrganization(nestApp) {
-  const adminUserData = await createUser(nestApp, {
-    email: 'admin@tooljet.io',
-    groups: ['end-user', 'admin'],
-  });
-  const adminUser = adminUserData.user;
-  const organization = adminUserData.organization;
-  const defaultUserData = await createUser(nestApp, {
-    email: 'developer@tooljet.io',
-    groups: ['end-user'],
-    organization,
-  });
-  const defaultUser = defaultUserData.user;
-
-  const app = await createApplication(nestApp, {
-    user: adminUser,
-    name: 'sample app',
-    isPublic: false,
-  });
-
-  return { adminUser, defaultUser, app };
-}
-
-export const generateRedirectUrl = async (
-  email: string,
-  current_organization?: Organization,
-  isOrgInvitation?: boolean,
-  isSSO = true
-) => {
-  const ds = getDefaultDataSource();
-  const user = await ds.manager.findOneOrFail(User, { where: { email: email } });
-
-  const organizationToken = user.organizationUsers?.find(
-    (ou) => ou.organizationId === current_organization?.id
-  )?.invitationToken;
-
-  return `${process.env['TOOLJET_HOST']}${isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
-    }${organizationToken
-      ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
-      : isSSO
-        ? '?'
-        : ''
-    }${isSSO ? 'source=sso' : ''}`;
-};
-
-export const createSSOMockConfig = (mockConfig) => {
-  jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-    switch (key) {
-      case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-        return 'google-client-id';
-      case 'SSO_GIT_OAUTH2_CLIENT_ID':
-        return 'git-client-id';
-      case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-        return 'git-secret';
-      case 'SSO_ACCEPTED_DOMAINS':
-        return 'tooljet.io,tooljet.com';
-      default:
-        return process.env[key];
-    }
-  });
-};
 
 export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
   const organizationUsersRepository: Repository<OrganizationUser> = getDefaultDataSource().getRepository(OrganizationUser);
@@ -1050,24 +963,7 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   expect(user.defaultOrganizationId).toBe(org.id);
 };
 
-export const getPathFromUrl = (url) => {
-  return url.split('?')[0];
-};
-
-export const createFirstUser = async (app: INestApplication) => {
-  let userRepository: Repository<User> = app.get('UserRepository');
-
-  await request(app.getHttpServer())
-    .post('/api/onboarding/setup-super-admin')
-    .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet', workspaceName: 'tooljet' });
-
-  return await userRepository.findOneOrFail({
-    where: { email: 'firstuser@tooljet.com' },
-    relations: ['organizationUsers'],
-  });
-};
-
-export const generateAppDefaults = async (
+export const createAppWithDependencies = async (
   app: INestApplication,
   user: any,
   {
@@ -1089,7 +985,7 @@ export const generateAppDefaults = async (
     false
   );
 
-  const appEnvironments = await createAppEnvironments(app, user.organizationId);
+  const appEnvironments = await ensureAppEnvironments(app, user.organizationId);
   const appVersion = await createApplicationVersion(app, application);
 
   let dataQuery: any;
@@ -1124,8 +1020,10 @@ export const generateAppDefaults = async (
 
   return { application, appVersion, dataSource, dataQuery, appEnvironments };
 };
+/** @deprecated Use createAppWithDependencies instead */
+export const generateAppDefaults = createAppWithDependencies;
 
-export const getAppWithAllDetails = async (id: string) => {
+export const findAppWithRelations = async (id: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager
     .createQueryBuilder(App, 'app')
@@ -1149,6 +1047,8 @@ export const getAppWithAllDetails = async (id: string) => {
 
   return app;
 };
+/** @deprecated Use findAppWithRelations instead */
+export const getAppWithAllDetails = findAppWithRelations;
 
 export const authenticateUser = async (
   app: INestApplication,
@@ -1170,7 +1070,7 @@ export const authenticateUser = async (
  * Avoids login-flow side effects (new org creation, event emitter, async handlers)
  * that cause deadlocks and FK violations in tests.
  */
-export const createTestSession = async (
+export const buildTestSession = async (
   user: User,
   organizationId?: string
 ): Promise<{ tokenCookie: string[] }> => {
@@ -1194,7 +1094,7 @@ export const createTestSession = async (
   // Verify the session is readable (guards against connection pool isolation issues)
   const verify = await ds.query('SELECT id FROM user_sessions WHERE id = $1', [sessionId]);
   if (!verify.length) {
-    throw new Error(`createTestSession: session ${sessionId} not found after INSERT`);
+    throw new Error(`buildTestSession: session ${sessionId} not found after INSERT`);
   }
 
   const payload = {
@@ -1212,6 +1112,8 @@ export const createTestSession = async (
 
   return { tokenCookie: cookie };
 };
+/** @deprecated Use buildTestSession instead */
+export const createTestSession = buildTestSession;
 
 export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {
   return await request
@@ -1233,7 +1135,7 @@ export const getAppEnvironment = async (id: string, priority: number) => {
  * Sets the currentVersionId on the app, simulating a "release".
  * Required by EE webhook service which looks up workflowApp.currentVersionId.
  */
-export const releaseAppVersion = async (appId: string, versionId: string) => {
+export const markVersionAsReleased = async (appId: string, versionId: string) => {
   const ds = getDefaultDataSource();
   await ds.manager
     .createQueryBuilder()
@@ -1242,7 +1144,11 @@ export const releaseAppVersion = async (appId: string, versionId: string) => {
     .where('id = :id', { id: appId })
     .execute();
 };
+/** @deprecated Use markVersionAsReleased instead */
+export const releaseAppVersion = markVersionAsReleased;
 
+// --- Workflow-specific helpers ---
+// TODO: migrate to workflows.helper.ts once getDefaultDataSource() is shared
 export const getWorkflowWebhookApiToken = async (appId: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager.createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
