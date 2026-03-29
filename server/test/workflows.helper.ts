@@ -34,6 +34,7 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
 import { JavaScriptBundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
 import { PythonBundleGenerationService } from '../ee/workflows/services/python-bundle-generation.service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 
 
 export const createUser = async (
@@ -338,25 +339,29 @@ export async function clearDB(nestApp: INestApplication) {
 
     await dropTooljetDbTables(defaultDataSource, tooljetDbDataSource);
 
-    const entities = defaultDataSource.entityMetadatas;
-    for (const entity of entities) {
-        const repository = defaultDataSource.getRepository(entity.name);
+    const skippedTables = [
+        'app_group_permissions',
+        'data_source_group_permissions',
+        'group_permissions',
+        'user_group_permissions',
+        'instance_settings',
+    ];
 
-        if (
-            [
-                'app_group_permissions',
-                'data_source_group_permissions',
-                'group_permissions',
-                'user_group_permissions',
-            ].includes(entity.tableName)
-        )
-            continue;
-        if (entity.tableName !== 'instance_settings') {
-            await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
-        } else {
-            await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
-        }
+    const entities = defaultDataSource.entityMetadatas;
+    const tablesToTruncate = entities
+        .filter(entity => !skippedTables.includes(entity.tableName))
+        .map(entity => entity.tableName);
+
+    // Batch all truncations in a single statement to avoid deadlocks
+    // when background workflow executions are still completing.
+    if (tablesToTruncate.length > 0) {
+        await defaultDataSource.query(
+            `TRUNCATE ${tablesToTruncate.join(', ')} RESTART IDENTITY CASCADE;`
+        );
     }
+    await defaultDataSource.query(
+        `UPDATE instance_settings SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`
+    );
 }
 
 async function dropTooljetDbTables(defaultDataSource: TypeOrmDataSource, tooljetDbDataSource: TypeOrmDataSource) {
@@ -442,6 +447,32 @@ export const createNestAppInstance = async (options: {
     const moduleBuilder = Test.createTestingModule({
         imports: [await AppModule.register({ IS_GET_CONTEXT: isGetContext })],
         providers: [],
+    });
+
+    // Mock LicenseTermsService to allow all features in tests.
+    // Uses plain functions (NOT jest.fn()) so jest.resetAllMocks() cannot clear them.
+    // Returns field-appropriate values: 'UNLIMITED' for simple fields,
+    // structured objects for WORKFLOWS (guards check .workspace/.instance properties).
+    moduleBuilder.overrideProvider(LicenseTermsService).useValue({
+        getLicenseTerms: (field: string) => {
+            if (field === 'workflows') {
+                return Promise.resolve({
+                    execution_timeout: 'UNLIMITED',
+                    workspace: {
+                        total: 'UNLIMITED',
+                        daily_executions: 'UNLIMITED',
+                        monthly_executions: 'UNLIMITED',
+                    },
+                    instance: {
+                        total: 'UNLIMITED',
+                        daily_executions: 'UNLIMITED',
+                        monthly_executions: 'UNLIMITED',
+                    },
+                });
+            }
+            return Promise.resolve('UNLIMITED');
+        },
+        getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
     });
 
     // Apply mock providers if provided - override each provider

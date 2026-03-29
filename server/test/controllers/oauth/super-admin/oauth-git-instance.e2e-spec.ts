@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource, seedInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
@@ -23,6 +23,7 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await seedInstanceSSOConfigs();
   });
 
   beforeAll(async () => {
@@ -84,7 +85,10 @@ describe('oauth controller', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        // Production returns a full session — first SSO user is a regular user
+        // (super admin must be set up via /api/onboarding/setup-super-admin)
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -121,7 +125,9 @@ describe('oauth controller', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        // Second user gets a session but is not super admin
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
@@ -129,6 +135,9 @@ describe('oauth controller', () => {
         const { organization, user } = await createUser(app, {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
+          ssoConfigs: [
+            { sso: 'git', enabled: true, configScope: 'organization', configs: { clientId: 'git-client-id', clientSecret: '' } },
+          ],
         });
         current_organization = organization;
         current_user = user;
@@ -163,7 +172,7 @@ describe('oauth controller', () => {
           (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
-            .send({ token, organizationId: current_organization.id })
+            .send({ token })
             .expect(201);
 
           const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });

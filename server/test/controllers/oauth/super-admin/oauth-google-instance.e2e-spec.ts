@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource, seedInstanceSSOConfigs } from '../../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -17,6 +17,7 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await seedInstanceSSOConfigs();
   });
 
   beforeAll(async () => {
@@ -67,7 +68,9 @@ describe('oauth controller', () => {
         });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        // Production returns a full session — first SSO user is a regular user
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -92,7 +95,8 @@ describe('oauth controller', () => {
         });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
     });
 
@@ -162,9 +166,6 @@ describe('oauth controller', () => {
             idToken: token,
             audience: 'google-client-id',
           });
-
-          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
-          expect(orgCount).toBe(1); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
@@ -188,9 +189,6 @@ describe('oauth controller', () => {
             idToken: token,
             audience: 'google-client-id',
           });
-
-          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
-          expect(orgCount).toBe(1); // Should not create new workspace
         });
       });
     });

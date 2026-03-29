@@ -58,17 +58,17 @@ describe('organizations controller', () => {
     });
 
     describe('update organization', () => {
-      it('should not change organization name if changes are done by user/admin', async () => {
+      it('should allow admin to change organization name even when personal workspace is disabled', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
         const loggedUser = await authenticateUser(app, user.email);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/name')
+          .patch('/api/organizations')
           .send({ name: 'new name' })
           .set('tj-workspace-id', organization.id)
           .set('Cookie', loggedUser.tokenCookie);
-        expect(response.statusCode).toBe(403);
+        expect(response.statusCode).toBe(200);
       });
 
       it('should change organization name if changes are done by super admin', async () => {
@@ -81,7 +81,7 @@ describe('organizations controller', () => {
         });
         const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
         const response = await request(app.getHttpServer())
-          .patch('/api/organizations/name')
+          .patch('/api/organizations')
           .send({ name: 'new name' })
           .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);

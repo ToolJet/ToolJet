@@ -45,6 +45,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
+import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
 
@@ -59,6 +60,39 @@ for (const [key, value] of Object.entries(_testEnvVars)) {
   }
 }
 
+/**
+ * Creates a resilient LicenseTermsService mock that cannot be cleared by jest.resetAllMocks().
+ * Uses plain functions (NOT jest.fn()) so they survive mock resets.
+ *
+ * Returns field-appropriate values:
+ * - 'UNLIMITED' for simple boolean/string fields
+ * - Structured object with UNLIMITED sub-properties for WORKFLOWS
+ *   (workflow guards check .workspace/.instance properties)
+ */
+function createResilientLicenseTermsMock() {
+  return {
+    getLicenseTerms: (field: string) => {
+      if (field === 'workflows') {
+        return Promise.resolve({
+          execution_timeout: 'UNLIMITED',
+          workspace: {
+            total: 'UNLIMITED',
+            daily_executions: 'UNLIMITED',
+            monthly_executions: 'UNLIMITED',
+          },
+          instance: {
+            total: 'UNLIMITED',
+            daily_executions: 'UNLIMITED',
+            monthly_executions: 'UNLIMITED',
+          },
+        });
+      }
+      return Promise.resolve('UNLIMITED');
+    },
+    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
+  };
+}
+
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
 
@@ -67,13 +101,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
     providers: [],
   });
 
-  // Mock LicenseTermsService to allow all features in tests
-  // Uses plain functions (NOT jest.fn()) so jest.resetAllMocks() cannot clear them.
-  // Must return 'UNLIMITED' because guards compare against LICENSE_LIMIT.UNLIMITED = 'UNLIMITED'.
-  moduleBuilder.overrideProvider(LicenseTermsService).useValue({
-    getLicenseTerms: () => Promise.resolve('UNLIMITED'),
-    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
-  });
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
 
   const moduleRef = await moduleBuilder.compile();
 
@@ -109,11 +137,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
     ],
   });
 
-  // Uses plain functions (NOT jest.fn()) so jest.resetAllMocks() cannot clear them
-  moduleBuilder.overrideProvider(LicenseTermsService).useValue({
-    getLicenseTerms: () => Promise.resolve('UNLIMITED'),
-    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
-  });
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
 
   const moduleRef = await moduleBuilder.compile();
 
@@ -218,10 +242,56 @@ export async function clearDB() {
     }
   }
 
-  // Reset instance_settings
+  // Reset instance_settings to a consistent baseline for every test
   if (existingSet.has('instance_settings')) {
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
   }
+}
+
+/**
+ * Seeds instance-level SSO configs (git, google, openid) in the DB.
+ * Required for OAuth tests because getSSOConfigs() in ee/auth/util.service.ts
+ * expects these rows to exist (crashes with "Cannot read properties of undefined"
+ * when the ssoConfigMap has no entry for the requested SSO type).
+ *
+ * @param options.enabled - Whether SSO is enabled (default: true for test convenience)
+ * @param options.gitConfigs - Override git SSO configs
+ * @param options.googleConfigs - Override google SSO configs
+ */
+export async function seedInstanceSSOConfigs(options?: {
+  enabled?: boolean;
+  gitConfigs?: Record<string, any>;
+  googleConfigs?: Record<string, any>;
+}) {
+  const ds = getDefaultDataSource();
+  const ssoRepo = ds.getRepository(SSOConfigs);
+  const enabled = options?.enabled ?? true;
+
+  // Use empty strings for secrets to avoid decryption errors
+  // (EncryptionService.decryptSecret skips falsy values)
+  const types = [
+    { sso: SSOType.GIT, configs: options?.gitConfigs ?? { clientId: 'git-client-id', clientSecret: '' } },
+    { sso: SSOType.GOOGLE, configs: options?.googleConfigs ?? { clientId: 'google-client-id' } },
+    { sso: SSOType.OPENID, configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' } },
+  ];
+
+  for (const { sso, configs } of types) {
+    const existing = await ssoRepo.findOne({ where: { sso, organizationId: null as any, configScope: ConfigScope.INSTANCE } });
+    if (!existing) {
+      await ssoRepo.save(
+        ssoRepo.create({
+          sso,
+          configs: configs as any,
+          enabled,
+          organizationId: null,
+          configScope: ConfigScope.INSTANCE,
+        })
+      );
+    }
+  }
+
+  // Also ensure ENABLE_SIGNUP is true so SSO can create new users
+  await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ENABLE_SIGNUP'`);
 }
 
 async function dropTooljetDbTables() {
@@ -1138,6 +1208,20 @@ export const getAppEnvironment = async (id: string, priority: number) => {
   });
 };
 
+/**
+ * Sets the currentVersionId on the app, simulating a "release".
+ * Required by EE webhook service which looks up workflowApp.currentVersionId.
+ */
+export const releaseAppVersion = async (appId: string, versionId: string) => {
+  const ds = getDefaultDataSource();
+  await ds.manager
+    .createQueryBuilder()
+    .update(App)
+    .set({ currentVersionId: versionId })
+    .where('id = :id', { id: appId })
+    .execute();
+};
+
 export const getWorkflowWebhookApiToken = async (appId: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager.createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
@@ -1193,17 +1277,49 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
 }> {
   let app: INestApplication;
 
-  const moduleRef = await Test.createTestingModule({
+  // When shouldMockLicenseService is true, create a mock that serves as both
+  // LicenseService AND LicenseTermsService. Uses jest.fn() with sensible defaults
+  // so tests can use jest.spyOn to override specific behavior.
+  // Unlike createMock<LicenseService>() (which returns undefined for all methods),
+  // this provides the same field-aware defaults as createResilientLicenseTermsMock()
+  // but with jest.fn() wrappers so they CAN be overridden by jest.spyOn/mockImplementation.
+  const licenseServiceInstance = shouldMockLicenseService ? {
+    ...createMock<LicenseService>(),
+    getLicenseTerms: jest.fn((field: string) => {
+      if (field === 'workflows') {
+        return Promise.resolve({
+          execution_timeout: 'UNLIMITED',
+          workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
+          instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
+        });
+      }
+      return Promise.resolve('UNLIMITED');
+    }),
+    getLicenseTermsInstance: jest.fn(() => Promise.resolve('UNLIMITED')),
+  } : null;
+
+  const moduleBuilder = Test.createTestingModule({
     imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
     providers: [
       {
         ...(shouldMockLicenseService && {
           provide: LicenseService,
-          useValue: createMock<LicenseService>(),
+          useValue: licenseServiceInstance,
         }),
       },
     ],
-  }).compile();
+  });
+
+  if (shouldMockLicenseService) {
+    // When mocking LicenseService, use the same instance for LicenseTermsService
+    // so tests can control guard behavior via jest.spyOn(licenseServiceMock, 'getLicenseTerms')
+    moduleBuilder.overrideProvider(LicenseTermsService).useValue(licenseServiceInstance);
+  } else {
+    // Use the resilient mock that survives jest.resetAllMocks()
+    moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
+  }
+
+  const moduleRef = await moduleBuilder.compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');

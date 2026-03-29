@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource, seedInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
@@ -17,6 +17,7 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await seedInstanceSSOConfigs();
     await instanceSettingsRepository.update(
       { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
       { value: 'false' }
