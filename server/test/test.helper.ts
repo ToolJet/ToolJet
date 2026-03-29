@@ -46,8 +46,18 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
 import * as fs from 'fs';
+import { getEnvVars } from 'scripts/database-config-utils';
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+
+// Load env vars from .env.test into process.env so ConfigService works consistently
+// in both NestJS modules and standalone test helpers (createTestSession, authHeaderForUser).
+const _testEnvVars = getEnvVars();
+for (const [key, value] of Object.entries(_testEnvVars)) {
+  if (process.env[key] === undefined && typeof value === 'string') {
+    process.env[key] = value;
+  }
+}
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -909,8 +919,7 @@ export const createSSOMockConfig = (mockConfig) => {
 };
 
 export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
-  let organizationUsersRepository: Repository<OrganizationUser>;
-  organizationUsersRepository = app.get('OrganizationUserRepository');
+  const organizationUsersRepository: Repository<OrganizationUser> = getDefaultDataSource().getRepository(OrganizationUser);
 
   const { invitationToken } = user;
   const { invitationToken: orgInviteToken } = await organizationUsersRepository.findOneOrFail({

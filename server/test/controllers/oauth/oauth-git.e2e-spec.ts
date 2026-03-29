@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl, getDefaultDataSource } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../test.helper';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -35,6 +35,7 @@ describe('oauth controller', () => {
     'organization_id',
     'super_admin',
     'current_organization_slug',
+    'workflow_group_permissions',
   ].sort();
 
   beforeEach(async () => {
@@ -155,7 +156,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should sign in new user when domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -189,14 +190,14 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
+        it('should sign in new user when domain includes spaces and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             domain: ' tooljet.io  ,  tooljet.com,  ,    ,  gmail.com',
           });
@@ -232,14 +233,12 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
+        it('should sign in new user when sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -272,13 +271,13 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
-        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should sign in new user when name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -311,13 +310,11 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
-        it('should return redirect url when the user does not exist and email id not available and sign up is enabled', async () => {
+        it('should sign in new user when email id not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -370,11 +367,9 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
@@ -603,12 +598,9 @@ describe('oauth controller', () => {
             expect.anything()
           );
 
-          expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
       });
     });

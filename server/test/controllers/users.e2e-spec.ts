@@ -20,14 +20,6 @@ describe('users controller', () => {
     jest.clearAllMocks();
   });
 
-  // TODO: GET /api/users/all has been replaced by GET /api/users (EE only).
-  // CE UsersController has no decorated routes, so this test cannot work against CE.
-  describe.skip('GET /api/users/all', () => {
-    it('only superadmins can able to access all users', async () => {
-      // Previously tested GET /api/users/all which no longer exists
-    });
-  });
-
   describe('PATCH /api/profile/password', () => {
     it('should allow users to update their password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });

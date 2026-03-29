@@ -16,9 +16,7 @@ const createSettings = async (app: INestApplication, userData: any, body: any) =
   return response;
 };
 
-// TODO: CE InstanceSettingsController throws NotFoundException for all CRUD operations.
-// These tests require the EE controller override to function. Skip until EE test harness is available.
-describe.skip('instance settings controller', () => {
+describe('instance settings controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -164,19 +162,22 @@ describe.skip('instance settings controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await createSettings(app, superAdminUserData, {
-        key: 'SOME_SETTINGS_4',
+      await createSettings(app, superAdminUserData, {
+        key: 'ENABLE_COMMENTS',
         value: 'false',
       });
+
+      // EE create returns empty body — query DB for the created setting
+      const createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
         .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
-        .send([{ value: 'true', id: response.body.setting.id }])
+        .send({ settings: [{ value: 'true', id: createdSetting.id, key: 'ENABLE_COMMENTS' }] })
         .expect(200);
 
-      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { id: response.body.setting.id } });
+      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { id: createdSetting.id } });
 
       expect(updatedSetting.value).toEqual('true');
 
@@ -184,7 +185,7 @@ describe.skip('instance settings controller', () => {
         .patch(`/api/instance-settings`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
-        .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
+        .send({ allow_personal_workspace: { value: 'true', id: createdSetting.id } })
         .expect(403);
     });
   });
@@ -212,22 +213,25 @@ describe.skip('instance settings controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await createSettings(app, superAdminUserData, {
+      await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_5',
         value: 'false',
       });
 
+      // EE create returns empty body — query DB for the created setting
+      const createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'SOME_SETTINGS_5' } });
+
       const preCount = await getDefaultDataSource().manager.count(InstanceSettings);
 
       await request(app.getHttpServer())
-        .delete(`/api/instance-settings/${response.body.setting.id}`)
+        .delete(`/api/instance-settings/${createdSetting.id}`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
         .send()
         .expect(403);
 
       await request(app.getHttpServer())
-        .delete(`/api/instance-settings/${response.body.setting.id}`)
+        .delete(`/api/instance-settings/${createdSetting.id}`)
         .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
         .send()

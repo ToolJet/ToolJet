@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl, getDefaultDataSource } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -32,6 +32,7 @@ describe('oauth controller', () => {
     'organization_id',
     'super_admin',
     'current_organization_slug',
+    'workflow_group_permissions',
   ].sort();
 
   beforeEach(async () => {
@@ -110,7 +111,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should sign in new user when domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
@@ -131,12 +132,13 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssouser@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
+        it('should sign in new user when sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -156,12 +158,12 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssouser@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
-        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should sign in new user when name not available and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -181,10 +183,10 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual('ssouser@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {

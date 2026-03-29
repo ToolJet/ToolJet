@@ -1,15 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl, getDefaultDataSource } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../test.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { SAML, Profile } from '@node-saml/node-saml';
 import { SSOResponse } from 'src/entities/sso_response.entity';
 
-// TODO: CE SamlService throws 'Method not implemented' for all operations.
-// These tests require the EE SAML service override to function.
-describe.skip('oauth controller', () => {
+describe('oauth controller', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
@@ -36,6 +34,7 @@ describe.skip('oauth controller', () => {
     'organization',
     'organization_id',
     'super_admin',
+    'workflow_group_permissions',
   ].sort();
 
   const defaultUserEmail = 'szoboszlai@lfc.com';
@@ -139,7 +138,7 @@ describe.skip('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should sign in new user when domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'lfc.com' });
 
           const response = await request(app.getHttpServer())
@@ -147,12 +146,12 @@ describe.skip('oauth controller', () => {
             .send({ samlResponseId: ssoResponseId });
 
           expect(response.statusCode).toBe(201);
-          const url = await generateRedirectUrl(defaultUserEmail, current_organization);
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
+        it('should sign in new user when domain includes spaces and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             domain: ' ldap.forumsys.com  ,  tooljet.com,  , lfc.com  ,  gmail.com',
           });
@@ -162,50 +161,42 @@ describe.skip('oauth controller', () => {
             .send({ samlResponseId: ssoResponseId });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl(defaultUserEmail, current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
+        it('should sign in new user when sign up is enabled', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
             .send({ samlResponseId: ssoResponseId });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl(defaultUserEmail, current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should sign in new user when name not available and sign up is enabled', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
             .send({ samlResponseId: ssoResponseId });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl(defaultUserEmail, current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
-        it('should return redirect url when the user does not exist and email id not available and sign up is enabled', async () => {
+        it('should sign in new user when email id not available in profile and sign up is enabled', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
             .send({ samlResponseId: ssoResponseId });
 
           expect(response.statusCode).toBe(201);
-
-          const url = await generateRedirectUrl(defaultUserEmail, current_organization);
-
-          const { redirect_url } = response.body;
-          expect(redirect_url).toEqual(url);
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should return login info when the user exist', async () => {
