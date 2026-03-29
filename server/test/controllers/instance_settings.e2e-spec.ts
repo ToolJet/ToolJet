@@ -162,13 +162,15 @@ describe('instance settings controller', () => {
       );
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      await createSettings(app, superAdminUserData, {
-        key: 'ENABLE_COMMENTS',
-        value: 'false',
-      });
-
-      // EE create returns empty body — query DB for the created setting
-      const createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      // Find or create the ENABLE_COMMENTS setting (may already exist from app startup)
+      let createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      if (!createdSetting) {
+        await createSettings(app, superAdminUserData, { key: 'ENABLE_COMMENTS', value: 'false' });
+        createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      } else {
+        // Reset to known state
+        await getDefaultDataSource().manager.update(InstanceSettings, createdSetting.id, { value: 'false' });
+      }
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
