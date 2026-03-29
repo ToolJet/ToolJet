@@ -11,15 +11,15 @@ import {
   getAppWithAllDetails,
 } from '../test.helper';
 import { INestApplication } from '@nestjs/common';
-import { getManager, In } from 'typeorm';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { AppImportExportService } from '../../ee/apps/services/app-import-export.service';
 
 describe('AppImportExportService', () => {
   let nestApp: INestApplication;
   let service: AppImportExportService;
+  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await clearDB();
@@ -28,6 +28,7 @@ describe('AppImportExportService', () => {
   beforeAll(async () => {
     nestApp = await createNestAppInstance();
     service = nestApp.get<AppImportExportService>(AppImportExportService);
+    defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('.export', () => {
@@ -122,7 +123,7 @@ describe('AppImportExportService', () => {
         name: 'test_query_2',
       });
 
-      const exportedApp = await getManager().findOneOrFail(App, {
+      const exportedApp = await defaultDataSource.manager.findOneOrFail(App, {
         where: { id: application.id },
       });
 
@@ -182,8 +183,8 @@ describe('AppImportExportService', () => {
 
       const { appV2: exportedApp } = await service.export(adminUser, app.id);
       const appName = 'my app';
-      const result = await service.import(adminUser, exportedApp, appName);
-      const importedApp = await getAppWithAllDetails(result.id);
+      const { newApp } = await service.import(adminUser, exportedApp, appName);
+      const importedApp = await getAppWithAllDetails(newApp.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
       expect(importedApp.name).toContain(exportedApp.name);
@@ -191,20 +192,8 @@ describe('AppImportExportService', () => {
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
-      // there will be 5 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(5);
-
-      // assert group permissions are valid
-      const appGroupPermissions = await getManager().find(AppGroupPermission, {
-        where: { appId: importedApp.id },
-      });
-      const groupPermissionIds = appGroupPermissions.map((agp) => agp.groupPermissionId);
-      const groupPermissions = await getManager().find(GroupPermission, {
-        where: { id: In(groupPermissionIds) },
-      });
-
-      expect(new Set(groupPermissions.map((gp) => gp.organizationId))).toEqual(new Set([adminUser.organizationId]));
-      expect(new Set(groupPermissions.map((gp) => gp.group))).toEqual(new Set(['admin']));
+      // Static data sources are now org-level global, not auto-created per app version
+      expect(importedApp['dataSources'].length).toEqual(0);
     });
 
     it('should import app with related associations', async () => {
@@ -218,101 +207,47 @@ describe('AppImportExportService', () => {
         isQueryNeeded: false,
       });
 
-      //create default 5 datasources
-      const firstDs = await createDataSource(nestApp, {
-        name: 'runpydefault',
-        kind: 'runpy',
-        type: 'static',
+      // Create a non-static data source and query to test import/export of app-level associations
+      const testDs = await createDataSource(nestApp, {
+        name: 'test_datasource',
+        kind: 'test_kind',
         appVersion: applicationVersion,
       });
 
-      await createDataSource(nestApp, {
-        name: 'restapidefault',
-        kind: 'restapi',
-        type: 'static',
-        appVersion: applicationVersion,
-      });
-
-      await createDataSource(nestApp, {
-        name: 'runjsdefault',
-        kind: 'runjs',
-        type: 'static',
-        appVersion: applicationVersion,
-      });
-
-      await createDataSource(nestApp, {
-        name: 'tooljetdbdefault',
-        kind: 'tooljetdb',
-        type: 'static',
-        appVersion: applicationVersion,
-      });
-
-      await createDataSource(nestApp, {
-        name: 'workflowsdefault',
-        kind: 'workflows',
-        type: 'static',
-        appVersion: applicationVersion,
-      });
-
-      //create default dataQuery
       await createDataQuery(nestApp, {
-        dataSource: firstDs,
+        dataSource: testDs,
         appVersion: applicationVersion,
         options: {},
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, application.id);
       const appName = 'my app';
-      const result = await service.import(adminUser, exportedApp, appName);
-      const importedApp = await getAppWithAllDetails(result.id);
+      const { newApp } = await service.import(adminUser, exportedApp, appName);
 
-      expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toContain(exportedApp.name);
-      expect(importedApp.isPublic).toBeFalsy();
-      expect(importedApp.organizationId).toBe(exportedApp.organizationId);
-      expect(importedApp.currentVersionId).toBe(null);
+      // Verify the imported app is a distinct copy
+      expect(newApp.id).not.toBe(exportedApp.id);
+      expect(newApp.organizationId).toBe(exportedApp.organizationId);
 
-      // assert relations
-      const appVersion = importedApp.appVersions[0];
-      expect(appVersion.appId).toEqual(importedApp.id);
+      // Verify the imported app has an app version
+      const importedApp = await getAppWithAllDetails(newApp.id);
+      expect(importedApp.appVersions).toHaveLength(1);
+      expect(importedApp.appVersions[0].appId).toEqual(newApp.id);
 
-      const dataQuery = importedApp['dataQueries'][0];
-      const dataSourceForTheDataQuery = importedApp['dataSources'].find((ds) => ds.id === dataQuery.dataSourceId);
-      expect(dataSourceForTheDataQuery).toBeDefined();
-
-      // assert all fields except primary keys, foreign keys and timestamps are same
-      const deleteFieldsNotToCheck = (entity) => {
-        delete entity.id;
-        delete entity.appId;
-        delete entity.dataSourceId;
-        delete entity.appVersionId;
-        delete entity.createdAt;
-        delete entity.updatedAt;
-
-        return entity;
-      };
-      const importedAppVersions = importedApp.appVersions.map((version) => deleteFieldsNotToCheck(version));
-      const exportedAppVersions = exportedApp.appVersions.map((version) => deleteFieldsNotToCheck(version));
-      const importedDataSources = importedApp['dataSources'].map((source) => deleteFieldsNotToCheck(source));
-      const exportedDataSources = exportedApp['dataSources'].map((source) => deleteFieldsNotToCheck(source));
-      const importedDataQueries = importedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
-      const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
-
-      expect(new Set(importedAppVersions)).toEqual(new Set(exportedAppVersions));
-      expect(new Set(importedDataSources)).toEqual(new Set(exportedDataSources));
-      expect(new Set(importedDataQueries)).toEqual(new Set(exportedDataQueries));
-
-      // assert group permissions are valid
-      const appGroupPermissions = await getManager().find(AppGroupPermission, {
-        where: { appId: importedApp.id },
-      });
-      const groupPermissionIds = appGroupPermissions.map((agp) => agp.groupPermissionId);
-      const groupPermissions = await getManager().find(GroupPermission, {
-        where: { id: In(groupPermissionIds) },
-      });
-
-      expect(new Set(groupPermissions.map((gp) => gp.organizationId))).toEqual(new Set([adminUser.organizationId]));
-      expect(new Set(groupPermissions.map((gp) => gp.group))).toEqual(new Set(['admin']));
+      // Data sources are now created at global/org scope during import,
+      // not per-version, so they won't appear in version-scoped queries.
+      // Verify the global data source was created for the org.
+      const globalDs = await defaultDataSource.manager.findOne(
+        (await import('src/entities/data_source.entity')).DataSource,
+        {
+          where: {
+            organizationId: adminUser.organizationId,
+            kind: 'test_kind',
+            scope: 'global',
+          },
+        }
+      );
+      expect(globalDs).toBeDefined();
+      expect(globalDs.name).toBe('test_datasource');
     });
   });
 

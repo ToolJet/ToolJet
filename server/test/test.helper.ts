@@ -333,7 +333,7 @@ export async function createApplicationVersion(
       canvasBackgroundColor: 'var(--cc-appBackground-surface)',
       backgroundFxQuery: '',
       appMode: 'light',
-    },
+    } as any,
   });
   version.homePageId = defaultPage.id;
 
@@ -766,6 +766,8 @@ export async function createDataSource(
       kind,
       appVersion,
       type,
+      // DB constraint: static type data sources must have global scope
+      scope: type === 'static' ? 'global' : 'local',
       createdAt: new Date(),
       updatedAt: new Date(),
     })

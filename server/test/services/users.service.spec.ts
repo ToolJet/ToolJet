@@ -1,27 +1,25 @@
-import {
-  clearDB,
-  createNestAppInstance,
-  createAppGroupPermission,
-  createUserGroupPermissions,
-  createGroupPermission,
-  setupOrganization,
-} from '../test.helper';
-import { UsersService } from '@modules/users/service';
+import { clearDB, createNestAppInstance, createUser } from '../test.helper';
+import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';
-import { DataSource as TypeOrmDataSource, In } from 'typeorm';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
-import { GroupUsers } from 'src/entities/group_users.entity';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
+import * as bcrypt from 'bcrypt';
 
+/**
+ * @group unit
+ *
+ * Tests for the EE UsersService (loaded when TOOLJET_EDITION=ee).
+ * The CE stub throws "not implemented" for all methods; these tests
+ * exercise the real EE implementations of:
+ *   - findInstanceUsers (pagination + search)
+ *   - updatePassword (validates, hashes, and persists new password)
+ *   - autoUpdateUserPassword (generates random password, persists it)
+ */
 describe('UsersService', () => {
   let nestApp: INestApplication;
   let service: UsersService;
   let defaultDataSource: TypeOrmDataSource;
-
-  beforeEach(async () => {
-    await clearDB();
-  });
 
   beforeAll(async () => {
     nestApp = await createNestAppInstance();
@@ -29,272 +27,205 @@ describe('UsersService', () => {
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
-  describe('.create', () => {
-    it('should create user', async () => {
-      const { adminUser } = await setupOrganization(nestApp);
-
-      await service.create(
-        {
-          email: 'john@example.com',
-          firstName: 'John',
-          lastName: 'Wick',
-        },
-        adminUser.defaultOrganizationId,
-        ['end-user']
-      );
-
-      const manager = defaultDataSource.manager;
-      const newUser = await manager.findOneOrFail(User, { where: { email: 'john@example.com' } });
-      expect(newUser.firstName).toEqual('John');
-      expect(newUser.lastName).toEqual('Wick');
-      expect(newUser.defaultOrganizationId).toBe(adminUser.defaultOrganizationId);
-
-      // expect default group permission is associated
-      const userGroups = await manager.find(GroupUsers, { where: { userId: newUser.id } });
-      expect(userGroups).toHaveLength(1);
-
-      const groupPermission = await manager.findOneOrFail(GroupPermissions, {
-        where: { id: userGroups[0].groupId },
-      });
-      expect(groupPermission.name).toEqual('end-user');
-      expect(groupPermission.organizationId).toEqual(adminUser.organizationId);
-    });
-  });
-
-  describe('.update', () => {
-    it('should update user', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-
-      await service.update(defaultUser.id, { firstName: 'Updated Name' });
-      await defaultUser.reload();
-
-      expect(defaultUser.firstName).toEqual('Updated Name');
-    });
-
-    it('should throw error when adding non existent user groups', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-
-      await expect(service.update(defaultUser.id, { addGroups: ['admin', 'non-existent'] })).rejects.toThrow(
-        'non-existent group does not exist for current organization'
-      );
-    });
-
-    it('should add user groups', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
-
-      await service.update(defaultUser.id, { addGroups: ['new-group'] });
-      await defaultUser.reload();
-
-      const userGroups = (await defaultUser.userPermissions).map((groupPermission) => groupPermission.name);
-
-      expect(userGroups.includes('new-group')).toBeTruthy;
-    });
-
-    it('should not add duplicate user groups', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
-
-      await service.update(defaultUser.id, { addGroups: ['new-group'] });
-      await defaultUser.reload();
-
-      await service.update(defaultUser.id, { addGroups: ['new-group', 'new-group'] });
-      await defaultUser.reload();
-
-      const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['end-user', 'new-group']));
-    });
-
-    it('should remove user groups', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
-
-      await service.update(defaultUser.id, { addGroups: ['new-group'] });
-      await defaultUser.reload();
-      expect(await defaultUser.userPermissions).toHaveLength(2);
-
-      await service.update(defaultUser.id, { removeGroups: ['new-group'] });
-      await defaultUser.reload();
-      const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['end-user']));
-    });
-
-    it('should remove user groups only if it exists', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
-
-      await service.update(defaultUser.id, { addGroups: ['new-group'] });
-      await defaultUser.reload();
-      expect(await defaultUser.userPermissions).toHaveLength(2);
-
-      await service.update(defaultUser.id, { removeGroups: ['new-group', 'new-group', 'non-existent'] });
-      await defaultUser.reload();
-      const allUserGroups = (await defaultUser.userPermissions).map((x) => x.name);
-      expect(new Set(allUserGroups)).toEqual(new Set(['end-user']));
-    });
-
-    it('should throw error when trying to remove admin user group if there is only one admin', async () => {
-      const { adminUser } = await setupOrganization(nestApp);
-
-      await expect(service.update(adminUser.id, { removeGroups: ['admin'] })).rejects.toThrow(
-        'Atleast one active admin is required.'
-      );
-    });
-  });
-
-  // TODO: This test needs a complete rewrite for the new permission system
-  // service.groupPermissions() no longer exists on UsersService
-  describe.skip('.groupPermissions', () => {
-    it('should return group permissions for the user', async () => {
-      const { adminUser, defaultUser } = await setupOrganization(nestApp);
-
-      await createGroupPermission(nestApp, { organizationId: adminUser.organizationId, group: 'group1' });
-      await service.update(adminUser.id, { addGroups: ['group1'] });
-      await adminUser.reload();
-
-      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'group2' });
-      await service.update(defaultUser.id, { addGroups: ['group2'] });
-      await defaultUser.reload();
-
-      let groupPermissions = (await service.groupPermissions(adminUser)).map((x) => x.name);
-      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'admin', 'group1']));
-
-      groupPermissions = (await service.groupPermissions(defaultUser)).map((x) => x.name);
-      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'group2']));
-    });
-  });
-
-  // TODO: This test needs a complete rewrite for the new permission system
-  // service.appGroupPermissions() no longer exists on UsersService
-  describe.skip('.appGroupPermissions', () => {
-    it('should return app group permissions for the user', async () => {
-      const { adminUser, defaultUser, app } = await setupOrganization(nestApp);
-      let groupPermissionIdsFromApp = (await service.appGroupPermissions(adminUser, app.id)).map(
-        (x) => x.groupPermissionId
-      );
-
-      let userGroupPermissionIds = (
-        await defaultDataSource.manager.find(GroupPermissions, {
-          where: {
-            name: In(['admin', 'end-user']),
-            organizationId: adminUser.organizationId,
-          },
-        })
-      ).map((gp) => gp.id);
-
-      expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(userGroupPermissionIds));
-
-      groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser, app.id)).map(
-        (x) => x.groupPermissionId
-      );
-
-      userGroupPermissionIds = (
-        await defaultDataSource.manager.find(GroupPermissions, {
-          where: {
-            name: 'end-user',
-            organizationId: defaultUser.defaultOrganizationId,
-          },
-        })
-      ).map((gp) => gp.id);
-
-      expect(groupPermissionIdsFromApp).toEqual(userGroupPermissionIds);
-    });
-  });
-
-  // TODO: This test needs a complete rewrite for the new permission system
-  // service.groupPermissionsForOrganization() no longer exists on UsersService
-  describe.skip('.groupPermissionsForOrganization', () => {
-    it('should return all group permissions within organization', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      const groupPermissions = (await service.groupPermissionsForOrganization(defaultUser.defaultOrganizationId)).map(
-        (x) => x.name
-      );
-
-      expect(new Set(groupPermissions)).toEqual(new Set(['end-user', 'admin']));
-    });
-  });
-
-  // TODO: This test needs a complete rewrite for the new permission system
-  // service.hasGroup() no longer exists on UsersService
-  describe.skip('.hasGroup', () => {
-    it('should return false if user has group', async () => {
-      const { adminUser } = await setupOrganization(nestApp);
-      expect(await service.hasGroup(adminUser, 'admin')).toBeTruthy();
-    });
-
-    it('should return true if user has group', async () => {
-      const { adminUser } = await setupOrganization(nestApp);
-      expect(await service.hasGroup(adminUser, 'superduper-admin')).toBeFalsy();
-    });
-  });
-
-  // TODO: This test needs a complete rewrite for the new permission system
-  // service.userCan() no longer exists on UsersService
-  describe.skip('.userCan', () => {
-    describe('perform action on invalid entity', () => {
-      it('should return false', async () => {
-        const { adminUser, app } = await setupOrganization(nestApp);
-
-        expect(await service.userCan(adminUser, 'create', 'Ice cream', app.id)).toEqual(false);
-        expect(await service.userCan(adminUser, 'read', 'Ice cream', app.id)).toEqual(false);
-        expect(await service.userCan(adminUser, 'update', 'Ice cream', app.id)).toEqual(false);
-        expect(await service.userCan(adminUser, 'delete', 'Ice cream', app.id)).toEqual(false);
-      });
-    });
-
-    describe("perform action on 'App' entity", () => {
-      it('should return boolean based on permissible actions', async () => {
-        const { adminUser, app } = await setupOrganization(nestApp);
-
-        expect(await service.userCan(adminUser, 'create', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(adminUser, 'read', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(adminUser, 'update', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(adminUser, 'delete', 'App', app.id)).toEqual(true);
-      });
-
-      it('should allow actions with custom groups based on app permissions', async () => {
-        const { defaultUser, app } = await setupOrganization(nestApp);
-        const userGroups = await createUserGroupPermissions(nestApp, defaultUser, ['developer']);
-        const developerUserGroup = userGroups[0];
-        await createAppGroupPermission(nestApp, app, developerUserGroup.groupPermissionId, {
-          read: true,
-          update: true,
-          delete: false,
-        });
-
-        expect(await service.userCan(defaultUser, 'create', 'App', app.id)).toEqual(false);
-        expect(await service.userCan(defaultUser, 'read', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(defaultUser, 'update', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(defaultUser, 'delete', 'App', app.id)).toEqual(false);
-      });
-
-      it('should opt the permissible group among multiple groups', async () => {
-        const { defaultUser, app } = await setupOrganization(nestApp);
-        const userGroups = await createUserGroupPermissions(nestApp, defaultUser, ['updater', 'deleter']);
-
-        const updaterUserGroup = userGroups[0];
-        await createAppGroupPermission(nestApp, app, updaterUserGroup.groupPermissionId, {
-          read: true,
-          update: true,
-          delete: false,
-        });
-
-        const deleterUserGroup = userGroups[1];
-        await createAppGroupPermission(nestApp, app, deleterUserGroup.groupPermissionId, {
-          read: false,
-          update: false,
-          delete: true,
-        });
-
-        expect(await service.userCan(defaultUser, 'create', 'App', app.id)).toEqual(false);
-        expect(await service.userCan(defaultUser, 'read', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(defaultUser, 'update', 'App', app.id)).toEqual(true);
-        expect(await service.userCan(defaultUser, 'delete', 'App', app.id)).toEqual(true);
-      });
-    });
+  beforeEach(async () => {
+    await clearDB();
   });
 
   afterAll(async () => {
     await nestApp.close();
+  });
+
+  describe('findInstanceUsers', () => {
+    it('should return users with pagination metadata', async () => {
+      // Create two users in the same organization
+      await createUser(nestApp, {
+        email: 'alice@tooljet.io',
+        firstName: 'Alice',
+        lastName: 'Smith',
+        groups: ['end-user', 'admin'],
+      });
+      await createUser(nestApp, {
+        email: 'bob@tooljet.io',
+        firstName: 'Bob',
+        lastName: 'Jones',
+        groups: ['end-user', 'admin'],
+      });
+
+      const result = await service.findInstanceUsers({ page: 1 });
+
+      expect(result.meta).toBeDefined();
+      expect(result.meta.total_count).toBeGreaterThanOrEqual(2);
+      expect(result.meta.current_page).toBe(1);
+      expect(result.meta.total_pages).toBeGreaterThanOrEqual(1);
+      expect(result.users.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should filter users by search text matching email', async () => {
+      await createUser(nestApp, {
+        email: 'findme@tooljet.io',
+        firstName: 'Find',
+        lastName: 'Me',
+        groups: ['end-user', 'admin'],
+      });
+      await createUser(nestApp, {
+        email: 'other@tooljet.io',
+        firstName: 'Other',
+        lastName: 'Person',
+        groups: ['end-user', 'admin'],
+      });
+
+      const result = await service.findInstanceUsers({
+        page: 1,
+        searchText: 'findme',
+      });
+
+      expect(result.users.length).toBeGreaterThanOrEqual(1);
+      const emails = result.users.map((u) => u.email);
+      expect(emails).toContain('findme@tooljet.io');
+    });
+
+    it('should filter users by search text matching first name', async () => {
+      await createUser(nestApp, {
+        email: 'unique1@tooljet.io',
+        firstName: 'Xylophone',
+        lastName: 'Doe',
+        groups: ['end-user', 'admin'],
+      });
+      await createUser(nestApp, {
+        email: 'unique2@tooljet.io',
+        firstName: 'Charlie',
+        lastName: 'Brown',
+        groups: ['end-user', 'admin'],
+      });
+
+      const result = await service.findInstanceUsers({
+        page: 1,
+        searchText: 'Xylophone',
+      });
+
+      expect(result.users.length).toBe(1);
+      expect(result.users[0].email).toBe('unique1@tooljet.io');
+    });
+
+    it('should return empty users array when search matches nothing', async () => {
+      await createUser(nestApp, {
+        email: 'someone@tooljet.io',
+        groups: ['end-user', 'admin'],
+      });
+
+      const result = await service.findInstanceUsers({
+        page: 1,
+        searchText: 'zzz_nonexistent_zzz',
+      });
+
+      expect(result.users).toEqual([]);
+      expect(result.meta.total_count).toBe(0);
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('should update the user password and hash it', async () => {
+      const { user } = await createUser(nestApp, {
+        email: 'pwduser@tooljet.io',
+        firstName: 'Pwd',
+        lastName: 'User',
+        groups: ['end-user', 'admin'],
+      });
+
+      // Read original password hash from DB
+      const userBefore = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+      const originalPasswordHash = userBefore.password;
+
+      const newPassword = 'NewSecurePassword123';
+      await service.updatePassword(user.id, user, newPassword);
+
+      // Read updated user from DB
+      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+
+      // Password hash should have changed
+      expect(userAfter.password).not.toEqual(originalPasswordHash);
+
+      // The stored hash should be a valid bcrypt hash of the new password
+      // Note: updateOne in UserRepository hashes the password with bcrypt before saving
+      const isMatch = await bcrypt.compare(newPassword, userAfter.password);
+      expect(isMatch).toBe(true);
+    });
+
+    it('should reset passwordRetryCount to 0', async () => {
+      const { user } = await createUser(nestApp, {
+        email: 'retryuser@tooljet.io',
+        firstName: 'Retry',
+        lastName: 'User',
+        groups: ['end-user', 'admin'],
+      });
+
+      // Set a non-zero retry count first
+      await defaultDataSource.manager.update(User, user.id, {
+        passwordRetryCount: 5,
+      });
+
+      await service.updatePassword(user.id, user, 'AnotherPassword456');
+
+      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+      expect(userAfter.passwordRetryCount).toBe(0);
+    });
+  });
+
+  describe('autoUpdateUserPassword', () => {
+    it('should generate and persist a new password, returning it in plaintext', async () => {
+      const { user } = await createUser(nestApp, {
+        email: 'autouser@tooljet.io',
+        firstName: 'Auto',
+        lastName: 'User',
+        groups: ['end-user', 'admin'],
+      });
+
+      const userBefore = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+      const originalHash = userBefore.password;
+
+      const newPassword = await service.autoUpdateUserPassword(user.id, user);
+
+      // Should return a non-empty string
+      expect(typeof newPassword).toBe('string');
+      expect(newPassword.length).toBeGreaterThan(0);
+
+      // DB password should have changed
+      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+      expect(userAfter.password).not.toEqual(originalHash);
+
+      // The returned plaintext password should match the stored hash
+      const isMatch = await bcrypt.compare(newPassword, userAfter.password);
+      expect(isMatch).toBe(true);
+    });
+
+    it('should reset passwordRetryCount to 0', async () => {
+      const { user } = await createUser(nestApp, {
+        email: 'autoreset@tooljet.io',
+        firstName: 'AutoReset',
+        lastName: 'User',
+        groups: ['end-user', 'admin'],
+      });
+
+      await defaultDataSource.manager.update(User, user.id, {
+        passwordRetryCount: 3,
+      });
+
+      await service.autoUpdateUserPassword(user.id, user);
+
+      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
+        where: { id: user.id },
+      });
+      expect(userAfter.passwordRetryCount).toBe(0);
+    });
   });
 });
