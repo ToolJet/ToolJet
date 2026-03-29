@@ -65,6 +65,17 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
     await repo.delete({ childId, childType });
   }
 
+  async findRootMappingsByChildIds(childIds: string[], manager?: EntityManager): Promise<DataQueryFolderMapping[]> {
+    const repo = manager ? manager.getRepository(DataQueryFolderMapping) : this;
+    return repo
+      .createQueryBuilder('mapping')
+      .where('mapping.parentId IS NULL')
+      .andWhere('mapping.childId IN (:...childIds)', { childIds })
+      .orderBy('mapping.index', 'ASC')
+      .addOrderBy('mapping.updatedAt', 'DESC')
+      .getMany();
+  }
+
   async getMaxIndexAtRoot(manager?: EntityManager): Promise<number> {
     const repo = manager ? manager.getRepository(DataQueryFolderMapping) : this;
     const result = await repo
