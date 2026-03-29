@@ -717,6 +717,7 @@ const DynamicSelector = ({
                   if (pagination) debouncedSearchRef.current(val);
                 }}
                 filterOption={pagination ? () => true : undefined}
+                width="100%"
               />
             </div>
           )}
