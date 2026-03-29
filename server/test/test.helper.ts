@@ -168,19 +168,47 @@ export async function clearDB() {
   ];
 
   const entities = ds.entityMetadatas;
+
+  // Collect all table names that exist in the DB, then TRUNCATE them all in one
+  // statement. Must filter out non-existent legacy tables first, because a single
+  // TRUNCATE fails entirely if any table is missing.
+  const existingRows: { table_name: string }[] = await ds.query(
+    `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
+  );
+  const existingSet = new Set(existingRows.map((r) => r.table_name));
+
+  const tables: string[] = [];
   for (const entity of entities) {
     if (skippedTables.includes(entity.tableName)) continue;
+    if (entity.tableName === 'instance_settings') continue;
+    if (!existingSet.has(entity.tableName)) continue;
+    tables.push(`"${entity.tableName}"`);
+  }
 
-    const repository = ds.getRepository(entity.name);
-    if (entity.tableName !== 'instance_settings') {
+  if (tables.length > 0) {
+    // Retry on deadlock — NestJS connection pool can transiently hold locks.
+    // Use lock_timeout to fail fast instead of waiting the default duration.
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
-        await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
-      } catch {
-        // Table may not exist in test DB — skip
+        await ds.query(`SET lock_timeout = '2s'`);
+        await ds.query(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`);
+        await ds.query(`SET lock_timeout = 0`);
+        break;
+      } catch (err: any) {
+        try { await ds.query(`SET lock_timeout = 0`); } catch {}
+        if (attempt < 4) {
+          await new Promise((r) => setTimeout(r, 50 * (attempt + 1)));
+          continue;
+        }
+        // Final attempt failed — log but don't throw (test will fail on its own)
+        console.error('clearDB: TRUNCATE failed after 5 attempts:', err?.message?.substring(0, 80));
       }
-    } else {
-      await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
     }
+  }
+
+  // Reset instance_settings
+  if (existingSet.has('instance_settings')) {
+    await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
   }
 }
 
@@ -981,6 +1009,54 @@ export const authenticateUser = async (
     .expect(201);
 
   return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] };
+};
+
+/**
+ * Creates a test session and returns a JWT cookie WITHOUT calling the login endpoint.
+ * Avoids login-flow side effects (new org creation, event emitter, async handlers)
+ * that cause deadlocks and FK violations in tests.
+ */
+export const createTestSession = async (
+  user: User,
+  organizationId?: string
+): Promise<{ tokenCookie: string[] }> => {
+  const ds = getDefaultDataSource();
+  const configService = new ConfigService();
+  const jwtService = new JwtService({
+    secret: configService.get<string>('SECRET_KEY_BASE'),
+  });
+
+  const orgId = organizationId || user.defaultOrganizationId;
+
+  // Create a user_session row directly, then verify it exists
+  const sessionResult = await ds.query(
+    `INSERT INTO user_sessions (user_id, device, created_at, expiry, last_logged_in)
+     VALUES ($1, 'test-agent', NOW(), NOW() + INTERVAL '1 day', NOW())
+     RETURNING id`,
+    [user.id]
+  );
+  const sessionId = sessionResult[0].id;
+
+  // Verify the session is readable (guards against connection pool isolation issues)
+  const verify = await ds.query('SELECT id FROM user_sessions WHERE id = $1', [sessionId]);
+  if (!verify.length) {
+    throw new Error(`createTestSession: session ${sessionId} not found after INSERT`);
+  }
+
+  const payload = {
+    sessionId,
+    username: user.id,
+    sub: user.email,
+    organizationIds: [orgId],
+    isPasswordLogin: true,
+    isSSOLogin: false,
+  };
+
+  const token = jwtService.sign(payload);
+  // Format as Set-Cookie header array (same format as express response.headers['set-cookie'])
+  const cookie = [`tj_auth_token=${token}; Max-Age=63072000; Path=/; HttpOnly; SameSite=Strict`];
+
+  return { tokenCookie: cookie };
 };
 
 export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {

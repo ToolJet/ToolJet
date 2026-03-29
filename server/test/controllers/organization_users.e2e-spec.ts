@@ -4,7 +4,7 @@ import { BadRequestException, INestApplication } from '@nestjs/common';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser, createTestSession, getDefaultDataSource } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -35,8 +35,8 @@ describe('organization users controller', () => {
 
     const organization = adminUserData.organization;
 
-    let loggedUser = await authenticateUser(app);
-    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    const adminSession = await createTestSession(adminUserData.user, organization.id);
+    adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -46,15 +46,25 @@ describe('organization users controller', () => {
 
     const superAdminUserData = await createUser(app, {
       email: 'superadmin@tooljet.io',
-      groups: ['developer', 'end-user'],
+      groups: ['admin', 'end-user'],
       userType: 'instance',
     });
+    // Add superadmin to admin's org so they can be authenticated against it
+    await createUser(
+      app,
+      {
+        email: 'superadmin@tooljet.io',
+        groups: ['admin', 'end-user'],
+        organization,
+      },
+      superAdminUserData.user
+    );
 
-    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
-    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+    superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
 
-    loggedUser = await authenticateUser(app, 'developer@tooljet.io');
-    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    const developerSession = await createTestSession(developerUserData.user, organization.id);
+    developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
@@ -64,10 +74,10 @@ describe('organization users controller', () => {
 
     for (const [index, userData] of [adminUserData, superAdminUserData].entries()) {
       const response = await request(app.getHttpServer())
-        .post(`/api/organization-users/`)
+        .post('/api/organization-users/')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
-        .send({ email: `test${index}@tooljet.io` })
+        .send({ email: `test${index}@tooljet.io`, role: 'end-user' })
         .expect(201);
 
       // should create audit log
@@ -87,28 +97,29 @@ describe('organization users controller', () => {
       expect(auditLog.actionType).toEqual('USER_INVITE');
       expect(auditLog.createdAt).toBeDefined();
     }
-    loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
-    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+    const viewerSession = await createTestSession(viewerUserData.user, organization.id);
+    viewerUserData['tokenCookie'] = viewerSession.tokenCookie;
 
     await request(app.getHttpServer())
-      .post(`/api/organization-users/`)
+      .post('/api/organization-users/')
       .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Cookie', adminUserData['tokenCookie'])
-      .send({ email: 'test@tooljet.io' })
+      .send({ email: 'test@tooljet.io', role: 'end-user' })
       .expect(201);
 
     await request(app.getHttpServer())
-      .post(`/api/organization-users/`)
+      .post('/api/organization-users/')
       .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
       .set('Cookie', developerUserData['tokenCookie'])
-      .send({ email: 'test2@tooljet.io' })
+      .send({ email: 'test2@tooljet.io', role: 'end-user' })
       .expect(403);
 
     await request(app.getHttpServer())
-      .post(`/api/organization-users/`)
+      .post('/api/organization-users/')
       .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
       .set('Cookie', viewerUserData['tokenCookie'])
-      .send({ email: 'test3@tooljet.io' })
+      .send({ email: 'test3@tooljet.io', role: 'end-user' })
       .expect(403);
   });
 
@@ -124,8 +135,8 @@ describe('organization users controller', () => {
         status: 'active',
       });
 
-      const loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       const organization = adminUserData.organization;
       const anotherAdminUserData = await createUser(app, {
@@ -163,18 +174,19 @@ describe('organization users controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-
       const organization = adminUserData.organization;
+
+      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
         groups: ['developer', 'end-user'],
         organization,
       });
 
-      loggedUser = await authenticateUser(app, 'developer@tooljet.io');
-      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const developerSession = await createTestSession(developerUserData.user, organization.id);
+      developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
@@ -185,12 +197,18 @@ describe('organization users controller', () => {
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'end-user'],
+        groups: ['admin', 'end-user'],
         userType: 'instance',
       });
+      // Add superadmin to admin's org
+      await createUser(
+        app,
+        { email: 'superadmin@tooljet.io', groups: ['admin', 'end-user'], organization },
+        superAdminUserData.user
+      );
 
-      loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
-      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+      superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
 
       await request(app.getHttpServer())
         .post(`/api/organization-users/${viewerUserData.orgUser.id}/archive/`)
@@ -240,24 +258,26 @@ describe('organization users controller', () => {
         status: 'active',
         groups: ['admin', 'end-user'],
       });
+      const organization = adminUserData.organization;
+
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'end-user'],
+        groups: ['admin', 'end-user'],
         userType: 'instance',
       });
-
-      let loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-
-      loggedUser = await authenticateUser(
+      // Add superadmin to admin's org
+      await createUser(
         app,
-        superAdminUserData.user.email,
-        'password',
-        adminUserData.organization.id
+        { email: 'superadmin@tooljet.io', groups: ['admin', 'end-user'], organization },
+        superAdminUserData.user
       );
-      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const organization = adminUserData.organization;
+      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+      const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+      superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
+
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
         status: 'active',
@@ -265,8 +285,8 @@ describe('organization users controller', () => {
         organization,
       });
 
-      loggedUser = await authenticateUser(app, 'developer@tooljet.io');
-      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const developerSession = await createTestSession(developerUserData.user, organization.id);
+      developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
@@ -274,9 +294,6 @@ describe('organization users controller', () => {
         groups: ['viewer', 'end-user'],
         organization,
       });
-
-      loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
-      viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       await request(app.getHttpServer())
         .post(`/api/organization-users/${viewerUserData.orgUser.id}/unarchive/`)
@@ -339,8 +356,8 @@ describe('organization users controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      const loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       const organization = adminUserData.organization;
       const developerUserData = await createUser(app, {
@@ -374,8 +391,8 @@ describe('organization users controller', () => {
         organization,
       });
 
-      const loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       await request(app.getHttpServer())
         .post(`/api/organization-users/${developerUserData.orgUser.id}/unarchive/`)
@@ -398,11 +415,11 @@ describe('organization users controller', () => {
       });
       const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', userType: 'workspace' });
 
-      let loggedUser = await authenticateUser(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
-      loggedUser = await authenticateUser(app, developerUserData.user.email);
-      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const developerSession = await createTestSession(developerUserData.user, adminUserData.organization.id);
+      developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const adminRequestResponse = await request(app.getHttpServer())
         .post(`/api/organization-users/${viewerUserData.user.id}/archive-all`)

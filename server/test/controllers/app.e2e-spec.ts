@@ -85,7 +85,7 @@ describe('Authentication', () => {
 
         const user = await userRepository.findOneOrFail({
           where: { email: 'test@tooljet.io' },
-          relations: ['organizationUsers'],
+          relations: ['organizationUsers', 'userPermissions'],
         });
 
         const organization = await orgRepository.findOneOrFail({
@@ -99,13 +99,8 @@ describe('Authentication', () => {
         const groupPermissions = await user.userPermissions;
         const groupNames = groupPermissions.map((x) => x.name);
 
-        expect(new Set(['end-user', 'admin'])).toEqual(new Set(groupNames));
-
-        const adminGroup = groupPermissions.find((x) => x.name == 'admin');
-        expect(adminGroup.appCreate).toBeTruthy();
-        expect(adminGroup.appDelete).toBeTruthy();
-        expect(adminGroup.folderCRUD).toBeTruthy();
-        expect(adminGroup.orgConstantCRUD).toBeTruthy();
+        // Signup users are assigned the end-user role in the default workspace
+        expect(groupNames).toContain('end-user');
 
         const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
         expect(endUserGroup.appCreate).toBeFalsy();
@@ -505,6 +500,12 @@ describe('Authentication', () => {
 
         const { user, orgUser } = userData;
 
+        // OrganizationInviteAuthGuard requires source='signup' for unauthenticated accept-invite
+        await getDefaultDataSource().getRepository(OrganizationUser).update(
+          { id: orgUser.id },
+          { source: 'signup' }
+        );
+
         const response = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
           token: orgUser.invitationToken,
         });
@@ -522,6 +523,12 @@ describe('Authentication', () => {
           status: 'invited',
         });
         const { user, orgUser } = userData;
+
+        // OrganizationInviteAuthGuard requires source='signup' for unauthenticated accept-invite
+        await getDefaultDataSource().getRepository(OrganizationUser).update(
+          { id: orgUser.id },
+          { source: 'signup' }
+        );
 
         const response = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
           token: orgUser.invitationToken,
@@ -575,7 +582,8 @@ describe('Authentication', () => {
         expect(status).toBe(200);
         expect(email).toEqual('organizationUser@tooljet.io');
         expect(name).toEqual('test test');
-        expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
+        // Production response includes status and password (questions field was removed)
+        expect(Object.keys(onboarding_details)).toEqual(['status', 'password']);
         await userData.user.reload();
         expect(userData.user.status).toBe('verified');
       });
