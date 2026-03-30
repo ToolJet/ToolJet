@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import ActionDialog from '../ActionDialog';
 import SearchBar, { useSearch } from '../SearchBar';
 import { useChangeAppIcon } from '../hooks/appsServiceHooks';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default function ChangeIconDialog({ open, onClose, appDetails }) {
   const { t } = useTranslation();
@@ -101,6 +102,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
                     className={cn('tw-text-icon-default', {
                       'tw-text-icon-brand': selectedIcon === filteredIcons[index],
                     })}
+                    data-cy={`icon-${generateCypressDataCy(filteredIcons[index].replace(/^Icon/, ''))}`}
                   />
                 </div>
               );
@@ -108,7 +110,9 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
           />
         ) : (
           <div className="tw-flex tw-items-center tw-justify-center tw-h-[18.75rem] ">
-            <p className="tw-text-body-large tw-text-text-placeholder">No matching results found</p>
+            <p className="tw-text-body-large tw-text-text-placeholder" data-cy="no-matching-results-found-text">
+              No matching results found
+            </p>
           </div>
         )}
       </div>

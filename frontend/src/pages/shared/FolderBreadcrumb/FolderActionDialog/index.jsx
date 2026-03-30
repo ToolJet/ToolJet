@@ -20,6 +20,7 @@ import {
 
 import ActionDialog from '../../ActionDialog';
 import SearchBar, { useSearch } from '../../SearchBar';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default function FolderActionDialog({
   open,
@@ -147,7 +148,7 @@ export default function FolderActionDialog({
           disabled: isSubmitBtnDisabled,
           isLoading: isFormBeingSubmitted,
           form: `${actionType}-folder-form`,
-          'data-cy': `${actionType}-folder-button`,
+          'data-cy': `${actionType}-button`,
           ...(isRemoveAppFromFolderOrDeleteFolder && { variant: 'dangerPrimary' }),
           ...(!isCreateOrEditFolder && { onClick: handleSubmitForm }),
         },
@@ -259,6 +260,7 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
               key={folder.value}
               onClick={() => setSelectedFolder(folder.value)}
               className="tw-flex tw-items-center tw-gap-2 tw-px-2 tw-py-1.5 tw-rounded-md tw-transition hover:tw-bg-interactive-default"
+              data-cy={`folder-option-${generateCypressDataCy(folder.value)}`}
             >
               <div className="tw-size-4">
                 {selectedFolder === folder.value && <Check size={16} strokeWidth={3} color="var(--icon-accent)" />}

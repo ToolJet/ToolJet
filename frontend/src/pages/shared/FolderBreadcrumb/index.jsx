@@ -15,6 +15,7 @@ import {
   SelectSeparator,
 } from '@/components/ui/Rocket/select';
 import { authenticationService } from '@/_services/authentication.service';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 import { useAppsStore } from '../store';
 // import SearchBar from '../SearchBar';
@@ -50,14 +51,16 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
     <Breadcrumb>
       <BreadcrumbList className="sm:tw-gap-2">
         <BreadcrumbItem>
-          <p className="tw-font-title-default tw-text-text-placeholder">Folders</p>
+          <p className="tw-font-title-default tw-text-text-placeholder" data-cy="folder-info">
+            Folders
+          </p>
         </BreadcrumbItem>
 
         <BreadcrumbSeparator />
 
         <BreadcrumbItem>
           <Select value={selectedFolder} onValueChange={onChangeSelectedFolder}>
-            <SelectTrigger className="tw-rounded-lg tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-border-0 hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected">
+            <SelectTrigger data-cy="all-applications-link" className="tw-rounded-lg tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-border-0 hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected">
               <FolderOpen size={16} color="var(--icon-default)" />
               <SelectValue />
             </SelectTrigger>
@@ -103,12 +106,13 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
 
               <SelectSeparator className="tw-bg-border-weak" />
 
-              <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
+              <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar" data-cy="folder-dropdown-list">
                 {folderList.map((folder) => (
                   <SelectItem
                     key={folder.value}
                     value={folder.value}
                     className="tw-font-body-default tw-text-text-default tw-justify-between tw-gap-2"
+                    data-cy={`${generateCypressDataCy(folder.label)}-folder-name`}
                   >
                     <SelectItemText>{folder.label}</SelectItemText>
                   </SelectItem>
@@ -124,6 +128,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                     variant="ghostBrand"
                     leadingIcon="plus"
                     className="tw-w-full"
+                    data-cy="create-new-folder-button"
                     onClick={handleCreateNewFolder}
                   >
                     New folder
