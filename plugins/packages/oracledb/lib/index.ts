@@ -59,7 +59,7 @@ export default class OracledbQueryService implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     await knexInstance.raw('SELECT * FROM v$version');
-    await knexInstance.destroy();
+    knexInstance.destroy();
 
     return {
       status: 'ok',
@@ -123,12 +123,7 @@ export default class OracledbQueryService implements QueryService {
 
       const config: Knex.Config = {
         client: 'oracledb',
-        connection: connectionConfig,
-        pool: { 
-          min: 0, 
-          max: 10, 
-          acquireTimeoutMillis: 30000 
-        }
+        connection: connectionConfig
       };
 
       return knex(config);
