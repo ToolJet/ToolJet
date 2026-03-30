@@ -59,7 +59,7 @@ export default class OracledbQueryService implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     await knexInstance.raw('SELECT * FROM v$version');
-    knexInstance.destroy();
+    await knexInstance.destroy();
 
     return {
       status: 'ok',
@@ -72,14 +72,14 @@ export default class OracledbQueryService implements QueryService {
   // else on other platforms like Linux
   // the system library search path MUST always be
   // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
-  initOracleClient(clientPathType: string, customPath: string, instantClientVersion: string) {
+  initOracleClient(clientPathType: string, customPath: string, instantClientVersion: string, initOptions: any = {}) {
     try {
-      let clientOpts = {};
+      let clientOpts: any = { ...initOptions };
 
       if (clientPathType === 'custom') {
-        clientOpts = { libDir: customPath };
+        clientOpts.libDir = customPath;
       } else if (clientPathType === 'default') {
-        clientOpts = { libDir: `/opt/oracle/instantclient_${instantClientVersion}` };
+        clientOpts.libDir = `/opt/oracle/instantclient_${instantClientVersion}`;
       }
 
       // enable node-oracledb Thick mode
@@ -92,23 +92,50 @@ export default class OracledbQueryService implements QueryService {
 
   async buildConnection(sourceOptions: SourceOptions) {
     try {
-      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
-    } catch (err) {
-      console.log('Oracle client is not initailized');
-    }
+      try {
+        let initOptions: any = {};
+        
+        if (sourceOptions.use_tns_alias === 'true' && sourceOptions.config_dir) {
+          initOptions.configDir = sourceOptions.config_dir; 
+        }
+        
+        this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version, initOptions);
+      } catch (err) {
+        console.error('Oracle client failed to initialize', err);
+        throw err;
+      }
 
-    const config: Knex.Config = {
-      client: 'oracledb',
-      connection: {
+      const connectionConfig: any = {
         user: sourceOptions.username,
         password: sourceOptions.password,
-        connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${sourceOptions.host})(PORT=${sourceOptions.port}))(CONNECT_DATA=(SERVER=DEDICATED)(${sourceOptions.database_type}=${sourceOptions.database})))`,
-        multipleStatements: true,
-        ssl: sourceOptions.ssl_enabled,
-      },
-    };
+      };
 
-    return knex(config);
+      if (sourceOptions.use_tns_alias === 'true') {
+        connectionConfig.connectString = sourceOptions.tns_alias;
+        
+        if (sourceOptions.config_dir) {
+          connectionConfig.walletLocation = sourceOptions.config_dir;
+        }
+      } else {
+        connectionConfig.connectString = `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${sourceOptions.host})(PORT=${sourceOptions.port}))(CONNECT_DATA=(SERVER=DEDICATED)(${sourceOptions.database_type}=${sourceOptions.database})))`;
+        connectionConfig.ssl = sourceOptions.ssl_enabled;
+      }
+
+      const config: Knex.Config = {
+        client: 'oracledb',
+        connection: connectionConfig,
+        pool: { 
+          min: 0, 
+          max: 10, 
+          acquireTimeoutMillis: 30000 
+        }
+      };
+
+      return knex(config);
+    } catch (err) {
+      console.error('Error building OracleDB connection:', err);
+      throw err;
+    }
   }
 
   async getConnection(
