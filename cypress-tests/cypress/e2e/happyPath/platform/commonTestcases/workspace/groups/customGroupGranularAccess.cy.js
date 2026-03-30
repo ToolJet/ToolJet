@@ -340,7 +340,7 @@ describe("Custom Group Granular Access", () => {
         ];
         let appId1;
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         cy.apiCreateApp(data.appName)
             .then((res) => {
                 appId1 = res.body.id;
@@ -416,7 +416,7 @@ describe("Custom Group Granular Access", () => {
             appId2 = appId;
         });
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
             apiAddUserToGroup(groupId1, data.email);
@@ -583,7 +583,9 @@ describe("Custom Group Granular Access", () => {
                 canAccessStaging: true,
                 canAccessProduction: false,
                 canAccessReleased: false,
-            }, "Apps");
+            },
+            false
+        );
 
         loginAsBuilder(data.email);
 
@@ -615,7 +617,7 @@ describe("Custom Group Granular Access", () => {
 })
 
 const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
-    cy.get('.css-uzxezq-multiValue').each(($el, index) => {
+    cy.get('div.selected-value').each(($el, index) => {
         cy.wrap($el).should('contain', envTags[index]);
     })
     cy.get('.css-1wy0on6').click();

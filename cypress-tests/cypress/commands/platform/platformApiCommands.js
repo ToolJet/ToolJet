@@ -329,9 +329,15 @@ Cypress.Commands.add(
 
     const formatResources = (type, resources, isAll) => {
       if (isAll) return [];
-      return type === "datasource"
-        ? resources.map((id) => ({ dataSourceId: id }))
-        : resources.map((id) => ({ appId: id }));
+
+      else if (type === "datasource") {
+        return resources.map((id) => ({ dataSourceId: id }));
+      }
+
+      else if (resourceType === "folder") {
+        return resources.map((id) => ({ folderId: id }));
+      }
+      return resources.map((id) => ({ appId: id }));
     };
 
     const buildPermissionObject = (type, perms, formattedResources) => {
@@ -341,6 +347,15 @@ Cypress.Commands.add(
             canUse: perms.canUse ?? true,
             canConfigure: perms.canConfigure ?? false,
           },
+          resourcesToAdd: formattedResources,
+        };
+      }
+
+      if (type === "folder") {
+        return {
+          canEditFolder: perms.canEditFolder ?? true,
+          canEditApps: perms.canEditApps ?? false,
+          canViewApps: perms.canViewApps ?? false,
           resourcesToAdd: formattedResources,
         };
       }
@@ -398,6 +413,7 @@ Cypress.Commands.add(
           app: { type: "app", endpoint: "app" },
           workflow: { type: "workflow", endpoint: "data-source" },
           datasource: { type: "data_source", endpoint: "data-source" },
+          folder: { type: "folder", endpoint: "folder" },
         };
         const { type, endpoint } = typeMap[resourceType] || typeMap.app;
         const url = isEnterprise
@@ -477,6 +493,7 @@ Cypress.Commands.add(
               app: "app",
               workflow: "app",
               data_source: "data-source",
+              folder: "folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 

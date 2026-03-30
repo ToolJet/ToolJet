@@ -15,7 +15,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -28,16 +28,14 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { APP_TYPES } from './constants';
 import { Component } from 'src/entities/component.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
@@ -58,7 +56,8 @@ export class AppsUtilService implements IAppsUtilService {
     user: User,
     type: APP_TYPES,
     isInitialisedFromPrompt: boolean = false,
-    manager: EntityManager
+    manager: EntityManager,
+    branchId?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
@@ -80,82 +79,184 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      //create default app version
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
-      const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
-      const defaultHomePage = await manager.save(
-        manager.create(Page, {
-          name: 'Home',
-          handle: 'home',
-          appVersionId: appVersion.id,
-          index: 1,
-          autoComputeLayout: true,
-        })
-      );
+      // Resolve workspace branch once — used for both version creation and co_relation_id.
+      let workspaceBranch: WorkspaceBranch | null = null;
+      if (branchId) {
+        workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+      }
+      const isNonDefaultBranch = !!(branchId && workspaceBranch && !workspaceBranch.isDefault);
 
-      if (type === 'module') {
-        const moduleContainer = await manager.save(
-          manager.create(Component, {
-            name: 'ModuleContainer',
-            type: 'ModuleContainer',
-            pageId: defaultHomePage.id,
-            properties: {
-              inputItems: { value: [] },
-              outputItems: { value: [] },
-              visibility: { value: '{{true}}' },
-            },
-            styles: {
-              backgroundColor: { value: '#fff' },
-            },
-            displayPreferences: {
-              showOnDesktop: { value: '{{true}}' },
-              showOnMobile: { value: '{{true}}' },
-            },
+      if (isNonDefaultBranch) {
+        // Non-default workspace branch: create ONLY the branch-specific version.
+        // No base version (branch_id=NULL) should exist for sub-branch apps —
+        // it would incorrectly appear in the default branch's version dropdown.
+        // The default branch gets its version via git pull/hydration.
+        const defaultSettings = {
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: 'var(--cc-appBackground-surface)',
+          backgroundFxQuery: '',
+          appMode: 'light',
+        };
+        const branchVersion = await manager.save(
+          AppVersion,
+          manager.create(AppVersion, {
+            // name: uuidv4(),
+            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : uuidv4(),
+            appId: app.id,
+            definition: {},
+            currentEnvironmentId: firstPriorityEnv.id,
+            status: AppVersionStatus.DRAFT,
+            // versionType: AppVersionType.BRANCH,
+            versionType: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? AppVersionType.VERSION : AppVersionType.BRANCH,
+            branchId: branchId,
+            showViewerNavigation: type === 'module' ? false : true,
+            globalSettings: defaultSettings,
+            pageSettings: {},
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
         );
 
-        await manager.save(
-          manager.create(Layout, {
-            component: moduleContainer,
-            type: 'desktop',
-            top: 50,
-            left: 6,
-            height: 400,
-            width: 38,
+        const branchHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: branchVersion.id,
+            index: 1,
+            autoComputeLayout: true,
+            appId: app.id,
           })
         );
 
-        await manager.save(
-          manager.create(Layout, {
-            component: moduleContainer,
-            type: 'mobile',
-            top: 50,
-            left: 6,
-            height: 400,
-            width: 38,
+        if (type === 'module') {
+          const moduleContainer = await manager.save(
+            manager.create(Component, {
+              name: 'ModuleContainer',
+              type: 'ModuleContainer',
+              pageId: branchHomePage.id,
+              properties: {
+                inputItems: { value: [] },
+                outputItems: { value: [] },
+                visibility: { value: '{{true}}' },
+              },
+              styles: { backgroundColor: { value: '#fff' } },
+              displayPreferences: {
+                showOnDesktop: { value: '{{true}}' },
+                showOnMobile: { value: '{{true}}' },
+              },
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'desktop',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'mobile',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+        }
+
+        branchVersion.homePageId = branchHomePage.id;
+        await manager.save(branchVersion);
+      } else {
+        // Default branch or no git sync: standard creation flow.
+        // Base version gets 'v1' — user-visible, renameable via version manager.
+        const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
+
+        const defaultHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: appVersion.id,
+            index: 1,
+            autoComputeLayout: true,
+            appId: app.id,
           })
         );
+
+        if (type === 'module') {
+          const moduleContainer = await manager.save(
+            manager.create(Component, {
+              name: 'ModuleContainer',
+              type: 'ModuleContainer',
+              pageId: defaultHomePage.id,
+              properties: {
+                inputItems: { value: [] },
+                outputItems: { value: [] },
+                visibility: { value: '{{true}}' },
+              },
+              styles: { backgroundColor: { value: '#fff' } },
+              displayPreferences: {
+                showOnDesktop: { value: '{{true}}' },
+                showOnMobile: { value: '{{true}}' },
+              },
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'desktop',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+          await manager.save(
+            manager.create(Layout, {
+              component: moduleContainer,
+              type: 'mobile',
+              top: 50,
+              left: 6,
+              height: 400,
+              width: 38,
+            })
+          );
+        }
+
+        appVersion.showViewerNavigation = type === 'module' ? false : true;
+        appVersion.homePageId = defaultHomePage.id;
+        appVersion.globalSettings = {
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: 'var(--cc-appBackground-surface)',
+          backgroundFxQuery: '',
+          appMode: 'light',
+        };
+        await manager.save(appVersion);
       }
 
-      // Set default values for app version
-      appVersion.showViewerNavigation = type === 'module' ? false : true;
-      appVersion.homePageId = defaultHomePage.id;
-      appVersion.globalSettings = {
-        appInMaintenance: false,
-        canvasMaxWidth: 100,
-        canvasMaxWidthType: '%',
-        canvasMaxHeight: 2400,
-        canvasBackgroundColor: 'var(--cc-appBackground-surface)',
-        backgroundFxQuery: '',
-        appMode: 'light',
-      };
-      await manager.save(appVersion);
+      // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
+      if (branchId) {
+        const coRelationId = uuidv4();
+        await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
+        app.co_relation_id = coRelationId;
+      }
+
       return app;
     }, manager);
   }
 
-  async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
+  async findAppWithIdOrSlug(slug: string, organizationId: string, branchId?: string): Promise<App> {
     let app: App;
 
     if (isUUID(slug)) {
@@ -367,7 +468,14 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    isGetAll: boolean,
+    branchId?: string
+  ): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -385,7 +493,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
     }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: resourceType }],
+      resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -395,12 +503,26 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type
+        type,
+        branchId
       );
 
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      // } else if (branchId) {
+      //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+      //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+      //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+      //     branchId,
+      //   });
+      } else if (branchId && type === APP_TYPES.FRONT_END) {
+        // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+        // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+        // Modules and workflows are common across all branches - no branch filter applied.
+        viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+          branchId,
+        });
       }
 
       if (isGetAll) {
@@ -420,7 +542,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    branchId?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -468,17 +591,29 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    return userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
+    );
+
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
+
+    // hideAll => strict allow-list mode (explicit grants only)
+    if (userAppPermissions.hideAll) {
+      return [null, ...explicitVisibleApps];
+    }
+
+    // normal mode => editable always visible, viewable minus hidden (non-editable)
+    return [
+      null,
+      ...Array.from(
+        new Set([
+          ...userAppPermissions.editableAppsId,
+          ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+        ])
+      ),
+    ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -510,7 +645,7 @@ export class AppsUtilService implements IAppsUtilService {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
 
-  async count(user: User, searchKey, type: APP_TYPES): Promise<number> {
+  async count(user: User, searchKey, type: APP_TYPES, branchId?: string): Promise<number> {
     let resourceType: MODULES;
 
     switch (type) {
@@ -528,16 +663,15 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const apps = await this.viewableAppsQueryUsingPermissions(
+      return await this.viewableAppsQueryUsingPermissions(
         user,
         userPermission[resourceType],
         manager,
         searchKey,
         undefined,
-        type
+        type,
+        branchId
       ).getCount();
-
-      return apps;
     });
   }
 
@@ -665,6 +799,10 @@ export class AppsUtilService implements IAppsUtilService {
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
         if (dq.options?.operation === 'join_tables') {
+          // The primary table is only in join_table.from.name — no top-level table_id for join queries
+          const fromName = dq.options?.join_table?.from?.name;
+          if (fromName) uniqTableIds.add(fromName);
+
           const joinOptions = dq.options?.join_table?.joins ?? [];
           (joinOptions || []).forEach((join) => {
             const { table, conditions } = join;
@@ -697,5 +835,42 @@ export class AppsUtilService implements IAppsUtilService {
     return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
     }, manager);
+  }
+
+  /**
+   * Determines if the editor should be frozen based on version status, type, and git configuration
+   * @param editingVersion - The app version being edited
+   * @param environmentPriority - The priority of the current environment (> 1 means production-like)
+   * @param appGit - The app's git configuration
+   * @param orgGit - The organization's git configuration
+   * @returns boolean indicating if editor should be frozen
+   */
+  shouldFreezeEditor(editingVersion: AppVersion, appGit: any, orgGit: any): boolean {
+    let shouldFreezeEditor = false;
+    // Check version status and type
+    if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
+      shouldFreezeEditor = true;
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status === AppVersionStatus.DRAFT &&
+      (!orgGit || !orgGit?.isBranchingEnabled)
+    ) {
+      // Draft VERSION without branching — not frozen
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status !== AppVersionStatus.DRAFT
+    ) {
+      shouldFreezeEditor = true;
+    } else {
+      // Workspace branching takes precedence: if branching is enabled, VERSION-type drafts on the
+      // default branch are always frozen (edits must happen on feature branches).
+      if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
+        shouldFreezeEditor = true;
+      } else if (appGit) {
+        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
+      }
+    }
+
+    return shouldFreezeEditor;
   }
 }

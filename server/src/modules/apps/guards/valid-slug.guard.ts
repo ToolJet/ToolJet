@@ -17,8 +17,11 @@ export class ValidSlugGuard implements CanActivate {
       throw new BadRequestException('Slug or User is missing');
     }
 
+    // Extract active branch from query param or header (client-side branch tracking)
+    const branchId = request.query?.branch_id || request.headers['x-branch-id'];
+
     // Fetch the app associated with the provided slug for the user's organization
-    const app = await this.appsUtilService.findAppWithIdOrSlug(slug, user.organizationId);
+    const app = await this.appsUtilService.findAppWithIdOrSlug(slug, user.organizationId, branchId);
 
     // If no app is found, throw a BadRequestException
     if (!app) {
