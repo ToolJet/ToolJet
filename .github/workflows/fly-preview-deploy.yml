@@ -65,11 +65,15 @@ jobs:
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            "https://api.machines.dev/v1/apps/$APP_NAME")
+          if [[ "$STATUS" == "200" ]]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  App $APP_NAME already exists — skipping build"
+            echo "⚠️  App $APP_NAME already exists (HTTP $STATUS) — skipping build"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ App $APP_NAME not found (HTTP $STATUS) — proceeding with deploy"
           fi
 
 
@@ -366,11 +370,15 @@ jobs:
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            "https://api.machines.dev/v1/apps/$APP_NAME")
+          if [[ "$STATUS" == "200" ]]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  App $APP_NAME already exists — skipping build"
+            echo "⚠️  App $APP_NAME already exists (HTTP $STATUS) — skipping build"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ App $APP_NAME not found (HTTP $STATUS) — proceeding with deploy"
           fi
 
 
@@ -676,11 +684,15 @@ jobs:
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $FLY_API_TOKEN" \
+            "https://api.machines.dev/v1/apps/$APP_NAME")
+          if [[ "$STATUS" == "200" ]]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  App $APP_NAME already exists — skipping build"
+            echo "⚠️  App $APP_NAME already exists (HTTP $STATUS) — skipping build"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ App $APP_NAME not found (HTTP $STATUS) — proceeding with deploy"
           fi
 
 
@@ -957,7 +969,8 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.head.repo.fork == false &&
-      github.event.action == 'synchronize'
+      (github.event.action == 'synchronize' ||
+       (github.event.action == 'labeled' && github.event.label.name == 'fly-ce-rebuild'))
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       APP_NAME: tooljet-ce-pr-${{ github.event.pull_request.number }}
@@ -992,20 +1005,31 @@ jobs:
         id: detect
         run: |
           TEAM="${{ steps.check.outputs.team }}"
-          CHANGED=$(git diff --name-only HEAD~1 HEAD)
-          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
-          B=$(echo "$CHANGED" | grep -c "^server/" || true)
-          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          FORCE="${{ github.event.action == 'labeled' }}"
           BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
-          if [[ "$TEAM" == "fly-ce-active-appbuilder" ]]; then
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-          elif [[ "$TEAM" == "fly-ce-active-platform" ]]; then
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-          elif [[ "$TEAM" == "fly-ce-active-marketplace" ]]; then
-            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          if [[ "$FORCE" == "true" ]]; then
+            # Force rebuild: triggered by fly-ce-rebuild label (e.g. submodule change)
+            if [[ "$TEAM" == "fly-ce-active-appbuilder" || "$TEAM" == "fly-ce-active-platform" ]]; then
+              BUILD_FRONTEND=true; BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ce-active-marketplace" ]]; then
+              BUILD_PLUGINS=true; BUILD_BACKEND=true
+            fi
+          else
+            # Normal: detect what changed in this commit
+            CHANGED=$(git diff --name-only ${{ github.event.before }} HEAD)
+            F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+            B=$(echo "$CHANGED" | grep -c "^server/" || true)
+            P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+            if [[ "$TEAM" == "fly-ce-active-appbuilder" ]]; then
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ce-active-platform" ]]; then
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            elif [[ "$TEAM" == "fly-ce-active-marketplace" ]]; then
+              [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            fi
           fi
           echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
           echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
@@ -1105,12 +1129,28 @@ jobs:
               body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
             });
 
+
+      - name: Remove Rebuild Label
+        if: steps.check.outputs.active == 'true' && github.event.action == 'labeled'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'fly-ce-rebuild'
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
   fast-update-ee-lts:
     name: Fast Update - EE LTS
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.head.repo.fork == false &&
-      github.event.action == 'synchronize'
+      (github.event.action == 'synchronize' ||
+       (github.event.action == 'labeled' && github.event.label.name == 'fly-ee-lts-rebuild'))
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       APP_NAME: tooljet-ee-lts-pr-${{ github.event.pull_request.number }}
@@ -1147,20 +1187,31 @@ jobs:
         id: detect
         run: |
           TEAM="${{ steps.check.outputs.team }}"
-          CHANGED=$(git diff --name-only HEAD~1 HEAD)
-          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
-          B=$(echo "$CHANGED" | grep -c "^server/" || true)
-          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          FORCE="${{ github.event.action == 'labeled' }}"
           BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
-          if [[ "$TEAM" == "fly-ee-lts-active-appbuilder" ]]; then
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-          elif [[ "$TEAM" == "fly-ee-lts-active-platform" ]]; then
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-          elif [[ "$TEAM" == "fly-ee-lts-active-marketplace" ]]; then
-            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          if [[ "$FORCE" == "true" ]]; then
+            # Force rebuild: triggered by fly-ee-lts-rebuild label (e.g. submodule change)
+            if [[ "$TEAM" == "fly-ee-lts-active-appbuilder" || "$TEAM" == "fly-ee-lts-active-platform" ]]; then
+              BUILD_FRONTEND=true; BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ee-lts-active-marketplace" ]]; then
+              BUILD_PLUGINS=true; BUILD_BACKEND=true
+            fi
+          else
+            # Normal: detect what changed in this commit
+            CHANGED=$(git diff --name-only ${{ github.event.before }} HEAD)
+            F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+            B=$(echo "$CHANGED" | grep -c "^server/" || true)
+            P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+            if [[ "$TEAM" == "fly-ee-lts-active-appbuilder" ]]; then
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ee-lts-active-platform" ]]; then
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            elif [[ "$TEAM" == "fly-ee-lts-active-marketplace" ]]; then
+              [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            fi
           fi
           echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
           echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
@@ -1262,12 +1313,28 @@ jobs:
               body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
             });
 
+
+      - name: Remove Rebuild Label
+        if: steps.check.outputs.active == 'true' && github.event.action == 'labeled'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'fly-ee-lts-rebuild'
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
   fast-update-ee-pre:
     name: Fast Update - EE Pre-release
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.head.repo.fork == false &&
-      github.event.action == 'synchronize'
+      (github.event.action == 'synchronize' ||
+       (github.event.action == 'labeled' && github.event.label.name == 'fly-ee-pre-rebuild'))
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       APP_NAME: tooljet-ee-pre-pr-${{ github.event.pull_request.number }}
@@ -1304,20 +1371,31 @@ jobs:
         id: detect
         run: |
           TEAM="${{ steps.check.outputs.team }}"
-          CHANGED=$(git diff --name-only HEAD~1 HEAD)
-          F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
-          B=$(echo "$CHANGED" | grep -c "^server/" || true)
-          P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+          FORCE="${{ github.event.action == 'labeled' }}"
           BUILD_FRONTEND=false; BUILD_BACKEND=false; BUILD_PLUGINS=false
-          if [[ "$TEAM" == "fly-ee-pre-active-appbuilder" ]]; then
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-          elif [[ "$TEAM" == "fly-ee-pre-active-platform" ]]; then
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
-            [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
-          elif [[ "$TEAM" == "fly-ee-pre-active-marketplace" ]]; then
-            [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
-            [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+          if [[ "$FORCE" == "true" ]]; then
+            # Force rebuild: triggered by fly-ee-pre-rebuild label (e.g. submodule change)
+            if [[ "$TEAM" == "fly-ee-pre-active-appbuilder" || "$TEAM" == "fly-ee-pre-active-platform" ]]; then
+              BUILD_FRONTEND=true; BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ee-pre-active-marketplace" ]]; then
+              BUILD_PLUGINS=true; BUILD_BACKEND=true
+            fi
+          else
+            # Normal: detect what changed in this commit
+            CHANGED=$(git diff --name-only ${{ github.event.before }} HEAD)
+            F=$(echo "$CHANGED" | grep -c "^frontend/" || true)
+            B=$(echo "$CHANGED" | grep -c "^server/" || true)
+            P=$(echo "$CHANGED" | grep -c "^plugins/" || true)
+            if [[ "$TEAM" == "fly-ee-pre-active-appbuilder" ]]; then
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            elif [[ "$TEAM" == "fly-ee-pre-active-platform" ]]; then
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+              [[ "$F" -gt 0 ]] && BUILD_FRONTEND=true
+            elif [[ "$TEAM" == "fly-ee-pre-active-marketplace" ]]; then
+              [[ "$P" -gt 0 ]] && BUILD_PLUGINS=true
+              [[ "$B" -gt 0 ]] && BUILD_BACKEND=true
+            fi
           fi
           echo "build_frontend=$BUILD_FRONTEND" >> $GITHUB_OUTPUT
           echo "build_backend=$BUILD_BACKEND" >> $GITHUB_OUTPUT
@@ -1418,3 +1496,19 @@ jobs:
               issue_number: context.payload.pull_request.number,
               body: `⚡ **Fast update** (${team} team) — rebuilt: ${built}\nPreview: https://${{ env.APP_NAME }}.fly.dev`
             });
+
+
+      - name: Remove Rebuild Label
+        if: steps.check.outputs.active == 'true' && github.event.action == 'labeled'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'fly-ee-pre-rebuild'
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
