@@ -38,7 +38,12 @@ async function sendMessage(body, onMessage, isDocs = false) {
     },
     openWhenHidden: true,
     onopen: async (response) => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
+        err.statusCode = response.status;
+        throw err;
+      }
     },
     onmessage: (event) => {
       if (!event.data) return;
