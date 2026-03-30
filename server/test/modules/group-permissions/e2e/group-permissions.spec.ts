@@ -71,8 +71,8 @@ describe('group permissions controller (v2)', () => {
     };
   }
 
-  /** Authenticate and stash the cookie on the user object for convenience. */
-  async function login(email: string, password = 'password', organizationId: string | null = null) {
+  /** Authenticate and return the session cookie. */
+  async function authenticate(email: string, password = 'password', organizationId: string | null = null) {
     const result = await login(nestApp, email, password, organizationId);
     return result.tokenCookie;
   }
@@ -93,7 +93,7 @@ describe('group permissions controller (v2)', () => {
   describe('POST /api/v2/group-permissions', () => {
     it('should not allow non-admin to create a group', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await createGroupViaApi(cookie, defaultUser.defaultOrganizationId, 'avengers');
       expect(response.statusCode).toBe(403);
@@ -101,7 +101,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to create a custom group', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       const response = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
       expect(response.statusCode).toBe(201);
@@ -115,7 +115,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should reject duplicate group names within the same organization', async () => {
       const { organization: { adminUser } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       const first = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
       expect(first.statusCode).toBe(201);
@@ -126,8 +126,8 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow the same group name in different organizations', async () => {
       const { organization: { adminUser }, anotherOrganization: { anotherAdminUser } } = await setupOrganizations();
-      const adminCookie = await login('admin@tooljet.io');
-      const anotherAdminCookie = await login('another_admin@tooljet.io');
+      const adminCookie = await authenticate('admin@tooljet.io');
+      const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
       const r1 = await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
       expect(r1.statusCode).toBe(201);
@@ -144,7 +144,7 @@ describe('group permissions controller (v2)', () => {
   describe('GET /api/v2/group-permissions', () => {
     it('should not allow non-admin to list groups', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .get('/api/v2/group-permissions')
@@ -156,7 +156,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to list all groups', async () => {
       const { organization: { adminUser } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       // Create a custom group first
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
@@ -184,7 +184,7 @@ describe('group permissions controller (v2)', () => {
   describe('GET /api/v2/group-permissions/:id', () => {
     it('should not allow non-admin to get a group', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .get('/api/v2/group-permissions/some-id')
@@ -196,7 +196,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to get a group by id', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -216,8 +216,8 @@ describe('group permissions controller (v2)', () => {
 
     it('should return 404 for group from another organization', async () => {
       const { organization: { adminUser, organization }, anotherOrganization: { anotherAdminUser } } = await setupOrganizations();
-      const adminCookie = await login('admin@tooljet.io');
-      const anotherAdminCookie = await login('another_admin@tooljet.io');
+      const adminCookie = await authenticate('admin@tooljet.io');
+      const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
       await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -241,7 +241,7 @@ describe('group permissions controller (v2)', () => {
   describe('PUT /api/v2/group-permissions/:id', () => {
     it('should not allow non-admin to update a group', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .put('/api/v2/group-permissions/some-id')
@@ -254,7 +254,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to rename a custom group', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -274,7 +274,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should reject renaming to an existing group name', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -292,7 +292,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to update group permission flags', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -319,7 +319,7 @@ describe('group permissions controller (v2)', () => {
   describe('DELETE /api/v2/group-permissions/:id', () => {
     it('should not allow non-admin to delete a group', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .delete('/api/v2/group-permissions/some-id')
@@ -331,7 +331,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to delete a custom group', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -356,7 +356,7 @@ describe('group permissions controller (v2)', () => {
   describe('POST /api/v2/group-permissions/:id/users', () => {
     it('should not allow non-admin to add users', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .post('/api/v2/group-permissions/some-id/users')
@@ -369,7 +369,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to add users to a custom group', async () => {
       const { organization: { adminUser, defaultUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -396,7 +396,7 @@ describe('group permissions controller (v2)', () => {
   describe('GET /api/v2/group-permissions/:id/users', () => {
     it('should not allow non-admin to list group users', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .get('/api/v2/group-permissions/some-id/users')
@@ -408,7 +408,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to list users in a group', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       // Get the admin default group
       const adminGroup = await findEntityOrFail(GroupPermissions, { name: 'admin', organizationId: organization.id } as any);
@@ -432,7 +432,7 @@ describe('group permissions controller (v2)', () => {
   describe('DELETE /api/v2/group-permissions/users/:id', () => {
     it('should not allow non-admin to remove a user from a group', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .delete('/api/v2/group-permissions/users/some-id')
@@ -444,7 +444,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to remove a user from a custom group', async () => {
       const { organization: { adminUser, defaultUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
@@ -480,7 +480,7 @@ describe('group permissions controller (v2)', () => {
   describe('GET /api/v2/group-permissions/:id/users/addable-users', () => {
     it('should not allow non-admin to search addable users', async () => {
       const { organization: { defaultUser } } = await setupOrganizations();
-      const cookie = await login('developer@tooljet.io');
+      const cookie = await authenticate('developer@tooljet.io');
 
       const response = await request(nestApp.getHttpServer())
         .get('/api/v2/group-permissions/some-id/users/addable-users?input=test')
@@ -492,7 +492,7 @@ describe('group permissions controller (v2)', () => {
 
     it('should allow admin to search for addable users', async () => {
       const { organization: { adminUser, organization } } = await setupOrganizations();
-      const cookie = await login('admin@tooljet.io');
+      const cookie = await authenticate('admin@tooljet.io');
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
