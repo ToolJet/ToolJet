@@ -4,6 +4,7 @@ import {
     verifyLoadingState,
     verifyVisibility,
 } from "Support/utils/appBuilder/components/properties/common";
+import { componentCommonSelectors } from "Selectors/appBuilder/components/common";
 import {
     verifyBorderType,
     verifyImageBackgroundColor,
@@ -15,26 +16,23 @@ import {
 } from "Support/utils/appBuilder/components/properties/imageComponent";
 
 describe("Image Component - Feature Validation", { baseUrl: null }, () => {
+    const {
+        desktopToggle,
+        visibilityToggle,
+        jsVisibilityToggle,
+        jsDisableToggle,
+        jsLoadingToggle,
+        csaVisibilityToggle,
+        csaLoadingToggle,
+        csaDisableToggle,
+    } = componentCommonSelectors;
+
     const componentSelector = '[data-cy="draggable-widget-image1"]:eq(1)';
-    const desktopToggle = '[data-cy="toggleswitch1"] .d-flex';
     const zoomToggle = '[data-cy="zoombutton"] input[type="checkbox"]';
     const rotateToggle = '[data-cy="rotatebutton"] input[type="checkbox"]';
-    const visibilityToggle = '[data-cy="toggleswitch3"] .d-flex';
-    const loadingState = '[data-cy="toggleswitch5"] .d-flex';
-
-    // JS action toggles (single toggle for set/reset)
-    const jsVisibilityToggle = '[data-cy="jsvisibilitytoggle"] .d-flex';
-    const jsDisableToggle = '[data-cy="jsdisabletoggle"] .d-flex';
-    const jsLoadingToggle = '[data-cy="jsloadingtoggle"] .d-flex';
-
-    // CSA checkboxes/toggles
-    const csaVisibilityToggle = '[data-cy="csavisibility"] .d-flex';
-    const csaLoadingToggle = '[data-cy="csaloading"] .d-flex';
-    const csaDisableToggle = '[data-cy="csadisable"] .d-flex';
 
     const appUrl =
-        "https://appbuilder-v3-lts-eetestsystem.tooljet.com/applications/0196abdc-e11e-4333-b79e-92a57c3dd39d";
-
+        "https://appbuilder-v3-lts-eetestsystem.tooljet.com/applications/image-app-automation";
     const setup = () => {
         genralProperties(componentSelector, desktopToggle, { state: "exist" });
         genralProperties(componentSelector, visibilityToggle, {
@@ -69,7 +67,7 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
         cy.viewport(1800, 1400);
     });
 
-    it("should verify visibility, disable, and loading states", () => {
+    it("should verify properties", () => {
         genralProperties(componentSelector, desktopToggle, { state: "exist" });
 
         verifyVisibility(componentSelector, {
@@ -86,39 +84,22 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
         });
 
         verifyLoadingState(componentSelector, {
-            toggle: loadingState,
             csa: csaLoadingToggle,
             jsSet: jsLoadingToggle,
             jsReset: jsLoadingToggle,
         });
-    });
-
-    it("should verify zoom feature", () => {
-        setup();
 
         verifyZoomFeature(componentSelector, zoomToggle);
-    });
-
-    it("should verify rotate feature", () => {
-        setup();
 
         verifyRotateFeature(componentSelector, rotateToggle);
     });
 
-    it("should verify image fit options", () => {
+    it("should verify styles", () => {
         setup();
 
         verifyImageFit(componentSelector, fitDropdown, imageFitOptions);
-    });
-
-    it("should verify border type options", () => {
-        setup();
 
         verifyBorderType(componentSelector, shapeDropdown, borderTypeOptions);
-    });
-
-    it("should verify label (padding) options", () => {
-        setup();
 
         verifyImageLabel(componentSelector, labelInput, [
             { input: "50", styles: ["padding: 50px"] },
@@ -126,10 +107,13 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
             { input: "200", styles: ["padding: 200px"] },
             { input: "0", styles: ["padding: 0px"] },
         ]);
-    });
 
-    it("should verify image fit and border type combination", () => {
-        setup();
+        verifyImageBackgroundColor(componentSelector, colorPicker, [
+            { hex: "ff0000", expectedBg: "rgb(255, 0, 0)" },
+            { hex: "00ff00", expectedBg: "rgb(0, 255, 0)" },
+            { hex: "0000ff", expectedBg: "rgb(0, 0, 255)" },
+            { hex: "000000", expectedBg: "rgb(0, 0, 0)" },
+        ]);
 
         verifyImageFitAndBorderType(
             componentSelector,
@@ -140,18 +124,7 @@ describe("Image Component - Feature Validation", { baseUrl: null }, () => {
         );
     });
 
-    it("should verify background color via color picker", () => {
-        setup();
-
-        verifyImageBackgroundColor(componentSelector, colorPicker, [
-            { hex: "ff0000", expectedBg: "rgb(255, 0, 0)" },
-            { hex: "00ff00", expectedBg: "rgb(0, 255, 0)" },
-            { hex: "0000ff", expectedBg: "rgb(0, 0, 255)" },
-            { hex: "000000", expectedBg: "rgb(0, 0, 0)" },
-        ]);
-    });
-
-    it("should verify event on image click", () => {
+    it("should verify events", () => {
         setup();
 
         cy.get(componentSelector).click();
