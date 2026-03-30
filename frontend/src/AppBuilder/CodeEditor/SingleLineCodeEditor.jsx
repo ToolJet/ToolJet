@@ -80,6 +80,33 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
 
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef?.current]
+  );
+
+  const [wrapperWidth, setWrapperWidth] = useState(0);
+  const [_wrapperHeight, setWrapperHeight] = useState(0);
+  const [overlayKey, setOverlayKey] = useState(0);
+
+  useEffect(() => {
+    if (!wrapperRef.current || !isInsideQueryManager) return;
+    setWrapperWidth(wrapperRef.current.clientWidth);
+    setWrapperHeight(wrapperRef.current.clientHeight);
+    const observer = new window.ResizeObserver(() => {
+      setWrapperWidth(wrapperRef.current?.clientWidth || 0);
+      const newHeight = wrapperRef.current?.clientHeight || 0;
+      setWrapperHeight((prev) => {
+        if (prev !== newHeight) {
+          setOverlayKey((k) => k + 1);
+        }
+        return newHeight;
+      });
+    });
+    observer.observe(wrapperRef.current);
+    return () => observer.disconnect();
+  }, [isInsideQueryManager]);
+
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
@@ -139,6 +166,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
     >
       <PreviewBox.Container
         previewRef={previewRef}
+        {...(isInsideQueryManager && { wrapperWidth: wrapperWidth })}
+        overlayKey={overlayKey}
+        isInsideQueryManager={isInsideQueryManager}
         showPreview={showPreview}
         customVariables={customVariables}
         enablePreview={enablePreview}

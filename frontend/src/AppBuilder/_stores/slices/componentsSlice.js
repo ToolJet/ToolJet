@@ -25,6 +25,42 @@ import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+
+// Debounce timers for query re-runs triggered by dependency changes
+const queryRerunTimers = new Map();
+
+// Debounce delay for dependency-triggered query re-runs.
+// RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
+function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+  }
+  const delay = 500;
+  const timerId = setTimeout(() => {
+    queryRerunTimers.delete(queryId);
+    const store = getStore();
+    const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
+    if (query?.options?.runOnDependencyChange) {
+      store.queryPanel.runQuery(queryId, queryName, undefined, undefined, {}, false, false, moduleId);
+    }
+  }, delay);
+  queryRerunTimers.set(queryId, timerId);
+}
+
+/** Clear any pending rerun timer for a query (e.g., on deletion). */
+export function clearQueryRerunTimer(queryId) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+    queryRerunTimers.delete(queryId);
+  }
+}
+
+/** Clear ALL pending rerun timers (e.g., on page switch). */
+function clearAllQueryRerunTimers() {
+  queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
+  queryRerunTimers.clear();
+}
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -935,7 +971,16 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
+    // Cancel any pending rerun timers from the previous page/context
+    clearAllQueryRerunTimers();
+
+    const {
+      getCurrentPageComponents,
+      addToDependencyGraph,
+      setResolvedComponents,
+      resolveOthers,
+      registerQueryDependencies,
+    } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
@@ -946,6 +991,52 @@ export const createComponentsSlice = (set, get) => ({
     });
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled
+    const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
+    queries.forEach((query) => {
+      if (query.options?.runOnDependencyChange) {
+        registerQueryDependencies(query.id, query.name, query.kind, query.options, moduleId);
+      }
+    });
+  },
+
+  registerQueryDependencies: (queryId, queryName, kind, options, moduleId = 'canvas') => {
+    // RunJS/RunPy do not support dependency-triggered re-runs
+    if (kind === 'runjs' || kind === 'runpy') return;
+
+    const { addDependency } = get();
+    const optionsPath = `queries.${queryId}.__options__`;
+
+    // Clean up existing __options__ node and all its edges
+    const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+    if (depGraph && depGraph.hasNode(optionsPath)) {
+      set(
+        (state) => {
+          state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+          return { ...state };
+        },
+        false,
+        'clearQueryOptionsDeps'
+      );
+    }
+
+    // Extract all {{}} refs from the query's active options
+    const refs = extractQueryReferences(kind, options);
+    if (!refs.length) return;
+
+    const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+    const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+
+    refs.forEach((ref) => {
+      const { allRefs } = extractAndReplaceReferencesFromString(ref, componentNameIdMapping, queryNameIdMapping);
+      allRefs.forEach(({ entityType, entityNameOrId, entityKey }) => {
+        const sourcePath = entityNameOrId
+          ? `${entityType}.${entityNameOrId}.${entityKey}`
+          : `${entityType}.${entityKey}`;
+        addDependency(sourcePath, optionsPath, { queryId, queryName }, moduleId);
+      });
+    });
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components
@@ -2146,6 +2237,19 @@ export const createComponentsSlice = (set, get) => ({
     const dependecies = getDependencies(path, moduleId);
     if (dependecies?.length) {
       dependecies.forEach((dependency) => {
+        // Handle query options sentinel — trigger re-run instead of resolution
+        if (dependency.endsWith('.__options__')) {
+          const nodeData = getNodeData(dependency, moduleId);
+          if (nodeData?.queryId) {
+            const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
+            if (query?.options?.runOnDependencyChange) {
+              // Use live name from store (queryIdNameMapping is updated on rename)
+              const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
+              scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
+            }
+          }
+          return;
+        }
         const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
         if (itemsLength) {
