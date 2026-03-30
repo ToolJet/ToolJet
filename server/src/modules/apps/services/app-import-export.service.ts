@@ -70,6 +70,7 @@ type NewRevampedComponent =
   | 'PasswordInput'
   | 'NumberInput'
   | 'EmailInput'
+  | 'DropdownV2'
   | 'Table'
   | 'Button'
   | 'Checkbox'
@@ -99,7 +100,10 @@ type NewRevampedComponent =
   | 'PhoneInput'
   | 'IFrame'
   | 'DropdownV2'
-  | 'TreeSelect';
+  | 'TreeSelect'
+  | 'ButtonGroupV2'
+  | 'ModalV2'
+  | 'PopoverMenu';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -114,6 +118,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PasswordInput',
   'NumberInput',
   'EmailInput',
+  'DropdownV2',
   'Table',
   'Checkbox',
   'Button',
@@ -144,6 +149,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'ButtonGroupV2',
+  'ModalV2',
+  'PopoverMenu',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -183,6 +191,21 @@ const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
   'DatetimePickerV2',
   'TimePicker',
   'DaterangePicker',
+];
+
+const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
+  Datepicker: 'Select date',
+  DatePickerV2: 'Select date',
+  DatetimePickerV2: 'Select date and time',
+  TimePicker: 'Select time',
+  DaterangePicker: 'Select Date Range',
+};
+
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'DropdownV2',
 ];
 
 @Injectable()
@@ -2916,6 +2939,83 @@ function migrateProperties(
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
       properties.showClearBtn = { value: '{{false}}' };
+    }
+    if (componentType === 'Button') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.contentAlignment === undefined) {
+        styles.contentAlignment = { value: 'center' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'ButtonGroupV2') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'ModalV2') {
+      if (styles.triggerButtonTextSize === undefined) {
+        styles.triggerButtonTextSize = { value: '{{14}}' };
+      }
+      if (styles.triggerButtonFontWeight === undefined) {
+        styles.triggerButtonFontWeight = { value: 'normal' };
+      }
+      if (styles.triggerButtonContentAlignment === undefined) {
+        styles.triggerButtonContentAlignment = { value: 'center' };
+      }
+      if (styles.triggerButtonHoverBackgroundColor === undefined) {
+        styles.triggerButtonHoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.triggerButtonHoverBackgroundMode === undefined) {
+        styles.triggerButtonHoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'PopoverMenu') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.contentAlignment === undefined) {
+        styles.contentAlignment = { value: 'center' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    const placeholderDefault = PLACEHOLDER_DATE_TIME_COMPONENT[componentType];
+    if (placeholderDefault && properties.placeholder === undefined) {
+      properties.placeholder = { value: placeholderDefault };
+    }
+
+    if (PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES.includes(componentType) && styles.placeholderTextColor === undefined) {
+      styles.placeholderTextColor = { value: 'var(--cc-placeholder-text)' };
     }
 
     // DropdownV2
