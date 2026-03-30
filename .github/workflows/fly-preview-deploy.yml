@@ -248,12 +248,7 @@ jobs:
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
-          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
-            flyctl apps destroy $APP_NAME --yes
-            echo "✅ App destroyed"
-          else
-            echo "ℹ️ App not found, skipping"
-          fi
+          flyctl apps destroy "$APP_NAME" --yes && echo "✅ App destroyed" || echo "ℹ️ App not found, skipping"
 
       - name: Clean up Labels
         uses: actions/github-script@v6
@@ -504,12 +499,7 @@ jobs:
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
-            flyctl apps destroy $APP_NAME --yes
-            echo "✅ App destroyed"
-          else
-            echo "ℹ️ App not found, skipping"
-          fi
+          flyctl apps destroy "$APP_NAME" --yes && echo "✅ App destroyed" || echo "ℹ️ App not found, skipping"
 
       - name: Clean up Labels
         uses: actions/github-script@v6
@@ -762,12 +752,7 @@ jobs:
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          if flyctl apps show $APP_NAME --json > /dev/null 2>&1; then
-            flyctl apps destroy $APP_NAME --yes
-            echo "✅ App destroyed"
-          else
-            echo "ℹ️ App not found, skipping"
-          fi
+          flyctl apps destroy "$APP_NAME" --yes && echo "✅ App destroyed" || echo "ℹ️ App not found, skipping"
 
       - name: Clean up Labels
         uses: actions/github-script@v6
