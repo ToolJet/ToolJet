@@ -772,19 +772,48 @@ export default class MysqlQueryService implements QueryService {
   }
 
   private async _fetchTablesForDatabase(
-    sourceOptions: SourceOptions
-  ): Promise<Array<{ value: string; label: string }>> {
+    sourceOptions: SourceOptions,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<{ items: Array<{ value: string; label: string }>; totalCount: number }> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search}%`;
+
+      if (queryOptions?.limit) {
+        const limit = queryOptions.limit;
+        const page = queryOptions.page || 1;
+        const offset = (page - 1) * limit;
+
+        const [dataResult, countResult] = await Promise.all([
+          knexInstance.raw(
+            `SELECT table_name as table_name FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' AND table_name LIKE ?
+             ORDER BY table_name LIMIT ? OFFSET ?`,
+            [searchPattern, limit, offset]
+          ),
+          knexInstance.raw(
+            `SELECT COUNT(*) AS total FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' AND table_name LIKE ?`,
+            [searchPattern]
+          ),
+        ]);
+
+        const items = (dataResult[0] || []).map((row: any) => ({ value: row.table_name, label: row.table_name }));
+        const totalCount = parseInt(countResult[0]?.[0]?.total ?? '0', 10);
+        return { items, totalCount };
+      }
+
       const result = await knexInstance.raw(
         `SELECT table_name as table_name FROM information_schema.tables
-         WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'
-         ORDER BY table_name`
+         WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' AND table_name LIKE ?
+         ORDER BY table_name`,
+        [searchPattern]
       );
 
-      const rows = result[0] || [];
-      return rows.map((row: any) => ({ value: row.table_name, label: row.table_name }));
+      const items = (result[0] || []).map((row: any) => ({ value: row.table_name, label: row.table_name }));
+      return { items, totalCount: items.length };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
@@ -846,8 +875,18 @@ export default class MysqlQueryService implements QueryService {
       if (methodName === 'listTables') {
         if (!sourceOptions.database)
           throw new QueryError('Database is required', 'No database specified in source options', {});
-        const tables = await this._fetchTablesForDatabase(sourceOptions);
-        return { status: 'ok', data: tables };
+        const isPaginated = !!args?.limit;
+        const result = await this._fetchTablesForDatabase(sourceOptions, {
+          search: args?.search,
+          page: args?.page,
+          limit: args?.limit,
+        });
+
+        if (isPaginated) {
+          return { items: result.items, totalCount: result.totalCount };
+        }
+
+        return { status: 'ok', data: result.items };
       }
 
       if (methodName === 'listColumns') {
