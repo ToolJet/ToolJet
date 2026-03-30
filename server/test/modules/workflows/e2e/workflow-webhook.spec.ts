@@ -6,6 +6,8 @@ import {
   loginAs,
   createApplication,
   createApplicationVersion,
+  createDataSource,
+  createDataQuery,
   enableWebhookForWorkflows,
   getWorkflowWebhookApiToken,
   triggerWorkflowViaWebhook,
@@ -18,21 +20,7 @@ import * as request from 'supertest';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
-
-const checkIfRunjsQueryCanAccessParamsPassedFromWebhook = async (appId: string, appVersionId: string) => {
-  return await getDefaultDataSource().manager
-    .createQueryBuilder(WorkflowExecution, 'we')
-    .innerJoinAndSelect(WorkflowExecutionNode, 'wen', 'wen.workflowExecutionId = we.id')
-    .where('we.appVersionId = :appVerId and wen.type = :type', {
-      appVerId: appVersionId,
-      type: 'query',
-      isExecuted: true,
-    })
-    .select(['wen.result'])
-    .orderBy('we.created_at', 'DESC')
-    .limit(1)
-    .execute();
-};
+import { AppVersion } from '@entities/app_version.entity';
 
 const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) => {
   return {
@@ -300,11 +288,137 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       expect(response.statusCode).toBe(400);
     });
 
-    // DELETED: 'should trigger workflows from webhooks, with Runjs node accessing params passed as input'
-    // Justification: This test depends on POST /api/data-queries to create a RunJS data source
-    // and query, but that endpoint now returns 404 in the test environment. The test also uses
-    // the old workflow definition update API flow which has been restructured. The core webhook
-    // functionality (trigger, params validation, environment checks) is covered by other tests.
+    it('should trigger workflow from webhook with RunJS node accessing params passed as input', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
+      const { user } = userData;
+      const workflow = await createApplication(app, { name: 'workflow webhook runjs', user, type: 'workflow' });
+
+      // IDs for workflow definition nodes
+      const startNodeId = uuidv4();
+      const queryNodeId = uuidv4();
+      const resultNodeId = uuidv4();
+
+      // Create app version with a start -> query -> result workflow definition.
+      // The queries array uses idOnDefinition to link the query node to a real DataQuery.
+      // We use a placeholder id (null) here; it gets patched after creating the DataQuery.
+      const appVersion = await createApplicationVersion(app, workflow, {
+        definition: {
+          nodes: [
+            {
+              id: startNodeId,
+              data: { nodeType: 'start', label: 'Start trigger' },
+              position: { x: 100, y: 80 },
+              type: 'input',
+              sourcePosition: 'right',
+              deletable: false,
+              width: 144,
+              height: 106,
+            },
+            {
+              id: queryNodeId,
+              data: {
+                nodeType: 'query',
+                label: 'RunJS Query',
+                nodeName: 'myQuery',
+                idOnDefinition: queryNodeId,
+              },
+              position: { x: 350, y: 80 },
+              type: 'query',
+              sourcePosition: 'right',
+              targetPosition: 'left',
+              width: 144,
+              height: 52,
+            },
+            {
+              id: resultNodeId,
+              data: {
+                nodeType: 'result',
+                label: 'Result',
+                code: 'return myQuery.data',
+              },
+              position: { x: 600, y: 80 },
+              type: 'output',
+              targetPosition: 'left',
+              deletable: false,
+              width: 144,
+              height: 52,
+            },
+          ],
+          edges: [
+            {
+              source: startNodeId,
+              sourceHandle: null,
+              target: queryNodeId,
+              targetHandle: null,
+              id: `edge-${startNodeId}-${queryNodeId}`,
+            },
+            {
+              source: queryNodeId,
+              sourceHandle: 'success',
+              target: resultNodeId,
+              targetHandle: null,
+              id: `edge-${queryNodeId}-${resultNodeId}`,
+            },
+          ],
+          queries: [
+            { idOnDefinition: queryNodeId, id: null },
+          ],
+          webhookParams: [
+            { key: 'name', dataType: 'string' },
+          ],
+        },
+      });
+
+      // Create a RunJS data source (type: 'default' => scope: 'local', attached to app version)
+      const dataSource = await createDataSource(app, {
+        appVersion,
+        name: 'runjsdefault',
+        kind: 'runjs',
+        type: 'default',
+      });
+
+      const dataQuery = await createDataQuery(app, {
+        name: 'myQuery',
+        dataSource,
+        appVersion,
+        options: { code: 'return startTrigger.params.name' },
+      });
+
+      // Patch the definition to link the query node to the real DataQuery ID
+      const appVersionRepo = getDefaultDataSource().getRepository(AppVersion);
+      appVersion.definition.queries[0].id = dataQuery.id;
+      await appVersionRepo.save(appVersion);
+
+      await markVersionAsReleased(workflow.id, appVersion.id);
+
+      const loggedUser = await loginAs(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Enable the workflow
+      const enableWorkflowStatusResponse = await enableWorkflowStatus(
+        app,
+        workflow?.id,
+        user.defaultOrganizationId,
+        userData['tokenCookie'],
+        true
+      );
+      expect(enableWorkflowStatusResponse.statusCode).toBe(200);
+
+      await enableWebhookForWorkflows(workflow.id);
+      const workflowWebhookApiToken = await getWorkflowWebhookApiToken(workflow?.id ?? '');
+
+      // Trigger the webhook with a param value
+      const response = await triggerWorkflowViaWebhook(app, workflowWebhookApiToken, workflow?.id, 'development', {
+        name: 'testvalue',
+      });
+
+      // The synchronous webhook trigger returns the result node's resolved data.
+      // The result node code is `return myQuery.data` which resolves to the RunJS
+      // output (the webhook param value). The response is a plain string, so we
+      // check response.text rather than response.body (which is {} for non-JSON).
+      expect(response.statusCode).toBe(200);
+      expect(response.text).toBe('testvalue');
+    });
   });
 
   afterAll(async () => {
