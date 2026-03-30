@@ -55,6 +55,25 @@ export const verifyLoadingState = (componentSelector, controls) => {
     genralProperties(componentSelector, csa, { className: "tj-widget-loader", classNameState: "not.exist" });
 }
 
+export const verifyOnClick = (componentSelector, toastSelector, expectedMessage, innerSelector = null) => {
+    cy.get('body').click(0, 0);
+    cy.get(toastSelector).should('not.exist');
+    const target = innerSelector
+        ? cy.get(componentSelector).find(innerSelector)
+        : cy.get(componentSelector);
+    target.realClick();
+    cy.get('body').click(0, 0);
+    cy.verifyToastMessage(toastSelector, expectedMessage);
+};
+
+export const verifyOnHover = (componentSelector, toastSelector, expectedMessage, innerSelector = null) => {
+    const target = innerSelector
+        ? cy.get(componentSelector).find(innerSelector)
+        : cy.get(componentSelector);
+    target.realHover();
+    cy.verifyToastMessage(toastSelector, expectedMessage);
+};
+
 export const verifyDisability = (componentSelector, controls) => {
     const { csa, jsSet, jsReset } = controls;
     const disabled = { attr: 'data-disabled', attrValue: 'true' };
