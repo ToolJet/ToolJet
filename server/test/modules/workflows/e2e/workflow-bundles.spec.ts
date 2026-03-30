@@ -7,15 +7,15 @@ import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
 import {
-  clearDB,
+  resetDB,
   setupOrganizationAndUser,
-  login,
+  workflowLogin as login,
   createWorkflowForUser,
-  createApplicationVersion,
-  createNestAppInstance,
-  createUser,
+  createWorkflowApplicationVersion,
+  createWorkflowUser,
+  initTestApp,
   createUserWorkflowPermissions,
-} from '../../../workflows.helper';
+} from '../../../test.helper';
 import { WorkflowBundle } from '../../../../src/entities/workflow_bundle.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
@@ -94,7 +94,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
   });
 
   beforeEach(async () => {
-    await clearDB(app);
+    await resetDB();
 
     // Configure Polly.js to only pass through localhost calls
     // External API calls (like NPM registry) will be recorded
@@ -110,10 +110,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance({
-      edition: 'ee',
-      isGetContext: true,
-    });
+    ({ app } = await initTestApp({ edition: 'ee' }));
   });
 
   afterEach(async () => {
@@ -479,7 +476,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -516,7 +513,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -550,7 +547,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-with-deps');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -634,10 +631,10 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       // Create workflow owned by admin
       const workflow = await createWorkflowForUser(app, adminUser, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createUser(app, {
+      const limitedUser = await createWorkflowUser(app, {
         email: 'readonly@tooljet.io',
         password: 'password',
         firstName: 'ReadOnly',
@@ -685,7 +682,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow, {
+      const appVersion = await createWorkflowApplicationVersion(app, workflow, {
         definition: {
           nodes: [{ id: '1', data: { nodeType: 'start' }, position: { x: 0, y: 0 } }],
           edges: [],
@@ -761,7 +758,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python-update');
-      const appVersion = await createApplicationVersion(app, workflow, {
+      const appVersion = await createWorkflowApplicationVersion(app, workflow, {
         definition: {
           nodes: [{ id: '1', data: { nodeType: 'start' }, position: { x: 0, y: 0 } }],
           edges: [],
@@ -829,7 +826,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -889,10 +886,10 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       // Create workflow owned by admin
       const workflow = await createWorkflowForUser(app, adminUser, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createUser(app, {
+      const limitedUser = await createWorkflowUser(app, {
         email: 'readonly@tooljet.io',
         password: 'password',
         firstName: 'ReadOnly',
@@ -940,7 +937,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -988,7 +985,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python-status');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -1032,7 +1029,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-no-bundle');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -1082,10 +1079,10 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       // Create workflow owned by admin
       const workflow = await createWorkflowForUser(app, adminUser, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createUser(app, {
+      const limitedUser = await createWorkflowUser(app, {
         email: 'readonly@tooljet.io',
         password: 'password',
         firstName: 'ReadOnly',
@@ -1133,7 +1130,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -1187,7 +1184,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python-rebuild');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -1244,7 +1241,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
@@ -1289,10 +1286,10 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       // Create workflow owned by admin
       const workflow = await createWorkflowForUser(app, adminUser, 'test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createUser(app, {
+      const limitedUser = await createWorkflowUser(app, {
         email: 'readonly@tooljet.io',
         password: 'password',
         firstName: 'ReadOnly',
@@ -1340,7 +1337,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'integration-test-workflow');
-      const appVersion = await createApplicationVersion(app, workflow, {
+      const appVersion = await createWorkflowApplicationVersion(app, workflow, {
         definition: {
           nodes: [
             {
@@ -1476,7 +1473,7 @@ describe('Community Edition - workflow bundle management controller', () => {
   });
 
   beforeEach(async () => {
-    await clearDB(app);
+    await resetDB();
 
     // Configure Polly.js to only pass through localhost calls
     // External API calls (like NPM registry) will be recorded
@@ -1493,10 +1490,7 @@ describe('Community Edition - workflow bundle management controller', () => {
 
   beforeAll(async () => {
     // Use CE edition without EE mock providers
-    app = await createNestAppInstance({
-      edition: 'ce',
-      isGetContext: true,
-    });
+    ({ app } = await initTestApp({ edition: 'ce' }));
   });
 
   afterEach(async () => {
@@ -1548,7 +1542,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -1579,7 +1573,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -1614,7 +1608,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -1645,7 +1639,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       });
 
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
-      const appVersion = await createApplicationVersion(app, workflow);
+      const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;

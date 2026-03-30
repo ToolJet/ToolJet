@@ -14,3 +14,6 @@ export * from './helpers/seed';
 
 // --- API: HTTP and authentication helpers ---
 export * from './helpers/api';
+
+// --- Workflows: workflow-specific factories (apps, queries, executions, bundles) ---
+export * from './helpers/workflows';

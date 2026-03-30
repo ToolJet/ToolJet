@@ -11,16 +11,16 @@ import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
 import { parse } from 'flatted';
 import {
-  clearDB,
+  resetDB,
   setupOrganizationAndUser,
-  createNestAppInstance,
+  initTestApp,
   createCompleteWorkflow,
   createBundle,
-  login,
+  workflowLogin as login,
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,
-} from '../../../workflows.helper';
+} from '../../../test.helper';
 
 const executeWorkflow = async (
   nestApp: INestApplication,
@@ -114,14 +114,11 @@ const context = setupPolly({
 let app: INestApplication;
 
 beforeAll(async () => {
-  app = await createNestAppInstance({
-    edition: 'ee',
-    isGetContext: true
-  });
+  ({ app } = await initTestApp({ edition: 'ee' }));
 });
 
 beforeEach(async () => {
-  await clearDB(app);
+  await resetDB();
 
   // Configure Polly.js to only pass through localhost calls
   // External API calls will be recorded

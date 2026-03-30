@@ -161,9 +161,6 @@ export interface InitTestAppResult {
  */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
   const {
-    // edition and plan are reserved for future use; currently tests always run
-    // as ee/enterprise since that's what AppModule.register provides.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     edition = 'ee',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     plan = 'enterprise',
@@ -171,6 +168,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     mockLicenseService = false,
     extraImports = [],
   } = options ?? {};
+
+  // Set edition env var so AppModule and getImportPath() resolve correctly.
+  process.env.TOOLJET_EDITION = edition;
 
   const providers: Provider[] = [];
 
