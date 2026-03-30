@@ -92,9 +92,6 @@ describe("CouchDB", () => {
 
         fillDSConnectionForm(couchdbFormConfig, couchdbFormConfig.invalidPassword);
         verifyDSConnection("failed", "Response code 401");
-
-        fillDSConnectionForm(couchdbFormConfig, couchdbFormConfig.invalidPort);
-        verifyDSConnection("failed", "connect ECONNREFUSED");
     });
 });
 

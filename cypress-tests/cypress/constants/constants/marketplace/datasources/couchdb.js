@@ -83,12 +83,17 @@ export const couchdbFormConfig = {
         {
             type: "input",
             fieldName: "Username",
-            text: `${Cypress.env('couchdb_user')}`
+            text: `${Cypress.env('couchdb_username')}`
         },
         {
             type: "encrypted",
             fieldName: "Password",
             text: `${Cypress.env('couchdb_password')}`
+        },
+        {
+            type: "input",
+            fieldName: "Database name",
+            text: `${Cypress.env('couchdb_database')}`
         },
         {
             type: "dropdown",

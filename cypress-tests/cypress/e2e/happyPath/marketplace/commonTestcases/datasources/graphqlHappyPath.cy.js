@@ -63,11 +63,13 @@ describe("GraphQL", () => {
     });
 
     it("3. GraphQL - Verify query execution with valid connection", () => {
+        const graphqlUrl = Cypress.env("GraphQl_Url");
         const validOptions = graphqlApiOptions.map((opt) =>
             opt.key === "url"
-                ? { ...opt, value: Cypress.env("GraphQl_Url") }
+                ? { ...opt, value: graphqlUrl }
                 : opt
         );
+
         cy.apiCreateDataSource(
             `${Cypress.env("server_host")}/api/data-sources`,
             `${graphqlDataSourceName}`,
@@ -76,51 +78,81 @@ describe("GraphQL", () => {
             true
         );
 
-        cy.getAuthHeaders().then((headers) => {
-            cy.request({
-                method: "GET",
-                url: `${Cypress.env("server_host")}/api/apps`,
-                headers,
-                failOnStatusCode: false,
-            }).then((response) => {
-                const app = response.body?.apps?.find((a) => a.name === data.appName);
-                if (app?.id) {
-                    cy.request({
-                        method: "DELETE",
-                        url: `${Cypress.env("server_host")}/api/apps/${app.id}`,
-                        headers,
-                        failOnStatusCode: false,
-                    });
-                }
-            });
-        });
+        data.appName = `${fake.companyName}-GraphQL-App`;
         cy.apiCreateApp(data.appName).then(() => {
             data.appCreated = true;
         });
-        cy.apiAddQueryToApp({
-            queryName: "graphql-test-query",
-            options: {
-                transformationLanguage: "javascript",
-                enableTransformation: false,
-            },
-            dataSourceName: graphqlDataSourceName,
-            dsKind: "graphql",
-        });
-        cy.openApp();
 
-        cy.get('[data-cy="list-query-graphql-test-query"]').click();
-        cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
-            `{
-      allFilms {
-      films { title director }
-      }
-      }`
-        );
-        cy.get(dataSourceSelector.queryPreviewButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Query (graphql-test-query) completed."
-        );
+        // Create and run a GraphQL query via API
+        cy.getCookie("tj_auth_token").then((cookie) => {
+            const headers = {
+                "Tj-Workspace-Id": Cypress.env("workspaceId"),
+                Cookie: `tj_auth_token=${cookie.value}`,
+            };
+
+            cy.request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+                headers,
+            }).then((appResponse) => {
+                const currentEnvironmentId = appResponse.body.editorEnvironment.id;
+                const editingVersionId = appResponse.body.editing_version.id;
+
+                cy.request({
+                    method: "GET",
+                    url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}/environments/${currentEnvironmentId}/versions/${editingVersionId}`,
+                    headers,
+                }).then((dsResponse) => {
+                    const dataSource = dsResponse.body.data_sources.find(
+                        (ds) => ds.name === graphqlDataSourceName
+                    );
+
+                    cy.request({
+                        method: "POST",
+                        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${dataSource.id}/versions/${editingVersionId}`,
+                        headers,
+                        body: {
+                            app_id: Cypress.env("appId"),
+                            app_version_id: editingVersionId,
+                            name: "graphql_test_query",
+                            kind: "graphql",
+                            options: {
+                                query: `{ allFilms { films { title director } } }`,
+                                variables: "",
+                                headers: [["", ""]],
+                                url_params: [["", ""]],
+                                cookies: [["", ""]],
+                                transformationLanguage: "javascript",
+                                enableTransformation: false,
+                            },
+                            data_source_id: dataSource.id,
+                            plugin_id: null,
+                        },
+                    }).then((createResponse) => {
+                        expect(createResponse.status).to.eq(201);
+                        const queryId = createResponse.body.id;
+
+                        cy.request({
+                            method: "POST",
+                            url: `${Cypress.env("server_host")}/api/data-queries/${queryId}/run`,
+                            headers,
+                            failOnStatusCode: false,
+                        }).then((runResponse) => {
+                            expect(runResponse.status).to.eq(201);
+                            expect(runResponse.body.status).to.eq("ok");
+
+                            const responseData = runResponse.body.data.data;
+                            expect(responseData).to.have.property("allFilms");
+                            expect(responseData.allFilms).to.have.property("films");
+                            expect(responseData.allFilms.films).to.be.an("array");
+                            expect(responseData.allFilms.films.length).to.be.greaterThan(0);
+                            expect(responseData.allFilms.films[0]).to.have.property("title");
+                            expect(responseData.allFilms.films[0]).to.have.property("director");
+                        });
+                    });
+                });
+            });
+        });
     });
 });
 

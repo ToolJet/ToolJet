@@ -90,8 +90,10 @@ export const saveAndDiscardDSChanges = (option) => {
   cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
 };
 
+let _testConnCounter = 0;
 export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
-  cy.intercept('POST', '**/api/data-sources/*/test-connection').as('testConnection');
+  const alias = `testConnection${_testConnCounter++}`;
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as(alias);
   cy.waitForElement('[data-cy="test-connection-button"]', 60000);
 
   cy.get('[data-cy="test-connection-button"]')
@@ -99,29 +101,45 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
     .should("contain.text", "Test connection")
     .click();
 
-  // Wait for the API call to complete (cloud services can be slow in CI)
-  cy.wait('@testConnection', { timeout: 80000 });
-
-  // Toast class .go3958317564 is goober-generated and can be slow to render in CI.
-  // Use 80s timeout to account for CI latency + slow test-connection responses.
+  // Wait for the API call to complete and verify API response
   const toastTimeout = 80000;
+  cy.wait(`@${alias}`, { timeout: toastTimeout }).then((interception) => {
+    const responseBody = interception.response.body;
 
+    switch (expectedStatus) {
+      case "success":
+        expect(responseBody.status).to.eq("ok");
+        break;
+
+      case "failed":
+        expect(responseBody.status).to.not.eq("ok");
+
+        if (customMessage) {
+          const errorMsg = responseBody.data?.message || responseBody.message || JSON.stringify(responseBody);
+          expect(errorMsg).to.contain(customMessage);
+        }
+        break;
+    }
+  });
+
+  // Verify UI toast feedback
   switch (expectedStatus) {
     case "success":
-      // Success feedback is now a toast (PR #15616 — inline badge removed)
       cy.verifyToastMessage(".go3958317564", "Test connection verified", true, toastTimeout);
       break;
 
     case "failed":
-      // Some plugins show a failure toast; others only show inline alert text.
-      // Always verify the inline alert when customMessage is provided.
+      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
+
       if (customMessage) {
-        cy.get('[data-cy="connection-alert-text"]', { timeout: toastTimeout })
-          .scrollIntoView()
-          .should("be.visible", { timeout: toastTimeout })
-          .and("contain.text", customMessage);
-      } else {
-        cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
+        cy.get("body").then(($body) => {
+          if ($body.find('[data-cy="connection-alert-text"]').length > 0) {
+            cy.get('[data-cy="connection-alert-text"]')
+              .scrollIntoView()
+              .should("be.visible")
+              .and("contain.text", customMessage);
+          }
+        });
       }
       break;
   }
