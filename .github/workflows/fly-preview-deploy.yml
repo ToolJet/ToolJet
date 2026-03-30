@@ -63,36 +63,6 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  App $APP_NAME already exists — skipping build"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-
-      - name: Check if App Already Exists
-        id: existing-check
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: |
-          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  App $APP_NAME already exists — skipping build"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-
-      - name: Check if App Already Exists
-        id: existing-check
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: |
           APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
           if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
@@ -101,6 +71,8 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
+
+
 
 
       - name: Create Fly App
@@ -386,6 +358,21 @@ jobs:
 
       - name: Setup flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Check if App Already Exists
+        id: existing-check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  App $APP_NAME already exists — skipping build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
 
       - name: Create Fly App
         if: steps.existing-check.outputs.exists != 'true'
@@ -681,6 +668,21 @@ jobs:
 
       - name: Setup flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Check if App Already Exists
+        id: existing-check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  App $APP_NAME already exists — skipping build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
 
       - name: Create Fly App
         if: steps.existing-check.outputs.exists != 'true'
