@@ -5,11 +5,11 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import {
-  clearDB,
+  resetDB,
   createUser,
-  authHeaderForUser,
-  createNestAppInstanceWithEnvMock,
-  authenticateUser,
+  buildAuthHeader,
+  initTestApp,
+  loginAs,
   getDefaultDataSource,
 } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -28,7 +28,7 @@ describe('Authentication', () => {
   let current_user: User;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     // Ensure ConfigService mock falls through to process.env as baseline
     jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
       return process.env[key];
@@ -36,7 +36,7 @@ describe('Authentication', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
 
     const defaultDataSource = getDefaultDataSource();
     userRepository = defaultDataSource.getRepository(User);
@@ -223,7 +223,7 @@ describe('Authentication', () => {
     });
     it('should be able to switch between organizations', async () => {
       const { orgUser, organization: invited_organization } = await createUser(app, { email: 'user@tooljet.io' });
-      const loggedUser = await authenticateUser(app, current_user.email);
+      const loggedUser = await loginAs(app, current_user.email);
       const response = await request(app.getHttpServer())
         .get('/api/switch/' + orgUser.organizationId)
         .set('tj-workspace-id', current_user.organizationId)

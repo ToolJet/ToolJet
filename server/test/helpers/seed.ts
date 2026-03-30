@@ -12,7 +12,6 @@
  * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
  */
 
-/* eslint-disable prefer-const */
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, Repository } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -44,12 +43,125 @@ import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { getDefaultDataSource } from './bootstrap';
 
 // ---------------------------------------------------------------------------
+// Interfaces
+// ---------------------------------------------------------------------------
+
+export interface CreateUserOptions {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  groups?: Array<string>;
+  organization?: Organization;
+  status?: string;
+  userType?: string;
+  invitationToken?: string;
+  formLoginStatus?: boolean;
+  organizationName?: string;
+  ssoConfigs?: Array<SSOConfigInput>;
+  enableSignUp?: boolean;
+  userStatus?: string;
+}
+
+export interface SSOConfigInput {
+  sso: string;
+  enabled: boolean;
+  configScope?: string;
+  configs?: Record<string, string>;
+}
+
+export interface CreateAppOptions {
+  name: string;
+  user?: User & { organizationId: string };
+  isPublic?: boolean;
+  slug?: string;
+  type?: string;
+}
+
+export interface CreateAppVersionOptions {
+  name?: string;
+  definition?: Record<string, unknown> | null;
+  currentEnvironmentId?: string | null;
+}
+
+export interface CreateDataSourceOptions {
+  appVersion: AppVersion;
+  name: string;
+  kind: string;
+  type?: string;
+  options?: Array<Partial<DataSourceOptionInput>> | Record<string, unknown>;
+  environmentId?: string | null;
+}
+
+export interface DataSourceOptionInput {
+  key: string;
+  value: string;
+  encrypted?: boolean | string;
+}
+
+export interface CreateDataQueryOptions {
+  name?: string;
+  dataSource: DataSource;
+  appVersion: AppVersion;
+  options?: Record<string, unknown>;
+}
+
+export interface CreateDataSourceOptionParams {
+  dataSource: DataSource;
+  environmentId: string;
+  options?: Array<Partial<DataSourceOptionInput>> | Record<string, unknown>;
+}
+
+export interface CreateAppWithDependenciesOptions {
+  isQueryNeeded?: boolean;
+  isDataSourceNeeded?: boolean;
+  isAppPublic?: boolean;
+  dsKind?: string;
+  dsOptions?: Array<Partial<DataSourceOptionInput>>;
+  name?: string;
+}
+
+export interface CreateGroupPermissionParams {
+  name?: string;
+  group?: string;
+  type?: string;
+  organizationId?: string;
+  organization?: Organization;
+  appCreate?: boolean;
+  appDelete?: boolean;
+  folderCRUD?: boolean;
+  orgConstantCRUD?: boolean;
+  dataSourceCreate?: boolean;
+  dataSourceDelete?: boolean;
+  workflowCreate?: boolean;
+  workflowDelete?: boolean;
+}
+
+export interface PermissionFlags {
+  read?: boolean;
+  update?: boolean;
+  delete?: boolean;
+}
+
+export interface EnsureInstanceSSOConfigsOptions {
+  enabled?: boolean;
+  gitConfigs?: Record<string, string>;
+  googleConfigs?: Record<string, string>;
+}
+
+/** Result type for convenience role factory functions */
+export interface TestUser {
+  user: User;
+  workspace: Organization;
+  orgUser: OrganizationUser;
+  cookie: string[];
+}
+
+// ---------------------------------------------------------------------------
 // Environment helpers
 // ---------------------------------------------------------------------------
 
-export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
-  let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = getDefaultDataSource().getRepository(AppEnvironment);
+export async function getAllEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
+  const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
   return await appEnvironmentRepository.find({
     where: {
@@ -61,9 +173,8 @@ export async function getAllEnvironments(nestApp, organizationId): Promise<AppEn
   });
 }
 
-export async function ensureAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
-  let appEnvironmentRepository: Repository<AppEnvironment>;
-  appEnvironmentRepository = getDefaultDataSource().getRepository(AppEnvironment);
+export async function ensureAppEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
+  const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
   return await Promise.all(
     defaultAppEnvironments.map(async (env) => {
@@ -78,8 +189,6 @@ export async function ensureAppEnvironments(nestApp, organizationId): Promise<Ap
     })
   );
 }
-/** @deprecated Use ensureAppEnvironments instead */
-export const createAppEnvironments = ensureAppEnvironments;
 
 export const getAppEnvironment = async (id: string, priority: number) => {
   const ds = getDefaultDataSource();
@@ -102,32 +211,35 @@ export const getAppEnvironment = async (id: string, priority: number) => {
  * @param options.gitConfigs - Override git SSO configs
  * @param options.googleConfigs - Override google SSO configs
  */
-export async function ensureInstanceSSOConfigs(options?: {
-  enabled?: boolean;
-  gitConfigs?: Record<string, any>;
-  googleConfigs?: Record<string, any>;
-}) {
+export async function ensureInstanceSSOConfigs(options?: EnsureInstanceSSOConfigsOptions): Promise<void> {
   const ds = getDefaultDataSource();
   const ssoRepo = ds.getRepository(SSOConfigs);
   const enabled = options?.enabled ?? true;
 
   // Use empty strings for secrets to avoid decryption errors
   // (EncryptionService.decryptSecret skips falsy values)
-  const types = [
+  const types: Array<{ sso: SSOType; configs: Record<string, string> }> = [
     { sso: SSOType.GIT, configs: options?.gitConfigs ?? { clientId: 'git-client-id', clientSecret: '' } },
     { sso: SSOType.GOOGLE, configs: options?.googleConfigs ?? { clientId: 'google-client-id' } },
     { sso: SSOType.OPENID, configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' } },
   ];
 
   for (const { sso, configs } of types) {
-    const existing = await ssoRepo.findOne({ where: { sso, organizationId: null as any, configScope: ConfigScope.INSTANCE } });
+    // Instance-level SSO configs have no organizationId — use raw query to bypass TypeORM's
+    // strict typing on nullable foreign keys
+    const existing = await ssoRepo
+      .createQueryBuilder('sso')
+      .where('sso.sso = :sso', { sso })
+      .andWhere('sso.organizationId IS NULL')
+      .andWhere('sso.configScope = :scope', { scope: ConfigScope.INSTANCE })
+      .getOne();
     if (!existing) {
       await ssoRepo.save(
         ssoRepo.create({
           sso,
-          configs: configs as any,
+          configs: configs as SSOConfigs['configs'],
           enabled,
-          organizationId: null,
+          organizationId: undefined,
           configScope: ConfigScope.INSTANCE,
         })
       );
@@ -137,14 +249,12 @@ export async function ensureInstanceSSOConfigs(options?: {
   // Also ensure ENABLE_SIGNUP is true so SSO can create new users
   await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ENABLE_SIGNUP'`);
 }
-/** @deprecated Use ensureInstanceSSOConfigs instead */
-export const seedInstanceSSOConfigs = ensureInstanceSSOConfigs;
 
 // ---------------------------------------------------------------------------
 // Group / permission helpers (private + public)
 // ---------------------------------------------------------------------------
 
-async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
+async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, organizationId: string): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
 
@@ -206,7 +316,7 @@ async function maybeCreateDefaultGroupPermissions(nestApp, organizationId) {
   }
 }
 
-async function addEndUserGroupToUser(nestApp, user) {
+async function addEndUserGroupToUser(nestApp: INestApplication, user: User & { organizationId: string }): Promise<User> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   const groupUsersRepository = ds.getRepository(GroupUsers);
@@ -227,10 +337,7 @@ async function addEndUserGroupToUser(nestApp, user) {
   return user;
 }
 
-// Keep backward-compatible alias
-const addAllUsersGroupToUser = addEndUserGroupToUser;
-
-export async function createUserGroupPermissions(nestApp, user, groups) {
+export async function createUserGroupPermissions(nestApp: INestApplication, user: User & { organizationId: string }, groups: string[]): Promise<GroupUsers[]> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   const groupUsersRepository = ds.getRepository(GroupUsers);
@@ -277,7 +384,7 @@ export async function createUserGroupPermissions(nestApp, user, groups) {
   return groupUserEntries;
 }
 
-export async function createGroupPermission(nestApp, params) {
+export async function createGroupPermission(nestApp: INestApplication, params: CreateGroupPermissionParams): Promise<GroupPermissions> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
   // Map old property names to new ones
@@ -316,7 +423,7 @@ export async function createGroupPermission(nestApp, params) {
  * @param groupId - The GroupPermissions id
  * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
  */
-export async function grantAppPermission(nestApp, application, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
+export async function grantAppPermission(nestApp: INestApplication, application: App, groupId: string, permissions: PermissionFlags): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
@@ -373,9 +480,6 @@ export async function grantAppPermission(nestApp, application, groupId, permissi
     await groupAppsRepo.save(groupApp);
   }
 }
-/** @deprecated Use grantAppPermission instead */
-export const createAppGroupPermission = grantAppPermission;
-
 /**
  * Creates data-source-level permissions for a group using the new granular permissions system.
  *
@@ -384,7 +488,7 @@ export const createAppGroupPermission = grantAppPermission;
  * @param groupId - The GroupPermissions id
  * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
  */
-export async function createDatasourceGroupPermission(nestApp, dataSourceId, groupId, permissions: { read?: boolean; update?: boolean; delete?: boolean }) {
+export async function createDatasourceGroupPermission(nestApp: INestApplication, dataSourceId: string, groupId: string, permissions: PermissionFlags): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const dsGroupRepo = ds.getRepository(DataSourcesGroupPermissions);
@@ -429,7 +533,7 @@ export async function createDatasourceGroupPermission(nestApp, dataSourceId, gro
 // ---------------------------------------------------------------------------
 
 export async function createUser(
-  nestApp,
+  nestApp: INestApplication,
   {
     firstName,
     lastName,
@@ -444,30 +548,12 @@ export async function createUser(
     ssoConfigs = [],
     enableSignUp = false,
     userStatus = 'active',
-  }: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    groups?: Array<string>;
-    organization?: Organization;
-    status?: string;
-    userType?: string;
-    invitationToken?: string;
-    formLoginStatus?: boolean;
-    organizationName?: string;
-    ssoConfigs?: Array<any>;
-    enableSignUp?: boolean;
-    userStatus?: string;
-  },
+  }: CreateUserOptions,
   existingUser?: User
-) {
-  let userRepository: Repository<User>;
-  let organizationRepository: Repository<Organization>;
-  let organizationUsersRepository: Repository<OrganizationUser>;
-
-  userRepository = getDefaultDataSource().getRepository(User);
-  organizationRepository = getDefaultDataSource().getRepository(Organization);
-  organizationUsersRepository = getDefaultDataSource().getRepository(OrganizationUser);
+): Promise<{ organization: Organization; user: User & { organizationId: string }; orgUser: OrganizationUser }> {
+  const userRepository: Repository<User> = getDefaultDataSource().getRepository(User);
+  const organizationRepository: Repository<Organization> = getDefaultDataSource().getRepository(Organization);
+  const organizationUsersRepository: Repository<OrganizationUser> = getDefaultDataSource().getRepository(OrganizationUser);
 
   organization =
     organization ||
@@ -508,7 +594,7 @@ export async function createUser(
   } else {
     user = existingUser;
   }
-  user.organizationId = organization.id;
+  (user as User & { organizationId: string }).organizationId = organization.id;
 
   const orgUser = await organizationUsersRepository.save(
     organizationUsersRepository.create({
@@ -522,14 +608,15 @@ export async function createUser(
     })
   );
 
-  await maybeCreateDefaultGroupPermissions(nestApp, user.organizationId);
+  const typedUser = user as User & { organizationId: string };
+  await maybeCreateDefaultGroupPermissions(nestApp, typedUser.organizationId);
   await createUserGroupPermissions(
     nestApp,
-    user,
+    typedUser,
     groups || ['end-user', 'admin'] // default groups
   );
 
-  return { organization, user, orgUser };
+  return { organization, user: typedUser, orgUser };
 }
 
 // ---------------------------------------------------------------------------
@@ -537,12 +624,11 @@ export async function createUser(
 // ---------------------------------------------------------------------------
 
 export async function createApplication(
-  nestApp,
-  { name, user, isPublic, slug, type = 'front-end' }: any,
+  nestApp: INestApplication,
+  { name, user, isPublic, slug, type = 'front-end' }: CreateAppOptions,
   shouldCreateEnvs = true
-) {
-  let appRepository: Repository<App>;
-  appRepository = getDefaultDataSource().getRepository(App);
+): Promise<App> {
+  const appRepository: Repository<App> = getDefaultDataSource().getRepository(App);
 
   user = user || (await (await createUser(nestApp, {})).user);
 
@@ -567,17 +653,14 @@ export async function createApplication(
 }
 
 export async function createApplicationVersion(
-  nestApp,
-  application,
-  { name = 'v0', definition = null, currentEnvironmentId = null } = {}
-) {
-  let appVersionsRepository: Repository<AppVersion>;
-  let appEnvironmentsRepository: Repository<AppEnvironment>;
+  _nestApp: INestApplication,
+  application: App & { organizationId: string },
+  { name = 'v0', definition = null, currentEnvironmentId = null }: CreateAppVersionOptions = {}
+): Promise<AppVersion> {
   const ds = getDefaultDataSource();
-  appVersionsRepository = ds.getRepository(AppVersion);
-  appEnvironmentsRepository = ds.getRepository(AppEnvironment);
-  const pageRepository = ds.getRepository(Page);
-  const appRepository = ds.getRepository(App);
+  const appVersionsRepository: Repository<AppVersion> = ds.getRepository(AppVersion);
+  const appEnvironmentsRepository: Repository<AppEnvironment> = ds.getRepository(AppEnvironment);
+  const pageRepository: Repository<Page> = ds.getRepository(Page);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -625,7 +708,7 @@ export async function createApplicationVersion(
       canvasBackgroundColor: 'var(--cc-appBackground-surface)',
       backgroundFxQuery: '',
       appMode: 'light',
-    } as any,
+    } as AppVersion['globalSettings'],
   });
   version.homePageId = defaultPage.id;
 
@@ -637,11 +720,10 @@ export async function createApplicationVersion(
 // ---------------------------------------------------------------------------
 
 export async function createDataSource(
-  nestApp,
-  { appVersion, name, kind, type = 'default', options, environmentId = null }: any
-) {
-  let dataSourceRepository: Repository<DataSource>;
-  dataSourceRepository = getDefaultDataSource().getRepository(DataSource);
+  nestApp: INestApplication,
+  { appVersion, name, kind, type = 'default', options, environmentId = null }: CreateDataSourceOptions
+): Promise<DataSource> {
+  const dataSourceRepository: Repository<DataSource> = getDefaultDataSource().getRepository(DataSource);
 
   const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
@@ -661,9 +743,8 @@ export async function createDataSource(
   return dataSource;
 }
 
-export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, appVersion, options }: any) {
-  let dataQueryRepository: Repository<DataQuery>;
-  dataQueryRepository = getDefaultDataSource().getRepository(DataQuery);
+export async function createDataQuery(_nestApp: INestApplication, { name = 'defaultquery', dataSource, appVersion, options }: CreateDataQueryOptions): Promise<DataQuery> {
+  const dataQueryRepository: Repository<DataQuery> = getDefaultDataSource().getRepository(DataQuery);
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
@@ -677,15 +758,16 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
   );
 }
 
-export async function createDataSourceOption(nestApp, { dataSource, environmentId, options }: any) {
+export async function createDataSourceOption(_nestApp: INestApplication, { dataSource, environmentId, options }: CreateDataSourceOptionParams): Promise<DataSourceOptions> {
   const ds = getDefaultDataSource();
   const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
   const credentialRepository = ds.getRepository(Credential);
 
   // Match production behavior: create Credential records for encrypted options
-  const parsedOptions: Record<string, any> = {};
+  const parsedOptions: Record<string, { credential_id?: string; encrypted: boolean; value?: string }> = {};
   if (Array.isArray(options)) {
     for (const opt of options) {
+      if (!opt.key) continue; // skip partial entries with no key
       if (opt.encrypted === 'true' || opt.encrypted === true) {
         const credential = await credentialRepository.save(
           credentialRepository.create({ valueCiphertext: opt.value || '' })
@@ -715,9 +797,8 @@ export async function createDataSourceOption(nestApp, { dataSource, environmentI
 // File creation
 // ---------------------------------------------------------------------------
 
-export async function createFile(nestApp: any) {
-  let fileRepository: Repository<File>;
-  fileRepository = getDefaultDataSource().getRepository(File);
+export async function createFile(_nestApp: INestApplication): Promise<File> {
+  const fileRepository: Repository<File> = getDefaultDataSource().getRepository(File);
   const createFileDto = new CreateFileDto();
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
@@ -730,7 +811,7 @@ export async function createFile(nestApp: any) {
 
 export const createAppWithDependencies = async (
   app: INestApplication,
-  user: any,
+  user: User & { organizationId: string },
   {
     isQueryNeeded = true,
     isDataSourceNeeded = true,
@@ -738,7 +819,7 @@ export const createAppWithDependencies = async (
     dsKind = 'restapi',
     dsOptions = [{}],
     name = 'name',
-  }
+  }: CreateAppWithDependenciesOptions
 ) => {
   const application = await createApplication(
     app,
@@ -753,8 +834,8 @@ export const createAppWithDependencies = async (
   const appEnvironments = await ensureAppEnvironments(app, user.organizationId);
   const appVersion = await createApplicationVersion(app, application);
 
-  let dataQuery: any;
-  let dataSource: any;
+  let dataQuery: DataQuery | undefined;
+  let dataSource: DataSource | undefined;
   if (isDataSourceNeeded) {
     dataSource = await createDataSource(app, {
       name: 'name',
@@ -785,9 +866,6 @@ export const createAppWithDependencies = async (
 
   return { application, appVersion, dataSource, dataQuery, appEnvironments };
 };
-/** @deprecated Use createAppWithDependencies instead */
-export const generateAppDefaults = createAppWithDependencies;
-
 export const findAppWithRelations = async (id: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager
@@ -812,9 +890,6 @@ export const findAppWithRelations = async (id: string) => {
 
   return app;
 };
-/** @deprecated Use findAppWithRelations instead */
-export const getAppWithAllDetails = findAppWithRelations;
-
 /**
  * Sets the currentVersionId on the app, simulating a "release".
  * Required by EE webhook service which looks up workflowApp.currentVersionId.
@@ -828,9 +903,6 @@ export const markVersionAsReleased = async (appId: string, versionId: string) =>
     .where('id = :id', { id: appId })
     .execute();
 };
-/** @deprecated Use markVersionAsReleased instead */
-export const releaseAppVersion = markVersionAsReleased;
-
 // ---------------------------------------------------------------------------
 // Workflow-specific helpers
 // ---------------------------------------------------------------------------
@@ -856,7 +928,7 @@ export const triggerWorkflowViaWebhook = async (
   apiToken: string,
   workflowId: string,
   environment = 'development',
-  bodyJson: any = {}
+  bodyJson: Record<string, unknown> = {}
 ) => {
   return await request(app.getHttpServer())
     .post(`/api/v2/webhooks/workflows/${workflowId}/trigger?environment=${environment}`)
@@ -869,7 +941,7 @@ export const enableWorkflowStatus = async (
   app: INestApplication,
   workflowId: string,
   orgId: string,
-  tokenCookie: any,
+  tokenCookie: string[],
   isMaintenanceOn = true
 ) => {
   return await request(app.getHttpServer())
@@ -886,14 +958,6 @@ export const enableWorkflowStatus = async (
 // ---------------------------------------------------------------------------
 // Convenience role factories
 // ---------------------------------------------------------------------------
-
-/** Result type for convenience role factory functions */
-export interface TestUser {
-  user: User;
-  workspace: Organization;
-  orgUser: OrganizationUser;
-  cookie: string[] | string | undefined;
-}
 
 /**
  * Creates a user with admin role, auto-logs in via authenticateUser, returns unified TestUser.

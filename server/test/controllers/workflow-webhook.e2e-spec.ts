@@ -1,18 +1,17 @@
 import { INestApplication } from '@nestjs/common';
 import {
-  clearDB,
+  resetDB,
   createUser,
-  createNestAppInstance,
-  authenticateUser,
+  initTestApp,
+  loginAs,
   createApplication,
   createApplicationVersion,
   enableWebhookForWorkflows,
   getWorkflowWebhookApiToken,
   triggerWorkflowViaWebhook,
   enableWorkflowStatus,
-  createNestAppInstanceWithServiceMocks,
   getDefaultDataSource,
-  releaseAppVersion,
+  markVersionAsReleased,
 } from '../test.helper';
 import { v4 as uuidv4 } from 'uuid';
 import * as request from 'supertest';
@@ -105,11 +104,11 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
   let app: INestApplication;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
   });
 
   describe('Access workflow from webhook without params', () => {
@@ -119,9 +118,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -148,9 +147,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -181,9 +180,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(true);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -212,9 +211,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(true);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -245,9 +244,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(true);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -277,9 +276,9 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
       const workflow = await createApplication(app, { name: 'workflow webhook', user, type: 'workflow' });
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(true);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-      await releaseAppVersion(workflow.id, appVersion.id);
+      await markVersionAsReleased(workflow.id, appVersion.id);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -330,12 +329,12 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
   let licenseServiceMock;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    ({ app, licenseServiceMock } = await createNestAppInstanceWithServiceMocks({
-      shouldMockLicenseService: true,
+    ({ app, licenseServiceMock } = await initTestApp({
+      mockLicenseService: true,
     }));
   });
 
@@ -375,7 +374,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const createAppResponse = await request(app.getHttpServer())
@@ -430,7 +429,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const createAppResponse = await request(app.getHttpServer())
@@ -488,7 +487,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -553,7 +552,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -618,7 +617,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow
@@ -683,7 +682,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
       const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
       const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Enabling workflow

@@ -2,10 +2,10 @@
  * api.ts — HTTP request and authentication helpers for tests.
  *
  * This module owns:
- * - authenticateUser / loginAs — POST /api/authenticate
- * - logoutUser / logout — GET /api/session/logout
- * - buildTestSession / createTestSession — JWT session creation without HTTP
- * - buildAuthHeader / authHeaderForUser — JWT token string generation
+ * - authenticateUser — POST /api/authenticate
+ * - logoutUser — GET /api/session/logout
+ * - buildTestSession — JWT session creation without HTTP
+ * - buildAuthHeader — JWT token string generation
  * - verifyInviteToken, setUpAccountFromToken — onboarding HTTP helpers
  *
  * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
@@ -39,9 +39,6 @@ export function buildAuthHeader(user: User, organizationId?: string, isPasswordL
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
-/** @deprecated Use buildAuthHeader instead */
-export const authHeaderForUser = buildAuthHeader;
-
 // ---------------------------------------------------------------------------
 // HTTP-based auth
 // ---------------------------------------------------------------------------
@@ -50,20 +47,20 @@ export const authenticateUser = async (
   app: INestApplication,
   email = 'admin@tooljet.io',
   password = 'password',
-  organization_id = null
-) => {
+  organization_id: string | null = null
+): Promise<{ user: Record<string, unknown>; tokenCookie: string[] }> => {
   const sessionResponse = await request
     .agent(app.getHttpServer())
     .post(`/api/authenticate${organization_id ? `/${organization_id}` : ''}`)
     .send({ email, password })
     .expect(201);
 
-  return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] };
+  return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] as string[] };
 };
-/** @deprecated Use authenticateUser instead (or loginAs) */
+/** @deprecated Use authenticateUser instead */
 export const loginAs = authenticateUser;
 
-export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {
+export const logoutUser = async (app: INestApplication, tokenCookie: string[], organization_id: string) => {
   return await request
     .agent(app.getHttpServer())
     .get('/api/session/logout')
@@ -125,9 +122,6 @@ export const buildTestSession = async (
 
   return { tokenCookie: cookie };
 };
-/** @deprecated Use buildTestSession instead */
-export const createTestSession = buildTestSession;
-
 // ---------------------------------------------------------------------------
 // Onboarding helpers
 // ---------------------------------------------------------------------------
@@ -155,7 +149,7 @@ export const verifyInviteToken = async (app: INestApplication, user: User, verif
   return response;
 };
 
-export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload) => {
+export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload: Record<string, unknown>) => {
   const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send(payload);
   const { status } = response;
   expect(status).toBe(201);

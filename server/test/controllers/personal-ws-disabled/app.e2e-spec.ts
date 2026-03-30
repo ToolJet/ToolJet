@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -21,7 +21,7 @@ describe('Authentication', () => {
   let current_organization: Organization;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     await instanceSettingsRepository.update(
       { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
       { value: 'false' }
@@ -34,7 +34,7 @@ describe('Authentication', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
 
     const defaultDataSource = getDefaultDataSource();
     userRepository = defaultDataSource.getRepository(User);
@@ -147,7 +147,7 @@ describe('Authentication', () => {
         email: 'admin@tooljet.io',
       });
 
-      const loggedUser = await authenticateUser(app, adminUser.email);
+      const loggedUser = await loginAs(app, adminUser.email);
       await request(app.getHttpServer())
         .post(`/api/organization-users/`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)

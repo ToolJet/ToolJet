@@ -1,14 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  clearDB,
+  resetDB,
   createApplication,
   createUser,
-  createNestAppInstance,
+  initTestApp,
   createGroupPermission,
   createUserGroupPermissions,
-  createAppGroupPermission,
-  authenticateUser,
+  grantAppPermission,
+  loginAs,
 } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -23,11 +23,11 @@ describe('folders controller', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    nestApp = await createNestAppInstance();
+    ({ app: nestApp } = await initTestApp());
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
@@ -42,7 +42,7 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = await loginAs(nestApp);
 
       const folder = await defaultDataSource.manager.save(Folder, {
         name: 'Folder1',
@@ -154,9 +154,9 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
-      let loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await loginAs(nestApp);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',
@@ -276,10 +276,10 @@ describe('folders controller', () => {
       organization: adminUserData.organization,
     });
 
-    let loggedUser = await authenticateUser(nestApp);
+    let loggedUser = await loginAs(nestApp);
     adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    loggedUser = await authenticateUser(nestApp, newUserData.user.email);
+    loggedUser = await loginAs(nestApp, newUserData.user.email);
     newUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const folder = await defaultDataSource.manager.save(Folder, {
@@ -385,7 +385,7 @@ describe('folders controller', () => {
     const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
       where: { name: 'folder-handler' },
     });
-    await createAppGroupPermission(nestApp, appInFolder, group.id, {
+    await grantAppPermission(nestApp, appInFolder, group.id, {
       read: true,
     });
     await createUserGroupPermissions(nestApp, newUserData.user, ['folder-handler']);
@@ -432,7 +432,7 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = await loginAs(nestApp);
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folders`)
@@ -460,9 +460,9 @@ describe('folders controller', () => {
         userType: 'instance',
       });
 
-      let loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await loginAs(nestApp);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',
@@ -510,16 +510,16 @@ describe('folders controller', () => {
         organization: adminUserData.organization,
       });
 
-      let loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await loginAs(nestApp);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(nestApp, viewerUserData.user.email);
+      loggedUser = await loginAs(nestApp, viewerUserData.user.email);
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
+      loggedUser = await loginAs(nestApp, developerUserData.user.email);
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',
@@ -595,16 +595,16 @@ describe('folders controller', () => {
         folderCRUD: true,
       });
 
-      let loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await loginAs(nestApp);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(nestApp, viewerUserData.user.email);
+      loggedUser = await loginAs(nestApp, viewerUserData.user.email);
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
+      loggedUser = await loginAs(nestApp, developerUserData.user.email);
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',

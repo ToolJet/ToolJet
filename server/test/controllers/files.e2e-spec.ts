@@ -1,16 +1,16 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createFile, clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
+import { createFile, resetDB, createUser, initTestApp, loginAs } from '../test.helper';
 
 describe('files controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
   });
 
   it('should not allow un-authenticated users to fetch a file', async () => {
@@ -24,7 +24,7 @@ describe('files controller', () => {
 
     const file = await createFile(app);
 
-    const loggedUser = await authenticateUser(app);
+    const loggedUser = await loginAs(app);
 
     const response = await request(app.getHttpServer())
       .get(`/api/files/${file.id}`)

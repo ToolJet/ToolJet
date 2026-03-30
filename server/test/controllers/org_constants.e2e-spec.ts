@@ -2,12 +2,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  clearDB,
+  resetDB,
   createUser,
-  createNestAppInstance,
+  initTestApp,
   createGroupPermission,
-  authenticateUser,
-  createAppEnvironments,
+  loginAs,
+  ensureAppEnvironments,
 } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -27,11 +27,11 @@ describe('organization environment constants controller', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
@@ -60,7 +60,7 @@ describe('organization environment constants controller', () => {
         organization,
       });
 
-      const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
 
       const bodyArray = [
         {
@@ -71,13 +71,13 @@ describe('organization environment constants controller', () => {
         },
       ];
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'developer@tooljet.io');
+      loggedUser = await loginAs(app, 'developer@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
+      loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const constantArray = [];
@@ -163,16 +163,16 @@ describe('organization environment constants controller', () => {
         orgConstantCRUD: true,
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'dev@tooljet.io');
+      loggedUser = await loginAs(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
+      loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
 
       await request(app.getHttpServer())
         .post(`/api/organization-constants/`)
@@ -230,13 +230,13 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'dev@tooljet.io');
+      loggedUser = await loginAs(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
+      loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
@@ -246,7 +246,7 @@ describe('organization environment constants controller', () => {
       await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
         orgConstantCRUD: true,
       });
-      const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
 
       const response = await createConstant(app, adminUserData, {
         constant_name: 'user_name',
@@ -309,20 +309,20 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'dev@tooljet.io');
+      loggedUser = await loginAs(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
+      loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
         where: { name: 'developer' },
       });
 
-      const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
 
       await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
         orgConstantCRUD: true,

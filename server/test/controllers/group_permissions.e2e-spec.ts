@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, createApplication, authenticateUser } from '../test.helper';
+import { resetDB, createUser, initTestApp, createApplication, loginAs } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
@@ -25,11 +25,11 @@ describe('group permissions controller (v2)', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    nestApp = await createNestAppInstance();
+    ({ app: nestApp } = await initTestApp());
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
@@ -77,7 +77,7 @@ describe('group permissions controller (v2)', () => {
 
   /** Authenticate and stash the cookie on the user object for convenience. */
   async function loginAs(email: string, password = 'password', organizationId: string | null = null) {
-    const result = await authenticateUser(nestApp, email, password, organizationId);
+    const result = await loginAs(nestApp, email, password, organizationId);
     return result.tokenCookie;
   }
 

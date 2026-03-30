@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, getDefaultDataSource } from '../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -21,11 +21,11 @@ describe('Authentication', () => {
   let current_user: User;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
 
     const defaultDataSource = getDefaultDataSource();
     userRepository = defaultDataSource.getRepository(User);

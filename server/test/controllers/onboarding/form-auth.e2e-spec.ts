@@ -4,10 +4,10 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import {
-  clearDB,
-  createNestAppInstanceWithEnvMock,
+  resetDB,
+  initTestApp,
   createUser,
-  authenticateUser,
+  loginAs,
   getDefaultDataSource,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
@@ -31,7 +31,7 @@ describe('Form Onboarding', () => {
   let mockConfig;
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
     const defaultDataSource = getDefaultDataSource();
     userRepository = defaultDataSource.getRepository(User);
     orgRepository = defaultDataSource.getRepository(Organization);
@@ -39,7 +39,7 @@ describe('Form Onboarding', () => {
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
       switch (key) {
         case 'DISABLE_MULTI_WORKSPACE':
@@ -129,7 +129,7 @@ describe('Form Onboarding', () => {
         .send({ email: 'newuser@tooljet.com', name: 'New User', password: 'password' });
 
       const user = await userRepository.findOneOrFail({ where: { email: 'newuser@tooljet.com' } });
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await loginAs(app, user.email);
 
       const response = await request(app.getHttpServer())
         .get('/api/apps')
@@ -154,7 +154,7 @@ describe('Form Onboarding', () => {
       });
       adminUser = user;
       adminOrg = organization;
-      loggedAdmin = await authenticateUser(app, adminUser.email);
+      loggedAdmin = await loginAs(app, adminUser.email);
     });
 
     it('should invite a new user to the workspace', async () => {
@@ -255,7 +255,7 @@ describe('Form Onboarding', () => {
       });
 
       // Accept the invite — requires the invited user to be authenticated
-      const loggedOther = await authenticateUser(app, otherUser.email);
+      const loggedOther = await loginAs(app, otherUser.email);
       await request(app.getHttpServer())
         .post('/api/onboarding/accept-invite')
         .send({ token: invitationToken })
@@ -278,7 +278,7 @@ describe('Form Onboarding', () => {
         email: 'admin@tooljet.com',
         status: 'active',
       });
-      const loggedAdmin = await authenticateUser(app, user.email);
+      const loggedAdmin = await loginAs(app, user.email);
 
       // Invite a user
       await request(app.getHttpServer())
@@ -314,7 +314,7 @@ describe('Form Onboarding', () => {
         email: 'admin@tooljet.com',
         status: 'active',
       });
-      const loggedAdmin = await authenticateUser(app, adminUser.email);
+      const loggedAdmin = await loginAs(app, adminUser.email);
 
       // Signup another user independently
       await request(app.getHttpServer())
@@ -340,7 +340,7 @@ describe('Form Onboarding', () => {
   });
 
   afterAll(async () => {
-    await clearDB();
+    await resetDB();
     await app.close();
   });
 });

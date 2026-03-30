@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -26,11 +26,11 @@ describe('library apps controller', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
@@ -54,13 +54,13 @@ describe('library apps controller', () => {
         organization,
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(app, 'developer@tooljet.io');
+      loggedUser = await loginAs(app, 'developer@tooljet.io');
       nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',
@@ -97,7 +97,7 @@ describe('library apps controller', () => {
         groups: ['end-user', 'admin'],
       });
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -130,10 +130,10 @@ describe('library apps controller', () => {
         userType: 'instance',
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',

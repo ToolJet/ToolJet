@@ -1,13 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  clearDB,
+  resetDB,
   createUser,
-  createNestAppInstance,
+  initTestApp,
   createDataQuery,
-  createAppGroupPermission,
-  generateAppDefaults,
-  authenticateUser,
+  grantAppPermission,
+  createAppWithDependencies,
+  loginAs,
   createDatasourceGroupPermission,
 } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
@@ -21,11 +21,11 @@ describe('data queries controller', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
@@ -50,15 +50,15 @@ describe('data queries controller', () => {
       organization: adminUserData.organization,
     });
 
-    const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
+    const { application, dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});
 
-    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    let loggedUser = await loginAs(app, adminUserData.user.email);
     adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    loggedUser = await loginAs(app, developerUserData.user.email);
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    loggedUser = await loginAs(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
     superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
@@ -67,7 +67,7 @@ describe('data queries controller', () => {
         name: 'developer',
       },
     });
-    await createAppGroupPermission(app, application, developerUserGroup.id, {
+    await grantAppPermission(app, application, developerUserGroup.id, {
       read: true,
       update: true,
       delete: false,
@@ -79,7 +79,7 @@ describe('data queries controller', () => {
         name: 'viewer',
       },
     });
-    await createAppGroupPermission(app, application, viewerUserGroup.id, {
+    await grantAppPermission(app, application, viewerUserGroup.id, {
       read: true,
       update: false,
       delete: false,
@@ -106,10 +106,10 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
-    const loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    const loggedUser = await loginAs(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
+    const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});
     const response = await request(app.getHttpServer())
       .post(`/api/data-queries/${dataQuery.id}/run`)
       .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
@@ -125,7 +125,7 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, { isAppPublic: true });
+    const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, { isAppPublic: true });
 
     const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 
@@ -138,7 +138,7 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
+    const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});
 
     const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 

@@ -1,4 +1,4 @@
-import { clearDB, createNestAppInstance, createUser } from '../test.helper';
+import { resetDB, initTestApp, createUser } from '../test.helper';
 import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
@@ -22,13 +22,13 @@ describe('UsersService', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeAll(async () => {
-    nestApp = await createNestAppInstance();
+    ({ app: nestApp } = await initTestApp());
     service = nestApp.get<UsersService>(UsersService);
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   afterAll(async () => {

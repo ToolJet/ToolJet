@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../test.helper';
 import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
@@ -20,11 +20,11 @@ describe('instance settings controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
   });
 
   describe('GET /api/instance-settings', () => {
@@ -55,9 +55,9 @@ describe('instance settings controller', () => {
         },
       ];
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',
@@ -107,9 +107,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',
@@ -152,9 +152,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',
@@ -205,9 +205,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',

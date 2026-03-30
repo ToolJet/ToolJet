@@ -3,13 +3,13 @@
  *
  * This module owns:
  * - Global side effects (TOOLJET_VERSION, .env.test loading)
- * - NestJS test app instantiation (initTestApp + backward-compat wrappers)
+ * - NestJS test app instantiation (initTestApp)
  * - DataSource singleton management (setDataSources, getDefaultDataSource, getTooljetDbDataSource)
  *
  * IMPORTANT: This module imports NOTHING from test.helper.ts to avoid circular dependencies.
  */
 
-import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
@@ -32,7 +32,7 @@ import { getEnvVars } from 'scripts/database-config-utils';
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
 // Load env vars from .env.test into process.env so ConfigService works consistently
-// in both NestJS modules and standalone test helpers (createTestSession, authHeaderForUser).
+// in both NestJS modules and standalone test helpers (buildTestSession, buildAuthHeader).
 const _testEnvVars = getEnvVars();
 for (const [key, value] of Object.entries(_testEnvVars)) {
   if (process.env[key] === undefined && typeof value === 'string') {
@@ -108,7 +108,7 @@ function createResilientLicenseTermsMock() {
 // App configuration helper (shared across all factory functions)
 // ---------------------------------------------------------------------------
 
-async function configureApp(app: INestApplication, moduleRef: any): Promise<void> {
+async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
@@ -154,7 +154,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   } = options ?? {};
 
   // Build providers list
-  const providers: any[] = [];
+  const providers: Provider[] = [];
 
   if (mockConfig) {
     providers.push({
@@ -224,33 +224,3 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   return result;
 }
 
-// ---------------------------------------------------------------------------
-// Backward-compatible wrappers
-// ---------------------------------------------------------------------------
-
-export async function createNestAppInstance(): Promise<INestApplication> {
-  const { app } = await initTestApp();
-  return app;
-}
-
-export async function createNestAppInstanceWithEnvMock(): Promise<{
-  app: INestApplication;
-  mockConfig: DeepMocked<ConfigService>;
-}> {
-  const { app, mockConfig } = await initTestApp({ mockConfig: true });
-  return { app, mockConfig: mockConfig! };
-}
-
-export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseService = false }): Promise<{
-  app: INestApplication;
-  licenseServiceMock?: DeepMocked<LicenseService>;
-  configServiceMock?: DeepMocked<ConfigService>;
-}> {
-  const { app, licenseServiceMock } = await initTestApp({
-    mockLicenseService: shouldMockLicenseService,
-  });
-  return {
-    app,
-    ...(shouldMockLicenseService && { licenseServiceMock }),
-  };
-}

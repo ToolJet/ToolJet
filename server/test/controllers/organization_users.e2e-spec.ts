@@ -3,18 +3,18 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstance, authenticateUser, createTestSession, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, buildTestSession, getDefaultDataSource } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     const defaultDataSource = getDefaultDataSource();
     userRepository = defaultDataSource.getRepository(User);
   });
@@ -34,7 +34,7 @@ describe('organization users controller', () => {
 
     const organization = adminUserData.organization;
 
-    const adminSession = await createTestSession(adminUserData.user, organization.id);
+    const adminSession = await buildTestSession(adminUserData.user, organization.id);
     adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
     const developerUserData = await createUser(app, {
@@ -59,10 +59,10 @@ describe('organization users controller', () => {
       superAdminUserData.user
     );
 
-    const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+    const superAdminSession = await buildTestSession(superAdminUserData.user, organization.id);
     superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
 
-    const developerSession = await createTestSession(developerUserData.user, organization.id);
+    const developerSession = await buildTestSession(developerUserData.user, organization.id);
     developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
     const viewerUserData = await createUser(app, {
@@ -88,7 +88,7 @@ describe('organization users controller', () => {
       expect(user).toBeDefined();
     }
 
-    const viewerSession = await createTestSession(viewerUserData.user, organization.id);
+    const viewerSession = await buildTestSession(viewerUserData.user, organization.id);
     viewerUserData['tokenCookie'] = viewerSession.tokenCookie;
 
     await request(app.getHttpServer())
@@ -125,7 +125,7 @@ describe('organization users controller', () => {
         status: 'active',
       });
 
-      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       const organization = adminUserData.organization;
@@ -168,7 +168,7 @@ describe('organization users controller', () => {
 
       const organization = adminUserData.organization;
 
-      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       const developerUserData = await createUser(app, {
@@ -177,7 +177,7 @@ describe('organization users controller', () => {
         organization,
       });
 
-      const developerSession = await createTestSession(developerUserData.user, organization.id);
+      const developerSession = await buildTestSession(developerUserData.user, organization.id);
       developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const viewerUserData = await createUser(app, {
@@ -199,7 +199,7 @@ describe('organization users controller', () => {
         superAdminUserData.user
       );
 
-      const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+      const superAdminSession = await buildTestSession(superAdminUserData.user, organization.id);
       superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
 
       await request(app.getHttpServer())
@@ -268,10 +268,10 @@ describe('organization users controller', () => {
         superAdminUserData.user
       );
 
-      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
-      const superAdminSession = await createTestSession(superAdminUserData.user, organization.id);
+      const superAdminSession = await buildTestSession(superAdminUserData.user, organization.id);
       superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
 
       const developerUserData = await createUser(app, {
@@ -281,7 +281,7 @@ describe('organization users controller', () => {
         organization,
       });
 
-      const developerSession = await createTestSession(developerUserData.user, organization.id);
+      const developerSession = await buildTestSession(developerUserData.user, organization.id);
       developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const viewerUserData = await createUser(app, {
@@ -357,7 +357,7 @@ describe('organization users controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       const organization = adminUserData.organization;
@@ -393,7 +393,7 @@ describe('organization users controller', () => {
         organization,
       });
 
-      const adminSession = await createTestSession(adminUserData.user, organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
       await request(app.getHttpServer())
@@ -418,10 +418,10 @@ describe('organization users controller', () => {
       });
       const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', userType: 'workspace' });
 
-      const adminSession = await createTestSession(adminUserData.user, adminUserData.organization.id);
+      const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
       adminUserData['tokenCookie'] = adminSession.tokenCookie;
 
-      const developerSession = await createTestSession(developerUserData.user, adminUserData.organization.id);
+      const developerSession = await buildTestSession(developerUserData.user, adminUserData.organization.id);
       developerUserData['tokenCookie'] = developerSession.tokenCookie;
 
       const adminRequestResponse = await request(app.getHttpServer())

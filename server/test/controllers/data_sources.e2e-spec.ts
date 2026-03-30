@@ -1,17 +1,17 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  clearDB,
+  resetDB,
   createUser,
-  createNestAppInstance,
+  initTestApp,
   createDataSource,
   createDataSourceOption,
   createApplicationVersion,
   createApplication,
-  createAppEnvironments,
+  ensureAppEnvironments,
   getAllEnvironments,
-  generateAppDefaults,
-  authenticateUser,
+  createAppWithDependencies,
+  loginAs,
 } from '../test.helper';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -22,12 +22,12 @@ describe('data sources controller', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   afterAll(async () => {
@@ -40,9 +40,9 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createAppEnvironments(app, adminUserData.organization.id);
+      await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+      const loggedUser = await loginAs(app, adminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .post('/api/data-sources')
@@ -71,9 +71,9 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createAppEnvironments(app, adminUserData.organization.id);
+      await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+      const loggedUser = await loginAs(app, adminUserData.user.email);
 
       // Create a data source via the API so it has the correct organizationId
       await request(app.getHttpServer())
@@ -107,7 +107,7 @@ describe('data sources controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
 
       // Try to list data sources for admin's org using another org's user
       const response = await request(app.getHttpServer())
@@ -126,9 +126,9 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createAppEnvironments(app, adminUserData.organization.id);
+      await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+      const loggedUser = await loginAs(app, adminUserData.user.email);
 
       // Create a data source via the API
       const createResponse = await request(app.getHttpServer())
@@ -157,21 +157,21 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      // Note: generateAppDefaults below creates app which seeds environments
+      // Note: createAppWithDependencies below creates app which seeds environments
       const anotherOrgAdminUserData = await createUser(app, {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
 
-      // Create data source using generateAppDefaults, then set organizationId
-      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      // Create data source using createAppWithDependencies, then set organizationId
+      const { dataSource } = await createAppWithDependencies(app, adminUserData.user, {
         isQueryNeeded: false,
       });
       await defaultDataSource.manager.update(DataSource, dataSource.id, {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .put(`/api/data-sources/${dataSource.id}`)
@@ -190,9 +190,9 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createAppEnvironments(app, adminUserData.organization.id);
+      await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await authenticateUser(app, adminUserData.user.email);
+      const loggedUser = await loginAs(app, adminUserData.user.email);
 
       // Create a data source via the API
       const createResponse = await request(app.getHttpServer())
@@ -216,20 +216,20 @@ describe('data sources controller', () => {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      // Note: generateAppDefaults below creates app which seeds environments
+      // Note: createAppWithDependencies below creates app which seeds environments
       const anotherOrgAdminUserData = await createUser(app, {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
 
-      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      const { dataSource } = await createAppWithDependencies(app, adminUserData.user, {
         isQueryNeeded: false,
       });
       await defaultDataSource.manager.update(DataSource, dataSource.id, {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedAnotherUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data-sources/${dataSource.id}`)
@@ -251,7 +251,7 @@ describe('data sources controller', () => {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      const { dataSource } = await createAppWithDependencies(app, adminUserData.user, {
         isQueryNeeded: false,
       });
 
@@ -260,7 +260,7 @@ describe('data sources controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+      const loggedUser = await loginAs(app, anotherOrgAdminUserData.user.email);
 
       // Should not update if user of another org
       const response = await request(app.getHttpServer())

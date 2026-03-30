@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
@@ -12,11 +12,11 @@ describe('organizations controller', () => {
   let mockConfig;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
     const defaultDataSource = getDefaultDataSource();
     ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
     userRepository = defaultDataSource.getRepository(User);
@@ -36,9 +36,9 @@ describe('organizations controller', () => {
       const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
       const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
 
-      let loggedUser = await authenticateUser(app);
+      let loggedUser = await loginAs(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await authenticateUser(
+      loggedUser = await loginAs(
         app,
         superAdminUserData.user.email,
         'password',
@@ -85,9 +85,9 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        let loggedUser = await authenticateUser(app);
+        let loggedUser = await loginAs(app);
         user['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', organization.id);
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
         for (const [index, userData] of [user, superAdminUserData.user].entries()) {
@@ -121,7 +121,7 @@ describe('organizations controller', () => {
 
       it('should throw error if name is empty', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: '', slug: 'slug' })
@@ -133,7 +133,7 @@ describe('organizations controller', () => {
 
       it('should throw error if name is longer than 50 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: '100000000000000000000000000000000000000000000000000000000000000909', slug: 'sdsdds23423' })
@@ -147,7 +147,7 @@ describe('organizations controller', () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: 'My workspace', slug: 'my-workspace' })
@@ -169,9 +169,9 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        let loggedUser = await authenticateUser(app);
+        let loggedUser = await loginAs(app);
         user['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', organization.id);
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
         // Update name via organizations endpoint
@@ -214,7 +214,7 @@ describe('organizations controller', () => {
 
       it('should throw error if name is longer than 50 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
 
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
@@ -232,7 +232,7 @@ describe('organizations controller', () => {
           groups: ['end-user'],
           organization,
         });
-        const loggedUser = await authenticateUser(app, 'developer@tooljet.io');
+        const loggedUser = await loginAs(app, 'developer@tooljet.io');
         const response = await request(app.getHttpServer())
           .patch('/api/login-configs/organization-general')
           .send({ domain: 'tooljet.io', enableSignUp: true })
@@ -251,9 +251,9 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        let loggedUser = await authenticateUser(app);
+        let loggedUser = await loginAs(app);
         user['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', organization.id);
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
         for (const userData of [user, superAdminUserData.user]) {
@@ -279,7 +279,7 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        const loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        const loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', organization.id);
         let response = await request(app.getHttpServer())
           .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
@@ -294,7 +294,7 @@ describe('organizations controller', () => {
         expect(gitConfigs['clientId']).toBe('client-id');
         expect(gitConfigs['clientSecret']).not.toBe('client-secret');
 
-        const loggedSuperAdminUser = await authenticateUser(
+        const loggedSuperAdminUser = await loginAs(
           app,
           superAdminUserData.user.email,
           'password',
@@ -320,7 +320,7 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
           groups: ['end-user'],
         });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
@@ -340,9 +340,9 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        let loggedUser = await authenticateUser(app);
+        let loggedUser = await loginAs(app);
         user['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', organization.id);
         superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
         const response = await request(app.getHttpServer())
@@ -378,7 +378,7 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
           groups: ['end-user'],
         });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .get('/api/login-configs/organization')
           .set('tj-workspace-id', user.defaultOrganizationId)
@@ -393,7 +393,7 @@ describe('organizations controller', () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
         const response = await request(app.getHttpServer())
           .patch('/api/login-configs/organization-sso')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
@@ -432,7 +432,7 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
         });
 
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
 
         const response = await request(app.getHttpServer())
           .patch('/api/login-configs/organization-sso')
@@ -475,7 +475,7 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
         });
 
-        const loggedUser = await authenticateUser(app);
+        const loggedUser = await loginAs(app);
 
         const getResponse = await request(app.getHttpServer()).get(
           `/api/login-configs/${organization.id}/public`

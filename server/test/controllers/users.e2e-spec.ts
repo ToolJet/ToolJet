@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../test.helper';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
 
@@ -8,11 +8,11 @@ describe('users controller', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
   });
 
   afterEach(() => {
@@ -27,7 +27,7 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -47,7 +47,7 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -73,7 +73,7 @@ describe('users controller', () => {
 
       const [firstName, lastName] = ['Daenerys', 'Targaryen'];
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -97,7 +97,7 @@ describe('users controller', () => {
       const { user } = userData;
       const filePath = path.join(__dirname, '../__mocks__/avatar.png');
 
-      const loggedUser = await authenticateUser(app);
+      const loggedUser = await loginAs(app);
       userData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())

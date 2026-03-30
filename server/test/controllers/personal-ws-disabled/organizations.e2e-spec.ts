@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, authenticateUser, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
@@ -10,7 +10,7 @@ describe('organizations controller', () => {
   let instanceSettingsRepository: Repository<InstanceSettings>;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     await instanceSettingsRepository.update(
       { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
       { value: 'false' }
@@ -18,7 +18,7 @@ describe('organizations controller', () => {
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
     const defaultDataSource = getDefaultDataSource();
     instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
   });
@@ -34,7 +34,7 @@ describe('organizations controller', () => {
         const { user: userData } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
-        const loggedUser = await authenticateUser(app, userData.email);
+        const loggedUser = await loginAs(app, userData.email);
         await request(app.getHttpServer())
           .post('/api/organizations')
           .set('tj-workspace-id', userData.defaultOrganizationId)
@@ -47,7 +47,7 @@ describe('organizations controller', () => {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
-        const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+        const loggedUser = await loginAs(app, superAdminUserData.user.email);
         await request(app.getHttpServer())
           .post('/api/organizations')
           .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
@@ -62,7 +62,7 @@ describe('organizations controller', () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
-        const loggedUser = await authenticateUser(app, user.email);
+        const loggedUser = await loginAs(app, user.email);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations')
           .send({ name: 'new name' })
@@ -79,7 +79,7 @@ describe('organizations controller', () => {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
-        const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+        const loggedUser = await loginAs(app, superAdminUserData.user.email);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations')
           .send({ name: 'new name' })

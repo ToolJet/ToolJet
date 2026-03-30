@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance, logoutUser, authenticateUser } from '../test.helper';
+import { resetDB, createUser, initTestApp, logout, loginAs } from '../test.helper';
 import * as request from 'supertest';
 
 describe('session & new apis', () => {
@@ -7,23 +7,23 @@ describe('session & new apis', () => {
   let tokenCookie: string;
   let orgId: string;
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     const { organization } = await createUser(app, {
       email: 'admin@tooljet.io',
       firstName: 'user',
       lastName: 'name',
     });
     orgId = organization.id;
-    const { tokenCookie: tokenCookieData } = await authenticateUser(app);
+    const { tokenCookie: tokenCookieData } = await loginAs(app);
     tokenCookie = tokenCookieData;
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp());
   });
 
   afterEach(async () => {
-    await logoutUser(app, tokenCookie, orgId);
+    await logout(app, tokenCookie, orgId);
   });
 
   it('Should return 401 if the auth token is invalid', async () => {

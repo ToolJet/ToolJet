@@ -2,7 +2,7 @@
  * cleanup.ts — Database cleanup and generic entity helpers.
  *
  * This module owns:
- * - resetDB() / clearDB() — truncates all tables between test runs
+ * - resetDB() — truncates all tables between test runs
  * - dropTooljetDbTables() — private helper for ToolJet DB internal tables
  * - Generic entity helpers: findEntity, updateEntity, countEntities
  *
@@ -31,7 +31,7 @@ async function dropTooljetDbTables() {
 }
 
 // ---------------------------------------------------------------------------
-// resetDB (formerly clearDB)
+// resetDB
 // ---------------------------------------------------------------------------
 
 export async function resetDB() {
@@ -87,7 +87,7 @@ export async function resetDB() {
         await ds.query(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`);
         await ds.query(`SET lock_timeout = 0`);
         break;
-      } catch (err: any) {
+      } catch (err: unknown) {
         try { await ds.query(`SET lock_timeout = 0`); } catch {}
         if (attempt < 4) {
           // On first retry, also kill ALL other connections (not just idle-in-transaction)
@@ -104,7 +104,8 @@ export async function resetDB() {
           await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
           continue;
         }
-        console.error('clearDB: TRUNCATE failed after 5 attempts:', err?.message?.substring(0, 120));
+        const message = err instanceof Error ? err.message.substring(0, 120) : String(err);
+        console.error('resetDB: TRUNCATE failed after 5 attempts:', message);
       }
     }
   }
@@ -114,8 +115,6 @@ export async function resetDB() {
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
   }
 }
-/** @deprecated Use resetDB instead */
-export const clearDB = resetDB;
 
 // ---------------------------------------------------------------------------
 // Generic entity helpers
@@ -141,7 +140,7 @@ export async function updateEntity<T extends ObjectLiteral>(
   updates: Partial<T>
 ): Promise<void> {
   const ds = getDefaultDataSource();
-  await ds.manager.update(EntityClass, id, updates as any);
+  await ds.manager.update(EntityClass, id, updates as Parameters<typeof ds.manager.update>[2]);
 }
 
 /**

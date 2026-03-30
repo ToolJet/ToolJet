@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { authenticateUser, clearDB, createNestAppInstance, createUser, createApplication, getDefaultDataSource } from '../test.helper';
+import { loginAs, resetDB, initTestApp, createUser, createApplication, getDefaultDataSource } from '../test.helper';
 import * as request from 'supertest';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
@@ -25,11 +25,11 @@ describe('folder apps controller', () => {
   let nestApp: INestApplication;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    nestApp = await createNestAppInstance();
+    ({ app: nestApp } = await initTestApp());
   });
 
   describe('POST /api/folder-apps', () => {
@@ -45,7 +45,7 @@ describe('folder apps controller', () => {
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
       );
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = await loginAs(nestApp);
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder-apps`)
@@ -74,7 +74,7 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
-      const loggedUser = await authenticateUser(
+      const loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',
@@ -104,7 +104,7 @@ describe('folder apps controller', () => {
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
       );
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = await loginAs(nestApp);
 
       await request(nestApp.getHttpServer())
         .post(`/api/folder-apps`)
@@ -125,7 +125,7 @@ describe('folder apps controller', () => {
     it('should remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = await loginAs(nestApp);
 
       const manager = getDefaultDataSource().manager;
       // create a new folder
@@ -160,7 +160,7 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
-      const loggedUser = await authenticateUser(
+      const loggedUser = await loginAs(
         nestApp,
         superAdminUserData.user.email,
         'password',

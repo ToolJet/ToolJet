@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, getDefaultDataSource } from '../../test.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -40,7 +40,7 @@ describe('oauth controller', () => {
   const defaultUserEmail = 'szoboszlai@lfc.com';
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
     setupSAMLMocks();
   });
 
@@ -66,7 +66,7 @@ describe('oauth controller', () => {
   };
 
   beforeAll(async () => {
-    ({ app } = await createNestAppInstanceWithEnvMock());
+    ({ app } = await initTestApp({ mockConfig: true }));
     const defaultDataSource = getDefaultDataSource();
     ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
     orgRepository = defaultDataSource.getRepository(Organization);

@@ -1,14 +1,14 @@
 import {
-  clearDB,
+  resetDB,
   createUser,
-  createNestAppInstance,
+  initTestApp,
   createApplication,
   createApplicationVersion,
   createDataQuery,
   createDataSource,
-  generateAppDefaults,
-  createAppEnvironments,
-  getAppWithAllDetails,
+  createAppWithDependencies,
+  ensureAppEnvironments,
+  findAppWithRelations,
 } from '../test.helper';
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
@@ -22,11 +22,11 @@ describe('AppImportExportService', () => {
   let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
-    await clearDB();
+    await resetDB();
   });
 
   beforeAll(async () => {
-    nestApp = await createNestAppInstance();
+    ({ app: nestApp } = await initTestApp());
     service = nestApp.get<AppImportExportService>(AppImportExportService);
     defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
@@ -38,7 +38,7 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const { application: app } = await generateAppDefaults(nestApp, adminUserData.user, {
+      const { application: app } = await createAppWithDependencies(nestApp, adminUserData.user, {
         isAppPublic: true,
         isDataSourceNeeded: false,
         isQueryNeeded: false,
@@ -61,11 +61,11 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const { application } = await generateAppDefaults(nestApp, adminUserData.user, {
+      const { application } = await createAppWithDependencies(nestApp, adminUserData.user, {
         isAppPublic: true,
       });
 
-      const exportedApp = await getAppWithAllDetails(application.id);
+      const exportedApp = await findAppWithRelations(application.id);
 
       const { appV2: result } = await service.export(adminUser, exportedApp.id);
 
@@ -94,7 +94,7 @@ describe('AppImportExportService', () => {
         },
         false
       );
-      await createAppEnvironments(nestApp, adminUser.organizationId);
+      await ensureAppEnvironments(nestApp, adminUser.organizationId);
       const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
@@ -175,7 +175,7 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const { application: app } = await generateAppDefaults(nestApp, adminUserData.user, {
+      const { application: app } = await createAppWithDependencies(nestApp, adminUserData.user, {
         isAppPublic: true,
         isDataSourceNeeded: false,
         isQueryNeeded: false,
@@ -184,7 +184,7 @@ describe('AppImportExportService', () => {
       const { appV2: exportedApp } = await service.export(adminUser, app.id);
       const appName = 'my app';
       const { newApp } = await service.import(adminUser, exportedApp, appName);
-      const importedApp = await getAppWithAllDetails(newApp.id);
+      const importedApp = await findAppWithRelations(newApp.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
       expect(importedApp.name).toContain(exportedApp.name);
@@ -202,7 +202,7 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const { application, appVersion: applicationVersion } = await generateAppDefaults(nestApp, adminUserData.user, {
+      const { application, appVersion: applicationVersion } = await createAppWithDependencies(nestApp, adminUserData.user, {
         isDataSourceNeeded: false,
         isQueryNeeded: false,
       });
@@ -229,7 +229,7 @@ describe('AppImportExportService', () => {
       expect(newApp.organizationId).toBe(exportedApp.organizationId);
 
       // Verify the imported app has an app version
-      const importedApp = await getAppWithAllDetails(newApp.id);
+      const importedApp = await findAppWithRelations(newApp.id);
       expect(importedApp.appVersions).toHaveLength(1);
       expect(importedApp.appVersions[0].appId).toEqual(newApp.id);
 
