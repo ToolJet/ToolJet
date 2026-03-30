@@ -146,12 +146,8 @@ export const useWorkspaceBranchesStore = create(
         },
 
         async checkForUpdates(branch) {
-          try {
-            const result = await workspaceBranchesService.checkForUpdates(branch);
-            return result;
-          } catch (error) {
-            throw error;
-          }
+          const result = await workspaceBranchesService.checkForUpdates(branch);
+          return result;
         },
 
         reset() {
