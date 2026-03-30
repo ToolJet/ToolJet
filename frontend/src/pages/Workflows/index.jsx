@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -56,11 +56,12 @@ export default function Workflows() {
   const { data: workflowWorkspaceLevelLimit, isSuccess: isWorkspaceLimitFetchedSuccessfully } =
     useFetchWorkflowLimit('workspace');
 
+  const { hasViewPermission, hasCreatePermission } = useMemo(() => canUserPerformWorkflowAction(), []);
+
   useEffect(() => {
     // fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD }); // Also called in frontend/src/_ui/Layout/index.jsx check if we can skip this call from here
 
     // TODO: I guess if we do not render route itself we won't need this logic here
-    const { hasViewPermission } = canUserPerformWorkflowAction();
     const canView = hasViewPermission && isWorkflowsFeatureEnabled();
 
     if (!canView) {
@@ -69,7 +70,7 @@ export default function Workflows() {
       const workspaceId = getWorkspaceId();
       navigate(`/${workspaceId}/home`);
     }
-  }, [navigate]);
+  }, [navigate, hasViewPermission]);
 
   const setSelectedFolder = (folderId) => {
     if (folderId === 'all') {
@@ -114,6 +115,7 @@ export default function Workflows() {
     !isInstanceLimitFetchedSuccessfully || !isWorkspaceLimitFetchedSuccessfully || isWorkflowLimitReached;
 
   const checkUserPermissions = (app) => canUserPerformWorkflowAction('', app);
+  const showCreateAppActions = hasCreatePermission;
 
   const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
   // Only exclude env param if license is invalid/expired (basic plan)
@@ -134,14 +136,16 @@ export default function Workflows() {
               limits={workflowLimitsDetails}
             />
           ) : (
-            <div className="tw-flex tw-items-center tw-gap-2">
-              <CreateWorkflowBtn
-                label={t('workflowsDashboard.header.createNewApplication')}
-                disabled={isCreationDisabled}
-              />
+            showCreateAppActions && (
+              <div className="tw-flex tw-items-center tw-gap-2">
+                <CreateWorkflowBtn
+                  label={t('workflowsDashboard.header.createNewApplication')}
+                  disabled={isCreationDisabled}
+                />
 
-              <MoreAppsActionMenu appType="workflow" disabled={isCreationDisabled} />
-            </div>
+                <MoreAppsActionMenu appType="workflow" disabled={isCreationDisabled} />
+              </div>
+            )
           )}
         </PageHeader>
 
