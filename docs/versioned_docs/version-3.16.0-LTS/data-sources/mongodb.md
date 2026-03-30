@@ -59,7 +59,7 @@ The connection string typically looks like this: `mongodb+srv://${username}:${pa
 For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net/hrms`
 :::
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongodb-connectionString.png" alt="ToolJet - Mongo connection"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/mongo-db/connection-string-ux-imp.png" alt="ToolJet - Mongo connection String encoded"/>
 
 **Note:** Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
