@@ -58,24 +58,70 @@ jobs:
       - name: Setup flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
+      - name: Check if App Already Exists
+        id: existing-check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  App $APP_NAME already exists — skipping build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+
+      - name: Check if App Already Exists
+        id: existing-check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  App $APP_NAME already exists — skipping build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+
+      - name: Check if App Already Exists
+        id: existing-check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          if flyctl apps show "$APP_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  App $APP_NAME already exists — skipping build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+
       - name: Create Fly App
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
-          APP_NAME="tooljet-ce-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
           flyctl ips allocate-v4 --shared --app "$APP_NAME"
           flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -87,6 +133,7 @@ jobs:
           cache-to: type=gha,mode=min,scope=ce-pr-${{ env.PR_NUMBER }}
 
       - name: Create Postgres Volume
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -98,6 +145,7 @@ jobs:
             --yes
 
       - name: Deploy Machine
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -139,6 +187,7 @@ jobs:
 
 
       - name: Configure Machine (suspend + health check)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -148,6 +197,7 @@ jobs:
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
+        if: steps.existing-check.outputs.exists != 'true'
         run: |
           APP_URL="https://tooljet-ce-pr-${{ env.PR_NUMBER }}.fly.dev"
           echo "Waiting 3 min for app boot, then polling health..."
@@ -167,6 +217,7 @@ jobs:
           done
 
       - name: Enable Autostop (suspend on idle)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -179,6 +230,7 @@ jobs:
             -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -197,6 +249,7 @@ jobs:
             });
 
       - name: Update Labels
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -218,6 +271,42 @@ jobs:
               labels: [activeLabel]
             });
             console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+      - name: Comment App Already Exists
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const appName = process.env.APP_NAME;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ Preview App Already Running!\n\n` +
+                    `A **CE** preview app for this PR already exists.\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://${appName}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/${appName} |\n\n` +
+                    `> To redeploy from scratch, add the \`fly-ce-destroy\` label first, then re-add the team label.`
+            });
+
+      - name: Remove Trigger Label (app already exists)
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: context.payload.label.name
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
+
 
   # ─────────────────────────────────────────────────────────────────────────────
   # CE: Rebuild on new commits
@@ -299,23 +388,24 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Create Fly App
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
-          APP_NAME="tooljet-ee-lts-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
           flyctl ips allocate-v4 --shared --app "$APP_NAME"
           flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -330,6 +420,7 @@ jobs:
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Create Postgres Volume
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -341,6 +432,7 @@ jobs:
             --yes
 
       - name: Deploy Machine
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -390,6 +482,7 @@ jobs:
 
 
       - name: Configure Machine (suspend + health check)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -399,6 +492,7 @@ jobs:
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
+        if: steps.existing-check.outputs.exists != 'true'
         run: |
           APP_URL="https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.fly.dev"
           echo "Waiting 3 min for app boot, then polling health..."
@@ -418,6 +512,7 @@ jobs:
           done
 
       - name: Enable Autostop (suspend on idle)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -430,6 +525,7 @@ jobs:
             -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -448,6 +544,7 @@ jobs:
             });
 
       - name: Update Labels
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -469,6 +566,42 @@ jobs:
               labels: [activeLabel]
             });
             console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+      - name: Comment App Already Exists
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const appName = process.env.APP_NAME;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ Preview App Already Running!\n\n` +
+                    `A **EE LTS** preview app for this PR already exists.\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://${appName}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/${appName} |\n\n` +
+                    `> To redeploy from scratch, add the \`fly-ee-lts-destroy\` label first, then re-add the team label.`
+            });
+
+      - name: Remove Trigger Label (app already exists)
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: context.payload.label.name
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
+
 
   # ─────────────────────────────────────────────────────────────────────────────
   # EE LTS: Rebuild on new commits
@@ -550,25 +683,26 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Create Fly App
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: |
           # Note: "tooljet-ee-pre-release-pr-NNN" exceeds Fly's 30-char limit for large PR numbers.
           # Using shortened name "tooljet-ee-pre-pr-NNN" to stay safe.
-          APP_NAME="tooljet-ee-pre-pr-${{ env.PR_NUMBER }}"
           flyctl apps create "$APP_NAME"
-          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
           flyctl ips allocate-v4 --shared --app "$APP_NAME"
           flyctl ips allocate-v6 --app "$APP_NAME"
 
       - name: Authenticate Docker with Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
         run: flyctl auth docker
 
       - name: Build and Push Image to Fly Registry
+        if: steps.existing-check.outputs.exists != 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -583,6 +717,7 @@ jobs:
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Create Postgres Volume
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -594,6 +729,7 @@ jobs:
             --yes
 
       - name: Deploy Machine
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           FLY_ORG: ${{ secrets.FLY_ORG }}
@@ -643,6 +779,7 @@ jobs:
 
 
       - name: Configure Machine (suspend + health check)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -652,6 +789,7 @@ jobs:
           curl -s -X POST "https://api.machines.dev/v1/apps/$APP_NAME/machines/$MACHINE_ID" -H "Authorization: Bearer $FLY_API_TOKEN" -H "Content-Type: application/json" -d "$PAYLOAD" | jq -r '"\u2705 Machine configured: autostop=\(.config.services[0].autostop)"'
 
       - name: Wait for Healthy
+        if: steps.existing-check.outputs.exists != 'true'
         run: |
           APP_URL="https://tooljet-ee-pre-pr-${{ env.PR_NUMBER }}.fly.dev"
           echo "Waiting 3 min for app boot, then polling health..."
@@ -671,6 +809,7 @@ jobs:
           done
 
       - name: Enable Autostop (suspend on idle)
+        if: steps.existing-check.outputs.exists != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -683,6 +822,7 @@ jobs:
             -d "$PAYLOAD" | jq -r '"\u2705 Autostop enabled: suspend"'
 
       - name: Comment Deployment URL
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -701,6 +841,7 @@ jobs:
             });
 
       - name: Update Labels
+        if: steps.existing-check.outputs.exists != 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -722,6 +863,42 @@ jobs:
               labels: [activeLabel]
             });
             console.log(`Swapped ${triggerLabel} → ${activeLabel}`);
+      - name: Comment App Already Exists
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const appName = process.env.APP_NAME;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ Preview App Already Running!\n\n` +
+                    `A **EE Pre-release** preview app for this PR already exists.\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://${appName}.fly.dev |\n` +
+                    `| **Fly Dashboard** | https://fly.io/apps/${appName} |\n\n` +
+                    `> To redeploy from scratch, add the \`fly-ee-pre-destroy\` label first, then re-add the team label.`
+            });
+
+      - name: Remove Trigger Label (app already exists)
+        if: steps.existing-check.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: context.payload.label.name
+              });
+            } catch (e) { console.log('Label already removed:', e.message); }
+
 
   # ─────────────────────────────────────────────────────────────────────────────
   # EE Pre-release: Rebuild on new commits
