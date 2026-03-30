@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { login, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../../../test.helper';
 import * as request from 'supertest';
-import { Folder } from '../../src/entities/folder.entity';
-import { FolderApp } from '../../src/entities/folder_app.entity';
+import { Folder } from '@entities/folder.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 
 async function setupOrganization(nestApp) {
   const adminUserData = await createUser(nestApp, {
