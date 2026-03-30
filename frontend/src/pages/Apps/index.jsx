@@ -117,6 +117,7 @@ export default function Apps({ appType = 'front-end' }) {
                   <CreateWorkflowBtn
                     label={t('homePage.header.createNewApplication', 'Create new app')}
                     disabled={isCreationDisabled}
+                    dataCy="create-new-app-button"
                   />
 
                   <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
