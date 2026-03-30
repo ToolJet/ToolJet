@@ -1,14 +1,3 @@
-/**
- * bootstrap.ts — Test application factory and global side effects.
- *
- * This module owns:
- * - Global side effects (TOOLJET_VERSION, .env.test loading)
- * - NestJS test app instantiation (initTestApp)
- * - DataSource singleton management (setDataSources, getDefaultDataSource, getTooljetDbDataSource)
- *
- * IMPORTANT: This module imports NOTHING from test.helper.ts to avoid circular dependencies.
- */
-
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
@@ -25,14 +14,8 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
 
-// ---------------------------------------------------------------------------
-// Global side effects
-// ---------------------------------------------------------------------------
-
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
-// Load env vars from .env.test into process.env so ConfigService works consistently
-// in both NestJS modules and standalone test helpers (buildTestSession, buildAuthHeader).
 const _testEnvVars = getEnvVars();
 for (const [key, value] of Object.entries(_testEnvVars)) {
   if (process.env[key] === undefined && typeof value === 'string') {
@@ -40,13 +23,10 @@ for (const [key, value] of Object.entries(_testEnvVars)) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Module-level state: DataSource singletons
-// ---------------------------------------------------------------------------
-
 let _defaultDataSource: TypeOrmDataSource;
 let _tooljetDbDataSource: TypeOrmDataSource;
 
+/** Captures TypeORM DataSource singletons from the NestJS app for use by test helpers. */
 export function setDataSources(nestApp: INestApplication) {
   _defaultDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   try {
@@ -56,6 +36,7 @@ export function setDataSources(nestApp: INestApplication) {
   }
 }
 
+/** Returns the default TypeORM DataSource. Throws if setDataSources() was not called. */
 export function getDefaultDataSource(): TypeOrmDataSource {
   if (!_defaultDataSource) {
     throw new Error('DataSource not initialized. Call setDataSources(app) in beforeAll.');
@@ -63,22 +44,16 @@ export function getDefaultDataSource(): TypeOrmDataSource {
   return _defaultDataSource;
 }
 
+/** Returns the ToolJet DB DataSource, or undefined if not configured. */
 export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
   return _tooljetDbDataSource;
 }
 
-// ---------------------------------------------------------------------------
-// Resilient license terms mock
-// ---------------------------------------------------------------------------
-
 /**
- * Creates a resilient LicenseTermsService mock that cannot be cleared by jest.resetAllMocks().
- * Uses plain functions (NOT jest.fn()) so they survive mock resets.
- *
- * Returns field-appropriate values:
- * - 'UNLIMITED' for simple boolean/string fields
- * - Structured object with UNLIMITED sub-properties for WORKFLOWS
- *   (workflow guards check .workspace/.instance properties)
+ * Creates a LicenseTermsService mock that survives jest.resetAllMocks().
+ * Uses plain functions instead of jest.fn() so mock resets cannot clear them.
+ * Returns 'UNLIMITED' for simple fields and a structured object for 'workflows'
+ * (workflow guards check .workspace/.instance sub-properties).
  */
 function createResilientLicenseTermsMock() {
   return {
@@ -104,10 +79,7 @@ function createResilientLicenseTermsMock() {
   };
 }
 
-// ---------------------------------------------------------------------------
-// App configuration helper (shared across all factory functions)
-// ---------------------------------------------------------------------------
-
+/** Applies standard NestJS app configuration (prefix, pipes, filters, versioning). */
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
@@ -120,10 +92,7 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
   });
 }
 
-// ---------------------------------------------------------------------------
-// initTestApp — plan-aware unified test app factory
-// ---------------------------------------------------------------------------
-
+/** Options for initializing the NestJS test application. */
 export interface InitTestAppOptions {
   /** Edition to simulate. Default: 'ee' */
   edition?: 'ce' | 'ee' | 'cloud';
@@ -135,12 +104,18 @@ export interface InitTestAppOptions {
   mockLicenseService?: boolean;
 }
 
+/** Result of initTestApp containing the app and optional mocks. */
 export interface InitTestAppResult {
   app: INestApplication;
   mockConfig?: DeepMocked<ConfigService>;
   licenseServiceMock?: DeepMocked<LicenseService>;
 }
 
+/**
+ * Initializes a NestJS test application with edition and plan context.
+ * @param options.mockConfig - When true, injects a DeepMocked ConfigService.
+ * @param options.mockLicenseService - When true, injects a controllable LicenseService mock (use jest.spyOn to override).
+ */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
   const {
     // edition and plan are reserved for future use; currently tests always run
@@ -153,7 +128,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     mockLicenseService = false,
   } = options ?? {};
 
-  // Build providers list
   const providers: Provider[] = [];
 
   if (mockConfig) {
@@ -163,9 +137,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     });
   }
 
-  // When mockLicenseService is true, create a mock that serves as both
-  // LicenseService AND LicenseTermsService. Uses jest.fn() with sensible defaults
-  // so tests can use jest.spyOn to override specific behavior.
   const licenseServiceInstance = mockLicenseService
     ? {
         ...createMock<LicenseService>(),
@@ -196,11 +167,8 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   });
 
   if (mockLicenseService && licenseServiceInstance) {
-    // When mocking LicenseService, use the same instance for LicenseTermsService
-    // so tests can control guard behavior via jest.spyOn(licenseServiceMock, 'getLicenseTerms')
     moduleBuilder.overrideProvider(LicenseTermsService).useValue(licenseServiceInstance);
   } else {
-    // Use the resilient mock that survives jest.resetAllMocks()
     moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
   }
 
@@ -223,4 +191,3 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 
   return result;
 }
-

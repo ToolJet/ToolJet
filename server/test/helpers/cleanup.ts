@@ -1,22 +1,6 @@
-/**
- * cleanup.ts — Database cleanup and generic entity helpers.
- *
- * This module owns:
- * - resetDB() — truncates all tables between test runs
- * - dropTooljetDbTables() — private helper for ToolJet DB internal tables
- * - Generic entity helpers: findEntity, findEntityOrFail, saveEntity, findEntities,
- *   updateEntity, countEntities, getEntityRepository
- *
- * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
- */
-
 import { ObjectLiteral, FindOptionsWhere, EntityTarget, DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { InternalTable } from '@entities/internal_table.entity';
 import { getDefaultDataSource, getTooljetDbDataSource } from './bootstrap';
-
-// ---------------------------------------------------------------------------
-// Private helpers
-// ---------------------------------------------------------------------------
 
 async function dropTooljetDbTables() {
   const ds = getDefaultDataSource();
@@ -31,10 +15,7 @@ async function dropTooljetDbTables() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// resetDB
-// ---------------------------------------------------------------------------
-
+/** Resets the test database -- truncates all tables, terminates stale connections, resets instance settings. */
 export async function resetDB() {
   if (process.env.NODE_ENV !== 'test') return;
   await dropTooljetDbTables();
@@ -52,9 +33,6 @@ export async function resetDB() {
 
   const entities = ds.entityMetadatas;
 
-  // Collect all table names that exist in the DB, then TRUNCATE them all in one
-  // statement. Must filter out non-existent legacy tables first, because a single
-  // TRUNCATE fails entirely if any table is missing.
   const existingRows: { table_name: string }[] = await ds.query(
     `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
   );
@@ -71,7 +49,6 @@ export async function resetDB() {
   if (tables.length > 0) {
     // Terminate lingering backends that may hold locks from previous test files'
     // async operations (e.g., workflow executions completing after app.close()).
-    // The current connection's pool will reconnect automatically.
     try {
       await ds.query(`
         SELECT pg_terminate_backend(pid)
@@ -91,7 +68,7 @@ export async function resetDB() {
       } catch (err: unknown) {
         try { await ds.query(`SET lock_timeout = 0`); } catch {}
         if (attempt < 4) {
-          // On first retry, also kill ALL other connections (not just idle-in-transaction)
+          // On first retry, kill ALL other connections (not just idle-in-transaction)
           if (attempt === 1) {
             try {
               await ds.query(`
@@ -111,19 +88,12 @@ export async function resetDB() {
     }
   }
 
-  // Reset instance_settings to a consistent baseline for every test
   if (existingSet.has('instance_settings')) {
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Generic entity helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Find a single entity by criteria. Returns null if not found.
- */
+/** Finds a single entity by criteria. Returns null if not found. */
 export async function findEntity<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   where: FindOptionsWhere<T>
@@ -132,9 +102,7 @@ export async function findEntity<T extends ObjectLiteral>(
   return await ds.manager.findOne(EntityClass, { where });
 }
 
-/**
- * Find a single entity by criteria. Throws if not found.
- */
+/** Finds a single entity by criteria. Throws if not found. */
 export async function findEntityOrFail<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   where: FindOptionsWhere<T>
@@ -143,9 +111,7 @@ export async function findEntityOrFail<T extends ObjectLiteral>(
   return await ds.manager.findOneOrFail(EntityClass, { where });
 }
 
-/**
- * Update an entity by id.
- */
+/** Updates an entity by id with the given partial fields. */
 export async function updateEntity<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   id: string,
@@ -155,9 +121,7 @@ export async function updateEntity<T extends ObjectLiteral>(
   await ds.manager.update(EntityClass, id, updates as Parameters<typeof ds.manager.update>[2]);
 }
 
-/**
- * Save (insert or update) an entity. Equivalent to ds.manager.save(Entity, data).
- */
+/** Saves (inserts or updates) an entity. */
 export async function saveEntity<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   data: DeepPartial<T>
@@ -166,9 +130,7 @@ export async function saveEntity<T extends ObjectLiteral>(
   return await ds.manager.save(EntityClass, data);
 }
 
-/**
- * Find multiple entities matching criteria.
- */
+/** Finds multiple entities matching criteria. */
 export async function findEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   options?: FindManyOptions<T>
@@ -177,9 +139,7 @@ export async function findEntities<T extends ObjectLiteral>(
   return await ds.manager.find(EntityClass, options);
 }
 
-/**
- * Count entities matching criteria. If no where clause provided, counts all rows.
- */
+/** Counts entities matching criteria. If no where clause provided, counts all rows. */
 export async function countEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   where?: FindOptionsWhere<T>
@@ -188,9 +148,7 @@ export async function countEntities<T extends ObjectLiteral>(
   return await ds.manager.count(EntityClass, where ? { where } : undefined);
 }
 
-/**
- * Delete entities matching criteria.
- */
+/** Deletes entities matching criteria. */
 export async function deleteEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   where: FindOptionsWhere<T>
@@ -200,8 +158,8 @@ export async function deleteEntities<T extends ObjectLiteral>(
 }
 
 /**
- * Get a TypeORM Repository for the given entity class.
- * Use sparingly — prefer findEntity/saveEntity/updateEntity for simple ops.
+ * Returns a TypeORM Repository for the given entity class.
+ * Prefer findEntity/saveEntity/updateEntity for simple operations.
  */
 export function getEntityRepository<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>

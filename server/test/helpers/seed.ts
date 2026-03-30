@@ -1,17 +1,3 @@
-/**
- * seed.ts — Entity creation (seeding) functions for tests.
- *
- * This module owns all functions that INSERT rows into the database:
- * - createUser, createApplication, createApplicationVersion, etc.
- * - Environment helpers (ensureAppEnvironments, getAllEnvironments, getAppEnvironment)
- * - Permission helpers (grantAppPermission, createDatasourceGroupPermission, etc.)
- * - Composite helpers (createAppWithDependencies, findAppWithRelations, etc.)
- * - Workflow helpers (enableWebhookForWorkflows, triggerWorkflowViaWebhook, etc.)
- * - Convenience role factories (createAdmin, createBuilder, createEndUser, createSuperAdmin)
- *
- * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
- */
-
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, Repository } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -44,10 +30,7 @@ import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { getDefaultDataSource } from './bootstrap';
 
-// ---------------------------------------------------------------------------
-// Interfaces
-// ---------------------------------------------------------------------------
-
+/** Options for creating a user with workspace and group memberships. */
 export interface CreateUserOptions {
   firstName?: string;
   lastName?: string;
@@ -64,6 +47,7 @@ export interface CreateUserOptions {
   userStatus?: string;
 }
 
+/** SSO configuration entry for workspace creation. */
 export interface SSOConfigInput {
   sso: string;
   enabled: boolean;
@@ -71,6 +55,7 @@ export interface SSOConfigInput {
   configs?: Record<string, string>;
 }
 
+/** Options for creating an application. */
 export interface CreateAppOptions {
   name: string;
   user?: User & { organizationId: string };
@@ -79,12 +64,14 @@ export interface CreateAppOptions {
   type?: string;
 }
 
+/** Options for creating an application version. */
 export interface CreateAppVersionOptions {
   name?: string;
   definition?: Record<string, unknown> | null;
   currentEnvironmentId?: string | null;
 }
 
+/** Options for creating a data source attached to an app version. */
 export interface CreateDataSourceOptions {
   appVersion: AppVersion;
   name: string;
@@ -94,12 +81,14 @@ export interface CreateDataSourceOptions {
   environmentId?: string | null;
 }
 
+/** A single key-value option for a data source, optionally encrypted. */
 export interface DataSourceOptionInput {
   key: string;
   value: string;
   encrypted?: boolean | string;
 }
 
+/** Options for creating a data query attached to a data source and app version. */
 export interface CreateDataQueryOptions {
   name?: string;
   dataSource: DataSource;
@@ -107,12 +96,14 @@ export interface CreateDataQueryOptions {
   options?: Record<string, unknown>;
 }
 
+/** Parameters for creating data source options in a specific environment. */
 export interface CreateDataSourceOptionParams {
   dataSource: DataSource;
   environmentId: string;
   options?: Array<Partial<DataSourceOptionInput>> | Record<string, unknown>;
 }
 
+/** Options for creating a fully wired app with version, data source, and query. */
 export interface CreateAppWithDependenciesOptions {
   isQueryNeeded?: boolean;
   isDataSourceNeeded?: boolean;
@@ -122,6 +113,7 @@ export interface CreateAppWithDependenciesOptions {
   name?: string;
 }
 
+/** Options for creating a custom group permission. */
 export interface CreateGroupPermissionParams {
   name?: string;
   group?: string;
@@ -138,19 +130,21 @@ export interface CreateGroupPermissionParams {
   workflowDelete?: boolean;
 }
 
+/** Boolean flags for read/update/delete permissions. */
 export interface PermissionFlags {
   read?: boolean;
   update?: boolean;
   delete?: boolean;
 }
 
+/** Options for seeding instance-level SSO configurations. */
 export interface EnsureInstanceSSOConfigsOptions {
   enabled?: boolean;
   gitConfigs?: Record<string, string>;
   googleConfigs?: Record<string, string>;
 }
 
-/** Result type for convenience role factory functions */
+/** Authenticated user with workspace context and session cookie. */
 export interface TestUser {
   user: User;
   workspace: Organization;
@@ -158,10 +152,7 @@ export interface TestUser {
   cookie: string[];
 }
 
-// ---------------------------------------------------------------------------
-// Environment helpers
-// ---------------------------------------------------------------------------
-
+/** Returns all app environments for a workspace, ordered by priority. */
 export async function getAllEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
   const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
@@ -175,6 +166,7 @@ export async function getAllEnvironments(_nestApp: INestApplication, organizatio
   });
 }
 
+/** Creates the default app environments (development, staging, production) for a workspace. */
 export async function ensureAppEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
   const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
@@ -192,6 +184,7 @@ export async function ensureAppEnvironments(_nestApp: INestApplication, organiza
   );
 }
 
+/** Finds an app environment by id or priority. */
 export const getAppEnvironment = async (id: string, priority: number) => {
   const ds = getDefaultDataSource();
   return await ds.manager.findOneOrFail(AppEnvironment, {
@@ -199,16 +192,9 @@ export const getAppEnvironment = async (id: string, priority: number) => {
   });
 };
 
-// ---------------------------------------------------------------------------
-// SSO config seeding
-// ---------------------------------------------------------------------------
-
 /**
- * Seeds instance-level SSO configs (git, google, openid) in the DB.
- * Required for OAuth tests because getSSOConfigs() in ee/auth/util.service.ts
- * expects these rows to exist (crashes with "Cannot read properties of undefined"
- * when the ssoConfigMap has no entry for the requested SSO type).
- *
+ * Seeds instance-level SSO configs (git, google, openid) in the database.
+ * Required for OAuth tests because getSSOConfigs() expects these rows to exist.
  * @param options.enabled - Whether SSO is enabled (default: true for test convenience)
  * @param options.gitConfigs - Override git SSO configs
  * @param options.googleConfigs - Override google SSO configs
@@ -227,8 +213,8 @@ export async function ensureInstanceSSOConfigs(options?: EnsureInstanceSSOConfig
   ];
 
   for (const { sso, configs } of types) {
-    // Instance-level SSO configs have no organizationId — use raw query to bypass TypeORM's
-    // strict typing on nullable foreign keys
+    // Instance-level SSO configs have no organizationId -- use query builder to bypass
+    // TypeORM's strict typing on nullable foreign keys
     const existing = await ssoRepo
       .createQueryBuilder('sso')
       .where('sso.sso = :sso', { sso })
@@ -248,13 +234,8 @@ export async function ensureInstanceSSOConfigs(options?: EnsureInstanceSSOConfig
     }
   }
 
-  // Also ensure ENABLE_SIGNUP is true so SSO can create new users
   await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ENABLE_SIGNUP'`);
 }
-
-// ---------------------------------------------------------------------------
-// Group / permission helpers (private + public)
-// ---------------------------------------------------------------------------
 
 async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, organizationId: string): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
@@ -289,7 +270,6 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
       });
       const savedGroup = await groupPermissionsRepository.save(groupPermission);
 
-      // Seed granular permissions for apps, data sources, and workflows
       const granularRepo = ds.getRepository(GranularPermissions);
       const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
 
@@ -302,7 +282,6 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
         });
         const savedGranular = await granularRepo.save(granular);
 
-        // Create apps group permissions for each app type
         if (resourceType === ResourceType.APP) {
           const appsPerm = appsGroupRepo.create({
             granularPermissionId: savedGranular.id,
@@ -339,6 +318,7 @@ async function addEndUserGroupToUser(nestApp: INestApplication, user: User & { o
   return user;
 }
 
+/** Assigns a user to the specified groups within their workspace, creating custom groups as needed. */
 export async function createUserGroupPermissions(nestApp: INestApplication, user: User & { organizationId: string }, groups: string[]): Promise<GroupUsers[]> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
@@ -347,7 +327,6 @@ export async function createUserGroupPermissions(nestApp: INestApplication, user
   let groupUserEntries = [];
 
   for (const group of groups) {
-    // Map old group names to new ones
     const groupName = group === 'all_users' ? 'end-user' : group;
 
     let groupPermission: GroupPermissions;
@@ -386,10 +365,10 @@ export async function createUserGroupPermissions(nestApp: INestApplication, user
   return groupUserEntries;
 }
 
+/** Creates a custom group permission in a workspace with the specified capabilities. */
 export async function createGroupPermission(nestApp: INestApplication, params: CreateGroupPermissionParams): Promise<GroupPermissions> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
-  // Map old property names to new ones
   const mappedParams = { ...params };
   if (mappedParams.group) {
     mappedParams.name = mappedParams.group === 'all_users' ? 'end-user' : mappedParams.group;
@@ -398,7 +377,6 @@ export async function createGroupPermission(nestApp: INestApplication, params: C
   if (!mappedParams.type) {
     mappedParams.type = GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP;
   }
-  // Ensure organizationId is set explicitly when organization entity is passed
   if (mappedParams.organization && !mappedParams.organizationId) {
     mappedParams.organizationId = mappedParams.organization.id;
     delete mappedParams.organization;
@@ -410,20 +388,8 @@ export async function createGroupPermission(nestApp: INestApplication, params: C
 }
 
 /**
- * Creates app-level permissions for a group using the new granular permissions system.
- *
- * The old system used `app_group_permissions` with `read`, `update`, `delete` flags.
- * The new system uses `granular_permissions` -> `apps_group_permissions` -> `group_apps`.
- *
- * This function:
- * 1. Finds or creates a GranularPermission of type APP for the given group
- * 2. Finds or creates an AppsGroupPermissions linked to it
- * 3. Creates a GroupApps entry linking the specific app to the permission
- *
- * @param nestApp - The NestJS application instance
- * @param application - The App entity
- * @param groupId - The GroupPermissions id
- * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
+ * Grants app-level permissions to a group using the granular permissions system.
+ * Creates GranularPermission -> AppsGroupPermissions -> GroupApps chain.
  */
 export async function grantAppPermission(nestApp: INestApplication, application: App, groupId: string, permissions: PermissionFlags): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
@@ -431,7 +397,6 @@ export async function grantAppPermission(nestApp: INestApplication, application:
   const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
   const groupAppsRepo = ds.getRepository(GroupApps);
 
-  // Find or create a granular permission for APP type on this group
   let granular = await granularRepo.findOne({
     where: { groupId, type: ResourceType.APP },
   });
@@ -446,7 +411,6 @@ export async function grantAppPermission(nestApp: INestApplication, application:
     granular = await granularRepo.save(granular);
   }
 
-  // Find or create apps group permissions for the granular permission
   let appsPerm = await appsGroupRepo.findOne({
     where: { granularPermissionId: granular.id },
   });
@@ -461,7 +425,6 @@ export async function grantAppPermission(nestApp: INestApplication, application:
     });
     appsPerm = await appsGroupRepo.save(appsPerm);
   } else {
-    // Update existing permissions
     await appsGroupRepo.update(appsPerm.id, {
       canEdit: permissions.update || appsPerm.canEdit,
       canView: permissions.read || appsPerm.canView,
@@ -469,7 +432,6 @@ export async function grantAppPermission(nestApp: INestApplication, application:
     appsPerm = await appsGroupRepo.findOne({ where: { id: appsPerm.id } });
   }
 
-  // Create a GroupApps entry linking the specific app
   const existingGroupApp = await groupAppsRepo.findOne({
     where: { appId: application.id, appsGroupPermissionsId: appsPerm.id },
   });
@@ -482,20 +444,13 @@ export async function grantAppPermission(nestApp: INestApplication, application:
     await groupAppsRepo.save(groupApp);
   }
 }
-/**
- * Creates data-source-level permissions for a group using the new granular permissions system.
- *
- * @param nestApp - The NestJS application instance
- * @param dataSourceId - The DataSource id (not used for granular perms, but kept for API compat)
- * @param groupId - The GroupPermissions id
- * @param permissions - { read?: boolean, update?: boolean, delete?: boolean }
- */
+
+/** Grants data source-level permissions to a group using the granular permissions system. */
 export async function createDatasourceGroupPermission(nestApp: INestApplication, dataSourceId: string, groupId: string, permissions: PermissionFlags): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const dsGroupRepo = ds.getRepository(DataSourcesGroupPermissions);
 
-  // Find or create a granular permission for DATA_SOURCE type on this group
   let granular = await granularRepo.findOne({
     where: { groupId, type: ResourceType.DATA_SOURCE },
   });
@@ -510,7 +465,6 @@ export async function createDatasourceGroupPermission(nestApp: INestApplication,
     granular = await granularRepo.save(granular);
   }
 
-  // Find or create data sources group permissions for the granular permission
   let dsPerm = await dsGroupRepo.findOne({
     where: { granularPermissionId: granular.id },
   });
@@ -530,10 +484,7 @@ export async function createDatasourceGroupPermission(nestApp: INestApplication,
   }
 }
 
-// ---------------------------------------------------------------------------
-// User creation
-// ---------------------------------------------------------------------------
-
+/** Creates a user with workspace membership, group assignments, and default permissions. */
 export async function createUser(
   nestApp: INestApplication,
   {
@@ -615,16 +566,13 @@ export async function createUser(
   await createUserGroupPermissions(
     nestApp,
     typedUser,
-    groups || ['end-user', 'admin'] // default groups
+    groups || ['end-user', 'admin']
   );
 
   return { organization, user: typedUser, orgUser };
 }
 
-// ---------------------------------------------------------------------------
-// Application creation
-// ---------------------------------------------------------------------------
-
+/** Creates an application in the given user's workspace. */
 export async function createApplication(
   nestApp: INestApplication,
   { name, user, isPublic, slug, type = 'front-end' }: CreateAppOptions,
@@ -654,6 +602,7 @@ export async function createApplication(
   return newApp;
 }
 
+/** Creates an app version with a default page, globalSettings, and environment binding. */
 export async function createApplicationVersion(
   _nestApp: INestApplication,
   application: App & { organizationId: string },
@@ -685,7 +634,7 @@ export async function createApplicationVersion(
     })
   );
 
-  // Create a default page for this version so EE page-level permission checks don't
+  // Default page required so EE page-level permission checks don't
   // treat an empty page list as "no accessible pages" (since [].every() === true).
   const defaultPage = await pageRepository.save(
     pageRepository.create({
@@ -697,8 +646,6 @@ export async function createApplicationVersion(
     })
   );
 
-  // Set homePageId, globalSettings, and showViewerNavigation on the version,
-  // matching the production create flow in apps/util.service.ts
   await appVersionsRepository.update(version.id, {
     homePageId: defaultPage.id,
     showViewerNavigation: true,
@@ -717,10 +664,7 @@ export async function createApplicationVersion(
   return version;
 }
 
-// ---------------------------------------------------------------------------
-// DataSource / DataQuery creation
-// ---------------------------------------------------------------------------
-
+/** Creates a data source attached to an app version, optionally with environment-specific options. */
 export async function createDataSource(
   nestApp: INestApplication,
   { appVersion, name, kind, type = 'default', options, environmentId = null }: CreateDataSourceOptions
@@ -733,7 +677,6 @@ export async function createDataSource(
       kind,
       appVersion,
       type,
-      // DB constraint: static type data sources must have global scope
       scope: type === 'static' ? 'global' : 'local',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -745,6 +688,7 @@ export async function createDataSource(
   return dataSource;
 }
 
+/** Creates a data query attached to a data source and app version. */
 export async function createDataQuery(_nestApp: INestApplication, { name = 'defaultquery', dataSource, appVersion, options }: CreateDataQueryOptions): Promise<DataQuery> {
   const dataQueryRepository: Repository<DataQuery> = getDefaultDataSource().getRepository(DataQuery);
 
@@ -760,16 +704,16 @@ export async function createDataQuery(_nestApp: INestApplication, { name = 'defa
   );
 }
 
+/** Creates data source options for a specific environment, with Credential records for encrypted values. */
 export async function createDataSourceOption(_nestApp: INestApplication, { dataSource, environmentId, options }: CreateDataSourceOptionParams): Promise<DataSourceOptions> {
   const ds = getDefaultDataSource();
   const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
   const credentialRepository = ds.getRepository(Credential);
 
-  // Match production behavior: create Credential records for encrypted options
   const parsedOptions: Record<string, { credential_id?: string; encrypted: boolean; value?: string }> = {};
   if (Array.isArray(options)) {
     for (const opt of options) {
-      if (!opt.key) continue; // skip partial entries with no key
+      if (!opt.key) continue;
       if (opt.encrypted === 'true' || opt.encrypted === true) {
         const credential = await credentialRepository.save(
           credentialRepository.create({ valueCiphertext: opt.value || '' })
@@ -795,10 +739,7 @@ export async function createDataSourceOption(_nestApp: INestApplication, { dataS
   );
 }
 
-// ---------------------------------------------------------------------------
-// File creation
-// ---------------------------------------------------------------------------
-
+/** Creates a test file entity with dummy binary data. */
 export async function createFile(_nestApp: INestApplication): Promise<File> {
   const fileRepository: Repository<File> = getDefaultDataSource().getRepository(File);
   const createFileDto = new CreateFileDto();
@@ -807,19 +748,14 @@ export async function createFile(_nestApp: INestApplication): Promise<File> {
   return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
-// ---------------------------------------------------------------------------
-// Folder helpers
-// ---------------------------------------------------------------------------
-
+/** Options for creating a folder. */
 export interface CreateFolderOptions {
   name: string;
   type?: string;
   organizationId: string;
 }
 
-/**
- * Creates a Folder entity in the database.
- */
+/** Creates a folder in the given workspace. */
 export async function createFolder(
   _nestApp: INestApplication,
   { name, type, organizationId }: CreateFolderOptions
@@ -830,9 +766,7 @@ export async function createFolder(
   );
 }
 
-/**
- * Creates a FolderApp entry linking an App to a Folder.
- */
+/** Links an application to a folder. */
 export async function addAppToFolder(
   _nestApp: INestApplication,
   application: App,
@@ -844,10 +778,7 @@ export async function addAppToFolder(
   );
 }
 
-// ---------------------------------------------------------------------------
-// Composite helpers
-// ---------------------------------------------------------------------------
-
+/** Creates an app with version, environments, data source, and query in one call. */
 export const createAppWithDependencies = async (
   app: INestApplication,
   user: User & { organizationId: string },
@@ -905,6 +836,8 @@ export const createAppWithDependencies = async (
 
   return { application, appVersion, dataSource, dataQuery, appEnvironments };
 };
+
+/** Finds an app with all versions, data sources, and data queries eager-loaded. */
 export const findAppWithRelations = async (id: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager
@@ -929,8 +862,9 @@ export const findAppWithRelations = async (id: string) => {
 
   return app;
 };
+
 /**
- * Sets the currentVersionId on the app, simulating a "release".
+ * Sets currentVersionId on the app, simulating a release.
  * Required by EE webhook service which looks up workflowApp.currentVersionId.
  */
 export const markVersionAsReleased = async (appId: string, versionId: string) => {
@@ -942,16 +876,15 @@ export const markVersionAsReleased = async (appId: string, versionId: string) =>
     .where('id = :id', { id: appId })
     .execute();
 };
-// ---------------------------------------------------------------------------
-// Workflow-specific helpers
-// ---------------------------------------------------------------------------
 
+/** Returns the workflow webhook API token for the given app. */
 export const getWorkflowWebhookApiToken = async (appId: string) => {
   const ds = getDefaultDataSource();
   const app = await ds.manager.createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
   return app?.workflowApiToken ?? '';
 };
 
+/** Enables (or disables) the webhook trigger for a workflow and generates an API token. */
 export const enableWebhookForWorkflows = async (workflowId: string, status = true) => {
   const ds = getDefaultDataSource();
   await ds.manager
@@ -962,6 +895,7 @@ export const enableWebhookForWorkflows = async (workflowId: string, status = tru
     .execute();
 };
 
+/** Triggers a workflow execution via the webhook endpoint. */
 export const triggerWorkflowViaWebhook = async (
   app: INestApplication,
   apiToken: string,
@@ -976,6 +910,7 @@ export const triggerWorkflowViaWebhook = async (
     .send(bodyJson);
 };
 
+/** Toggles maintenance mode on a workflow via the app update endpoint. */
 export const enableWorkflowStatus = async (
   app: INestApplication,
   workflowId: string,
@@ -994,15 +929,7 @@ export const enableWorkflowStatus = async (
     });
 };
 
-// ---------------------------------------------------------------------------
-// Convenience role factories
-// ---------------------------------------------------------------------------
-
-/**
- * Creates a user with admin role, auto-logs in via authenticateUser, returns unified TestUser.
- * Uses authenticateUser() (still in test.helper.ts / api.ts) for login.
- * NOTE: Imports authenticateUser lazily to avoid circular deps before api.ts is extracted.
- */
+/** Creates a workspace admin and returns an authenticated session. */
 export async function createAdmin(
   nestApp: INestApplication,
   email: string,
@@ -1014,16 +941,13 @@ export async function createAdmin(
     organization: opts?.workspace,
   });
 
-  // Lazy import to avoid circular dependency during extraction
   const { authenticateUser } = await import('./api');
   const { tokenCookie } = await authenticateUser(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
 
-/**
- * Creates a user with builder role, auto-logs in, returns unified TestUser.
- */
+/** Creates a workspace builder and returns an authenticated session. */
 export async function createBuilder(
   nestApp: INestApplication,
   email: string,
@@ -1041,9 +965,7 @@ export async function createBuilder(
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
 
-/**
- * Creates a user with end-user role only, auto-logs in, returns unified TestUser.
- */
+/** Creates a workspace end-user and returns an authenticated session. */
 export async function createEndUser(
   nestApp: INestApplication,
   email: string,
@@ -1061,9 +983,7 @@ export async function createEndUser(
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
 
-/**
- * Creates a super-admin user, auto-logs in, returns unified TestUser.
- */
+/** Creates a super-admin (instance-level) user and returns an authenticated session. */
 export async function createSuperAdmin(
   nestApp: INestApplication,
   email: string

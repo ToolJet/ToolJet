@@ -1,16 +1,3 @@
-/**
- * api.ts — HTTP request and authentication helpers for tests.
- *
- * This module owns:
- * - authenticateUser — POST /api/authenticate
- * - logoutUser — GET /api/session/logout
- * - buildTestSession — JWT session creation without HTTP
- * - buildAuthHeader — JWT token string generation
- * - verifyInviteToken, setUpAccountFromToken — onboarding HTTP helpers
- *
- * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
- */
-
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,10 +8,7 @@ import { User } from '@entities/user.entity';
 import * as request from 'supertest';
 import { getDefaultDataSource } from './bootstrap';
 
-// ---------------------------------------------------------------------------
-// Auth header (no HTTP, pure JWT)
-// ---------------------------------------------------------------------------
-
+/** Generates a JWT Bearer token string for the given user without any HTTP call. */
 export function buildAuthHeader(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
@@ -39,10 +23,8 @@ export function buildAuthHeader(user: User, organizationId?: string, isPasswordL
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
-// ---------------------------------------------------------------------------
-// HTTP-based auth
-// ---------------------------------------------------------------------------
 
+/** Authenticates a user via POST /api/authenticate and returns the user body and session cookie. */
 export const authenticateUser = async (
   app: INestApplication,
   email = 'admin@tooljet.io',
@@ -60,6 +42,7 @@ export const authenticateUser = async (
 /** @deprecated Use authenticateUser instead */
 export const loginAs = authenticateUser;
 
+/** Logs out a user via GET /api/session/logout. */
 export const logoutUser = async (app: INestApplication, tokenCookie: string[], organization_id: string) => {
   return await request
     .agent(app.getHttpServer())
@@ -71,13 +54,9 @@ export const logoutUser = async (app: INestApplication, tokenCookie: string[], o
 /** @deprecated Use logoutUser instead */
 export const logout = logoutUser;
 
-// ---------------------------------------------------------------------------
-// Session creation (no HTTP round-trip)
-// ---------------------------------------------------------------------------
-
 /**
- * Creates a test session and returns a JWT cookie WITHOUT calling the login endpoint.
- * Avoids login-flow side effects (new org creation, event emitter, async handlers)
+ * Creates a JWT session cookie without calling the login endpoint.
+ * Avoids login-flow side effects (workspace creation, event emitter, async handlers)
  * that cause deadlocks and FK violations in tests.
  */
 export const buildTestSession = async (
@@ -92,7 +71,6 @@ export const buildTestSession = async (
 
   const orgId = organizationId || user.defaultOrganizationId;
 
-  // Create a user_session row directly, then verify it exists
   const sessionResult = await ds.query(
     `INSERT INTO user_sessions (user_id, device, created_at, expiry, last_logged_in)
      VALUES ($1, 'test-agent', NOW(), NOW() + INTERVAL '1 day', NOW())
@@ -101,7 +79,6 @@ export const buildTestSession = async (
   );
   const sessionId = sessionResult[0].id;
 
-  // Verify the session is readable (guards against connection pool isolation issues)
   const verify = await ds.query('SELECT id FROM user_sessions WHERE id = $1', [sessionId]);
   if (!verify.length) {
     throw new Error(`buildTestSession: session ${sessionId} not found after INSERT`);
@@ -117,15 +94,12 @@ export const buildTestSession = async (
   };
 
   const token = jwtService.sign(payload);
-  // Format as Set-Cookie header array (same format as express response.headers['set-cookie'])
   const cookie = [`tj_auth_token=${token}; Max-Age=63072000; Path=/; HttpOnly; SameSite=Strict`];
 
   return { tokenCookie: cookie };
 };
-// ---------------------------------------------------------------------------
-// Onboarding helpers
-// ---------------------------------------------------------------------------
 
+/** Verifies an invitation token via the onboarding endpoint and asserts the user becomes 'verified'. */
 export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
   const organizationUsersRepository: Repository<OrganizationUser> = getDefaultDataSource().getRepository(OrganizationUser);
 
@@ -149,6 +123,7 @@ export const verifyInviteToken = async (app: INestApplication, user: User, verif
   return response;
 };
 
+/** Sets up an account from an invitation token and asserts the user becomes 'active' in the workspace. */
 export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload: Record<string, unknown>) => {
   const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send(payload);
   const { status } = response;
