@@ -60,11 +60,28 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
+    triggerButtonTextSize = 14,
+    triggerButtonFontWeight,
+    triggerButtonContentAlignment,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
+  const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
+    ? normalizedTriggerButtonTextSize
+    : 14;
+  const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
+  const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
+  const normalizedTriggerButtonFontWeight = triggerButtonFontWeight === 'medium' ? 500 : triggerButtonFontWeight;
+  const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
+    ? normalizedTriggerButtonFontWeight
+    : normalizedTriggerButtonFontWeight === '0'
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -188,12 +205,15 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     footerHeightPx,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor,
     triggerButtonTextColor,
     isVisible,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
     direction,
+    triggerButtonContentAlignment,
   });
 
   const { modalWidth, parentRef } = useModalEventSideEffects({
@@ -217,7 +237,7 @@ export const ModalV2 = function Modal({
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary overflow-hidden"
+          className="jet-btn btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -233,7 +253,14 @@ export const ModalV2 = function Modal({
           data-cy={`${dataCy}-launch-button`}
         >
           {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}>
+          <span
+            className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
+            style={{
+              fontSize: `${computedTriggerButtonFontSize}px`,
+              lineHeight: `${computedTriggerButtonLineHeight}px`,
+              fontWeight: computedTriggerButtonFontWeight,
+            }}
+          >
             {triggerButtonLabel ?? 'Show Modal'}
           </span>
           {iconVisibility && (
@@ -241,8 +268,8 @@ export const ModalV2 = function Modal({
               iconName={iconName}
               fallbackIcon="IconHome2"
               style={{
-                width: '16px',
-                height: '16px',
+                width: `${computedTriggerButtonIconSize}px`,
+                height: `${computedTriggerButtonIconSize}px`,
                 color: iconColor,
               }}
               className="tw-flex-shrink-0"

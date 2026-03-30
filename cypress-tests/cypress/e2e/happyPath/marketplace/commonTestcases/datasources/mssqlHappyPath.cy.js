@@ -9,7 +9,7 @@ const data = {};
 describe("MSSQL", () => {
     data.dataSourceName = fake.lastName
         .toLowerCase()
-        .replaceAll("[^A-Za-z]", "");
+        .replace(/[^a-z0-9]/g, "");
     const mssqlDataSourceName = `cypress-${data.dataSourceName}-mssql`;
     beforeEach(() => {
         cy.apiLogin();
