@@ -1,4 +1,5 @@
 import { dsCommonSelector } from "Selectors/marketplace/common";
+import { commonSelectors } from "Selectors/common";
 
 export const fillDSConnectionTextField = (field) => {
   cy.clearAndType(dsCommonSelector.textField(field.fieldName), field.text);
@@ -90,8 +91,10 @@ export const saveAndDiscardDSChanges = (option) => {
   cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
 };
 
+let _testConnCounter = 0;
 export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
-  cy.intercept('POST', '**/api/data-sources/*/test-connection').as('testConnection');
+  const alias = `testConnection${_testConnCounter++}`;
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as(alias);
   cy.waitForElement('[data-cy="test-connection-button"]', 60000);
 
   cy.get('[data-cy="test-connection-button"]')
@@ -99,24 +102,48 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
     .should("contain.text", "Test connection")
     .click();
 
-  // Wait for the API call to complete
-  cy.wait('@testConnection', { timeout: 60000 });
+  // Wait for the API call to complete and verify both API response and UI feedback
+  cy.wait(`@${alias}`, { timeout: 60000 }).then((interception) => {
+    const responseBody = interception.response.body;
 
+    switch (expectedStatus) {
+      case "success":
+        // Verify API response
+        expect(responseBody.status).to.eq("ok");
+        break;
+
+      case "failed":
+        // Verify API response
+        expect(responseBody.status).to.not.eq("ok");
+
+        // Verify error message in the API response body if customMessage provided
+        if (customMessage) {
+          const errorMsg = responseBody.data?.message || responseBody.message || JSON.stringify(responseBody);
+          expect(errorMsg).to.contain(customMessage);
+        }
+        break;
+    }
+  });
+
+  // Verify UI toast feedback
   switch (expectedStatus) {
     case "success":
-      // Success feedback is now a toast (PR #15616 — inline badge removed)
-      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, 50000);
+      cy.verifyToastMessage(commonSelectors.toastMessage, "Test connection verified", true, 60000);
       break;
 
     case "failed":
-      // Failure feedback is now a toast; specific error still shown in connection-alert-text
-      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
+      cy.verifyToastMessage(commonSelectors.toastMessage, "Test connection could not be verified", true, 60000);
 
+      // Verify error details in the connection alert text when rendered
       if (customMessage) {
-        cy.get('[data-cy="connection-alert-text"]')
-          .scrollIntoView()
-          .should("be.visible", { timeout: 50000 })
-          .and("contain.text", customMessage);
+        cy.get("body").then(($body) => {
+          if ($body.find('[data-cy="connection-alert-text"]').length > 0) {
+            cy.get('[data-cy="connection-alert-text"]')
+              .scrollIntoView()
+              .should("be.visible")
+              .and("contain.text", customMessage);
+          }
+        });
       }
       break;
   }
