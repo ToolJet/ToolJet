@@ -41,7 +41,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
-  private _isEnvGitMapping: boolean;
+  private _isEnvMapping: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
@@ -144,7 +144,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isEnvGitMapping = this.getFeatureValue('envGitMapping');
+    this._isEnvMapping = this.getFeatureValue('workspaceEnv');
   }
 
   private getFeatureValue(key: string) {
@@ -554,7 +554,7 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
-      envGitMapping: this.envGitMapping,
+      workspaceEnv: this.workspaceEnv,
     };
   }
 
@@ -650,10 +650,10 @@ export default class LicenseBase {
     return !!this._app?.features?.history;
   }
 
-  public get envGitMapping(): boolean {
+  public get workspaceEnv(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.envGitMapping;
+      return !!this.BASIC_PLAN_TERMS.features?.workspaceEnv;
     }
-    return this._isEnvGitMapping;
+    return this._isEnvMapping;
   }
 }
