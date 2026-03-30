@@ -10,6 +10,7 @@ import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderBut
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
@@ -27,6 +28,10 @@ export const EditorHeader = ({ darkMode }) => {
     }),
     shallow
   );
+
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnWorkspaceFeatureBranch =
+    workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -83,8 +88,8 @@ export const EditorHeader = ({ darkMode }) => {
                     <>
                       <PreviewAndShareIcons />
                       {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                      {/* Hide version dropdown when on a feature branch */}
-                      {selectedVersion?.versionType !== 'branch' && (
+                      {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
+                      {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>

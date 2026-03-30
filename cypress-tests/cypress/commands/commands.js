@@ -44,10 +44,10 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 
 Cypress.Commands.add(
   "verifyToastMessage",
-  (selector, message, closeAction = true) => {
-    cy.get(selector, { timeout: 15000 })
+  (selector, message, closeAction = true, timeout = 15000) => {
+    cy.get(selector, { timeout: timeout })
       .as("toast")
-      .should("contain.text", message, { timeout: 15000 });
+      .should("contain.text", message, { timeout: timeout });
     if (closeAction) {
       cy.get("body").then(($body) => {
         if ($body.find(commonSelectors.toastCloseButton).length > 0) {
@@ -506,8 +506,8 @@ Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait(2000);
 });
 

@@ -853,9 +853,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
-      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
-        ?.hideCloseButton;
-      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0)) + 2 * HOVER_CLICK_OUTLINE_BORDER;
+      const isModalHeaderCloseBtnHidden = useStore.getState().getResolvedComponent(componentId.slice(0, 36))
+        ?.properties?.hideCloseButton;
+      padding = 2 * (MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER) + (isModalHeaderCloseBtnHidden ? 0 : 56);
     } else {
       padding = 2 * MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
     }
@@ -867,6 +867,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
     padding =
       2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
   }
+
   return canvasWidth - padding;
 };
 

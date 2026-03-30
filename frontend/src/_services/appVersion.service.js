@@ -118,17 +118,6 @@ function autoSaveApp(
   isUserSwitchedVersion = false,
   isComponentCutProcess = false
 ) {
-  // console.log('autoSaveApp-->', {
-  //   appId,
-  //   versionId,
-  //   diff,
-  //   type,
-  //   pageId,
-  //   operation,
-  //   isUserSwitchedVersion,
-  //   isComponentCutProcess,
-  // });
-
   const OPERATION = {
     create: 'POST',
     update: 'PUT',

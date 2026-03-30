@@ -45,3 +45,4 @@ ti-*
 .tj_env.*
 .local/
 taskfile.*
+.serena/

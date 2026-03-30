@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -19,7 +19,7 @@ import { ValidAppGuard } from './guards/valid-app.guard';
 import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
-import { isHttpsEnabled } from '@helpers/utils.helper';
+import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -37,19 +37,19 @@ export class AppsController implements IAppsController {
   ) {
     // clear ai cookies
     // FIXME: can move this to service or middlewares
+    const cookieDomain = getCookieDomain();
+    const clearOptions = {
+      secure: isHttpsEnabled(),
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      // Must match the domain used when setting, otherwise clearCookie has no effect
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
     if (cookies.tj_ai_prompt) {
-      response.clearCookie('tj_ai_prompt', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_ai_prompt', clearOptions);
     }
     if (cookies.tj_template_id) {
-      response.clearCookie('tj_template_id', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_template_id', clearOptions);
     }
 
     return this.appsService.create(user, appCreateDto);
@@ -108,12 +108,13 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  index(@User() user, @Query() query) {
+  index(@User() user, @Query() query, @Headers('x-branch-id') headerBranchId?: string) {
     const AppListDto: AppListDto = {
       page: query.page,
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
+      branchId: query.branch_id || headerBranchId,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }
@@ -121,7 +122,7 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('/addable')
-  indexAddable(@User() user: UserEntity) {
+  indexAddable(@User() user: UserEntity, @Query('branch_id') branchId?: string) {
     return this.appsService.getAllApps(
       user,
       {
@@ -129,6 +130,7 @@ export class AppsController implements IAppsController {
         folderId: null,
         searchKey: '',
         type: 'front-end',
+        branchId,
       },
       true
     );
@@ -155,8 +157,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
-  show(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.appsService.getOne(app, user);
+  show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
+    return this.appsService.getOne(app, user, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

@@ -23,6 +23,10 @@ export class VersionCreateDto {
 
   @IsOptional()
   versionType?: AppVersionType;
+
+  @IsUUID()
+  @IsOptional()
+  branchId?: string;
 }
 
 export class PromoteVersionDto {

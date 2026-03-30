@@ -473,6 +473,7 @@ const EditorInput = ({
         selectors={{ className: 'preview-block-portal' }}
         dragResizePortal={true}
         callgpt={null}
+        onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
       >
         <ErrorBoundary>
           <div

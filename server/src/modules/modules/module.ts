@@ -65,6 +65,7 @@ export class ModulesModule {
         ValidAppGuard,
         OrganizationGitSyncRepository,
       ],
+      exports: [AppsUtilService],
     };
   }
 }

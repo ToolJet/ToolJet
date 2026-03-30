@@ -11,6 +11,7 @@ import { Tooltip } from 'react-tooltip';
 import { gitSyncService } from '@/_services';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { AlertTriangle } from 'lucide-react';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -112,6 +113,16 @@ export function BranchDropdown({ appId, organizationId }) {
     }
   };
 
+  // Ensure workspace branch store is initialized (Layout doesn't render in app editor route)
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isWsBranchStoreInitialized = useWorkspaceBranchesStore((state) => state.isInitialized);
+
+  useEffect(() => {
+    if (!isWsBranchStoreInitialized && organizationId) {
+      useWorkspaceBranchesStore.getState().actions.initialize(organizationId);
+    }
+  }, [isWsBranchStoreInitialized, organizationId]);
+
   // Zustand state
   const {
     currentBranch,
@@ -124,8 +135,10 @@ export function BranchDropdown({ appId, organizationId }) {
     switchBranch,
     switchToDefaultBranch,
     setCurrentBranch,
+    createBranch,
     orgGit,
     selectedVersion,
+    developmentVersions,
   } = useStore((state) => ({
     currentBranch: state.currentBranch,
     allBranches: state.allBranches,
@@ -137,8 +150,10 @@ export function BranchDropdown({ appId, organizationId }) {
     switchBranch: state.switchBranch,
     switchToDefaultBranch: state.switchToDefaultBranch,
     setCurrentBranch: state.setCurrentBranch,
+    createBranch: state.createBranch,
     orgGit: state.orgGit,
     selectedVersion: state.selectedVersion,
+    developmentVersions: state.developmentVersions,
   }));
 
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -168,7 +183,7 @@ export function BranchDropdown({ appId, organizationId }) {
     }
   }, [showDropdown]);
 
-  // Fetch branches and PRs on mount and when dropdown opens
+  // Fetch branches and PRs on mount and when branchingEnabled changes
   useEffect(() => {
     if (branchingEnabled && appId && organizationId) {
       handleRefresh();
@@ -176,9 +191,80 @@ export function BranchDropdown({ appId, organizationId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchingEnabled, appId, organizationId]);
 
+  // Auto-switch to the correct branch version on initial load.
+  // Uses branchId from the current version to find the matching branch-type version.
+  // switchBranch() handles everything: version, environment, editability, banner, push/pull.
+  const initialBranchSwitchDone = useRef(false);
+  useEffect(() => {
+    if (initialBranchSwitchDone.current) return;
+    if (!branchingEnabled || !appId) return;
+    if (!developmentVersions?.length) return;
+
+    const isBranchTypeVersionForSwitch =
+      selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+
+    // Already on a branch version — no version switch needed, but sync workspace branch context
+    // so the header shows the correct branch name and localStorage is up to date.
+    if (isBranchTypeVersionForSwitch) {
+      const versionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
+      // allBranches from gitSyncService.getAllBranches has no workspace branch UUID field,
+      // so we compare workspaceActiveBranch.id against versionBranchId directly.
+      if (versionBranchId && workspaceActiveBranch?.id !== versionBranchId) {
+        initialBranchSwitchDone.current = true;
+        useWorkspaceBranchesStore.getState().actions.switchBranch(versionBranchId);
+      }
+      return;
+    }
+
+    const defaultBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const currentVersionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
+
+    // Get all branch-type versions
+    const branchVersions = developmentVersions.filter((v) => v.versionType === 'branch' || v.version_type === 'branch');
+
+    if (branchVersions.length === 0) return;
+
+    // Determine target branch name:
+    // 1. If current version has branchId, find the branch version with same branchId
+    // 2. Fallback: use workspace store's active branch
+    // 3. Fallback: if exactly one branch version exists, use it
+    let targetBranchName = null;
+
+    if (currentVersionBranchId) {
+      const matchByBranchId = branchVersions.find((v) => (v.branchId || v.branch_id) === currentVersionBranchId);
+      if (matchByBranchId) {
+        targetBranchName = matchByBranchId.name;
+      }
+    }
+
+    if (!targetBranchName && workspaceActiveBranch?.name && workspaceActiveBranch.name !== defaultBranch) {
+      const matchByWs = branchVersions.find((v) => v.name === workspaceActiveBranch.name);
+      if (matchByWs) {
+        targetBranchName = matchByWs.name;
+      }
+    }
+
+    // Only fall back to the single branch version when the workspace active branch is
+    // a feature branch (non-default). On the default/main workspace branch the user is
+    // intentionally on the canonical version — do not auto-switch.
+    const isOnDefaultWorkspaceBranch =
+      !workspaceActiveBranch || workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault;
+    if (!targetBranchName && branchVersions.length === 1 && !isOnDefaultWorkspaceBranch) {
+      targetBranchName = branchVersions[0].name;
+    }
+
+    if (!targetBranchName || targetBranchName === defaultBranch) {
+      return;
+    }
+
+    initialBranchSwitchDone.current = true;
+    switchBranch(appId, targetBranchName).catch((err) => console.error('Branch switch failed:', err?.message || err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [branchingEnabled, appId, workspaceActiveBranch, developmentVersions, selectedVersion, orgGit, allBranches]);
+
   // Manual fetch last commit function
   const fetchLastCommit = async () => {
-    const currentBranchName = selectedVersion?.name || currentBranch?.name;
+    const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
     const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
     const isOnDefaultBranch = currentBranchName === defaultBranchName;
 
@@ -291,16 +377,29 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Check if current branch is the default branch
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  // Use selectedVersion.name as the current branch (ToolJet's version/branch name)
-  const currentBranchName = selectedVersion?.name || currentBranch?.name;
+  // Branch-type versions have UUID names (intentional) — never use them as branch display name.
+  // Use workspace branch name first, then AppBuilder currentBranch, then version name only for non-branch versions.
+  const isBranchTypeVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+  const currentBranchName =
+    workspaceActiveBranch?.name || currentBranch?.name || (isBranchTypeVersion ? undefined : selectedVersion?.name);
 
   // Determine if on default branch:
-  // - If versionType is 'version', we're on a regular version (show default branch UI)
-  // - If versionType is 'branch', we're on a feature branch (show branch commit UI)
-  const isOnDefaultBranch = selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+  // For platform git sync: use workspace branch context (all versions have versionType='version')
+  // For per-app branching: fall back to versionType check
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  // Display name: show default branch name when on a version, otherwise show current branch name
-  const displayBranchName = isOnDefaultBranch ? defaultBranchName : currentBranchName;
+  // Display name: use workspace branch name if available, otherwise derive from version/branch state
+  const displayBranchName = workspaceActiveBranch?.name || (isOnDefaultBranch ? defaultBranchName : currentBranchName);
+
+  // For platform git sync: the UUID-named branch-type version (currentBranch) has no created_by,
+  // but the matching human-readable git branch entry in allBranches does.
+  // Prefer the workspaceActiveBranch name lookup to get the enriched entry with author/time.
+  const activeBranchInfo =
+    (workspaceActiveBranch?.name && allBranches.find((b) => b.name === workspaceActiveBranch.name)) || currentBranch;
 
   // Filter PRs based on active tab
   // Check both 'state' and 'status' fields to support different API responses
@@ -380,15 +479,15 @@ export function BranchDropdown({ appId, organizationId }) {
                   <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
                   <div className="branch-metadata-feature">
                     <span className="metadata-text">
-                      Created by {currentBranch?.created_by || currentBranch?.author || 'Unknown'}
+                      Created by {activeBranchInfo?.created_by || activeBranchInfo?.author || 'Unknown'}
                     </span>
                     <span>•</span>
                     <span className="metadata-text">
                       {getRelativeTime(
-                        selectedVersion?.createdAt ||
-                          selectedVersion?.created_at ||
-                          currentBranch?.createdAt ||
-                          currentBranch?.created_at
+                        activeBranchInfo?.created_at ||
+                          activeBranchInfo?.updated_at ||
+                          selectedVersion?.createdAt ||
+                          selectedVersion?.created_at
                       )}
                     </span>
                   </div>
@@ -566,20 +665,19 @@ export function BranchDropdown({ appId, organizationId }) {
                   <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
                   <span>Create new branch</span>
                 </button>
-                {console.log('BranchDropdown - allBranches:', allBranches, 'length:', allBranches.length) ||
-                  (allBranches.length > 0 && (
-                    <button
-                      className="switch-branch-btn"
-                      onClick={() => {
-                        setShowDropdown(false);
-                        setShowSwitchModal(true);
-                      }}
-                      data-cy="switch-branch-btn"
-                    >
-                      <SolidIcon name="refresh" width="14" />
-                      <span>Switch branch</span>
-                    </button>
-                  ))}
+                {allBranches.length > 0 && (
+                  <button
+                    className="switch-branch-btn"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowSwitchModal(true);
+                    }}
+                    data-cy="switch-branch-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" />
+                    <span>Switch branch</span>
+                  </button>
+                )}
               </>
             ) : (
               <>
