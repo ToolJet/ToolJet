@@ -13,7 +13,7 @@ import {
   createAppWithDependencies,
   loginAs,
   updateEntity,
-} from '../test.helper';
+} from '../../../test.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
 describe('data sources controller', () => {

@@ -12,7 +12,7 @@ import {
   findEntity,
   updateEntity,
   countEntities,
-} from '../test.helper';
+} from '../../../test.helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 

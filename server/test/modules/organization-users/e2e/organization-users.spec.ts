@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { resetDB, createUser, initTestApp, loginAs, buildTestSession, getEntityRepository } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, buildTestSession, getEntityRepository } from '../../../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;

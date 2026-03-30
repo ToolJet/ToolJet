@@ -25,7 +25,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //   createNestAppInstance,
 //   createUser,
 //   authenticateUser
-// } from '../test.helper';
+// } from '../../../test.helper';
 // import { getManager, EntityManager, DataSource } from 'typeorm';
 // import { tooljetDbOrmconfig } from '../../ormconfig';
 // import { Organization } from '../../src/entities/organization.entity';

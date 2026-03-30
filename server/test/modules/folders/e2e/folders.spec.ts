@@ -15,7 +15,7 @@ import {
   findEntity,
   updateEntity,
   countEntities,
-} from '../test.helper';
+} from '../../../test.helper';
 import { Folder } from 'src/entities/folder.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 

@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { loginAs, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../test.helper';
+import { loginAs, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../../../test.helper';
 import * as request from 'supertest';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';

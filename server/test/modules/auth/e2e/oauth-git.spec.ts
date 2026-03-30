@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getEntityRepository } from '../../test.helper';
+import { resetDB, createUser, initTestApp, getEntityRepository } from '../../../test.helper';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';

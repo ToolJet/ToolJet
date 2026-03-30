@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createFile, resetDB, createUser, initTestApp, loginAs } from '../test.helper';
+import { createFile, resetDB, createUser, initTestApp, loginAs } from '../../../test.helper';
 
 describe('files controller', () => {
   let app: INestApplication;

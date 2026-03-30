@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, saveEntity } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, saveEntity } from '../../../test.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
 /** Create the built-in static data sources that templates expect to exist. */
