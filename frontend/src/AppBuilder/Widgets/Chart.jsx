@@ -105,6 +105,7 @@ export default function Chart({
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
   const layout = {
+    ...chartLayout,
     width: width - 6,
     height: height - 2,
     plot_bgcolor: updatedBgColor,
@@ -190,7 +191,6 @@ export default function Chart({
       t: padding,
     },
     ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
-    ...(chartLayout.shapes && { shapes: chartLayout.shapes }),
     barmode: barmode,
     hoverlabel: { namelength: -1 },
     ...('dragmode' in chartLayout && { dragmode: chartLayout.dragmode }),
