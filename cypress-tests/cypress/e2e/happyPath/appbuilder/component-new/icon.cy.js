@@ -4,39 +4,33 @@ import {
     verifyLoadingState,
     verifyVisibility,
 } from "Support/utils/appBuilder/components/properties/common";
+import { componentCommonSelectors } from "Selectors/appBuilder/components/common";
 import {
     verifyIconColor,
     verifyIconAlignment,
     verifyIconOnClick,
     verifyIconOnHover,
-} from "Support/utils/appBuilder/components/properties/iconcomponent";
+} from "Support/utils/appBuilder/components/properties/iconComponent";
 
 describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
+    const {
+        desktopToggle,
+        visibilityToggle,
+        jsVisibilityToggle,
+        jsDisableToggle,
+        jsLoadingToggle,
+        csaVisibilityToggle,
+        csaLoadingToggle,
+        csaDisableToggle,
+    } = componentCommonSelectors;
+
     const componentSelector = '[data-cy="draggable-widget-iconcomponent"]>';
-    const desktopToggle = '[data-cy="desktoptoggle"] .d-flex';
-    const visibilityToggle = '[data-cy="visibilitytoggle"] .d-flex';
-
-    // JS action toggles (single toggle for set/reset)
-    const jsVisibilityToggle = '[data-cy="jsvisibilitytoggle"] .d-flex';
-    const jsDisableToggle = '[data-cy="jsdisabletoggle"] .d-flex';
-    const jsLoadingToggle = '[data-cy="jsloadingtoggle"] .d-flex';
-
-    // CSA toggles
-    const csaVisibilityToggle = '[data-cy="csavisibletoggle"] .d-flex';
-    const csaLoadingToggle = '[data-cy="csaloadingtoggle"] .d-flex';
-    const csaDisableToggle = '[data-cy="csadisabletoggle"] .d-flex';
 
     // Icon-specific controls
     const colorPicker = '[data-cy="iconcolorpicker"]';
-    const boxShadowColorPicker = '[data-cy="boxshadowcolorpicker"]';
     const alignmentDropdown = '[data-cy="alignmentdropdown-actionable-section"]';
 
-    // Event trigger buttons
-    const csaClickBtn = '[data-cy="csaclickbutton-button"]';
-    const jsClickBtn = '[data-cy="jsiconclick-button"]';
-
-    const appUrl =
-        "https://appbuilder-v3-lts-eetestsystem.tooljet.com/applications/123c5160-2e06-40e8-a463-a6e0605a24a6";
+    const appUrl ="https://appbuilder-v3-lts-eetestsystem.tooljet.com/applications/icon-automation"
 
     const setup = () => {
         genralProperties(componentSelector, desktopToggle, { state: "exist" });
@@ -50,7 +44,7 @@ describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
         cy.viewport(1800, 1400);
     });
 
-    it("should verify visibility, disable, and loading states", () => {
+    it("should verify properties", () => {
         genralProperties(componentSelector, desktopToggle, { state: "exist" });
 
         verifyVisibility(componentSelector, {
@@ -67,14 +61,13 @@ describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
         });
 
         verifyLoadingState(componentSelector, {
-            // toggle: jsLoadingToggle,
             csa: csaLoadingToggle,
             jsSet: jsLoadingToggle,
             jsReset: jsLoadingToggle,
         });
     });
 
-    it("should verify icon color via color picker", () => {
+    it("should verify styles", () => {
         setup();
 
         verifyIconColor(componentSelector, colorPicker, [
@@ -83,10 +76,6 @@ describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
             { hex: "000000", expectedColor: "rgb(0, 0, 0)" },
         ]);
-    });
-
-    it("should verify icon alignment", () => {
-        setup();
 
         verifyIconAlignment(componentSelector, alignmentDropdown, [
             { label: "Left", expectedAlign: "left" },
@@ -95,8 +84,9 @@ describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
         ]);
     });
 
-    it("should verify events on icon click, hover and action triggers using CSA and JS", () => {
+    it("should verify events", () => {
         setup();
+
         verifyIconOnHover(
             componentSelector,
             ".go3958317564",
@@ -115,5 +105,4 @@ describe("Icon Component - Feature Validation", { baseUrl: null }, () => {
         cy.get('[data-cy="jsiconclick-label"]').click();
         cy.verifyToastMessage('.go3958317564', 'Clicked', false);
     });
-
 });
