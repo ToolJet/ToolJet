@@ -12,7 +12,7 @@ import {
   enableWorkflowStatus,
   getDefaultDataSource,
   markVersionAsReleased,
-} from '../test.helper';
+} from '../../../test.helper';
 import { v4 as uuidv4 } from 'uuid';
 import * as request from 'supertest';
 import { LICENSE_FIELD } from '@modules/licensing/constants';

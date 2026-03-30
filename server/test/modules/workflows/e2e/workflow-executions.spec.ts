@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
-import { WorkflowExecution } from '../../src/entities/workflow_execution.entity';
+import { WorkflowExecution } from '../../../../src/entities/workflow_execution.entity';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
@@ -20,7 +20,7 @@ import {
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,
-} from '../workflows.helper';
+} from '../../../workflows.helper';
 
 const executeWorkflow = async (
   nestApp: INestApplication,

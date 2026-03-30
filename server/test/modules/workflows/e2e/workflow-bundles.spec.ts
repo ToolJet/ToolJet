@@ -15,8 +15,8 @@ import {
   createNestAppInstance,
   createUser,
   createUserWorkflowPermissions,
-} from '../workflows.helper';
-import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
+} from '../../../workflows.helper';
+import { WorkflowBundle } from '../../../../src/entities/workflow_bundle.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 
