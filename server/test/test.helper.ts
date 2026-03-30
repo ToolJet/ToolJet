@@ -1,26 +1,16 @@
 /**
- * test.helper.ts — Barrel re-export file.
- *
- * All implementation lives in focused modules under ./helpers/:
- * - bootstrap.ts — Test app factory, DataSource singletons, global side effects
- * - cleanup.ts  — Database cleanup (resetDB), generic entity helpers
- * - seed.ts     — Entity creation functions (users, apps, data sources, etc.)
- * - api.ts      — HTTP/auth helpers (authenticateUser, buildTestSession, etc.)
- *
- * This file re-exports everything so existing `import { X } from '../test.helper'`
- * statements continue to work without changes.
- *
- * NOTE: No backward-compat aliases — all exports use canonical names only.
+ * Barrel re-export — all test helpers available from a single import path.
+ * New code should import directly from helpers/setup, helpers/seed, helpers/api, or helpers/utils.
  */
 
-// --- Layer 0: Bootstrap (app factory, DataSource singletons) ---
-export * from './helpers/bootstrap';
+// --- Setup: app factory, plan-aware mocking, database lifecycle ---
+export * from './helpers/setup';
 
-// --- Layer 1: Cleanup (resetDB, generic entity helpers) ---
-export * from './helpers/cleanup';
+// --- Utils: generic entity helpers (find, save, update, count, delete) ---
+export * from './helpers/utils';
 
-// --- Layer 2: Seed (entity creation) ---
+// --- Seed: entity factories (users, apps, data sources, permissions) ---
 export * from './helpers/seed';
 
-// --- Layer 3: API (HTTP requests, auth) ---
+// --- API: HTTP and authentication helpers ---
 export * from './helpers/api';

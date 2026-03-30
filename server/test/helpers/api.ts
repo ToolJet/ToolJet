@@ -1,3 +1,6 @@
+/**
+ * HTTP and authentication helpers -- login, logout, session management, and onboarding API calls.
+ */
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -6,7 +9,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import * as request from 'supertest';
-import { getDefaultDataSource } from './bootstrap';
+import { getDefaultDataSource } from './setup';
 
 /** Generates a JWT Bearer token string for the given user without any HTTP call. */
 export function buildAuthHeader(user: User, organizationId?: string, isPasswordLogin = true): string {

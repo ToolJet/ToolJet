@@ -1,3 +1,6 @@
+/**
+ * Entity factories -- creates users, apps, data sources, permissions, and other domain objects for tests.
+ */
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, Repository } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -28,7 +31,7 @@ import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
-import { getDefaultDataSource } from './bootstrap';
+import { getDefaultDataSource } from './setup';
 
 /** Options for creating a user with workspace and group memberships. */
 export interface CreateUserOptions {
