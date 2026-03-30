@@ -7,7 +7,7 @@
   ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": "test/modules/.*/e2e/.*spec\\.ts$",
   "runner": "groups",
   "testTimeout": 60000,
   "forceExit": true,
