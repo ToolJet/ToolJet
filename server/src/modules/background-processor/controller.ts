@@ -1,5 +1,5 @@
 import { Controller, Sse, Param, ForbiddenException, NotFoundException, MessageEvent, UseGuards } from '@nestjs/common';
-import { Observable, map } from 'rxjs';
+import { Observable, map, finalize } from 'rxjs';
 import { BackgroundProcessorService } from './service';
 import { SseProgressEvent } from './types';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
@@ -9,10 +9,11 @@ import { User, UserEntity } from '@modules/app/decorators/user.decorator';
  * Background Processor Controller
  *
  * Provides SSE endpoint for clients to subscribe to job progress events.
+ * Supports multi-pod deployments via Redis pub/sub.
  *
  * ## How to Start a Job
  *
- * Jobs are NOT started via this controller. Instead, inject `BackgroundProcessorService`
+ * Jobs are NOT started via this controller. Instead, inject `BackgroundProcessorUtilService`
  * into your own service/controller and call `startJob()` with your task definitions.
  *
  * @example
@@ -44,6 +45,11 @@ import { User, UserEntity } from '@modules/app/decorators/user.decorator';
  * 1. Call your endpoint to start a job → receive `{ jobId, processInfo }`
  * 2. Subscribe to SSE: `new EventSource('/jobs/:jobId/events?token=<jwt>')`
  * 3. Handle events: 'running', 'completed', 'failed', 'done'
+ *
+ * ## Multi-Pod Support
+ *
+ * Jobs can be started on any pod and SSE requests can hit any pod.
+ * Events are distributed via Redis pub/sub automatically.
  */
 @Controller('jobs')
 export class BackgroundProcessorController {
@@ -61,8 +67,8 @@ export class BackgroundProcessorController {
    */
   @Sse(':jobId/events')
   @UseGuards(JwtAuthGuard)
-  streamEvents(@Param('jobId') jobId: string, @User() user: UserEntity): Observable<MessageEvent> {
-    const stream$ = this.processor.getEventStream(jobId, user.id);
+  async streamEvents(@Param('jobId') jobId: string, @User() user: UserEntity): Promise<Observable<MessageEvent>> {
+    const stream$ = await this.processor.getEventStream(jobId, user.id);
 
     if (stream$ === null) {
       throw new NotFoundException(`Job ${jobId} not found or already completed`);
@@ -77,7 +83,11 @@ export class BackgroundProcessorController {
           data: event,
           type: 'progress',
         })
-      )
+      ),
+      // Cleanup when client disconnects or observable completes
+      finalize(() => {
+        this.processor.cleanupSubscription(jobId);
+      })
     );
   }
 }

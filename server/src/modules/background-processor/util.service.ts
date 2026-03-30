@@ -9,11 +9,12 @@ import { BackgroundProcessorJobStore } from './store';
  * Background Processor Service
  *
  * A generic service for running multiple asynchronous tasks with progress tracking via SSE.
+ * Supports multi-pod deployments via Redis pub/sub.
  *
  * @example
  * ```typescript
  * // 1. Inject the service into your own service/controller:
- * constructor(private readonly backgroundProcessor: BackgroundProcessorService) {}
+ * constructor(private readonly backgroundProcessor: BackgroundProcessorUtilService) {}
  *
  * // 2. Define your tasks as ProcessInfo[]:
  * const tasks: ProcessInfo[] = [
@@ -43,7 +44,7 @@ import { BackgroundProcessorJobStore } from './store';
  * ];
  *
  * // 3. Start the job:
- * const { jobId, processInfo } = this.backgroundProcessor.startJob(tasks, {
+ * const { jobId, processInfo } = await this.backgroundProcessor.startJob(tasks, {
  *   userId: req.user.id,      // links job to user for SSE auth
  *   isRunParallel: false,      // sequential (default) or parallel
  *   isBreakOnError: true,      // stop on first error (default)
@@ -57,6 +58,7 @@ import { BackgroundProcessorJobStore } from './store';
  * - Weightages auto-distribute remaining percentage across tasks without explicit weights
  * - SSE events include: 'running', 'completed', 'failed', 'done'
  * - Jobs are automatically cleaned up after completion
+ * - Events are distributed via Redis pub/sub for multi-pod support
  */
 @Injectable()
 export class BackgroundProcessorUtilService {
@@ -80,14 +82,14 @@ export class BackgroundProcessorUtilService {
    *   - `isRunParallel`: If true, runs all tasks concurrently (default: false)
    *   - `isBreakOnError`: If true, stops execution on first failure (default: true)
    *
-   * @returns Object containing:
+   * @returns Promise containing:
    *   - `jobId`: UUID to subscribe to SSE events
    *   - `processInfo`: Resolved task names with calculated weightages
    */
-  startJob(
+  async startJob(
     processInfos: ProcessInfo[],
     options: ProcessOptions = {}
-  ): { jobId: string; processInfo: ResolvedProcessInfo[] } {
+  ): Promise<{ jobId: string; processInfo: ResolvedProcessInfo[] }> {
     this.transactionLogger.log(`[BackgroundProcessor] startJob invoked with ${processInfos.length} tasks`);
 
     const { isRunParallel = false, isBreakOnError = true, userId } = options;
@@ -99,13 +101,12 @@ export class BackgroundProcessorUtilService {
     const resolvedInfo = this.resolveWeightages(processInfos);
     this.transactionLogger.log(`[BackgroundProcessor] Weightages resolved for jobId: ${jobId}`);
 
-    const subject = new Subject<SseProgressEvent>();
-
-    this.jobStore.set(jobId, { subject, resolvedInfo, userId });
-    this.transactionLogger.log(`[BackgroundProcessor] Job ${jobId} registered in job store`);
+    // Store job metadata in Redis and get local subject
+    const subject = await this.jobStore.set(jobId, { resolvedInfo, userId });
+    this.transactionLogger.log(`[BackgroundProcessor] Job ${jobId} registered in Redis store`);
 
     // fire-and-forget — runs in background
-    this.execute(jobId, processInfos, resolvedInfo, {
+    this.execute(jobId, processInfos, resolvedInfo, subject, {
       isRunParallel,
       isBreakOnError,
     }).catch((err) => {
@@ -158,20 +159,23 @@ export class BackgroundProcessorUtilService {
     jobId: string,
     processInfos: ProcessInfo[],
     resolvedInfo: ResolvedProcessInfo[],
+    subject: Subject<SseProgressEvent>,
     options: { isRunParallel: boolean; isBreakOnError: boolean }
   ) {
     this.transactionLogger.log(
       `[BackgroundProcessor] execute started for jobId: ${jobId}, tasks: ${processInfos.length}, parallel: ${options.isRunParallel}`
     );
 
-    const { subject } = this.jobStore.get(jobId)!;
     let completedWeightage = 0;
 
-    const emit = (event: SseProgressEvent) => {
+    const emit = async (event: SseProgressEvent) => {
       this.transactionLogger.log(
         `[BackgroundProcessor] Emitting event for jobId: ${jobId}, task: ${event.task}, status: ${event.status}, completedWeightage: ${event.completedWeightage}`
       );
+      // Emit locally for this pod's subscribers
       subject.next(event);
+      // Publish to Redis for cross-pod distribution
+      await this.jobStore.publishEvent(jobId, event);
     };
 
     const runTask = async (index: number): Promise<boolean> => {
@@ -182,7 +186,7 @@ export class BackgroundProcessorUtilService {
         `[BackgroundProcessor] runTask started - jobId: ${jobId}, task: "${task}", index: ${index}, weightage: ${weightage}`
       );
 
-      emit({
+      await emit({
         jobId,
         task,
         weightage,
@@ -199,7 +203,7 @@ export class BackgroundProcessorUtilService {
           `[BackgroundProcessor] Task completed successfully - jobId: ${jobId}, task: "${task}", result: ${JSON.stringify(result)}`
         );
 
-        emit({
+        await emit({
           jobId,
           task,
           weightage,
@@ -214,7 +218,7 @@ export class BackgroundProcessorUtilService {
           err
         );
 
-        emit({
+        await emit({
           jobId,
           task,
           weightage,
@@ -283,7 +287,7 @@ export class BackgroundProcessorUtilService {
       );
 
       // final "done" envelope
-      emit({
+      await emit({
         jobId,
         task: '',
         weightage: 0,
@@ -291,10 +295,10 @@ export class BackgroundProcessorUtilService {
         status: 'done',
       });
 
-      subject.complete();
-      this.jobStore.delete(jobId);
+      // Cleanup: delete() handles subject.complete(), localSubjects cleanup, and Redis cleanup
+      await this.jobStore.delete(jobId);
 
-      this.transactionLogger.log(`[BackgroundProcessor] Job ${jobId} completed and removed from jobs map`);
+      this.transactionLogger.log(`[BackgroundProcessor] Job ${jobId} completed and removed from Redis`);
     }
   }
 }

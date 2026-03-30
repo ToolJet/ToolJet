@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { TransactionLogger } from '@modules/logging/service';
 import { BackgroundProcessorJobStore } from './store';
+import { SseProgressEvent } from './types';
 
 @Injectable()
 export class BackgroundProcessorService {
@@ -12,27 +14,41 @@ export class BackgroundProcessorService {
   /**
    * Returns the observable stream for the given job, but only if
    * the requesting userId matches the job owner.
+   *
+   * Works across pods via Redis pub/sub - the SSE request can hit any pod
+   * and will receive events from the executor pod.
    */
-  getEventStream(jobId: string, userId: string) {
+  async getEventStream(jobId: string, userId: string): Promise<Observable<SseProgressEvent> | null | 'FORBIDDEN'> {
     this.transactionLogger.log(`[BackgroundProcessor] getEventStream invoked for jobId: ${jobId}, userId: ${userId}`);
 
-    const job = this.jobStore.get(jobId);
-    if (!job) {
+    // Check job metadata from Redis
+    const metadata = await this.jobStore.getMetadata(jobId);
+    if (!metadata) {
       this.transactionLogger.warn(`[BackgroundProcessor] Job not found for jobId: ${jobId}`);
       return null;
     }
 
-    this.transactionLogger.log(`[BackgroundProcessor] Job found for jobId: ${jobId}, job owner: ${job.userId}`);
+    this.transactionLogger.log(`[BackgroundProcessor] Job found for jobId: ${jobId}, job owner: ${metadata.userId}`);
 
-    if (job.userId && job.userId !== userId) {
+    if (metadata.userId && metadata.userId !== userId) {
       this.transactionLogger.error(
-        `[BackgroundProcessor] Access denied for jobId: ${jobId} - requesting userId: ${userId} does not match job owner: ${job.userId}`
+        `[BackgroundProcessor] Access denied for jobId: ${jobId} - requesting userId: ${userId} does not match job owner: ${metadata.userId}`
       );
-      // If job is not associated with a user or userId matches, allow access. Otherwise, deny.
       return 'FORBIDDEN' as const;
     }
 
-    this.transactionLogger.log(`[BackgroundProcessor] Access granted for jobId: ${jobId}, returning event stream`);
-    return job.subject.asObservable();
+    this.transactionLogger.log(`[BackgroundProcessor] Access granted for jobId: ${jobId}, subscribing to event stream`);
+
+    // Subscribe to Redis channel and return Observable
+    return this.jobStore.subscribeToEvents(jobId);
+  }
+
+  /**
+   * Cleans up SSE subscription resources when client disconnects.
+   * Called by controller's finalize operator.
+   */
+  cleanupSubscription(jobId: string): void {
+    this.transactionLogger.log(`[BackgroundProcessor] cleanupSubscription called for jobId: ${jobId}`);
+    this.jobStore.cleanupSubscription(jobId);
   }
 }
