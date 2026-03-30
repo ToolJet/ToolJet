@@ -9,6 +9,9 @@ export type SourceOptions = {
   client_path_type: string;
   path: string;
   instant_client_version: string;
+  use_tns_alias: string;
+  tns_alias: string;
+  config_dir: string;
 };
 export type QueryOptions = {
   operation: string;

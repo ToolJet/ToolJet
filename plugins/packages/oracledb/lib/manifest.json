@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Oracle DB datasource",
@@ -40,11 +39,20 @@
     "ssl_enabled": {
       "value": true
     },
-    "client_path_type":{
+    "client_path_type": {
       "value": "default"
     },
     "instant_client_version": {
       "value": "21_10"
+    },
+    "use_tns_alias": {
+      "value": "false"
+    },
+    "tns_alias": {
+      "value": ""
+    },
+    "config_dir": {
+      "value": ""
     }
   },
   "properties": {
@@ -63,7 +71,7 @@
           "name": "Custom"
         }
       ],
-      "commonFields":{
+      "commonFields": {
         "host": {
           "label": "Host",
           "key": "host",
@@ -115,10 +123,41 @@
           "key": "password",
           "type": "password",
           "description": "Enter password"
-        }
+        },
+        "use_tns_alias": {
+          "label": "Use TNS Alias",
+          "key": "use_tns_alias",
+          "type": "dropdown-component-flip",
+          "description": "Dropdown to connect using a TNS Alias instead of Host/Port",
+          "list": [
+            {
+              "value": "false",
+              "name": "No"
+            },
+            {
+              "value": "true",
+              "name": "Yes"
+            }
+          ]
+        },
+        "true": {
+          "tns_alias": {
+            "label": "TNS Alias",
+            "key": "tns_alias",
+            "type": "text",
+            "description": "Enter the TNS Alias (e.g., ORCL)"
+          },
+          "config_dir": {
+            "label": "Configuration Directory (TNS_ADMIN)",
+            "key": "config_dir",
+            "type": "text",
+            "description": "Enter the path to the folder containing tnsnames.ora / wallet"
+          }
+        },
+        "false": {}
       }
     },
-    "custom":{
+    "custom": {
       "path": {
         "label": "Path",
         "key": "path",
