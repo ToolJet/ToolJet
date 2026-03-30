@@ -23,7 +23,7 @@ describe('oauth controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
   });
 
@@ -117,7 +117,7 @@ describe('OAuth google instance (super admin)', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
   });

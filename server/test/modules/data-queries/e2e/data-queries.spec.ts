@@ -23,7 +23,7 @@ describe('data queries controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {

@@ -26,7 +26,7 @@ describe('group permissions controller (v2)', () => {
   });
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp());
+    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   afterAll(async () => {

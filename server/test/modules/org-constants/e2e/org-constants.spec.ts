@@ -32,7 +32,7 @@ describe('organization environment constants controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   describe('GET /api/organization-constants/decrypted', () => {

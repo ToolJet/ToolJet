@@ -43,7 +43,7 @@ describe('oauth controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ mockConfig: true }));
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     orgRepository = getEntityRepository(Organization);
   });

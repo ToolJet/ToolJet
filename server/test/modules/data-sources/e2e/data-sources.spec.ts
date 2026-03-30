@@ -20,7 +20,7 @@ describe('data sources controller', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   beforeEach(async () => {

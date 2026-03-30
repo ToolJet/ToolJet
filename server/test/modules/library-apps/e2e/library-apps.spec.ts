@@ -27,7 +27,7 @@ describe('library apps controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   describe('POST /api/library_apps', () => {

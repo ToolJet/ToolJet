@@ -31,7 +31,7 @@ describe('Form Onboarding', () => {
   let mockConfig;
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);

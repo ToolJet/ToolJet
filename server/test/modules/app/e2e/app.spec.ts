@@ -27,7 +27,7 @@ describe('Authentication', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);
@@ -654,7 +654,7 @@ describe('app controller (EE, personal workspace disabled)', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
@@ -837,7 +837,7 @@ describe('app controller (EE, super admin)', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);

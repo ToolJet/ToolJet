@@ -29,7 +29,7 @@ describe('folder apps controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp());
+    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   describe('POST /api/folder-apps', () => {

@@ -10,7 +10,7 @@ describe('files controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   it('should not allow un-authenticated users to fetch a file', async () => {

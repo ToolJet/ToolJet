@@ -18,7 +18,7 @@ describe('organizations controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     userRepository = getEntityRepository(User);
   });
@@ -511,7 +511,7 @@ describe('organizations controller (EE, personal workspace disabled)', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'team', mockConfig: true }));
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
   });
 

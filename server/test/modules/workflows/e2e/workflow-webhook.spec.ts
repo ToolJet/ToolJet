@@ -108,7 +108,7 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   describe('Access workflow from webhook without params', () => {
@@ -333,7 +333,7 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
   });
 
   beforeAll(async () => {
-    ({ app, licenseServiceMock } = await initTestApp({
+    ({ app, licenseServiceMock } = await initTestApp({ edition: 'ee', plan: 'enterprise',
       mockLicenseService: true,
     }));
   });

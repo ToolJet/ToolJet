@@ -39,7 +39,7 @@ describe('apps controller', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
   describe('GET /api/apps/:id', () => {
