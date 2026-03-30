@@ -4,18 +4,18 @@ import { LICENSE_FIELD, LICENSE_LIMIT } from './constants';
 export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
   return totalCount !== LICENSE_LIMIT.UNLIMITED
     ? {
-      percentage: (currentCount / totalCount) * 100,
-      total: totalCount,
-      current: currentCount,
-      licenseStatus,
-      label,
-      canAddUnlimited: false,
-    }
+        percentage: (currentCount / totalCount) * 100,
+        total: totalCount,
+        current: currentCount,
+        licenseStatus,
+        label,
+        canAddUnlimited: false,
+      }
     : {
-      canAddUnlimited: true,
-      licenseStatus,
-      label,
-    };
+        canAddUnlimited: true,
+        licenseStatus,
+        label,
+      };
 }
 
 export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: LicenseBase): any {
