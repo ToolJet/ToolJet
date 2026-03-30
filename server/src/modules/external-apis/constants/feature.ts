@@ -5,6 +5,9 @@ import { FeaturesConfig } from '../types';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.EXTERNAL_APIS]: {
+    [FEATURE_KEY.GET_LICENSE_STATUS]: {
+      isPublic: true,
+    },
     [FEATURE_KEY.GET_ALL_USERS]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,

@@ -8,6 +8,11 @@ import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-secu
 export class ExternalApisController implements IExternalApisController {
   constructor() {}
 
+  @Get('license/status')
+  async getLicenseStatus() {
+    throw new NotFoundException();
+  }
+
   @UseGuards(ExternalApiSecurityGuard)
   @Get('users')
   async getAllUsers() {
