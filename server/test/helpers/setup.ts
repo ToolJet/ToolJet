@@ -66,30 +66,51 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
 // ---------------------------------------------------------------------------
 
 /**
+ * Per-field mock values for license terms.
+ * Guards and services expect specific shapes for certain fields.
+ */
+const LICENSE_FIELD_MOCK_VALUES: Record<string, any> = {
+  workflows: {
+    execution_timeout: 'UNLIMITED',
+    workspace: {
+      total: 'UNLIMITED',
+      daily_executions: 'UNLIMITED',
+      monthly_executions: 'UNLIMITED',
+    },
+    instance: {
+      total: 'UNLIMITED',
+      daily_executions: 'UNLIMITED',
+      monthly_executions: 'UNLIMITED',
+    },
+  },
+  // AuditLogsDurationGuard destructures status.licenseType
+  status: { licenseType: 'ENTERPRISE' },
+  // AuditLogsDurationGuard reads maxDurationForAuditLogs (numeric, in days)
+  maxDaysForAuditLogs: 365,
+};
+
+/**
  * Creates a LicenseTermsService mock that survives jest.resetAllMocks().
  * Uses plain functions instead of jest.fn() so mock resets cannot clear them.
- * Returns 'UNLIMITED' for simple fields and a structured object for 'workflows'
- * (workflow guards check .workspace/.instance sub-properties).
+ * Returns 'UNLIMITED' for simple fields, structured objects for fields that
+ * guards destructure (workflows, status, etc.), and handles array inputs
+ * the same way constructLicenseFieldValue does.
  */
 function createResilientLicenseTermsMock() {
+  const resolveField = (field: string): any => {
+    return field in LICENSE_FIELD_MOCK_VALUES ? LICENSE_FIELD_MOCK_VALUES[field] : 'UNLIMITED';
+  };
+
   return {
-    getLicenseTerms: (field: string) => {
-      if (field === 'workflows') {
-        return Promise.resolve({
-          execution_timeout: 'UNLIMITED',
-          workspace: {
-            total: 'UNLIMITED',
-            daily_executions: 'UNLIMITED',
-            monthly_executions: 'UNLIMITED',
-          },
-          instance: {
-            total: 'UNLIMITED',
-            daily_executions: 'UNLIMITED',
-            monthly_executions: 'UNLIMITED',
-          },
-        });
+    getLicenseTerms: (field: string | string[]) => {
+      if (Array.isArray(field)) {
+        const result: Record<string, any> = {};
+        for (const key of field) {
+          result[key] = resolveField(key);
+        }
+        return Promise.resolve(result);
       }
-      return Promise.resolve('UNLIMITED');
+      return Promise.resolve(resolveField(field));
     },
     getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
   };
@@ -118,6 +139,12 @@ export interface InitTestAppOptions {
   mockConfig?: boolean;
   /** When true, provides a DeepMocked<LicenseService> (for overriding license checks in tests). */
   mockLicenseService?: boolean;
+  /**
+   * Additional NestJS DynamicModules to register alongside the default AppModule.
+   * Useful for loading dynamic modules (e.g. AuditLogsModule) that are excluded
+   * in migration context (IS_GET_CONTEXT: true).
+   */
+  extraImports?: any[];
 }
 
 /** Result of initTestApp containing the app and optional mocks. */
@@ -142,6 +169,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     plan = 'enterprise',
     mockConfig = false,
     mockLicenseService = false,
+    extraImports = [],
   } = options ?? {};
 
   const providers: Provider[] = [];
@@ -178,7 +206,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   }
 
   const moduleBuilder = Test.createTestingModule({
-    imports: [await AppModule.register({ IS_GET_CONTEXT: true })],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true }), ...extraImports],
     providers,
   });
 
