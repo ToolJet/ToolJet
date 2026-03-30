@@ -1,8 +1,6 @@
 import { resetDB, initTestApp, createUser } from '../test.helper';
 import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
@@ -19,12 +17,10 @@ import * as bcrypt from 'bcrypt';
 describe('UsersService', () => {
   let nestApp: INestApplication;
   let service: UsersService;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
     service = nestApp.get<UsersService>(UsersService);
-    defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   beforeEach(async () => {
@@ -133,18 +129,14 @@ describe('UsersService', () => {
       });
 
       // Read original password hash from DB
-      const userBefore = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userBefore = await findEntityOrFail(User, { id: user.id } as any);
       const originalPasswordHash = userBefore.password;
 
       const newPassword = 'NewSecurePassword123';
       await service.updatePassword(user.id, user, newPassword);
 
       // Read updated user from DB
-      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userAfter = await findEntityOrFail(User, { id: user.id } as any);
 
       // Password hash should have changed
       expect(userAfter.password).not.toEqual(originalPasswordHash);
@@ -164,15 +156,13 @@ describe('UsersService', () => {
       });
 
       // Set a non-zero retry count first
-      await defaultDataSource.manager.update(User, user.id, {
+      await updateEntity(User, user.id, {
         passwordRetryCount: 5,
       });
 
       await service.updatePassword(user.id, user, 'AnotherPassword456');
 
-      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userAfter = await findEntityOrFail(User, { id: user.id } as any);
       expect(userAfter.passwordRetryCount).toBe(0);
     });
   });
@@ -186,9 +176,7 @@ describe('UsersService', () => {
         groups: ['end-user', 'admin'],
       });
 
-      const userBefore = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userBefore = await findEntityOrFail(User, { id: user.id } as any);
       const originalHash = userBefore.password;
 
       const newPassword = await service.autoUpdateUserPassword(user.id, user);
@@ -198,9 +186,7 @@ describe('UsersService', () => {
       expect(newPassword.length).toBeGreaterThan(0);
 
       // DB password should have changed
-      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userAfter = await findEntityOrFail(User, { id: user.id } as any);
       expect(userAfter.password).not.toEqual(originalHash);
 
       // The returned plaintext password should match the stored hash
@@ -216,15 +202,13 @@ describe('UsersService', () => {
         groups: ['end-user', 'admin'],
       });
 
-      await defaultDataSource.manager.update(User, user.id, {
+      await updateEntity(User, user.id, {
         passwordRetryCount: 3,
       });
 
       await service.autoUpdateUserPassword(user.id, user);
 
-      const userAfter = await defaultDataSource.manager.findOneOrFail(User, {
-        where: { id: user.id },
-      });
+      const userAfter = await findEntityOrFail(User, { id: user.id } as any);
       expect(userAfter.passwordRetryCount).toBe(0);
     });
   });

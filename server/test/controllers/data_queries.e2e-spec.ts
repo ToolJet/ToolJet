@@ -9,16 +9,14 @@ import {
   createAppWithDependencies,
   loginAs,
   createDatasourceGroupPermission,
+  findEntityOrFail,
 } from '../test.helper';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { MODULES } from 'src/modules/app/constants/modules';
 
 describe('data queries controller', () => {
   let app: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -26,7 +24,6 @@ describe('data queries controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
@@ -62,11 +59,9 @@ describe('data queries controller', () => {
     superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
-    const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-      where: {
+    const developerUserGroup = await findEntityOrFail(GroupPermissions, {
         name: 'developer',
-      },
-    });
+      } as any);
     await grantAppPermission(app, application, developerUserGroup.id, {
       read: true,
       update: true,
@@ -74,11 +69,9 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for viewer
-    const viewerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-      where: {
+    const viewerUserGroup = await findEntityOrFail(GroupPermissions, {
         name: 'viewer',
-      },
-    });
+      } as any);
     await grantAppPermission(app, application, viewerUserGroup.id, {
       read: true,
       update: false,

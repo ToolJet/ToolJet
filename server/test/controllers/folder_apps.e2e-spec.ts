@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { loginAs, resetDB, initTestApp, createUser, createApplication, getDefaultDataSource } from '../test.helper';
+import { loginAs, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../test.helper';
 import * as request from 'supertest';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
@@ -39,11 +39,8 @@ describe('folder apps controller', () => {
 
     it('should add an app to a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getDefaultDataSource().manager;
       // create a new folder
-      const folder = await manager.save(
-        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
-      );
+      const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
 
       const loggedUser = await loginAs(nestApp);
 
@@ -62,11 +59,8 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to add apps to folders in any organization', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getDefaultDataSource().manager;
       // create a new folder
-      const folder = await manager.save(
-        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
-      );
+      const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
       //super admin
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
@@ -97,12 +91,9 @@ describe('folder apps controller', () => {
 
     it('should not add an app to a folder more than once', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getDefaultDataSource().manager;
 
       // create a new folder
-      const folder = await manager.save(
-        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
-      );
+      const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
 
       const loggedUser = await loginAs(nestApp);
 
@@ -127,13 +118,10 @@ describe('folder apps controller', () => {
 
       const loggedUser = await loginAs(nestApp);
 
-      const manager = getDefaultDataSource().manager;
       // create a new folder
-      const folder = await manager.save(
-        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
-      );
+      const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
       // add app to folder
-      const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
+      const folderApp = await saveEntity(FolderApp, { folderId: folder.id, appId: app.id } as any);
       const response = await request(nestApp.getHttpServer())
         .put(`/api/folder-apps/${folderApp.folderId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
@@ -145,13 +133,10 @@ describe('folder apps controller', () => {
 
     it('super admin should be able to remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
-      const manager = getDefaultDataSource().manager;
       // create a new folder
-      const folder = await manager.save(
-        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
-      );
+      const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
       // add app to folder
-      const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
+      const folderApp = await saveEntity(FolderApp, { folderId: folder.id, appId: app.id } as any);
 
       //super admin
       const superAdminUserData = await createUser(nestApp, {

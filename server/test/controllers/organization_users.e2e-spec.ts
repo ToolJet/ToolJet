@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { resetDB, createUser, initTestApp, loginAs, buildTestSession, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, buildTestSession, getEntityRepository } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -15,8 +15,7 @@ describe('organization users controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
+    userRepository = getEntityRepository(User);
   });
 
   it('should allow only admin/super admin to be able to invite new users', async () => {

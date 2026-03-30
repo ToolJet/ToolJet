@@ -8,7 +8,7 @@ import {
   initTestApp,
   createUser,
   loginAs,
-  getDefaultDataSource,
+  getEntityRepository,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
 
@@ -32,10 +32,9 @@ describe('Form Onboarding', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
-    orgRepository = defaultDataSource.getRepository(Organization);
-    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    orgUserRepository = getEntityRepository(OrganizationUser);
   });
 
   beforeEach(async () => {

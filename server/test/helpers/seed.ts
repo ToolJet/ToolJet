@@ -40,6 +40,8 @@ import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
+import { Folder } from '@entities/folder.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 import { getDefaultDataSource } from './bootstrap';
 
 // ---------------------------------------------------------------------------
@@ -803,6 +805,43 @@ export async function createFile(_nestApp: INestApplication): Promise<File> {
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
   return await fileRepository.save(fileRepository.create(createFileDto));
+}
+
+// ---------------------------------------------------------------------------
+// Folder helpers
+// ---------------------------------------------------------------------------
+
+export interface CreateFolderOptions {
+  name: string;
+  type?: string;
+  organizationId: string;
+}
+
+/**
+ * Creates a Folder entity in the database.
+ */
+export async function createFolder(
+  _nestApp: INestApplication,
+  { name, type, organizationId }: CreateFolderOptions
+): Promise<Folder> {
+  const folderRepository: Repository<Folder> = getDefaultDataSource().getRepository(Folder);
+  return await folderRepository.save(
+    folderRepository.create({ name, ...(type != null && { type }), organizationId })
+  );
+}
+
+/**
+ * Creates a FolderApp entry linking an App to a Folder.
+ */
+export async function addAppToFolder(
+  _nestApp: INestApplication,
+  application: App,
+  folder: Folder
+): Promise<FolderApp> {
+  const folderAppRepository: Repository<FolderApp> = getDefaultDataSource().getRepository(FolderApp);
+  return await folderAppRepository.save(
+    folderAppRepository.create({ app: application, folder })
+  );
 }
 
 // ---------------------------------------------------------------------------

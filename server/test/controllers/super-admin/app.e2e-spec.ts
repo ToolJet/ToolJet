@@ -10,7 +10,7 @@ import {
   buildAuthHeader,
   initTestApp,
   loginAs,
-  getDefaultDataSource,
+  getEntityRepository,
 } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -37,12 +37,10 @@ describe('Authentication', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
-
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
-    orgRepository = defaultDataSource.getRepository(Organization);
-    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
-    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    orgUserRepository = getEntityRepository(OrganizationUser);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
   });
 
   afterEach(() => {

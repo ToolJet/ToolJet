@@ -1,15 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs } from '../test.helper';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
+import { resetDB, createUser, initTestApp, loginAs, saveEntity } from '../test.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
 /** Create the built-in static data sources that templates expect to exist. */
-async function createDefaultDataSources(ds: TypeOrmDataSource, organizationId: string) {
+async function createDefaultDataSources(organizationId: string) {
   const kinds = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
   for (const kind of kinds) {
-    await ds.manager.save(DataSource, {
+    await saveEntity(DataSource, {
       name: `${kind}default`,
       kind,
       scope: 'global',
@@ -23,7 +21,6 @@ async function createDefaultDataSources(ds: TypeOrmDataSource, organizationId: s
 
 describe('library apps controller', () => {
   let app: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -31,7 +28,6 @@ describe('library apps controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('POST /api/library_apps', () => {
@@ -69,7 +65,7 @@ describe('library apps controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Templates expect built-in static data sources to exist in the organization
-      await createDefaultDataSources(defaultDataSource, adminUserData.organization.id);
+      await createDefaultDataSources(adminUserData.organization.id);
 
       // Use json-formatter template (no ToolJet DB tables) to avoid QueryRunner
       // issues in the test environment

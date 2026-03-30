@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getEntityRepository, findEntityOrFail } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -35,12 +35,10 @@ describe('Authentication', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
-
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
-    orgRepository = defaultDataSource.getRepository(Organization);
-    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
-    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
+    instanceSettingsRepository = getEntityRepository(InstanceSettings);
   });
 
   afterEach(() => {
@@ -155,11 +153,9 @@ describe('Authentication', () => {
         .send({ email: 'invited@tooljet.io', firstName: 'signupuser', lastName: 'user', role: 'end-user' })
         .expect(201);
 
-      const invitedUserDetails = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
+      const invitedUserDetails = await findEntityOrFail(User, { email: 'invited@tooljet.io' } as any);
 
-      const organizationUserBeforeUpdate = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
+      const organizationUserBeforeUpdate = await findEntityOrFail(OrganizationUser, { userId: Not(adminUser.id), organizationId: org.id } as any);
 
       const verifyResponse = await request(app.getHttpServer())
         .get(
@@ -181,13 +177,11 @@ describe('Authentication', () => {
       });
 
       expect(response.statusCode).toBe(201);
-      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
+      const updatedUser = await findEntityOrFail(User, { email: 'invited@tooljet.io' } as any);
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
       expect(updatedUser.defaultOrganizationId).toBe(org.id);
-      const organizationUser = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
+      const organizationUser = await findEntityOrFail(OrganizationUser, { userId: Not(adminUser.id), organizationId: org.id } as any);
       expect(organizationUser.status).toEqual('active');
 
       const acceptInviteResponse = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({

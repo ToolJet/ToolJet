@@ -8,9 +8,11 @@ import {
   createGroupPermission,
   loginAs,
   ensureAppEnvironments,
+  findEntityOrFail,
+  findEntity,
+  updateEntity,
+  countEntities,
 } from '../test.helper';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 
@@ -24,7 +26,6 @@ const createConstant = async (app: INestApplication, adminUserData: any, body: a
 
 describe('organization environment constants controller', () => {
   let app: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -32,7 +33,6 @@ describe('organization environment constants controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('GET /api/organization-constants/decrypted', () => {
@@ -155,11 +155,11 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { name: 'developer' },
+      const developerGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
       });
 
-      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+      await updateEntity(GroupPermissions, developerGroup.id, {
         orgConstantCRUD: true,
       });
 
@@ -239,11 +239,11 @@ describe('organization environment constants controller', () => {
       loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { name: 'developer' },
+      const developerGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
       });
 
-      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+      await updateEntity(GroupPermissions, developerGroup.id, {
         orgConstantCRUD: true,
       });
       const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
@@ -268,11 +268,9 @@ describe('organization environment constants controller', () => {
 
         // Values are stored encrypted in the DB; verify the update succeeded
         // by reading the raw record and confirming it was written (non-null).
-        const updatedVariable = await defaultDataSource.manager.findOne(OrgEnvironmentConstantValue, {
-          where: {
-            organizationConstantId: response.body.constant.id,
-            environmentId: appEnvironments[0].id,
-          },
+        const updatedVariable = await findEntity(OrgEnvironmentConstantValue, {
+          organizationConstantId: response.body.constant.id,
+          environmentId: appEnvironments[0].id,
         });
 
         expect(updatedVariable.value).toBeDefined();
@@ -318,13 +316,13 @@ describe('organization environment constants controller', () => {
       loggedUser = await loginAs(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const developerGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { name: 'developer' },
+      const developerGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
       });
 
       const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
 
-      await defaultDataSource.manager.update(GroupPermissions, developerGroup.id, {
+      await updateEntity(GroupPermissions, developerGroup.id, {
         orgConstantCRUD: true,
       });
 
@@ -336,7 +334,7 @@ describe('organization environment constants controller', () => {
           environments: [appEnvironments[0]?.id],
         });
 
-        const preCount = await defaultDataSource.manager.count(OrgEnvironmentConstantValue);
+        const preCount = await countEntities(OrgEnvironmentConstantValue);
 
         const x = await request(app.getHttpServer())
           .delete(`/api/organization-constants/${response.body.constant.id}?environmentId=${appEnvironments[0].id}`)
@@ -345,7 +343,7 @@ describe('organization environment constants controller', () => {
           .send()
           .expect(200);
 
-        const postCount = await defaultDataSource.manager.count(OrgEnvironmentConstantValue);
+        const postCount = await countEntities(OrgEnvironmentConstantValue);
         expect(postCount).toEqual(0);
       }
 

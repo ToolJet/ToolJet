@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { resetDB, createUser, initTestApp, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -26,12 +26,10 @@ describe('Authentication', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
-
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
-    orgRepository = defaultDataSource.getRepository(Organization);
-    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
-    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    orgUserRepository = getEntityRepository(OrganizationUser);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
   });
 
   afterEach(() => {
@@ -425,9 +423,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const user = await getDefaultDataSource().manager.findOne(User, {
-        where: { email: 'admin@tooljet.io' },
-      });
+      const user = await findEntity(User, { email: 'admin@tooljet.io' } as any);
 
       expect(emailServiceMock).toHaveBeenCalledWith(
         expect.objectContaining({ to: user.email, token: user.forgotPasswordToken })
@@ -458,9 +454,7 @@ describe('Authentication', () => {
     });
 
     it('should reset password', async () => {
-      const user = await getDefaultDataSource().manager.findOne(User, {
-        where: { email: 'admin@tooljet.io' },
-      });
+      const user = await findEntity(User, { email: 'admin@tooljet.io' } as any);
 
       user.forgotPasswordToken = 'token';
       await user.save();
@@ -501,7 +495,7 @@ describe('Authentication', () => {
         const { user, orgUser } = userData;
 
         // OrganizationInviteAuthGuard requires source='signup' for unauthenticated accept-invite
-        await getDefaultDataSource().getRepository(OrganizationUser).update(
+        await getEntityRepository(OrganizationUser).update(
           { id: orgUser.id },
           { source: 'signup' }
         );
@@ -512,7 +506,7 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
 
-        const organizationUser = await getDefaultDataSource().manager.findOneOrFail(OrganizationUser, { where: { userId: user.id } });
+        const organizationUser = await findEntityOrFail(OrganizationUser, { userId: user.id } as any);
         expect(organizationUser.status).toEqual('active');
       });
 
@@ -525,7 +519,7 @@ describe('Authentication', () => {
         const { user, orgUser } = userData;
 
         // OrganizationInviteAuthGuard requires source='signup' for unauthenticated accept-invite
-        await getDefaultDataSource().getRepository(OrganizationUser).update(
+        await getEntityRepository(OrganizationUser).update(
           { id: orgUser.id },
           { source: 'signup' }
         );

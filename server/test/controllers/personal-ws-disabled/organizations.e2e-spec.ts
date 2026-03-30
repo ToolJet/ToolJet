@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getEntityRepository } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
@@ -19,8 +19,7 @@ describe('organizations controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    const defaultDataSource = getDefaultDataSource();
-    instanceSettingsRepository = defaultDataSource.getRepository(InstanceSettings);
+    instanceSettingsRepository = getEntityRepository(InstanceSettings);
   });
 
   afterEach(() => {

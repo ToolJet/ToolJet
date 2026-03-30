@@ -4,12 +4,13 @@
  * This module owns:
  * - resetDB() — truncates all tables between test runs
  * - dropTooljetDbTables() — private helper for ToolJet DB internal tables
- * - Generic entity helpers: findEntity, updateEntity, countEntities
+ * - Generic entity helpers: findEntity, findEntityOrFail, saveEntity, findEntities,
+ *   updateEntity, countEntities, getEntityRepository
  *
  * IMPORTANT: This module imports ONLY from ./bootstrap (no circular deps).
  */
 
-import { ObjectLiteral, FindOptionsWhere, EntityTarget } from 'typeorm';
+import { ObjectLiteral, FindOptionsWhere, EntityTarget, DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { InternalTable } from '@entities/internal_table.entity';
 import { getDefaultDataSource, getTooljetDbDataSource } from './bootstrap';
 
@@ -132,6 +133,17 @@ export async function findEntity<T extends ObjectLiteral>(
 }
 
 /**
+ * Find a single entity by criteria. Throws if not found.
+ */
+export async function findEntityOrFail<T extends ObjectLiteral>(
+  EntityClass: EntityTarget<T>,
+  where: FindOptionsWhere<T>
+): Promise<T> {
+  const ds = getDefaultDataSource();
+  return await ds.manager.findOneOrFail(EntityClass, { where });
+}
+
+/**
  * Update an entity by id.
  */
 export async function updateEntity<T extends ObjectLiteral>(
@@ -144,12 +156,56 @@ export async function updateEntity<T extends ObjectLiteral>(
 }
 
 /**
- * Count entities matching criteria.
+ * Save (insert or update) an entity. Equivalent to ds.manager.save(Entity, data).
+ */
+export async function saveEntity<T extends ObjectLiteral>(
+  EntityClass: EntityTarget<T>,
+  data: DeepPartial<T>
+): Promise<T> {
+  const ds = getDefaultDataSource();
+  return await ds.manager.save(EntityClass, data);
+}
+
+/**
+ * Find multiple entities matching criteria.
+ */
+export async function findEntities<T extends ObjectLiteral>(
+  EntityClass: EntityTarget<T>,
+  options?: FindManyOptions<T>
+): Promise<T[]> {
+  const ds = getDefaultDataSource();
+  return await ds.manager.find(EntityClass, options);
+}
+
+/**
+ * Count entities matching criteria. If no where clause provided, counts all rows.
  */
 export async function countEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
-  where: FindOptionsWhere<T>
+  where?: FindOptionsWhere<T>
 ): Promise<number> {
   const ds = getDefaultDataSource();
-  return await ds.manager.count(EntityClass, { where });
+  return await ds.manager.count(EntityClass, where ? { where } : undefined);
+}
+
+/**
+ * Delete entities matching criteria.
+ */
+export async function deleteEntities<T extends ObjectLiteral>(
+  EntityClass: EntityTarget<T>,
+  where: FindOptionsWhere<T>
+): Promise<void> {
+  const ds = getDefaultDataSource();
+  await ds.manager.delete(EntityClass, where);
+}
+
+/**
+ * Get a TypeORM Repository for the given entity class.
+ * Use sparingly — prefer findEntity/saveEntity/updateEntity for simple ops.
+ */
+export function getEntityRepository<T extends ObjectLiteral>(
+  EntityClass: EntityTarget<T>
+): Repository<T> {
+  const ds = getDefaultDataSource();
+  return ds.getRepository(EntityClass);
 }

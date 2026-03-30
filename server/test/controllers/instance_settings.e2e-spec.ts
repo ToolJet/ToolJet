@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, findEntity, countEntities, updateEntity, deleteEntities } from '../test.helper';
 import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
@@ -163,13 +163,13 @@ describe('instance settings controller', () => {
       superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       // Find or create the ENABLE_COMMENTS setting (may already exist from app startup)
-      let createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+      let createdSetting = await findEntity(InstanceSettings, { key: 'ENABLE_COMMENTS' } as any);
       if (!createdSetting) {
         await createSettings(app, superAdminUserData, { key: 'ENABLE_COMMENTS', value: 'false' });
-        createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'ENABLE_COMMENTS' } });
+        createdSetting = await findEntity(InstanceSettings, { key: 'ENABLE_COMMENTS' } as any);
       } else {
         // Reset to known state
-        await getDefaultDataSource().manager.update(InstanceSettings, createdSetting.id, { value: 'false' });
+        await updateEntity(InstanceSettings, createdSetting.id, { value: 'false' });
       }
 
       await request(app.getHttpServer())
@@ -179,7 +179,7 @@ describe('instance settings controller', () => {
         .send({ settings: [{ value: 'true', id: createdSetting.id, key: 'ENABLE_COMMENTS' }] })
         .expect(200);
 
-      const updatedSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { id: createdSetting.id } });
+      const updatedSetting = await findEntity(InstanceSettings, { id: createdSetting.id } as any);
 
       expect(updatedSetting.value).toEqual('true');
 
@@ -221,9 +221,9 @@ describe('instance settings controller', () => {
       });
 
       // EE create returns empty body — query DB for the created setting
-      const createdSetting = await getDefaultDataSource().manager.findOne(InstanceSettings, { where: { key: 'SOME_SETTINGS_5' } });
+      const createdSetting = await findEntity(InstanceSettings, { key: 'SOME_SETTINGS_5' } as any);
 
-      const preCount = await getDefaultDataSource().manager.count(InstanceSettings);
+      const preCount = await countEntities(InstanceSettings);
 
       await request(app.getHttpServer())
         .delete(`/api/instance-settings/${createdSetting.id}`)
@@ -239,13 +239,13 @@ describe('instance settings controller', () => {
         .send()
         .expect(200);
 
-      const postCount = await getDefaultDataSource().manager.count(InstanceSettings);
+      const postCount = await countEntities(InstanceSettings);
       expect(postCount).toEqual(preCount - 1);
     });
   });
 
   afterAll(async () => {
-    await getDefaultDataSource().manager.delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
+    await deleteEntities(InstanceSettings, { key: Like('%SOME_SETTINGS%') } as any);
     await app.close();
   });
 });

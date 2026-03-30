@@ -1,8 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, createApplication, loginAs } from '../test.helper';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
+import { resetDB, createUser, initTestApp, createApplication, loginAs as loginAsHelper, findEntityOrFail, findEntity, findEntities } from '../test.helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
 
@@ -22,7 +20,6 @@ import { GroupUsers } from 'src/entities/group_users.entity';
  */
 describe('group permissions controller (v2)', () => {
   let nestApp: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -30,7 +27,6 @@ describe('group permissions controller (v2)', () => {
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
-    defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   afterAll(async () => {
@@ -77,7 +73,7 @@ describe('group permissions controller (v2)', () => {
 
   /** Authenticate and stash the cookie on the user object for convenience. */
   async function loginAs(email: string, password = 'password', organizationId: string | null = null) {
-    const result = await loginAs(nestApp, email, password, organizationId);
+    const result = await loginAsHelper(nestApp, email, password, organizationId);
     return result.tokenCookie;
   }
 
@@ -110,9 +106,7 @@ describe('group permissions controller (v2)', () => {
       const response = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
       expect(response.statusCode).toBe(201);
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
       expect(group.name).toBe('avengers');
       expect(group.organizationId).toBe(organization.id);
       expect(group.createdAt).toBeDefined();
@@ -206,9 +200,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${group.id}`)
@@ -229,9 +221,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       // Another org's admin should not be able to access
       const response = await request(nestApp.getHttpServer())
@@ -268,9 +258,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/v2/group-permissions/${group.id}`)
@@ -280,8 +268,8 @@ describe('group permissions controller (v2)', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updated = await defaultDataSource.manager.findOne(GroupPermissions, { where: { id: group.id } });
-      expect(updated.name).toBe('titans');
+      const updated = await findEntity(GroupPermissions, { id: group.id } as any);
+      expect(updated!.name).toBe('titans');
     });
 
     it('should reject renaming to an existing group name', async () => {
@@ -290,9 +278,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       // Try to rename to 'admin' which is a default group
       const response = await request(nestApp.getHttpServer())
@@ -310,9 +296,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/v2/group-permissions/${group.id}`)
@@ -322,9 +306,9 @@ describe('group permissions controller (v2)', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updated = await defaultDataSource.manager.findOne(GroupPermissions, { where: { id: group.id } });
-      expect(updated.appCreate).toBe(true);
-      expect(updated.appDelete).toBe(true);
+      const updated = await findEntity(GroupPermissions, { id: group.id } as any);
+      expect(updated!.appCreate).toBe(true);
+      expect(updated!.appDelete).toBe(true);
     });
   });
 
@@ -351,9 +335,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .delete(`/api/v2/group-permissions/${group.id}`)
@@ -362,7 +344,7 @@ describe('group permissions controller (v2)', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const deleted = await defaultDataSource.manager.findOne(GroupPermissions, { where: { id: group.id } });
+      const deleted = await findEntity(GroupPermissions, { id: group.id } as any);
       expect(deleted).toBeNull();
     });
   });
@@ -391,9 +373,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/v2/group-permissions/${group.id}/users`)
@@ -403,9 +383,7 @@ describe('group permissions controller (v2)', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const usersInGroup = await defaultDataSource.manager.find(GroupUsers, {
-        where: { groupId: group.id },
-      });
+      const usersInGroup = await findEntities(GroupUsers, { where: { groupId: group.id } });
       const userIds = usersInGroup.map((gu) => gu.userId);
       expect(userIds).toContain(defaultUser.id);
     });
@@ -433,9 +411,7 @@ describe('group permissions controller (v2)', () => {
       const cookie = await loginAs('admin@tooljet.io');
 
       // Get the admin default group
-      const adminGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { name: 'admin', organizationId: organization.id },
-      });
+      const adminGroup = await findEntityOrFail(GroupPermissions, { name: 'admin', organizationId: organization.id } as any);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${adminGroup.id}/users`)
@@ -472,9 +448,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       // Add user first
       await request(nestApp.getHttpServer())
@@ -484,9 +458,7 @@ describe('group permissions controller (v2)', () => {
         .send({ userIds: [defaultUser.id], groupId: group.id });
 
       // Find the GroupUsers entry
-      const groupUser = await defaultDataSource.manager.findOneOrFail(GroupUsers, {
-        where: { groupId: group.id, userId: defaultUser.id },
-      });
+      const groupUser = await findEntityOrFail(GroupUsers, { groupId: group.id, userId: defaultUser.id } as any);
 
       // Remove the user
       const response = await request(nestApp.getHttpServer())
@@ -496,9 +468,7 @@ describe('group permissions controller (v2)', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const remaining = await defaultDataSource.manager.find(GroupUsers, {
-        where: { groupId: group.id, userId: defaultUser.id },
-      });
+      const remaining = await findEntities(GroupUsers, { where: { groupId: group.id, userId: defaultUser.id } });
       expect(remaining).toHaveLength(0);
     });
   });
@@ -526,9 +496,7 @@ describe('group permissions controller (v2)', () => {
 
       await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-      const group = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-        where: { organizationId: organization.id, name: 'avengers' },
-      });
+      const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${group.id}/users/addable-users?input=developer`)

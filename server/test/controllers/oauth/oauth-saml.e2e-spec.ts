@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getDefaultDataSource } from '../../test.helper';
+import { resetDB, createUser, initTestApp, getEntityRepository, saveEntity } from '../../test.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -67,9 +67,8 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ mockConfig: true }));
-    const defaultDataSource = getDefaultDataSource();
-    ssoConfigsRepository = defaultDataSource.getRepository(SSOConfigs);
-    orgRepository = defaultDataSource.getRepository(Organization);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
+    orgRepository = getEntityRepository(Organization);
   });
 
   afterEach(() => {
@@ -96,13 +95,11 @@ describe('oauth controller', () => {
       });
       current_organization = organization;
       /* store fake SAML response */
-      const response = await getDefaultDataSource().manager.save(
-        getDefaultDataSource().manager.create(SSOResponse, {
+      const response = await saveEntity(SSOResponse, {
           sso: 'saml',
           configId: organization.id,
           response: '<xml></xml>',
-        })
-      );
+        } as any);
       ssoResponseId = response.id;
     });
 

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getDefaultDataSource, ensureInstanceSSOConfigs } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
@@ -28,9 +28,8 @@ describe('oauth controller', () => {
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
-    const defaultDataSource = getDefaultDataSource();
-    userRepository = defaultDataSource.getRepository(User);
-    orgUserRepository = defaultDataSource.getRepository(OrganizationUser);
+    userRepository = getEntityRepository(User);
+    orgUserRepository = getEntityRepository(OrganizationUser);
   });
 
   afterEach(() => {

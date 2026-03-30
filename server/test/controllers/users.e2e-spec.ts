@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, getDefaultDataSource } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, findEntityOrFail } from '../test.helper';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
 
@@ -37,7 +37,7 @@ describe('users controller', () => {
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
       expect(response.statusCode).toBe(200);
-      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await findEntityOrFail(User, { email: user.email } as any);
       expect(updatedUser.password).not.toEqual(oldPassword);
     });
 
@@ -61,7 +61,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await findEntityOrFail(User, { email: user.email } as any);
       expect(updatedUser.password).toEqual(oldPassword);
     });
   });
@@ -84,7 +84,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getDefaultDataSource().manager.findOneOrFail(User, { where: { email: user.email } });
+      const updatedUser = await findEntityOrFail(User, { email: user.email } as any);
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
     });

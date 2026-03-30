@@ -9,17 +9,16 @@ import {
   createAppWithDependencies,
   ensureAppEnvironments,
   findAppWithRelations,
+  findEntityOrFail,
+  findEntity,
 } from '../test.helper';
 import { INestApplication } from '@nestjs/common';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '../../ee/apps/services/app-import-export.service';
 
 describe('AppImportExportService', () => {
   let nestApp: INestApplication;
   let service: AppImportExportService;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -28,7 +27,6 @@ describe('AppImportExportService', () => {
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
     service = nestApp.get<AppImportExportService>(AppImportExportService);
-    defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('.export', () => {
@@ -123,9 +121,7 @@ describe('AppImportExportService', () => {
         name: 'test_query_2',
       });
 
-      const exportedApp = await defaultDataSource.manager.findOneOrFail(App, {
-        where: { id: application.id },
-      });
+      const exportedApp = await findEntityOrFail(App, { id: application.id } as any);
 
       let { appV2: result } = await service.export(adminUser, exportedApp.id, { version_id: appVersion1.id });
 
@@ -236,16 +232,12 @@ describe('AppImportExportService', () => {
       // Data sources are now created at global/org scope during import,
       // not per-version, so they won't appear in version-scoped queries.
       // Verify the global data source was created for the org.
-      const globalDs = await defaultDataSource.manager.findOne(
-        (await import('src/entities/data_source.entity')).DataSource,
-        {
-          where: {
+      const { DataSource: DataSourceEntity } = await import('src/entities/data_source.entity');
+      const globalDs = await findEntity(DataSourceEntity, {
             organizationId: adminUser.organizationId,
             kind: 'test_kind',
             scope: 'global',
-          },
-        }
-      );
+          } as any);
       expect(globalDs).toBeDefined();
       expect(globalDs.name).toBe('test_datasource');
     });

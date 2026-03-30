@@ -16,24 +16,23 @@ import {
   logout,
   getAllEnvironments,
   getAppEnvironment,
+  createFolder,
+  addAppToFolder,
+  findEntityOrFail,
+  findEntities,
+  saveEntity,
+  updateEntity,
 } from '../test.helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { Folder } from 'src/entities/folder.entity';
-import { FolderApp } from 'src/entities/folder_app.entity';
-import { AuditLog } from 'src/entities/audit_log.entity';
 import { Credential } from 'src/entities/credential.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
-import { MODULES } from 'src/modules/app/constants/modules';
 
 describe('apps controller', () => {
   let app: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeEach(async () => {
     await resetDB();
@@ -41,7 +40,6 @@ describe('apps controller', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   describe('GET /api/apps/:id', () => {
@@ -208,12 +206,10 @@ describe('apps controller', () => {
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         const organization = adminUserData.organization;
-        const allUserGroup = await defaultDataSource.manager.findOneOrFail(GroupPermissions, {
-          where: {
-            name: 'end-user',
-            organizationId: adminUserData.organization.id,
-          },
-        });
+        const allUserGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'end-user',
+          organizationId: adminUserData.organization.id,
+        } as any);
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
           groups: ['all_users', 'developer'],
@@ -278,14 +274,11 @@ describe('apps controller', () => {
           },
           false
         );
-        const folder = await defaultDataSource.manager.save(Folder, {
+        const folder = await createFolder(app, {
           name: 'Folder',
           organizationId: adminUserData.organization.id,
         });
-        await defaultDataSource.manager.save(FolderApp, {
-          app: appInFolder,
-          folder: folder,
-        });
+        await addAppToFolder(app, appInFolder, folder);
 
         let response = await request(app.getHttpServer())
           .get(`/api/apps`)
@@ -408,7 +401,7 @@ describe('apps controller', () => {
         let loggedUser = await loginAs(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
         const organization = adminUserData.organization;
-        const folder = await defaultDataSource.manager.save(Folder, {
+        const folder = await createFolder(app, {
           name: 'Folder',
           organizationId: adminUserData.organization.id,
         });
@@ -476,10 +469,7 @@ describe('apps controller', () => {
           },
           false
         );
-        await defaultDataSource.manager.save(FolderApp, {
-          app: appInFolder,
-          folder: folder,
-        });
+        await addAppToFolder(app, appInFolder, folder);
 
         const publicAppInFolder = await createApplication(
           app,
@@ -490,10 +480,7 @@ describe('apps controller', () => {
           },
           false
         );
-        await defaultDataSource.manager.save(FolderApp, {
-          app: publicAppInFolder,
-          folder: folder,
-        });
+        await addAppToFolder(app, publicAppInFolder, folder);
 
         const nonPermissibleAppInFolder = await createApplication(
           app,
@@ -503,10 +490,7 @@ describe('apps controller', () => {
           },
           false
         );
-        await defaultDataSource.manager.save(FolderApp, {
-          app: nonPermissibleAppInFolder,
-          folder: folder,
-        });
+        await addAppToFolder(app, nonPermissibleAppInFolder, folder);
 
         let response = await request(app.getHttpServer())
           .get(`/api/apps`)
@@ -1022,11 +1006,9 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
-        const allUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-          where: {
-            name: 'end-user',
-          },
-        });
+        const allUserGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'end-user',
+        } as any);
         await grantAppPermission(app, application, allUserGroup.id, {
           read: true,
           update: false,
@@ -1182,11 +1164,9 @@ describe('apps controller', () => {
           });
           const version = await createApplicationVersion(app, application);
           // setup app permissions for developer
-          const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-            where: {
-              name: 'developer',
-            },
-          });
+          const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+            name: 'developer',
+          } as any);
           await grantAppPermission(app, application, developerUserGroup.id, {
             read: false,
             update: true,
@@ -1280,9 +1260,7 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const v2 = await defaultDataSource.manager.findOneOrFail(AppVersion, {
-            where: { name: 'v2' },
-          });
+          const v2 = await findEntityOrFail(AppVersion, { name: 'v2' } as any);
           expect(v2.definition).toEqual(v1.definition);
 
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
@@ -1410,9 +1388,8 @@ describe('apps controller', () => {
             options: { method: 'get' },
           });
 
-          const manager = defaultDataSource.manager;
-          let dataSources = await manager.find(DataSource);
-          let dataQueries = await manager.find(DataQuery, { relations: ['dataSource'] });
+          let dataSources = await findEntities(DataSource);
+          let dataQueries = await findEntities(DataQuery, { relations: ['dataSource'] });
           expect(dataSources).toHaveLength(1);
           expect(dataQueries).toHaveLength(1);
 
@@ -1431,8 +1408,8 @@ describe('apps controller', () => {
               environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
-          dataSources = await manager.find(DataSource);
-          dataQueries = await manager.find(DataQuery, { relations: ['dataSource'] });
+          dataSources = await findEntities(DataSource);
+          dataQueries = await findEntities(DataQuery, { relations: ['dataSource'] });
           expect(dataSources).toHaveLength(2);
           expect(dataQueries).toHaveLength(2);
           expect(dataSources.map((s) => s.appVersionId).includes(version2.body.id)).toBeTruthy();
@@ -1448,8 +1425,8 @@ describe('apps controller', () => {
               environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
-          dataSources = await manager.find(DataSource);
-          dataQueries = await manager.find(DataQuery, { relations: ['dataSource'] });
+          dataSources = await findEntities(DataSource);
+          dataQueries = await findEntities(DataQuery, { relations: ['dataSource'] });
           expect(dataSources).toHaveLength(3);
           expect(dataQueries).toHaveLength(3);
           expect(dataSources.map((s) => s.appVersionId).includes(version3.body.id)).toBeTruthy();
@@ -1496,11 +1473,11 @@ describe('apps controller', () => {
             dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
           });
 
-          let credentials = await defaultDataSource.manager.find(Credential);
+          let credentials = await findEntities(Credential);
           expect(credentials.length).toBeGreaterThan(0);
           const credential = credentials[0];
           credential.valueCiphertext = 'strongPassword';
-          await defaultDataSource.manager.save(credential);
+          await saveEntity(Credential, credential);
 
           const developmentEnv = await getAppEnvironment(null, 1);
 
@@ -1528,13 +1505,13 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const dataSources = await defaultDataSource.manager.find(DataSource);
-          const dataQueries = await defaultDataSource.manager.find(DataQuery);
+          const dataSources = await findEntities(DataSource);
+          const dataQueries = await findEntities(DataQuery);
 
           expect(dataSources).toHaveLength(3);
           expect(dataQueries).toHaveLength(3);
 
-          credentials = await defaultDataSource.manager.find(Credential);
+          credentials = await findEntities(Credential);
           expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toContain('strongPassword');
 
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
@@ -1637,11 +1614,9 @@ describe('apps controller', () => {
         const version2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
 
         // setup app permissions for developer
-        const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-          where: {
-            name: 'developer',
-          },
-        });
+        const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'developer',
+        } as any);
         await grantAppPermission(app, application, developerUserGroup.id, {
           read: false,
           update: true,
@@ -1712,7 +1687,7 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
         await createApplicationVersion(app, application, { name: 'v2', definition: null });
 
-        await defaultDataSource.manager.update(App, { id: application.id }, { currentVersionId: version.id });
+        await updateEntity(App, application.id, { currentVersionId: version.id } as any);
 
         const response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version.id}`)
@@ -1752,11 +1727,9 @@ describe('apps controller', () => {
         });
         const version = await createApplicationVersion(app, application);
 
-        const allUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-          where: {
-            name: 'end-user',
-          },
-        });
+        const allUserGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'end-user',
+        } as any);
         await grantAppPermission(app, application, allUserGroup.id, {
           read: true,
           update: false,
@@ -1863,9 +1836,9 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         // setup app permissions for developer
-        const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-          where: { name: 'developer' },
-        });
+        const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'developer',
+        } as any);
         await grantAppPermission(app, application, developerUserGroup.id, {
           read: false,
           update: true,
@@ -2080,22 +2053,18 @@ describe('apps controller', () => {
       });
       await createApplicationVersion(app, application);
       // setup app permissions for developer
-      const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-        where: {
-          name: 'developer',
-        },
-      });
+      const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
+      } as any);
       await grantAppPermission(app, application, developerUserGroup.id, {
         read: true,
         update: true,
         delete: false,
       });
       // setup app permissions for viewer
-      const viewerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-        where: {
-          name: 'viewer',
-        },
-      });
+      const viewerUserGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'viewer',
+      } as any);
       await grantAppPermission(app, application, viewerUserGroup.id, {
         read: true,
         update: false,
@@ -2233,11 +2202,9 @@ describe('apps controller', () => {
       await createApplicationVersion(app, application);
 
       // setup app permissions for developer
-      const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-        where: {
-          name: 'developer',
-        },
-      });
+      const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
+      } as any);
       developerUserGroup.appCreate = true;
       await developerUserGroup.save();
 
@@ -2289,11 +2256,9 @@ describe('apps controller', () => {
       await createApplicationVersion(app, application);
 
       // setup app permissions for developer
-      const developerUserGroup = await defaultDataSource.getRepository(GroupPermissions).findOneOrFail({
-        where: {
-          name: 'developer',
-        },
-      });
+      const developerUserGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'developer',
+      } as any);
       developerUserGroup.appCreate = true;
       await developerUserGroup.save();
 

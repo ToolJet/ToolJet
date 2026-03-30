@@ -12,18 +12,15 @@ import {
   getAllEnvironments,
   createAppWithDependencies,
   loginAs,
+  updateEntity,
 } from '../test.helper';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
-  let defaultDataSource: TypeOrmDataSource;
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-    defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
   });
 
   beforeEach(async () => {
@@ -167,7 +164,7 @@ describe('data sources controller', () => {
       const { dataSource } = await createAppWithDependencies(app, adminUserData.user, {
         isQueryNeeded: false,
       });
-      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+      await updateEntity(DataSource, dataSource.id, {
         organizationId: adminUserData.organization.id,
       });
 
@@ -225,7 +222,7 @@ describe('data sources controller', () => {
       const { dataSource } = await createAppWithDependencies(app, adminUserData.user, {
         isQueryNeeded: false,
       });
-      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+      await updateEntity(DataSource, dataSource.id, {
         organizationId: adminUserData.organization.id,
       });
 
@@ -256,7 +253,7 @@ describe('data sources controller', () => {
       });
 
       // Set organizationId on data source so ValidateDataSourceGuard can find it
-      await defaultDataSource.manager.update(DataSource, dataSource.id, {
+      await updateEntity(DataSource, dataSource.id, {
         organizationId: adminUserData.organization.id,
       });
 
