@@ -162,6 +162,7 @@ const useAppData = (
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
   const previousRestoreTimestamp = usePrevious(restoreTimestamp);
+  const isSwitchingBranch = useStore((state) => state.isSwitchingBranch);
 
   const location = useRouter().location;
 
@@ -623,7 +624,7 @@ const useAppData = (
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
-    if (moduleMode) return;
+    if (moduleMode || isSwitchingBranch) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
@@ -745,7 +746,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, isSwitchingBranch]);
 
   useEffect(() => {
     if (moduleMode) return;
