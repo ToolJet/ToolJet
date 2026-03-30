@@ -1,4 +1,4 @@
-import { resetDB, initTestApp, createUser } from '../test.helper';
+import { resetDB, initTestApp, createUser, findEntityOrFail, updateEntity } from '../../../test.helper';
 import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';

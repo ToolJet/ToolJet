@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DataQueriesUtilService } from '../../../src/modules/data-queries/util.service';
+import { DataQueriesUtilService } from '../../../../src/modules/data-queries/util.service';
 import { ConfigService } from '@nestjs/config';
-import { VersionRepository } from '../../../src/modules/versions/repository';
-import { AppEnvironmentUtilService } from '../../../src/modules/app-environments/util.service';
-import { DataSourcesUtilService } from '../../../src/modules/data-sources/util.service';
-import { PluginsServiceSelector } from '../../../src/modules/data-sources/services/plugin-selector.service';
+import { VersionRepository } from '../../../../src/modules/versions/repository';
+import { AppEnvironmentUtilService } from '../../../../src/modules/app-environments/util.service';
+import { DataSourcesUtilService } from '../../../../src/modules/data-sources/util.service';
+import { PluginsServiceSelector } from '../../../../src/modules/data-sources/services/plugin-selector.service';
 
 describe('DataQueriesUtilService', () => {
   let service: DataQueriesUtilService;

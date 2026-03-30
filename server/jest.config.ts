@@ -11,6 +11,7 @@ const config: Config.InitialOptions = {
       'ts-jest',
       {
         tsconfig: 'tsconfig.json',
+        diagnostics: false,
       },
     ],
   },
