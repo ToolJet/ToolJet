@@ -4,7 +4,6 @@
 import { INestApplication } from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
-import { OrganizationUser } from '@entities/organization_user.entity';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
@@ -28,10 +27,8 @@ import {
 } from '../../ee/workflows/services/workflow-executions.service';
 import { JavaScriptBundleGenerationService } from '../../ee/workflows/services/bundle-generation.service';
 import { PythonBundleGenerationService } from '../../ee/workflows/services/python-bundle-generation.service';
-import { UserSessions } from '@entities/user_sessions.entity';
-import { SessionType } from '@modules/external-apis/constants';
 import { getDefaultDataSource } from './setup';
-import { ensureAppEnvironments } from './seed';
+import { createUser, ensureAppEnvironments } from './seed';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,77 +70,14 @@ async function updateInstanceSetting(key: string, value: string): Promise<void> 
 }
 
 // ---------------------------------------------------------------------------
-// Authentication (direct DB session — no HTTP call)
-// ---------------------------------------------------------------------------
-
-/**
- * Creates a user session and JWT directly in the database.
- * Unlike the HTTP `login` in api.ts, this does NOT call /api/authenticate
- * and works with plaintext passwords (as used by createWorkflowUser).
- */
-export const workflowLogin = async (
-  app: INestApplication,
-  email: string = 'admin@tooljet.io',
-  organizationId?: string
-): Promise<{ user: { id: string; email: string; firstName: string; lastName: string; organizationId: string }; tokenCookie: string[] }> => {
-  const ds = getDefaultDataSource();
-  const userRepository = ds.getRepository(User);
-  const sessionRepository = ds.getRepository(UserSessions);
-
-  const user = await userRepository.findOneOrFail({
-    where: { email },
-    relations: ['organizationUsers', 'organizationUsers.organization'],
-  });
-
-  const expiry = new Date();
-  expiry.setDate(expiry.getDate() + 30);
-
-  const session = sessionRepository.create({
-    userId: user.id,
-    device: 'e2e-test',
-    expiry: expiry,
-    lastLoggedIn: new Date(),
-    sessionType: SessionType.USER,
-  });
-  await sessionRepository.save(session);
-
-  const jwt = require('jsonwebtoken');
-  const token = jwt.sign(
-    {
-      sessionId: session.id,
-      username: user.id,
-      sub: user.email,
-      organizationIds: [organizationId || user.organizationId || user.defaultOrganizationId],
-      isPasswordLogin: true,
-      isSSOLogin: false,
-      iat: Math.floor(Date.now() / 1000),
-    },
-    process.env.SECRET_KEY_BASE || 'secret',
-    { expiresIn: '1h' }
-  );
-
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      organizationId: user.organizationId || user.defaultOrganizationId,
-    },
-    tokenCookie: [`tj_auth_token=${token}; HttpOnly; Path=/`],
-  };
-};
-
-// ---------------------------------------------------------------------------
 // Organization & user setup
 // ---------------------------------------------------------------------------
 
 /**
  * Creates a user with an organization, default app environments, and optional workflow permissions.
  *
- * NOTE: This uses a simplified user creation path (no group permissions, no SSO configs)
- * compared to the main `createUser` in seed.ts. It is intentionally kept separate because
- * the workflow tests expect this specific setup shape (raw user + org, no default group scaffolding).
+ * Uses the standard `createUser` from seed.ts which sets up group permissions and SSO configs,
+ * allowing HTTP login (POST /api/authenticate) to work correctly.
  */
 export const setupOrganizationAndUser = async (
   nestApp: INestApplication,
@@ -160,11 +94,12 @@ export const setupOrganizationAndUser = async (
 
   await updateInstanceSetting(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE, allowPersonalWorkspace.toString());
 
-  const user = await createWorkflowUser(nestApp, userParams);
-
-  const ds = getDefaultDataSource();
-  const organizationRepository = ds.getRepository(Organization);
-  const organization = await organizationRepository.findOneOrFail({ where: { id: user.organizationId } });
+  const { user, organization } = await createUser(nestApp, {
+    email: userParams.email,
+    firstName: userParams.firstName,
+    lastName: userParams.lastName,
+    groups: ['end-user', 'admin'],
+  });
 
   await ensureAppEnvironments(nestApp, organization.id);
 
@@ -173,55 +108,6 @@ export const setupOrganizationAndUser = async (
   }
 
   return { user, organization };
-};
-
-/**
- * Creates a bare user+org for workflow tests.
- * Unlike the main createUser in seed.ts, this does NOT create default group permissions
- * or SSO configs — workflow tests use a simpler setup.
- */
-export const createWorkflowUser = async (
-  nestApp: INestApplication,
-  userParams: { firstName: string; lastName: string; email: string; password: string; organizationId?: string }
-): Promise<User> => {
-  const ds = getDefaultDataSource();
-  const userRepository = ds.getRepository(User);
-  const organizationRepository = ds.getRepository(Organization);
-  const orgUserRepository = ds.getRepository(OrganizationUser);
-
-  let organization: Organization;
-  if (userParams.organizationId) {
-    organization = await organizationRepository.findOneOrFail({ where: { id: userParams.organizationId } });
-  } else {
-    organization = organizationRepository.create({
-      name: 'Test Organization',
-      slug: 'test-organization',
-      status: 'active',
-    });
-    organization = await organizationRepository.save(organization);
-  }
-
-  const user = userRepository.create({
-    email: userParams.email,
-    firstName: userParams.firstName,
-    lastName: userParams.lastName,
-    password: userParams.password,
-    organizationId: organization.id,
-    defaultOrganizationId: organization.id,
-    status: 'active',
-  });
-
-  const savedUser = await userRepository.save(user);
-
-  const organizationUser = orgUserRepository.create({
-    userId: savedUser.id,
-    organizationId: organization.id,
-    role: 'admin',
-    status: 'active',
-  });
-  await orgUserRepository.save(organizationUser);
-
-  return savedUser;
 };
 
 // ---------------------------------------------------------------------------

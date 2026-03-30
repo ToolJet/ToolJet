@@ -16,7 +16,7 @@ import {
   initTestApp,
   createCompleteWorkflow,
   createBundle,
-  workflowLogin as login,
+  login,
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,

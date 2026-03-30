@@ -9,10 +9,10 @@ import * as path from 'path';
 import {
   resetDB,
   setupOrganizationAndUser,
-  workflowLogin as login,
+  login,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
-  createWorkflowUser,
+  createUser,
   initTestApp,
   createUserWorkflowPermissions,
 } from '../../../test.helper';
@@ -617,7 +617,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
       // Create admin user who will own the workflow
-      const { user: adminUser } = await setupOrganizationAndUser(app, {
+      const { user: adminUser, organization } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
@@ -634,12 +634,12 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createWorkflowUser(app, {
+      const { user: limitedUser } = await createUser(app, {
         email: 'readonly@tooljet.io',
-        password: 'password',
         firstName: 'ReadOnly',
         lastName: 'User',
-        organizationId: adminUser.organizationId,
+        groups: ['end-user'],
+        organization: organization,
       });
 
       // Give limited user view-only permissions (no edit access)
@@ -872,7 +872,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
       // Create admin user who will own the workflow
-      const { user: adminUser } = await setupOrganizationAndUser(app, {
+      const { user: adminUser, organization } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
@@ -889,12 +889,12 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createWorkflowUser(app, {
+      const { user: limitedUser } = await createUser(app, {
         email: 'readonly@tooljet.io',
-        password: 'password',
         firstName: 'ReadOnly',
         lastName: 'User',
-        organizationId: adminUser.organizationId,
+        groups: ['end-user'],
+        organization: organization,
       });
 
       // Give limited user view-only permissions (no edit access)
@@ -1065,7 +1065,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
       // Create admin user who will own the workflow
-      const { user: adminUser } = await setupOrganizationAndUser(app, {
+      const { user: adminUser, organization } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
@@ -1082,12 +1082,12 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createWorkflowUser(app, {
+      const { user: limitedUser } = await createUser(app, {
         email: 'readonly@tooljet.io',
-        password: 'password',
         firstName: 'ReadOnly',
         lastName: 'User',
-        organizationId: adminUser.organizationId,
+        groups: ['end-user'],
+        organization: organization,
       });
 
       // Give limited user view-only permissions (no edit access)
@@ -1272,7 +1272,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
       // Create admin user who will own the workflow
-      const { user: adminUser } = await setupOrganizationAndUser(app, {
+      const { user: adminUser, organization } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
@@ -1289,12 +1289,12 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const appVersion = await createWorkflowApplicationVersion(app, workflow);
 
       // Create limited user in the same organization
-      const limitedUser = await createWorkflowUser(app, {
+      const { user: limitedUser } = await createUser(app, {
         email: 'readonly@tooljet.io',
-        password: 'password',
         firstName: 'ReadOnly',
         lastName: 'User',
-        organizationId: adminUser.organizationId,
+        groups: ['end-user'],
+        organization: organization,
       });
 
       // Give limited user view-only permissions (no edit access)
