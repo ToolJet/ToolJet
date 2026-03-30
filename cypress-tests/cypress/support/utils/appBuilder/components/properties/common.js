@@ -55,12 +55,37 @@ export const verifyLoadingState = (componentSelector, controls) => {
     genralProperties(componentSelector, csa, { className: "tj-widget-loader", classNameState: "not.exist" });
 }
 
-export const verifyDisability = (componentSelector, controls) => {
-    const { csa, jsSet, jsReset } = controls;
-    const disabled = { attr: 'data-disabled', attrValue: 'true' };
-    const enabled = { attr: 'data-disabled', attrValue: 'false' };
+export const verifyDisability = (
+  componentSelector,
+  controls,
+  options = { attr: "data-disabled" },
+) => {
+  const { csa, jsSet, jsReset } = controls;
+  const { attr, assertClass } = options;
 
-    cy.get(componentSelector).should('have.attr', 'data-disabled', 'false');
+  const disabled = {};
+  if (attr) {
+    disabled.attr = attr;
+    disabled.attrValue = "true";
+  }
+  if (assertClass) {
+    disabled.assertClass = assertClass;
+    disabled.assertClassState = "have.class";
+  }
+
+  const enabled = {};
+  if (attr) {
+    enabled.attr = attr;
+    enabled.attrValue = "false";
+  }
+  if (assertClass) {
+    enabled.assertClass = assertClass;
+    enabled.assertClassState = "not.have.class";
+  }
+
+  if (attr) cy.get(componentSelector).should("have.attr", attr, "false");
+  if (assertClass)
+    cy.get(componentSelector).should("not.have.class", assertClass);
 
     genralProperties(componentSelector, jsSet, disabled);
     genralProperties(componentSelector, jsReset, enabled);
