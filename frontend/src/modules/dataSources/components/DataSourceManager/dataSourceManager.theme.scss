@@ -1,6 +1,11 @@
 @import '@/_styles/colors.scss';
 
-
+.datasource-version-info-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0.4;
+}
 
 
 .sample-db-modal-body{
