@@ -69,7 +69,7 @@ export class AppsService implements IAppsService {
     protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -161,14 +161,19 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
+        // Check if the app is in stub state (pulled from git but not yet hydrated)
+        const stubVersion = await this.versionRepository.findOne({ where: { appId: app.id, isStub: true } });
+        if (stubVersion) {
+          throw new NotFoundException('app-not-ready');
+        }
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
 
@@ -254,7 +259,7 @@ export class AppsService implements IAppsService {
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
       // Block rename if git sync is enabled and app has been pushed
-      if (isGitSyncEnabled  && app.type === APP_TYPES.FRONT_END) {
+      if (isGitSyncEnabled && app.type === APP_TYPES.FRONT_END) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
         if (appGitSync) {
           // Check if on default branch (not a feature branch)
