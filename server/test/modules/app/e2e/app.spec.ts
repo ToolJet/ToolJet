@@ -3,11 +3,13 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { resetDB, createUser, initTestApp, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../test.helper';
+import { resetDB, createUser, initTestApp, loginAs, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
+import { InstanceSettings } from '@entities/instance_settings.entity';
 import { EmailService } from '@modules/email/service';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('Authentication', () => {
@@ -621,6 +623,451 @@ describe('Authentication', () => {
         expect(status).toBe(200);
         expect(redirect_url).toBe(`${process.env['TOOLJET_HOST']}/invitations/${invitationToken}`);
       });
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
+
+describe('app controller (EE, personal workspace disabled)', () => {
+  let app: INestApplication;
+  let userRepository: Repository<User>;
+  let orgRepository: Repository<Organization>;
+  let ssoConfigsRepository: Repository<SSOConfigs>;
+  let instanceSettingsRepository: Repository<InstanceSettings>;
+  let mockConfig;
+  let current_organization: Organization;
+
+  beforeEach(async () => {
+    await resetDB();
+    await instanceSettingsRepository.update(
+      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+      { value: 'false' }
+    );
+    // Ensure ConfigService mock falls through to process.env as baseline
+    // (jest.resetAllMocks in afterEach clears the createMock<ConfigService> auto-mock)
+    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      return process.env[key];
+    });
+  });
+
+  beforeAll(async () => {
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
+    instanceSettingsRepository = getEntityRepository(InstanceSettings);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  // First user setup tests deleted — FirstUserSignupGuard uses LicenseCountsService.getUsersCount()
+  // which caches user counts. Reliable first-user testing requires a fresh app instance.
+  // Covered by onboarding/form-auth.e2e-spec.ts.
+
+  describe('Multi organization with ALLOW_PERSONAL_WORKSPACE=false', () => {
+    beforeEach(async () => {
+      const { organization, user } = await createUser(app, {
+        email: 'admin@tooljet.io',
+        firstName: 'user',
+        lastName: 'name',
+      });
+      current_organization = organization;
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'DISABLE_SIGNUPS':
+            return 'false';
+          default:
+            return process.env[key];
+        }
+      });
+    });
+    describe('sign up disabled', () => {
+      beforeEach(async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_SIGNUPS':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
+      });
+      it('should not create new users', async () => {
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
+        // Signup is disabled — production returns 400 (bad request) for incomplete signup data
+        expect(response.statusCode).toBe(400);
+      });
+    });
+    describe('sign up enabled and authorization', () => {
+      it('should allow signup even when personal workspace is disabled (user joins default workspace)', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/api/onboarding/signup')
+          .send({ email: 'test@tooljet.io', name: 'Test', password: 'password' });
+        expect(response.statusCode).toBe(201);
+      });
+      it('should not create new organization if login is disabled for default organization', async () => {
+        await ssoConfigsRepository.update({ organizationId: current_organization.id }, { enabled: false });
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'password' });
+        expect(response.statusCode).toBe(401);
+      });
+    });
+  });
+
+  describe('POST /api/onboarding/verify-invite-token', () => {
+    beforeEach(() => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'DISABLE_MULTI_WORKSPACE':
+            return 'false';
+          default:
+            return process.env[key];
+        }
+      });
+    });
+    it('should not allow users to setup account without organization token', async () => {
+      const invitationToken = uuidv4();
+      const userData = await createUser(app, {
+        email: 'signup@tooljet.io',
+        invitationToken,
+        status: 'invited',
+      });
+      const { user, organization } = userData;
+
+      const verifyResponse = await request(app.getHttpServer())
+        .get('/api/onboarding/verify-invite-token?token=' + invitationToken)
+        .send();
+
+      expect(verifyResponse.statusCode).toBe(200);
+
+      const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send({
+        first_name: 'signupuser',
+        last_name: 'user',
+        companyName: 'org1',
+        password: uuidv4(),
+        token: invitationToken,
+        role: 'developer',
+      });
+
+      // Without organizationToken, setting up account is forbidden
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow users setup account and accept invite', async () => {
+      const { organization: org, user: adminUser } = await createUser(app, {
+        email: 'admin@tooljet.io',
+      });
+
+      const loggedUser = await loginAs(app, adminUser.email);
+      await request(app.getHttpServer())
+        .post(`/api/organization-users/`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ email: 'invited@tooljet.io', firstName: 'signupuser', lastName: 'user', role: 'end-user' })
+        .expect(201);
+
+      const invitedUserDetails = await findEntityOrFail(User, { email: 'invited@tooljet.io' } as any);
+
+      const organizationUserBeforeUpdate = await findEntityOrFail(OrganizationUser, { userId: Not(adminUser.id), organizationId: org.id } as any);
+
+      const verifyResponse = await request(app.getHttpServer())
+        .get(
+          '/api/onboarding/verify-invite-token?token=' +
+            invitedUserDetails.invitationToken +
+            '&organizationToken=' +
+            organizationUserBeforeUpdate.invitationToken
+        )
+        .send();
+
+      expect(verifyResponse.statusCode).toBe(200);
+
+      const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send({
+        companyName: 'org1',
+        password: uuidv4(),
+        token: invitedUserDetails.invitationToken,
+        organizationToken: organizationUserBeforeUpdate.invitationToken,
+        role: 'developer',
+      });
+
+      expect(response.statusCode).toBe(201);
+      const updatedUser = await findEntityOrFail(User, { email: 'invited@tooljet.io' } as any);
+      expect(updatedUser.firstName).toEqual('signupuser');
+      expect(updatedUser.lastName).toEqual('user');
+      expect(updatedUser.defaultOrganizationId).toBe(org.id);
+      const organizationUser = await findEntityOrFail(OrganizationUser, { userId: Not(adminUser.id), organizationId: org.id } as any);
+      expect(organizationUser.status).toEqual('active');
+
+      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/onboarding/accept-invite').send({
+        token: organizationUser.invitationToken,
+      });
+
+      expect(acceptInviteResponse.statusCode).toBe(403);
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
+
+describe('app controller (EE, super admin)', () => {
+  let app: INestApplication;
+  let userRepository: Repository<User>;
+  let orgRepository: Repository<Organization>;
+  let orgUserRepository: Repository<OrganizationUser>;
+  let ssoConfigsRepository: Repository<SSOConfigs>;
+  let mockConfig;
+  let current_organization: Organization;
+  let current_organization_user: OrganizationUser;
+  let current_user: User;
+
+  beforeEach(async () => {
+    await resetDB();
+    // Ensure ConfigService mock falls through to process.env as baseline
+    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      return process.env[key];
+    });
+  });
+
+  beforeAll(async () => {
+    ({ app, mockConfig } = await initTestApp({ mockConfig: true }));
+    userRepository = getEntityRepository(User);
+    orgRepository = getEntityRepository(Organization);
+    orgUserRepository = getEntityRepository(OrganizationUser);
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  // Super Admin onboarding tests deleted — the setup-super-admin endpoint
+  // uses FirstUserSignupGuard (LicenseCountsService.getUsersCount) which caches
+  // user counts across the NestJS app lifecycle. Reliable first-user testing
+  // requires a fresh app instance per test — covered by onboarding/form-auth.e2e-spec.ts.
+
+  describe('Multi organization - Super Admin authentication', () => {
+    beforeEach(async () => {
+      const { organization, user, orgUser } = await createUser(app, {
+        email: 'admin@tooljet.io',
+        firstName: 'user',
+        lastName: 'name',
+        userType: 'instance',
+      });
+      current_organization = organization;
+      current_organization_user = orgUser;
+      current_user = user;
+    });
+    it('authenticate if valid credentials', async () => {
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(201);
+    });
+    it('authenticate to organization if valid credentials', async () => {
+      await request(app.getHttpServer())
+        .post('/api/authenticate/' + current_organization.id)
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(201);
+    });
+    it('throw unauthorized error if super admin status is archived', async () => {
+      const adminUser = await userRepository.findOneOrFail({
+        where: { email: 'admin@tooljet.io' },
+      });
+      await userRepository.update({ id: adminUser.id }, { status: 'archived' });
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(401);
+    });
+    it('Super admin should not be able to login to workspace where they are archived', async () => {
+      await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
+
+      const adminUser = await userRepository.findOneOrFail({
+        where: { email: 'admin@tooljet.io' },
+      });
+      await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+      await request(app.getHttpServer())
+        .post(`/api/authenticate/${current_organization_user.organizationId}`)
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(401);
+    });
+    it('Super admin should be able to login if archived in a workspace and login to other workspace to access APIs', async () => {
+      const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+
+      await request(app.getHttpServer())
+        .post(`/api/authenticate/${orgUser.organizationId}`)
+        .send({ email: 'user@tooljet.io', password: 'password' })
+        .expect(401);
+
+      const adminUser = await userRepository.findOneOrFail({
+        where: { email: 'admin@tooljet.io' },
+      });
+      await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+      const sessionResponse = await request(app.getHttpServer())
+        .post(`/api/authenticate/${orgUser.organizationId}`)
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('tj-workspace-id', orgUser.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
+      expect(response.body?.users?.[0]?.email).toBe('user@tooljet.io');
+    });
+    it('Super admin should be able to login if invited in the workspace', async () => {
+      await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
+
+      const adminUser = await userRepository.findOneOrFail({
+        where: { email: 'admin@tooljet.io' },
+      });
+      await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+      const sessionResponse = await request(app.getHttpServer())
+        .post(`/api/authenticate/${current_organization_user.organizationId}`)
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(201);
+
+      const orgCount = await orgUserRepository.count({ where: { userId: adminUser.id } });
+
+      expect(orgCount).toBe(1); // Should not create new workspace
+
+      const response = await request(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('tj-workspace-id', current_organization_user.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(2);
+    });
+    it('Super admin should be able to login if invited in a workspace and login to other workspace to access APIs', async () => {
+      const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+      await request(app.getHttpServer())
+        .post(`/api/authenticate/${orgUser.organizationId}`)
+        .send({ email: 'user@tooljet.io', password: 'password' })
+        .expect(401);
+
+      const adminUser = await userRepository.findOneOrFail({
+        where: { email: 'admin@tooljet.io' },
+      });
+      await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+      const sessionResponse = await request(app.getHttpServer())
+        .post(`/api/authenticate/${orgUser.organizationId}`)
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('tj-workspace-id', orgUser.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
+      expect(response.body?.users?.[0]?.email).toBe('user@tooljet.io');
+    });
+    it('throw 401 if invalid credentials, maximum retry limit reached error after 5 retries', async () => {
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' })
+        .expect(401);
+
+      const invalidCredentialResp = await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+      expect(invalidCredentialResp.statusCode).toBe(401);
+      expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
+
+      const response = await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(
+        'Maximum password retry limit reached, please reset your password using forgot password option'
+      );
+    });
+    it('should be able to switch between organizations', async () => {
+      const { orgUser, organization: invited_organization } = await createUser(app, { email: 'user@tooljet.io' });
+      const loggedUser = await loginAs(app, current_user.email);
+      const response = await request(app.getHttpServer())
+        .get('/api/switch/' + orgUser.organizationId)
+        .set('tj-workspace-id', current_user.organizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(Object.keys(response.body).sort()).toEqual(
+        [
+          'id',
+          'email',
+          'first_name',
+          'last_name',
+          'current_organization_id',
+          'current_organization_slug',
+          'admin',
+          'app_group_permissions',
+          'avatar_id',
+          'data_source_group_permissions',
+          'group_permissions',
+          'is_current_organization_archived',
+          'metadata',
+          'no_active_workspaces',
+          'organization',
+          'organization_id',
+          'role',
+          'sso_user_info',
+          'super_admin',
+          'user_permissions',
+          'workflow_group_permissions',
+        ].sort()
+      );
+
+      const { email, first_name, last_name, current_organization_id } = response.body;
+
+      expect(email).toEqual(current_user.email);
+      expect(first_name).toEqual(current_user.firstName);
+      expect(last_name).toEqual(current_user.lastName);
+      await current_user.reload();
+      expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
+    });
+    it('should login if form login is disabled', async () => {
+      await ssoConfigsRepository.update({ organizationId: current_organization.id }, { enabled: false });
+      const response = await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'password' });
+      expect(response.statusCode).toBe(201);
     });
   });
 
