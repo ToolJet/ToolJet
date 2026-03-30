@@ -107,8 +107,11 @@ export const verifyButtonSelection = (componentSelector) => {
             cy.get(componentSelector).find('[data-cy="buttongroup-button-1"]')
                 .should('have.css', 'background-color', initialBg);
             // Button-0 should now be unselected
+            cy.log('Button-0 should now be unselected')
             cy.get(componentSelector).find('[data-cy="buttongroup-button-0"]')
                 .should('not.have.css', 'background-color', initialBg);
+            // Reset: re-select button-0 to restore original state
+            cy.get(componentSelector).find('[data-cy="buttongroup-button-0"]').click();
         });
 };
 

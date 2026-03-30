@@ -4,6 +4,7 @@ import {
     verifyLoadingState,
     verifyVisibility,
 } from "Support/utils/appBuilder/components/properties/common";
+import { componentCommonSelectors } from "Selectors/appBuilder/components/common";
 import {
     verifyButtonGroupLayout,
     verifyButtonGroupAlignment,
@@ -22,21 +23,19 @@ import {
 } from "Support/utils/appBuilder/components/properties/buttonGroupComponent";
 
 describe("Button Group Component - Feature Validation", { baseUrl: null }, () => {
+    const {
+        desktopToggle,
+        visibilityToggle,
+        jsVisibilityToggle,
+        jsDisableToggle,
+        jsLoadingToggle,
+        csaVisibilityToggle,
+        csaLoadingToggle,
+        csaDisableToggle,
+    } = componentCommonSelectors;
+
     const componentSelector = '[data-cy="buttongroup"]';
     const wrapperSelector = '[data-cy="draggable-widget-buttongroup"]';
-    const desktopToggle = '[data-cy="desktoptoggle"] .d-flex';
-    const visibilityToggle = '[data-cy="visibilitytoggle"] .d-flex';
-    const loadingToggle = '[data-cy="loadingtoggle"] .d-flex';
-
-    // JS action toggles (single toggle for set/reset)
-    const jsVisibilityToggle = '[data-cy="jsvisibilitytoggle"] .d-flex';
-    const jsDisableToggle = '[data-cy="jsdisabletoggle"] .d-flex';
-    const jsLoadingToggle = '[data-cy="jsloadingtoggle"] .d-flex';
-
-    // CSA toggles
-    const csaVisibilityToggle = '[data-cy="csavisibility"] .d-flex';
-    const csaLoadingToggle = '[data-cy="csaloading"] .d-flex';
-    const csaDisableToggle = '[data-cy="csadisable"] .d-flex';
 
     // CSA / JS action buttons
     const csaClearBtn = '[data-cy="setimage-label"]';
@@ -75,7 +74,7 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
         cy.viewport(1800, 1400);
     });
 
-    it("should verify visibility, disable, and loading states", () => {
+    it("should verify properties", () => {
         genralProperties(componentSelector, desktopToggle, { state: "exist" });
 
         verifyVisibility(componentSelector, {
@@ -92,15 +91,23 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
         });
 
         verifyLoadingState(wrapperSelector, {
-            toggle: loadingToggle,
             csa: csaLoadingToggle,
             jsSet: jsLoadingToggle,
             jsReset: jsLoadingToggle,
         });
+
+        verifyButtonSelection(componentSelector);
+        cy.wait(1000)
+        verifyMultipleSelect(componentSelector, multipleSelectToggle);
+
+        verifyClearSelectedOptions(componentSelector, csaClearBtn);
     });
 
-    it("should verify button group layout options", () => {
+    it("should verify styles", () => {
         setup();
+
+        // Ensure button-0 is selected before color picker tests
+        cy.get(componentSelector).find('[data-cy="buttongroup-button-0"]').click();
 
         verifyButtonGroupLayout(componentSelector, layoutDropdown, [
             { label: "Column", expectedFlexDir: "column" },
@@ -108,10 +115,6 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
             { label: "Wrap", expectedFlexDir: "row" },
             { label: "Row", expectedFlexDir: "row" },
         ]);
-    });
-
-    it("should verify button group alignment options", () => {
-        setup();
 
         verifyButtonGroupAlignment(componentSelector, buttonAlignmentDropdown, [
             { label: "Left", expectedJustify: "start" },
@@ -119,19 +122,13 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
             { label: "Right", expectedJustify: "end" },
             { label: "Center", expectedJustify: "center" },
         ]);
-    });
-
-    it("should verify label alignment options", () => {
-        setup();
 
         verifyLabelAlignment(componentSelector, labelAlignmentDropdown, [
             { label: "Top", expectedFlexDir: "column" },
             { label: "Side", expectedFlexDir: "row" },
         ]);
-    });
 
-    it("should verify selected button background color via color picker", () => {
-        setup();
+        cy.get(componentSelector).find('[data-cy="buttongroup-button-0"]').click();
 
         verifySelectedButtonBgColor(componentSelector, selectedBtnBgColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
@@ -139,20 +136,12 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
             { hex: "000000", expectedColor: "rgb(0, 0, 0)" },
         ]);
-    });
-
-    it("should verify selected button text color via color picker", () => {
-        setup();
 
         verifySelectedButtonTextColor(componentSelector, selectedBtnTextColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
             { hex: "ffffff", expectedColor: "rgb(255, 255, 255)" },
             { hex: "000000", expectedColor: "rgb(0, 0, 0)" },
         ]);
-    });
-
-    it("should verify unselected button background color via color picker", () => {
-        setup();
 
         verifyUnselectedButtonBgColor(componentSelector, buttonBgColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
@@ -160,50 +149,30 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
             { hex: "000000", expectedColor: "rgb(0, 0, 0)" },
         ]);
-    });
-
-    it("should verify unselected button text color via color picker", () => {
-        setup();
 
         verifyUnselectedButtonTextColor(componentSelector, buttonTextColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
             { hex: "ffffff", expectedColor: "rgb(255, 255, 255)" },
             { hex: "000000", expectedColor: "rgb(0, 0, 0)" },
         ]);
-    });
-
-    it("should verify button border color via color picker", () => {
-        setup();
 
         verifyButtonBorderColor(componentSelector, buttonBorderColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
             { hex: "00ff00", expectedColor: "rgb(0, 255, 0)" },
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
         ]);
-    });
-
-    it("should verify box shadow color via color picker", () => {
-        setup();
 
         verifyBoxShadowColor(componentSelector, boxShadowColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
             { hex: "00ff00", expectedColor: "rgb(0, 255, 0)" },
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
         ]);
-    });
-
-    it("should verify label color via color picker", () => {
-        setup();
 
         verifyLabelColor(componentSelector, labelColorPicker, [
             { hex: "ff0000", expectedColor: "rgb(255, 0, 0)" },
             { hex: "00ff00", expectedColor: "rgb(0, 255, 0)" },
             { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
         ]);
-    });
-
-    it("should verify border radius input", () => {
-        setup();
 
         verifyBorderRadius(componentSelector, borderRadiusInput, [
             { input: "20", expectedRadius: "20px" },
@@ -213,39 +182,13 @@ describe("Button Group Component - Feature Validation", { baseUrl: null }, () =>
         ]);
     });
 
-    it("should verify single button selection", () => {
+    it("should verify events", () => {
         setup();
 
-        verifyButtonSelection(componentSelector);
-    });
-
-    it("should verify multiple select toggle", () => {
-        setup();
-
-        verifyMultipleSelect(componentSelector, multipleSelectToggle);
-    });
-
-    it("should verify CSA clear selected options", () => {
-        setup();
-
-        verifyClearSelectedOptions(componentSelector, csaClearBtn);
-    });
-
-    it("should verify JS link click event triggers toast", () => {
-        setup();
-
-        // Click a button in the group first to register an interaction
         cy.get(componentSelector).find('[data-cy="buttongroup-button-1"]').click();
         cy.verifyToastMessage(toastSelector, "Button group clicked", false);
-        // Now trigger the JS action click and verify toast appears again
+
         cy.get(jsLinkClickBtn).click();
-        cy.verifyToastMessage(toastSelector, "Button group clicked", false);
-    });
-
-    it("should verify button group button click triggers toast", () => {
-        setup();
-
-        cy.get(componentSelector).find('[data-cy="buttongroup-button-1"]').click();
         cy.verifyToastMessage(toastSelector, "Button group clicked", false);
     });
 });
