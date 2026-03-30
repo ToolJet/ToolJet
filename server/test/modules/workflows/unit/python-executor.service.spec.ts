@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PythonExecutorService } from '../../ee/workflows/services/python-executor.service';
-import { PythonExecutorService as BasePythonExecutorService } from '../../src/modules/workflows/services/python-executor.service';
-import { SecurityModeDetectorService } from '../../ee/workflows/services/security-mode-detector.service';
-import { SandboxMode } from '../../src/modules/workflows/interfaces/IPythonExecutorService';
+import { PythonExecutorService } from '@ee/workflows/services/python-executor.service';
+import { PythonExecutorService as BasePythonExecutorService } from '@modules/workflows/services/python-executor.service';
+import { SecurityModeDetectorService } from '@ee/workflows/services/security-mode-detector.service';
+import { SandboxMode } from '@modules/workflows/interfaces/IPythonExecutorService';
 import { Logger } from 'nestjs-pino';
 
 /**

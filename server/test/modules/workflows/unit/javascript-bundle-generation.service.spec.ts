@@ -5,9 +5,9 @@ import * as fs from 'fs/promises';
 import { exec } from 'child_process';
 import * as esbuild from 'esbuild';
 import * as crypto from 'crypto';
-import { JavaScriptBundleGenerationService } from '../../ee/workflows/services/bundle-generation.service';
-import { JavaScriptBundleGenerationService as BaseJavaScriptBundleGenerationService } from '../../src/modules/workflows/services/bundle-generation.service';
-import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
+import { JavaScriptBundleGenerationService } from '@ee/workflows/services/bundle-generation.service';
+import { JavaScriptBundleGenerationService as BaseJavaScriptBundleGenerationService } from '@modules/workflows/services/bundle-generation.service';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 
 // Mock external dependencies
 jest.mock('fs/promises');

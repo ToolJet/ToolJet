@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import * as fs from 'fs/promises';
 import { exec } from 'child_process';
 import * as crypto from 'crypto';
-import { PythonBundleGenerationService } from '../../ee/workflows/services/python-bundle-generation.service';
-import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
+import { PythonBundleGenerationService } from '@ee/workflows/services/python-bundle-generation.service';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 
 // Mock external dependencies
 jest.mock('fs/promises');

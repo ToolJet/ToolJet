@@ -1,8 +1,8 @@
 /** @jest-environment setup-polly-jest/jest-environment-node */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { NpmRegistryService } from '../../ee/workflows/services/npm-registry.service';
-import { NpmRegistryService as BaseNpmRegistryService } from '../../src/modules/workflows/services/npm-registry.service';
+import { NpmRegistryService } from '@ee/workflows/services/npm-registry.service';
+import { NpmRegistryService as BaseNpmRegistryService } from '@modules/workflows/services/npm-registry.service';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';

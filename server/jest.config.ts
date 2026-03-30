@@ -6,7 +6,7 @@ const config: Config.InitialOptions = {
   rootDir: '.',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
-  testRegex: 'test/(modules/.*/unit|services)/.*spec\\.ts$',
+  testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',

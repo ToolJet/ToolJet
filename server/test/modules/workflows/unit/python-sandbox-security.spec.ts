@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PythonExecutorService } from '../../ee/workflows/services/python-executor.service';
-import { SecurityModeDetectorService } from '../../ee/workflows/services/security-mode-detector.service';
-import { SandboxMode } from '../../src/modules/workflows/interfaces/IPythonExecutorService';
-import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
+import { PythonExecutorService } from '@ee/workflows/services/python-executor.service';
+import { SecurityModeDetectorService } from '@ee/workflows/services/security-mode-detector.service';
+import { SandboxMode } from '@modules/workflows/interfaces/IPythonExecutorService';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 import { Logger } from 'nestjs-pino';
 import { execSync } from 'child_process';
 import * as fs from 'fs';

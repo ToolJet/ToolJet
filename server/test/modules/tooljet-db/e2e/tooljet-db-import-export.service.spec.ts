@@ -2,14 +2,14 @@ import { BadRequestException, ConflictException, INestApplication, NotFoundExcep
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, createUser, setDataSources } from '../test.helper';
-import { setupTestTables } from '../tooljet-db-test.helper';
+import { resetDB, createUser, setDataSources } from '../../../test.helper';
+import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
-import { ormconfig, tooljetDbOrmconfig } from '../../ormconfig';
-import { getEnvVars } from '../../scripts/database-config-utils';
+import { ormconfig, tooljetDbOrmconfig } from 'ormconfig';
+import { getEnvVars } from 'scripts/database-config-utils';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
