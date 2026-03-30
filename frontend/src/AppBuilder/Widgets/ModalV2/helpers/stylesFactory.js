@@ -1,5 +1,5 @@
-const tinycolor = require('tinycolor2');
 import { MODAL_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export function createModalStyles({
   height,
@@ -13,14 +13,24 @@ export function createModalStyles({
   footerBackgroundColor,
   footerHeightPx,
   triggerButtonBackgroundColor,
+  triggerButtonHoverBackgroundMode,
+  triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
   triggerButtonTextColor,
   isVisible,
   boxShadow,
   headerDividerColor,
   footerDividerColor,
   direction,
+  triggerButtonContentAlignment,
 }) {
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
+  const isReverseDirection = direction === 'left';
+  const computedTriggerButtonContentAlignment =
+    {
+      left: isReverseDirection ? 'flex-end' : 'flex-start',
+      center: 'center',
+      right: isReverseDirection ? 'flex-start' : 'flex-end',
+    }[triggerButtonContentAlignment] ?? 'center';
   return {
     modalBody: {
       height: backwardCompatibilityCheck ? computedCanvasHeight : height,
@@ -47,8 +57,12 @@ export function createModalStyles({
       width: '100%',
       display: isVisible ? '' : 'none',
       flexDirection: direction === 'left' ? 'row-reverse' : 'row',
+      justifyContent: computedTriggerButtonContentAlignment,
       gap: '6px',
-      '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      '--tblr-btn-color-darker':
+        triggerButtonHoverBackgroundMode === 'manual'
+          ? triggerButtonHoverBackgroundColor || getModifiedColor(triggerButtonBackgroundColor, 'hover')
+          : getModifiedColor(triggerButtonBackgroundColor, 'hover'),
       boxShadow,
       borderColor: triggerButtonBackgroundColor,
       height: '100%',
