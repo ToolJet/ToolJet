@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { loginAs, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../../../test.helper';
+import { login, resetDB, initTestApp, createUser, createApplication, saveEntity } from '../../../test.helper';
 import * as request from 'supertest';
 import { Folder } from '../../src/entities/folder.entity';
 import { FolderApp } from '../../src/entities/folder_app.entity';
@@ -42,7 +42,7 @@ describe('folder apps controller', () => {
       // create a new folder
       const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
 
-      const loggedUser = await loginAs(nestApp);
+      const loggedUser = await login(nestApp);
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder-apps`)
@@ -68,7 +68,7 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
-      const loggedUser = await loginAs(
+      const loggedUser = await login(
         nestApp,
         superAdminUserData.user.email,
         'password',
@@ -95,7 +95,7 @@ describe('folder apps controller', () => {
       // create a new folder
       const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
 
-      const loggedUser = await loginAs(nestApp);
+      const loggedUser = await login(nestApp);
 
       await request(nestApp.getHttpServer())
         .post(`/api/folder-apps`)
@@ -116,7 +116,7 @@ describe('folder apps controller', () => {
     it('should remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
 
-      const loggedUser = await loginAs(nestApp);
+      const loggedUser = await login(nestApp);
 
       // create a new folder
       const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
@@ -145,7 +145,7 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
-      const loggedUser = await loginAs(
+      const loggedUser = await login(
         nestApp,
         superAdminUserData.user.email,
         'password',

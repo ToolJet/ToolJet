@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createFile, resetDB, createUser, initTestApp, loginAs } from '../../../test.helper';
+import { createFile, resetDB, createUser, initTestApp, login } from '../../../test.helper';
 
 describe('files controller', () => {
   let app: INestApplication;
@@ -24,7 +24,7 @@ describe('files controller', () => {
 
     const file = await createFile(app);
 
-    const loggedUser = await loginAs(app);
+    const loggedUser = await login(app);
 
     const response = await request(app.getHttpServer())
       .get(`/api/files/${file.id}`)

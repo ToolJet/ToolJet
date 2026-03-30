@@ -11,7 +11,7 @@ import {
   ensureAppEnvironments,
   getAllEnvironments,
   createAppWithDependencies,
-  loginAs,
+  login,
   updateEntity,
 } from '../../../test.helper';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -39,7 +39,7 @@ describe('data sources controller', () => {
       });
       await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await loginAs(app, adminUserData.user.email);
+      const loggedUser = await login(app, adminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .post('/api/data-sources')
@@ -70,7 +70,7 @@ describe('data sources controller', () => {
       });
       await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await loginAs(app, adminUserData.user.email);
+      const loggedUser = await login(app, adminUserData.user.email);
 
       // Create a data source via the API so it has the correct organizationId
       await request(app.getHttpServer())
@@ -104,7 +104,7 @@ describe('data sources controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await login(app, anotherOrgAdminUserData.user.email);
 
       // Try to list data sources for admin's org using another org's user
       const response = await request(app.getHttpServer())
@@ -125,7 +125,7 @@ describe('data sources controller', () => {
       });
       await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await loginAs(app, adminUserData.user.email);
+      const loggedUser = await login(app, adminUserData.user.email);
 
       // Create a data source via the API
       const createResponse = await request(app.getHttpServer())
@@ -168,7 +168,7 @@ describe('data sources controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await login(app, anotherOrgAdminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .put(`/api/data-sources/${dataSource.id}`)
@@ -189,7 +189,7 @@ describe('data sources controller', () => {
       });
       await ensureAppEnvironments(app, adminUserData.organization.id);
 
-      const loggedUser = await loginAs(app, adminUserData.user.email);
+      const loggedUser = await login(app, adminUserData.user.email);
 
       // Create a data source via the API
       const createResponse = await request(app.getHttpServer())
@@ -226,7 +226,7 @@ describe('data sources controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedAnotherUser = await loginAs(app, anotherOrgAdminUserData.user.email);
+      const loggedAnotherUser = await login(app, anotherOrgAdminUserData.user.email);
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data-sources/${dataSource.id}`)
@@ -257,7 +257,7 @@ describe('data sources controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      const loggedUser = await loginAs(app, anotherOrgAdminUserData.user.email);
+      const loggedUser = await login(app, anotherOrgAdminUserData.user.email);
 
       // Should not update if user of another org
       const response = await request(app.getHttpServer())

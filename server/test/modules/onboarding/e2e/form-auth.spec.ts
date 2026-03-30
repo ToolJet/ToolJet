@@ -7,7 +7,7 @@ import {
   resetDB,
   initTestApp,
   createUser,
-  loginAs,
+  login,
   getEntityRepository,
 } from '../../../test.helper';
 import { Repository } from 'typeorm';
@@ -128,7 +128,7 @@ describe('Form Onboarding', () => {
         .send({ email: 'newuser@tooljet.com', name: 'New User', password: 'password' });
 
       const user = await userRepository.findOneOrFail({ where: { email: 'newuser@tooljet.com' } });
-      const loggedUser = await loginAs(app, user.email);
+      const loggedUser = await login(app, user.email);
 
       const response = await request(app.getHttpServer())
         .get('/api/apps')
@@ -153,7 +153,7 @@ describe('Form Onboarding', () => {
       });
       adminUser = user;
       adminOrg = organization;
-      loggedAdmin = await loginAs(app, adminUser.email);
+      loggedAdmin = await login(app, adminUser.email);
     });
 
     it('should invite a new user to the workspace', async () => {
@@ -254,7 +254,7 @@ describe('Form Onboarding', () => {
       });
 
       // Accept the invite — requires the invited user to be authenticated
-      const loggedOther = await loginAs(app, otherUser.email);
+      const loggedOther = await login(app, otherUser.email);
       await request(app.getHttpServer())
         .post('/api/onboarding/accept-invite')
         .send({ token: invitationToken })
@@ -277,7 +277,7 @@ describe('Form Onboarding', () => {
         email: 'admin@tooljet.com',
         status: 'active',
       });
-      const loggedAdmin = await loginAs(app, user.email);
+      const loggedAdmin = await login(app, user.email);
 
       // Invite a user
       await request(app.getHttpServer())
@@ -313,7 +313,7 @@ describe('Form Onboarding', () => {
         email: 'admin@tooljet.com',
         status: 'active',
       });
-      const loggedAdmin = await loginAs(app, adminUser.email);
+      const loggedAdmin = await login(app, adminUser.email);
 
       // Signup another user independently
       await request(app.getHttpServer())

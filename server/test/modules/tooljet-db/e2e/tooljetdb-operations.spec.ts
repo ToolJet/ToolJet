@@ -16,8 +16,8 @@ import {
   resetDB,
   createUser,
   initTestApp,
-  authenticateUser,
-  logoutUser,
+  login,
+  logout,
   getTooljetDbDataSource,
 } from '../../../test.helper';
 
@@ -60,12 +60,12 @@ describe('ToolJet Database Table Operations', () => {
       if (!schemaReady) tooljetDbAvailable = false;
     }
 
-    const auth = await authenticateUser(app);
+    const auth = await login(app);
     adminCookie = auth.tokenCookie;
   });
 
   afterEach(async () => {
-    await logoutUser(app, adminCookie, adminOrgId);
+    await logout(app, adminCookie, adminOrgId);
   });
 
   afterAll(async () => {
@@ -179,7 +179,7 @@ describe('ToolJet Database Table Operations', () => {
         groups: ['end-user'],
       });
 
-      const { tokenCookie: endUserCookie } = await authenticateUser(
+      const { tokenCookie: endUserCookie } = await login(
         app,
         'enduser@tooljet.io',
         'password',
@@ -194,7 +194,7 @@ describe('ToolJet Database Table Operations', () => {
 
       expect(res.statusCode).toBe(403);
 
-      await logoutUser(app, endUserCookie, endUser.defaultOrganizationId);
+      await logout(app, endUserCookie, endUser.defaultOrganizationId);
     });
   });
 });

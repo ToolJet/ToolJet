@@ -16,7 +16,7 @@ import {
   createNestAppInstance,
   createCompleteWorkflow,
   createBundle,
-  authenticateUser,
+  login,
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,
@@ -31,7 +31,7 @@ const executeWorkflow = async (
     parameters?: Record<string, any>;
   } = {}
 ): Promise<any> => {
-  const { tokenCookie } = await authenticateUser(nestApp, user.email);
+  const { tokenCookie } = await login(nestApp, user.email);
 
   const response = await request(nestApp.getHttpServer())
     .post('/api/workflow_executions')
@@ -1643,7 +1643,7 @@ result = pydash.sum_(sorted_numbers)
         environmentId: appVersion.currentEnvironmentId
       });
 
-      const { tokenCookie } = await authenticateUser(app, user.email);
+      const { tokenCookie } = await login(app, user.email);
 
       const statusResponse = await request(app.getHttpServer())
         .get(`/api/workflow_executions/${execution.id}/status`)
@@ -1683,7 +1683,7 @@ result = pydash.sum_(sorted_numbers)
         environmentId: appVersion.currentEnvironmentId
       });
 
-      const { tokenCookie } = await authenticateUser(app, user.email);
+      const { tokenCookie } = await login(app, user.email);
 
       const detailsResponse = await request(app.getHttpServer())
         .get(`/api/workflow_executions/${execution.id}`)
@@ -1729,7 +1729,7 @@ result = pydash.sum_(sorted_numbers)
         environmentId: appVersion.currentEnvironmentId
       });
 
-      const { tokenCookie } = await authenticateUser(app, user.email);
+      const { tokenCookie } = await login(app, user.email);
 
       const listResponse = await request(app.getHttpServer())
         .get(`/api/workflow_executions/all/${appVersion.id}`)
@@ -1773,7 +1773,7 @@ result = pydash.sum_(sorted_numbers)
         });
       }
 
-      const { tokenCookie } = await authenticateUser(app, user.email);
+      const { tokenCookie } = await login(app, user.email);
 
       const logsResponse = await request(app.getHttpServer())
         .get(`/api/workflow_executions?appVersionId=${appVersion.id}&page=1&per_page=2`)
@@ -1849,7 +1849,7 @@ result = pydash.sum_(sorted_numbers)
         environmentId: appVersion.currentEnvironmentId
       });
 
-      const { tokenCookie } = await authenticateUser(app, user.email);
+      const { tokenCookie } = await login(app, user.email);
 
       const nodesResponse = await request(app.getHttpServer())
         .get(`/api/workflow_executions/${execution.id}/nodes?page=1&per_page=10`)

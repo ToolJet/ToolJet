@@ -28,7 +28,7 @@ export function buildAuthHeader(user: User, organizationId?: string, isPasswordL
 }
 
 /** Authenticates a user via POST /api/authenticate and returns the user body and session cookie. */
-export const authenticateUser = async (
+export const login = async (
   app: INestApplication,
   email = 'admin@tooljet.io',
   password = 'password',
@@ -42,11 +42,9 @@ export const authenticateUser = async (
 
   return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] as string[] };
 };
-/** @deprecated Use authenticateUser instead */
-export const loginAs = authenticateUser;
 
 /** Logs out a user via GET /api/session/logout. */
-export const logoutUser = async (app: INestApplication, tokenCookie: string[], organization_id: string) => {
+export const logout = async (app: INestApplication, tokenCookie: string[], organization_id: string) => {
   return await request
     .agent(app.getHttpServer())
     .get('/api/session/logout')
@@ -54,8 +52,6 @@ export const logoutUser = async (app: INestApplication, tokenCookie: string[], o
     .set('Cookie', tokenCookie)
     .expect(200);
 };
-/** @deprecated Use logoutUser instead */
-export const logout = logoutUser;
 
 /**
  * Creates a JWT session cookie without calling the login endpoint.

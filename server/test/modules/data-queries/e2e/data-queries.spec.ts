@@ -7,7 +7,7 @@ import {
   createDataQuery,
   grantAppPermission,
   createAppWithDependencies,
-  loginAs,
+  login,
   createDatasourceGroupPermission,
   findEntityOrFail,
 } from '../../../test.helper';
@@ -49,13 +49,13 @@ describe('data queries controller', () => {
 
     const { application, dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});
 
-    let loggedUser = await loginAs(app, adminUserData.user.email);
+    let loggedUser = await login(app, adminUserData.user.email);
     adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await loginAs(app, developerUserData.user.email);
+    loggedUser = await login(app, developerUserData.user.email);
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await loginAs(app, viewerUserData.user.email);
+    loggedUser = await login(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
-    loggedUser = await loginAs(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
     superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
@@ -99,7 +99,7 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
-    const loggedUser = await loginAs(app, anotherOrgAdminUserData.user.email);
+    const loggedUser = await login(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});

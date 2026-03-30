@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, findEntity, countEntities, updateEntity, deleteEntities } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, login, findEntity, countEntities, updateEntity, deleteEntities } from '../../../test.helper';
 import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
@@ -55,9 +55,9 @@ describe('instance settings controller', () => {
         },
       ];
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',
@@ -107,9 +107,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',
@@ -152,9 +152,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',
@@ -205,9 +205,9 @@ describe('instance settings controller', () => {
         groups: ['admin', 'end-user'],
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',

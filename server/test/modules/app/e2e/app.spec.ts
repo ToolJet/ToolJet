@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { resetDB, createUser, initTestApp, loginAs, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -765,7 +765,7 @@ describe('app controller (EE, personal workspace disabled)', () => {
         email: 'admin@tooljet.io',
       });
 
-      const loggedUser = await loginAs(app, adminUser.email);
+      const loggedUser = await login(app, adminUser.email);
       await request(app.getHttpServer())
         .post(`/api/organization-users/`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
@@ -1022,7 +1022,7 @@ describe('app controller (EE, super admin)', () => {
     });
     it('should be able to switch between organizations', async () => {
       const { orgUser, organization: invited_organization } = await createUser(app, { email: 'user@tooljet.io' });
-      const loggedUser = await loginAs(app, current_user.email);
+      const loggedUser = await login(app, current_user.email);
       const response = await request(app.getHttpServer())
         .get('/api/switch/' + orgUser.organizationId)
         .set('tj-workspace-id', current_user.organizationId)

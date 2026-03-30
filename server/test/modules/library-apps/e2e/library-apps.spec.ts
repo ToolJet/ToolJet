@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, loginAs, saveEntity } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, login, saveEntity } from '../../../test.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
 /** Create the built-in static data sources that templates expect to exist. */
@@ -50,13 +50,13 @@ describe('library apps controller', () => {
         organization,
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'developer@tooljet.io');
+      loggedUser = await login(app, 'developer@tooljet.io');
       nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',
@@ -93,7 +93,7 @@ describe('library apps controller', () => {
         groups: ['end-user', 'admin'],
       });
 
-      const loggedUser = await loginAs(app);
+      const loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -126,10 +126,10 @@ describe('library apps controller', () => {
         userType: 'instance',
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(
+      loggedUser = await login(
         app,
         superAdminUserData.user.email,
         'password',

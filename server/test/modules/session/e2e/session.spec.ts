@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, logout, loginAs } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, logout, login } from '../../../test.helper';
 import * as request from 'supertest';
 
 describe('session & new apis', () => {
@@ -14,7 +14,7 @@ describe('session & new apis', () => {
       lastName: 'name',
     });
     orgId = organization.id;
-    const { tokenCookie: tokenCookieData } = await loginAs(app);
+    const { tokenCookie: tokenCookieData } = await login(app);
     tokenCookie = tokenCookieData;
   });
 

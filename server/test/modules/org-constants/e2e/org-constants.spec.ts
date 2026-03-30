@@ -6,7 +6,7 @@ import {
   createUser,
   initTestApp,
   createGroupPermission,
-  loginAs,
+  login,
   ensureAppEnvironments,
   findEntityOrFail,
   findEntity,
@@ -71,13 +71,13 @@ describe('organization environment constants controller', () => {
         },
       ];
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'developer@tooljet.io');
+      loggedUser = await login(app, 'developer@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'viewer@tooljet.io');
+      loggedUser = await login(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const constantArray = [];
@@ -163,13 +163,13 @@ describe('organization environment constants controller', () => {
         orgConstantCRUD: true,
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'dev@tooljet.io');
+      loggedUser = await login(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'viewer@tooljet.io');
+      loggedUser = await login(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
@@ -230,13 +230,13 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'dev@tooljet.io');
+      loggedUser = await login(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'viewer@tooljet.io');
+      loggedUser = await login(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const developerGroup = await findEntityOrFail(GroupPermissions, {
@@ -307,13 +307,13 @@ describe('organization environment constants controller', () => {
         organization: adminUserData.organization,
       });
 
-      let loggedUser = await loginAs(app);
+      let loggedUser = await login(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'dev@tooljet.io');
+      loggedUser = await login(app, 'dev@tooljet.io');
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      loggedUser = await loginAs(app, 'viewer@tooljet.io');
+      loggedUser = await login(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const developerGroup = await findEntityOrFail(GroupPermissions, {

@@ -944,8 +944,8 @@ export async function createAdmin(
     organization: opts?.workspace,
   });
 
-  const { authenticateUser } = await import('./api');
-  const { tokenCookie } = await authenticateUser(nestApp, email, 'password');
+  const { login } = await import('./api');
+  const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
@@ -962,8 +962,8 @@ export async function createBuilder(
     organization: opts?.workspace,
   });
 
-  const { authenticateUser } = await import('./api');
-  const { tokenCookie } = await authenticateUser(nestApp, email, 'password');
+  const { login } = await import('./api');
+  const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
@@ -980,8 +980,8 @@ export async function createEndUser(
     organization: opts?.workspace,
   });
 
-  const { authenticateUser } = await import('./api');
-  const { tokenCookie } = await authenticateUser(nestApp, email, 'password');
+  const { login } = await import('./api');
+  const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }
@@ -997,8 +997,8 @@ export async function createSuperAdmin(
     userType: 'instance',
   });
 
-  const { authenticateUser } = await import('./api');
-  const { tokenCookie } = await authenticateUser(nestApp, email, 'password');
+  const { login } = await import('./api');
+  const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
 }

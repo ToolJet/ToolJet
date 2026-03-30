@@ -9,7 +9,7 @@ import * as path from 'path';
 import {
   clearDB,
   setupOrganizationAndUser,
-  authenticateUser,
+  login,
   createWorkflowForUser,
   createApplicationVersion,
   createNestAppInstance,
@@ -134,7 +134,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -182,7 +182,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -224,7 +224,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -284,7 +284,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -317,7 +317,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -351,7 +351,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -385,7 +385,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -412,7 +412,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -444,7 +444,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         }
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -480,7 +480,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -517,7 +517,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -551,7 +551,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-with-deps');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // First, add some dependencies to the workflow
@@ -573,7 +573,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       await waitForBundleReady(bundleRepo, appVersion.id, 'javascript');
 
       // Re-authenticate to ensure fresh token for GET request
-      const refreshedUser = await authenticateUser(app, user.email);
+      const refreshedUser = await login(app, user.email);
 
       // Now get the dependencies
       const response = await request(app.getHttpServer())
@@ -652,7 +652,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       // Authenticate as limited user
-      const loggedUser = await authenticateUser(app, limitedUser.email);
+      const loggedUser = await login(app, limitedUser.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -692,7 +692,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         },
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const dependencies = {
@@ -768,7 +768,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         },
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // Python dependencies are sent as requirements.txt string format
@@ -830,7 +830,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -907,7 +907,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       // Authenticate as limited user
-      const loggedUser = await authenticateUser(app, limitedUser.email);
+      const loggedUser = await login(app, limitedUser.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -941,7 +941,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // First, add dependencies to trigger bundle generation
@@ -989,7 +989,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python-status');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // First, add dependencies to trigger bundle generation
@@ -1033,7 +1033,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-no-bundle');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1100,7 +1100,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       // Authenticate as limited user
-      const loggedUser = await authenticateUser(app, limitedUser.email);
+      const loggedUser = await login(app, limitedUser.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1134,7 +1134,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // First create a bundle
@@ -1188,7 +1188,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-python-rebuild');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // First create a Python bundle (requirements.txt string format)
@@ -1245,7 +1245,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1307,7 +1307,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       });
 
       // Authenticate as limited user
-      const loggedUser = await authenticateUser(app, limitedUser.email);
+      const loggedUser = await login(app, limitedUser.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1354,7 +1354,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         },
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       // Step 1: Search for packages
@@ -1518,7 +1518,7 @@ describe('Community Edition - workflow bundle management controller', () => {
         lastName: 'User',
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1550,7 +1550,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
       const appVersion = await createApplicationVersion(app, workflow);
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1581,7 +1581,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
       const appVersion = await createApplicationVersion(app, workflow);
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1616,7 +1616,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
       const appVersion = await createApplicationVersion(app, workflow);
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1647,7 +1647,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       const workflow = await createWorkflowForUser(app, user, 'Test Workflow');
       const appVersion = await createApplicationVersion(app, workflow);
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())
@@ -1675,7 +1675,7 @@ describe('Community Edition - workflow bundle management controller', () => {
         lastName: 'User',
       });
 
-      const loggedUser = await authenticateUser(app, user.email);
+      const loggedUser = await login(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
       const response = await request(app.getHttpServer())

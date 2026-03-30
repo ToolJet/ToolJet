@@ -24,7 +24,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //   clearDB,
 //   createNestAppInstance,
 //   createUser,
-//   authenticateUser
+//   login
 // } from '../../../test.helper';
 // import { getManager, EntityManager, DataSource } from 'typeorm';
 // import { tooljetDbOrmconfig } from '../../ormconfig';
@@ -88,7 +88,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 
 //       // Creates a new workspace
@@ -124,7 +124,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -162,7 +162,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 
 //       // Creates a new workspace
@@ -203,7 +203,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -258,7 +258,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -297,7 +297,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -315,7 +315,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -347,7 +347,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -366,7 +366,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -384,7 +384,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -402,7 +402,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -420,7 +420,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -438,7 +438,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -459,7 +459,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -477,7 +477,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -498,7 +498,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
@@ -516,7 +516,7 @@ describe('Tooljet Database Role E2E Tests (Placeholder)', () => {
 //       const userData = await createUser(app, { email: 'admin@tooljet.io' });
 //       const { user } = userData;
 
-//       const loggedUser = await authenticateUser(app);
+//       const loggedUser = await login(app);
 //       userData['tokenCookie'] = loggedUser.tokenCookie;
 //       // Creates a new workspace
 //       const workspace1Details = prepareNewWorkspaceJson('workspace1');
