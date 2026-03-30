@@ -474,6 +474,7 @@ const EditorInput = ({
         dragResizePortal={true}
         callgpt={null}
         onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+        canRefresh={portalProps?.canRefresh}
       >
         <ErrorBoundary>
           <div

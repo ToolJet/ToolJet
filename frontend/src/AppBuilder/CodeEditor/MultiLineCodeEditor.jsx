@@ -288,6 +288,7 @@ const MultiLineCodeEditor = (props) => {
           dragResizePortal={true}
           callgpt={null}
           onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+          canRefresh={portalProps?.canRefresh}
         >
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
