@@ -102,6 +102,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -141,6 +143,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -180,6 +184,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -219,6 +225,8 @@
             "invokeMethod": "listCollections",
             "label": "Fetch Collections"
           },
+          "pagination": true,
+          "pageSize": 6,
           "description": "Select a collection from the dropdown",
           "width": "320px",
           "height": "36px",
@@ -258,6 +266,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -287,6 +297,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -326,6 +338,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -376,6 +390,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -425,6 +441,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -474,6 +492,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -523,6 +543,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -572,6 +594,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -621,6 +645,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -660,6 +686,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -699,6 +727,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -738,6 +768,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",
@@ -777,6 +809,8 @@
           "invokeMethod": "listCollections",
           "label": "Fetch Collections"
         },
+        "pagination": true,
+        "pageSize": 6,
         "description": "Select a collection from the dropdown",
         "width": "320px",
         "height": "36px",

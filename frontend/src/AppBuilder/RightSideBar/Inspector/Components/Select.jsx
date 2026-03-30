@@ -34,6 +34,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
   const isTagsInput = component?.component?.component === 'TagsInput';
+  const isRadioButton = component?.component?.component === 'RadioButtonV2';
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -321,7 +322,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
+              initialValue={
+                isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value
+              }
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -587,6 +590,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'enableSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isRadioButton &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'layout',
             'properties',
             currentState,
             allComponents

@@ -184,9 +184,7 @@ export default function AppCard({
             disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
               if (app?.current_version_id && canAccessReleased) {
-                window.open(
-                  urlJoin(getHostURL(), `/applications/${app.slug}`)
-                );
+                window.open(urlJoin(getHostURL(), `/applications/${app.slug}`));
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
               }
@@ -259,7 +257,7 @@ export default function AppCard({
       AppName
     );
   }
-
+  const isStub = app?.app_versions?.[0]?.is_stub;
   return (
     <ToolTip
       message="Modules are not available on your current plan."
@@ -320,7 +318,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module') && (
+            {(canUpdate || appType === 'module' || isStub) && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -336,7 +334,6 @@ export default function AppCard({
                         folder_id: currentFolder?.id,
                       });
                     }}
-                    reloadDocument
                   >
                     <button
                       type="button"
@@ -352,7 +349,7 @@ export default function AppCard({
               </div>
             )}
             {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
-            {appType !== 'module' && LaunchButton}
+            {!isStub && appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>

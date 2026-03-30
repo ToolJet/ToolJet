@@ -73,8 +73,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-        ? backgroundColor
-        : 'transparent';
+      ? backgroundColor
+      : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,

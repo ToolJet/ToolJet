@@ -118,17 +118,6 @@ function autoSaveApp(
   isUserSwitchedVersion = false,
   isComponentCutProcess = false
 ) {
-  // console.log('autoSaveApp-->', {
-  //   appId,
-  //   versionId,
-  //   diff,
-  //   type,
-  //   pageId,
-  //   operation,
-  //   isUserSwitchedVersion,
-  //   isComponentCutProcess,
-  // });
-
   const OPERATION = {
     create: 'POST',
     update: 'PUT',
@@ -151,10 +140,10 @@ function autoSaveApp(
   const body = !type
     ? { ...diff }
     : bodyMappings[type]?.[operation] || {
-      is_user_switched_version: isUserSwitchedVersion,
-      pageId,
-      diff,
-    };
+        is_user_switched_version: isUserSwitchedVersion,
+        pageId,
+        diff,
+      };
 
   if (type === 'components' && operation === 'delete' && isComponentCutProcess) {
     body['is_component_cut'] = true;

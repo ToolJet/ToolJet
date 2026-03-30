@@ -23,6 +23,7 @@ import { Page } from './page.entity';
 import { EventHandler } from './event_handler.entity';
 import { WorkflowSchedule } from './workflow_schedule.entity';
 import { User } from './user.entity';
+import { WorkspaceBranch } from './workspace_branch.entity';
 
 export enum AppVersionType {
   VERSION = 'version',
@@ -100,6 +101,22 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'released_at', type: 'timestamp', nullable: true })
   releasedAt: Date;
+
+  @Column({ name: 'is_stub', default: false })
+  isStub: boolean;
+
+  @Column({ name: 'branch_id', nullable: true })
+  branchId: string;
+
+  @ManyToOne(() => WorkspaceBranch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch: WorkspaceBranch;
+
+  @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
+  pulledAt: Date;
+
+  @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
+  sourceTag: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

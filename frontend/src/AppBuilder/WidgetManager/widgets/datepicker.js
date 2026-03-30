@@ -15,6 +15,14 @@ export const datepickerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select date',
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -103,6 +111,7 @@ export const datepickerConfig = {
     },
     properties: {
       defaultValue: { value: '01/01/2022' },
+      placeholder: { value: 'Select date' },
       format: { value: 'DD/MM/YYYY' },
       enableTime: { value: '{{false}}' },
       enableDate: { value: '{{true}}' },

@@ -40,7 +40,7 @@ const dropAnimation = {
 
 const TRASH_ID = 'void';
 
-export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, dataCy }) {
+export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }) {
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
@@ -462,7 +462,9 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, dataCy 
           </DragOverlay>,
           document.body
         )}
-        {showDeleteButton ? <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${dataCy}-drag-delete-button`} /> : null}
+        {showDeleteButton ? (
+          <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${dataCy}-drag-delete-button`} />
+        ) : null}
       </DndContext>
       <Modal
         showModal={showModal}
@@ -473,7 +475,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, dataCy 
     </>
   );
 
-  function renderSortableItemDragOverlay (id) {
+  function renderSortableItemDragOverlay(id) {
     return (
       <Item
         value={id}
@@ -490,7 +492,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, dataCy 
   }
 }
 
-function SortableItem ({
+function SortableItem({
   disabled,
   id,
   index,

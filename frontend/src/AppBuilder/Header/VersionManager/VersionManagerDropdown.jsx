@@ -269,7 +269,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       },
       (error) => {
         toast.dismiss(deletingToast);
-        toast.error(error?.message || 'Failed to delete version');
+        toast.error(error?.error || error?.message || 'Failed to delete version');
         resetDeleteModal();
       }
     );

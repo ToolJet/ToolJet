@@ -271,6 +271,10 @@ export class GeneratePATDto {
   @IsOptional()
   appId: string;
 
+  @IsString()
+  @IsOptional()
+  appSlug?: string;
+
   @IsOptional()
   @IsInt()
   @Min(1)

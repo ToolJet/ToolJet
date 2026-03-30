@@ -482,6 +482,7 @@ export const DropdownV2 = ({
     menuPortal: (base) => ({
       ...base,
       ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
+      zIndex: 1040,
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value

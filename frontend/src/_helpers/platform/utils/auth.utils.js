@@ -75,17 +75,13 @@ export const extractErrorObj = (errorResponse) => {
   return { ...errorDetails, message };
 };
 
-export const getPostSignupRedirectPath = ({
-  redirectTo,
-  organizationSlug,
-}) => {
+export const getPostSignupRedirectPath = ({ redirectTo, organizationSlug }) => {
   const hasRedirect = Boolean(redirectTo);
   const hasSlug = Boolean(organizationSlug);
 
   const isApplicationRoute = /^\/applications\//.test(redirectTo || '');
 
   if (hasRedirect) {
-
     if (isApplicationRoute) {
       return redirectTo;
     }

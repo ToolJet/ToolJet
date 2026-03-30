@@ -22,8 +22,6 @@ const initialState = {
   developmentVersions: [],
   draftVersions: [],
   publishedVersions: [],
-  draftVersions: [],
-  publishedVersions: [],
   environmentLoadingState: 'completed',
   isPublicAccess: false,
 };

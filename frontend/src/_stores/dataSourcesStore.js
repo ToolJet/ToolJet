@@ -14,6 +14,7 @@ const initialState = {
     unSavedModalVisible: false,
     action: null,
     saveAction: null,
+    nextRoute: null,
   },
 };
 

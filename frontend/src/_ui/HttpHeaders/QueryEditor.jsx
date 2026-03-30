@@ -44,8 +44,9 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               </div>
             </div>
             <button
-              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${darkMode ? 'delete-field-option-dark' : ''
-                }`}
+              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${
+                darkMode ? 'delete-field-option-dark' : ''
+              }`}
               role="button"
               onClick={() => {
                 removeKeyValuePair(index);

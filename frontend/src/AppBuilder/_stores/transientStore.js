@@ -7,16 +7,16 @@ import { create, zustandDevTools } from './utils';
  * like hover states, drag positions, etc.
  */
 export default create(
-  zustandDevTools((set, get) => ({
-    hoveredComponentForGrid: '',
-    hoveredComponentBoundaryId: '',
+  zustandDevTools(
+    (set, get) => ({
+      hoveredComponentForGrid: '',
+      hoveredComponentBoundaryId: '',
 
-    setHoveredComponentForGrid: (id) => set({ hoveredComponentForGrid: id }, false, 'setHoveredComponentForGrid'),
-    getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
-    setHoveredComponentBoundaryId: (id) => set({ hoveredComponentBoundaryId: id }, false, 'setHoveredComponentBoundaryId'),
-  }),
+      setHoveredComponentForGrid: (id) => set({ hoveredComponentForGrid: id }, false, 'setHoveredComponentForGrid'),
+      getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
+      setHoveredComponentBoundaryId: (id) =>
+        set({ hoveredComponentBoundaryId: id }, false, 'setHoveredComponentBoundaryId'),
+    }),
     { name: 'Transient Store', anonymousActionType: 'unknown' }
   )
 );
-
-

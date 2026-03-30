@@ -171,8 +171,9 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div
-        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${isDynamicHeightEnabled ? 'flex-grow-1' : ''
-          }`}
+        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
+          isDynamicHeightEnabled ? 'flex-grow-1' : ''
+        }`}
       >
         {filteredData.map((listItem, index) => (
           <ListviewSubcontainer
