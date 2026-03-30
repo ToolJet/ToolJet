@@ -218,7 +218,6 @@ export class OrganizationRepository extends Repository<Organization> {
           where: { isDefault: true },
         });
       } catch {
-        console.error('No default workspace in this instance');
         return null;
       }
     });
