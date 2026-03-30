@@ -198,6 +198,7 @@
         "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
+        "build-with-ai/bring-your-own-key",
         "build-with-ai/ai-credits",
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
