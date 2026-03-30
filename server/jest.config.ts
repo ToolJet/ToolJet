@@ -39,6 +39,7 @@ const config: Config.InitialOptions = {
   runner: 'groups',
   testTimeout: 30000,
   forceExit: true,
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
     'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
   ],

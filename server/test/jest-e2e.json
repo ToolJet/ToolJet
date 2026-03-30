@@ -9,6 +9,7 @@
   "testEnvironment": "node",
   "setupFiles": ["<rootDir>/../test/jest-setup.ts"],
   "testRegex": "test/modules/.*/e2e/.*spec\\.ts$",
+  "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",
   "testTimeout": 60000,
   "forceExit": true,
