@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mongodbUIConfig, mongodbFormConfig } from "Constants/constants/marketplace/datasources/mongodb";
 
 const data = {};
@@ -32,7 +32,9 @@ describe("MongoDB", () => {
                 { key: "port", value: "", encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "username", value: "", encrypted: false },
+                { key: "use_ssl", value: false, encrypted: false },
                 { key: "tls_certificate", value: "none", encrypted: false },
+                { key: "ssh_enabled", value: "disabled", encrypted: false },
                 { key: "password", value: null, encrypted: true },
                 { key: "ca_cert", value: null, encrypted: true },
                 { key: "client_key", value: null, encrypted: true },
@@ -61,7 +63,9 @@ describe("MongoDB", () => {
                 { key: "port", value: "", encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "username", value: "", encrypted: false },
+                { key: "use_ssl", value: false, encrypted: false },
                 { key: "tls_certificate", value: "none", encrypted: false },
+                { key: "ssh_enabled", value: "disabled", encrypted: false },
                 { key: "password", value: null, encrypted: true },
                 { key: "ca_cert", value: null, encrypted: true },
                 { key: "client_key", value: null, encrypted: true },
@@ -93,7 +97,9 @@ describe("MongoDB", () => {
                 { key: "port", value: "", encrypted: false },
                 { key: "database", value: "", encrypted: false },
                 { key: "username", value: "", encrypted: false },
+                { key: "use_ssl", value: false, encrypted: false },
                 { key: "tls_certificate", value: "none", encrypted: false },
+                { key: "ssh_enabled", value: "disabled", encrypted: false },
                 { key: "password", value: null, encrypted: true },
                 { key: "ca_cert", value: null, encrypted: true },
                 { key: "client_key", value: null, encrypted: true },
