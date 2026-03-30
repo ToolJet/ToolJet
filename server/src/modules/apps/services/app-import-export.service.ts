@@ -1577,6 +1577,7 @@ export class AppImportExportService {
                     event: componentEvent.event,
                     index: componentEvent.index,
                     appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                    co_relation_id: componentEvent.id || undefined,
                   });
 
                   await manager.save(EventHandler, newEvent);
@@ -1598,6 +1599,7 @@ export class AppImportExportService {
                 event: pageEvent.event,
                 index: pageEvent.index,
                 appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                co_relation_id: pageEvent.id || undefined,
               });
 
               await manager.save(EventHandler, newEvent);
@@ -1640,6 +1642,7 @@ export class AppImportExportService {
                 event: dataQueryEvent.event,
                 index: dataQueryEvent.index,
                 appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                co_relation_id: dataQueryEvent.id || undefined,
               });
 
               await manager.save(EventHandler, newEvent);

@@ -17,50 +17,34 @@ export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInte
       }),
     ]);
 
-    // Using raw SQL instead of entity queries to avoid dependency on current entity schema
-    const permissionGroups = await queryRunner.query(`
-      SELECT id, name, type, app_create, app_delete 
-      FROM permission_groups
+    // Admin default groups: always true
+    await queryRunner.query(`
+      UPDATE permission_groups
+      SET app_promote = true, app_release = true
+      WHERE type = 'default' AND name = 'admin'
     `);
 
-    for (const group of permissionGroups) {
-      const { id, name, type, app_create, app_delete } = group;
-      const hasAppPermissions = app_create === true || app_delete === true;
+    // Builder default groups: match existing app_create or app_delete
+    await queryRunner.query(`
+      UPDATE permission_groups
+      SET app_promote = (app_create OR app_delete),
+          app_release = (app_create OR app_delete)
+      WHERE type = 'default' AND name = 'builder'
+    `);
 
-      let appPromote = false;
-      let appRelease = false;
+    // Custom groups: match existing app_create or app_delete
+    await queryRunner.query(`
+      UPDATE permission_groups
+      SET app_promote = (app_create OR app_delete),
+          app_release = (app_create OR app_delete)
+      WHERE type = 'custom'
+    `);
 
-      // For custom groups and builders :
-      // If the group has  -> app create || app delete permissions  : assign promote and release permissions to the group otherwise false
-      if (type === 'default') {
-        switch (name) {
-          case 'admin':
-            appPromote = true;
-            appRelease = true;
-            break;
-          case 'end-user':
-            appPromote = false;
-            appRelease = false;
-            break;
-          case 'builder':
-            appPromote = hasAppPermissions;
-            appRelease = hasAppPermissions;
-            break;
-          default:
-            break;
-        }
-      } else if (type === 'custom') {
-        appPromote = hasAppPermissions;
-        appRelease = hasAppPermissions;
-      }
-
-      await queryRunner.query(`
-        UPDATE permission_groups 
-        SET app_promote = $1, app_release = $2 
-        WHERE id = $3
-      `, [appPromote, appRelease, id]);
-    }
+    // end-user default groups: already false from column default, no update needed
   }
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropColumn('permission_groups', 'app_release');
+    await queryRunner.dropColumn('permission_groups', 'app_promote');
+  }
 }
-// TO Do later : pending to add constraint on admin and end user groups

@@ -395,6 +395,12 @@ export function BranchDropdown({ appId, organizationId }) {
   // Display name: use workspace branch name if available, otherwise derive from version/branch state
   const displayBranchName = workspaceActiveBranch?.name || (isOnDefaultBranch ? defaultBranchName : currentBranchName);
 
+  // For platform git sync: the UUID-named branch-type version (currentBranch) has no created_by,
+  // but the matching human-readable git branch entry in allBranches does.
+  // Prefer the workspaceActiveBranch name lookup to get the enriched entry with author/time.
+  const activeBranchInfo =
+    (workspaceActiveBranch?.name && allBranches.find((b) => b.name === workspaceActiveBranch.name)) || currentBranch;
+
   // Filter PRs based on active tab
   // Check both 'state' and 'status' fields to support different API responses
   const openPRs = pullRequests.filter(
@@ -473,15 +479,15 @@ export function BranchDropdown({ appId, organizationId }) {
                   <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
                   <div className="branch-metadata-feature">
                     <span className="metadata-text">
-                      Created by {currentBranch?.created_by || currentBranch?.author || 'Unknown'}
+                      Created by {activeBranchInfo?.created_by || activeBranchInfo?.author || 'Unknown'}
                     </span>
                     <span>•</span>
                     <span className="metadata-text">
                       {getRelativeTime(
-                        selectedVersion?.createdAt ||
-                          selectedVersion?.created_at ||
-                          currentBranch?.createdAt ||
-                          currentBranch?.created_at
+                        activeBranchInfo?.created_at ||
+                          activeBranchInfo?.updated_at ||
+                          selectedVersion?.createdAt ||
+                          selectedVersion?.created_at
                       )}
                     </span>
                   </div>
