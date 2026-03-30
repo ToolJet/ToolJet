@@ -1,4 +1,4 @@
-export const elasticsearchUIConfig = {
+export const minioUIConfig = {
     defaultFields: [
         {
             type: "input",
@@ -6,17 +6,18 @@ export const elasticsearchUIConfig = {
             validations: {
                 isRequired: false,
                 placeholder: "Enter host",
-                defaultValue: "localhost",
+                defaultValue: "play.min.io",
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Port",
             validations: {
                 isRequired: false,
                 placeholder: "Enter port",
-                defaultValue: "9200",
+                defaultValue: "9000",
                 disabled: false
             }
         },
@@ -32,10 +33,10 @@ export const elasticsearchUIConfig = {
 
         {
             type: "input",
-            fieldName: "Username",
+            fieldName: "Access key",
             validations: {
                 isRequired: false,
-                placeholder: "Enter username",
+                placeholder: "Enter access key",
                 defaultValue: "",
                 disabled: false
             }
@@ -43,7 +44,7 @@ export const elasticsearchUIConfig = {
 
         {
             type: "encrypted",
-            fieldName: "Password",
+            fieldName: "Secret key",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -53,30 +54,21 @@ export const elasticsearchUIConfig = {
                 showEncrypted: true,
                 hasEyeIcon: false
             }
-        },
-
-        {
-            type: "dropdown",
-            fieldName: "SSL certificate",
-            validations: {
-                defaultValue: 'None',
-                disabled: false
-            }
         }
     ]
 };
 
-export const elasticsearchFormConfig = {
+export const minioFormConfig = {
     valid: [
         {
             type: "input",
             fieldName: "Host",
-            text: `${Cypress.env('elasticsearch_host')}`
+            text: `${Cypress.env('minio_host')}`
         },
         {
             type: "input",
             fieldName: "Port",
-            text: "9200"
+            text: `${Cypress.env('minio_port')}`
         },
         {
             type: "toggle",
@@ -85,20 +77,13 @@ export const elasticsearchFormConfig = {
         },
         {
             type: "input",
-            fieldName: "Username",
-            text: `${Cypress.env('elasticsearch_user')}`
+            fieldName: "Access key",
+            text: `${Cypress.env('minio_accesskey')}`
         },
         {
             type: "encrypted",
-            fieldName: "Password",
-            text: `${Cypress.env('elasticsearch_password')}`
-        }
-    ],
-    invalidSsl: [
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: true
+            fieldName: "Secret key",
+            text: `${Cypress.env('minio_secretkey')}`
         }
     ],
     invalidHost: [
@@ -108,18 +93,18 @@ export const elasticsearchFormConfig = {
             text: "invalid-host"
         }
     ],
-    invalidUsername: [
+    invalidAccessKey: [
         {
             type: "input",
-            fieldName: "Username",
-            text: "invalid-username"
+            fieldName: "Access key",
+            text: "invalid-access-key"
         }
     ],
-    invalidPassword: [
+    invalidSecretKey: [
         {
             type: "encrypted",
-            fieldName: "Password",
-            text: "invalid-password"
+            fieldName: "Secret key",
+            text: "invalid-secret-key"
         }
     ],
     invalidPort: [
@@ -129,4 +114,11 @@ export const elasticsearchFormConfig = {
             text: "9999"
         }
     ],
+    invalidSsl: [
+        {
+            type: "toggle",
+            fieldName: "SSL",
+            shouldBeChecked: true
+        }
+    ]
 };
