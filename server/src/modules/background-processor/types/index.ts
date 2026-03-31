@@ -30,5 +30,5 @@ export interface SseProgressEvent {
 export interface JobContext {
   subject: Subject<SseProgressEvent>;
   resolvedInfo: ResolvedProcessInfo[];
-  userId: string;
+  userId?: string;
 }
