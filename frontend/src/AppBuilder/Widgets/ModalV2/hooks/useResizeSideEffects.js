@@ -18,7 +18,6 @@ export function useModalEventSideEffects({
     // Select the DOM element
     const canvasElement = document.querySelector('.page-container.canvas-container');
     if (!canvasElement) return; // Ensure the element exists
-    // console.log('creating resize observer');
     // Create a ResizeObserver
     const resizeObserver = new ResizeObserver((entries) => {
       if (!showModal) return;
@@ -41,7 +40,7 @@ export function useModalEventSideEffects({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
-  }, [size, onShowSideEffects]);
+  }, [showModal, size, onShowSideEffects]);
 
   useEffect(() => {
     if (showModal && parentRef.current) {
