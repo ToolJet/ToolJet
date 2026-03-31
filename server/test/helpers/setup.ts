@@ -61,6 +61,17 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
   return _tooljetDbDataSource;
 }
 
+/**
+ * Closes the NestJS test application and releases DataSource references.
+ * Use this in afterAll instead of raw `app.close()` to prevent stale singletons.
+ */
+export async function closeTestApp(app: INestApplication | undefined): Promise<void> {
+  if (!app) return;
+  await app.close();
+  _defaultDataSource = undefined as any;
+  _tooljetDbDataSource = undefined as any;
+}
+
 // ---------------------------------------------------------------------------
 // App factory
 // ---------------------------------------------------------------------------

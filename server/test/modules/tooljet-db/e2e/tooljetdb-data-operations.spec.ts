@@ -22,6 +22,7 @@ import {
   initTestApp,
   login,
   getTooljetDbDataSource,
+  closeTestApp,
 } from '../../../test.helper';
 
 describe('ToolJet DB data operations (EE, enterprise)', () => {
@@ -235,16 +236,7 @@ describe('ToolJet DB data operations (EE, enterprise)', () => {
   });
 
   afterAll(async () => {
-    // Note: app.close() can hang due to open HTTP connections.
-    // Jest's --forceExit handles cleanup.
-    try {
-      await Promise.race([
-        app?.close(),
-        new Promise((resolve) => setTimeout(resolve, 5_000)),
-      ]);
-    } catch {
-      // Swallow errors during teardown
-    }
+    await closeTestApp(app);
   });
 
   // ---------------------------------------------------------------------------
