@@ -39,11 +39,15 @@ const LifecycleCTAButton = () => {
   // Determine if we're on default branch or feature branch
   // For platform git sync: use workspace branch context
   // For per-app branching: fall back to versionType check
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
-    ? workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault || workspaceActiveBranch.name === defaultBranchName
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
   // Determine button state based on git configuration and branch type

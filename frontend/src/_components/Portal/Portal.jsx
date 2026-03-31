@@ -7,6 +7,7 @@ import {
   readCodehinterPopupEditorDimensions,
   getDefaultCodehinterPopupEditorDimensions,
 } from '@/_helpers/codehinterPortalDimensions';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 const Portal = ({ children, ...restProps }) => {
   const {
@@ -19,6 +20,7 @@ const Portal = ({ children, ...restProps }) => {
     callgpt,
     isCopilotEnabled,
     onPortalDimensionsChange = noop,
+    canRefresh = false,
   } = restProps;
 
   const [name, setName] = React.useState(componentName);
@@ -62,6 +64,7 @@ const Portal = ({ children, ...restProps }) => {
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
           onPortalDimensionsChange={onPortalDimensionsChange}
+          canRefresh={canRefresh}
         >
           {children}
         </Portal.Modal>
@@ -85,6 +88,7 @@ const Modal = ({
   callgpt,
   isCopilotEnabled,
   onPortalDimensionsChange,
+  canRefresh = false,
 }) => {
   const [loading, setLoading] = React.useState(false);
 
@@ -101,6 +105,7 @@ const Modal = ({
 
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
+  console.log('Rendering Portal Modal with componentName:', componentName, 'and canRefresh:', canRefresh);
   const renderModalContent = () => (
     <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
@@ -130,6 +135,20 @@ const Modal = ({
             >
               <Button.Content title={'Generate code'} />
             </Button>
+          </div>
+        )}
+
+        {canRefresh && (
+          <div className="mx-2">
+            <ButtonComponent
+              iconOnly
+              isLucid
+              leadingIcon="refresh-ccw"
+              size="medium"
+              variant="outline"
+              ariaLabel="Refresh"
+              className="codehinter-refresh-btn"
+            />
           </div>
         )}
 
