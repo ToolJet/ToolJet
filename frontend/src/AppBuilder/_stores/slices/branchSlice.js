@@ -13,7 +13,6 @@ const initialState = {
   isLoadingPRs: false,
   branchError: null,
   initialAutoSwitchDone: false,
-  isSwitchingContext: false,
 };
 
 export const createBranchSlice = (set, get) => ({
@@ -221,7 +220,7 @@ export const createBranchSlice = (set, get) => ({
 
       // Switch to branch version (and Development environment if needed)
       // Set flag before any state changes to suppress intermediate useEffect triggers
-      set(() => ({ isSwitchingContext: true }), false, 'switchBranch:switching');
+      get().beginVersionEnvSwitch();
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first
         if (!alreadyInDevelopment) {
@@ -231,22 +230,14 @@ export const createBranchSlice = (set, get) => ({
               appId,
               branchVersion.id,
               (data) => {
-                // Single batched set clears the flag + updates version — triggers useEffect exactly once
-                set(
-                  () => ({
-                    isSwitchingContext: false,
-                    currentVersionId: branchVersion.id,
-                    selectedVersion: branchVersion,
-                  }),
-                  false,
-                  'switchBranch:done'
-                );
+                get().completeVersionEnvSwitch(branchVersion.id, branchVersion);
                 resolve({ success: true, data });
               },
               (error) => {
                 console.error('switchBranch - error after environment change:', error);
+                get().cancelVersionEnvSwitch();
                 set(
-                  () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch to branch' }),
+                  () => ({ branchError: error.message || 'Failed to switch to branch' }),
                   false,
                   'switchBranch:error'
                 );
@@ -260,25 +251,13 @@ export const createBranchSlice = (set, get) => ({
             appId,
             branchVersion.id,
             (data) => {
-              // Single batched set clears the flag + updates version — triggers useEffect exactly once
-              set(
-                () => ({
-                  isSwitchingContext: false,
-                  currentVersionId: branchVersion.id,
-                  selectedVersion: branchVersion,
-                }),
-                false,
-                'switchBranch:done'
-              );
+              get().completeVersionEnvSwitch(branchVersion.id, branchVersion);
               resolve({ success: true, data });
             },
             (error) => {
               console.error('switchBranch - error switching version:', error);
-              set(
-                () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch to branch' }),
-                false,
-                'switchBranch:error'
-              );
+              get().cancelVersionEnvSwitch();
+              set(() => ({ branchError: error.message || 'Failed to switch to branch' }), false, 'switchBranch:error');
               reject({ success: false, error: error.message });
             }
           );
@@ -430,7 +409,7 @@ export const createBranchSlice = (set, get) => ({
 
       // EXACTLY MATCH handleVersionSelect behavior (line 144 in VersionManagerDropdown.jsx)
       // Set flag before any state changes to suppress intermediate useEffect triggers
-      set(() => ({ isSwitchingContext: true }), false, 'switchToDefaultBranch:switching');
+      get().beginVersionEnvSwitch();
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first (like handleVersionSelect does)
         if (!alreadyInDevelopment) {
@@ -440,22 +419,14 @@ export const createBranchSlice = (set, get) => ({
               appId,
               targetVersion.id,
               (data) => {
-                // Single batched set clears the flag + updates version — triggers useEffect exactly once
-                set(
-                  () => ({
-                    isSwitchingContext: false,
-                    currentVersionId: targetVersion.id,
-                    selectedVersion: targetVersion,
-                  }),
-                  false,
-                  'switchToDefaultBranch:done'
-                );
+                get().completeVersionEnvSwitch(targetVersion.id, targetVersion);
                 resolve({ success: true, data, version: targetVersion });
               },
               (error) => {
                 console.error('switchToDefaultBranch - error after environment change:', error);
+                get().cancelVersionEnvSwitch();
                 set(
-                  () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch version' }),
+                  () => ({ branchError: error.message || 'Failed to switch version' }),
                   false,
                   'switchToDefaultBranch:error'
                 );
@@ -469,22 +440,14 @@ export const createBranchSlice = (set, get) => ({
             appId,
             targetVersion.id,
             (data) => {
-              // Single batched set clears the flag + updates version — triggers useEffect exactly once
-              set(
-                () => ({
-                  isSwitchingContext: false,
-                  currentVersionId: targetVersion.id,
-                  selectedVersion: targetVersion,
-                }),
-                false,
-                'switchToDefaultBranch:done'
-              );
+              get().completeVersionEnvSwitch(targetVersion.id, targetVersion);
               resolve({ success: true, data, version: targetVersion });
             },
             (error) => {
               console.error('switchToDefaultBranch - error switching version:', error);
+              get().cancelVersionEnvSwitch();
               set(
-                () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch version' }),
+                () => ({ branchError: error.message || 'Failed to switch version' }),
                 false,
                 'switchToDefaultBranch:error'
               );

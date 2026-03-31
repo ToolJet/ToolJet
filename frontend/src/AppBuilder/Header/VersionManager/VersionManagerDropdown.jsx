@@ -33,6 +33,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    beginVersionEnvSwitch,
+    completeVersionEnvSwitch,
+    cancelVersionEnvSwitch,
     orgGit,
   } = useStore(
     (state) => ({
@@ -47,8 +50,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       releasedVersionId: state.releasedVersionId,
       selectedVersion: state.selectedVersion,
       developmentVersions: state.developmentVersions,
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+      beginVersionEnvSwitch: state.beginVersionEnvSwitch,
+      completeVersionEnvSwitch: state.completeVersionEnvSwitch,
+      cancelVersionEnvSwitch: state.cancelVersionEnvSwitch,
       orgGit: state.orgGit,
     }),
     shallow
@@ -198,35 +204,27 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
     if (isDifferentEnvironment) {
       // First switch environment, then switch version
-      // This updates the global selectedEnvironment
-      useStore.setState({ isSwitchingContext: true });
+      beginVersionEnvSwitch();
       environmentChangedAction(selectedEnvironmentFilter, () => {
-        // After environment switch, change the version
         changeEditorVersionAction(
           appId,
           version.id,
-          () => {
-            // Single batched set clears the flag + updates version — triggers useEffect exactly once
-            useStore.setState({ isSwitchingContext: false, currentVersionId: version.id, selectedVersion: version });
-          },
+          () => completeVersionEnvSwitch(version.id, version),
           (error) => {
-            useStore.setState({ isSwitchingContext: false });
+            cancelVersionEnvSwitch();
             toast.error(error.message || 'Failed to switch version');
           }
         );
       });
     } else {
       // Same environment, just switch version
-      useStore.setState({ isSwitchingContext: true });
+      beginVersionEnvSwitch();
       changeEditorVersionAction(
         appId,
         version.id,
-        () => {
-          // Single batched set clears the flag + updates version — triggers useEffect exactly once
-          useStore.setState({ isSwitchingContext: false, currentVersionId: version.id, selectedVersion: version });
-        },
+        () => completeVersionEnvSwitch(version.id, version),
         (error) => {
-          useStore.setState({ isSwitchingContext: false });
+          cancelVersionEnvSwitch();
           toast.error(error.message || 'Failed to switch version');
         }
       );
