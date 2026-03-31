@@ -65,7 +65,13 @@ export class AppGitModule extends SubModule {
         FeatureAbilityFactory,
         ...(isMainImport ? [AppVersionRenameListener] : []),
       ],
-      exports: [SourceControlProviderService, SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],
+      exports: [
+        SourceControlProviderService,
+        SSHAppGitUtilityService,
+        HTTPSAppGitUtilityService,
+        GitLabAppGitUtilityService,
+        HTTPSAppGitService,
+      ],
     };
   }
 }
