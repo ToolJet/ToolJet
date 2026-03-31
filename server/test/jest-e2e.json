@@ -13,6 +13,7 @@
   "runner": "groups",
   "testTimeout": 60000,
   "detectOpenHandles": true,
+  "forceExit": true,
   "transformIgnorePatterns": [
     "node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)"
   ],
