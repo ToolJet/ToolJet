@@ -168,6 +168,10 @@ export const fillDSConnectionEncryptedField = (field) => {
 
 export const fillDataOnCodeMirrorInput = (field) => {
   const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  cy.get(selector).scrollIntoView();
+  cy.wait(500);
+  // Focus the CodeMirror editor directly to bypass covered-element check from .realClick()
+  cy.get(selector).find(".cm-content").click({ force: true });
   cy.get(selector).clearAndTypeOnCodeMirror(field.text);
 };
 
