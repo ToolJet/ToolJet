@@ -1,8 +1,8 @@
-export const gcsUIConfig = {
+export const notionUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
-            fieldName: "Private key",
+            fieldName: "Token",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -16,19 +16,19 @@ export const gcsUIConfig = {
     ]
 };
 
-export const gcsFormConfig = {
+export const notionFormConfig = {
     valid: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            fieldName: "Token",
+            text: `${Cypress.env('notion_api_key')}`
         }
     ],
-    invalidPrivateKey: [
+    invalidToken: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: "invalid-private-key"
+            fieldName: "Token",
+            text: "invalid-token"
         }
     ]
 };

@@ -1,4 +1,4 @@
-export const minioUIConfig = {
+export const saphanaUIConfig = {
     defaultFields: [
         {
             type: "input",
@@ -6,7 +6,7 @@ export const minioUIConfig = {
             validations: {
                 isRequired: false,
                 placeholder: "Enter host",
-                defaultValue: "play.min.io",
+                defaultValue: "localhost",
                 disabled: false
             }
         },
@@ -16,31 +16,33 @@ export const minioUIConfig = {
             validations: {
                 isRequired: false,
                 placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
+                defaultValue: "443",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "Database name",
             validations: {
                 isRequired: false,
-                placeholder: "Enter access key",
+                placeholder: "Name of the database",
+                defaultValue: "",
+                disabled: false
+            }
+        },
+        {
+            type: "input",
+            fieldName: "Username",
+            validations: {
+                isRequired: false,
+                placeholder: "Enter username",
                 defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Password",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -54,32 +56,32 @@ export const minioUIConfig = {
     ]
 };
 
-export const minioFormConfig = {
+export const saphanaFormConfig = {
     valid: [
         {
             type: "input",
             fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
+            text: `${Cypress.env('saphana_host')}`
         },
         {
             type: "input",
             fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            text: `${Cypress.env('saphana_port')}`
         },
         {
             type: "input",
-            fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            fieldName: "Database name",
+            text: `${Cypress.env('saphana_database')}`
+        },
+        {
+            type: "input",
+            fieldName: "Username",
+            text: `${Cypress.env('saphana_user')}`
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
+            fieldName: "Password",
+            text: `${Cypress.env('saphana_password')}`
         }
     ],
     invalidHost: [
@@ -89,18 +91,25 @@ export const minioFormConfig = {
             text: "invalid-host"
         }
     ],
-    invalidAccessKey: [
+    invalidUsername: [
         {
             type: "input",
-            fieldName: "Access key",
-            text: "invalid-access-key"
+            fieldName: "Username",
+            text: "invalid-username"
         }
     ],
-    invalidSecretKey: [
+    invalidPassword: [
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: "invalid-secret-key"
+            fieldName: "Password",
+            text: "invalid-password"
+        }
+    ],
+    invalidPort: [
+        {
+            type: "input",
+            fieldName: "Port",
+            text: "9999"
         }
     ]
 };

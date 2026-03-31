@@ -1,46 +1,38 @@
-export const minioUIConfig = {
+export const rethinkdbUIConfig = {
     defaultFields: [
+        {
+            type: "input",
+            fieldName: "Database",
+            validations: {
+                isRequired: false,
+                placeholder: "database name",
+                defaultValue: "",
+                disabled: false
+            }
+        },
         {
             type: "input",
             fieldName: "Host",
             validations: {
                 isRequired: false,
-                placeholder: "Enter host",
-                defaultValue: "play.min.io",
+                placeholder: "",
+                defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Port",
+            fieldName: "Username",
             validations: {
                 isRequired: false,
-                placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
-                disabled: false
-            }
-        },
-        {
-            type: "input",
-            fieldName: "Access key",
-            validations: {
-                isRequired: false,
-                placeholder: "Enter access key",
+                placeholder: "",
                 defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Password",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -50,36 +42,46 @@ export const minioUIConfig = {
                 showEncrypted: true,
                 hasEyeIcon: false
             }
-        }
-    ]
-};
-
-export const minioFormConfig = {
-    valid: [
-        {
-            type: "input",
-            fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
         },
         {
             type: "input",
             fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
+            validations: {
+                isRequired: false,
+                placeholder: "28015",
+                defaultValue: "28015",
+                disabled: false
+            }
+        }
+    ]
+};
+
+export const rethinkdbFormConfig = {
+    valid: [
         {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            type: "input",
+            fieldName: "Host",
+            text: `${Cypress.env('rethinkdb_host')}`
         },
         {
             type: "input",
-            fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            fieldName: "Port",
+            text: `${Cypress.env('rethinkdb_port')}`
+        },
+        {
+            type: "input",
+            fieldName: "Database",
+            text: `${Cypress.env('rethinkdb_database')}`
+        },
+        {
+            type: "input",
+            fieldName: "Username",
+            text: `${Cypress.env('rethinkdb_username')}`
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
+            fieldName: "Password",
+            text: `${Cypress.env('rethinkdb_password')}`
         }
     ],
     invalidHost: [
@@ -89,18 +91,25 @@ export const minioFormConfig = {
             text: "invalid-host"
         }
     ],
-    invalidAccessKey: [
+    invalidUsername: [
         {
             type: "input",
-            fieldName: "Access key",
-            text: "invalid-access-key"
+            fieldName: "Username",
+            text: "invalid-username"
         }
     ],
-    invalidSecretKey: [
+    invalidPassword: [
         {
             type: "encrypted",
-            fieldName: "Secret key",
-            text: "invalid-secret-key"
+            fieldName: "Password",
+            text: "invalid-password"
+        }
+    ],
+    invalidPort: [
+        {
+            type: "input",
+            fieldName: "Port",
+            text: "9999"
         }
     ]
 };

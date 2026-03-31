@@ -1,30 +1,22 @@
-export const minioUIConfig = {
+export const athenaUIConfig = {
     defaultFields: [
         {
             type: "input",
-            fieldName: "Host",
+            fieldName: "Database",
             validations: {
                 isRequired: false,
-                placeholder: "Enter host",
-                defaultValue: "play.min.io",
+                placeholder: "Enter database name",
+                defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Port",
+            fieldName: "S3 output location",
             validations: {
                 isRequired: false,
-                placeholder: "Enter port",
-                defaultValue: "9000",
-                disabled: false
-            }
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            validations: {
-                defaultValue: true,
+                placeholder: "Enter output location",
+                defaultValue: "",
                 disabled: false
             }
         },
@@ -50,43 +42,38 @@ export const minioUIConfig = {
                 showEncrypted: true,
                 hasEyeIcon: false
             }
+        },
+        {
+            type: "dropdown",
+            fieldName: "Region",
+            validations: {
+                disabled: false
+            }
         }
     ]
 };
 
-export const minioFormConfig = {
+export const athenaFormConfig = {
     valid: [
         {
             type: "input",
-            fieldName: "Host",
-            text: `${Cypress.env('minio_host')}`
-        },
-        {
-            type: "input",
-            fieldName: "Port",
-            text: `${Cypress.env('minio_port')}`
-        },
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: false
+            fieldName: "Database",
+            text: `${Cypress.env('amazonathena_DbName')}`
         },
         {
             type: "input",
             fieldName: "Access key",
-            text: `${Cypress.env('minio_accesskey')}`
+            text: `${Cypress.env('amazonathena_accessKey')}`
         },
         {
             type: "encrypted",
             fieldName: "Secret key",
-            text: `${Cypress.env('minio_secretkey')}`
-        }
-    ],
-    invalidHost: [
+            text: `${Cypress.env('amazonathena_secretKey')}`
+        },
         {
-            type: "input",
-            fieldName: "Host",
-            text: "invalid-host"
+            type: "dropdown",
+            fieldName: "Region",
+            text: "US East (N. Virginia)"
         }
     ],
     invalidAccessKey: [

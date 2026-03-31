@@ -1,8 +1,8 @@
-export const gcsUIConfig = {
+export const sendgridUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
-            fieldName: "Private key",
+            fieldName: "API key",
             validations: {
                 isRequired: false,
                 placeholder: "**************",
@@ -16,19 +16,23 @@ export const gcsUIConfig = {
     ]
 };
 
-export const gcsFormConfig = {
+export const sendgridFormConfig = {
     valid: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            fieldName: "API key",
+            text: `${Cypress.env('sendgrid_api_key')}`
         }
     ],
-    invalidPrivateKey: [
+    invalidApiKey: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: "invalid-private-key"
+            fieldName: "API key",
+            text: "invalid-api-key"
         }
     ]
 };
+
+export const sendgridApiOptions = [
+    { key: "api_key", value: null, encrypted: true }
+];

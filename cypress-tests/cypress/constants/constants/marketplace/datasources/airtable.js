@@ -1,10 +1,10 @@
-export const gcsUIConfig = {
+export const airtableUIConfig = {
     defaultFields: [
         {
             type: "encrypted",
-            fieldName: "Private key",
+            fieldName: "Personal access token",
             validations: {
-                isRequired: false,
+                isRequired: true,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,
@@ -16,19 +16,19 @@ export const gcsUIConfig = {
     ]
 };
 
-export const gcsFormConfig = {
+export const airtableFormConfig = {
     valid: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
+            fieldName: "Personal access token",
+            text: `${Cypress.env('airTable_apikey')}`
         }
     ],
-    invalidPrivateKey: [
+    invalidToken: [
         {
             type: "encrypted",
-            fieldName: "Private key",
-            text: "invalid-private-key"
+            fieldName: "Personal access token",
+            text: "invalid-token"
         }
     ]
 };

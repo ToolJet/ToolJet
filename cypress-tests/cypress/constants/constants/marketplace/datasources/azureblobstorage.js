@@ -1,4 +1,4 @@
-export const azureBlobStorageUIConfig = {
+export const azureblobstorageUIConfig = {
     defaultFields: [
         {
             type: "input",
@@ -13,7 +13,7 @@ export const azureBlobStorageUIConfig = {
     ]
 };
 
-export const azureBlobStorageFormConfig = {
+export const azureblobstorageFormConfig = {
     valid: [
         {
             type: "input",
