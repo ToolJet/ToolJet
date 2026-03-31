@@ -367,7 +367,20 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type, branchId } = appListDto;
+    const { folderId, page, searchKey, type } = appListDto;
+    // When no branchId is provided (e.g. end users), fall back to the default branch
+    // so that only default-branch apps are shown instead of all apps across all branches.
+    let branchId = appListDto.branchId;
+    if (!branchId && type === 'front-end') {
+      const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+      if (orgGit) {
+        const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        });
+        branchId = defaultBranch?.id;
+      }
+    }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
