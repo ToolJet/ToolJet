@@ -30,4 +30,8 @@ export class GitEnvRegistryService implements IGitEnvRegistryService {
   }
 
   async ensureResolved(_workspaceId: string): Promise<void> {}
+
+  applyLicenseToResolvedOrgs(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

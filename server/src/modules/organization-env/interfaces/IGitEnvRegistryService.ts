@@ -21,4 +21,5 @@ export interface IGitEnvRegistryService {
   getActiveProvider(workspaceId: string): GITConnectionType;
 
   ensureResolved(workspaceId: string): Promise<void>;
+  applyLicenseToResolvedOrgs(): Promise<void>;
 }
