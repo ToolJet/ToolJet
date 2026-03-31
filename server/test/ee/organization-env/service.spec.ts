@@ -24,8 +24,9 @@ describe('OrganizationEnvRegistryService', () => {
       const orgId = '11111111-1111-1111-1111-111111111111';
       (service as any).resolvedIds.add(orgId);
 
-      expect(service.getResolvedOrganizationIds()).toContain(orgId);
-      expect(service.getResolvedOrganizationIds()).toHaveLength(1);
+      const result = service.getResolvedOrganizationIds();
+      expect(result).toContain(orgId);
+      expect(result).toHaveLength(1);
     });
 
     it('returns all resolved UUIDs when multiple orgs are present', () => {
