@@ -200,7 +200,7 @@ export class BackgroundProcessorUtilService {
         completedWeightage += weightage;
 
         this.transactionLogger.log(
-          `[BackgroundProcessor] Task completed successfully - jobId: ${jobId}, task: "${task}", result: ${JSON.stringify(result)}`
+          `[BackgroundProcessor] Task completed successfully - jobId: ${jobId}, task: "${task}", resultType: ${typeof result}`
         );
 
         await emit({
