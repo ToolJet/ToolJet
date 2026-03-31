@@ -16,6 +16,28 @@ export const aiService = {
   getConversation,
 };
 
+function handleAITextResponse(response) {
+  return response.text().then((text) => {
+    let data = null;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw {
+        error: data?.message || text || response.statusText,
+        data: data || { message: text },
+        statusCode: response?.status,
+      };
+    }
+
+    return data ?? text;
+  });
+}
+
 async function voteMessage(messageId, voteType) {
   const body = {
     messageId,
@@ -73,7 +95,7 @@ async function sendMessage(body, onMessage, isDocs = false) {
 
 async function getCopilotSuggestion(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleAITextResponse);
 }
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -85,7 +107,7 @@ async function getCreditBalance() {
 
 async function fixWithAI(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleAITextResponse);
 }
 
 async function updateKey(body) {

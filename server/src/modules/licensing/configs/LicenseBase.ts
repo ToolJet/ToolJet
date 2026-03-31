@@ -510,6 +510,9 @@ export default class LicenseBase {
   }
 
   public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
+    if (this.IsBasicPlan) {
+      return (this.BASIC_PLAN_TERMS.ai?.plan as 'byok' | 'selfhostai' | 'credits') || 'credits';
+    }
     return this._aiPlan || 'credits';
   }
 
@@ -559,6 +562,7 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      aiPlan: this.aiPlan,
     };
   }
 
