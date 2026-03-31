@@ -75,7 +75,16 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         ]).finally(() => setIsLoading(false));
       }
     }
-  }, [show, appId, organizationId, branchingEnabled, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions, wsActions]);
+  }, [
+    show,
+    appId,
+    organizationId,
+    branchingEnabled,
+    fetchBranches,
+    lazyLoadAppVersions,
+    fetchDevelopmentVersions,
+    wsActions,
+  ]);
 
   // Branch list: workspace branches for platform git sync, per-app branches otherwise
   const branchList = branchingEnabled ? wsBranches : allBranches;
