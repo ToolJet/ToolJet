@@ -199,30 +199,34 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     if (isDifferentEnvironment) {
       // First switch environment, then switch version
       // This updates the global selectedEnvironment
+      useStore.setState({ isSwitchingContext: true });
       environmentChangedAction(selectedEnvironmentFilter, () => {
         // After environment switch, change the version
         changeEditorVersionAction(
           appId,
           version.id,
           () => {
-            setCurrentVersionId(version.id);
-            setSelectedVersion(version);
+            // Single batched set clears the flag + updates version — triggers useEffect exactly once
+            useStore.setState({ isSwitchingContext: false, currentVersionId: version.id, selectedVersion: version });
           },
           (error) => {
+            useStore.setState({ isSwitchingContext: false });
             toast.error(error.message || 'Failed to switch version');
           }
         );
       });
     } else {
       // Same environment, just switch version
+      useStore.setState({ isSwitchingContext: true });
       changeEditorVersionAction(
         appId,
         version.id,
         () => {
-          setCurrentVersionId(version.id);
-          setSelectedVersion(version);
+          // Single batched set clears the flag + updates version — triggers useEffect exactly once
+          useStore.setState({ isSwitchingContext: false, currentVersionId: version.id, selectedVersion: version });
         },
         (error) => {
+          useStore.setState({ isSwitchingContext: false });
           toast.error(error.message || 'Failed to switch version');
         }
       );

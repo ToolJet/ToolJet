@@ -13,7 +13,7 @@ const initialState = {
   isLoadingPRs: false,
   branchError: null,
   initialAutoSwitchDone: false,
-  isSwitchingBranch: false,
+  isSwitchingContext: false,
 };
 
 export const createBranchSlice = (set, get) => ({
@@ -221,7 +221,7 @@ export const createBranchSlice = (set, get) => ({
 
       // Switch to branch version (and Development environment if needed)
       // Set flag before any state changes to suppress intermediate useEffect triggers
-      set(() => ({ isSwitchingBranch: true }), false, 'switchBranch:switching');
+      set(() => ({ isSwitchingContext: true }), false, 'switchBranch:switching');
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first
         if (!alreadyInDevelopment) {
@@ -234,7 +234,7 @@ export const createBranchSlice = (set, get) => ({
                 // Single batched set clears the flag + updates version — triggers useEffect exactly once
                 set(
                   () => ({
-                    isSwitchingBranch: false,
+                    isSwitchingContext: false,
                     currentVersionId: branchVersion.id,
                     selectedVersion: branchVersion,
                   }),
@@ -246,7 +246,7 @@ export const createBranchSlice = (set, get) => ({
               (error) => {
                 console.error('switchBranch - error after environment change:', error);
                 set(
-                  () => ({ isSwitchingBranch: false, branchError: error.message || 'Failed to switch to branch' }),
+                  () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch to branch' }),
                   false,
                   'switchBranch:error'
                 );
@@ -263,7 +263,7 @@ export const createBranchSlice = (set, get) => ({
               // Single batched set clears the flag + updates version — triggers useEffect exactly once
               set(
                 () => ({
-                  isSwitchingBranch: false,
+                  isSwitchingContext: false,
                   currentVersionId: branchVersion.id,
                   selectedVersion: branchVersion,
                 }),
@@ -275,7 +275,7 @@ export const createBranchSlice = (set, get) => ({
             (error) => {
               console.error('switchBranch - error switching version:', error);
               set(
-                () => ({ isSwitchingBranch: false, branchError: error.message || 'Failed to switch to branch' }),
+                () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch to branch' }),
                 false,
                 'switchBranch:error'
               );
@@ -430,7 +430,7 @@ export const createBranchSlice = (set, get) => ({
 
       // EXACTLY MATCH handleVersionSelect behavior (line 144 in VersionManagerDropdown.jsx)
       // Set flag before any state changes to suppress intermediate useEffect triggers
-      set(() => ({ isSwitchingBranch: true }), false, 'switchToDefaultBranch:switching');
+      set(() => ({ isSwitchingContext: true }), false, 'switchToDefaultBranch:switching');
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first (like handleVersionSelect does)
         if (!alreadyInDevelopment) {
@@ -443,7 +443,7 @@ export const createBranchSlice = (set, get) => ({
                 // Single batched set clears the flag + updates version — triggers useEffect exactly once
                 set(
                   () => ({
-                    isSwitchingBranch: false,
+                    isSwitchingContext: false,
                     currentVersionId: targetVersion.id,
                     selectedVersion: targetVersion,
                   }),
@@ -455,7 +455,7 @@ export const createBranchSlice = (set, get) => ({
               (error) => {
                 console.error('switchToDefaultBranch - error after environment change:', error);
                 set(
-                  () => ({ isSwitchingBranch: false, branchError: error.message || 'Failed to switch version' }),
+                  () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch version' }),
                   false,
                   'switchToDefaultBranch:error'
                 );
@@ -472,7 +472,7 @@ export const createBranchSlice = (set, get) => ({
               // Single batched set clears the flag + updates version — triggers useEffect exactly once
               set(
                 () => ({
-                  isSwitchingBranch: false,
+                  isSwitchingContext: false,
                   currentVersionId: targetVersion.id,
                   selectedVersion: targetVersion,
                 }),
@@ -484,7 +484,7 @@ export const createBranchSlice = (set, get) => ({
             (error) => {
               console.error('switchToDefaultBranch - error switching version:', error);
               set(
-                () => ({ isSwitchingBranch: false, branchError: error.message || 'Failed to switch version' }),
+                () => ({ isSwitchingContext: false, branchError: error.message || 'Failed to switch version' }),
                 false,
                 'switchToDefaultBranch:error'
               );
