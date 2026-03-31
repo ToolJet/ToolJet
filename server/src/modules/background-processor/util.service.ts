@@ -143,7 +143,8 @@ export class BackgroundProcessorUtilService {
       }
     }
 
-    if (explicitSum > 100) {
+    // Allow a tiny epsilon for floating-point rounding (e.g. 33.33 * 3 = 99.99)
+    if (explicitSum > 100 + 1e-9) {
       throw new Error(
         `[BackgroundProcessor] Invalid weightages: explicit weightages sum to ${explicitSum}, which exceeds 100`
       );
