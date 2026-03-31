@@ -99,7 +99,7 @@ export default function generateColumnsData({
     .map((column) => {
       if (!column) return null;
 
-      const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
+      const columnSize = column.columnSize || columnSizes[column?.id] || columnSizes[column?.name];
       const columnType = column?.columnType;
 
       // Process column options for select types

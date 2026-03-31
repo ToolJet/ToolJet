@@ -194,6 +194,7 @@
             "runQueryOnApplicationLoad": "Run this query on application load",
             "confirmBeforeQueryRun": "Request confirmation before running query",
             "notificationOnSuccess": "Show notification on success",
+            "runOnDependencyChange": "Run this query on dependency change",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",
             "notificationDuration": "Notification duration (s)",
