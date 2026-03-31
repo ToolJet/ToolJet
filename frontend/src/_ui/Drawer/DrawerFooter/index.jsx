@@ -131,8 +131,8 @@ function DrawerFooter({
         )}
         <div className="d-flex action-btns">
           {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
-            (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
-            (isCreateColumn && foreignKeyDetails?.length > 0) ? (
+          (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
+          (isCreateColumn && foreignKeyDetails?.length > 0) ? (
             <ButtonSolid variant="dangerTertiary" onClick={onDeletePopup}>
               <DeleteIcon />
               &nbsp; Delete

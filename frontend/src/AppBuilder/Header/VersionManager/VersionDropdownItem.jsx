@@ -41,7 +41,7 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-    developmentVersions.find((v) => v.id === version.parentVersionId)
+      developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
@@ -108,17 +108,19 @@ const VersionDropdownItem = ({
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
         <div
           className={cx('dropdown-item tj-text-xsm', {
-            'cursor-pointer': isDraft,
-            disabled: !isDraft,
+            // 'cursor-pointer': isDraft,
+            'cursor-pointer': true,
+            // disabled: !isDraft,
             'dark-theme theme-dark': darkMode,
           })}
           onClick={(e) => {
             e.stopPropagation();
-            if (!isDraft) return; // disable when not a draft
+            // if (!isDraft) return; // disable when not a draft
             onEdit?.(version);
             document.body.click(); // Close popover
           }}
-          aria-disabled={!isDraft}
+          // aria-disabled={!isDraft}
+          aria-disabled={false}
           data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-edit-version-button`}
         >
           Edit details

@@ -46,8 +46,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       /* User is going through invite flow */
       const isInviteSession = !!req['isInviteSession'];
 
+      let organizationId =
+        typeof req.headers['tj-workspace-id'] === 'object'
+          ? req.headers['tj-workspace-id'][0]
+          : req.headers['tj-workspace-id'];
+
+      if (!organizationId && payload?.isPATLogin && payload?.appId) {
+        organizationId = payload.organizationIds[0];
+      }
+
       if (isUserMandatory || isGetUserSession || isInviteSession) {
-        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);
+        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId);
       }
 
       if (isGetUserSession) {
@@ -57,15 +66,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.tjApiSource = payload.tj_api_source;
 
         return user;
-      }
-
-      let organizationId =
-        typeof req.headers['tj-workspace-id'] === 'object'
-          ? req.headers['tj-workspace-id'][0]
-          : req.headers['tj-workspace-id'];
-
-      if (!organizationId && payload?.isPATLogin && payload?.appId) {
-        organizationId = payload.organizationIds[0];
       }
 
       if (isUserMandatory) {

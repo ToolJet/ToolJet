@@ -30,6 +30,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.REGENERATE_MESSAGE,
           FEATURE_KEY.VOTE_MESSAGE,
           FEATURE_KEY.GET_CREDITS_BALANCE,
+          FEATURE_KEY.LIST_CONVERSATIONS,
+          FEATURE_KEY.CREATE_CONVERSATION,
+          FEATURE_KEY.GET_CONVERSATION,
         ],
         AiConversation
       );

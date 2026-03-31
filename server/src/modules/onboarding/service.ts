@@ -726,6 +726,7 @@ export class OnboardingService implements IOnboardingService {
           to: existingUser.email,
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
+          organizationId: existingUser.defaultOrganizationId,
         },
       });
       return;

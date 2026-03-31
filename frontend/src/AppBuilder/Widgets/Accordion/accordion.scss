@@ -37,9 +37,9 @@
 }
 
 .dynamic-height-target {
-  .canvas-component {
-    .widget-type-container {
-      .sub-canvas {
+  > .canvas-component {
+    > .widget-type-container {
+      > .sub-canvas {
         overflow-y: hidden !important;
       }
     }

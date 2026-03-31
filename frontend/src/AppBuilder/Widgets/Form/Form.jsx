@@ -46,6 +46,7 @@ const FormComponent = (props) => {
     onComponentClick,
     subContainerIndex,
     currentMode,
+    componentType,
   } = props;
 
   const { moduleId } = useModuleContext();
@@ -157,6 +158,7 @@ const FormComponent = (props) => {
     value: isJSONSchema,
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   const parentRef = useRef(null);

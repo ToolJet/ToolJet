@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { getAvatar } from '@/_helpers/utils';
-import { appendWorkspaceId, getQueryParams } from '@/_helpers/routes';
+import { getAvatar, stripTrailingSlash } from '@/_helpers/utils';
+import { appendWorkspaceId, getQueryParams, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import cx from 'classnames';
 import { organizationService } from '@/_services';
+import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
 import { useLocation } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
 
@@ -127,11 +128,28 @@ export default function SwitchWorkspacePage({ darkMode, archived = false, isAppU
     organizationService.getOrganizations().then((response) => setOrganizations(response.organizations));
   };
 
-  const switchOrganization = ({ id, slug }) => {
+  const redirectWithSessionTransfer = useSessionTransferRedirect('SwitchWorkspace');
+
+  const switchOrganization = (org) => {
+    const { id, slug } = org;
     if (slug || id) {
       const newPath = appendWorkspaceId(slug || id, location.pathname, true);
-      window.history.replaceState(null, null, newPath);
-      window.location.reload();
+      const targetDomain = getTargetDomainURL(org);
+      const currentOrigin = window.location.origin;
+
+      if (targetDomain && targetDomain !== currentOrigin) {
+        redirectWithSessionTransfer(targetDomain, newPath, id);
+      } else if (!targetDomain && isCustomDomain()) {
+        const mainHost = window.public_config?.TOOLJET_HOST;
+        if (!mainHost) {
+          console.error('[SwitchWorkspace] TOOLJET_HOST not configured, cannot redirect from custom domain');
+          return;
+        }
+        redirectWithSessionTransfer(stripTrailingSlash(mainHost), newPath, id);
+      } else {
+        window.history.replaceState(null, null, newPath);
+        window.location.reload();
+      }
     }
   };
   const { t } = useTranslation();

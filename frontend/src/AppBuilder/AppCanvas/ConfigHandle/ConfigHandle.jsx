@@ -36,9 +36,9 @@ export const ConfigHandle = ({
   subContainerIndex,
   isDynamicHeightEnabled,
 }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
@@ -86,7 +86,7 @@ export const ConfigHandle = ({
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
@@ -118,24 +118,24 @@ export const ConfigHandle = ({
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-      background: 'var(--interactive-selected)',
-      color: 'var(--text-default)',
-      padding: '2px 6px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '6px',
-      height: '24px',
-    }
+        background: 'var(--interactive-selected)',
+        color: 'var(--text-default)',
+        padding: '2px 6px',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: '6px',
+        height: '24px',
+      }
     : {
-      color: 'var(--text-on-solid)',
-      padding: '2px 6px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '6px',
-      height: '24px',
-    };
+        color: 'var(--text-on-solid)',
+        padding: '2px 6px',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: '6px',
+        height: '24px',
+      };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
     getConfigHandleButtonStyle.background = '#9747FF';
   }
@@ -195,7 +195,6 @@ export const ConfigHandle = ({
     return null;
   }
 
-
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -205,8 +204,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-              ? '-26px'
-              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+            ? '-26px'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -288,24 +287,21 @@ export const ConfigHandle = ({
         <PencilRuler size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
 
-      {
-        licenseValid && isRestricted && (
-          <ConfigHandleButton
-            customStyles={iconOnlyButtonStyle}
-            message={getTooltip()}
-            show={licenseValid && isRestricted && !draggingComponentId}
-            dataCy={`${componentName.toLowerCase()}-permissions-button`}
-          >
-            <Lock size={14} color="var(--icon-strong)" />
-          </ConfigHandleButton>
-        )
-      }
-      {
-        !isMultipleComponentsSelected && !shouldFreeze && (
-          <Suspense fallback={null}>
-            <MentionComponentInChat componentName={componentName} />
-          </Suspense >
-        )}
+      {licenseValid && isRestricted && (
+        <ConfigHandleButton
+          customStyles={iconOnlyButtonStyle}
+          message={getTooltip()}
+          show={licenseValid && isRestricted && !draggingComponentId}
+          dataCy={`${componentName.toLowerCase()}-permissions-button`}
+        >
+          <Lock size={14} color="var(--icon-strong)" />
+        </ConfigHandleButton>
+      )}
+      {!isMultipleComponentsSelected && !shouldFreeze && (
+        <Suspense fallback={null}>
+          <MentionComponentInChat componentName={componentName} />
+        </Suspense>
+      )}
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
@@ -319,17 +315,15 @@ export const ConfigHandle = ({
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {
-        (componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-          <Tooltip
-            delay={{ show: 500, hide: 50 }}
-            id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-            className="tooltip"
-            isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-            style={{ textAlign: 'center' }}
-          />
-        )
-      }
-    </div >
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
+        <Tooltip
+          delay={{ show: 500, hide: 50 }}
+          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+          className="tooltip"
+          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
+          style={{ textAlign: 'center' }}
+        />
+      )}
+    </div>
   );
 };

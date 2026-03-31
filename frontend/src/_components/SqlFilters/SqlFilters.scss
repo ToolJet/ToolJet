@@ -1,0 +1,55 @@
+.sql-filters-container {
+  width: 100%;
+}
+
+.sql-filters-label {
+  flex-shrink: 0;
+}
+
+.sql-filters-field-container {
+  flex-grow: 1;
+}
+
+.sql-filter-row {
+  margin-bottom: 8px;
+
+  .codehinter-input {
+    .cm-editor {
+      // height: 30px !important;
+      min-height: 30px !important;
+      max-height: 100px !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  .sql-filter-end {
+    .codehinter-input {
+      .cm-editor {
+        border-right: 0;
+      }
+    }
+  }
+}
+
+.sql-filter-value-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.sql-filter-value-input {
+  width: calc(100% - 35px);
+}
+
+.sql-filter-delete-button {
+  flex-shrink: 0;
+  min-height: 30px !important;
+  max-height: 100px !important;
+}
+
+.sql-filter-add-condition-button {
+  margin-top: 8px;
+}
+
+.sql-filter-add-condition-button.no-filters-above {
+  margin-top: 0;
+}

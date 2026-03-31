@@ -21,6 +21,7 @@ export enum PageType {
   GROUP = 'group',
   URL = 'url',
   APP = 'app',
+  CUSTOM = 'custom',
 }
 
 export class CreatePageDto {

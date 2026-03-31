@@ -38,6 +38,7 @@ import {
   getSSRFConfig,
   getSSRFProtectionOptions,
 } from './ssrf-protection';
+import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuilder';
 
 export {
   QueryError,
@@ -75,4 +76,7 @@ export {
   getSSRFConfig,
   getSSRFProtectionOptions,
   getTooljetEdition,
+  QueryBuilder,
+  QueryBuilderError,
+  createQueryBuilder,
 };

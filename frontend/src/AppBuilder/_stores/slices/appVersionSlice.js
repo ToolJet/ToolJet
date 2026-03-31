@@ -9,6 +9,7 @@ const initialState = {
   isAppVersionPromoted: false,
   currentAppVersionEnvironment: null,
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
+  restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -59,18 +60,22 @@ export const createAppVersionSlice = (set, get) => ({
 
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
-  getShouldFreeze: (skipIsEditorFreezedCheck = false) => {
-    return (
-      get().isVersionReleased ||
-      (!skipIsEditorFreezedCheck && get().isEditorFreezed) ||
-      get().selectedVersion?.id === get().releasedVersionId
-    );
+  getShouldFreeze: (skipIsEditorFreezedCheck = false, isModuleEditor = false) => {
+    if (isModuleEditor) return false;
+    const isVersionReleased = get().isVersionReleased;
+    const isEditorFreezed = get().isEditorFreezed;
+    const selectedVersionId = get().selectedVersion?.id;
+    const releasedVersionId = get().releasedVersionId;
+    const result =
+      isVersionReleased || (!skipIsEditorFreezedCheck && isEditorFreezed) || selectedVersionId === releasedVersionId;
+    return result;
   },
 
   setRestoredAppHistoryId: (id) => {
     set(
       (state) => {
         state.restoredAppHistoryId = id;
+        state.restoreTimestamp = Date.now(); // Always update timestamp to trigger re-fetch
       },
       false,
       'setRestoredAppHistoryId'

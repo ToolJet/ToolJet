@@ -21,16 +21,16 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
 
   const [conditionObj, setConditionObj] = useState(() => {
-  const current = authenticationService.currentSessionValue || {};
-  const isAdmin = !!current.admin;
-  const isBuilder = !!current.user_permissions?.is_builder;
-  return {
-    admin: isAdmin,
-    isBuilder,
-    wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
-    // admins and builders only on EE or Cloud
-    canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
-  };
+    const current = authenticationService.currentSessionValue || {};
+    const isAdmin = !!current.admin;
+    const isBuilder = !!current.user_permissions?.is_builder;
+    return {
+      admin: isAdmin,
+      isBuilder,
+      wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+      // admins and builders only on EE or Cloud
+      canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+    };
   });
 
   //Filtered Links from the workspace settings links array
@@ -44,47 +44,47 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   };
 
   useEffect(() => {
-      const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-          const isAdmin = !!newOrd?.admin;
-          const isBuilder = !!newOrd?.user_permissions?.is_builder;
-          const editionNow = fetchEdition();
-          const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
-          setConditionObj({
-              admin: isAdmin,
-              isBuilder,
-              wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
-              canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
-          });
+    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+      const isAdmin = !!newOrd?.admin;
+      const isBuilder = !!newOrd?.user_permissions?.is_builder;
+      const editionNow = fetchEdition();
+      const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
+      setConditionObj({
+        admin: isAdmin,
+        isBuilder,
+        wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+        canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
       });
+    });
 
-      const pathParts = location.pathname.split('/').filter(Boolean);
-      const selectedTabFromRoute = pathParts.pop();
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const selectedTabFromRoute = pathParts.pop();
 
-      if (selectedTabFromRoute === 'workspace-settings') {
-          const availableLinks = filteredLinks();
-          
-          if (availableLinks.length > 0) {
-              let target = availableLinks[0];
+    if (selectedTabFromRoute === 'workspace-settings') {
+      const availableLinks = filteredLinks();
 
-              if (!admin && conditionObj.isBuilder) {
-                  const themesLink = availableLinks.find(l => l.id === 'themes');
-                  if (themesLink) target = themesLink;
-              }
+      if (availableLinks.length > 0) {
+        let target = availableLinks[0];
 
-              setSelectedTab(target.id);
-              navigate(target.route, { replace: true });
-          }
-      } else {
-          const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
-          if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
-              redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
-          }
-          const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
-          updateSidebarNAV(selectedWorkspaceSetting?.name || '');
-          setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
+        if (!admin && conditionObj.isBuilder) {
+          const themesLink = availableLinks.find((l) => l.id === 'themes');
+          if (themesLink) target = themesLink;
+        }
+
+        setSelectedTab(target.id);
+        navigate(target.route, { replace: true });
       }
+    } else {
+      const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
+      if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
+        redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
+      }
+      const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
+      updateSidebarNAV(selectedWorkspaceSetting?.name || '');
+      setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
+    }
 
-      return () => subscription.unsubscribe();
+    return () => subscription.unsubscribe();
   }, [admin, location.pathname, conditionObj.isBuilder]);
 
   const handleClick = (data) => {
@@ -141,7 +141,10 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px', scrollbarGutter: 'stable'  }}>
+          <div
+            className={cx('col workspace-content-wrapper')}
+            style={{ paddingTop: '40px', scrollbarGutter: 'stable' }}
+          >
             <div className="w-100">
               <Outlet />
             </div>

@@ -92,7 +92,7 @@ export const CustomOptions = (props) => {
         );
       case 'plain':
       default:
-        return <span>{safeText}</span>;
+        return <span>{String(safeText)}</span>;
     }
   };
 

@@ -9,6 +9,13 @@ export interface SourceOptions {
   instanceName?: string;
   azure?: boolean;
   connection_options?: string[][];
+  allow_dynamic_connection_parameters?: boolean;
+  ssl_enabled?: boolean;
+  ssl_certificate?: string;
+  ca_cert?: string;
+  client_cert?: string;
+  client_key?: string;
+  root_cert?: string;
   ssh_enabled?: 'enabled' | 'disabled';
   ssh_host?: string;
   ssh_port?: number;

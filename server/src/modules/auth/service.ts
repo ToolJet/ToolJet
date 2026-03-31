@@ -261,6 +261,7 @@ export class AuthService implements IAuthService {
         to: email,
         token: forgotPasswordToken,
         firstName: user.firstName,
+        organizationId: user.defaultOrganizationId,
       },
     });
   }

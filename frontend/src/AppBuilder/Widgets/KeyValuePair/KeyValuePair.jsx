@@ -30,6 +30,7 @@ export const KeyValuePair = ({
   currentLayout,
   currentMode,
   subContainerIndex,
+  componentType,
 }) => {
   const {
     dataSourceSelector,
@@ -89,6 +90,7 @@ export const KeyValuePair = ({
     width: widgetWidth,
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   // Merge original data with edited values

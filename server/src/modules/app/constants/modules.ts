@@ -43,7 +43,9 @@ export enum MODULES {
   MODULES = 'Modules',
   APP_GIT = 'AppGit',
   GIT_SYNC = 'GitSync',
+  WORKSPACE_BRANCHES = 'WorkspaceBranches',
   APP_HISTORY = 'AppHistory',
   CRM = 'CRM',
   SCIM = 'SCIM',
+  CUSTOM_DOMAINS = 'customDomains',
 }

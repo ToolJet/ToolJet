@@ -57,8 +57,12 @@ export const RadioButton = function RadioButton({
       role="radiogroup"
       aria-labelledby={`${id}-label`}
     >
-      <span className="form-check-label col-auto py-0" style={{ color: textColor }} id={`${id}-label`}
-        data-cy={`${dataCy}-label`}>
+      <span
+        className="form-check-label col-auto py-0"
+        style={{ color: textColor }}
+        id={`${id}-label`}
+        data-cy={`${dataCy}-label`}
+      >
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">
@@ -80,7 +84,12 @@ export const RadioButton = function RadioButton({
               aria-hidden={!visibility}
               aria-labelledby={`${id}-option-${index}-label`}
             />
-            <span className="form-check-label" style={{ color: textColor }} id={`${id}-option-${index}-label`} data-cy={`${dataCy}-option-label-${index}`}>
+            <span
+              className="form-check-label"
+              style={{ color: textColor }}
+              id={`${id}-option-${index}-label`}
+              data-cy={`${dataCy}-option-label-${index}`}
+            >
               {option.name}
             </span>
           </label>

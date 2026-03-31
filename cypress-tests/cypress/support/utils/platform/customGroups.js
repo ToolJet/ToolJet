@@ -70,6 +70,9 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
         } else if (resourceType === "datasource") {
             cy.get(groupsSelector.addDatasourceButton).click();
         }
+        else if (resourceType === "folder") {
+            cy.get(groupsSelector.addFolderButton).click();
+        }
     });
 
     cy.clearAndType(groupsSelector.permissionNameInput, permissionName);
@@ -91,6 +94,15 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
             cy.get(groupsSelector.buildWithDatasourceRadio).check();
         } else if (permission === "configure") {
             cy.get(groupsSelector.configureDatasourceradio).check();
+        }
+    }
+    else if (resourceType === "folder") {
+        if (permission === "editFolder") {
+            cy.get(groupsSelector.editFolderRadio).check();
+        } else if (permission === "editApp") {
+            cy.get(groupsSelector.editAppRadio).check();
+        } else if (permission === "viewApp") {
+            cy.get(groupsSelector.viewAppRadio).check();
         }
     }
 

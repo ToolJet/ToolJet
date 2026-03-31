@@ -25,7 +25,11 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
-  folderCRUD: boolean;
+  folderCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  folderDelete: boolean;
 
   @IsBoolean()
   @IsOptional()
@@ -97,4 +101,8 @@ export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   @IsOptional()
   addWorkflows: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addFolders: boolean;
 }

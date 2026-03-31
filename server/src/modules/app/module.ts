@@ -47,12 +47,15 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
+import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
+import { BranchContextModule } from '@modules/branch-context/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
+import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
@@ -64,6 +67,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ScimModule } from '@modules/scim/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
@@ -95,6 +99,7 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
+      await BranchContextModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
@@ -137,12 +142,14 @@ export class AppModule implements OnModuleInit, NestModule {
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
       await AppGitModule.register(configs, true),
+      await WorkspaceBranchesModule.register(configs, true),
       await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
+      await CustomDomainsModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -159,6 +166,11 @@ export class AppModule implements OnModuleInit, NestModule {
           }),
         })
       );
+    }
+
+    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+      const { SessionTransferModule } = await import('../session-transfer/module');
+      conditionalImports.push(await SessionTransferModule.register(configs, true));
     }
 
     if (process.env.ENABLE_METRICS === 'true') {
@@ -179,6 +191,7 @@ export class AppModule implements OnModuleInit, NestModule {
         SessionScheduler,
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
+        CustomDomainStatusScheduler,
       ],
     };
   }

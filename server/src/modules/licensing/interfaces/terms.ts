@@ -32,6 +32,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    customDomains?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;
@@ -58,10 +59,11 @@ export interface Terms {
       query: boolean;
       pages: boolean;
     };
-    features? :{
+    features?: {
       promote: boolean;
       release: boolean;
-    }
+      history: boolean;
+    };
   };
   modules?: {
     enabled: boolean;

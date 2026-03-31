@@ -10,7 +10,7 @@
     "@cypress/code-coverage": "^3.12.12",
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^7.3.0",
-    "cypress": "^15.4.0",
+    "cypress": "^15.11.0",
     "cypress-mailhog": "^2.5.0"
   },
   "dependencies": {

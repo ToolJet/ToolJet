@@ -4,9 +4,8 @@ import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
 import { OptionsList } from './components';
 import { useOptionsManager } from './hooks/useOptionsManager';
+import { COMPONENT_INSPECTOR_CONFIG, DEFAULT_CONFIG } from './constants';
 import './styles.scss';
-
-const POPOVER_MENU_FIELDS = ['format', 'label', 'description', 'value', 'icon', 'visibility', 'disable'];
 
 export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -21,6 +20,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
+  const componentType = component?.component?.component;
+  const config = { ...DEFAULT_CONFIG, ...COMPONENT_INSPECTOR_CONFIG[componentType] };
+
   // Use the custom hook for options management
   const {
     options,
@@ -33,9 +35,11 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     getItemStyle,
     getResolvedValue,
     isDynamicOptionsEnabled,
-  } = useOptionsManager(component, paramUpdated);
+    handleDefaultChange,
+  } = useOptionsManager(component, paramUpdated, config.optionLabelPrefix);
 
   // ===== PROPERTY ORGANIZATION =====
+  const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
   let optionsProperties = [];
@@ -65,7 +69,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         onDragEnd={onDragEnd}
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
-        popoverFields={POPOVER_MENU_FIELDS}
+        dataCyPrefix={config.dataCy}
+        popoverFields={config.popoverFields}
+        onDefaultChange={handleDefaultChange}
         {...restProps}
       />
     );
@@ -96,24 +102,33 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   });
 
   // Section configurations
+  const mainProperties = properties.filter((property) => !optionsProperties.includes(property));
+
   const sections = [
+    ...(!config.singleDataSection && mainProperties.length > 0
+      ? [
+          {
+            title: config.propertiesAccordionTitle,
+            type: 'properties',
+            properties: mainProperties,
+          },
+        ]
+      : []),
     {
-      title: 'Menu',
-      type: 'properties',
-      properties: properties.filter((property) => !optionsProperties.includes(property)),
-    },
-    {
-      title: 'Options',
+      title: !config.singleDataSection ? config.optionsAccordionTitle || 'Options' : config.propertiesAccordionTitle,
       custom: () => (
         <>
           {createRenderElement('advanced')}
           {isDynamicOptionsEnabled ? (
             <>
-              {createRenderElement('schema')} {createRenderElement('optionsLoadingState')}
+              {createRenderElement('schema')}{' '}
+              {optionsProperties.includes('optionsLoadingState') && createRenderElement('optionsLoadingState')}
             </>
           ) : (
             _renderOptions()
           )}
+          {optionsProperties.includes('multiSelection') && createRenderElement('multiSelection')}
+          {optionsProperties.includes('layout') && createRenderElement('layout')}
         </>
       ),
     },
@@ -133,14 +148,30 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         />
       ),
     },
-    {
-      title: 'Additional Actions',
-      type: 'properties',
-      properties: additionalActions,
-      extraProps: (property) => ({
-        placeholder: componentMeta.properties?.[property]?.placeholder,
-      }),
-    },
+    ...(validations.length > 0
+      ? [
+          {
+            title: 'Validation',
+            type: 'validation',
+            properties: validations,
+            extraProps: (property) => ({
+              placeholder: componentMeta.validation?.[property]?.placeholder,
+            }),
+          },
+        ]
+      : []),
+    ...(additionalActions.length > 0
+      ? [
+          {
+            title: 'Additional Actions',
+            type: 'properties',
+            properties: additionalActions,
+            extraProps: (property) => ({
+              placeholder: componentMeta.properties?.[property]?.placeholder,
+            }),
+          },
+        ]
+      : []),
     {
       title: 'Devices',
       type: 'others',

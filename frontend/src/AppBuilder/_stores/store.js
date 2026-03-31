@@ -13,6 +13,7 @@ import { createDataSourceSlice } from './slices/dataSourceSlice';
 import { createUndoRedoSlice } from './slices/undoRedoSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
+// eslint-disable-next-line import/no-unresolved
 import { enableMapSet } from 'immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
@@ -33,6 +34,7 @@ import { createFormComponentSlice } from './slices/componentSlices/formComponent
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { createBranchSlice } from './slices/branchSlice';
 enableMapSet();
 
 export default create(
@@ -71,6 +73,7 @@ export default create(
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),
+      ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

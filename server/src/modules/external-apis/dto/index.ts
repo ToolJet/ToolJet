@@ -271,6 +271,10 @@ export class GeneratePATDto {
   @IsOptional()
   appId: string;
 
+  @IsString()
+  @IsOptional()
+  appSlug?: string;
+
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -289,3 +293,32 @@ export class ValidatePATSessionDto {
   @IsString()
   accessToken: string;
 }
+
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+// Export groups DTOs
+export {
+  CreateGroupExternalDto,
+  GranularPermissionDto,
+  GranularPermissionResourceType,
+  AppEnvironment,
+  AppPermissionsDto,
+  DataSourcePermissionsDto,
+  WorkspacePermissionsDto,
+  WorkflowPermissionsDto,
+} from './groups.dto';

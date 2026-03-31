@@ -2,12 +2,14 @@ import React from 'react';
 import cx from 'classnames';
 import Branch from '@assets/images/icons/branch.svg';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const FreezeVersionInfo = ({
   info = 'App cannot be edited after promotion. Please create a new version from Development to make any changes.',
   hide = false,
 }) => {
-  const isViewOnly = useStore((state) => state.getShouldFreeze());
+  const { isModuleEditor } = useModuleContext();
+  const isViewOnly = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAiOperationInProgress = useStore((state) => state?.ai?.isLoading);
 
   if (!isViewOnly || hide || isAiOperationInProgress) return null;

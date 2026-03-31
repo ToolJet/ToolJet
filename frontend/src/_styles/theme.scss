@@ -692,6 +692,7 @@ button {
     background-color: var(--surfaces-surface-01);
     background-clip: border-box;
     height: 100vh;
+    z-index: 1041;
 
     >div {
       background-color: var(--surfaces-surface-01);
@@ -6434,29 +6435,7 @@ input.hide-input-arrows {
   width: 36px;
 }
 
-.custom-checkbox-tree {
-  overflow-y: auto;
-  color: #3e525b;
 
-  .react-checkbox-tree label:hover {
-    background: none !important;
-  }
-
-  .rct-icons-fa4 {
-
-    .rct-icon-expand-open,
-    .rct-icon-expand-close {
-      &::before {
-        content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' focusable='false' data-icon='caret-down' width='12px' height='12px' fill='currentColor' aria-hidden='true'%3E%3Cpath d='M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z'%3E%3C/path%3E%3C/svg%3E") !important;
-      }
-    }
-
-    .rct-icon-expand-close {
-      transform: rotate(-90deg);
-      -webkit-transform: rotate(-90deg);
-    }
-  }
-}
 
 // sso enable/disable box
 .tick-cross-info {
@@ -14516,131 +14495,6 @@ tbody {
   }
 }
 
-.git-sync-modal,
-.modal-base {
-
-  .create-commit-container,
-  .commit-info,
-  .pull-container,
-  .pushpull-container {
-    height: 260px !important;
-
-    .form-control {
-      font-weight: 400;
-      font-size: 12px;
-      line-height: 20px;
-      color: var(--slate12);
-    }
-
-    .form-group {
-      .tj-input-error-state {
-        border: 1px solid var(--tomato9) !important;
-      }
-
-      .tj-input-error {
-        color: var(--tomato10) !important;
-      }
-    }
-
-    .info-text {
-      color: var(--slate10);
-    }
-
-    .tj-input-error {
-      color: var(--tomato10);
-    }
-
-    .form-control.disabled {
-      background-color: var(--slate3) !important;
-      color: var(--slate9) !important;
-    }
-
-    .last-commit-info {
-      background: var(--slate3);
-
-      .message-info {
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .author-info {
-        font-size: 10px;
-        color: var(--slate11);
-      }
-    }
-
-    .check-for-updates {
-      display: flex;
-      align-items: center;
-      color: var(--indigo9);
-
-      svg {
-        path {
-          fill: var(--indigo9);
-        }
-
-        rect {
-          fill: none;
-        }
-      }
-
-      .loader-container {
-        height: unset !important;
-
-        .primary-spin-loader {
-          width: 18px;
-          height: 18px;
-          margin-right: 5px;
-        }
-      }
-    }
-  }
-
-  .modal-footer {
-    border-top: 1px solid var(--slate5);
-    padding: 1rem;
-
-    .tj-btn-left-icon {
-      svg {
-        width: 20px;
-        height: 20px;
-
-        path {
-          fill: var(--indigo1);
-        }
-      }
-    }
-
-    .tj-large-btn {
-      font-weight: 500;
-      font-size: 14px;
-    }
-  }
-
-  .modal-body {
-    .loader-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 180px;
-    }
-  }
-
-  .modal-base {
-    .tj-text-xxsm {
-      color: var(--slate11);
-    }
-  }
-
-  .modal-header {
-    border-bottom: 1px solid var(--slate5) !important;
-
-    .modal-title {
-      color: var(--slate12);
-    }
-  }
-}
-
 .custom-gap-7 {
   gap: 7px;
 }
@@ -17477,7 +17331,7 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .cm-tooltip {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
 .accordion-item {
@@ -17911,22 +17765,6 @@ section.ai-message-prompt-input-wrapper {
     margin-left: 25px !important;
     margin-bottom: 10px !important;
   }
-}
-
-.git-sync-modal {
-  width: 400px !important;
-  height: 484px !important;
-}
-
-.dark-theme.git-sync-modal {
-  .modal-header {
-    border-bottom: 1px solid var(--slate5) !important;
-  }
-}
-
-.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-push.active,
-.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
-  border-bottom: 2px solid var(--indigo9) !important;
 }
 
 .custom_fc_frame {

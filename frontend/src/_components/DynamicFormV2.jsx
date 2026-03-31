@@ -8,6 +8,11 @@ import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
 import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
@@ -37,6 +42,7 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -104,7 +110,7 @@ const DynamicFormV2 = ({
       .map((item) => item.key);
   };
   React.useEffect(() => {
-    if (isGDS) {
+    if (isGDS && currentAppEnvironmentId) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
         const constants = {
           globals: {},
@@ -381,6 +387,16 @@ const DynamicFormV2 = ({
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -393,12 +409,23 @@ const DynamicFormV2 = ({
     const { label, description, widget, required, width, key, help_text: helpText, list, buttonText } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
-    const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
+    const isEncrypted =
+      widget === 'password-v3' ||
+      widget === 'password-v3-textarea' ||
+      widget === 'password' ||
+      encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+
+    // On locked master branch, disable non-encrypted fields (encrypted fields remain editable)
+    const isFieldDisabledByBranchLock = isWorkspaceBranchLocked && !isEncrypted;
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -432,7 +459,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -440,6 +467,8 @@ const DynamicFormV2 = ({
           onBlur,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
+          disabled: isFieldDisabledByBranchLock,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       }
       case 'password-v3':
@@ -476,7 +505,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -484,7 +513,10 @@ const DynamicFormV2 = ({
           onBlur,
           isRequired: isRequired,
           isValidatedMessages: validationStatus,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           isEditing: isEditing,
@@ -506,11 +538,34 @@ const DynamicFormV2 = ({
           handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: isEncrypted,
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-sql-filters': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+        };
+      }
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate': {
+        return {
+          getter: key,
+          parseKey: uiProperties.parse_key,
+          options: options,
+          handleOptionChange,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode: localStorage.getItem('darkMode') === 'true',
         };
       }
       case 'toggle':
@@ -520,23 +575,29 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        // eslint-disable-next-line no-case-declarations
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
-          defaultChecked: isEnabled,
           checked: isEnabled,
           label: label,
           helpText: helpText,
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
-            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+            handleOptionChange(
+              key,
+              e.target.checked ? (booleanMode ? true : 'enabled') : booleanMode ? false : 'disabled',
+              true
+            );
           },
         };
       case 'toggle-v2':
         return {
           checked: currentValue,
-          label:label,
+          label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
@@ -547,6 +608,7 @@ const DynamicFormV2 = ({
           onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       case 'checkbox':
         return {
@@ -557,7 +619,10 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
           helpText: helpText,
           isRequired: isRequired,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'checkbox-group':
         return {
@@ -622,7 +687,7 @@ const DynamicFormV2 = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
@@ -684,7 +749,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
-                    widget !== 'toggle-v2' && 
+                    widget !== 'toggle-v2' &&
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -722,12 +787,12 @@ const DynamicFormV2 = ({
 
   const FlipComponentDropdown = (uiProperties) => {
     const flipComponentDropdowns = Object.values(uiProperties || {})
-    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
-    .sort((a, b) => {
-      const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
+      .filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      .sort((a, b) => {
+        const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
 
     // Build all components with their order for sorting
     const allComponents = [];
@@ -736,6 +801,9 @@ const DynamicFormV2 = ({
     // Add dropdown components with their order
     flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+      const scopedChildren = flipComponentDropdown[selector];
+      const parentChildren = uiProperties[selector];
+      const childrenToRender = scopedChildren !== undefined ? scopedChildren : parentChildren;
 
       allComponents.push({
         order: flipComponentDropdown.order, // Keep undefined if not set
@@ -756,26 +824,30 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
                 {flipComponentDropdown.widget !== 'toggle-flip' &&
-                (flipComponentDropdown.label || isHorizontalLayout) && (
-                  <label
-                    className={cx('form-label')}
-                    data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                  >
-                    {flipComponentDropdown.label}
-                  </label>
-                )}
+                  (flipComponentDropdown.label || isHorizontalLayout) && (
+                    <label
+                      className={cx('form-label')}
+                      data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                    >
+                      {flipComponentDropdown.label}
+                    </label>
+                  )}
 
                 <div
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
                   {flipComponentDropdown.widget === 'toggle-flip' ? (
-                    <ToggleV2 {...getElementProps(flipComponentDropdown)} />
+                    <ToggleV2
+                      {...getElementProps(flipComponentDropdown)}
+                      dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                    />
                   ) : (
                     <Select
                       {...getElementProps(flipComponentDropdown)}
                       styles={{}}
                       useCustomStyles={false}
+                      isSearchable={false}
                       dataCy={generateCypressDataCy(flipComponentDropdown.label)}
                     />
                   )}
@@ -786,7 +858,7 @@ const DynamicFormV2 = ({
               </div>
             </div>
 
-            {getLayout(uiProperties[selector])}
+            {getLayout(childrenToRender)}
           </div>
         ),
       });
@@ -831,7 +903,7 @@ const DynamicFormV2 = ({
 
   const isFlipComponentDropdown = (uiProperties) => {
     const checkFlipComponents = uiProperties
-      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      ? Object.values(uiProperties).filter((c) => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
       : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);

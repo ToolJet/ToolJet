@@ -49,6 +49,7 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isCustomDomains: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
@@ -81,6 +82,7 @@ export default class LicenseBase {
       this._isAi = true;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
+      this._isCustomDomains = true;
       this._plan = plan;
       return;
     }
@@ -140,6 +142,7 @@ export default class LicenseBase {
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
+    this._isCustomDomains = this.getFeatureValue('customDomains');
   }
 
   private getFeatureValue(key: string) {
@@ -471,6 +474,13 @@ export default class LicenseBase {
     return this._isScimEnabled;
   }
 
+  public get customDomains(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.customDomains;
+    }
+    return this._isCustomDomains;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -533,6 +543,7 @@ export default class LicenseBase {
       appPermissionPages: this.appPermissionPages,
       appPagesLimit: this.appPagesLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
+      customDomain: this.customDomains,
       promote: this.canPromote,
       release: this.canRelease,
       google: this.google,
@@ -540,6 +551,7 @@ export default class LicenseBase {
       externalApis: this.externalApis,
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
+      appHistory: this.appHistory,
     };
   }
 
@@ -575,6 +587,7 @@ export default class LicenseBase {
       workspacesCount: this.workspaces,
       workflows: this.workflows,
       startDate: this.startDate,
+      appHistoryEnabled: this.appHistory,
     };
   }
 
@@ -621,5 +634,16 @@ export default class LicenseBase {
       return true;
     }
     return !!this._app?.features?.release;
+  }
+
+  public get appHistory(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
+    }
+
+    if (this._app?.features?.history === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.history;
   }
 }

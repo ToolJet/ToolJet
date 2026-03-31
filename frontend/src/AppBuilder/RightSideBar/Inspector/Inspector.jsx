@@ -50,11 +50,12 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
-import { ReorderableList } from './Components/ReorderableList';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
+import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -125,6 +126,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'FileInput',
   'Tags',
   'Chat',
   'PopoverMenu',
@@ -142,9 +144,12 @@ export const NEW_REVAMPED_COMPONENTS = [
   'JSONEditor',
   'KeyValuePair',
   'IFrame',
+  'Navigation',
+  'TreeSelect',
   'Accordion',
   'ReorderableList',
-  'Navigation',
+  'FileButton',
+  'ButtonGroupV2',
 ];
 
 export const Inspector = ({
@@ -154,10 +159,11 @@ export const Inspector = ({
   selectedComponentId,
   handleRightSidebarToggle,
 }) => {
+  const { isModuleEditor } = useModuleContext();
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
@@ -445,7 +451,7 @@ export const Inspector = ({
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
     if (value === 'permission') {
       if (!hasAppPermissionComponent) return;
@@ -873,7 +879,9 @@ const GetAccordion = React.memo(
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton': // fall-through to FilePicker
       case 'FilePicker':
+      case 'FileInput':
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':
@@ -920,15 +928,17 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
       case 'PopoverMenu':
-        return <PopoverMenu {...restProps} />;
       case 'ReorderableList':
-        return <ReorderableList {...restProps} />;
+        return <PopoverMenu {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
-
       case 'Navigation':
         return <Navigation {...restProps} />;
+      case 'TreeSelect':
+        return <TreeSelect {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

@@ -3,6 +3,29 @@ import { CreateEventHandlerDto, UpdateEvent } from '@modules/apps/dto/event';
 import { App } from '@entities/app.entity';
 import { EntityManager } from 'typeorm';
 
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface EventCreateContext {
+  eventHandler: CreateEventHandlerDto;
+}
+
+export interface EventBulkCreateContext {
+  eventHandlers: CreateEventHandlerDto[];
+}
+
+export interface EventUpdateContext {
+  events: UpdateEvent[];
+  updateType: 'update' | 'reorder';
+  oldEventDtos: any[];
+  eventNames: string[];
+}
+
+export interface EventDeleteContext {
+  eventId: string;
+  eventName: string;
+}
+
 export interface IEventsService {
   findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]>;
   findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]>;
