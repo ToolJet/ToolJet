@@ -101,19 +101,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       const dataSourceList = [...result, ...sampleDataSource];
 
-      //remove tokenData from restapi datasources
+      // Token data is now stored in datasource_user_token_data, not in options
       const dataSources = dataSourceList?.map((ds) => {
-        if (ds.kind === 'restapi') {
-          const options = {};
-          Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
-            if (key !== 'tokenData') {
-              return (options[key] = ds.dataSourceOptions[0].options[key]);
-            }
-          });
-          ds.options = options;
-        } else {
-          ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
-        }
+        ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
         delete ds['dataSourceOptions'];
         return ds;
       });

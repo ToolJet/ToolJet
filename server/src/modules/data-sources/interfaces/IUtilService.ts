@@ -14,7 +14,8 @@ export interface IDataSourcesUtilService {
     dataSource: DataSource,
     options: Array<object>,
     manager: EntityManager,
-    userId: string
+    userId?: string,
+    dataSourceOptionId?: string
   ): Promise<any>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
@@ -36,7 +37,9 @@ export interface IDataSourcesUtilService {
   parseOptionsForOauthDataSource(
     options: Array<object>,
     resetSecureData?: boolean,
-    userId?: string
+    userId?: string,
+    dataSourceOptionId?: string,
+    manager?: EntityManager
   ): Promise<Array<object>>;
 
   resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
