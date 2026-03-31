@@ -51,7 +51,7 @@ import { BackgroundProcessorJobStore } from './store';
  * });
  *
  * // 4. Return jobId to client, client subscribes to SSE:
- * //    GET /jobs/:jobId/events?token=<jwt>
+ * //    GET /jobs/:jobId/events with JWT auth → receives progress events
  * ```
  *
  * @remarks
