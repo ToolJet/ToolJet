@@ -40,7 +40,6 @@ export const ColorPicker = (props) => {
     direction,
     auto,
     width: labelWidth,
-    widthType,
     backgroundColor,
     borderColor,
     accentColor,
@@ -232,7 +231,6 @@ export const ColorPicker = (props) => {
 
   // ===== COMPUTED STYLES =====
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
-  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width
 
   const isFocusedOrOpen = isFocused || showColorPicker;
   const buttonBorderColor = !isValid
@@ -253,7 +251,7 @@ export const ColorPicker = (props) => {
     backgroundColor,
     boxShadow,
     ...(exposedVariablesTemporaryState.isLoading && { justifyContent: 'start' }),
-    ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
+    ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, auto, alignment),
   };
 
   const pickerStyles = {
@@ -323,8 +321,7 @@ export const ColorPicker = (props) => {
           direction={direction}
           defaultAlignment={alignment}
           isMandatory={isMandatory}
-          _width={_width}
-          widthType={widthType}
+          _width={labelWidth}
           top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}

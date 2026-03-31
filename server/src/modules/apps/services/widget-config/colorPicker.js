@@ -182,30 +182,6 @@ export const colorPickerConfig = {
       ],
       isFxNotRequired: true,
     },
-    widthType: {
-      type: 'select',
-      showLabel: false,
-      options: [
-        { name: 'Of the Component', value: 'ofComponent' },
-        { name: 'Of the Field', value: 'ofField' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'ofComponent',
-      },
-      accordian: 'label',
-      isFxNotRequired: true,
-      conditionallyRender: [
-        {
-          key: 'alignment',
-          value: 'side',
-        },
-        {
-          key: 'auto',
-          value: false,
-        },
-      ],
-    },
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -305,7 +281,6 @@ export const colorPickerConfig = {
       direction: { value: 'left' },
       auto: { value: '{{true}}' },
       width: { value: '{{33}}' },
-      widthType: { value: 'ofComponent' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
