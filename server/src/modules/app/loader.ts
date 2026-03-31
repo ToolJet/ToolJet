@@ -115,7 +115,13 @@ export class AppModuleLoader {
       getMainDBConnectionModule(),
       TypeOrmModule.forRoot({
         ...tooljetDbOrmconfig,
-        ...(process.env.NODE_ENV === 'test' && { retryAttempts: 1, retryDelay: 1000 }),
+        ...(process.env.NODE_ENV === 'test' && {
+          retryAttempts: 0,
+          extra: {
+            ...(tooljetDbOrmconfig as any).extra,
+            connectionTimeoutMillis: 3000,
+          },
+        }),
       }),
       RequestContextModule,
       GuardValidatorModule,
