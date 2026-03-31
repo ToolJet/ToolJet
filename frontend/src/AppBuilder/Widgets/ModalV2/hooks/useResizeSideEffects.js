@@ -17,11 +17,11 @@ export function useModalEventSideEffects({
   useEffect(() => {
     // Select the DOM element
     const canvasElement = document.querySelector('.page-container.canvas-container');
-
     if (!canvasElement) return; // Ensure the element exists
-
+    // console.log('creating resize observer');
     // Create a ResizeObserver
     const resizeObserver = new ResizeObserver((entries) => {
+      if (!showModal) return;
       for (let entry of entries) {
         // Update the height state when the element's height changes
         onShowSideEffects();
