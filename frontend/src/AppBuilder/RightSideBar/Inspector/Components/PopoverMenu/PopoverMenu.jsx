@@ -67,11 +67,11 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         onOptionChange={handleOptionChange}
         onAddOption={handleAddOption}
         onDragEnd={onDragEnd}
+        onDefaultChange={handleDefaultChange}
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
-        dataCyPrefix={config.dataCy}
-        popoverFields={config.popoverFields}
-        onDefaultChange={handleDefaultChange}
+        componentType={componentType}
+        config={config}
         {...restProps}
       />
     );
