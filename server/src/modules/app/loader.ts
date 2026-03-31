@@ -113,7 +113,10 @@ export class AppModuleLoader {
         },
       }),
       getMainDBConnectionModule(),
-      TypeOrmModule.forRoot(tooljetDbOrmconfig),
+      TypeOrmModule.forRoot({
+        ...tooljetDbOrmconfig,
+        ...(process.env.NODE_ENV === 'test' && { retryAttempts: 1, retryDelay: 1000 }),
+      }),
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
