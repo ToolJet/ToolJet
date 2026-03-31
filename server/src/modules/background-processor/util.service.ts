@@ -127,10 +127,26 @@ export class BackgroundProcessorUtilService {
 
     for (const info of infos) {
       if (info.weightage != null) {
+        if (typeof info.weightage !== 'number' || isNaN(info.weightage)) {
+          throw new Error(
+            `[BackgroundProcessor] Invalid weightage for task "${info.task}": value is NaN or not a number`
+          );
+        }
+        if (info.weightage < 0) {
+          throw new Error(
+            `[BackgroundProcessor] Invalid weightage for task "${info.task}": negative value ${info.weightage} is not allowed`
+          );
+        }
         explicitSum += info.weightage;
       } else {
         implicitCount++;
       }
+    }
+
+    if (explicitSum > 100) {
+      throw new Error(
+        `[BackgroundProcessor] Invalid weightages: explicit weightages sum to ${explicitSum}, which exceeds 100`
+      );
     }
 
     this.transactionLogger.log(
