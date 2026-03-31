@@ -4,7 +4,9 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  opacity: 0.4;
+  svg circle {
+    fill: var(--icon-default);
+  }
 }
 
 

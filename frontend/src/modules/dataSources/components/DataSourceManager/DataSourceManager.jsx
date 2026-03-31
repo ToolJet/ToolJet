@@ -1072,8 +1072,8 @@ class DataSourceManagerComponent extends React.Component {
                   )}
                 </div>
                 <div className="tw-flex tw-items-center tw-pt-[15px] tw-gap-2">
-                  {selectedDataSource?.pluginId && (
-                    <ToolTip message={`Version ${dataSourceSchema?.version || 'info not available'}`} placement="right">
+                  {selectedDataSource?.pluginId && dataSourceSchema?.version && (
+                    <ToolTip message={`Version ${dataSourceSchema?.version}`} placement="right">
                       <span className="datasource-version-info-icon" data-cy="datasource-version-info">
                         <InfoIcon style={{ width: '20px', height: '20px' }} />
                       </span>
