@@ -141,7 +141,7 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
   cy.get(groupsSelector.granularLink).click();
 
   cy.get(groupsSelector.granularAccessPermission).within(() => {
-    cy.get(groupsSelector.environmentTags).should('be.visible');
+    cy.get(groupsSelector.environmentTagsContainer).should('be.visible');
     cy.get('.environment-tag').should('have.length', environmentTags.length);
     cy.get('.environment-tag').each(($el, index) => {
       cy.wrap($el).should('have.text', environmentTags[index]);
