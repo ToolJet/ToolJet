@@ -139,12 +139,11 @@ export async function initializeEnvConfigRegistry(app: NestExpressApplication, l
     const { OrganizationEnvRegistryService } = await import(`${importPath}/organization-env/service`);
     const { GitEnvRegistryService } = await import(`${importPath}/organization-env/registry/git-env`);
 
-    // GitEnvRegistryService must register its callback before orgEnvService scans files
-    const gitEnvRegistryService = app.get(GitEnvRegistryService, { strict: false });
-    await gitEnvRegistryService.initialize();
-
     const envRegistryService = app.get(OrganizationEnvRegistryService, { strict: false });
     await envRegistryService.initialize();
+
+    const gitEnvRegistryService = app.get(GitEnvRegistryService, { strict: false });
+    await gitEnvRegistryService.initialize();
     logger.log('✅ Environment config registry initialized successfully');
   } catch (error) {
     logger.error('❌ Failed to initialize environment config registry:', error);

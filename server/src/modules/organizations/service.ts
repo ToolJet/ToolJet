@@ -18,7 +18,6 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { CustomDomainRepository } from '@modules/custom-domains/repository';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
@@ -28,7 +27,6 @@ export class OrganizationsService implements IOrganizationsService {
     protected readonly licenseOrganizationService: LicenseOrganizationService,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly licenseUserService: LicenseUserService,
-    protected readonly organizationEnvRegistryService: OrganizationEnvRegistryService,
     @Optional() protected readonly customDomainRepository: CustomDomainRepository
   ) { }
 
@@ -93,7 +91,7 @@ export class OrganizationsService implements IOrganizationsService {
   }
 
   async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
-    const shouldReloadEnvConfigs = await dbTransactionWrap(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationId = user.organizationId;
       const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
@@ -118,12 +116,7 @@ export class OrganizationsService implements IOrganizationsService {
         },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
-      return !!updatableData.slug && updatableData.slug !== organization.slug;
     });
-
-    if (shouldReloadEnvConfigs) {
-      await this.reloadEnvConfigs(user.organizationId);
-    }
 
     return;
   }
@@ -204,13 +197,4 @@ export class OrganizationsService implements IOrganizationsService {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
 
-  protected async reloadEnvConfigs(organizationId: string): Promise<void> {
-    if (!this.organizationEnvRegistryService) return;
-
-    try {
-      await this.organizationEnvRegistryService.reload(organizationId);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-    }
-  }
 }
