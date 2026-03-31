@@ -12,7 +12,6 @@
   "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",
   "testTimeout": 60000,
-  "forceExit": true,
   "detectOpenHandles": true,
   "transformIgnorePatterns": [
     "node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)"
