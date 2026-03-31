@@ -678,24 +678,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       refreshToken = newToken['refresh_token'] ?? null;
     }
 
-    // Persist tokens to datasource_user_token_data for all relevant environments
+    // Persist tokens to datasource_user_token_data
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.MULTI_ENVIRONMENT,
-        organizationId
-      );
       const tokenUserId = isMultiAuthEnabled ? userId : null;
-
-      if (isMultiEnvEnabled) {
-        const dso = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, environmentId);
-        await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
-      } else {
-        const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
-        for (const env of allEnvs) {
-          const dso = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, env.id);
-          await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
-        }
-      }
+      const dso = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, environmentId);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
     });
   }
 
@@ -1007,21 +994,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const refreshToken = accessTokenDetails['refresh_token'] ?? null;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.MULTI_ENVIRONMENT,
-        organizationId
-      );
-
-      if (isMultiEnvEnabled) {
-        const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
-        await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
-      } else {
-        const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
-        for (const env of allEnvs) {
-          const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id);
-          await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
-        }
-      }
+      const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
     });
   }
 
@@ -1039,29 +1013,33 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', refreshToken)
       : null;
 
-    // DELETE + INSERT pattern to handle upsert with nullable user_id
+    let existing: DatasourceUserTokenData | null;
     if (userId !== null) {
-      await manager.delete(DatasourceUserTokenData, { dataSourceOptionId, userId });
+      existing = await manager.findOne(DatasourceUserTokenData, { where: { dataSourceOptionId, userId } });
     } else {
-      // For single-auth (userId IS NULL), delete existing null-user row
-      await manager
-        .createQueryBuilder()
-        .delete()
-        .from(DatasourceUserTokenData)
-        .where('data_source_option_id = :dataSourceOptionId AND user_id IS NULL', { dataSourceOptionId })
-        .execute();
+      existing = await manager
+        .createQueryBuilder(DatasourceUserTokenData, 'dst')
+        .where('dst.data_source_option_id = :dataSourceOptionId AND dst.user_id IS NULL', { dataSourceOptionId })
+        .getOne();
     }
 
-    const row = manager.create(DatasourceUserTokenData, {
-      userId,
-      dataSourceOptionId,
-      authToken: encryptedAccessToken,
-      refreshToken: encryptedRefreshToken,
-      moreDetails: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await manager.save(row);
+    if (existing) {
+      existing.authToken = encryptedAccessToken;
+      existing.refreshToken = encryptedRefreshToken;
+      existing.updatedAt = new Date();
+      await manager.save(existing);
+    } else {
+      const row = manager.create(DatasourceUserTokenData, {
+        userId,
+        dataSourceOptionId,
+        authToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
+        moreDetails: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(row);
+    }
   }
 
   protected async getUserTokenData(
