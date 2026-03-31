@@ -192,8 +192,9 @@ export const RadioButtonV2 = ({
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const computedLayoutStyles = {
+    height: '100%',
     flexDirection: layout === 'wrap' ? 'row' : layout,
-    ...(layout === 'wrap' && { flexWrap: 'wrap' }),
+    ...(layout === 'wrap' && { flexWrap: 'wrap', maxHeight: '100%', height: 'max-content' }),
     overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
   };
 
@@ -248,7 +249,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0 h-100"
+            className="d-flex px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
