@@ -7,10 +7,7 @@ import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import { cx } from 'class-variance-authority';
-import {
-  getLabelWidthOfInput,
-  getWidthTypeOfComponentStyles,
-} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const ButtonGroupV2 = (props) => {
@@ -36,7 +33,6 @@ export const ButtonGroupV2 = (props) => {
     direction,
     auto: labelAutoWidth,
     labelWidth,
-    widthType,
     backgroundColor,
     hoverBackgroundMode = 'auto',
     hoverBackgroundColor = 'var(--cc-primary-brand)',
@@ -228,7 +224,6 @@ export const ButtonGroupV2 = (props) => {
   // ===== COMPUTED STYLES =====
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const justifyContentByAlignment = btnAlignment === 'left' ? 'start' : btnAlignment === 'right' ? 'end' : 'center';
-  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
 
   const groupStyles = {
     width: layout === 'wrap' ? '100%' : 'max-content',
@@ -240,7 +235,7 @@ export const ButtonGroupV2 = (props) => {
     height: _height,
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
     overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
-    ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+    ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
   };
 
   const commonStyles = {
@@ -334,8 +329,7 @@ export const ButtonGroupV2 = (props) => {
           direction={direction}
           defaultAlignment={alignment}
           isMandatory={isMandatory}
-          _width={_width}
-          widthType={widthType}
+          _width={labelWidth}
           top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
