@@ -21,16 +21,20 @@ export class AppModuleLoader {
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+    const isTest = process.env.NODE_ENV === 'test';
+    const mainDbTestOverrides = isTest ? { retryAttempts: 0 } : {};
+
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
             inject: [TypeormLoggerService],
             useFactory: (profilerLogger: TypeormLoggerService) => ({
               ...ormconfig,
+              ...mainDbTestOverrides,
               logger: profilerLogger,
             }),
           })
-        : TypeOrmModule.forRoot(ormconfig);
+        : TypeOrmModule.forRoot({ ...ormconfig, ...mainDbTestOverrides });
     };
 
     // Static imports that are always loaded
@@ -39,11 +43,13 @@ export class AppModuleLoader {
         wildcard: false,
         newListener: false,
         removeListener: false,
-        maxListeners: process.env.NODE_ENV === 'test' ? 0 : 5,
+        maxListeners: isTest ? 20 : 5,
         verboseMemoryLeak: true,
         ignoreErrors: false,
       }),
-      ScheduleModule.forRoot(),
+      // ScheduleModule registers cron timers that accumulate across test files.
+      // Excluding it in test mode makes @Cron decorators inert (no timers fire).
+      ...(isTest ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
@@ -52,6 +58,12 @@ export class AppModuleLoader {
           ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
           ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
           ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
+          // In test mode: disable ioredis reconnection to prevent zombie connections
+          // accumulating across test files in a long-lived Node.js process.
+          ...(isTest && {
+            maxRetriesPerRequest: null,
+            retryStrategy: () => null,
+          }),
         },
       }),
       await ConfigModule.forRoot({
@@ -115,13 +127,7 @@ export class AppModuleLoader {
       getMainDBConnectionModule(),
       TypeOrmModule.forRoot({
         ...tooljetDbOrmconfig,
-        ...(process.env.NODE_ENV === 'test' && {
-          retryAttempts: 0,
-          extra: {
-            ...(tooljetDbOrmconfig as any).extra,
-            connectionTimeoutMillis: 3000,
-          },
-        }),
+        ...(process.env.NODE_ENV === 'test' && { retryAttempts: 0 }),
       }),
       RequestContextModule,
       GuardValidatorModule,
