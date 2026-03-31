@@ -1,6 +1,7 @@
 .color-picker-widget {
     .color-picker-button {
         width: 100%;
+        min-width: 0px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -13,6 +14,7 @@
             justify-content: flex-start;
             align-items: center;
             gap: 8px;
+            overflow: hidden;
 
             .color-preview {
                 height: 18px;
@@ -56,10 +58,19 @@
         background-color: var(--cc-surface1-surface) !important;
         border: none !important;
 
-        // Hack to style the cursor for hue and alpha sliders
-        .flexbox-fix:nth-child(2) {
-            div[style*="left"] > div {
-                height: 14px !important;
+        .flexbox-fix{
+            // Hack to style the cursor for hue and alpha sliders
+            &:nth-child(2) {
+                div[style*="left"] > div {
+                    height: 14px !important;
+                }
+            }
+
+            // Hack to style the hue slider when alpha is false
+            &> div:first-child {
+                &> div:first-child {
+                    height: 16px !important;
+                }
             }
         }
 

@@ -4,10 +4,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import * as Popover from '@radix-ui/react-popover';
 import { cx } from 'class-variance-authority';
 import Label from '@/_ui/Label';
-import {
-  getLabelWidthOfInput,
-  getWidthTypeOfComponentStyles,
-} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
