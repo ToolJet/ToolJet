@@ -58,12 +58,21 @@ export class BackgroundProcessorController {
   /**
    * GET /jobs/:jobId/events
    * SSE endpoint — guarded by JWT, validates job ownership.
+   * Returns an Observable stream of MessageEvent objects with progress updates.
+   * Cleans up resources when client disconnects.
    *
-   * @remarks
-   * EventSource doesn't support custom headers, so JWT must be sent as query param:
-   * `new EventSource('/jobs/123/events?token=<jwt>')`
-   *
-   * Your JwtStrategy needs to read from query fallback.
+   * Example client-side usage:
+   * ```javascript
+   * const eventSource = new EventSource(`/jobs/${jobId}/events`, { withCredentials: true });
+   * eventSource.onmessage = (event) => {
+   *   const progressEvent = JSON.parse(event.data);
+   *   console.log('Job Progress:', progressEvent);
+   * };
+   * eventSource.onerror = (err) => {
+   *   console.error('SSE error:', err);
+   *   eventSource.close();
+   * };
+   *```
    */
   @Sse(':jobId/events')
   @UseGuards(JwtAuthGuard)
