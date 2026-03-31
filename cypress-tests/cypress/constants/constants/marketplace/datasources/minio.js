@@ -10,7 +10,6 @@ export const minioUIConfig = {
                 disabled: false
             }
         },
-
         {
             type: "input",
             fieldName: "Port",
@@ -21,7 +20,6 @@ export const minioUIConfig = {
                 disabled: false
             }
         },
-
         {
             type: "toggle",
             fieldName: "SSL",
@@ -30,7 +28,6 @@ export const minioUIConfig = {
                 disabled: false
             }
         },
-
         {
             type: "input",
             fieldName: "Access key",
@@ -41,7 +38,6 @@ export const minioUIConfig = {
                 disabled: false
             }
         },
-
         {
             type: "encrypted",
             fieldName: "Secret key",
@@ -105,20 +101,6 @@ export const minioFormConfig = {
             type: "encrypted",
             fieldName: "Secret key",
             text: "invalid-secret-key"
-        }
-    ],
-    invalidPort: [
-        {
-            type: "input",
-            fieldName: "Port",
-            text: "9999"
-        }
-    ],
-    invalidSsl: [
-        {
-            type: "toggle",
-            fieldName: "SSL",
-            shouldBeChecked: true
         }
     ]
 };

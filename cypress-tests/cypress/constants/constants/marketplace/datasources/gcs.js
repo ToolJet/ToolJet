@@ -21,7 +21,7 @@ export const gcsFormConfig = {
         {
             type: "encrypted",
             fieldName: "Private key",
-            text: JSON.stringify(Cypress.env('bigquery_private_key'))
+            text: `${JSON.stringify(Cypress.env('gcs_private_key'))}`
         }
     ],
     invalidPrivateKey: [
