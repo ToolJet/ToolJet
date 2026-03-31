@@ -48,7 +48,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { GitEnvRegistryService } from '@ee/organization-env/registry/git-env';
+import { GitEnvRegistryService } from '@ee/organization-env/utils/git-env';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 

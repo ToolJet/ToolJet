@@ -14,7 +14,7 @@ export class OrganizationEnvModule extends SubModule {
 
     const { OrganizationEnvRegistryService, GitEnvRegistryService } = await this.getProviders(configs, 'organization-env', [
       'service',
-      'registry/git-env',
+      'utils/git-env',
     ]);
 
     this.cachedModule = {

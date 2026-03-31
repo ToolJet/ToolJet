@@ -46,3 +46,4 @@ ti-*
 .local/
 taskfile.*
 .serena/
+docs/superpowers/

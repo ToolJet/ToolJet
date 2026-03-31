@@ -2,7 +2,7 @@ jest.mock('@modules/organizations/repository', () => ({
   OrganizationRepository: jest.fn(),
 }));
 
-import { GitEnvRegistryService } from '@ee/organization-env/registry/git-env';
+import { GitEnvRegistryService } from '@ee/organization-env/utils/git-env';
 import { GIT_ENV_KEYS } from '@modules/organization-env/constants';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
 
