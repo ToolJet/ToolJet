@@ -30,7 +30,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.18.2
+      - name: Use Node.js 22.15.1
         uses: actions/setup-node@v3
         with:
           node-version: 22.15.1
@@ -124,7 +124,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.18.2
+      - name: Use Node.js 22.15.1
         uses: actions/setup-node@v3
         with:
           node-version: 22.15.1
@@ -185,7 +185,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.18.2
+      - name: Use Node.js 22.15.1
         uses: actions/setup-node@v3
         with:
           node-version: 22.15.1
@@ -245,7 +245,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.18.2
+      - name: Use Node.js 22.15.1
         uses: actions/setup-node@v3
         with:
           node-version: 22.15.1
