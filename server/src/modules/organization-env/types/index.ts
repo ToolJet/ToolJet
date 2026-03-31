@@ -25,4 +25,3 @@ export interface GitLabEnvConfig {
 }
 
 export type EnvProviderState = { isEnabled: boolean; isFinalized: boolean };
-export type ProviderSummary = { mapped: boolean; ready: boolean };

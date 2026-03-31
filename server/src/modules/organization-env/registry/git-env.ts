@@ -7,41 +7,17 @@ import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig, GitSshEnvConfig }
 export class GitEnvRegistryService implements IGitEnvRegistryService {
   async initialize(): Promise<void> {}
 
-  hasGitHttpsConfig(_workspaceId: string): boolean {
-    return false;
-  }
+  hasGitHttpsConfig(_workspaceId: string): boolean { return false; }
+  hasGitSshConfig(_workspaceId: string): boolean { return false; }
+  hasGitLabConfig(_workspaceId: string): boolean { return false; }
 
-  hasGitSshConfig(_workspaceId: string): boolean {
-    return false;
-  }
+  async getGitHttpsConfig(_workspaceId: string): Promise<GitHttpsEnvConfig | null> { return null; }
+  async getGitSshConfig(_workspaceId: string): Promise<GitSshEnvConfig | null> { return null; }
+  async getGitLabConfig(_workspaceId: string): Promise<GitLabEnvConfig | null> { return null; }
 
-  hasGitLabConfig(_workspaceId: string): boolean {
-    return false;
-  }
-
-  async getGitHttpsConfig(_workspaceId: string): Promise<GitHttpsEnvConfig | null> {
-    return null;
-  }
-
-  async getGitSshConfig(_workspaceId: string): Promise<GitSshEnvConfig | null> {
-    return null;
-  }
-
-  async getGitLabConfig(_workspaceId: string): Promise<GitLabEnvConfig | null> {
-    return null;
-  }
-
-  async getGitHttpsTemplateConfig(_workspaceId: string): Promise<Partial<GitHttpsEnvConfig> | null> {
-    return null;
-  }
-
-  async getGitSshTemplateConfig(_workspaceId: string): Promise<Partial<GitSshEnvConfig> | null> {
-    return null;
-  }
-
-  async getGitLabTemplateConfig(_workspaceId: string): Promise<Partial<GitLabEnvConfig> | null> {
-    return null;
-  }
+  async getGitHttpsTemplateConfig(_workspaceId: string): Promise<Partial<GitHttpsEnvConfig> | null> { return null; }
+  async getGitSshTemplateConfig(_workspaceId: string): Promise<Partial<GitSshEnvConfig> | null> { return null; }
+  async getGitLabTemplateConfig(_workspaceId: string): Promise<Partial<GitLabEnvConfig> | null> { return null; }
 
   setProviderState(_workspaceId: string, _provider: GITConnectionType, _state: EnvProviderState): void {}
 
@@ -52,4 +28,6 @@ export class GitEnvRegistryService implements IGitEnvRegistryService {
   getActiveProvider(_workspaceId: string): GITConnectionType {
     return GITConnectionType.DISABLED;
   }
+
+  async ensureResolved(_workspaceId: string): Promise<void> {}
 }

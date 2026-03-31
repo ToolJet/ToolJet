@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { IOrganizationEnvRegistryService, OrgEnvLoadedCallback } from '@modules/organization-env/interfaces/IService';
+import { IOrganizationEnvRegistryService } from '@modules/organization-env/interfaces/IService';
 
 @Injectable()
 export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryService {
   async initialize(): Promise<void> {}
-
-  async reload(_organizationId?: string): Promise<void> {}
 
   has(_organizationId: string, _key: string): boolean {
     return false;
@@ -19,5 +17,5 @@ export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryS
     return undefined;
   }
 
-  registerOrgEnvLoadedCallback(_cb: OrgEnvLoadedCallback): void {}
+  async ensureResolved(_organizationId: string): Promise<void> {}
 }

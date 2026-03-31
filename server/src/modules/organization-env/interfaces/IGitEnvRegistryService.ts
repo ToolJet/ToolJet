@@ -19,4 +19,6 @@ export interface IGitEnvRegistryService {
   setProviderState(workspaceId: string, provider: GITConnectionType, state: EnvProviderState): void;
   getProviderState(workspaceId: string, provider: GITConnectionType): EnvProviderState;
   getActiveProvider(workspaceId: string): GITConnectionType;
+
+  ensureResolved(workspaceId: string): Promise<void>;
 }
