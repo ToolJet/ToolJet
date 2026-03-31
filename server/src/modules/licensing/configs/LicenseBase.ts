@@ -506,7 +506,7 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.ai;
     }
-    return this._isAi;
+    return this._isAi || this._aiPlan === 'selfhostai' || this._aiPlan === 'byok';
   }
 
   public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
