@@ -141,6 +141,8 @@ function createQRProxy(realQR: QueryRunner): QueryRunner {
 
 /** Starts a test transaction on both DataSources. Call in beforeEach. */
 export async function beginTestTransaction() {
+  // Skip if DataSource isn't initialized yet (beforeAll hasn't run initTestApp)
+  if (!_defaultDataSource) return;
   const ds = getDefaultDataSource();
   _origCreateQR = ds.createQueryRunner.bind(ds);
   _testQR = _origCreateQR();
@@ -160,6 +162,7 @@ export async function beginTestTransaction() {
 
 /** Rolls back the test transaction on both DataSources. Call in afterEach. */
 export async function rollbackTestTransaction() {
+  if (!_testQR) return; // no transaction active (beforeAll hasn't run yet)
   const ds = getDefaultDataSource();
   if (_testQR) {
     await _testQR.rollbackTransaction();
