@@ -10,3 +10,31 @@
         --tblr-table-accent-bg: revert !important;
     }
 }
+
+.td-container:has(.table-expansion-toggle) {
+    height: auto !important;
+}
+
+.table-expansion-toggle {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0px;
+    border-radius: 4px;
+    color: var(--cc-default-icon);
+}
+
+.table-expanded-row-container {
+    .table-expanded-row-content {
+        position: sticky;
+        left: 0;
+        background-color: var(--cc-surface2-surface, #f6f8fa);
+        border-bottom: 1px solid var(--cc-weak-border);
+    }
+}

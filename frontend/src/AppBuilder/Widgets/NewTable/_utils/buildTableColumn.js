@@ -2,6 +2,7 @@ import React from 'react';
 import { generateActionColumns } from './generateActionColumns';
 import generateColumnsData from './generateColumnsData';
 import IndeterminateCheckbox from '../_components/IndeterminateCheckbox';
+import { ChevronUp } from 'lucide-react';
 
 export const buildTableColumn = (
   showBulkSelector,
@@ -17,9 +18,43 @@ export const buildTableColumn = (
   globalFilter,
   serverSideSearch,
   tableBodyRef,
-  t
+  t,
+  enableExpandableRows,
+  expandedRows,
+  toggleRowExpansion
 ) => {
+  const expansionColumn = enableExpandableRows
+    ? {
+        id: 'expansion',
+        enableSorting: false,
+        enableResizing: false,
+        meta: { columnType: 'expansion', skipExport: true, skipFilter: true, skipAddNewRow: true },
+        size: 40,
+        header: () => null,
+        cell: ({ row }) => {
+          const isExpanded = row.id in (expandedRows ?? {});
+          return (
+            <button
+              className="table-expansion-toggle"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRowExpansion?.(id, row.id, row.index);
+              }}
+              aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+              title={isExpanded ? 'Collapse row' : 'Expand row'}
+            >
+              <ChevronUp
+                width={18}
+                style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)' }}
+              />
+            </button>
+          );
+        },
+      }
+    : null;
+
   return [
+    expansionColumn,
     {
       id: 'selection',
       accessorKey: 'selection',
