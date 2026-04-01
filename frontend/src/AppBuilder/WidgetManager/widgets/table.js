@@ -289,6 +289,28 @@ export const tableConfig = {
       },
       section: 'additionalActions',
     },
+    enableExpandableRows: {
+      type: 'toggle',
+      displayName: 'Enable expandable rows',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    expansionHeight: {
+      type: 'number',
+      displayName: 'Expanded row height',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 250,
+      },
+      section: 'additionalActions',
+      conditionallyRender: {
+        key: 'enableExpandableRows',
+        value: true,
+      },
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -301,6 +323,7 @@ export const tableConfig = {
   events: {
     onRowHovered: { displayName: 'Row hovered' },
     onRowClicked: { displayName: 'Row clicked' },
+    onExpand: { displayName: 'Row expanded' },
     onBulkUpdate: { displayName: 'Save changes' },
     onPageChanged: { displayName: 'Page changed' },
     onSearch: { displayName: 'Search' },
@@ -479,6 +502,8 @@ export const tableConfig = {
     searchText: '',
     selectedRows: [],
     filters: [],
+    lastExpandedRow: null,
+    currentExpandedRows: [],
   },
   actions: [
     {
@@ -751,6 +776,8 @@ export const tableConfig = {
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: `{{false}}` },
       selectRowOnCellEdit: { value: '{{false}}' },
+      enableExpandableRows: { value: '{{false}}' },
+      expansionHeight: { value: '{{250}}' },
     },
     events: [],
     styles: {

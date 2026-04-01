@@ -419,6 +419,7 @@ export const Table = (props) => {
     [enablePagination, serverSidePagination]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
@@ -428,6 +429,8 @@ export const Table = (props) => {
     'visibility',
     'disabledState',
     'dynamicHeight',
+    'enableExpandableRows',
+    'expansionHeight',
   ];
 
   // Accordion items
