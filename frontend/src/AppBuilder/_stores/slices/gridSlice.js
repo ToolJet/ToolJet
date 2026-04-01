@@ -536,7 +536,6 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    console.log('oopp');
     const {
       clearSelectedComponents,
       isGroupResizing,
