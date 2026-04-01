@@ -13,6 +13,8 @@ import { MetaModule } from '@modules/meta/module';
 import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
+import { AppService } from './service';
+import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -188,6 +190,8 @@ export class AppModule implements OnModuleInit, NestModule {
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
         CustomDomainStatusScheduler,
+        AppService,
+        AppUtilService,
       ],
     };
   }
