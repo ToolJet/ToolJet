@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, ensureInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
@@ -13,23 +13,25 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-describe('oauth controller', () => {
+describe('OAuth Git instance-level SSO', () => {
   let app: INestApplication;
   let instanceSettingsRepository: Repository<InstanceSettings>;
+  let userRepository: Repository<User>;
+  let orgUserRepository: Repository<OrganizationUser>;
   let mockConfig;
 
-  beforeEach(async () => {
-    await resetDB();
-    await ensureInstanceSSOConfigs();
-    await instanceSettingsRepository.update(
-      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
-      { value: 'false' }
-    );
-  });
+  const token = 'some-Token';
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
+    userRepository = getEntityRepository(User);
+    orgUserRepository = getEntityRepository(OrganizationUser);
+  });
+
+  beforeEach(async () => {
+    await resetDB();
+    await ensureInstanceSSOConfigs();
   });
 
   afterEach(() => {
@@ -37,8 +39,19 @@ describe('oauth controller', () => {
     jest.clearAllMocks();
   });
 
-  describe('SSO Login', () => {
-    beforeEach(() => {
+  afterAll(async () => {
+    await closeTestApp(app);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Instance SSO — non-super-admin flows
+  // ---------------------------------------------------------------------------
+  describe('SSO Login (non-super-admin)', () => {
+    beforeEach(async () => {
+      await instanceSettingsRepository.update(
+        { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+        { value: 'false' }
+      );
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
@@ -52,9 +65,9 @@ describe('oauth controller', () => {
         }
       });
     });
+
     describe('Multi-Workspace instance level SSO', () => {
       describe('sign in via Git OAuth', () => {
-        const token = 'some-Token';
         it('Should not login if user workspace status is invited', async () => {
           await createUser(app, {
             firstName: 'SSO',
@@ -136,38 +149,13 @@ describe('oauth controller', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-});
+  // ---------------------------------------------------------------------------
+  // Instance SSO — super-admin flows
+  // ---------------------------------------------------------------------------
+  describe('SSO Login (super admin)', () => {
+    let current_organization: Organization;
+    let current_user: User;
 
-describe('OAuth git instance (super admin)', () => {
-  let app: INestApplication;
-  let userRepository: Repository<User>;
-  let orgUserRepository: Repository<OrganizationUser>;
-
-  let mockConfig;
-  const token = 'some-Token';
-  let current_organization: Organization;
-  let current_user: User;
-
-  beforeEach(async () => {
-    await resetDB();
-    await ensureInstanceSSOConfigs();
-  });
-
-  beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
-    userRepository = getEntityRepository(User);
-    orgUserRepository = getEntityRepository(OrganizationUser);
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
-
-  describe('SSO Login', () => {
     beforeEach(() => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
@@ -182,6 +170,7 @@ describe('OAuth git instance (super admin)', () => {
         }
       });
     });
+
     describe('Multi-Workspace instance level SSO: Setup first user', () => {
       it('First user should be super admin', async () => {
         const gitAuthResponse = jest.fn();
@@ -414,9 +403,5 @@ describe('OAuth git instance (super admin)', () => {
         });
       });
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });

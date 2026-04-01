@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { resetDB, createUser, initTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, closeTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -12,19 +12,17 @@ import { EmailService } from '@modules/email/service';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { v4 as uuidv4 } from 'uuid';
 
-describe('Authentication', () => {
+describe('app controller (EE)', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;
   let orgUserRepository: Repository<OrganizationUser>;
   let ssoConfigsRepository: Repository<SSOConfigs>;
+  let instanceSettingsRepository: Repository<InstanceSettings>;
   let mockConfig;
   let current_organization: Organization;
+  let current_organization_user: OrganizationUser;
   let current_user: User;
-
-  beforeEach(async () => {
-    await resetDB();
-  });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
@@ -32,11 +30,20 @@ describe('Authentication', () => {
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
+    instanceSettingsRepository = getEntityRepository(InstanceSettings);
+  });
+
+  beforeEach(async () => {
+    await resetDB();
   });
 
   afterEach(() => {
     jest.resetAllMocks();
     jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
   });
 
   describe('Multi organization', () => {
@@ -626,51 +633,26 @@ describe('Authentication', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-});
-
-describe('app controller (EE, personal workspace disabled)', () => {
-  let app: INestApplication;
-  let userRepository: Repository<User>;
-  let orgRepository: Repository<Organization>;
-  let ssoConfigsRepository: Repository<SSOConfigs>;
-  let instanceSettingsRepository: Repository<InstanceSettings>;
-  let mockConfig;
-  let current_organization: Organization;
-
-  beforeEach(async () => {
-    await resetDB();
-    await instanceSettingsRepository.update(
-      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
-      { value: 'false' }
-    );
-    // Ensure ConfigService mock falls through to process.env as baseline
-    // (jest.resetAllMocks in afterEach clears the createMock<ConfigService> auto-mock)
-    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-      return process.env[key];
-    });
-  });
-
-  beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
-    userRepository = getEntityRepository(User);
-    orgRepository = getEntityRepository(Organization);
-    ssoConfigsRepository = getEntityRepository(SSOConfigs);
-    instanceSettingsRepository = getEntityRepository(InstanceSettings);
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
+  // -------------------------------------------------------------------------
+  // Personal workspace disabled
+  // -------------------------------------------------------------------------
 
   // First user setup tests deleted — FirstUserSignupGuard uses LicenseCountsService.getUsersCount()
   // which caches user counts. Reliable first-user testing requires a fresh app instance.
   // Covered by onboarding/form-auth.e2e-spec.ts.
 
   describe('Multi organization with ALLOW_PERSONAL_WORKSPACE=false', () => {
+    beforeEach(async () => {
+      await instanceSettingsRepository.update(
+        { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+        { value: 'false' }
+      );
+      // Ensure ConfigService mock falls through to process.env as baseline
+      // (jest.resetAllMocks in afterEach clears the createMock<ConfigService> auto-mock)
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        return process.env[key];
+      });
+    });
     beforeEach(async () => {
       const { organization, user } = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -812,42 +794,9 @@ describe('app controller (EE, personal workspace disabled)', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-});
-
-describe('app controller (EE, super admin)', () => {
-  let app: INestApplication;
-  let userRepository: Repository<User>;
-  let orgRepository: Repository<Organization>;
-  let orgUserRepository: Repository<OrganizationUser>;
-  let ssoConfigsRepository: Repository<SSOConfigs>;
-  let mockConfig;
-  let current_organization: Organization;
-  let current_organization_user: OrganizationUser;
-  let current_user: User;
-
-  beforeEach(async () => {
-    await resetDB();
-    // Ensure ConfigService mock falls through to process.env as baseline
-    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-      return process.env[key];
-    });
-  });
-
-  beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
-    userRepository = getEntityRepository(User);
-    orgRepository = getEntityRepository(Organization);
-    orgUserRepository = getEntityRepository(OrganizationUser);
-    ssoConfigsRepository = getEntityRepository(SSOConfigs);
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
+  // -------------------------------------------------------------------------
+  // Super Admin authentication
+  // -------------------------------------------------------------------------
 
   // Super Admin onboarding tests deleted — the setup-super-admin endpoint
   // uses FirstUserSignupGuard (LicenseCountsService.getUsersCount) which caches
@@ -856,6 +805,10 @@ describe('app controller (EE, super admin)', () => {
 
   describe('Multi organization - Super Admin authentication', () => {
     beforeEach(async () => {
+      // Ensure ConfigService mock falls through to process.env as baseline
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        return process.env[key];
+      });
       const { organization, user, orgUser } = await createUser(app, {
         email: 'admin@tooljet.io',
         firstName: 'user',
@@ -1069,9 +1022,5 @@ describe('app controller (EE, super admin)', () => {
         .send({ email: 'admin@tooljet.io', password: 'password' });
       expect(response.statusCode).toBe(201);
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });
