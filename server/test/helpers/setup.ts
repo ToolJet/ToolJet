@@ -61,12 +61,21 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
   return _tooljetDbDataSource;
 }
 
+// ---------------------------------------------------------------------------
+// App context cache (Spring Boot-style — reuse app across files with same config)
+// ---------------------------------------------------------------------------
+
+let _cachedApp: INestApplication | undefined;
+let _cachedConfigKey: string | undefined;
+let _cachedMocks: { mockConfig?: DeepMocked<ConfigService>; licenseServiceMock?: DeepMocked<LicenseService> } = {};
+
 /**
  * Closes the NestJS test application and releases DataSource references.
- * Use this in afterAll instead of raw `app.close()` to prevent stale singletons.
+ * Cached apps (shared across files) are NOT closed — they live for the entire
+ * suite and are cleaned up by forceExit at process end.
  */
 export async function closeTestApp(app: INestApplication | undefined): Promise<void> {
-  if (!app) return;
+  if (!app || app === _cachedApp) return;
   await app.close();
   _defaultDataSource = undefined as any;
   _tooljetDbDataSource = undefined as any;
@@ -180,6 +189,31 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     extraImports = [],
   } = options ?? {};
 
+  // Cache key: JSON fingerprint of config that affects app creation.
+  // extraImports are not cacheable (dynamic modules are unique per call).
+  const configKey = extraImports.length > 0
+    ? undefined
+    : JSON.stringify({ edition, plan, mockConfig, mockLicenseService });
+
+  // Cache hit — reuse existing app (Spring Boot-style context caching)
+  if (configKey && _cachedApp && _cachedConfigKey === configKey) {
+    setDataSources(_cachedApp);
+    const result: InitTestAppResult = { app: _cachedApp };
+    if (_cachedMocks.mockConfig) result.mockConfig = _cachedMocks.mockConfig;
+    if (_cachedMocks.licenseServiceMock) result.licenseServiceMock = _cachedMocks.licenseServiceMock;
+    return result;
+  }
+
+  // Cache miss — close old cached app if config changed
+  if (_cachedApp) {
+    await _cachedApp.close();
+    _cachedApp = undefined;
+    _cachedConfigKey = undefined;
+    _cachedMocks = {};
+    _defaultDataSource = undefined as any;
+    _tooljetDbDataSource = undefined as any;
+  }
+
   // Set edition env var so AppModule and getImportPath() resolve correctly.
   process.env.TOOLJET_EDITION = edition;
 
@@ -242,6 +276,15 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 
   if (mockLicenseService) {
     result.licenseServiceMock = moduleRef.get(LicenseService);
+  }
+
+  // Cache the app for reuse by subsequent files with the same config
+  if (configKey) {
+    _cachedApp = app;
+    _cachedConfigKey = configKey;
+    _cachedMocks = {};
+    if (result.mockConfig) _cachedMocks.mockConfig = result.mockConfig;
+    if (result.licenseServiceMock) _cachedMocks.licenseServiceMock = result.licenseServiceMock;
   }
 
   return result;
