@@ -289,6 +289,9 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
     const finalOptions: SourceOptions = sourceOptions;
+    if (!finalOptions.auth_type) {
+      finalOptions.auth_type = 'sql';
+    }
    // SSL config 
     const shouldUseSSL = finalOptions.ssl_enabled === true;
     let sslObject: any = null;
