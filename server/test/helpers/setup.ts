@@ -165,6 +165,12 @@ export interface InitTestAppOptions {
    * in migration context (IS_GET_CONTEXT: true).
    */
   extraImports?: any[];
+  /**
+   * When true, bypasses the context cache and creates a fresh NestJS app.
+   * Use when tests need env vars set before app creation (e.g., ThrottlerModule config).
+   * The fresh app is NOT cached and will be properly closed by closeTestApp().
+   */
+  freshApp?: boolean;
 }
 
 /** Result of initTestApp containing the app and optional mocks. */
@@ -187,26 +193,39 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     mockConfig = false,
     mockLicenseService = false,
     extraImports = [],
+    freshApp = false,
   } = options ?? {};
 
   // Cache key: JSON fingerprint of config that affects app creation.
-  // extraImports are not cacheable (dynamic modules are unique per call).
-  const configKey = extraImports.length > 0
+  // extraImports and freshApp are not cacheable.
+  const configKey = (extraImports.length > 0 || freshApp)
     ? undefined
     : JSON.stringify({ edition, plan, mockConfig, mockLicenseService });
 
   // Cache hit — reuse existing app (Spring Boot-style context caching)
+  // Also verify the DataSource is still alive (a spec may have called app.close() directly).
   if (configKey && _cachedApp && _cachedConfigKey === configKey) {
-    setDataSources(_cachedApp);
-    const result: InitTestAppResult = { app: _cachedApp };
-    if (_cachedMocks.mockConfig) result.mockConfig = _cachedMocks.mockConfig;
-    if (_cachedMocks.licenseServiceMock) result.licenseServiceMock = _cachedMocks.licenseServiceMock;
-    return result;
+    try {
+      const ds = _cachedApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+      if (ds.isInitialized) {
+        setDataSources(_cachedApp);
+        const result: InitTestAppResult = { app: _cachedApp };
+        if (_cachedMocks.mockConfig) result.mockConfig = _cachedMocks.mockConfig;
+        if (_cachedMocks.licenseServiceMock) result.licenseServiceMock = _cachedMocks.licenseServiceMock;
+        return result;
+      }
+    } catch {
+      // DataSource retrieval failed — app was destroyed externally
+    }
+    // Cached app is dead — evict it
+    _cachedApp = undefined;
+    _cachedConfigKey = undefined;
+    _cachedMocks = {};
   }
 
   // Cache miss — close old cached app if config changed
   if (_cachedApp) {
-    await _cachedApp.close();
+    try { await _cachedApp.close(); } catch {}
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
     _cachedMocks = {};

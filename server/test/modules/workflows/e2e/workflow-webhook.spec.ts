@@ -433,8 +433,8 @@ describe('Workflow Webhooks - Rate Limiting (EE, enterprise)', () => {
   beforeAll(async () => {
     process.env.WEBHOOK_THROTTLE_LIMIT = String(RATE_LIMIT);
     process.env.WEBHOOK_THROTTLE_TTL = String(RATE_TTL);
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-  }, 90_000); // longer timeout — second app init in same file
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', freshApp: true }));
+  }, 90_000); // longer timeout — fresh app needed for throttle config
 
   beforeEach(async () => {
     await resetDB();
@@ -879,70 +879,3 @@ describe('Workflow and Webhooks - Rate Limit exceeding scenarios (DISABLED)', ()
   });
 });
 */
-
-describe('Workflow Webhooks - Rate Limiting (EE, enterprise)', () => {
-  jest.setTimeout(30000);
-  let app: INestApplication;
-
-  const RATE_LIMIT = 2;
-  const RATE_TTL = 60000;
-
-  beforeAll(async () => {
-    // Set low throttle limits via env vars BEFORE creating the app so
-    // ThrottlerModule.forRootAsync picks them up through ConfigService.
-    process.env.WEBHOOK_THROTTLE_LIMIT = String(RATE_LIMIT);
-    process.env.WEBHOOK_THROTTLE_TTL = String(RATE_TTL);
-
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-  });
-
-  beforeEach(async () => {
-    await resetDB();
-  });
-
-  afterAll(async () => {
-    delete process.env.WEBHOOK_THROTTLE_LIMIT;
-    delete process.env.WEBHOOK_THROTTLE_TTL;
-    await app.close();
-  });
-
-  it('should return 429 when webhook trigger rate limit is exceeded', async () => {
-    // Set up a workflow with webhook enabled
-    const userData = await createUser(app, { email: 'admin@tooljet.io' });
-    const { user } = userData;
-    const workflow = await createApplication(app, { name: 'rate-limit-test', user, type: 'workflow' });
-    const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
-    const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
-    await markVersionAsReleased(workflow.id, appVersion.id);
-
-    const loggedUser = await login(app);
-    userData['tokenCookie'] = loggedUser.tokenCookie;
-
-    const enableWorkflowStatusResponse = await enableWorkflowStatus(
-      app,
-      workflow?.id,
-      user.defaultOrganizationId,
-      userData['tokenCookie'],
-      true
-    );
-    expect(enableWorkflowStatusResponse.statusCode).toBe(200);
-
-    await enableWebhookForWorkflows(workflow.id);
-    const workflowWebhookApiToken = await getWorkflowWebhookApiToken(workflow?.id ?? '');
-
-    // Fire requests within the limit — should succeed
-    for (let i = 0; i < RATE_LIMIT; i++) {
-      const response = await triggerWorkflowViaWebhook(app, workflowWebhookApiToken, workflow?.id, 'development');
-      expect(response.statusCode).toBe(200);
-    }
-
-    // One more request past the limit — should be throttled
-    const throttledResponse = await triggerWorkflowViaWebhook(
-      app,
-      workflowWebhookApiToken,
-      workflow?.id,
-      'development'
-    );
-    expect(throttledResponse.statusCode).toBe(429);
-  });
-});
