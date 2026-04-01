@@ -122,14 +122,21 @@ PaginationItem.propTypes = {
 };
 
 // ── PaginationLink (page number) ───────────────────────────────────────────
-function PaginationLink({ className, isActive, size, ...props }) {
+function PaginationLink({ className, isActive, size, disabled, ...props }) {
   const context = useContext(PaginationContext);
   const resolvedSize = size || context.size;
 
   return (
     <ShadcnPaginationLink
       isActive={isActive}
-      className={cn(paginationLinkVariants({ size: resolvedSize }), isActive && activeClasses, className)}
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
+      className={cn(
+        paginationLinkVariants({ size: resolvedSize }),
+        isActive && activeClasses,
+        disabled && 'tw-pointer-events-none tw-opacity-50',
+        className,
+      )}
       {...props}
     />
   );
@@ -145,12 +152,21 @@ PaginationLink.propTypes = {
 };
 
 // ── PaginationPrevious ─────────────────────────────────────────────────────
-function PaginationPrevious({ className, size, ...props }) {
+function PaginationPrevious({ className, size, disabled, ...props }) {
   const context = useContext(PaginationContext);
   const resolvedSize = size || context.size;
 
   return (
-    <ShadcnPaginationPrevious className={cn(paginationNavVariants({ size: resolvedSize }), className)} {...props} />
+    <ShadcnPaginationPrevious
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
+      className={cn(
+        paginationNavVariants({ size: resolvedSize }),
+        disabled && 'tw-pointer-events-none tw-opacity-50',
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
@@ -163,11 +179,22 @@ PaginationPrevious.propTypes = {
 };
 
 // ── PaginationNext ─────────────────────────────────────────────────────────
-function PaginationNext({ className, size, ...props }) {
+function PaginationNext({ className, size, disabled, ...props }) {
   const context = useContext(PaginationContext);
   const resolvedSize = size || context.size;
 
-  return <ShadcnPaginationNext className={cn(paginationNavVariants({ size: resolvedSize }), className)} {...props} />;
+  return (
+    <ShadcnPaginationNext
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
+      className={cn(
+        paginationNavVariants({ size: resolvedSize }),
+        disabled && 'tw-pointer-events-none tw-opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 PaginationNext.displayName = 'PaginationNext';

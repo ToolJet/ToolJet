@@ -7,9 +7,9 @@ import { Switch as ShadcnSwitch } from '@/components/ui/Rocket/shadcn/switch';
 const switchClasses = [
   // Layout
   'tw-peer tw-inline-flex tw-shrink-0 tw-items-center',
-  'tw-shadow-elevation-000 tw-h-5 tw-w-9 tw-rounded-full',
+  'tw-shadow-elevation-none tw-h-5 tw-w-9 tw-rounded-full',
   'tw-border-2 tw-border-solid tw-border-transparent',
-  'tw-cursor-pointer tw-shadow-sm',
+  'tw-cursor-pointer',
   'tw-transition-[colors,transform]',
   // Active press
   'active:tw-scale-[0.97]',

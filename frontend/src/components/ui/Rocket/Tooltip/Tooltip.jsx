@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import {
   Tooltip as ShadcnTooltip,
   TooltipTrigger as ShadcnTooltipTrigger,
-  TooltipContent as ShadcnTooltipContent,
   TooltipProvider as ShadcnTooltipProvider,
 } from '@/components/ui/Rocket/shadcn/tooltip';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
@@ -41,9 +40,7 @@ const TooltipContent = forwardRef(function TooltipContent(
         {...props}
       >
         {children}
-        {showArrow && (
-          <TooltipArrow />
-        )}
+        {showArrow && <TooltipArrow />}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );
@@ -58,16 +55,9 @@ TooltipContent.propTypes = {
 };
 
 // ── TooltipArrow ─────────────────────────────────────────────────────────
-const TooltipArrow = forwardRef(function TooltipArrow(
-  { className, ...props },
-  ref
-) {
+const TooltipArrow = forwardRef(function TooltipArrow({ className, ...props }, ref) {
   return (
-    <TooltipPrimitive.Arrow
-      ref={ref}
-      className={cn('tw-fill-[var(--background-inverse)]', className)}
-      {...props}
-    />
+    <TooltipPrimitive.Arrow ref={ref} className={cn('tw-fill-[var(--background-inverse)]', className)} {...props} />
   );
 });
 TooltipArrow.displayName = 'TooltipArrow';
@@ -77,11 +67,4 @@ TooltipArrow.propTypes = {
 };
 
 // ── Exports ──────────────────────────────────────────────────────────────
-export {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipArrow,
-  tooltipContentClasses,
-};
+export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent, TooltipArrow, tooltipContentClasses };
