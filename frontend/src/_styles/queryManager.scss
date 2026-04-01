@@ -155,6 +155,17 @@ $border-radius: 4px;
     background: transparent;
   }
 
+  .query-folder-handler.ghost {
+    background-color: #eceef0;
+    border-radius: 4px;
+    position: relative;
+    width: 100%;
+    opacity: 0.8;
+    &.dark-theme {
+      background-color: var(--slate4);
+    }
+  }
+
   .query-row:hover .query-rename-delete-btn {
     display: flex !important;
   }

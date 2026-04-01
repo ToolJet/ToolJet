@@ -5,6 +5,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import Skeleton from 'react-loading-skeleton';
 import { QueryCard } from './QueryCard';
+import { QueryFolderTree as QueryFolderTreeBase } from './QueryFolderTree';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
@@ -21,6 +22,9 @@ import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsM
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
 import QueryCardMenu from './QueryCardMenu';
+import { withEditionSpecificComponent } from '@/modules/common/helpers';
+
+const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
@@ -131,7 +135,10 @@ export const QueryDataPane = ({ darkMode }) => {
               />
             </ToolTip>
           </div>
-          <AddDataSourceButton darkMode={darkMode} />
+          <div className="col-auto d-flex" style={{ gap: '2px' }}>
+            {licenseValid && <AddFolderButton darkMode={darkMode} />}
+            <AddDataSourceButton darkMode={darkMode} />
+          </div>
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
@@ -182,10 +189,12 @@ export const QueryDataPane = ({ darkMode }) => {
             }`}
           >
             <div>
-              {/* TODO: replace/add filter query logic here */}
-              {filteredQueries.map((query) => (
-                <QueryCard key={query.id} dataQuery={query} darkMode={darkMode} localDs={!!isDataSourceLocal(query)} />
-              ))}
+              <QueryFolderTree
+                filteredQueries={filteredQueries}
+                searchActive={!!searchTermForFilters}
+                darkMode={darkMode}
+                isDataSourceLocal={isDataSourceLocal}
+              />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
               {licenseValid && (
                 <AppPermissionsModal
@@ -240,6 +249,27 @@ const EmptyDataSource = () => (
     <span data-cy="label-no-queries">No queries have been added. </span>
   </div>
 );
+
+const AddFolderButton = ({ darkMode: _darkMode }) => {
+  const appVersionId = useStore((state) => state.currentVersionId);
+  const createFolder = useStore((state) => state.queryFolders.createFolder);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
+  return (
+    <ToolTip message="Add folder" placement="bottom">
+      <Button
+        isLucid
+        iconOnly
+        size="medium"
+        variant="ghost"
+        leadingIcon="folder"
+        disabled={shouldFreeze}
+        onClick={() => createFolder('New Folder', appVersionId)}
+        data-cy="add-folder-button"
+      />
+    </ToolTip>
+  );
+};
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');

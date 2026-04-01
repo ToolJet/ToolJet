@@ -15,7 +15,7 @@ function getAll(appVersionId) {
 }
 
 function create(name, appVersionId) {
-  const body = { name, app_version_id: appVersionId };
+  const body = { name, appVersionId };
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data-query-folders`, requestOptions).then(handleResponse);
 }
@@ -38,7 +38,7 @@ function del(id, mode) {
 }
 
 function reorder(childId, childType, newIndex, parentId) {
-  const body = { child_id: childId, child_type: childType, new_index: newIndex, parent_id: parentId };
+  const body = { childId, childType, newIndex, parentId };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data-query-folders/reorder`, requestOptions).then(handleResponse);
 }
