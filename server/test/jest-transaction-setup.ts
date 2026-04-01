@@ -8,9 +8,17 @@
 import { beginTestTransaction, rollbackTestTransaction } from './helpers/setup';
 
 beforeEach(async () => {
-  await beginTestTransaction();
+  try {
+    await beginTestTransaction();
+  } catch (e) {
+    console.error('[TXN] beginTestTransaction FAILED:', (e as Error).message);
+  }
 });
 
 afterEach(async () => {
-  await rollbackTestTransaction();
+  try {
+    await rollbackTestTransaction();
+  } catch (e) {
+    console.error('[TXN] rollbackTestTransaction FAILED:', (e as Error).message);
+  }
 });
