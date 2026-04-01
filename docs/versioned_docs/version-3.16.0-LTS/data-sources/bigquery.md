@@ -65,6 +65,7 @@ Query results can be transformed using transformations. Read our transformations
 - **[Query](#query)**
 - **[List Datasets](#list-datasets)**
 - **[List Tables](#list-tables)**
+- **[Get Dataset Info](#get-dataset-info)**
 - **[Insert Record ](#insert-record)**
 - **[Delete Record ](#delete-record)**
 - **[Update Record](#update-record)**
@@ -80,9 +81,9 @@ This operation returns the data based on the **Query**.
 
 #### Required Parameters
 
-- **Query**
-- **Query options**
-- **Query results options**
+- Query
+- Query options
+- Query results options
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-query-v3.png" alt="BQ query"/>
 
@@ -98,9 +99,19 @@ This operation returns the list of tables within a dataset.
 
 #### Required Parameter
 
-- **Dataset ID**
+- Dataset Id
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-tables.png" alt="BQ list tables"/>
+
+### Get Dataset Info
+
+This operation allows the users to retrieve the metadata for a specific dataset.
+
+#### Required Parameters
+
+- Dataset Id
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-get-dataset-info.png" alt="BQ get dataset info"/>
 
 ### Create Table
 
@@ -108,9 +119,9 @@ This operation is used to create a table.
 
 #### Required Parameters
 
-- **Table ID**
-- **Dataset ID**
-- **Options**
+- Table Id
+- Dataset Id
+- Options
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-table-v4.png"  alt="BQ create tables"/>
 
@@ -122,8 +133,8 @@ This operation is used to delete a table.
 
 #### Required Parameters
 
-- **Table ID**
-- **Dataset ID**
+- Table Id
+- Dataset Id
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-table-v3.png" alt="BQ delete tables"/>
 
@@ -133,13 +144,13 @@ This operation is used to create a view.
 
 #### Required Parameters
 
-- **Table ID**
-- **Dataset ID**
-- **View name**
-- **View columns**
-- **Condition**
-- **Query options**
-- **Query results options**
+- Table Id
+- Dataset Id
+- View name
+- View columns
+- Condition
+- Query options
+- Query results options
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-create-view.png" alt="BQ create view"/>
 
@@ -149,9 +160,9 @@ This operation is used to insert a record.
 
 #### Required parameters:
 
-- **Table ID**
-- **Dataset ID**
-- **Rows**
+- Table Id
+- Dataset Id
+- Rows
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v3.png" alt="BQ insert"/>
 
@@ -161,11 +172,11 @@ Use this operation to delete a record.
 
 #### Required parameters:
 
-- **Table ID**
-- **Dataset ID**
-- **Condition**
-- **Query options**
-- **Query results options**
+- Table Id
+- Dataset Id
+- Condition
+- Query options
+- Query results options
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-delete-rec.png"  alt="BQ delete" />
 
@@ -179,10 +190,10 @@ Use this operation to update a record.
 
 #### Required parameters:
 
-- **Table ID**
-- **Dataset ID**
-- **Columns**
-- **Condition**
-- **Query results options**
+- Table Id
+- Dataset Id
+- Columns
+- Condition
+- Query results options
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-update-rec.png" alt="BQ update" />
