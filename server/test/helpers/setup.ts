@@ -1,9 +1,4 @@
-/**
- * Test environment setup — app factory, plan-aware mocking, and database lifecycle.
- *
- * Deep module design: callers declare WHAT they need (edition, plan), the
- * infrastructure handles HOW (caching, mocking, module registration).
- */
+/** App factory with caching, license mocking, and DB lifecycle for tests. */
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
@@ -63,10 +58,8 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// App context cache (Spring Boot-style — reuse app across files with same config)
-// Multi-slot cache keyed by edition: EE, CE, and Cloud each get their own slot.
-// No eviction — each edition's app lives independently for the entire suite.
-// `plan` does NOT affect the cache key — it reconfigures the mock instead.
+// App context cache — one slot per edition, no eviction.
+// `plan` reconfigures the mock, not the app.
 // ---------------------------------------------------------------------------
 
 interface CachedAppSlot {
@@ -99,11 +92,11 @@ export async function closeTestApp(app: INestApplication | undefined): Promise<v
 }
 
 // ---------------------------------------------------------------------------
-// Transaction-per-test rollback (Rails-style)
+// Transaction-per-test rollback
 //
-// Wraps each test in a DB transaction. ROLLBACK at the end undoes all changes
-// instantly (~1ms) instead of TRUNCATE (~200ms). PostgreSQL's transactional DDL
-// means CREATE/DROP TABLE are also rolled back.
+// Wraps each test in a DB transaction. ROLLBACK undoes all changes instead of
+// TRUNCATE — significantly faster. PostgreSQL transactional DDL means
+// CREATE/DROP TABLE are also rolled back.
 // ---------------------------------------------------------------------------
 
 let _testQR: QueryRunner | undefined;
@@ -268,7 +261,6 @@ function configurePlanMock(app: INestApplication, plan: string) {
   lts._fieldValues = { ...LICENSE_FIELD_DEFAULTS, ...(PLAN_TERMS[plan] ?? {}) };
 }
 
-/** Applies standard NestJS app configuration (prefix, pipes, filters, versioning). */
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
@@ -281,7 +273,6 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
   });
 }
 
-/** Options for initializing the NestJS test application. */
 export interface InitTestAppOptions {
   /** Edition to simulate. Default: 'ee'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
@@ -299,18 +290,11 @@ export interface InitTestAppOptions {
   freshApp?: boolean;
 }
 
-/** Result of initTestApp. */
 export interface InitTestAppResult {
   app: INestApplication;
 }
 
-/**
- * Initializes a NestJS test application with edition and plan context.
- *
- * Deep module: callers declare edition/plan, the infrastructure handles
- * caching (multi-slot by edition), mock configuration (plan-aware
- * LicenseTermsService), and module registration (AuditLogsModule included).
- */
+/** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
   const {
     edition = 'ee',
@@ -322,7 +306,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   const isCacheable = !freshApp;
   const cacheKey = isCacheable ? edition : undefined;
 
-  // Cache hit — reuse existing app for this edition
   if (cacheKey && _cache[cacheKey]) {
     const slot = _cache[cacheKey];
     try {
@@ -401,7 +384,7 @@ export async function resetDB() {
   const ds = getDefaultDataSource();
   if (!ds.isInitialized) await ds.initialize();
 
-  // Legacy tables removed from DB but still have entity metadata registered
+  // Tables with entity metadata registered but no longer in the schema
   const skippedTables = [
     'app_group_permissions',
     'data_source_group_permissions',
@@ -445,8 +428,8 @@ export async function resetDB() {
     }
   }
 
-  if (existingSet.has('instance_settings')) {
+  if (existingSet.has('instance_settings'))
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
-  }
+
 }
 

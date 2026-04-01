@@ -12,7 +12,6 @@
   "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",
   "testTimeout": 60000,
-  "detectOpenHandles": true,
   "forceExit": true,
   "slowTestThreshold": 60,
   "transformIgnorePatterns": [
@@ -23,7 +22,7 @@
       "ts-jest",
       {
         "tsconfig": "<rootDir>/../tsconfig.json",
-      "diagnostics": false
+        "diagnostics": false
       }
     ]
   },

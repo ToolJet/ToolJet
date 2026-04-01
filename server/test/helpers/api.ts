@@ -1,31 +1,10 @@
-/**
- * HTTP and authentication helpers -- login, logout, session management, and onboarding API calls.
- */
+/** HTTP and authentication helpers -- login, logout, session management. */
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
-import { OrganizationUser } from '@entities/organization_user.entity';
-import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import * as request from 'supertest';
 import { getDefaultDataSource } from './setup';
-
-/** Generates a JWT Bearer token string for the given user without any HTTP call. */
-export function buildAuthHeader(user: User, organizationId?: string, isPasswordLogin = true): string {
-  const configService = new ConfigService();
-  const jwtService = new JwtService({
-    secret: configService.get<string>('SECRET_KEY_BASE'),
-  });
-  const authPayload = {
-    username: user.id,
-    sub: user.email,
-    organizationId: organizationId || user.defaultOrganizationId,
-    isPasswordLogin,
-  };
-  const authToken = jwtService.sign(authPayload);
-  return `Bearer ${authToken}`;
-}
 
 /** Authenticates a user via POST /api/authenticate and returns the user body and session cookie. */
 export const login = async (
@@ -98,43 +77,3 @@ export const buildTestSession = async (
   return { tokenCookie: cookie };
 };
 
-/** Verifies an invitation token via the onboarding endpoint and asserts the user becomes 'verified'. */
-export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
-  const organizationUsersRepository: Repository<OrganizationUser> = getDefaultDataSource().getRepository(OrganizationUser);
-
-  const { invitationToken } = user;
-  const { invitationToken: orgInviteToken } = await organizationUsersRepository.findOneOrFail({
-    where: { userId: user.id },
-  });
-  const response = await request(app.getHttpServer()).get(
-    `/api/onboarding/verify-invite-token?token=${invitationToken}${!verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
-    }`
-  );
-  const {
-    body: { onboarding_details },
-    status,
-  } = response;
-
-  expect(status).toBe(200);
-  expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
-  await user.reload();
-  expect(user.status).toBe('verified');
-  return response;
-};
-
-/** Sets up an account from an invitation token and asserts the user becomes 'active' in the workspace. */
-export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload: Record<string, unknown>) => {
-  const response = await request(app.getHttpServer()).post('/api/onboarding/setup-account-from-token').send(payload);
-  const { status } = response;
-  expect(status).toBe(201);
-
-  const { email, first_name, last_name, current_organization_id } = response.body;
-
-  expect(email).toEqual(user.email);
-  expect(first_name).toEqual(user.firstName);
-  expect(last_name).toEqual(user.lastName);
-  expect(current_organization_id).toBe(org.id);
-  await user.reload();
-  expect(user.status).toBe('active');
-  expect(user.defaultOrganizationId).toBe(org.id);
-};

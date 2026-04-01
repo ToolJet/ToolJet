@@ -10,7 +10,6 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
-import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -40,7 +39,6 @@ interface TestWorkflowNodeData extends Partial<Omit<WorkflowNodeData, 'nodeType'
   nodeName?: string;
 }
 
-/** Node type with additional properties needed for testing. */
 export interface WorkflowNode extends Omit<WorkflowDefinitionNode, 'data'> {
   data: TestWorkflowNodeData;
   position: { x: number; y: number };
@@ -48,10 +46,8 @@ export interface WorkflowNode extends Omit<WorkflowDefinitionNode, 'data'> {
   targetPosition?: string;
 }
 
-/** Edge type alias. */
 export type WorkflowEdge = WorkflowDefinitionEdge;
 
-/** Query type with additional properties needed for testing. */
 export interface WorkflowQuery extends Partial<WorkflowDefinitionQuery> {
   idOnDefinition: string;
   dataSourceKind: 'runjs' | 'restapi' | 'runpy' | 'grpcv2';
@@ -73,12 +69,7 @@ async function updateInstanceSetting(key: string, value: string): Promise<void> 
 // Organization & user setup
 // ---------------------------------------------------------------------------
 
-/**
- * Creates a user with an organization, default app environments, and optional workflow permissions.
- *
- * Uses the standard `createUser` from seed.ts which sets up group permissions and SSO configs,
- * allowing HTTP login (POST /api/authenticate) to work correctly.
- */
+/** Creates a user with organization, environments, and optional workflow permissions. */
 export const setupOrganizationAndUser = async (
   nestApp: INestApplication,
   userParams: { email: string; password: string; firstName: string; lastName: string },
@@ -302,54 +293,8 @@ export const createWorkflowDataQuery = async (
 };
 
 // ---------------------------------------------------------------------------
-// Workflow execution factory
-// ---------------------------------------------------------------------------
-
-/** Creates a WorkflowExecution record in the database. */
-export const createWorkflowExecution = async (
-  nestApp: INestApplication,
-  appVersion: AppVersion,
-  user: User
-): Promise<WorkflowExecution> => {
-  const ds = getDefaultDataSource();
-  const workflowExecutionRepository = ds.getRepository(WorkflowExecution);
-
-  const workflowExecution = workflowExecutionRepository.create({
-    appVersionId: appVersion.id,
-    executingUserId: user.id,
-    executed: true,
-    status: 'success',
-    logs: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  return await workflowExecutionRepository.save(workflowExecution);
-};
-
-// ---------------------------------------------------------------------------
 // Workflow definition builders
 // ---------------------------------------------------------------------------
-
-/** Builds query options for a gRPC data source. */
-export const buildGrpcOptions = (config: {
-  proto?: string;
-  service?: string;
-  rpc?: string;
-  metadata?: Record<string, string>;
-  message?: string;
-}) => ({
-  proto: config.proto || '',
-  service: config.service || '',
-  rpc: config.rpc || '',
-  metadata: config.metadata || {},
-  message: config.message || '{}',
-});
-
-/** Builds query options for a Python runner data source. */
-export const buildRunPyOptions = (code: string) => ({
-  code,
-});
 
 /** Builds a complete workflow definition object from nodes, edges, queries, and optional config. */
 export const buildWorkflowDefinition = (config: {
@@ -420,7 +365,6 @@ export const createCompleteWorkflow = async (
   const dataSources: DataSource[] = [];
   const dataQueries: DataQuery[] = [];
 
-  // Group queries by data source kind
   const queryGroups = new Map<string, WorkflowQuery[]>();
   for (const query of workflowConfig.queries) {
     const existing = queryGroups.get(query.dataSourceKind) || [];
@@ -428,7 +372,6 @@ export const createCompleteWorkflow = async (
     queryGroups.set(query.dataSourceKind, existing);
   }
 
-  // Create data sources for each kind
   const dataSourceMap = new Map<string, DataSource>();
   for (const [kind] of queryGroups) {
     const dataSource = await createWorkflowDataSource(
@@ -443,7 +386,6 @@ export const createCompleteWorkflow = async (
     dataSourceMap.set(kind, dataSource);
   }
 
-  // Create data queries and update definition
   for (let i = 0; i < workflowConfig.queries.length; i++) {
     const queryConfig = workflowConfig.queries[i];
     const dataSource = dataSourceMap.get(queryConfig.dataSourceKind)!;
@@ -461,7 +403,6 @@ export const createCompleteWorkflow = async (
     }
   }
 
-  // Update app version with the linked query IDs
   appVersion.definition.queries = queriesDefinition;
   await ds.getRepository(AppVersion).save(appVersion);
 
@@ -472,10 +413,7 @@ export const createCompleteWorkflow = async (
 // Bundle factory
 // ---------------------------------------------------------------------------
 
-/**
- * Creates a bundle for workflow execution.
- * @param language - 'javascript' or 'python'
- */
+/** Creates a bundle for workflow execution. */
 export const createBundle = async (
   nestApp: INestApplication,
   appVersionId: string,

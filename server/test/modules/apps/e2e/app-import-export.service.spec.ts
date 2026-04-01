@@ -16,6 +16,9 @@ import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
 
+// initTestApp() can exceed 60s when Jest restarts the worker to free memory
+jest.setTimeout(120_000);
+
 describe('AppImportExportService', () => {
   let nestApp: INestApplication;
   let service: AppImportExportService;

@@ -32,8 +32,8 @@ import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { getDefaultDataSource } from './setup';
+import { login } from './api';
 
-/** Options for creating a user with workspace and group memberships. */
 export interface CreateUserOptions {
   firstName?: string;
   lastName?: string;
@@ -50,7 +50,6 @@ export interface CreateUserOptions {
   userStatus?: string;
 }
 
-/** SSO configuration entry for workspace creation. */
 export interface SSOConfigInput {
   sso: string;
   enabled: boolean;
@@ -58,7 +57,6 @@ export interface SSOConfigInput {
   configs?: Record<string, string>;
 }
 
-/** Options for creating an application. */
 export interface CreateAppOptions {
   name: string;
   user?: User & { organizationId: string };
@@ -67,14 +65,12 @@ export interface CreateAppOptions {
   type?: string;
 }
 
-/** Options for creating an application version. */
 export interface CreateAppVersionOptions {
   name?: string;
   definition?: Record<string, unknown> | null;
   currentEnvironmentId?: string | null;
 }
 
-/** Options for creating a data source attached to an app version. */
 export interface CreateDataSourceOptions {
   appVersion: AppVersion;
   name: string;
@@ -91,7 +87,6 @@ export interface DataSourceOptionInput {
   encrypted?: boolean | string;
 }
 
-/** Options for creating a data query attached to a data source and app version. */
 export interface CreateDataQueryOptions {
   name?: string;
   dataSource: DataSource;
@@ -99,7 +94,6 @@ export interface CreateDataQueryOptions {
   options?: Record<string, unknown>;
 }
 
-/** Parameters for creating data source options in a specific environment. */
 export interface CreateDataSourceOptionParams {
   dataSource: DataSource;
   environmentId: string;
@@ -116,7 +110,6 @@ export interface CreateAppWithDependenciesOptions {
   name?: string;
 }
 
-/** Options for creating a custom group permission. */
 export interface CreateGroupPermissionParams {
   name?: string;
   group?: string;
@@ -133,14 +126,12 @@ export interface CreateGroupPermissionParams {
   workflowDelete?: boolean;
 }
 
-/** Boolean flags for read/update/delete permissions. */
 export interface PermissionFlags {
   read?: boolean;
   update?: boolean;
   delete?: boolean;
 }
 
-/** Options for seeding instance-level SSO configurations. */
 export interface EnsureInstanceSSOConfigsOptions {
   enabled?: boolean;
   gitConfigs?: Record<string, string>;
@@ -169,7 +160,7 @@ export async function getAllEnvironments(_nestApp: INestApplication, organizatio
   });
 }
 
-/** Creates the default app environments (development, staging, production) for a workspace. */
+/** Creates the default app environments for a workspace. */
 export async function ensureAppEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
   const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
@@ -751,7 +742,6 @@ export async function createFile(_nestApp: INestApplication): Promise<File> {
   return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
-/** Options for creating a folder. */
 export interface CreateFolderOptions {
   name: string;
   type?: string;
@@ -944,7 +934,6 @@ export async function createAdmin(
     organization: opts?.workspace,
   });
 
-  const { login } = await import('./api');
   const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
@@ -962,7 +951,6 @@ export async function createBuilder(
     organization: opts?.workspace,
   });
 
-  const { login } = await import('./api');
   const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
@@ -980,7 +968,6 @@ export async function createEndUser(
     organization: opts?.workspace,
   });
 
-  const { login } = await import('./api');
   const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };
@@ -997,7 +984,6 @@ export async function createSuperAdmin(
     userType: 'instance',
   });
 
-  const { login } = await import('./api');
   const { tokenCookie } = await login(nestApp, email, 'password');
 
   return { user, workspace: organization, orgUser, cookie: tokenCookie };

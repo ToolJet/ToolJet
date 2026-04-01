@@ -1,6 +1,4 @@
-/**
- * Generic entity helpers — typed wrappers around TypeORM operations so test files never import from 'typeorm' directly.
- */
+/** Typed wrappers around TypeORM operations for test convenience. */
 import { ObjectLiteral, FindOptionsWhere, EntityTarget, DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { getDefaultDataSource } from './setup';
 
@@ -22,7 +20,6 @@ export async function findEntityOrFail<T extends ObjectLiteral>(
   return await ds.manager.findOneOrFail(EntityClass, { where });
 }
 
-/** Updates an entity by id with the given partial fields. */
 export async function updateEntity<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   id: string,
@@ -41,7 +38,6 @@ export async function saveEntity<T extends ObjectLiteral>(
   return await ds.manager.save(EntityClass, data);
 }
 
-/** Finds multiple entities matching criteria. */
 export async function findEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   options?: FindManyOptions<T>
@@ -59,7 +55,6 @@ export async function countEntities<T extends ObjectLiteral>(
   return await ds.manager.count(EntityClass, where ? { where } : undefined);
 }
 
-/** Deletes entities matching criteria. */
 export async function deleteEntities<T extends ObjectLiteral>(
   EntityClass: EntityTarget<T>,
   where: FindOptionsWhere<T>
