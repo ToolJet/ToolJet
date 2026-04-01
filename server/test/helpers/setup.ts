@@ -4,7 +4,7 @@
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
@@ -85,6 +85,101 @@ export async function closeTestApp(app: INestApplication | undefined): Promise<v
   } else {
     _defaultDataSource = undefined as any;
     _tooljetDbDataSource = undefined as any;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Transaction-per-test rollback (Rails-style)
+//
+// Wraps each test in a DB transaction. ROLLBACK at the end undoes all changes
+// instantly (~1ms) instead of TRUNCATE (~200ms). PostgreSQL's transactional DDL
+// means CREATE/DROP TABLE are also rolled back.
+// ---------------------------------------------------------------------------
+
+let _testQR: QueryRunner | undefined;
+let _testQR_tj: QueryRunner | undefined;
+let _origCreateQR: ((...args: any[]) => QueryRunner) | undefined;
+let _origCreateQR_tj: ((...args: any[]) => QueryRunner) | undefined;
+
+/** Creates a proxy around the test's QueryRunner that prevents release() and maps nested transactions to SAVEPOINTs. */
+function createQRProxy(realQR: QueryRunner): QueryRunner {
+  let savepointId = 0;
+  const savepointStack: string[] = [];
+
+  return new Proxy(realQR, {
+    get(target, prop, receiver) {
+      if (prop === 'release') return async () => {};
+
+      if (prop === 'startTransaction') {
+        return async () => {
+          const sp = `sp_${++savepointId}`;
+          savepointStack.push(sp);
+          await realQR.query(`SAVEPOINT ${sp}`);
+        };
+      }
+
+      if (prop === 'commitTransaction') {
+        return async () => {
+          const sp = savepointStack.pop();
+          if (sp) await realQR.query(`RELEASE SAVEPOINT ${sp}`);
+        };
+      }
+
+      if (prop === 'rollbackTransaction') {
+        return async () => {
+          const sp = savepointStack.pop();
+          if (sp) await realQR.query(`ROLLBACK TO SAVEPOINT ${sp}`);
+        };
+      }
+
+      if (prop === 'isTransactionActive') return true;
+
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+}
+
+/** Starts a test transaction on both DataSources. Call in beforeEach. */
+export async function beginTestTransaction() {
+  const ds = getDefaultDataSource();
+  _origCreateQR = ds.createQueryRunner.bind(ds);
+  _testQR = _origCreateQR();
+  await _testQR.connect();
+  await _testQR.startTransaction();
+  ds.createQueryRunner = () => createQRProxy(_testQR!);
+
+  const tjDs = getTooljetDbDataSource();
+  if (tjDs) {
+    _origCreateQR_tj = tjDs.createQueryRunner.bind(tjDs);
+    _testQR_tj = _origCreateQR_tj();
+    await _testQR_tj.connect();
+    await _testQR_tj.startTransaction();
+    tjDs.createQueryRunner = () => createQRProxy(_testQR_tj!);
+  }
+}
+
+/** Rolls back the test transaction on both DataSources. Call in afterEach. */
+export async function rollbackTestTransaction() {
+  const ds = getDefaultDataSource();
+  if (_testQR) {
+    await _testQR.rollbackTransaction();
+    await _testQR.release();
+    _testQR = undefined;
+  }
+  if (_origCreateQR) {
+    ds.createQueryRunner = _origCreateQR as any;
+    _origCreateQR = undefined;
+  }
+
+  const tjDs = getTooljetDbDataSource();
+  if (tjDs && _testQR_tj) {
+    await _testQR_tj.rollbackTransaction();
+    await _testQR_tj.release();
+    _testQR_tj = undefined;
+  }
+  if (tjDs && _origCreateQR_tj) {
+    tjDs.createQueryRunner = _origCreateQR_tj as any;
+    _origCreateQR_tj = undefined;
   }
 }
 
@@ -322,9 +417,11 @@ async function dropTooljetDbTables() {
   }
 }
 
-/** Resets the test database -- truncates all tables, terminates stale connections, resets instance settings. */
+/** Resets the test database. No-op when transaction rollback is active. */
 export async function resetDB() {
   if (process.env.NODE_ENV !== 'test') return;
+  // Transaction rollback handles cleanup — previous test's changes were rolled back.
+  if (_testQR) return;
   await dropTooljetDbTables();
 
   const ds = getDefaultDataSource();
