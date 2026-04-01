@@ -9,21 +9,32 @@ ToolJet can establish connections with GraphQL endpoints, enabling the execution
 
 To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/graphql/connection-v3.png" alt="Data source GraphQL"/>
+ToolJet requires the following to connect to a GraphQL datasource.
 
-ToolJet requires the following to connect to a GraphQL datasource:
+### Credentials
 
-- **URL**: URL of the GraphQL endpoint.
-- **Headers**: Any headers the GraphQL source requires.
-- **URL parameters**: Additional query string parameters.
-- **Authentication Type**: The method of authentication to use with GraphQL requests.
+- **Base URL**: The URL of the GraphQL API endpoint where requests are sent.
+- **Headers**: Key-value pairs sent with the request to provide metadata such as authentication tokens or content type.
+- **URL parameters**: Additional key-value pairs appended to the request URL as query string parameters.
+- **Body**: The request payload containing the GraphQL query, variables, or mutation data.
+- **Cookies**: Cookie values included with the request for session management or authentication.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/graphql/connection-v4.png" alt="Data source GraphQL"/>
+
+### Authentication Types
+
+The method of authentication to use with GraphQL requests.
+
   - **None**: No credentials or tokens are required.
+
   - **Basic**: Requires Username and Password.
-    <img className="screenshot-full img-full" src= "/img/datasource-reference/graphql/basic-conenction.png" alt="basic GraphQL Connection" style={{marginTop:'15px'}} />
+  <img className="screenshot-full img-full" src= "/img/datasource-reference/graphql/basic-conenction.png" alt="basic GraphQL Connection" style={{marginBottom:'15px'}} />
+
   - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access.
-    <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/bearer-connection.png" alt="bearer-GraphQL-Connection" style={{marginTop:'15px'}}/>
+  <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/bearer-connection.png" alt="bearer-GraphQL-Connection" style={{marginBottom:'15px'}}/>
+
   - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, client authentication, access tokens, authorization URL, custom authentication parameters, and custom query parameters.
-    <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection" style={{marginTop:'15px'}}/>
+  <img className="screenshot-full img-l" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection"/>
 
 ## Querying GraphQL
 
@@ -32,16 +43,16 @@ ToolJet requires the following to connect to a GraphQL datasource:
 3. Add the Query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
-### Required Parameters:
-
+**Required Parameters**
 - Query
 
-### Optional Parameters
-
-- Variable
+**Optional Parameters**
+- Variables
 - Headers
+- Params
+- Cookies
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/graphql/query-v3.png" alt="GraphQl querying" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/graphql/query-v4.png" alt="GraphQl querying" style={{marginBottom:'15px'}}/>
 
 #### Example
 
