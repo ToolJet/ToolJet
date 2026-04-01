@@ -367,43 +367,22 @@ export async function resetDB() {
   }
 
   if (tables.length > 0) {
-    // Terminate lingering backends that may hold locks from previous test files'
-    // async operations (e.g., workflow executions completing after app.close()).
-    try {
-      await ds.query(`
-        SELECT pg_terminate_backend(pid)
-        FROM pg_stat_activity
-        WHERE datname = current_database()
-          AND pid <> pg_backend_pid()
-          AND state = 'idle in transaction'
-      `);
-    } catch {}
-
-    for (let attempt = 0; attempt < 5; attempt++) {
+    // With context caching, the pg-pool is shared across files.
+    // Do NOT call pg_terminate_backend — it kills connections from our own pool,
+    // corrupting the shared pool and causing "Connection terminated" errors.
+    // The zombie fixes (no ScheduleModule, no ioredis reconnection) eliminate
+    // the lingering backends that pg_terminate_backend was trying to clean up.
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await ds.query(`SET lock_timeout = '3s'`);
         await ds.query(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`);
-        await ds.query(`SET lock_timeout = 0`);
         break;
       } catch (err: unknown) {
-        try { await ds.query(`SET lock_timeout = 0`); } catch {}
-        if (attempt < 4) {
-          // On first retry, kill ALL other connections (not just idle-in-transaction)
-          if (attempt === 1) {
-            try {
-              await ds.query(`
-                SELECT pg_terminate_backend(pid)
-                FROM pg_stat_activity
-                WHERE datname = current_database()
-                  AND pid <> pg_backend_pid()
-              `);
-            } catch {}
-          }
-          await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
           continue;
         }
         const message = err instanceof Error ? err.message.substring(0, 120) : String(err);
-        console.error('resetDB: TRUNCATE failed after 5 attempts:', message);
+        console.error('resetDB: TRUNCATE failed after 3 attempts:', message);
       }
     }
   }
