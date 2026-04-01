@@ -1,8 +1,8 @@
 export interface HealthResponse {
   works: string;
   license: {
-    isLicenseValid: boolean;
-    isExpired: boolean;
+    valid: boolean;
+    expired: boolean;
   };
 }
 

@@ -13,8 +13,8 @@ export class AppService implements IAppService {
     return {
       works: 'yeah',
       license: {
-        isLicenseValid: licenseStatus?.isLicenseValid ?? false,
-        isExpired: licenseStatus?.isExpired ?? true,
+        valid: licenseStatus?.isLicenseValid ?? false,
+        expired: licenseStatus?.isExpired ?? true,
       },
     };
   }
