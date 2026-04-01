@@ -425,6 +425,19 @@ export const createCodeHinterSlice = (set, get) => ({
             }))
           );
         }
+      } else if (parentType === 'Table') {
+        nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
+        const resolvables = customResolvables[baseParentId];
+        if (resolvables && resolvables[0]?.rowData !== undefined) {
+          const rowDataObj = resolvables[0].rowData;
+          hints.push({ hint: 'rowData', type: 'Object', isContext: true });
+          hints.push(
+            ...traverseObjectToHints(rowDataObj, 'rowData', 3).map((h) => ({
+              ...h,
+              isContext: true,
+            }))
+          );
+        }
       }
 
       // Move up the chain

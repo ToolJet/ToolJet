@@ -78,7 +78,10 @@ const Container = React.memo(
     }, [id, isDragging, deactivateMoveableGhost]);
 
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
+      return (
+        (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban' || componentType === 'Table')) ||
+        currentMode === 'view'
+      );
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);

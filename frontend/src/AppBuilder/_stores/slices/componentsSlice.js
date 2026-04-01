@@ -573,7 +573,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (parentType === 'Listview' || parentType === 'Kanban') {
+      if (parentType === 'Listview' || parentType === 'Kanban' || parentType === 'Table') {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -598,12 +598,11 @@ export const createComponentsSlice = (set, get) => ({
 
       // Check if this is the leaf level (array of listItem objects)
       const isLeafLevel =
-        (Array.isArray(resolvables) &&
-          resolvables.length > 0 &&
-          resolvables[0] &&
-          typeof resolvables[0] === 'object' &&
-          'listItem' in resolvables[0]) ||
-        'cardData' in resolvables[0];
+        Array.isArray(resolvables) &&
+        resolvables.length > 0 &&
+        resolvables[0] &&
+        typeof resolvables[0] === 'object' &&
+        ('listItem' in resolvables[0] || 'cardData' in resolvables[0] || 'rowData' in resolvables[0]);
 
       if (isLeafLevel) {
         // At the leaf level of nested ListView traversal — resolvables is an array of
@@ -2555,6 +2554,11 @@ export const createComponentsSlice = (set, get) => ({
       refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'cardData' });
     }
 
+    // rowData — coarse dependency on the Table (same pattern as listItem above).
+    if ((value.includes('rowData') && checkSubstringRegex(value, 'rowData')) || value === '{{rowData}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'rowData' });
+    }
+
     return refs;
   },
 
@@ -2576,7 +2580,12 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId(currentId) || currentId;
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (def.component?.component === 'Listview' || def.component?.component === 'Kanban') return baseId;
+      if (
+        def.component?.component === 'Listview' ||
+        def.component?.component === 'Kanban' ||
+        def.component?.component === 'Table'
+      )
+        return baseId;
       currentId = def.component?.parent;
     }
     return null;
