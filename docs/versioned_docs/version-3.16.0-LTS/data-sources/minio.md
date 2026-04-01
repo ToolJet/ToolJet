@@ -54,7 +54,7 @@ Retrieve an object from a bucket.
 
 **Response Structure**
 
-The **Read Object** operation in ToolJet returns both a UTF-8 encoded string representation of the object and the raw binary data.
+The **Read Object** operation returns an object that includes a UTF-8 encoded string representation of the object along with its raw binary data.
 
 | Field     | Type     | Description |
 |----------|----------|-------------|
