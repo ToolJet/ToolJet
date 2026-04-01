@@ -223,11 +223,12 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     _cachedMocks = {};
   }
 
-  // Cache miss with different config — abandon old cached app.
-  // Don't call _realClose() — it's slow (BullMQ worker drain) and can
-  // push beforeAll past the 60s timeout. The abandoned app's pg-pool
-  // connections idle out, and forceExit handles final cleanup.
+  // Cache miss with different config — close old app in the background.
+  // Don't await _realClose() — it's slow (BullMQ worker drain, 10-20s).
+  // Fire-and-forget: the old app drains concurrently while the new one initializes.
   if (!freshApp && _cachedApp) {
+    const realClose = (_cachedApp as any)._realClose;
+    if (realClose) realClose().catch(() => {});
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
     _cachedMocks = {};
