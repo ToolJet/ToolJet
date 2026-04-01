@@ -202,10 +202,10 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     freshApp = false,
   } = options ?? {};
 
-  // Only cache apps with NO mocks (default config). Mocked apps are always fresh.
-  // This avoids cache eviction entirely — the cached default app lives for the
-  // whole suite. Mocked apps create/close normally without touching the cache.
-  const isCacheable = !freshApp && !mockConfig && !mockLicenseService && extraImports.length === 0;
+  // Cache key: only edition + plan matter for app creation.
+  // mockConfig/mockLicenseService can be satisfied by spying on the cached app's
+  // real services — no need to create a separate app.
+  const isCacheable = !freshApp && extraImports.length === 0;
   const configKey = isCacheable ? JSON.stringify({ edition, plan }) : undefined;
 
   // Cache hit — reuse existing app
@@ -214,7 +214,13 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
       const ds = _cachedApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
       if (ds.isInitialized) {
         setDataSources(_cachedApp);
-        return { app: _cachedApp };
+        const result: InitTestAppResult = { app: _cachedApp };
+        // Return real services as "mocks" — tests use jest.spyOn() on these,
+        // which works identically on real objects. jest.restoreAllMocks() in
+        // afterEach cleans up the spies between tests.
+        if (mockConfig) result.mockConfig = _cachedApp.get(ConfigService);
+        if (mockLicenseService) result.licenseServiceMock = _cachedApp.get(LicenseService);
+        return result;
       }
     } catch {
       // DataSource retrieval failed — app was destroyed externally
