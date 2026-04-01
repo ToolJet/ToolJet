@@ -508,12 +508,15 @@ const useAppData = (
           );
         }
 
-        if (mode === 'edit' && licenseStatus && !moduleMode) {
+        if (mode === 'edit' && !moduleMode) {
           const versionId = appData.editing_version?.id || appData.current_version_id;
-          dataQueryFolderService.getAll(versionId).then((folderData) => {
-            setFolders(folderData.folders ?? []);
-            setFolderMappings(folderData.folderMappings ?? []);
-          });
+          dataQueryFolderService
+            .getAll(versionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
         }
 
         const constants = constantsResp?.constants;
@@ -731,11 +734,14 @@ const useAppData = (
 
         setFolders([]);
         setFolderMappings([]);
-        if (mode === 'edit' && licenseStatus) {
-          dataQueryFolderService.getAll(currentVersionId).then((folderData) => {
-            setFolders(folderData.folders ?? []);
-            setFolderMappings(folderData.folderMappings ?? []);
-          });
+        if (mode === 'edit') {
+          dataQueryFolderService
+            .getAll(currentVersionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
         }
 
         try {
