@@ -42,85 +42,88 @@ export const ERROR_TYPES = {
 
 export const ERROR_MESSAGES = {
   'url-unavailable': {
-    title: 'App Unavailable',
-    message: 'This app has not been released yet. Release the app or contact your administrator for access.',
+    title: 'App URL Unavailable',
+    message:
+      'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.',
     cta: 'Back to home page',
     queryParams: [],
   },
   restricted: {
-    title: 'Access Restricted',
-    message: "You don't have access to this app. Contact your administrator for more information.",
+    title: 'Restricted access',
+    message: 'You don’t have access to this app. Kindly contact admin to know more.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
   },
   'restricted-preview': {
-    title: 'Access Restricted',
-    message: 'Access to this preview environment is restricted. Contact your administrator for more information.',
+    title: 'Restricted access',
+    message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
     cta: 'Back to home page',
     queryParams: [],
   },
   'no-accessible-pages': {
-    title: 'Access Restricted',
-    message: "You don't have access to any pages in this app. Contact your administrator for more information.",
+    title: 'Restricted access',
+    message: 'You don’t have access to any page in this app. Kindly contact admin to know more.',
     retry: false,
     queryParams: [],
   },
   'ws-login-restricted': {
     title: 'Restricted access',
-    message: 'Workspace login is not enabled for this instance. Contact your super administrator to configure access.',
+    message:
+      'Enable workspace login from the instance login setting to be able to access this page. Contact super admin to know more.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
   },
   'invalid-link': {
     title: 'Invalid link',
-    message: 'The link is invalid. Please verify the link and try again.',
+    message: 'The link you provided is invalid. Please check the link and try again.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
   },
   'invalid-invite-session': {
-    title: 'Session Mismatch',
-    message: 'The current session does not match the invitation. Please log out and try again.',
+    title: 'Incorrect email address',
+    message: 'The user details of the active session does not match that of the invite. Please log out and try again.',
     cta: 'Back to home page',
     queryParams: [],
   },
   'no-active-workspace': {
-    title: 'No Active Workspaces',
-    message: 'No active workspaces found for your account. Contact your administrator for assistance.',
+    title: 'No active workspaces',
+    message: 'No active workspace were found for this user. Kindly contact admin to know more.',
     queryParams: [],
   },
   unknown: {
-    title: 'Something Went Wrong',
-    message: 'An error occurred while loading the app. Please try again or contact your administrator.',
+    title: 'Oops, something went wrong!',
+    message: 'An error occurred while loading the app. Please try again or contact admin.',
     cta: 'Back to home page',
     retry: true,
     queryParams: [],
   },
   'user-count-exceeding': {
-    title: 'User Limit Exceeded',
+    title: 'User count exceeding',
     message:
-      "Your builder or end-user count exceeds your plan's limit. Archive users or upgrade your plan to continue.",
+      'Your builder or end-user count exceeds the limit for your upgraded plan. Please archive users or increase your plan limits to upgrade successfully.',
     retry: false,
     icon: 'user',
   },
   'app-count-exceeding': {
-    title: 'App Limit Exceeded',
-    message: "The number of apps exceeds your plan's limit. Delete apps or upgrade your plan to continue.",
+    title: 'App count exceeding',
+    message:
+      'The number of apps existing exceeds the limit for your upgraded plan. Please delete apps or increase your plan limits to upgrade successfully.',
     retry: false,
     icon: 'apps',
   },
   'invited-workspace-archived': {
-    title: 'Workspace Archived',
-    message: 'The workspace you were invited to has been archived. Contact your administrator for more information.',
+    title: 'Archived workspace',
+    message: 'The workspace you are invited to has been archived. Kindly contact admin to know more.',
     cta: 'Back to home page',
     queryParams: [],
   },
   'user-is-not-activated': {
     title: 'Account not activated',
-    message: 'Your account is not activated yet. Please check your email for an activation link.',
+    message: 'Your account is not activated yet. Please check your email for activation link.',
     cta: 'Back to home page',
     queryParams: [],
   },
@@ -132,8 +135,8 @@ export const DEFAULT_ERROR_MESSAGE = {
 };
 
 export const TOOLTIP_MESSAGES = {
-  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until the current version is released.',
-  RELEASE_VERSION_URL_UNAVAILABLE: 'Release this version to make it publicly accessible.',
+  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
+  RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
 };
 
 export const DATA_SOURCE_TYPE = {
