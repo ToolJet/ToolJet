@@ -38,6 +38,8 @@ const Table = memo(
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
+    const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
+    const lastExpandedRowIndex = useTableStore((state) => state.components[id]?.lastExpandedRowIndex ?? null, shallow);
     const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
     const setTableActions = useTableStore((state) => state.setTableActions, shallow);
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
@@ -61,6 +63,7 @@ const Table = memo(
     );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+    const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
@@ -118,6 +121,33 @@ const Table = memo(
     useEffect(() => {
       hasDataChanged.current = true;
     }, [data]);
+
+    const enableExpandableRows = restOfProperties?.enableExpandableRows ?? false;
+
+    // When expandable rows are enabled and table data changes, update the customResolvables
+    // so that {{rowData.fieldName}} resolves correctly inside expansion containers.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
+      const rowDataItems = data.map((row) => ({ rowData: row }));
+      updateCustomResolvables(id, rowDataItems, 'rowData', moduleId, []);
+    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvables]);
+
+    // Expose currentExpandedRows / lastExpandedRow and fire onExpand on new expansions
+    const prevExpandedRowsRef = useRef({});
+    useEffect(() => {
+      const prev = prevExpandedRowsRef.current;
+      const currentExpandedRows = Object.values(expandedRows)
+        .filter((v) => typeof v === 'number')
+        .sort((a, b) => a - b);
+
+      setExposedVariables({ currentExpandedRows, lastExpandedRow: lastExpandedRowIndex });
+
+      // Fire onExpand only when a row is newly expanded
+      const hasNewExpansion = Object.keys(expandedRows).some((rowId) => !(rowId in prev));
+      if (hasNewExpansion) fireEvent('onExpand');
+
+      prevExpandedRowsRef.current = { ...expandedRows };
+    }, [expandedRows, lastExpandedRowIndex, setExposedVariables, fireEvent]);
 
     // Create ref for height observation
     const tableRef = useRef(null);
@@ -239,7 +269,7 @@ const Table = memo(
       isDynamicHeightEnabled,
       id: id,
       height,
-      value: JSON.stringify({ heightChangeValue, tableData }),
+      value: JSON.stringify({ heightChangeValue, tableData, expandedRows }),
       skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       adjustComponentPositions,
       currentLayout,

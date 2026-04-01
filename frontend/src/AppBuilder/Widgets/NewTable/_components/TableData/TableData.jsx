@@ -1,13 +1,16 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
 import { TableHeader } from './_components/TableHeader';
 import { TableRow } from './_components/TableRow';
+import { ExpandedRowContainer } from './_components/ExpandedRowContainer';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+
+const DEFAULT_EXPANSION_HEIGHT = 250;
 
 export const TableData = ({
   id,
@@ -22,6 +25,10 @@ export const TableData = ({
   lastClickedRowRef,
   componentName,
   loadingState,
+  enableExpandableRows,
+  expandedRows,
+  expansionHeight = DEFAULT_EXPANSION_HEIGHT,
+  canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
 
@@ -69,14 +76,49 @@ export const TableData = ({
     return styles;
   }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
-  // Setup virtualizer
+  // Build an interleaved list of virtual items: data rows + expansion panels.
+  // Use `row.id in expandedRows` (not truthy check) — rowIndex 0 is falsy.
+  const rows = table.getRowModel().rows;
+  const virtualItemList = useMemo(() => {
+    if (!enableExpandableRows) {
+      return rows.map((row) => ({ type: 'data', row, rowIndex: row.index }));
+    }
+    const items = [];
+    rows.forEach((row) => {
+      items.push({ type: 'data', row, rowIndex: row.index });
+      if (row.id in (expandedRows ?? {})) {
+        items.push({ type: 'expansion', row, rowIndex: row.index });
+      }
+    });
+    return items;
+  }, [rows, enableExpandableRows, expandedRows]);
+
+  const estimateSize = useCallback(
+    (i) => {
+      const item = virtualItemList[i];
+      if (item?.type === 'expansion') {
+        return expansionHeight;
+      }
+      return cellHeight === 'condensed' ? 40 : 46;
+    },
+    [virtualItemList, cellHeight, expansionHeight]
+  );
+
   const rowVirtualizer = useVirtualizer({
-    count: table.getRowModel().rows.length,
+    count: virtualItemList.length,
     getScrollElement: () => tableBodyRef.current,
-    estimateSize: () => (cellHeight === 'condensed' ? 40 : 46),
+    estimateSize,
     overscan: 5,
     scrollMargin: 0,
   });
+
+  // When virtualItemList length changes (row expanded/collapsed), clear the entire
+  // measurement cache and re-run estimateSize. This prevents stale index-N cache entries
+  // from causing expansion rows to render at wrong positions (overlap bug).
+  useEffect(() => {
+    rowVirtualizer.measure();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [virtualItemList.length, expansionHeight]);
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
@@ -138,12 +180,28 @@ export const TableData = ({
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const row = table.getRowModel().rows[virtualRow.index];
+            const item = virtualItemList[virtualRow.index];
+            if (!item) return null;
+
+            if (item.type === 'expansion') {
+              return (
+                <ExpandedRowContainer
+                  key={`${item.row.id}-expansion`}
+                  tableId={id}
+                  rowIndex={item.rowIndex}
+                  top={virtualRow.start}
+                  darkMode={darkMode}
+                  canvasWidth={canvasWidth}
+                  expansionHeight={expansionHeight}
+                />
+              );
+            }
+
             return (
               <TableRow
                 id={id}
-                key={row.id}
-                row={row}
+                key={item.row.id}
+                row={item.row}
                 virtualRow={virtualRow}
                 cellHeight={cellHeight}
                 getResolvedValue={getResolvedValue}

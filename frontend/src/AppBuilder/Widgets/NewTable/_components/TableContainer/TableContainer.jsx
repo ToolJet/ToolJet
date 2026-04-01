@@ -42,6 +42,13 @@ export const TableContainer = ({
 
   const actions = useTableStore((state) => state.getActions(id), shallow);
 
+  // Expandable rows
+  const enableExpandableRows = useTableStore((state) => state.getEnableExpandableRows(id), shallow);
+  const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
+  const toggleRowExpansion = useTableStore((state) => state.toggleRowExpansion, shallow);
+  const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
+  const expansionHeight = useTableStore((state) => state.getTableProperties(id)?.expansionHeight ?? 250, shallow);
+
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
   const paginationBtnClicked = useRef(false); // flag to indicate when page is changed using the pagination buttons or pagination input in table footer
@@ -70,7 +77,10 @@ export const TableContainer = ({
       globalFilter,
       serverSideSearch,
       tableBodyRef,
-      t
+      t,
+      enableExpandableRows,
+      expandedRows,
+      toggleRowExpansion
     );
   }, [
     actions,
@@ -85,6 +95,9 @@ export const TableContainer = ({
     globalFilter,
     showBulkSelector,
     serverSideSearch,
+    enableExpandableRows,
+    expandedRows,
+    toggleRowExpansion,
   ]);
 
   const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
@@ -101,6 +114,17 @@ export const TableContainer = ({
       globalFilter,
       setGlobalFilter,
     });
+
+  // Collapse all expanded rows when sort, filter, search or page changes
+  useEffect(() => {
+    if (enableExpandableRows) collapseAllRows(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    JSON.stringify(table.getState().sorting),
+    JSON.stringify(table.getState().columnFilters),
+    globalFilter,
+    pagination.pageIndex,
+  ]);
 
   // Memoizing allColumns to avoid re-rendering on every render
   // New reference for columnOrder is created on every render, so stringifying it
@@ -179,6 +203,10 @@ export const TableContainer = ({
         lastClickedRowRef={lastClickedRowRef}
         componentName={componentName}
         loadingState={loadingState}
+        enableExpandableRows={enableExpandableRows}
+        expandedRows={expandedRows}
+        expansionHeight={expansionHeight}
+        canvasWidth={width}
       />
       <Footer
         id={id}
