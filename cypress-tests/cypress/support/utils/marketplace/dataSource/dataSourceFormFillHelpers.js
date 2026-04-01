@@ -47,7 +47,7 @@ export const fillDSConnectionKeyValuePairs = (field) => {
       cy.root().then(($section) => {
         const keyFieldExists = $section.find(dsCommonSelector.keyInputField(field.fieldName, index)).length > 0;
         if (!keyFieldExists) {
-          cy.get(dsCommonSelector.addButton(field.fieldName))
+          cy.get(dsCommonSelector.addMoreButton(field.fieldName))
             .should('be.visible')
             .click();
           cy.wait(500);
@@ -90,8 +90,10 @@ export const saveAndDiscardDSChanges = (option) => {
   cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
 };
 
+let _testConnCounter = 0;
 export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
-  cy.intercept('POST', '**/api/data-sources/*/test-connection').as('testConnection');
+  const alias = `testConnection${_testConnCounter++}`;
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as(alias);
   cy.waitForElement('[data-cy="test-connection-button"]', 60000);
 
   cy.get('[data-cy="test-connection-button"]')
@@ -99,27 +101,46 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
     .should("contain.text", "Test connection")
     .click();
 
-  // Wait for the API call to complete
-  cy.wait('@testConnection', { timeout: 60000 });
+  // Wait for the API call to complete and verify API response
+  const toastTimeout = 80000;
+  cy.wait(`@${alias}`, { timeout: toastTimeout }).then((interception) => {
+    const responseBody = interception.response.body;
 
+    switch (expectedStatus) {
+      case "success":
+        expect(responseBody.status).to.eq("ok");
+        break;
+
+      case "failed":
+        expect(responseBody.status).to.not.eq("ok");
+
+        if (customMessage) {
+          const errorMsg = responseBody.data?.message || responseBody.message || JSON.stringify(responseBody);
+          expect(errorMsg).to.contain(customMessage);
+        }
+        break;
+    }
+  });
+
+  // Verify UI toast feedback
   switch (expectedStatus) {
     case "success":
-      cy.get('[data-cy="test-connection-verified-text"]')
-        .should("be.visible")
-        .should("have.text", "connection verified");
+      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, toastTimeout);
       break;
 
     case "failed":
-      cy.waitForElement('[data-cy="test-connection-failed-text"]', 60000);
-      cy.get('[data-cy="test-connection-failed-text"]')
-        .scrollIntoView()
-        .should("be.visible", { timeout: 30000 })
-        .should("contain.text", "could not connect");
+      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
 
-      cy.get('[data-cy="connection-alert-text"]')
-        .scrollIntoView()
-        .should("be.visible", { timeout: 40000 })
-        .verifyVisibleElement("have.text", customMessage);
+      if (customMessage) {
+        cy.get("body").then(($body) => {
+          if ($body.find('[data-cy="connection-alert-text"]').length > 0) {
+            cy.get('[data-cy="connection-alert-text"]')
+              .scrollIntoView()
+              .should("be.visible")
+              .and("contain.text", customMessage);
+          }
+        });
+      }
       break;
   }
 };
@@ -137,12 +158,27 @@ export const fillDSConnectionEncryptedField = (field) => {
     });
   }
 
-  cy.clearAndType(fieldSelector, field.text);
+  cy.get(fieldSelector)
+    .scrollIntoView()
+    .should("be.visible")
+    .click({ force: true })
+    .type(`{selectall}{backspace}`)
+    .type(field.text, { parseSpecialCharSequences: false });
 };
 
 export const fillDataOnCodeMirrorInput = (field) => {
   const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  cy.get(selector).scrollIntoView();
+  cy.wait(500);
+  // Focus the CodeMirror editor directly to bypass covered-element check from .realClick()
+  cy.get(selector).find(".cm-content").click({ force: true });
   cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+};
+
+export const fillDynamicSelectorFxMode = (field) => {
+  const sectionSelector = dsCommonSelector.subSection(field.fieldName);
+  cy.get(sectionSelector).find('[data-cy="undefined-fx-button"]').click();
+  cy.get(sectionSelector).find('[data-cy="-input-field"]').clearAndTypeOnCodeMirror(field.text);
 };
 
 export const fillCodeMirrorKeyValuePairs = (field) => {
@@ -190,6 +226,9 @@ const processFields = (fields) => {
         break;
       case 'codeMirrorKeyValue':
         fillCodeMirrorKeyValuePairs(field);
+        break;
+      case 'dynamicSelectorFx':
+        fillDynamicSelectorFxMode(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);

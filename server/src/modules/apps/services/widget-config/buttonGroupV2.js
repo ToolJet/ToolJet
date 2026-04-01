@@ -188,6 +188,31 @@ export const buttonGroupV2Config = {
       },
       accordian: 'Buttons',
     },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      accordian: 'Buttons',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'hoverBackgroundMode',
+        value: 'manual',
+      },
+      accordian: 'Buttons',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
@@ -204,6 +229,27 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-primary-text)',
       },
+      accordian: 'Buttons',
+    },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'Buttons',
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
       accordian: 'Buttons',
     },
     iconColor: {
@@ -388,6 +434,10 @@ export const buttonGroupV2Config = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
+      hoverBackgroundMode: { value: 'auto' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
