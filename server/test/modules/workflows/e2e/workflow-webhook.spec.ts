@@ -14,12 +14,10 @@ import {
   enableWorkflowStatus,
   getDefaultDataSource,
   markVersionAsReleased,
+  closeTestApp,
 } from '../../../test.helper';
 import { v4 as uuidv4 } from 'uuid';
 import * as request from 'supertest';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
-import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
-import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 import { AppVersion } from '@entities/app_version.entity';
 
 const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) => {
@@ -88,15 +86,14 @@ const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) =>
 // error messages and status codes. The tests were testing deleted behavior.
 
 describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workflowId>/trigger', () => {
-  jest.setTimeout(20000);
   let app: INestApplication;
-
-  beforeEach(async () => {
-    await resetDB();
-  });
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+  });
+
+  beforeEach(async () => {
+    await resetDB();
   });
 
   describe('Access workflow from webhook without params', () => {
@@ -422,23 +419,78 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
   });
 
   afterAll(async () => {
-    await app.close();
+    await closeTestApp(app);
   });
 });
 
-// DELETED: 'Workflow and Webhooks - Rate Limit exceeding scenarios' describe block (6 tests)
-// Justification: These tests mock LicenseService to test workflow creation limits and execution
-// rate limits. However, the authentication flow (POST /api/authenticate from test.helper.ts)
-// now performs license checks that are incompatible with the createMock<LicenseService>() pattern.
-// The auth endpoint returns 500 because the mocked LicenseService methods return undefined
-// for fields not explicitly handled by jest.spyOn. The actual rate-limiting guards
-// (WorkflowGuard, WorkflowCountGuard) use LicenseTermsService (not LicenseService) and
-// are already exercised by the workflow-executions e2e tests with the resilient mock.
-// To properly test rate limits, these tests would need to use the workflows.helper.ts
-// authentication pattern (which bypasses the auth endpoint) instead of test.helper.ts.
+// Rate limiting needs its own app instance because ThrottlerModule reads
+// WEBHOOK_THROTTLE_LIMIT at app creation time (global, not per-workflow).
+describe('Workflow Webhooks - Rate Limiting (EE, enterprise)', () => {
+  let app: INestApplication;
+  const RATE_LIMIT = 2;
+  const RATE_TTL = 60000;
+
+  beforeAll(async () => {
+    process.env.WEBHOOK_THROTTLE_LIMIT = String(RATE_LIMIT);
+    process.env.WEBHOOK_THROTTLE_TTL = String(RATE_TTL);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+  }, 90_000); // longer timeout — second app init in same file
+
+  beforeEach(async () => {
+    await resetDB();
+  });
+
+  afterAll(async () => {
+    delete process.env.WEBHOOK_THROTTLE_LIMIT;
+    delete process.env.WEBHOOK_THROTTLE_TTL;
+    await closeTestApp(app);
+  });
+
+  it('should return 429 when webhook trigger rate limit is exceeded', async () => {
+    const userData = await createUser(app, { email: 'admin@tooljet.io' });
+    const { user } = userData;
+    const workflow = await createApplication(app, { name: 'rate-limit-test', user, type: 'workflow' });
+    const sampleWorkflowDefinition = prepareSampleWorlflowDefinition(false);
+    const appVersion = await createApplicationVersion(app, workflow, sampleWorkflowDefinition);
+    await markVersionAsReleased(workflow.id, appVersion.id);
+
+    const loggedUser = await login(app);
+    userData['tokenCookie'] = loggedUser.tokenCookie;
+
+    const enableWorkflowStatusResponse = await enableWorkflowStatus(
+      app,
+      workflow?.id,
+      user.defaultOrganizationId,
+      userData['tokenCookie'],
+      true
+    );
+    expect(enableWorkflowStatusResponse.statusCode).toBe(200);
+
+    await enableWebhookForWorkflows(workflow.id);
+    const workflowWebhookApiToken = await getWorkflowWebhookApiToken(workflow?.id ?? '');
+
+    for (let i = 0; i < RATE_LIMIT; i++) {
+      const response = await triggerWorkflowViaWebhook(app, workflowWebhookApiToken, workflow?.id, 'development');
+      expect(response.statusCode).toBe(200);
+    }
+
+    const throttledResponse = await triggerWorkflowViaWebhook(
+      app,
+      workflowWebhookApiToken,
+      workflow?.id,
+      'development'
+    );
+    expect(throttledResponse.statusCode).toBe(429);
+    expect(throttledResponse.body.message).toBe('ThrottlerException: Too Many Requests');
+  });
+});
+
+// DELETED: 'Workflow and Webhooks - Rate Limit exceeding scenarios' describe block
+// Justification: Tests mocked LicenseService but auth flow is incompatible with that
+// pattern. Rate-limiting guards are exercised by workflow-executions e2e tests.
 
 /*
-describe('Workflow and Webhooks - Rate Limit exceeding scenarios', () => {
+describe('Workflow and Webhooks - Rate Limit exceeding scenarios (DISABLED)', () => {
   let app: INestApplication;
   let licenseServiceMock;
 
