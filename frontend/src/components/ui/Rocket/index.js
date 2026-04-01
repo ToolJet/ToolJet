@@ -148,3 +148,17 @@ export {
   tabsContentClasses,
 } from './Tabs/Tabs';
 export { Switch, switchClasses } from './Switch/Switch';
+export {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  alertDialogContentVariants,
+  AlertDialogOverlay,
+  AlertDialogMedia,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from './AlertDialog/AlertDialog';
