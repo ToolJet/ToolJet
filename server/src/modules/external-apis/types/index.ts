@@ -3,7 +3,6 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 
 interface Features {
-  [FEATURE_KEY.GET_LICENSE_STATUS]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_USERS]: FeatureConfig;
   [FEATURE_KEY.GET_USER]: FeatureConfig;
   [FEATURE_KEY.CREATE_USER]: FeatureConfig;
