@@ -223,8 +223,10 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     _cachedMocks = {};
   }
 
-  // Cache miss — close old cached app if config changed
-  if (_cachedApp) {
+  // freshApp: skip cache eviction — create a standalone app alongside the cached one.
+  // The cached app survives for the next file that needs the default config.
+  if (!freshApp && _cachedApp) {
+    // Cache miss with different config — close old cached app
     try { await _cachedApp.close(); } catch {}
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
