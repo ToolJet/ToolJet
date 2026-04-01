@@ -175,7 +175,7 @@ OTEL_LOG_LEVEL=debug
 ### Step 5: Configure Data Sources in Grafana
 Once Grafana is running, open http://localhost:3001 and log in using the admin credentials.
 
-Navigate to Connections → Data Sources, then click Add data source. You’ll create two data sources: one for metrics (Prometheus) and one for traces (Tempo).
+Navigate to Connections > Data Sources, then click Add data source. You’ll create two data sources: one for metrics (Prometheus) and one for traces (Tempo).
     <img className="screenshot-full" src="/img/tooljet-setup/observability/grafana/grafana-add-datasources.png" alt="Grafana Data Source"/>
 
 **1. Prometheus (Metrics)**
@@ -195,3 +195,63 @@ http://tempo:3200
 - Click **Save and test**.
 
 Your ToolJet instance will now begin streaming traces and metrics to Grafana.
+
+## Using ToolJet Grafana Dashboards
+
+Once observability is set up, ToolJet provides two pre-built Grafana dashboards for visualizing metrics:
+
+:::info
+These dashboards require Prometheus (metrics) and Tempo (traces) to be configured as described above.
+:::
+
+### Per-App Metrics Dashboard
+
+Download the dashboard:
+```bash
+curl -O https://tooljet-deployments.s3.us-west-1.amazonaws.com/tooljet-app-dashboard.json
+```
+
+This dashboard focuses on application-specific metrics and includes:
+
+- **App Overview:** Total query executions, success rate gauge, p95 latency, failure counts
+- **Query Performance:** Execution rates by query, latency percentiles, data source breakdown
+- **Top Queries:** Most executed queries, slowest queries (p95), most failed queries
+- **Environment Filtering:** Filter by app name, environment (production/staging/development), and mode (view/edit)
+
+The dashboard automatically extracts query text and environment names for immediate debugging without consulting logs.
+
+### Platform Metrics Dashboard
+
+Download the dashboard:
+```bash
+curl -O https://tooljet-deployments.s3.us-west-1.amazonaws.com/tooljet-platform-dashboard.json
+```
+
+This dashboard provides comprehensive platform monitoring:
+
+- **System Health:** P95 response time, request rate, error rate, total requests
+- **API Analytics:** Traffic distribution, top endpoints by hits, slowest endpoints
+- **Performance Trends:** Multi-percentile response time analysis (P50, P95, P99)
+- **Status Codes:** Success/error distribution over time
+- **Database Performance:** Query execution times, connection health
+- **Runtime Metrics:** Node.js event loop, GC performance, V8 memory usage
+- **Distributed Tracing:** Integration with Jaeger for trace viewing
+
+### Importing Dashboards
+
+To import the Grafana dashboards:
+
+1. Download the dashboard JSON files:
+   ```bash
+   # Download App-Based Metrics Dashboard
+   curl -O https://tooljet-deployments.s3.us-west-1.amazonaws.com/tooljet-app-dashboard.json
+
+   # Download Platform-Based Metrics Dashboard
+   curl -O https://tooljet-deployments.s3.us-west-1.amazonaws.com/tooljet-platform-dashboard.json
+   ```
+2. Open Grafana and navigate to **Dashboards** > **Import**
+3. Click **Upload JSON file** and select the downloaded dashboard JSON file
+4. Select your Prometheus data source
+5. Click **Import**
+
+The dashboards will be immediately available with real-time data from your ToolJet instance.
