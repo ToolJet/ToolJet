@@ -63,23 +63,13 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
 
 // ---------------------------------------------------------------------------
 // App context cache (Spring Boot-style — reuse app across files with same config)
-// Stores up to N cached apps keyed by config fingerprint. All cached apps
-// live for the entire suite; forceExit handles final cleanup.
+// Single-slot cache: only ONE app is cached at a time to limit memory.
+// When config changes, the old app is background-closed while the new one initializes.
 // ---------------------------------------------------------------------------
 
-interface CachedAppEntry {
-  app: INestApplication;
-  mocks: { mockConfig?: DeepMocked<ConfigService>; licenseServiceMock?: DeepMocked<LicenseService> };
-}
-
-const _appCache = new Map<string, CachedAppEntry>();
-
-function _isCachedApp(app: INestApplication): boolean {
-  for (const entry of _appCache.values()) {
-    if (entry.app === app) return true;
-  }
-  return false;
-}
+let _cachedApp: INestApplication | undefined;
+let _cachedConfigKey: string | undefined;
+let _cachedMocks: { mockConfig?: DeepMocked<ConfigService>; licenseServiceMock?: DeepMocked<LicenseService> } = {};
 
 /**
  * Closes the NestJS test application and releases DataSource references.
@@ -87,7 +77,7 @@ function _isCachedApp(app: INestApplication): boolean {
  * suite and are cleaned up by forceExit at process end.
  */
 export async function closeTestApp(app: INestApplication | undefined): Promise<void> {
-  if (!app || _isCachedApp(app)) return;
+  if (!app || app === _cachedApp) return;
   await app.close();
   _defaultDataSource = undefined as any;
   _tooljetDbDataSource = undefined as any;
@@ -216,24 +206,35 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 
   // Cache hit — reuse existing app (Spring Boot-style context caching)
   // Also verify the DataSource is still alive (a spec may have called app.close() directly).
-  if (configKey) {
-    const cached = _appCache.get(configKey);
-    if (cached) {
-      try {
-        const ds = cached.app.get(getDataSourceToken('default')) as TypeOrmDataSource;
-        if (ds.isInitialized) {
-          setDataSources(cached.app);
-          const result: InitTestAppResult = { app: cached.app };
-          if (cached.mocks.mockConfig) result.mockConfig = cached.mocks.mockConfig;
-          if (cached.mocks.licenseServiceMock) result.licenseServiceMock = cached.mocks.licenseServiceMock;
-          return result;
-        }
-      } catch {
-        // DataSource retrieval failed — app was destroyed externally
+  if (configKey && _cachedApp && _cachedConfigKey === configKey) {
+    try {
+      const ds = _cachedApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+      if (ds.isInitialized) {
+        setDataSources(_cachedApp);
+        const result: InitTestAppResult = { app: _cachedApp };
+        if (_cachedMocks.mockConfig) result.mockConfig = _cachedMocks.mockConfig;
+        if (_cachedMocks.licenseServiceMock) result.licenseServiceMock = _cachedMocks.licenseServiceMock;
+        return result;
       }
-      // Cached app is dead — evict it
-      _appCache.delete(configKey);
+    } catch {
+      // DataSource retrieval failed — app was destroyed externally
     }
+    _cachedApp = undefined;
+    _cachedConfigKey = undefined;
+    _cachedMocks = {};
+  }
+
+  // Cache miss with different config — background-close old cached app.
+  // Fire-and-forget: old app drains concurrently while new one initializes.
+  if (!freshApp && _cachedApp) {
+    const oldApp = _cachedApp;
+    const realClose = (oldApp as any)._realClose;
+    if (realClose) realClose().catch(() => {});
+    _cachedApp = undefined;
+    _cachedConfigKey = undefined;
+    _cachedMocks = {};
+    _defaultDataSource = undefined as any;
+    _tooljetDbDataSource = undefined as any;
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
@@ -304,11 +305,14 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   // Override app.close() to be a no-op — prevents spec files that call
   // app.close() directly from destroying the shared cached app.
   if (configKey) {
-    const mocks: CachedAppEntry['mocks'] = {};
-    if (result.mockConfig) mocks.mockConfig = result.mockConfig;
-    if (result.licenseServiceMock) mocks.licenseServiceMock = result.licenseServiceMock;
-    _appCache.set(configKey, { app, mocks });
+    _cachedApp = app;
+    _cachedConfigKey = configKey;
+    _cachedMocks = {};
+    if (result.mockConfig) _cachedMocks.mockConfig = result.mockConfig;
+    if (result.licenseServiceMock) _cachedMocks.licenseServiceMock = result.licenseServiceMock;
 
+    const _realClose = app.close.bind(app);
+    (app as any)._realClose = _realClose;
     app.close = async () => { /* no-op for cached apps */ };
   }
 
