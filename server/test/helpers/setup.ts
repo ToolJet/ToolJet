@@ -198,23 +198,19 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     freshApp = false,
   } = options ?? {};
 
-  // Cache key: JSON fingerprint of config that affects app creation.
-  // extraImports and freshApp are not cacheable.
-  const configKey = (extraImports.length > 0 || freshApp)
-    ? undefined
-    : JSON.stringify({ edition, plan, mockConfig, mockLicenseService });
+  // Only cache apps with NO mocks (default config). Mocked apps are always fresh.
+  // This avoids cache eviction entirely — the cached default app lives for the
+  // whole suite. Mocked apps create/close normally without touching the cache.
+  const isCacheable = !freshApp && !mockConfig && !mockLicenseService && extraImports.length === 0;
+  const configKey = isCacheable ? JSON.stringify({ edition, plan }) : undefined;
 
-  // Cache hit — reuse existing app (Spring Boot-style context caching)
-  // Also verify the DataSource is still alive (a spec may have called app.close() directly).
+  // Cache hit — reuse existing app
   if (configKey && _cachedApp && _cachedConfigKey === configKey) {
     try {
       const ds = _cachedApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
       if (ds.isInitialized) {
         setDataSources(_cachedApp);
-        const result: InitTestAppResult = { app: _cachedApp };
-        if (_cachedMocks.mockConfig) result.mockConfig = _cachedMocks.mockConfig;
-        if (_cachedMocks.licenseServiceMock) result.licenseServiceMock = _cachedMocks.licenseServiceMock;
-        return result;
+        return { app: _cachedApp };
       }
     } catch {
       // DataSource retrieval failed — app was destroyed externally
@@ -222,19 +218,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
     _cachedMocks = {};
-  }
-
-  // Cache miss with different config — background-close old cached app.
-  // Fire-and-forget: old app drains concurrently while new one initializes.
-  if (!freshApp && _cachedApp) {
-    const oldApp = _cachedApp;
-    const realClose = (oldApp as any)._realClose;
-    if (realClose) realClose().catch(() => {});
-    _cachedApp = undefined;
-    _cachedConfigKey = undefined;
-    _cachedMocks = {};
-    _defaultDataSource = undefined as any;
-    _tooljetDbDataSource = undefined as any;
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
