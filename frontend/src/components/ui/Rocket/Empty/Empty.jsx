@@ -18,7 +18,7 @@ const EmptySizeContext = createContext('default');
 const emptyVariants = cva(
   [
     'tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-items-center tw-justify-center',
-    'tw-rounded-lg',
+    'tw-rounded-lg tw-border-none',
     'tw-text-center tw-text-balance',
   ],
   {
