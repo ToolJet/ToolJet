@@ -5,6 +5,7 @@ import {
   appsService,
   appVersionService,
   dataqueryService,
+  dataQueryFolderService,
   orgEnvironmentConstantService,
   authenticationService,
   customStylesService,
@@ -74,6 +75,8 @@ const useAppData = (
   const setPages = useStore((state) => state.setPages);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const setFolders = useStore((state) => state.queryFolders.setFolders);
+  const setFolderMappings = useStore((state) => state.queryFolders.setFolderMappings);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const setComponentNameIdMapping = useStore((state) => state.setComponentNameIdMapping);
   const initDependencyGraph = useStore((state) => state.initDependencyGraph);
@@ -504,6 +507,15 @@ const useAppData = (
             moduleId
           );
         }
+
+        if (mode === 'edit' && licenseStatus && !moduleMode) {
+          const versionId = appData.editing_version?.id || appData.current_version_id;
+          dataQueryFolderService.getAll(versionId).then((folderData) => {
+            setFolders(folderData.folders ?? []);
+            setFolderMappings(folderData.folderMappings ?? []);
+          });
+        }
+
         const constants = constantsResp?.constants;
 
         if (constants) {
@@ -715,6 +727,15 @@ const useAppData = (
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        }
+
+        setFolders([]);
+        setFolderMappings([]);
+        if (mode === 'edit' && licenseStatus) {
+          dataQueryFolderService.getAll(currentVersionId).then((folderData) => {
+            setFolders(folderData.folders ?? []);
+            setFolderMappings(folderData.folderMappings ?? []);
+          });
         }
 
         try {
