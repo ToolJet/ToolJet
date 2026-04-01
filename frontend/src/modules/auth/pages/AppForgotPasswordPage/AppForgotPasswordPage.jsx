@@ -30,12 +30,14 @@ const AppForgotPasswordPage = () => {
   };
 
   if (showInfoScreen) {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <ForgotPasswordInfoScreen email={email} />} />;
+    return (
+      <OnboardingBackgroundWrapper MiddleComponent={() => <ForgotPasswordInfoScreen email={email} appSlug={slug} />} />
+    );
   }
 
   return (
     <OnboardingBackgroundWrapper
-      LeftSideComponent={() => <ForgotPasswordForm onSubmit={handleForgotPassword} />}
+      LeftSideComponent={() => <ForgotPasswordForm onSubmit={handleForgotPassword} appSlug={slug} />}
       RightSideComponent={GeneralFeatureImage}
     />
   );
