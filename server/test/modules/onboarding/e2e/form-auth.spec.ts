@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 import {
   resetDB,
   initTestApp,
@@ -28,10 +29,11 @@ describe('Form Onboarding', () => {
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;
   let orgUserRepository: Repository<OrganizationUser>;
-  let mockConfig;
+  let configService: ConfigService;
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);
@@ -39,7 +41,7 @@ describe('Form Onboarding', () => {
 
   beforeEach(async () => {
     await resetDB();
-    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+    jest.spyOn(configService, 'get').mockImplementation((key: string) => {
       switch (key) {
         case 'DISABLE_MULTI_WORKSPACE':
           return 'false';

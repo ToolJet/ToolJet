@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, ensureInstanceSSOConfigs } from '../../../test.helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
@@ -18,12 +19,13 @@ describe('OAuth Git instance-level SSO', () => {
   let instanceSettingsRepository: Repository<InstanceSettings>;
   let userRepository: Repository<User>;
   let orgUserRepository: Repository<OrganizationUser>;
-  let mockConfig;
+  let configService: ConfigService;
 
   const token = 'some-Token';
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
@@ -52,7 +54,7 @@ describe('OAuth Git instance-level SSO', () => {
         { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
         { value: 'false' }
       );
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
             return 'google-client-id';
@@ -157,7 +159,7 @@ describe('OAuth Git instance-level SSO', () => {
     let current_user: User;
 
     beforeEach(() => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
             return 'google-client-id';

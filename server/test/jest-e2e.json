@@ -8,7 +8,6 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "setupFiles": ["<rootDir>/../test/jest-setup.ts"],
-  "_setupFilesAfterEnv_DISABLED": ["<rootDir>/../test/jest-transaction-setup.ts"],
   "testRegex": "test/modules/.*/e2e/.*spec\\.ts$",
   "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",

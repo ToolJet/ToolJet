@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { resetDB, createUser, initTestApp, login, getEntityRepository } from '../../../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -11,14 +12,15 @@ describe('organizations controller', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let userRepository: Repository<User>;
-  let mockConfig;
+  let configService: ConfigService;
 
   beforeEach(async () => {
     await resetDB();
   });
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     userRepository = getEntityRepository(User);
   });
@@ -417,7 +419,7 @@ describe('organizations controller', () => {
       });
 
       it('should get organization specific details with instance level sso and override it with organization sso configs for all users for multiple organization deployment', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
               return 'google-client-id';
@@ -460,7 +462,7 @@ describe('organizations controller', () => {
       });
 
       it('should get organization specific details with instance level sso for all users for multiple organization deployment', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
               return 'google-client-id';
@@ -511,7 +513,7 @@ describe('organizations controller (EE, personal workspace disabled)', () => {
   });
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'team', mockConfig: true }));
+    ({ app } = await initTestApp({ plan: 'team' }));
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
   });
 

@@ -10,7 +10,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity } from '../../../test.helper';
-import { AuditLogsModule } from '@ee/audit-logs/module';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { MODULES } from '@modules/app/constants/modules';
 
@@ -18,13 +17,7 @@ describe('audit logs controller', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    // The audit-logs module is a dynamic module excluded by IS_GET_CONTEXT: true.
-    // Register it explicitly via extraImports.
-    ({ app } = await initTestApp({
-      edition: 'ee',
-      plan: 'enterprise',
-      extraImports: [await AuditLogsModule.register()],
-    }));
+    ({ app } = await initTestApp());
   });
 
   beforeEach(async () => {

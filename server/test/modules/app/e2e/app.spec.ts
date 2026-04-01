@@ -3,6 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 import { resetDB, createUser, initTestApp, closeTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from '../../../test.helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -19,13 +20,14 @@ describe('app controller (EE)', () => {
   let orgUserRepository: Repository<OrganizationUser>;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let instanceSettingsRepository: Repository<InstanceSettings>;
-  let mockConfig;
+  let configService: ConfigService;
   let current_organization: Organization;
   let current_organization_user: OrganizationUser;
   let current_user: User;
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
     userRepository = getEntityRepository(User);
     orgRepository = getEntityRepository(Organization);
     orgUserRepository = getEntityRepository(OrganizationUser);
@@ -55,7 +57,7 @@ describe('app controller (EE)', () => {
       });
       current_organization = organization;
       current_user = user;
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_SIGNUPS':
             return 'false';
@@ -66,7 +68,7 @@ describe('app controller (EE)', () => {
     });
     describe('sign up disabled', () => {
       beforeEach(async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_SIGNUPS':
               return 'true';
@@ -242,7 +244,7 @@ describe('app controller (EE)', () => {
         );
       });
       it('throw 401 if invalid credentials, maximum retry limit reached error will not throw if DISABLE_PASSWORD_RETRY_LIMIT is set to true', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_PASSWORD_RETRY_LIMIT':
               return 'true';
@@ -285,7 +287,7 @@ describe('app controller (EE)', () => {
         expect(response.body.message).toBe('Invalid credentials');
       });
       it('throw 401 if invalid credentials, maximum retry limit reached error will not throw after the count configured in PASSWORD_RETRY_LIMIT', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'PASSWORD_RETRY_LIMIT':
               return '3';
@@ -485,7 +487,7 @@ describe('app controller (EE)', () => {
   describe('POST /api/onboarding/accept-invite', () => {
     describe('Multi-Workspace Enabled', () => {
       beforeEach(() => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_MULTI_WORKSPACE':
               return 'false';
@@ -555,7 +557,7 @@ describe('app controller (EE)', () => {
         });
         current_organization = organization;
         current_user = user;
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_MULTI_WORKSPACE':
               return 'false';
@@ -649,7 +651,7 @@ describe('app controller (EE)', () => {
       );
       // Ensure ConfigService mock falls through to process.env as baseline
       // (jest.resetAllMocks in afterEach clears the createMock<ConfigService> auto-mock)
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         return process.env[key];
       });
     });
@@ -660,7 +662,7 @@ describe('app controller (EE)', () => {
         lastName: 'name',
       });
       current_organization = organization;
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_SIGNUPS':
             return 'false';
@@ -671,7 +673,7 @@ describe('app controller (EE)', () => {
     });
     describe('sign up disabled', () => {
       beforeEach(async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_SIGNUPS':
               return 'true';
@@ -705,7 +707,7 @@ describe('app controller (EE)', () => {
 
   describe('POST /api/onboarding/verify-invite-token', () => {
     beforeEach(() => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_MULTI_WORKSPACE':
             return 'false';
@@ -806,7 +808,7 @@ describe('app controller (EE)', () => {
   describe('Multi organization - Super Admin authentication', () => {
     beforeEach(async () => {
       // Ensure ConfigService mock falls through to process.env as baseline
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         return process.env[key];
       });
       const { organization, user, orgUser } = await createUser(app, {

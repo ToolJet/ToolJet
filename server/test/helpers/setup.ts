@@ -1,18 +1,19 @@
 /**
  * Test environment setup — app factory, plan-aware mocking, and database lifecycle.
+ *
+ * Deep module design: callers declare WHAT they need (edition, plan), the
+ * infrastructure handles HOW (caching, mocking, module registration).
  */
-import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL, Provider } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
+import { AuditLogsModule } from '@ee/audit-logs/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import * as cookieParser from 'cookie-parser';
-import { LicenseService } from '@modules/licensing/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
@@ -63,25 +64,34 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
 
 // ---------------------------------------------------------------------------
 // App context cache (Spring Boot-style — reuse app across files with same config)
-// Single-slot cache: only ONE app is cached at a time to limit memory.
-// When config changes, the old app is background-closed while the new one initializes.
+// Multi-slot cache keyed by edition: EE, CE, and Cloud each get their own slot.
+// No eviction — each edition's app lives independently for the entire suite.
+// `plan` does NOT affect the cache key — it reconfigures the mock instead.
 // ---------------------------------------------------------------------------
 
-let _cachedApp: INestApplication | undefined;
-let _cachedConfigKey: string | undefined;
+interface CachedAppSlot {
+  app: INestApplication;
+  realClose: () => Promise<void>;
+}
+
+const _cache: Record<string, CachedAppSlot> = {};
+
+function isCachedApp(app: INestApplication): boolean {
+  return Object.values(_cache).some((slot) => slot.app === app);
+}
 
 /**
  * Closes the NestJS test application and releases DataSource references.
  * Cached apps (shared across files) are NOT closed — they live for the entire
- * suite and are cleaned up by forceExit at process end.
+ * suite. Real close() is stored and called at process exit.
  */
 export async function closeTestApp(app: INestApplication | undefined): Promise<void> {
-  if (!app || app === _cachedApp) return;
+  if (!app || isCachedApp(app)) return;
   await app.close();
-  // Restore DataSources from cached app (if alive) instead of wiping —
-  // prevents "DataSource not initialized" if code runs before next initTestApp().
-  if (_cachedApp) {
-    setDataSources(_cachedApp);
+  // Restore DataSources from the most recently used cached app (prefer EE).
+  const fallback = _cache['ee'] || Object.values(_cache)[0];
+  if (fallback) {
+    setDataSources(fallback.app);
   } else {
     _defaultDataSource = undefined as any;
     _tooljetDbDataSource = undefined as any;
@@ -191,10 +201,10 @@ export async function rollbackTestTransaction() {
 // ---------------------------------------------------------------------------
 
 /**
- * Per-field mock values for license terms.
+ * Per-field mock values for license terms (enterprise plan — all unlocked).
  * Guards and services expect specific shapes for certain fields.
  */
-const LICENSE_FIELD_MOCK_VALUES: Record<string, any> = {
+const LICENSE_FIELD_DEFAULTS: Record<string, any> = {
   workflows: {
     execution_timeout: 'UNLIMITED',
     workspace: {
@@ -208,37 +218,54 @@ const LICENSE_FIELD_MOCK_VALUES: Record<string, any> = {
       monthly_executions: 'UNLIMITED',
     },
   },
-  // AuditLogsDurationGuard destructures status.licenseType
   status: { licenseType: 'ENTERPRISE' },
-  // AuditLogsDurationGuard reads maxDurationForAuditLogs (numeric, in days)
   maxDaysForAuditLogs: 365,
+};
+
+/**
+ * Plan-specific overrides merged on top of LICENSE_FIELD_DEFAULTS.
+ * Extensible — add plan-specific values as tests need them.
+ */
+const PLAN_TERMS: Record<string, Record<string, any>> = {
+  enterprise: {},
+  team: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 90 },
+  trial: { status: { licenseType: 'TRIAL' }, maxDaysForAuditLogs: 7 },
+  basic: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 30 },
+  starter: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 30 },
+  pro: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 180 },
 };
 
 /**
  * Creates a LicenseTermsService mock that survives jest.resetAllMocks().
  * Uses plain functions instead of jest.fn() so mock resets cannot clear them.
- * Returns 'UNLIMITED' for simple fields, structured objects for fields that
- * guards destructure (workflows, status, etc.), and handles array inputs
- * the same way constructLicenseFieldValue does.
+ * The mock is plan-aware — call configurePlanMock() to switch plans.
  */
 function createResilientLicenseTermsMock() {
-  const resolveField = (field: string): any => {
-    return field in LICENSE_FIELD_MOCK_VALUES ? LICENSE_FIELD_MOCK_VALUES[field] : 'UNLIMITED';
-  };
+  const mock = {
+    _fieldValues: { ...LICENSE_FIELD_DEFAULTS } as Record<string, any>,
 
-  return {
-    getLicenseTerms: (field: string | string[]) => {
+    getLicenseTerms(field: string | string[]) {
+      const resolve = (f: string) =>
+        f in mock._fieldValues ? mock._fieldValues[f] : 'UNLIMITED';
+
       if (Array.isArray(field)) {
         const result: Record<string, any> = {};
-        for (const key of field) {
-          result[key] = resolveField(key);
-        }
+        for (const key of field) result[key] = resolve(key);
         return Promise.resolve(result);
       }
-      return Promise.resolve(resolveField(field));
+      return Promise.resolve(resolve(field));
     },
+
     getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
   };
+  return mock;
+}
+
+/** Reconfigures the resilient mock's field values for the given plan. */
+function configurePlanMock(app: INestApplication, plan: string) {
+  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
+  if (!lts._fieldValues) return; // not our mock — skip
+  lts._fieldValues = { ...LICENSE_FIELD_DEFAULTS, ...(PLAN_TERMS[plan] ?? {}) };
 }
 
 /** Applies standard NestJS app configuration (prefix, pipes, filters, versioning). */
@@ -256,20 +283,14 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 
 /** Options for initializing the NestJS test application. */
 export interface InitTestAppOptions {
-  /** Edition to simulate. Default: 'ee' */
+  /** Edition to simulate. Default: 'ee'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
-  /** License plan to simulate. Default: 'enterprise' (all features unlocked). */
-  plan?: 'basic' | 'starter' | 'pro' | 'team' | 'enterprise';
-  /** When true, provides a DeepMocked<ConfigService> (for overriding config in tests). */
-  mockConfig?: boolean;
-  /** When true, provides a DeepMocked<LicenseService> (for overriding license checks in tests). */
-  mockLicenseService?: boolean;
   /**
-   * Additional NestJS DynamicModules to register alongside the default AppModule.
-   * Useful for loading dynamic modules (e.g. AuditLogsModule) that are excluded
-   * in migration context (IS_GET_CONTEXT: true).
+   * License plan to simulate. Default: 'enterprise' (all features unlocked).
+   * Does NOT create a new app — reconfigures the LicenseTermsService mock
+   * on the cached app to return plan-appropriate values.
    */
-  extraImports?: any[];
+  plan?: 'basic' | 'starter' | 'pro' | 'team' | 'enterprise' | 'trial';
   /**
    * When true, bypasses the context cache and creates a fresh NestJS app.
    * Use when tests need env vars set before app creation (e.g., ThrottlerModule config).
@@ -278,101 +299,60 @@ export interface InitTestAppOptions {
   freshApp?: boolean;
 }
 
-/** Result of initTestApp containing the app and optional mocks. */
+/** Result of initTestApp. */
 export interface InitTestAppResult {
   app: INestApplication;
-  mockConfig?: DeepMocked<ConfigService>;
-  licenseServiceMock?: DeepMocked<LicenseService>;
 }
 
 /**
  * Initializes a NestJS test application with edition and plan context.
- * @param options.mockConfig - When true, injects a DeepMocked ConfigService.
- * @param options.mockLicenseService - When true, injects a controllable LicenseService mock (use jest.spyOn to override).
+ *
+ * Deep module: callers declare edition/plan, the infrastructure handles
+ * caching (multi-slot by edition), mock configuration (plan-aware
+ * LicenseTermsService), and module registration (AuditLogsModule included).
  */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
   const {
     edition = 'ee',
     plan = 'enterprise',
-    mockConfig = false,
-    mockLicenseService = false,
-    extraImports = [],
     freshApp = false,
   } = options ?? {};
 
-  // Cache key: only edition + plan matter for app creation.
-  // mockConfig/mockLicenseService can be satisfied by spying on the cached app's
-  // real services — no need to create a separate app.
-  const isCacheable = !freshApp && extraImports.length === 0;
-  const configKey = isCacheable ? JSON.stringify({ edition, plan }) : undefined;
+  // Cache key: only edition matters. Plan reconfigures the mock, not the app.
+  const isCacheable = !freshApp;
+  const cacheKey = isCacheable ? edition : undefined;
 
-  // Cache hit — reuse existing app
-  if (configKey && _cachedApp && _cachedConfigKey === configKey) {
+  // Cache hit — reuse existing app for this edition
+  if (cacheKey && _cache[cacheKey]) {
+    const slot = _cache[cacheKey];
     try {
-      const ds = _cachedApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+      const ds = slot.app.get(getDataSourceToken('default')) as TypeOrmDataSource;
       if (ds.isInitialized) {
-        setDataSources(_cachedApp);
-        const result: InitTestAppResult = { app: _cachedApp };
-        // Return real services as "mocks" — tests use jest.spyOn() on these,
-        // which works identically on real objects. jest.restoreAllMocks() in
-        // afterEach cleans up the spies between tests.
-        if (mockConfig) result.mockConfig = _cachedApp.get(ConfigService);
-        if (mockLicenseService) result.licenseServiceMock = _cachedApp.get(LicenseService);
-        return result;
+        // Restore spies left by previous describes on shared services.
+        // Without this, jest.resetAllMocks() in afterEach leaves spies installed
+        // but returning undefined — poisoning the next describe's service calls.
+        jest.restoreAllMocks();
+        setDataSources(slot.app);
+        configurePlanMock(slot.app, plan);
+        return { app: slot.app };
       }
     } catch {
       // DataSource retrieval failed — app was destroyed externally
     }
-    _cachedApp = undefined;
-    _cachedConfigKey = undefined;
+    delete _cache[cacheKey];
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
   process.env.TOOLJET_EDITION = edition;
 
-  const providers: Provider[] = [];
-
-  if (mockConfig) {
-    providers.push({
-      provide: ConfigService,
-      useValue: createMock<ConfigService>(),
-    });
-  }
-
-  const licenseServiceInstance = mockLicenseService
-    ? {
-        ...createMock<LicenseService>(),
-        getLicenseTerms: jest.fn((field: string) => {
-          if (field === 'workflows') {
-            return Promise.resolve({
-              execution_timeout: 'UNLIMITED',
-              workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-              instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-            });
-          }
-          return Promise.resolve('UNLIMITED');
-        }),
-        getLicenseTermsInstance: jest.fn(() => Promise.resolve('UNLIMITED')),
-      }
-    : null;
-
-  if (mockLicenseService && licenseServiceInstance) {
-    providers.push({
-      provide: LicenseService,
-      useValue: licenseServiceInstance,
-    });
-  }
-
   const moduleBuilder = Test.createTestingModule({
-    imports: [await AppModule.register({ IS_GET_CONTEXT: true }), ...extraImports],
-    providers,
+    imports: [
+      await AppModule.register({ IS_GET_CONTEXT: true }),
+      await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
+    ],
   });
 
-  if (mockLicenseService && licenseServiceInstance) {
-    moduleBuilder.overrideProvider(LicenseTermsService).useValue(licenseServiceInstance);
-  } else {
-    moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
-  }
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
 
   const moduleRef = await moduleBuilder.compile();
   const app = moduleRef.createNestApplication();
@@ -380,27 +360,18 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   await configureApp(app, moduleRef);
   await app.init();
   setDataSources(app);
+  configurePlanMock(app, plan);
 
-  const result: InitTestAppResult = { app };
-
-  if (mockConfig) {
-    result.mockConfig = moduleRef.get(ConfigService);
+  // Cache the app for reuse by subsequent files with the same edition.
+  // Store real close() for process-exit cleanup; override to no-op so
+  // spec files that call app.close() directly can't destroy the shared app.
+  if (cacheKey) {
+    const realClose = app.close.bind(app);
+    app.close = async () => {};
+    _cache[cacheKey] = { app, realClose };
   }
 
-  if (mockLicenseService) {
-    result.licenseServiceMock = moduleRef.get(LicenseService);
-  }
-
-  // Cache the app for reuse by subsequent files with the same config.
-  // Override app.close() to be a no-op — prevents spec files that call
-  // app.close() directly from destroying the shared cached app.
-  if (configKey) {
-    _cachedApp = app;
-    _cachedConfigKey = configKey;
-    app.close = async () => { /* no-op for cached apps — forceExit handles cleanup */ };
-  }
-
-  return result;
+  return { app };
 }
 
 // ---------------------------------------------------------------------------

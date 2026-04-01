@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs, closeTestApp } from '../../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
@@ -10,7 +11,7 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 describe('OAuth Google instance-level SSO', () => {
   let app: INestApplication;
-  let mockConfig;
+  let configService: ConfigService;
   let instanceSettingsRepository: Repository<InstanceSettings>;
   let userRepository: Repository<User>;
   let orgUserRepository: Repository<OrganizationUser>;
@@ -18,7 +19,8 @@ describe('OAuth Google instance-level SSO', () => {
   const token = 'some-Token';
 
   beforeAll(async () => {
-    ({ app, mockConfig } = await initTestApp({ edition: 'ee', plan: 'enterprise', mockConfig: true }));
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
@@ -47,7 +49,7 @@ describe('OAuth Google instance-level SSO', () => {
         { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
         { value: 'false' }
       );
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
             return 'google-client-id';
@@ -113,7 +115,7 @@ describe('OAuth Google instance-level SSO', () => {
     let current_user: User;
 
     beforeEach(() => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
             return 'google-client-id';
