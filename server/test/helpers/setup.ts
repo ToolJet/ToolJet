@@ -223,12 +223,11 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     _cachedMocks = {};
   }
 
-  // freshApp: skip cache eviction — create a standalone app alongside the cached one.
-  // The cached app survives for the next file that needs the default config.
+  // Cache miss with different config — abandon old cached app.
+  // Don't call _realClose() — it's slow (BullMQ worker drain) and can
+  // push beforeAll past the 60s timeout. The abandoned app's pg-pool
+  // connections idle out, and forceExit handles final cleanup.
   if (!freshApp && _cachedApp) {
-    // Cache miss with different config — close old cached app (use _realClose to bypass no-op)
-    const realClose = (_cachedApp as any)._realClose || _cachedApp.close.bind(_cachedApp);
-    try { await realClose(); } catch {}
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
     _cachedMocks = {};
