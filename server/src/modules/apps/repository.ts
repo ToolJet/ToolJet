@@ -105,7 +105,8 @@ export class AppsRepository extends Repository<App> {
   async findByIdOrSlug(idOrSlug: string): Promise<App | null> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (isUUID(idOrSlug)) {
-        return manager.findOne(App, { where: { id: idOrSlug }, relations: ['appVersions'] });
+        const byId = await manager.findOne(App, { where: { id: idOrSlug }, relations: ['appVersions'] });
+        if (byId) return byId;
       }
       return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
     }, this.manager);
