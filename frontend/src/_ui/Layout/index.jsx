@@ -136,8 +136,8 @@ function Layout({
                   ''
                 ) : logo ? (
                   <img
-                    width="26px"
-                    height="26px"
+                    width="18px"
+                    height="18px"
                     src={logo}
                     onError={(e) => {
                       e.currentTarget.onerror = null; // prevent infinite loop
