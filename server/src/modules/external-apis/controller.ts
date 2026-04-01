@@ -8,7 +8,6 @@ import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-secu
 export class ExternalApisController implements IExternalApisController {
   constructor() {}
 
-
   @UseGuards(ExternalApiSecurityGuard)
   @Get('users')
   async getAllUsers() {
