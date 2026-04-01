@@ -124,10 +124,11 @@ const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns, id]);
+    }, [gridWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -189,7 +190,7 @@ const Container = React.memo(
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
-            if (id === 'canvas') {
+            if (id === 'canvas' || componentType === 'canvas-header' || componentType === 'canvas-footer') {
               return '100%';
             }
             // For Subcontainers
