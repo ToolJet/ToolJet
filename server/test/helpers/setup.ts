@@ -69,7 +69,6 @@ export function getTooljetDbDataSource(): TypeOrmDataSource | undefined {
 
 let _cachedApp: INestApplication | undefined;
 let _cachedConfigKey: string | undefined;
-let _cachedMocks: { mockConfig?: DeepMocked<ConfigService>; licenseServiceMock?: DeepMocked<LicenseService> } = {};
 
 /**
  * Closes the NestJS test application and releases DataSource references.
@@ -79,8 +78,14 @@ let _cachedMocks: { mockConfig?: DeepMocked<ConfigService>; licenseServiceMock?:
 export async function closeTestApp(app: INestApplication | undefined): Promise<void> {
   if (!app || app === _cachedApp) return;
   await app.close();
-  _defaultDataSource = undefined as any;
-  _tooljetDbDataSource = undefined as any;
+  // Restore DataSources from cached app (if alive) instead of wiping —
+  // prevents "DataSource not initialized" if code runs before next initTestApp().
+  if (_cachedApp) {
+    setDataSources(_cachedApp);
+  } else {
+    _defaultDataSource = undefined as any;
+    _tooljetDbDataSource = undefined as any;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +195,6 @@ export interface InitTestAppResult {
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
   const {
     edition = 'ee',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     plan = 'enterprise',
     mockConfig = false,
     mockLicenseService = false,
@@ -217,7 +221,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     }
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
-    _cachedMocks = {};
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
@@ -290,13 +293,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   if (configKey) {
     _cachedApp = app;
     _cachedConfigKey = configKey;
-    _cachedMocks = {};
-    if (result.mockConfig) _cachedMocks.mockConfig = result.mockConfig;
-    if (result.licenseServiceMock) _cachedMocks.licenseServiceMock = result.licenseServiceMock;
-
-    const _realClose = app.close.bind(app);
-    (app as any)._realClose = _realClose;
-    app.close = async () => { /* no-op for cached apps */ };
+    app.close = async () => { /* no-op for cached apps — forceExit handles cleanup */ };
   }
 
   return result;
