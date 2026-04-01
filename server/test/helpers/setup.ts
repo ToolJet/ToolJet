@@ -226,8 +226,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   // freshApp: skip cache eviction — create a standalone app alongside the cached one.
   // The cached app survives for the next file that needs the default config.
   if (!freshApp && _cachedApp) {
-    // Cache miss with different config — close old cached app
-    try { await _cachedApp.close(); } catch {}
+    // Cache miss with different config — close old cached app (use _realClose to bypass no-op)
+    const realClose = (_cachedApp as any)._realClose || _cachedApp.close.bind(_cachedApp);
+    try { await realClose(); } catch {}
     _cachedApp = undefined;
     _cachedConfigKey = undefined;
     _cachedMocks = {};
@@ -299,13 +300,19 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     result.licenseServiceMock = moduleRef.get(LicenseService);
   }
 
-  // Cache the app for reuse by subsequent files with the same config
+  // Cache the app for reuse by subsequent files with the same config.
+  // Override app.close() to be a no-op — prevents spec files that call
+  // app.close() directly from destroying the shared cached app.
   if (configKey) {
     _cachedApp = app;
     _cachedConfigKey = configKey;
     _cachedMocks = {};
     if (result.mockConfig) _cachedMocks.mockConfig = result.mockConfig;
     if (result.licenseServiceMock) _cachedMocks.licenseServiceMock = result.licenseServiceMock;
+
+    const _realClose = app.close.bind(app);
+    (app as any)._realClose = _realClose;
+    app.close = async () => { /* no-op for cached apps */ };
   }
 
   return result;
