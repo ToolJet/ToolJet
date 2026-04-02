@@ -16,19 +16,25 @@ const Tabs = ShadcnTabs;
 const TabsVariantContext = createContext('underline');
 
 // ── TabsList ────────────────────────────────────────────────────────────
-const tabsListVariants = cva(['tw-group/tabs-list tw-inline-flex tw-w-fit tw-items-center', '!tw-h-auto', 'tw-gap-0.5'], {
-  variants: {
-    variant: {
-      underline: ['tw-border-0 tw-border-b tw-border-solid tw-border-border-weak', 'tw-bg-transparent tw-rounded-none'],
-      'underline-inverted': [
-        'tw-border-0 tw-border-t tw-border-solid tw-border-border-weak',
-        'tw-bg-transparent tw-rounded-none',
-      ],
-      pill: ['tw-bg-background-surface-layer-02', 'tw-rounded-lg tw-p-1', 'tw-border-0'],
+const tabsListVariants = cva(
+  ['tw-group/tabs-list tw-inline-flex tw-w-fit tw-items-center', '!tw-h-auto', 'tw-gap-0.5'],
+  {
+    variants: {
+      variant: {
+        underline: [
+          'tw-border-0 tw-border-b tw-border-solid tw-border-border-weak',
+          'tw-bg-transparent tw-rounded-none',
+        ],
+        'underline-inverted': [
+          'tw-border-0 tw-border-t tw-border-solid tw-border-border-weak',
+          'tw-bg-transparent tw-rounded-none',
+        ],
+        pill: ['tw-bg-background-surface-layer-02', 'tw-rounded-lg tw-p-1', 'tw-border-0'],
+      },
     },
-  },
-  defaultVariants: { variant: 'underline' },
-});
+    defaultVariants: { variant: 'underline' },
+  }
+);
 
 const TabsList = forwardRef(function TabsList({ className, variant = 'underline', ...props }, ref) {
   return (

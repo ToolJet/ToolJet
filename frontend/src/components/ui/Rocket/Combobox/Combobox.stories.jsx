@@ -58,9 +58,7 @@ export const Sizes = {
     <div className="tw-flex tw-flex-col tw-gap-3 tw-w-72 tw-p-4">
       {['large', 'default', 'small'].map((size) => (
         <div key={size}>
-          <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block tw-capitalize">
-            {size}
-          </span>
+          <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block tw-capitalize">{size}</span>
           <Combobox items={frameworks.slice(0, 3)}>
             <ComboboxInput size={size} placeholder={`${size} size`} />
             <ComboboxContent>

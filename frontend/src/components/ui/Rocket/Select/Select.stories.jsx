@@ -216,7 +216,7 @@ export const WithField = {
             <SelectItem value="viewer">Viewer</SelectItem>
           </SelectContent>
         </Select>
-        <FieldDescription>Choose the user's permission level.</FieldDescription>
+        <FieldDescription>Choose the user&apos;s permission level.</FieldDescription>
       </Field>
 
       <Field data-invalid="true">

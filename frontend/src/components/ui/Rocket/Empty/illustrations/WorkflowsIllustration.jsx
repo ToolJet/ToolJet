@@ -28,7 +28,14 @@ const WorkflowsIllustration = ({ className = '', width = '24', height = '24', fi
           strokeWidth="1.40831"
         />
         <path d="M91.1892 104.137H108.089" stroke="var(--illu-accent)" strokeWidth="0.704154" strokeLinecap="round" />
-        <circle cx="111.591" cy="104.137" r="0.704154" fill="var(--illu-node)" stroke="var(--illu-accent)" strokeWidth="1.40831" />
+        <circle
+          cx="111.591"
+          cy="104.137"
+          r="0.704154"
+          fill="var(--illu-node)"
+          stroke="var(--illu-accent)"
+          strokeWidth="1.40831"
+        />
         <rect
           x="115.796"
           y="97.0958"
@@ -39,10 +46,34 @@ const WorkflowsIllustration = ({ className = '', width = '24', height = '24', fi
           stroke="var(--illu-accent)"
           strokeWidth="1.40831"
         />
-        <path d="M178.03 100.939L206.196 76.2931" stroke="var(--illu-accent)" strokeWidth="0.704154" strokeLinecap="round" />
-        <path d="M177.02 105.926L205.89 131.98" stroke="var(--illu-accent)" strokeWidth="0.704154" strokeLinecap="round" />
-        <circle cx="210.42" cy="72.7735" r="0.704154" fill="var(--illu-node)" stroke="var(--illu-accent)" strokeWidth="1.40831" />
-        <circle cx="209.411" cy="135.501" r="0.704154" fill="var(--illu-node)" stroke="var(--illu-accent)" strokeWidth="1.40831" />
+        <path
+          d="M178.03 100.939L206.196 76.2931"
+          stroke="var(--illu-accent)"
+          strokeWidth="0.704154"
+          strokeLinecap="round"
+        />
+        <path
+          d="M177.02 105.926L205.89 131.98"
+          stroke="var(--illu-accent)"
+          strokeWidth="0.704154"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="210.42"
+          cy="72.7735"
+          r="0.704154"
+          fill="var(--illu-node)"
+          stroke="var(--illu-accent)"
+          strokeWidth="1.40831"
+        />
+        <circle
+          cx="209.411"
+          cy="135.501"
+          r="0.704154"
+          fill="var(--illu-node)"
+          stroke="var(--illu-accent)"
+          strokeWidth="1.40831"
+        />
         <rect
           x="212.533"
           y="66.1128"
