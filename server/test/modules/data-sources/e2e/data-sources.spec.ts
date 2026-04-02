@@ -185,7 +185,7 @@ describe('DataSourcesController', () => {
           .set('Cookie', loggedAnotherUser.tokenCookie)
           .send({ name: 'hacked_name' });
 
-        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });
@@ -242,7 +242,7 @@ describe('DataSourcesController', () => {
           .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedAnotherUser.tokenCookie);
 
-        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });
@@ -277,7 +277,7 @@ describe('DataSourcesController', () => {
             code: 'oauth-auth-code',
           });
 
-        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });

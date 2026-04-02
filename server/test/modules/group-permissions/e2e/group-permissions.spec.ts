@@ -192,7 +192,7 @@ describe('GroupPermissionsControllerV2', () => {
         expect(response.statusCode).toBe(200);
         // Response should contain default groups (admin, end-user) plus the custom one
         const body = response.body;
-        // The response shape may be an array or an object with a groups key | handle both
+        // The response shape may be an array or an object with a groups key — handle both
         const groups: any[] = Array.isArray(body) ? body : (body.groupPermissions ?? body.group_permissions ?? body);
         const names = groups.map((g: any) => g.name ?? g.group);
         expect(names).toContain('admin');

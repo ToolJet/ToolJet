@@ -39,7 +39,7 @@ describe('EE (plan: enterprise)', () => {
   const mockRows: Record<number, any>[] = [];
 
   // ---------------------------------------------------------------------------
-  // Polly.js setup | intercept PostgREST, passthrough test server
+  // Polly.js setup — intercept PostgREST, passthrough test server
   // ---------------------------------------------------------------------------
   const context = setupPolly({
     adapters: [NodeHttpAdapter as any],
