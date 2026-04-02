@@ -3,6 +3,8 @@ import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mssqlUIConfig, mssqlFormConfig } from "Constants/constants/marketplace/datasources/mssql";
+import { sqlServerSelector } from "Constants/selectors/sqlServer";
+import { sqlServerText } from "Constants/texts/sqlServer";
 
 const data = {};
 
@@ -43,6 +45,8 @@ describe("MSSQL", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
+        cy.get(sqlServerSelector.authenticationTypeDropdown).click();
+        cy.contains(sqlServerSelector.authenticationTypeOption, sqlServerText.authenticationTypeOption).click();
         verifyConnectionFormUI(mssqlUIConfig.defaultFields);
     });
 
@@ -69,7 +73,8 @@ describe("MSSQL", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
-
+        cy.get(sqlServerSelector.authenticationTypeDropdown).click();
+        cy.contains(sqlServerSelector.authenticationTypeOption, sqlServerText.authenticationTypeOption).click();
         fillDSConnectionForm(mssqlFormConfig, []);
 
         verifyDSConnection();
@@ -99,6 +104,8 @@ describe("MSSQL", () => {
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
 
+        cy.get(sqlServerSelector.authenticationTypeDropdown).click();
+        cy.contains(sqlServerSelector.authenticationTypeOption, sqlServerText.authenticationTypeOption).click();
         verifyConnectionFormUI(mssqlUIConfig.defaultFields);
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidHost);
