@@ -17,23 +17,7 @@ export const TestConnection = ({
   appId,
 }) => {
   const [isTesting, setTestingStatus] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('unknown');
-  const [buttonText, setButtonText] = useState('Test connection');
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (isTesting) {
-      setButtonText('Testing connection...');
-    } else if (connectionStatus === 'success') {
-      setButtonText('Connection verified');
-    } else {
-      setButtonText('Test connection');
-    }
-  }, [isTesting, connectionStatus]);
-
-  useEffect(() => {
-    setConnectionStatus('unknown');
-  }, [options]);
 
   function testDataSource() {
     setTestingStatus(true);
@@ -62,45 +46,32 @@ export const TestConnection = ({
       (data) => {
         setTestingStatus(false);
         if (data.status === 'ok') {
-          setConnectionStatus('success');
+          toast.success(t('globals.testConnectionVerified', 'Test connection verified'));
         } else {
-          setConnectionStatus('failed');
+          toast.error(t('globals.testConnectionFailed', 'Test connection could not be verified'));
           onConnectionTestFailed(data);
         }
       },
       ({ error }) => {
         setTestingStatus(false);
-        setConnectionStatus('failed');
-        toast.error(error, { position: 'top-center' });
+        toast.error(t('globals.testConnectionFailed', 'Test connection could not be verified'));
       }
     );
   }
 
   return (
     <div>
-      {connectionStatus === 'failed' && (
-        <span className="badge bg-red-lt" data-cy={`test-connection-failed-text`}>
-          {t('globals.noConnection', 'could not connect')}
-        </span>
-      )}
-
-      {connectionStatus === 'success' && (
-        <span className="badge bg-green-lt" data-cy={`test-connection-verified-text`}>
-          {t('globals.connectionVerified', 'connection verified')}
-        </span>
-      )}
-
-      {connectionStatus === 'unknown' && (
-        <ButtonSolid
-          disabled={isTesting || connectionStatus === 'success'}
-          onClick={() => testDataSource()}
-          data-cy={`test-connection-button`}
-          variant="tertiary"
-          leftIcon="arrowsort"
-        >
-          {buttonText}
-        </ButtonSolid>
-      )}
+      <ButtonSolid
+        disabled={isTesting}
+        onClick={() => testDataSource()}
+        data-cy={`test-connection-button`}
+        variant="tertiary"
+        leftIcon="arrowsort"
+      >
+        {isTesting
+          ? t('globals.testingConnection', 'Testing connection...')
+          : t('globals.testConnection', 'Test connection')}
+      </ButtonSolid>
     </div>
   );
 };

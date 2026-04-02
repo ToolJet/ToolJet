@@ -62,7 +62,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
 
 type NewRevampedComponent =
   | 'Text'
@@ -70,6 +70,7 @@ type NewRevampedComponent =
   | 'PasswordInput'
   | 'NumberInput'
   | 'EmailInput'
+  | 'DropdownV2'
   | 'Table'
   | 'Button'
   | 'Checkbox'
@@ -99,7 +100,10 @@ type NewRevampedComponent =
   | 'PhoneInput'
   | 'IFrame'
   | 'DropdownV2'
-  | 'TreeSelect';
+  | 'TreeSelect'
+  | 'ButtonGroupV2'
+  | 'ModalV2'
+  | 'PopoverMenu';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -114,6 +118,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PasswordInput',
   'NumberInput',
   'EmailInput',
+  'DropdownV2',
   'Table',
   'Checkbox',
   'Button',
@@ -144,9 +149,18 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'ButtonGroupV2',
+  'ModalV2',
+  'PopoverMenu',
 ];
 
-const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
+const PartialRevampedComponents: PartialRevampedComponent[] = [
+  'CodeEditor',
+  'PDF',
+  'Calendar',
+  'CustomComponent',
+  'RadioButtonV2',
+];
 
 const INPUT_WIDGET_TYPES = [
   'TextInput',
@@ -179,6 +193,21 @@ const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
   'DaterangePicker',
 ];
 
+const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
+  Datepicker: 'Select date',
+  DatePickerV2: 'Select date',
+  DatetimePickerV2: 'Select date and time',
+  TimePicker: 'Select time',
+  DaterangePicker: 'Select Date Range',
+};
+
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'DropdownV2',
+];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -188,7 +217,19 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) { }
+  ) {}
+
+  private getEventHandlerName(event: any): string {
+    if (typeof event?.name === 'string' && event.name.trim()) {
+      return event.name.trim();
+    }
+
+    if (typeof event?.eventId === 'string' && event.eventId.trim()) {
+      return event.eventId.trim();
+    }
+
+    return '';
+  }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -306,10 +347,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -321,10 +362,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -332,16 +373,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .leftJoinAndSelect('components.permissions', 'permission')
-            .leftJoinAndSelect('permission.users', 'componentUser')
-            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -368,10 +409,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -426,11 +467,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-          .createQueryBuilder(App, 'app')
-          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-          .distinct(true)
-          .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .distinct(true)
+            .getMany()
         : [];
 
     // Process each module from the import data
@@ -870,7 +911,7 @@ export class AppImportExportService {
               await Promise.all(
                 pageEvents.map(async (event, index) => {
                   const newEvent = {
-                    name: event.eventId,
+                    name: this.getEventHandlerName(event),
                     sourceId: pageCreated.id,
                     target: Target.page,
                     event: event,
@@ -890,7 +931,7 @@ export class AppImportExportService {
                 await Promise.all(
                   eventObj.event.map(async (event, index) => {
                     const newEvent = manager.create(EventHandler, {
-                      name: event.eventId,
+                      name: this.getEventHandlerName(event),
                       sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                       target: Target.component,
                       event: event,
@@ -917,7 +958,7 @@ export class AppImportExportService {
 
                     actionEvents.forEach((event, index) => {
                       tableActionAndColumnEvents.push({
-                        name: event.eventId,
+                        name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableAction,
                         event: { ...event, ref: action.name },
@@ -933,7 +974,7 @@ export class AppImportExportService {
 
                     columnEvents.forEach((event, index) => {
                       tableActionAndColumnEvents.push({
-                        name: event.eventId,
+                        name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableColumn,
                         event: { ...event, ref: column.name },
@@ -1361,7 +1402,7 @@ export class AppImportExportService {
             await Promise.all(
               queryEvents.map(async (event, index) => {
                 const newEvent = await manager.create(EventHandler, {
-                  name: event.eventId,
+                  name: this.getEventHandlerName(event),
                   sourceId: mappedNewDataQuery.id,
                   target: Target.dataQuery,
                   event: event,
@@ -1507,10 +1548,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2238,10 +2279,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user?.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2260,7 +2301,7 @@ export class AppImportExportService {
       await Promise.all(
         queryEvents.map(async (event, index) => {
           const newEvent = {
-            name: event.eventId,
+            name: this.getEventHandlerName(event),
             sourceId: newQuery.id,
             target: Target.dataQuery,
             event: event,
@@ -2614,6 +2655,13 @@ function migrateProperties(
         }
       }
     }
+
+    // Radio Button V2
+    if (componentType === 'RadioButtonV2') {
+      if (properties.layout === undefined) {
+        properties.layout = { value: 'wrap' };
+      }
+    }
   }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
@@ -2891,6 +2939,83 @@ function migrateProperties(
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
       properties.showClearBtn = { value: '{{false}}' };
+    }
+    if (componentType === 'Button') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.contentAlignment === undefined) {
+        styles.contentAlignment = { value: 'center' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'ButtonGroupV2') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'ModalV2') {
+      if (styles.triggerButtonTextSize === undefined) {
+        styles.triggerButtonTextSize = { value: '{{14}}' };
+      }
+      if (styles.triggerButtonFontWeight === undefined) {
+        styles.triggerButtonFontWeight = { value: 'normal' };
+      }
+      if (styles.triggerButtonContentAlignment === undefined) {
+        styles.triggerButtonContentAlignment = { value: 'center' };
+      }
+      if (styles.triggerButtonHoverBackgroundColor === undefined) {
+        styles.triggerButtonHoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.triggerButtonHoverBackgroundMode === undefined) {
+        styles.triggerButtonHoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    if (componentType === 'PopoverMenu') {
+      if (styles.textSize === undefined) {
+        styles.textSize = { value: '{{14}}' };
+      }
+      if (styles.fontWeight === undefined) {
+        styles.fontWeight = { value: 'normal' };
+      }
+      if (styles.contentAlignment === undefined) {
+        styles.contentAlignment = { value: 'center' };
+      }
+      if (styles.hoverBackgroundColor === undefined) {
+        styles.hoverBackgroundColor = { value: 'var(--cc-primary-brand)' };
+      }
+      if (styles.hoverBackgroundMode === undefined) {
+        styles.hoverBackgroundMode = { value: 'auto' };
+      }
+    }
+
+    const placeholderDefault = PLACEHOLDER_DATE_TIME_COMPONENT[componentType];
+    if (placeholderDefault && properties.placeholder === undefined) {
+      properties.placeholder = { value: placeholderDefault };
+    }
+
+    if (PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES.includes(componentType) && styles.placeholderTextColor === undefined) {
+      styles.placeholderTextColor = { value: 'var(--cc-placeholder-text)' };
     }
 
     // DropdownV2

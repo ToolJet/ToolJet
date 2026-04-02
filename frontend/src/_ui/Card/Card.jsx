@@ -18,7 +18,6 @@ const Card = ({
   darkMode,
   tags = [],
 }) => {
-
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
 

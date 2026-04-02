@@ -68,5 +68,13 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
     return (column.buttons || []).find((b) => b.id === buttonId);
   };
 
-  return { addButton, removeButton, duplicateButton, updateButtonProperty, updateButtonProperties, reorderButtons, getButton };
+  return {
+    addButton,
+    removeButton,
+    duplicateButton,
+    updateButtonProperty,
+    updateButtonProperties,
+    reorderButtons,
+    getButton,
+  };
 };

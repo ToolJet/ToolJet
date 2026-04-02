@@ -114,7 +114,11 @@ export class SessionUtilService {
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
-      if (organization) user.organizationId = organization.id;
+      if (organization) {
+        user.organizationId = organization.id;
+        // Unconditional update on login — low frequency event
+        await manager.update(Organization, { id: organization.id }, { lastAccessedAt: new Date() });
+      }
 
       const cookieOptions: CookieOptions = {
         secure: isHttpsEnabled(),
@@ -496,7 +500,7 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string): Promise<void> {
+  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -547,6 +551,11 @@ export class SessionUtilService {
       manager.save(session).catch((err) => {
         console.error('error while extending session expiry', err);
       });
+
+      // Fire-and-forget: update workspace last_accessed_at at most once per interval
+      if (organizationId) {
+        this.organizationRepository.touchLastAccessedAt(organizationId);
+      }
     });
   }
 

@@ -43,7 +43,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
-
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
@@ -76,6 +75,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   };
 
   const validateNewOptions = (newOptions) => {
+    // Guard against stale writes: when queries are switched rapidly, child components (e.g. DynamicSelector)
+    // calls optionsChanged after the user has already moved to a different query.
+    // Without this check, the old query's options would be written onto the newly selected query.
+    const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
+    if (currentStoreQueryId !== selectedQuery?.id) return;
     const updatedOptions = cleanFocusedFields(newOptions);
     updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
@@ -249,7 +253,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         })}
         data-cy="query-events-section"
       >
-        <div className={`form-label`} data-cy="query-manager-events-label">{t('editor.queryManager.eventsHandler', 'Events')}</div>
+        <div className={`form-label`} data-cy="query-manager-events-label">
+          {t('editor.queryManager.eventsHandler', 'Events')}
+        </div>
         <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
@@ -257,6 +263,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             eventMetaDefinition={queryComponent.componentMeta}
             callerQueryId={selectedQueryId}
             popoverPlacement="auto"
+            callerQueryName={selectedQuery?.name}
           />
         </div>
       </div>
@@ -266,7 +273,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderTimeout = () => {
     return (
       <div className="d-flex" data-cy="query-timeout-section">
-        <div className="form-label mt-2" data-cy="query-manager-timeout-label">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
+        <div className="form-label mt-2" data-cy="query-manager-timeout-label">
+          {t('editor.queryManager.timeout', 'Timeout ( ms )')}
+        </div>
         <div className="query-manager-query-timeout">
           <CodeHinter
             theme={darkMode ? 'monokai' : 'base16-light'}
@@ -288,7 +297,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           })}
           data-cy="query-triggers-section"
         >
-          <div className="form-label mt-2" data-cy="query-manager-triggers-label">{t('editor.queryManager.settings', 'Triggers')}</div>
+          <div className="form-label mt-2" data-cy="query-manager-triggers-label">
+            {t('editor.queryManager.settings', 'Triggers')}
+          </div>
           <div className="flex-grow-1">
             {Object.keys(customToggles).map((toggle, index) => (
               <CustomToggleFlag
@@ -298,6 +309,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 index={index}
                 key={toggle}
                 darkMode={darkMode}
+                queryKind={selectedQuery?.kind}
               />
             ))}
             {selectedQuery?.kind === 'restapi' &&
@@ -314,7 +326,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           </div>
         </div>
         <div className="d-flex">
-          <div className="form-label">{ }</div>
+          <div className="form-label">{}</div>
           <SuccessNotificationInputs
             // currentState={currentState}
             options={options}
@@ -339,8 +351,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -362,7 +374,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           >
             Source
           </div>
-          <div className="d-flex flex-column align-items-start" style={{ width: '500px' }} data-cy="query-manager-change-data-source">
+          <div
+            className="d-flex flex-column align-items-start"
+            style={{ width: '500px' }}
+            data-cy="query-manager-change-data-source"
+          >
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
@@ -406,14 +422,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${!hasPermissions || isFreezed ? 'disabled' : ''
-        }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
+        !hasPermissions || isFreezed ? 'disabled' : ''
+      }`}
       style={{
         height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
         overflowY: 'auto',
@@ -445,14 +462,29 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, value, toggleOption, darkMode }) => {
-  const [flag, setFlag] = useState(false);
+const UNSUPPORTED_DEPENDENCY_CHANGE_KINDS = new Set(['runjs', 'runpy']);
 
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  queryKind,
+}) => {
+  const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
+
+  const isHidden = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
 
   useEffect(() => {
     setFlag(value);
   }, [value]);
+
+  if (isHidden) return null;
 
   return (
     <div className="query-manager-settings-toggles">

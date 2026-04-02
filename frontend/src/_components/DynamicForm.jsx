@@ -34,6 +34,7 @@ import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
+import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
 
 const DynamicForm = ({
   schema,
@@ -211,6 +212,8 @@ const DynamicForm = ({
         return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-key-value-tabs':
+        return GraphqlKeyValueTabs;
       case 'react-component-sort':
         return Sort;
       case 'react-component-oauth-authentication':
@@ -303,6 +306,9 @@ const DynamicForm = ({
     parse_key,
     columnSelectorOperation,
     columnSelectorDependsOn,
+    tabs,
+    pagination,
+    pageSize,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -389,6 +395,14 @@ const DynamicForm = ({
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-key-value-tabs': {
+        return {
+          options,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          tabs: tabs || [],
         };
       }
       case 'react-component-sort': {
@@ -502,8 +516,8 @@ const DynamicForm = ({
           cyLabel: label
             ? generateCypressDataCy(label)
             : key
-              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
-              : '',
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -597,6 +611,8 @@ const DynamicForm = ({
           fxEnabled: fxEnabled || fx_enabled,
           isMulti: isMulti || false,
           autoFetch: autoFetch || false,
+          pagination: pagination || false,
+          pageSize: pageSize || 25,
         };
       case 'react-component-sql-filters':
         return {

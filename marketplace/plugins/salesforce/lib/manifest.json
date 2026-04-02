@@ -80,7 +80,7 @@
       "label": "",
       "key": "oauth",
       "type": "react-component-oauth",
-      "description": "A component for salesforce",
+      "description": "A component for Salesforce",
       "oauth_configs": {
         "allowed_auth_types": [
           "oauth2"

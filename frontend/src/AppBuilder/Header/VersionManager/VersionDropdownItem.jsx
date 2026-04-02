@@ -41,7 +41,7 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-    developmentVersions.find((v) => v.id === version.parentVersionId)
+      developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 

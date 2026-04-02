@@ -29,13 +29,15 @@ export class AppHistoryModule extends SubModule {
       AppStateRepository,
       NameResolverRepository,
       AppStateAggregatorService,
-      AppHistoryStreamService,
       EntityChangeService,
       FeatureAbilityFactory,
       VersionRepository,
       AppsRepository,
       AppHistoryUtilService,
     ];
+    if (isMainImport) {
+      providers.push(AppHistoryStreamService);
+    }
 
     // Only register the queue for EE/Cloud editions
     const imports: any[] = [];
@@ -70,7 +72,7 @@ export class AppHistoryModule extends SubModule {
     return {
       module: AppHistoryModule,
       imports,
-      controllers: [AppHistoryController],
+      controllers: isMainImport ? [AppHistoryController] : [],
       providers,
       exports: [AppHistoryUtilService, EntityChangeService],
     };

@@ -359,74 +359,64 @@ export default class MysqlQueryService implements QueryService {
   
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-  let effectiveOptions = { ...sourceOptions };
-  if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
-    const parsed = this.parseConnectionString(sourceOptions.connection_string);
-      effectiveOptions.host= effectiveOptions.host || parsed.host;
-      effectiveOptions.port= effectiveOptions.port|| parsed.port;
-      effectiveOptions.database=effectiveOptions.database || parsed.database;
-      effectiveOptions.username=effectiveOptions.username || parsed.username;
-      effectiveOptions.password=effectiveOptions.password || parsed.password;
-      if (parsed.socket_path) effectiveOptions.socket_path =effectiveOptions.socket_path ||  parsed.socket_path;
-      if (parsed.ssl_enabled !== undefined) effectiveOptions.ssl_enabled = effectiveOptions.ssl_enabled || parsed.ssl_enabled;
-  }
+    let effectiveOptions = { ...sourceOptions };
 
-  const shouldUseSSL = effectiveOptions.ssl_enabled;
-  let sslObject: any = null;
+    const shouldUseSSL = effectiveOptions.ssl_enabled;
+    let sslObject: any = null;
 
-  if (shouldUseSSL) {
-    sslObject = { rejectUnauthorized: (effectiveOptions.ssl_certificate ?? 'none') !== 'none' };
-    
-    if (effectiveOptions.ssl_certificate === 'ca_certificate') {
-      sslObject.ca = effectiveOptions.ca_cert;
-      sslObject.key = effectiveOptions.client_key;
-      sslObject.cert = effectiveOptions.client_cert;
-    } else if (effectiveOptions.ssl_certificate === 'self_signed') {
-      sslObject.ca = effectiveOptions.root_cert;
-      sslObject.key = effectiveOptions.client_key;
-      sslObject.cert = effectiveOptions.client_cert;
+    if (shouldUseSSL) {
+      sslObject = { rejectUnauthorized: (effectiveOptions.ssl_certificate ?? 'none') !== 'none' };
+      
+      if (effectiveOptions.ssl_certificate === 'ca_certificate') {
+        sslObject.ca = effectiveOptions.ca_cert;
+        sslObject.key = effectiveOptions.client_key;
+        sslObject.cert = effectiveOptions.client_cert;
+      } else if (effectiveOptions.ssl_certificate === 'self_signed') {
+        sslObject.ca = effectiveOptions.root_cert;
+        sslObject.key = effectiveOptions.client_key;
+        sslObject.cert = effectiveOptions.client_cert;
+      }
     }
-  }
-  let connectionConfig: any ;
-  if (effectiveOptions.ssh_enabled=='enabled') {
-    connectionConfig = async () => {
-      const ssh = await createSSHStream(effectiveOptions);
-      return {
-        stream: ssh.stream,
+    let connectionConfig: any ;
+    if (effectiveOptions.ssh_enabled=='enabled') {
+      connectionConfig = async () => {
+        const ssh = await createSSHStream(effectiveOptions);
+        return {
+          stream: ssh.stream,
+          user: effectiveOptions.username,
+          password: effectiveOptions.password,
+          database: effectiveOptions.database,
+          multipleStatements: true,
+          ...(shouldUseSSL ? { ssl: sslObject } : {}),
+        };
+      };
+    }else{
+      connectionConfig = {
         user: effectiveOptions.username,
         password: effectiveOptions.password,
         database: effectiveOptions.database,
         multipleStatements: true,
         ...(shouldUseSSL ? { ssl: sslObject } : {}),
       };
-    };
-  }else{
-     connectionConfig = {
-      user: effectiveOptions.username,
-      password: effectiveOptions.password,
-      database: effectiveOptions.database,
-      multipleStatements: true,
-      ...(shouldUseSSL ? { ssl: sslObject } : {}),
-    };
-    
-    if (effectiveOptions.socket_path) {
-      connectionConfig.socketPath = effectiveOptions.socket_path;
-    }else{
-      connectionConfig.host = effectiveOptions.host;
-      connectionConfig.port =  Number(effectiveOptions.port);
+      
+      if (effectiveOptions.socket_path) {
+        connectionConfig.socketPath = effectiveOptions.socket_path;
+      }else{
+        connectionConfig.host = effectiveOptions.host;
+        connectionConfig.port =  Number(effectiveOptions.port);
+      }
     }
+
+    const config: Knex.Config = {
+      client: 'mysql2',
+      connection: connectionConfig,
+      ...this.connectionOptions(effectiveOptions),
+    };
+
+    const knexInstance = knex(config);
+
+    return knexInstance;
   }
-
-  const config: Knex.Config = {
-    client: 'mysql2',
-    connection: connectionConfig,
-    ...this.connectionOptions(effectiveOptions),
-  };
-
-  const knexInstance = knex(config);
-
-  return knexInstance;
-}
 
   async getConnection(
     sourceOptions: SourceOptions,
@@ -473,28 +463,48 @@ export default class MysqlQueryService implements QueryService {
   }
   async listTables(
       sourceOptions: SourceOptions,
+      queryOptions?: { search?: string; page?: number; limit?: number }
     ): Promise<QueryResult> {
       let knexInstance;
       try {
         knexInstance = await this.buildConnection(sourceOptions);
-        
-        const result = await knexInstance.raw(`SHOW TABLES`);
-  
-        const rows = result[0] || [];
-    
-        const tables = rows.map((row: any) => {
-          const tableName = Object.values(row)[0] as string;
-          return {
-            key: tableName,
-            value: tableName,
-            label: tableName,
-          };
-        });
-  
-        return {
-          status: 'ok',
-          data: tables,
-        };
+
+        const search = queryOptions?.search || '';
+        const searchPattern = `%${search}%`;
+
+        if (queryOptions?.limit) {
+          const limit = queryOptions.limit;
+          const page = queryOptions.page || 1;
+          const offset = (page - 1) * limit;
+
+          const [dataResult, countResult] = await Promise.all([
+            knexInstance.raw(
+              `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
+              [searchPattern, limit, offset]
+            ),
+            knexInstance.raw(
+              `SELECT COUNT(*) AS total FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ?`,
+              [searchPattern]
+            ),
+          ]);
+
+          const rows = (dataResult[0] || []).map((row: any) => ({ label: row.TABLE_NAME, value: row.TABLE_NAME }));
+          const totalCount = parseInt(countResult[0]?.[0]?.total ?? '0', 10);
+
+          return { status: 'ok', data: { rows, totalCount } };
+        }
+
+        const result = await knexInstance.raw(
+          `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
+          [searchPattern]
+        );
+
+        const tables = (result[0] || []).map((row: any) => ({
+          label: row.TABLE_NAME,
+          value: row.TABLE_NAME,
+        }));
+
+        return { status: 'ok', data: tables };
       } catch (err) {
         const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
         throw new QueryError('Could not fetch tables', errorMessage, {});
@@ -513,7 +523,22 @@ export default class MysqlQueryService implements QueryService {
     ): Promise<any> {
       try {
         if (methodName === 'getTables') {
-          return await this.listTables(sourceOptions);
+          const isPaginated = !!args?.limit;
+          const result = await this.listTables(sourceOptions, {
+            search: args?.search,
+            page:   args?.page,
+            limit:  args?.limit,
+          });
+
+          const payload = (result as any)?.data ?? [];
+
+          if (isPaginated) {
+            const rows = (payload as any)?.rows ?? [];
+            const totalCount = (payload as any)?.totalCount ?? 0;
+            return { items: rows, totalCount };
+          }
+
+          return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
         }
 
         throw new QueryError(
