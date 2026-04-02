@@ -6,7 +6,8 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { ConfigService } from '@nestjs/config';
 import { DataSourcesUtilService } from '../util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -128,13 +129,23 @@ export class SampleDataSourceService {
 
       const allEnvs: AppEnvironment[] = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
 
+      // Create default DataSourceVersion + DataSourceVersionOptions
+      const dsv = manager.create(DataSourceVersion, {
+        dataSourceId: dataSource.id,
+        name: dataSource.name,
+        isDefault: true,
+        isActive: true,
+        branchId: null,
+      });
+      const savedDsv = await manager.save(DataSourceVersion, dsv);
+
       await Promise.all(
         allEnvs?.map(async (env) => {
           const parsedOptions = await this.dataSourceUtilService.parseOptionsForCreate(options);
           await manager.save(
-            manager.create(DataSourceOptions, {
+            manager.create(DataSourceVersionOptions, {
+              dataSourceVersionId: savedDsv.id,
               environmentId: env.id,
-              dataSourceId: dataSource.id,
               options: parsedOptions,
             })
           );

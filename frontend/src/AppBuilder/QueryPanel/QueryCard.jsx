@@ -8,6 +8,7 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 //TODO: Remove this
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
@@ -16,6 +17,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const { isModuleEditor } = useModuleContext();
   const queryNameEleRef = useRef(null);
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
@@ -26,7 +28,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
   const deletingQueryId = useStore((state) => state.queryPanel.deletingQueryId);

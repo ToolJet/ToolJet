@@ -22,12 +22,21 @@ import { DataSource } from './data_source.entity';
 import { Page } from './page.entity';
 import { EventHandler } from './event_handler.entity';
 import { WorkflowSchedule } from './workflow_schedule.entity';
+import { User } from './user.entity';
+import { WorkspaceBranch } from './workspace_branch.entity';
 
+export enum AppVersionType {
+  VERSION = 'version',
+  BRANCH = 'branch',
+}
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
 
   @Column({ name: 'name' })
   name: string;
@@ -47,6 +56,14 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'home_page_id' })
   homePageId: string;
 
+  @Column({
+    name: 'version_type',
+    type: 'enum',
+    enum: AppVersionType,
+    default: AppVersionType.VERSION,
+  })
+  versionType: AppVersionType;
+
   @Column({ name: 'app_id' })
   appId: string;
 
@@ -59,6 +76,14 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'parent_version_id', type: 'uuid', nullable: true })
   parentVersionId: string;
 
+  @Column({ name: 'created_by', type: 'uuid', nullable: true })
+  createdBy: string;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'created_by' })
+  user: User;
+
+  // need to review if this should be a non-nullable field with default value as DRAFT status
   @Column({
     name: 'status',
     type: 'enum',
@@ -76,6 +101,22 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'released_at', type: 'timestamp', nullable: true })
   releasedAt: Date;
+
+  @Column({ name: 'is_stub', default: false })
+  isStub: boolean;
+
+  @Column({ name: 'branch_id', nullable: true })
+  branchId: string;
+
+  @ManyToOne(() => WorkspaceBranch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch: WorkspaceBranch;
+
+  @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
+  pulledAt: Date;
+
+  @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
+  sourceTag: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

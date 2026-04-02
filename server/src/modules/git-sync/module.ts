@@ -1,8 +1,10 @@
 import { DynamicModule } from '@nestjs/common';
+import { EncryptionModule } from '@modules/encryption/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
+import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
@@ -23,6 +25,8 @@ export class GitSyncModule extends SubModule {
       GitLabGitSyncUtilityService,
       BaseGitUtilService,
       BaseGitSyncService,
+      GitSyncAdapter,
+      WorkspaceGitSyncAdapter,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -35,11 +39,14 @@ export class GitSyncModule extends SubModule {
       'providers/gitlab/util.service',
       'base-git-util.service',
       'base-git.service',
+      'git-sync-adapter',
+      'workspace-git-sync-adapter',
     ]);
 
     return {
       module: GitSyncModule,
       imports: [
+        await EncryptionModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
@@ -61,6 +68,9 @@ export class GitSyncModule extends SubModule {
         GitLabGitSyncUtilityService,
         SourceControlProviderService,
         FeatureAbilityFactory,
+        GitSyncAdapter,
+        WorkspaceGitSyncAdapter,
+        EncryptionService,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
@@ -68,6 +78,10 @@ export class GitSyncModule extends SubModule {
         GitLabGitSyncUtilityService,
         BaseGitSyncService,
         BaseGitUtilService,
+        GitSyncAdapter,
+        WorkspaceGitSyncAdapter,
+        OrganizationGitSyncRepository,
+        SourceControlProviderService,
       ],
     };
   }
