@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
+import { resetDB, createUser, initTestApp, getEntityRepository } from 'test-helper';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -9,11 +9,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 jest.mock('got');
 const mockedGot = jest.mocked(got);
 
-/**
- * @group platform
- */
-describe('OAuthController', () => {
-  describe('EE (plan: enterprise)', () => {
+describe('oauth controller', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
@@ -42,18 +38,19 @@ describe('OAuthController', () => {
     'workflow_group_permissions',
   ].sort();
 
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    ssoConfigsRepository = getEntityRepository(SSOConfigs);
-    orgRepository = getEntityRepository(Organization);
-  });
-
   beforeEach(async () => {
     await resetDB();
   });
 
+  beforeAll(async () => {
+    ({ app } = await initTestApp());
+    ssoConfigsRepository = getEntityRepository(SSOConfigs);
+    orgRepository = getEntityRepository(Organization);
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('SSO Login', () => {
@@ -75,7 +72,7 @@ describe('OAuthController', () => {
     });
 
     describe('Multi-Workspace', () => {
-      describe('POST /api/oauth/sign-in/:configId (Git)', () => {
+      describe('sign in via Git OAuth', () => {
         let sso_configs;
         const token = 'some-Token';
         beforeEach(() => {
@@ -193,12 +190,10 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            first_name: 'SSO',
-            last_name: 'UserGit',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when domain includes spaces and sign up is enabled', async () => {
@@ -238,10 +233,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when sign up is enabled', async () => {
@@ -278,12 +271,10 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            first_name: 'SSO',
-            last_name: 'UserGit',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.first_name).toEqual('SSO');
+          expect(response.body.last_name).toEqual('UserGit');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should sign in new user when name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
@@ -319,10 +310,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should sign in new user when email id not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
@@ -378,10 +367,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
@@ -426,12 +413,13 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'anotheruser1@tooljet.io',
-            first_name: 'SSO',
-            last_name: 'userExist',
-            current_organization_id: current_organization.id,
-          });
+
+          const { email, first_name, last_name, current_organization_id } = response.body;
+
+          expect(email).toEqual('anotheruser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(current_organization_id).toBe(current_organization.id);
         });
         it('should return login info when the user exist with invited status', async () => {
           const { orgUser } = await createUser(app, {
@@ -476,12 +464,13 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'anotheruser1@tooljet.io',
-            first_name: 'SSO',
-            last_name: 'userExist',
-            current_organization_id: current_organization.id,
-          });
+
+          const { email, first_name, last_name, current_organization_id } = response.body;
+
+          expect(email).toEqual('anotheruser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -534,12 +523,13 @@ describe('OAuthController', () => {
           expect(gitAuthResponse).toHaveBeenCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
           expect(gitGetUserResponse).toHaveBeenCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'anotheruser1@tooljet.io',
-            first_name: 'SSO',
-            last_name: 'userExist',
-            current_organization_id: current_organization.id,
-          });
+
+          const { email, first_name, last_name, current_organization_id } = response.body;
+
+          expect(email).toEqual('anotheruser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -608,17 +598,14 @@ describe('OAuthController', () => {
           );
 
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'ssousergit@tooljet.io',
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual('ssousergit@tooljet.io');
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
       });
     });
   });
 
   afterAll(async () => {
-    await closeTestApp(app);
-  }, 60000);
+    await app.close();
   });
 });

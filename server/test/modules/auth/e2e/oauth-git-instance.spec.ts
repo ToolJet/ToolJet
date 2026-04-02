@@ -14,12 +14,7 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-/**
- * @group platform
- */
-describe('OAuthController', () => {
-  describe('Instance-level SSO', () => {
-  describe('EE (plan: enterprise)', () => {
+describe('OAuth Git instance-level SSO', () => {
   let app: INestApplication;
   let instanceSettingsRepository: Repository<InstanceSettings>;
   let userRepository: Repository<User>;
@@ -29,7 +24,7 @@ describe('OAuthController', () => {
   const token = 'some-Token';
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     configService = app.get(ConfigService);
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
@@ -43,10 +38,15 @@ describe('OAuthController', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO -- non-super-admin flows
+  // Instance SSO — non-super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (non-super-admin)', () => {
     beforeEach(async () => {
@@ -69,7 +69,7 @@ describe('OAuthController', () => {
     });
 
     describe('Multi-Workspace instance level SSO', () => {
-      describe('POST /api/oauth/sign-in/common/git', () => {
+      describe('sign in via Git OAuth', () => {
         it('Should not login if user workspace status is invited', async () => {
           await createUser(app, {
             firstName: 'SSO',
@@ -152,7 +152,7 @@ describe('OAuthController', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO -- super-admin flows
+  // Instance SSO — super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (super admin)', () => {
     let current_organization: Organization;
@@ -205,10 +205,10 @@ describe('OAuthController', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toMatchObject({
-          email: 'ssousergit@tooljet.io',
-          super_admin: false,
-        });
+        // Production returns a full session — first SSO user is a regular user
+        // (super admin must be set up via /api/onboarding/setup-super-admin)
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -245,10 +245,9 @@ describe('OAuthController', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toMatchObject({
-          email: 'ssousergit@tooljet.io',
-          super_admin: false,
-        });
+        // Second user gets a session but is not super admin
+        expect(response.body.email).toBe('ssousergit@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
@@ -263,7 +262,7 @@ describe('OAuthController', () => {
         current_organization = organization;
         current_user = user;
       });
-      describe('POST /api/oauth/sign-in/common/git (super admin)', () => {
+      describe('sign in via Git OAuth', () => {
         it('Workspace Login - should return 201 when the super admin log in', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -406,11 +405,5 @@ describe('OAuthController', () => {
         });
       });
     });
-  });
-
-  afterAll(async () => {
-    await closeTestApp(app);
-  }, 60000);
-  });
   });
 });

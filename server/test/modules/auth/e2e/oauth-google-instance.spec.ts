@@ -9,12 +9,7 @@ import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
-/**
- * @group platform
- */
-describe('OAuthController', () => {
-  describe('Instance-level SSO', () => {
-  describe('EE (plan: enterprise)', () => {
+describe('OAuth Google instance-level SSO', () => {
   let app: INestApplication;
   let configService: ConfigService;
   let instanceSettingsRepository: Repository<InstanceSettings>;
@@ -24,7 +19,7 @@ describe('OAuthController', () => {
   const token = 'some-Token';
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     configService = app.get(ConfigService);
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
@@ -38,10 +33,15 @@ describe('OAuthController', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO -- non-super-admin flows
+  // Instance SSO — non-super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (non-super-admin)', () => {
     beforeEach(async () => {
@@ -109,7 +109,7 @@ describe('OAuthController', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO -- super-admin flows
+  // Instance SSO — super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (super admin)', () => {
     let current_user: User;
@@ -149,10 +149,8 @@ describe('OAuthController', () => {
         });
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toMatchObject({
-          email: 'ssouser@tooljet.io',
-          super_admin: false,
-        });
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
 
       it('Second user should not be super admin', async () => {
@@ -178,14 +176,12 @@ describe('OAuthController', () => {
         });
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toMatchObject({
-          email: 'ssouser@tooljet.io',
-          super_admin: false,
-        });
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
       });
     });
 
-    describe('POST /api/oauth/sign-in/common/google (super admin)', () => {
+    describe('sign in via Google OAuth', () => {
       beforeEach(async () => {
         const { user } = await createUser(app, {
           email: 'superadmin@tooljet.io',
@@ -279,11 +275,5 @@ describe('OAuthController', () => {
         });
       });
     });
-  });
-
-  afterAll(async () => {
-    await closeTestApp(app);
-  }, 60000);
-  });
   });
 });

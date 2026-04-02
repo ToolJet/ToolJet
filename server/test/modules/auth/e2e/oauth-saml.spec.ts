@@ -1,17 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, saveEntity } from 'test-helper';
+import { resetDB, createUser, initTestApp, getEntityRepository, saveEntity } from 'test-helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { SAML, Profile } from '@node-saml/node-saml';
 import { SSOResponse } from 'src/entities/sso_response.entity';
 
-/**
- * @group platform
- */
-describe('OAuthController', () => {
-  describe('EE (plan: enterprise)', () => {
+describe('oauth controller', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
@@ -43,6 +39,11 @@ describe('OAuthController', () => {
 
   const defaultUserEmail = 'szoboszlai@lfc.com';
 
+  beforeEach(async () => {
+    await resetDB();
+    setupSAMLMocks();
+  });
+
   const setupSAMLMocks = (name?: string, email?: string) => {
     const googleVerifyMock = jest.spyOn(SAML.prototype, 'validatePostResponseAsync');
     googleVerifyMock.mockImplementation((container: Record<string, string>) => {
@@ -65,18 +66,14 @@ describe('OAuthController', () => {
   };
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     orgRepository = getEntityRepository(Organization);
   });
 
-  beforeEach(async () => {
-    await resetDB();
-    setupSAMLMocks();
-  });
-
   afterEach(() => {
     jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('SSO Login', () => {
@@ -107,7 +104,7 @@ describe('OAuthController', () => {
     });
 
     describe('Multi-Workspace', () => {
-      describe('POST /api/oauth/sign-in/:configId (SAML)', () => {
+      describe('sign in via Ldap SSO', () => {
         let sso_configs: any;
         beforeEach(() => {
           sso_configs = current_organization.ssoConfigs.find((conf) => conf.sso === 'saml');
@@ -147,10 +144,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: defaultUserEmail,
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when domain includes spaces and sign up is enabled', async () => {
@@ -164,10 +159,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: defaultUserEmail,
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when sign up is enabled', async () => {
@@ -177,10 +170,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: defaultUserEmail,
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when name not available and sign up is enabled', async () => {
@@ -190,10 +181,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: defaultUserEmail,
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should sign in new user when email id not available in profile and sign up is enabled', async () => {
@@ -203,10 +192,8 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: defaultUserEmail,
-            current_organization_id: current_organization.id,
-          });
+          expect(response.body.email).toEqual(defaultUserEmail);
+          expect(response.body.current_organization_id).toBe(current_organization.id);
         });
 
         it('should return login info when the user exist', async () => {
@@ -227,11 +214,12 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'mosalah@lfc.com',
-            first_name: 'Mo',
-            current_organization_id: current_organization.id,
-          });
+
+          const { email, first_name, current_organization_id } = response.body;
+
+          expect(email).toEqual('mosalah@lfc.com');
+          expect(first_name).toEqual('Mo');
+          expect(current_organization_id).toBe(current_organization.id);
         });
 
         it('should return login info when the user exist with invited status', async () => {
@@ -252,11 +240,12 @@ describe('OAuthController', () => {
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-          expect(response.body).toMatchObject({
-            email: 'mosalah@lfc.com',
-            last_name: 'Salah',
-            current_organization_id: current_organization.id,
-          });
+
+          const { email, last_name, current_organization_id } = response.body;
+
+          expect(email).toEqual('mosalah@lfc.com');
+          expect(last_name).toEqual('Salah');
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -265,7 +254,6 @@ describe('OAuthController', () => {
   });
 
   afterAll(async () => {
-    await closeTestApp(app);
-  }, 60000);
+    await app.close();
   });
 });
