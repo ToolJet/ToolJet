@@ -127,21 +127,21 @@ export class FolderAppsService implements IFolderAppsService {
     if (user.roleGroup === USER_ROLE.END_USER) {
       if (folderPermissions) {
         if (folderPermissions.isAllViewable) {
-          return folders.filter((folder) => folder.folderApps.length > 0);
+          return folders.filter((folder) => folder.folderApps.length >= 0);
         }
 
         const viewableFolderIds = new Set(folderPermissions.viewableFoldersId || []);
-        return folders.filter((folder) => viewableFolderIds.has(folder.id) && folder.folderApps.length > 0);
+        return folders.filter((folder) => viewableFolderIds.has(folder.id) && folder.folderApps.length >= 0);
       }
 
-      return folders.filter((folder) => folder.folderApps.length > 0);
+      return folders.filter((folder) => folder.folderApps.length >= 0);
     }
 
     // For builders: filter based on granular folder permissions
     if (folderPermissions) {
       // If user has "all" level access for any permission tier, show all folders
       if (folderPermissions.isAllEditable || folderPermissions.isAllEditApps || folderPermissions.isAllViewable) {
-        return folders.filter((f) => f.createdBy === user.id || f.folderApps.length > 0);
+        return folders.filter((f) => f.createdBy === user.id || f.folderApps.length >= 0);
       }
 
       const accessibleFolderIds = new Set([
