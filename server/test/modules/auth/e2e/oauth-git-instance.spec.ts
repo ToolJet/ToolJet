@@ -14,7 +14,9 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-describe('OAuth Git instance-level SSO', () => {
+/** @group platform */
+describe('OAuthController', () => {
+  describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let instanceSettingsRepository: Repository<InstanceSettings>;
   let userRepository: Repository<User>;
@@ -43,7 +45,7 @@ describe('OAuth Git instance-level SSO', () => {
 
   afterAll(async () => {
     await closeTestApp(app);
-  });
+  }, 60_000);
 
   // ---------------------------------------------------------------------------
   // Instance SSO — non-super-admin flows
@@ -405,5 +407,6 @@ describe('OAuth Git instance-level SSO', () => {
         });
       });
     });
+  });
   });
 });

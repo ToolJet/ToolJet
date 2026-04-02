@@ -1,13 +1,15 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getEntityRepository, saveEntity } from 'test-helper';
+import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, saveEntity } from 'test-helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { SAML, Profile } from '@node-saml/node-saml';
 import { SSOResponse } from 'src/entities/sso_response.entity';
 
-describe('oauth controller', () => {
+/** @group platform */
+describe('OAuthController', () => {
+  describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
@@ -39,11 +41,6 @@ describe('oauth controller', () => {
 
   const defaultUserEmail = 'szoboszlai@lfc.com';
 
-  beforeEach(async () => {
-    await resetDB();
-    setupSAMLMocks();
-  });
-
   const setupSAMLMocks = (name?: string, email?: string) => {
     const googleVerifyMock = jest.spyOn(SAML.prototype, 'validatePostResponseAsync');
     googleVerifyMock.mockImplementation((container: Record<string, string>) => {
@@ -69,6 +66,11 @@ describe('oauth controller', () => {
     ({ app } = await initTestApp());
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     orgRepository = getEntityRepository(Organization);
+  });
+
+  beforeEach(async () => {
+    await resetDB();
+    setupSAMLMocks();
   });
 
   afterEach(() => {
@@ -254,6 +256,7 @@ describe('oauth controller', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await closeTestApp(app);
+  }, 60_000);
   });
 });

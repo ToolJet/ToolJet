@@ -1,12 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, getEntityRepository } from 'test-helper';
+import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 
-describe('oauth controller', () => {
+/** @group platform */
+describe('OAuthController', () => {
+  describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
@@ -35,14 +37,14 @@ describe('oauth controller', () => {
     'workflow_group_permissions',
   ].sort();
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   beforeAll(async () => {
     ({ app } = await initTestApp());
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     orgRepository = getEntityRepository(Organization);
+  });
+
+  beforeEach(async () => {
+    await resetDB();
   });
 
   afterEach(() => {
@@ -270,6 +272,7 @@ describe('oauth controller', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await closeTestApp(app);
+  }, 60_000);
   });
 });

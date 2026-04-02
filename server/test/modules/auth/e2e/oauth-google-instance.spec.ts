@@ -9,7 +9,9 @@ import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
-describe('OAuth Google instance-level SSO', () => {
+/** @group platform */
+describe('OAuthController', () => {
+  describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let configService: ConfigService;
   let instanceSettingsRepository: Repository<InstanceSettings>;
@@ -38,7 +40,7 @@ describe('OAuth Google instance-level SSO', () => {
 
   afterAll(async () => {
     await closeTestApp(app);
-  });
+  }, 60_000);
 
   // ---------------------------------------------------------------------------
   // Instance SSO — non-super-admin flows
@@ -275,5 +277,6 @@ describe('OAuth Google instance-level SSO', () => {
         });
       });
     });
+  });
   });
 });
