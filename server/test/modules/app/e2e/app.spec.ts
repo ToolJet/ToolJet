@@ -744,11 +744,7 @@ describe('app controller (EE)', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    // Known failure: the onboarding service's setupAccountFromInvitationToken flow
-    // crashes during workspace activation in test — the invited user's defaultOrganizationId
-    // doesn't match the org they were invited to. Works in production because the signup
-    // flow sets defaultOrganizationId correctly. Needs investigation in the onboarding service.
-    it.skip('should allow users setup account and accept invite', async () => {
+    it('should allow users setup account and accept invite', async () => {
       const { organization: org, user: adminUser } = await createUser(app, {
         email: 'admin@tooljet.io',
       });
