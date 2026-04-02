@@ -23,6 +23,7 @@ title: ToolJet API
 
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
+- [Health Check](#health-check)
 - [Get All Users](#get-all-users)
 - [Get All Workspaces](#get-all-workspaces)
 - [Get All App Details](#get-all-app-details)
@@ -62,6 +63,42 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 ```
 
 ## API Endpoints
+
+### Health Check
+
+- **Description:** Returns the health status of the ToolJet instance, including license validity. This endpoint requires no authentication and can be used for uptime monitoring or load balancer health probes.
+- **URL:** `/api/health`
+- **Method:** GET
+- **Authorization:** None
+- **Content-Type:** `application/json`
+- **Response:** Health status object.
+
+```bash title="cURL Request"
+curl -X GET https://{your-domain}/api/health
+```
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+
+```json
+{
+  "works": "yeah",
+  "license": {
+    "valid": true,
+    "expired": false
+  }
+}
+```
+
+</details>
+
+| Field | Type | Description |
+|:------|:-----|:------------|
+| `works` | string | Returns `"yeah"` when the instance is reachable and operational |
+| `license.valid` | boolean | Indicates whether the current license is valid |
+| `license.expired` | boolean | Indicates whether the current license has expired |
+
+- **Response:** `200 OK`
 
 ### Get All Users
 
