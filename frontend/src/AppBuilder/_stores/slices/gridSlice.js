@@ -555,6 +555,7 @@ export const createGridSlice = (set, get) => ({
     } else if (isClickedOnCanvasFooter) {
       setCanvasFooterSelected(true);
     }
+
     // Check if any inspector popover is currently open
     const isInspectorPopoverOpen = () => {
       const selector = [

@@ -20,13 +20,15 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
+
+  if (isCanvasHeaderSelected) {
+    return <AppHeaderStylesPanel />;
+  }
+  if (isCanvasFooterSelected) {
+    return <AppFooterStylesPanel />;
+  }
+
   if (!selectedComponentId && activeTab !== RIGHT_SIDE_BAR_TAB.PAGES) {
-    if (isCanvasHeaderSelected) {
-      return <AppHeaderStylesPanel />;
-    }
-    if (isCanvasFooterSelected) {
-      return <AppFooterStylesPanel />;
-    }
     // return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     return (
       <>
