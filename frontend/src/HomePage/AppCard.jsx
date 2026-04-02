@@ -318,7 +318,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module' || isStub) && (
+            {(canUpdate || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
