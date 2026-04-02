@@ -28,6 +28,7 @@ export const TableData = ({
   enableExpandableRows,
   expandedRows,
   expansionHeight = DEFAULT_EXPANSION_HEIGHT,
+  dynamicHeightForExpansion,
   canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -118,7 +119,7 @@ export const TableData = ({
   useEffect(() => {
     rowVirtualizer.measure();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [virtualItemList.length, expansionHeight]);
+  }, [virtualItemList.length, expansionHeight, dynamicHeightForExpansion]);
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
@@ -193,6 +194,9 @@ export const TableData = ({
                   darkMode={darkMode}
                   canvasWidth={canvasWidth}
                   expansionHeight={expansionHeight}
+                  dynamicHeightForExpansion={dynamicHeightForExpansion}
+                  measureElement={(el) => (dynamicHeightForExpansion ? rowVirtualizer.measureElement(el) : undefined)}
+                  virtualItemIndex={virtualRow.index}
                 />
               );
             }

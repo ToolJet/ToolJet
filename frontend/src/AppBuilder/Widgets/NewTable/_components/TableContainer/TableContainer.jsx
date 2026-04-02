@@ -48,6 +48,7 @@ export const TableContainer = ({
   const toggleRowExpansion = useTableStore((state) => state.toggleRowExpansion, shallow);
   const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
   const expansionHeight = useTableStore((state) => state.getTableProperties(id)?.expansionHeight ?? 250, shallow);
+  const dynamicHeightForExpansion = useTableStore((state) => state.getDynamicHeightForExpansion(id), shallow);
 
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
@@ -206,6 +207,7 @@ export const TableContainer = ({
         enableExpandableRows={enableExpandableRows}
         expandedRows={expandedRows}
         expansionHeight={expansionHeight}
+        dynamicHeightForExpansion={dynamicHeightForExpansion}
         canvasWidth={width}
       />
       <Footer
