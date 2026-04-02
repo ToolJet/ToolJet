@@ -1,4 +1,5 @@
 import type { Config } from '@jest/types';
+import { coverageConfig } from './test/jest-coverage.config';
 
 const config: Config.InitialOptions = {
   verbose: true,
@@ -37,6 +38,7 @@ const config: Config.InitialOptions = {
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
     '^test-helper$': '<rootDir>/test/test.helper.ts',
   },
+  ...coverageConfig(),
   runner: 'groups',
   testTimeout: 30000,
   forceExit: true,
