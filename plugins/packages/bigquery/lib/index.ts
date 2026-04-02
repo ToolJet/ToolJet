@@ -164,6 +164,99 @@ export default class Bigquery implements QueryService {
     return columString.join(',');
   }
 
+  async invokeMethod(
+    methodName: string,
+    _context: { user?: any; app?: any },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    if (methodName === 'listDatasets') {
+      return await this._fetchDatasets(sourceOptions, args?.search, args?.page, args?.limit);
+    }
+    if (methodName === 'listTables') {
+      const datasetId = args?.values?.datasetId || '';
+      return await this._fetchTables(sourceOptions, datasetId, args?.search, args?.page, args?.limit);
+    }
+
+    throw new QueryError(
+      'Method not found',
+      `Method ${methodName} is not supported for BigQuery plugin`,
+      { availableMethods: ['listDatasets', 'listTables'] }
+    );
+  }
+
+  private async _fetchDatasets(sourceOptions: SourceOptions, search = '', page?: number, limit?: number): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
+    try {
+
+      const client = await this.getConnection(sourceOptions);
+
+      const [datasets] = await client.getDatasets();
+
+      const searchLower = search.toLowerCase();
+      const filtered = search
+        ? datasets.filter((d: any) => d.id.toLowerCase().includes(searchLower))
+        : datasets;
+
+      const totalCount = filtered.length;
+
+      if (limit) {
+        const offset = ((page || 1) - 1) * limit;
+        const paged = filtered.slice(offset, offset + limit);
+
+        const result = {
+          items: paged.map((d: any) => ({ value: d.id, label: d.id })),
+          totalCount,
+        };
+
+        return result;
+      }
+
+      const result = filtered.map((d: any) => ({ value: d.id, label: d.id }));
+
+      return result;
+    } catch (error) {
+
+      const errorMessage = error.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch datasets', errorMessage, {});
+    }
+  }
+
+ private async _fetchTables(
+    sourceOptions: SourceOptions,
+    datasetId: string,
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
+    try {
+      const client = await this.getConnection(sourceOptions);
+
+      const [tables] = await client.dataset(datasetId).getTables();
+      const searchLower = search.toLowerCase();
+      const filtered = search
+        ? tables.filter((t: any) => t.id.toLowerCase().includes(searchLower))
+        : tables;
+      const totalCount = filtered.length;
+      if (limit) {
+        const offset = ((page || 1) - 1) * limit;
+        const paged = filtered.slice(offset, offset + limit);
+
+        const result = {
+          items: paged.map((t: any) => ({ value: t.id, label: t.id })),
+          totalCount,
+        };
+
+        return result;
+      }
+
+      const result = filtered.map((t: any) => ({ value: t.id, label: t.id }));
+
+      return result;
+    } catch (error) {
+      const errorMessage = error.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
+  }
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
     const privateKey = this.getPrivateKey(sourceOptions?.private_key);
     let scopes = [];
