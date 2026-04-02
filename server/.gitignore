@@ -34,4 +34,4 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # Postgrest configuration
-**/postgrest.conf
+**/postgrest.confautoresearch-results.tsv
