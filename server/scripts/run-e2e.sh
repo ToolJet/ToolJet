@@ -13,7 +13,7 @@ set -o pipefail
 SHARDS=3
 JEST_CONFIG="./test/jest-e2e.json"
 NODE_OPTS="--max-old-space-size=8192"
-JEST_ARGS="--runInBand --forceExit --colors"
+JEST_ARGS="--runInBand --colors"
 
 total_passed=0
 total_failed=0

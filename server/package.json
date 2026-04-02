@@ -16,7 +16,7 @@
     "start:prod": "NODE_ENV=production node dist/src/main",
     "test": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' jest --config jest.config.ts --verbose --forceExit",
     "test:e2e": "bash ./scripts/run-e2e.sh",
-    "test:e2e:record": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' POLLY_MODE=record jest --config ./test/jest-e2e.json --runInBand --verbose --forceExit",
+    "test:e2e:record": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' POLLY_MODE=record jest --config ./test/jest-e2e.json --runInBand",
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:create:prod": "node dist/scripts/create-database.js ",
     "db:drop": "ts-node ./scripts/drop-database.ts",

@@ -12,6 +12,7 @@
   "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",
   "testTimeout": 60000,
+  "verbose": true,
   "forceExit": true,
   "slowTestThreshold": 60,
   "transformIgnorePatterns": [
