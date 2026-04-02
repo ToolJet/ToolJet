@@ -12,6 +12,8 @@ import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UserFolderPermissions } from '@modules/ability/types';
+import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -48,7 +50,22 @@ export class FolderAppsService implements IFolderAppsService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const type = query.type;
       const searchKey = query.searchKey;
-      const branchId = query.branchId;
+      let branchId = query.branchId;
+
+      // When no branchId is provided (e.g. end users without branch switcher),
+      // fall back to the default branch so folders reflect only default-branch apps.
+      if (!branchId && type === APP_TYPES.FRONT_END) {
+        const orgGit = await manager.findOne(OrganizationGitSync, {
+          where: { organizationId: user.organizationId },
+        });
+        if (orgGit) {
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+            select: ['id'],
+          });
+          branchId = defaultBranch?.id;
+        }
+      }
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
         resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],

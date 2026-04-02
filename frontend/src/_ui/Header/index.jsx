@@ -9,6 +9,7 @@ import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { authenticationService } from '@/_services';
 
 function Header({
   featureAccess,
@@ -18,6 +19,10 @@ function Header({
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
+  const currentSession = authenticationService.currentSessionValue;
+  const isAdmin = !!currentSession?.admin;
+  const isBuilder = !!currentSession?.user_permissions?.is_builder;
+  const canAccessGitControls = isAdmin || isBuilder;
 
   const routes = (pathEnd, path) => {
     const pathParts = path.split('/');
@@ -167,6 +172,7 @@ function Header({
               })}
             >
               {featureAccess?.gitSync &&
+                canAccessGitControls &&
                 isBranchStoreInitialized &&
                 pathname !== 'Workspace constants' &&
                 isGitSupportedPage && (
