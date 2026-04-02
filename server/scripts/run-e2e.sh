@@ -13,7 +13,7 @@ set -o pipefail
 SHARDS=3
 JEST_CONFIG="./test/jest-e2e.json"
 NODE_OPTS="--max-old-space-size=8192"
-JEST_ARGS="--runInBand --verbose --forceExit"
+JEST_ARGS="--runInBand --forceExit --colors"
 
 total_passed=0
 total_failed=0
@@ -22,8 +22,20 @@ tests_passed=0
 tests_failed=0
 failed_suites=""
 exit_code=0
+start_time=$SECONDS
 
 extract_num() { echo "$1" | grep -Eo "[0-9]+ $2" | awk '{print $1}'; }
+
+fmt_duration() {
+  local secs=$1
+  if [ $secs -ge 3600 ]; then
+    printf "%dh %dm %ds" $((secs/3600)) $((secs%3600/60)) $((secs%60))
+  elif [ $secs -ge 60 ]; then
+    printf "%dm %ds" $((secs/60)) $((secs%60))
+  else
+    printf "%ds" "$secs"
+  fi
+}
 
 for s in $(seq 1 $SHARDS); do
   printf "\n\033[1m━━━ Shard %d/%d ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n" "$s" "$SHARDS"
@@ -53,6 +65,7 @@ for s in $(seq 1 $SHARDS); do
 done
 
 total_tests=$((tests_passed + tests_failed))
+elapsed=$((SECONDS - start_time))
 
 printf "\n\033[1m━━━ Results ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
 
@@ -66,5 +79,6 @@ else
   echo "$failed_suites" | sort -u | grep -v '^$' | sed 's/^/  /'
 fi
 
+printf "\033[2mTime:        %s\033[0m\n" "$(fmt_duration $elapsed)"
 echo ""
 exit $exit_code
