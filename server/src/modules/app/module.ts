@@ -198,6 +198,7 @@ export class AppModule implements OnModuleInit, NestModule {
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
         CustomDomainStatusScheduler,
+        AppService,
       ],
     };
   }

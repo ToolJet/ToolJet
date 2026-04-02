@@ -15,6 +15,8 @@ interface Features {
   [FEATURE_KEY.LIST_CONVERSATIONS]: FeatureConfig;
   [FEATURE_KEY.CREATE_CONVERSATION]: FeatureConfig;
   [FEATURE_KEY.GET_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_KEY]: FeatureConfig;
+  [FEATURE_KEY.GET_KEY_SETTINGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -19,11 +19,13 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [sourceBranchId, setSourceBranchId] = useState('');
   const dropdownRef = useRef(null);
 
-  const { branches, activeBranchId } = useWorkspaceBranchesStore((state) => ({
+  const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
     activeBranchId: state.activeBranchId,
+    orgGitConfig: state.orgGitConfig,
   }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
+  const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
 
   // Always create from the default (main) branch
   const defaultBranch = branches.find((b) => b.is_default || b.isDefault);
@@ -211,7 +213,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
         {/* Info message */}
         <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
           {/* Branch can only be created from the default branch */}
-          Branch can only be created from the master
+          Branch can only be created from {defaultGitBranch}
         </Alert>
 
         {/* Footer buttons */}

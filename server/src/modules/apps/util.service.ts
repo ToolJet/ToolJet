@@ -106,7 +106,7 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : uuidv4(),
+            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : workspaceBranch!.name,
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
@@ -799,6 +799,10 @@ export class AppsUtilService implements IAppsUtilService {
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
         if (dq.options?.operation === 'join_tables') {
+          // The primary table is only in join_table.from.name — no top-level table_id for join queries
+          const fromName = dq.options?.join_table?.from?.name;
+          if (fromName) uniqTableIds.add(fromName);
+
           const joinOptions = dq.options?.join_table?.joins ?? [];
           (joinOptions || []).forEach((join) => {
             const { table, conditions } = join;

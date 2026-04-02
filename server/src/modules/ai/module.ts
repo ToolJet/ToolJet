@@ -18,6 +18,7 @@ import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { EncryptionModule } from '@modules/encryption/module';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -43,6 +44,7 @@ export class AiModule extends SubModule {
         await AppHistoryModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
+        await EncryptionModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
