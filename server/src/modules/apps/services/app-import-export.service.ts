@@ -201,12 +201,7 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
-  'TextInput',
-  'PasswordInput',
-  'NumberInput',
-  'DropdownV2',
-];
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -870,12 +865,14 @@ export class AppImportExportService {
                 showOnMobile: false,
                 backgroundColor: 'var(--cc-surface1-surface)',
                 border: 'var(--cc-default-border)',
+                height: 60,
               },
               pageFooter: page.pageFooter || {
                 showOnDesktop: false,
                 showOnMobile: false,
                 backgroundColor: 'var(--cc-surface1-surface)',
                 border: 'var(--cc-default-border)',
+                height: 60,
               },
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,

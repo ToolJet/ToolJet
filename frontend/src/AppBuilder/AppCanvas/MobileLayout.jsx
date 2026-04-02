@@ -23,6 +23,7 @@ export const MobileLayout = ({
   canvasMaxWidth,
   isAppDarkMode,
   mainCanvasContainer,
+  canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
@@ -46,7 +47,7 @@ export const MobileLayout = ({
         <div
           style={{
             position: 'sticky',
-            top: showCanvasHeader ? PAGE_CANVAS_HEADER_HEIGHT : 0,
+            top: showCanvasHeader ? canvasHeaderHeight : 0,
             zIndex: 9,
             flexShrink: 0,
           }}

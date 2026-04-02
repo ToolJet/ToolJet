@@ -91,13 +91,25 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       ] ?? false,
     shallow
   );
+  const canvasHeaderHeight = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.height ??
+      PAGE_CANVAS_HEADER_HEIGHT,
+    shallow
+  );
+  const canvasFooterHeight = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.height ??
+      PAGE_CANVAS_FOOTER_HEIGHT,
+    shallow
+  );
   const sideBarVisibleHeight = useAppPageSidebarHeight(
     canvasContentRef,
     showCanvasHeader,
     showCanvasFooter,
     appType,
-    PAGE_CANVAS_HEADER_HEIGHT,
-    PAGE_CANVAS_FOOTER_HEIGHT,
+    canvasHeaderHeight,
+    canvasFooterHeight,
     position,
     isPagesSidebarHidden
   );
@@ -268,6 +280,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           canvasMaxWidth={canvasMaxWidth}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          canvasHeaderHeight={canvasHeaderHeight}
                         />
                       ) : (
                         <DesktopLayout
@@ -291,6 +304,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           currentMode={currentMode}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          canvasHeaderHeight={canvasHeaderHeight}
                         />
                       )}
                     </SuspenseCountProvider>

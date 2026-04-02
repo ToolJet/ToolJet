@@ -28,6 +28,7 @@ export const DesktopLayout = ({
   currentMode,
   isAppDarkMode,
   mainCanvasContainer,
+  canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
 }) => (
   <div
     key={pageKey}
@@ -46,7 +47,7 @@ export const DesktopLayout = ({
           <div
             style={{
               position: 'sticky',
-              top: showCanvasHeader && appType !== 'module' ? PAGE_CANVAS_HEADER_HEIGHT : 0,
+              top: showCanvasHeader && appType !== 'module' ? canvasHeaderHeight : 0,
               flexShrink: 0,
               zIndex: 5,
               height: sideBarVisibleHeight,
