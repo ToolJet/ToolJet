@@ -52,9 +52,15 @@ export const AllVariants = {
       {['ghost', 'outline'].map((variant) => (
         <div key={variant} className="tw-flex tw-items-center tw-gap-3">
           <span className="tw-w-20 tw-text-sm tw-text-text-medium">{variant}</span>
-          <Toggle variant={variant} aria-label="Bold"><Bold size={14} /></Toggle>
-          <Toggle variant={variant} defaultPressed aria-label="Italic"><Italic size={14} /></Toggle>
-          <Toggle variant={variant} disabled aria-label="Underline"><Underline size={14} /></Toggle>
+          <Toggle variant={variant} aria-label="Bold">
+            <Bold size={14} />
+          </Toggle>
+          <Toggle variant={variant} defaultPressed aria-label="Italic">
+            <Italic size={14} />
+          </Toggle>
+          <Toggle variant={variant} disabled aria-label="Underline">
+            <Underline size={14} />
+          </Toggle>
         </div>
       ))}
     </div>

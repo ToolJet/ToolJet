@@ -1,11 +1,6 @@
 import React from 'react';
 import { Button } from '../Button/Button';
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from './Tooltip';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from './Tooltip';
 
 export default {
   title: 'Rocket/Tooltip',
@@ -28,9 +23,7 @@ export const Default = {
       <TooltipTrigger asChild>
         <Button variant="secondary">Hover me</Button>
       </TooltipTrigger>
-      <TooltipContent>
-        This is a tooltip
-      </TooltipContent>
+      <TooltipContent>This is a tooltip</TooltipContent>
     </Tooltip>
   ),
 };
@@ -44,9 +37,7 @@ export const Sides = {
           <TooltipTrigger asChild>
             <Button variant="secondary">{side}</Button>
           </TooltipTrigger>
-          <TooltipContent side={side}>
-            Tooltip on {side}
-          </TooltipContent>
+          <TooltipContent side={side}>Tooltip on {side}</TooltipContent>
         </Tooltip>
       ))}
     </div>
@@ -80,9 +71,7 @@ export const WithoutArrow = {
       <TooltipTrigger asChild>
         <Button variant="secondary">No arrow</Button>
       </TooltipTrigger>
-      <TooltipContent showArrow={false}>
-        Tooltip without arrow
-      </TooltipContent>
+      <TooltipContent showArrow={false}>Tooltip without arrow</TooltipContent>
     </Tooltip>
   ),
 };
@@ -98,7 +87,8 @@ export const WithBody = {
         <div className="tw-flex tw-flex-col tw-gap-1">
           <span className="tw-font-medium">This is a tooltip title</span>
           <span className="tw-font-normal tw-text-text-on-solid/80">
-            Tooltips are used to describe or identify an element. In most scenarios, tooltips help the user understand the meaning, function or alt-text of an element.
+            Tooltips are used to describe or identify an element. In most scenarios, tooltips help the user understand
+            the meaning, function or alt-text of an element.
           </span>
         </div>
       </TooltipContent>
@@ -123,7 +113,9 @@ export const AllSides = {
       ].map(({ side, align, label }) => (
         <Tooltip key={label} defaultOpen>
           <TooltipTrigger asChild>
-            <Button variant="secondary" size="small">{label}</Button>
+            <Button variant="secondary" size="small">
+              {label}
+            </Button>
           </TooltipTrigger>
           <TooltipContent side={side} align={align}>
             {label}

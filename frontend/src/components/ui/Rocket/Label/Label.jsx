@@ -5,11 +5,7 @@ import { cn } from '@/lib/utils';
 import { Label as ShadcnLabel } from '@/components/ui/Rocket/shadcn/label';
 
 const labelVariants = cva(
-  [
-    'tw-font-medium tw-leading-none',
-    'tw-pl-0.5',
-    'peer-disabled:tw-cursor-not-allowed peer-disabled:tw-opacity-70',
-  ],
+  ['tw-font-medium tw-leading-none', 'tw-pl-0.5', 'peer-disabled:tw-cursor-not-allowed peer-disabled:tw-opacity-70'],
   {
     variants: {
       size: {
@@ -22,27 +18,17 @@ const labelVariants = cva(
   }
 );
 
-const Label = forwardRef(function Label(
-  { className, size, required, disabled, children, ...props },
-  ref
-) {
+const Label = forwardRef(function Label({ className, size, required, disabled, children, ...props }, ref) {
   return (
     <ShadcnLabel
       ref={ref}
-      className={cn(
-        labelVariants({ size }),
-        disabled ? 'tw-text-text-disabled' : 'tw-text-text-default',
-        className
-      )}
+      className={cn(labelVariants({ size }), disabled ? 'tw-text-text-disabled' : 'tw-text-text-default', className)}
       {...props}
     >
       {children}
       {required && (
         <span
-          className={cn(
-            'tw-ml-0.5',
-            disabled ? 'tw-text-text-disabled' : 'tw-text-text-danger'
-          )}
+          className={cn('tw-ml-0.5', disabled ? 'tw-text-text-disabled' : 'tw-text-text-danger')}
           aria-hidden="true"
         >
           *

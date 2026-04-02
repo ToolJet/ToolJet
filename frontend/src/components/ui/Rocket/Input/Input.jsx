@@ -33,13 +33,7 @@ const inputVariants = cva(
 );
 
 const Input = forwardRef(function Input({ className, size, ...props }, ref) {
-  return (
-    <ShadcnInput
-      ref={ref}
-      className={cn(inputVariants({ size }), className)}
-      {...props}
-    />
-  );
+  return <ShadcnInput ref={ref} className={cn(inputVariants({ size }), className)} {...props} />;
 });
 
 Input.displayName = 'Input';

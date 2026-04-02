@@ -44,12 +44,7 @@ export const Sizes = {
     <div className="tw-flex tw-items-end tw-gap-3 tw-p-4">
       {['xs', 'sm', 'default', 'md', 'lg', 'xl', '2xl'].map((size) => (
         <div key={size} className="tw-flex tw-flex-col tw-items-center tw-gap-1">
-          <Avatar
-            size={size}
-            src={`https://i.pravatar.cc/128?u=${size}`}
-            alt={size}
-            fallback="RK"
-          />
+          <Avatar size={size} src={`https://i.pravatar.cc/128?u=${size}`} alt={size} fallback="RK" />
           <span className="tw-text-xs tw-text-text-medium">{size}</span>
         </div>
       ))}
