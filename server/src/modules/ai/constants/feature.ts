@@ -41,5 +41,11 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_CONVERSATION]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.UPDATE_KEY]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.GET_KEY_SETTINGS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };
