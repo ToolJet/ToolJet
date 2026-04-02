@@ -171,3 +171,4 @@ export {
   CollapsibleContent,
   collapsibleContentVariants,
 } from './Collapsible/Collapsible';
+export { Toaster, toast } from './Sonner/Sonner';
