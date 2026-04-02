@@ -11,9 +11,15 @@
 set -o pipefail
 
 SHARDS=3
-JEST_CONFIG="./test/jest-e2e.json"
+JEST_CONFIG="./test/jest-e2e.config.ts"
 NODE_OPTS="--max-old-space-size=8192"
 JEST_ARGS="--runInBand --colors"
+
+# Detect --coverage in args so we can route each shard to its own directory
+HAS_COVERAGE=false
+for arg in "$@"; do
+  [ "$arg" = "--coverage" ] && HAS_COVERAGE=true
+done
 
 total_passed=0
 total_failed=0
@@ -40,8 +46,13 @@ fmt_duration() {
 for s in $(seq 1 $SHARDS); do
   printf "\n\033[1m━━━ Shard %d/%d ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n" "$s" "$SHARDS"
 
+  COV_ARGS=""
+  if [ "$HAS_COVERAGE" = true ]; then
+    COV_ARGS="--coverageDirectory=.coverage/shard-$s"
+  fi
+
   NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest --config "$JEST_CONFIG" \
-    --shard="$s/$SHARDS" $JEST_ARGS "$@" 2>&1 | tee /tmp/e2e-shard-$s.log
+    --shard="$s/$SHARDS" $JEST_ARGS $COV_ARGS "$@" 2>&1 | tee /tmp/e2e-shard-$s.log
 
   shard_exit=${PIPESTATUS[0]}
   [ $shard_exit -ne 0 ] && exit_code=1
@@ -63,6 +74,21 @@ for s in $(seq 1 $SHARDS); do
   shard_failed=$(grep "FAIL " /tmp/e2e-shard-$s.log | head -20)
   [ -n "$shard_failed" ] && failed_suites="$failed_suites$shard_failed"$'\n'
 done
+
+# Merge per-shard coverage into a single report
+if [ "$HAS_COVERAGE" = true ]; then
+  printf "\n\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
+  mkdir -p .coverage/merged
+  npx nyc merge .coverage .coverage/merged/coverage-final.json 2>/dev/null
+  npx nyc report \
+    --temp-dir .coverage/merged \
+    --reporter=text --reporter=html --reporter=lcov \
+    --report-dir=coverage 2>/dev/null
+  cp .coverage/merged/coverage-final.json coverage/coverage-final.json
+  printf "\033[32mCoverage report written to coverage/\033[0m\n"
+  printf "\033[2mOpen coverage/index.html in a browser for the full report.\033[0m\n"
+  rm -rf .coverage
+fi
 
 total_tests=$((tests_passed + tests_failed))
 elapsed=$((SECONDS - start_time))
