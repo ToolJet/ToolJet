@@ -7,12 +7,7 @@ import {
   InputGroupText,
   InputGroupButton,
 } from './InputGroup';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '../Select/Select';
+import { Select, SelectContent, SelectItem, SelectValue } from '../Select/Select';
 import { Search, Mail, Eye, ChevronDown, Copy, Globe, Phone } from 'lucide-react';
 
 export default {

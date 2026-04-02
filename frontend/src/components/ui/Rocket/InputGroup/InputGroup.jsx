@@ -13,7 +13,6 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/Rocket/shadcn/input-group';
 
-
 // ── Wrapped (border/focus token override to match Rocket Input) ───────────
 
 const inputGroupSizes = {
@@ -51,7 +50,11 @@ InputGroup.propTypes = {
 
 function InputGroupAddon({ className, align = 'inline-start', children, ...props }) {
   return (
-    <ShadcnInputGroupAddon align={align} className={cn('tw-max-h-full tw-py-0.5 tw-gap-1 empty:tw-hidden', className)} {...props}>
+    <ShadcnInputGroupAddon
+      align={align}
+      className={cn('tw-max-h-full tw-py-0.5 tw-gap-1 empty:tw-hidden', className)}
+      {...props}
+    >
       {children}
     </ShadcnInputGroupAddon>
   );
@@ -112,10 +115,7 @@ const inputGroupSelectVariants = cva(
   }
 );
 
-const InputGroupSelect = forwardRef(function InputGroupSelect(
-  { className, size, children, ...props },
-  ref
-) {
+const InputGroupSelect = forwardRef(function InputGroupSelect({ className, size, children, ...props }, ref) {
   return (
     <SelectTrigger
       ref={ref}

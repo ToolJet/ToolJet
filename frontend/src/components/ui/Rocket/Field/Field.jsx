@@ -27,32 +27,17 @@ Field.propTypes = {
 };
 
 function FieldLabel({ className, ...props }) {
-  return (
-    <ShadcnFieldLabel
-      className={cn('tw-text-text-default tw-text-base tw-font-medium', className)}
-      {...props}
-    />
-  );
+  return <ShadcnFieldLabel className={cn('tw-text-text-default tw-text-base tw-font-medium', className)} {...props} />;
 }
 FieldLabel.displayName = 'FieldLabel';
 
 function FieldDescription({ className, ...props }) {
-  return (
-    <ShadcnFieldDescription
-      className={cn('tw-text-text-placeholder tw-text-sm', className)}
-      {...props}
-    />
-  );
+  return <ShadcnFieldDescription className={cn('tw-text-text-placeholder tw-text-sm', className)} {...props} />;
 }
 FieldDescription.displayName = 'FieldDescription';
 
 function FieldError({ className, ...props }) {
-  return (
-    <ShadcnFieldError
-      className={cn('tw-text-text-danger tw-text-sm', className)}
-      {...props}
-    />
-  );
+  return <ShadcnFieldError className={cn('tw-text-text-danger tw-text-sm', className)} {...props} />;
 }
 FieldError.displayName = 'FieldError';
 

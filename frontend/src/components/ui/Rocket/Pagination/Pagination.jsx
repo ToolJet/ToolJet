@@ -135,7 +135,7 @@ function PaginationLink({ className, isActive, size, disabled, ...props }) {
         paginationLinkVariants({ size: resolvedSize }),
         isActive && activeClasses,
         disabled && 'tw-pointer-events-none tw-opacity-50',
-        className,
+        className
       )}
       {...props}
     />
@@ -163,7 +163,7 @@ function PaginationPrevious({ className, size, disabled, ...props }) {
       className={cn(
         paginationNavVariants({ size: resolvedSize }),
         disabled && 'tw-pointer-events-none tw-opacity-50',
-        className,
+        className
       )}
       {...props}
     />
@@ -190,7 +190,7 @@ function PaginationNext({ className, size, disabled, ...props }) {
       className={cn(
         paginationNavVariants({ size: resolvedSize }),
         disabled && 'tw-pointer-events-none tw-opacity-50',
-        className,
+        className
       )}
       {...props}
     />
