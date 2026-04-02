@@ -42,7 +42,7 @@ describe('FolderAppsController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('POST /api/folder-apps', () => {
+    describe('POST /api/folder-apps — Add app to folder', () => {
       it('should allow only authenticated users to add apps to folders', async () => {
         await request(nestApp.getHttpServer()).post('/api/folder-apps').expect(401);
       });
@@ -126,7 +126,7 @@ describe('FolderAppsController', () => {
       });
     });
 
-    describe('PUT /api/folder-apps/:id', () => {
+    describe('PUT /api/folder-apps/:id — Remove app from folder', () => {
       it('should remove an app from a folder', async () => {
         const { adminUser, app } = await setupOrganization(nestApp);
 

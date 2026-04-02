@@ -25,7 +25,7 @@ describe('FilesController', () => {
       await closeTestApp(app);
     }, 60000);
 
-    describe('GET /api/files/:id', () => {
+    describe('GET /api/files/:id — Get file', () => {
       it('should not allow un-authenticated users to fetch a file', async () => {
         await request(app.getHttpServer()).get('/api/files/2540333b-f6fe-42b7-857c-736f24f9b644').expect(401);
       });

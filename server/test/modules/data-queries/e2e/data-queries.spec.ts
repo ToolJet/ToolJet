@@ -37,7 +37,7 @@ describe('DataQueriesController', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    describe('POST /api/data-queries/:id/run', () => {
+    describe('POST /api/data-queries/:id/run — Execute query', () => {
       it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

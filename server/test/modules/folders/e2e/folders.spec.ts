@@ -43,7 +43,7 @@ describe('FoldersController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('GET /api/folder-apps', () => {
+    describe('GET /api/folder-apps — List folder apps', () => {
       it('should allow only authenticated users to list folders', async () => {
         await request(nestApp.getHttpServer()).get(`/api/folder-apps?type=${FOLDER_TYPE}`).expect(401);
       });
@@ -433,7 +433,7 @@ describe('FoldersController', () => {
       });
     });
 
-    describe('POST /api/folders', () => {
+    describe('POST /api/folders — Create folder', () => {
       it('should allow only authenticated users to create folder', async () => {
         await request(nestApp.getHttpServer()).post('/api/folders').expect(401);
       });
@@ -501,7 +501,7 @@ describe('FoldersController', () => {
       });
     });
 
-    describe('PUT /api/folders/:id', () => {
+    describe('PUT /api/folders/:id — Update folder', () => {
       it('should be able to update an existing folder if group is admin or has update permission in the same organization or the user is a super admin', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -578,7 +578,7 @@ describe('FoldersController', () => {
       });
     });
 
-    describe('DELETE /api/folders/:id', () => {
+    describe('DELETE /api/folders/:id — Delete folder', () => {
       it('should be able to delete an existing folder if group is admin or has delete permission in the same organization or the user is a super admin', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',

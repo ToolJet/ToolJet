@@ -58,7 +58,7 @@ describe('AuditLogsController', () => {
     } as any);
   }
 
-  describe('GET /api/audit-logs', () => {
+  describe('GET /api/audit-logs — List audit logs', () => {
     it('should return 400 when timeFrom/timeTo are missing', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
 
@@ -109,7 +109,7 @@ describe('AuditLogsController', () => {
     });
   });
 
-  describe('GET /api/audit-logs/resources', () => {
+  describe('GET /api/audit-logs/resources — List resource types', () => {
     it('should allow an admin to list available resource types (200)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
 

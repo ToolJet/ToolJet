@@ -40,7 +40,7 @@ describe('LibraryAppsController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('POST /api/library_apps', () => {
+    describe('POST /api/library_apps — Create from template', () => {
       it('should be able to create app if user has app create permission or has instance user type', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -121,7 +121,7 @@ describe('LibraryAppsController', () => {
       });
     });
 
-    describe('GET /api/library_apps', () => {
+    describe('GET /api/library_apps — List templates', () => {
       it('should be get app manifests', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

@@ -111,7 +111,7 @@ describe('GroupPermissionsControllerV2', () => {
     // POST /api/v2/group-permissions — Create
     // -------------------------------------------------------------------------
 
-    describe('POST /api/v2/group-permissions', () => {
+    describe('POST /api/v2/group-permissions — Create group', () => {
       it('should not allow non-admin to create a group', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -164,7 +164,7 @@ describe('GroupPermissionsControllerV2', () => {
     // GET /api/v2/group-permissions — List
     // -------------------------------------------------------------------------
 
-    describe('GET /api/v2/group-permissions', () => {
+    describe('GET /api/v2/group-permissions — List groups', () => {
       it('should not allow non-admin to list groups', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -204,7 +204,7 @@ describe('GroupPermissionsControllerV2', () => {
     // GET /api/v2/group-permissions/:id — Get single
     // -------------------------------------------------------------------------
 
-    describe('GET /api/v2/group-permissions/:id', () => {
+    describe('GET /api/v2/group-permissions/:id — Get group', () => {
       it('should not allow non-admin to get a group', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -261,7 +261,7 @@ describe('GroupPermissionsControllerV2', () => {
     // PUT /api/v2/group-permissions/:id — Update
     // -------------------------------------------------------------------------
 
-    describe('PUT /api/v2/group-permissions/:id', () => {
+    describe('PUT /api/v2/group-permissions/:id — Update group', () => {
       it('should not allow non-admin to update a group', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -341,7 +341,7 @@ describe('GroupPermissionsControllerV2', () => {
     // DELETE /api/v2/group-permissions/:id — Delete
     // -------------------------------------------------------------------------
 
-    describe('DELETE /api/v2/group-permissions/:id', () => {
+    describe('DELETE /api/v2/group-permissions/:id — Delete group', () => {
       it('should not allow non-admin to delete a group', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -378,7 +378,7 @@ describe('GroupPermissionsControllerV2', () => {
     // POST /api/v2/group-permissions/:id/users — Add users
     // -------------------------------------------------------------------------
 
-    describe('POST /api/v2/group-permissions/:id/users', () => {
+    describe('POST /api/v2/group-permissions/:id/users — Add user to group', () => {
       it('should not allow non-admin to add users', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -418,7 +418,7 @@ describe('GroupPermissionsControllerV2', () => {
     // GET /api/v2/group-permissions/:id/users — List users in group
     // -------------------------------------------------------------------------
 
-    describe('GET /api/v2/group-permissions/:id/users', () => {
+    describe('GET /api/v2/group-permissions/:id/users — List group users', () => {
       it('should not allow non-admin to list group users', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -454,7 +454,7 @@ describe('GroupPermissionsControllerV2', () => {
     // DELETE /api/v2/group-permissions/users/:id — Remove user from group
     // -------------------------------------------------------------------------
 
-    describe('DELETE /api/v2/group-permissions/users/:id', () => {
+    describe('DELETE /api/v2/group-permissions/users/:id — Remove user from group', () => {
       it('should not allow non-admin to remove a user from a group', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
@@ -502,7 +502,7 @@ describe('GroupPermissionsControllerV2', () => {
     // GET /api/v2/group-permissions/:id/users/addable-users — Addable users
     // -------------------------------------------------------------------------
 
-    describe('GET /api/v2/group-permissions/:id/users/addable-users', () => {
+    describe('GET /api/v2/group-permissions/:id/users/addable-users — List addable users', () => {
       it('should not allow non-admin to search addable users', async () => {
         const { organization: { defaultUser } } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');

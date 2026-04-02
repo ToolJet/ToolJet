@@ -48,7 +48,7 @@ describe('InstanceSettingsController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('GET /api/instance-settings', () => {
+    describe('GET /api/instance-settings — List settings', () => {
       it('should allow only authenticated users to list instance settings', async () => {
         await request(app.getHttpServer()).get('/api/instance-settings').expect(401);
       });
@@ -115,7 +115,7 @@ describe('InstanceSettingsController', () => {
       });
     });
 
-    describe('POST /api/instance-settings', () => {
+    describe('POST /api/instance-settings — Create setting', () => {
       it('should only be able to create a new settings if the user is a super admin', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -160,7 +160,7 @@ describe('InstanceSettingsController', () => {
       });
     });
 
-    describe('PATCH /api/instance-settings', () => {
+    describe('PATCH /api/instance-settings — Update setting', () => {
       it('should only be able to update existing settings if the user is a super admin', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -213,7 +213,7 @@ describe('InstanceSettingsController', () => {
       });
     });
 
-    describe('DELETE /api/instance-settings/:id', () => {
+    describe('DELETE /api/instance-settings/:id — Delete setting', () => {
       it('should only be able to delete an existing setting if the user is a super admin', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

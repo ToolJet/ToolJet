@@ -38,7 +38,7 @@ describe('DataSourcesController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('POST /api/data-sources', () => {
+    describe('POST /api/data-sources — Create data source', () => {
       it('should allow admin to create a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -71,7 +71,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('GET /api/data-sources/:organizationId', () => {
+    describe('GET /api/data-sources/:organizationId — List data sources', () => {
       it('should allow admin to list data sources', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -126,7 +126,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('PUT /api/data-sources/:id', () => {
+    describe('PUT /api/data-sources/:id — Update data source', () => {
       it('should allow admin to update a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -190,7 +190,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('DELETE /api/data-sources/:id', () => {
+    describe('DELETE /api/data-sources/:id — Delete data source', () => {
       it('should allow admin to delete a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -247,7 +247,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('POST /api/data-sources/:id/authorize_oauth2', () => {
+    describe('POST /api/data-sources/:id/authorize_oauth2 — OAuth2 authorization', () => {
       it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',

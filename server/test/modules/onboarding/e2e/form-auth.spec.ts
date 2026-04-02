@@ -50,7 +50,7 @@ describe('OnboardingController', () => {
     jest.clearAllMocks();
   });
 
-  describe('POST /api/onboarding/setup-super-admin', () => {
+  describe('POST /api/onboarding/setup-super-admin — Setup super admin', () => {
     it('should reject signup when no super admin exists', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/onboarding/signup')
@@ -78,7 +78,7 @@ describe('OnboardingController', () => {
     });
   });
 
-  describe('POST /api/onboarding/signup', () => {
+  describe('POST /api/onboarding/signup — User signup', () => {
     it('should signup and auto-activate a new user', async () => {
       // First set up a super admin so signup is allowed
       await request(app.getHttpServer())
@@ -135,7 +135,7 @@ describe('OnboardingController', () => {
     });
   });
 
-  describe('POST /api/organization-users', () => {
+  describe('POST /api/organization-users — Invite user', () => {
     let adminUser: User;
     let adminOrg: Organization;
     let loggedAdmin: any;
