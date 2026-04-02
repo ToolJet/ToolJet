@@ -9,24 +9,29 @@
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity } from 'test-helper';
+import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity, closeTestApp } from 'test-helper';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { MODULES } from '@modules/app/constants/modules';
 
-describe('audit logs controller', () => {
-  let app: INestApplication;
+describe('AuditLogsController', () => {
+  describe('EE (plan: enterprise)', () => {
+    let app: INestApplication;
 
-  beforeAll(async () => {
-    ({ app } = await initTestApp());
-  });
+    beforeAll(async () => {
+      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
+    beforeEach(async () => {
+      await resetDB();
+    });
 
-  afterAll(async () => {
-    await app.close();
-  });
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
+    afterAll(async () => {
+      await closeTestApp(app);
+    }, 60000);
 
   /** Builds timeFrom/timeTo spanning the last 7 days (required by AuditLogsDurationGuard). */
   function recentTimeRange(): { timeFrom: string; timeTo: string } {
@@ -75,10 +80,10 @@ describe('audit logs controller', () => {
         .set('Cookie', admin.cookie)
         .expect(200);
 
-      expect(response.body).toHaveProperty('audit_logs');
-      expect(response.body).toHaveProperty('meta');
-      expect(Array.isArray(response.body.audit_logs)).toBe(true);
-      expect(response.body.audit_logs.length).toBeGreaterThanOrEqual(1);
+      expect(response.body).toMatchObject({
+        audit_logs: expect.arrayContaining([expect.any(Object)]),
+        meta: expect.any(Object),
+      });
     });
 
     it('should respect pagination params (page, perPage)', async () => {
@@ -92,11 +97,14 @@ describe('audit logs controller', () => {
         .set('Cookie', admin.cookie)
         .expect(200);
 
-      expect(response.body.meta).toHaveProperty('total_pages');
-      expect(response.body.meta).toHaveProperty('total_count');
-      expect(response.body.meta).toHaveProperty('current_page');
-      expect(response.body.meta.current_page).toEqual(1);
-      // With perPage=5, results should not exceed 5
+      expect(response.body).toMatchObject({
+        meta: {
+          total_pages: expect.any(Number),
+          total_count: expect.any(Number),
+          current_page: 1,
+        },
+        audit_logs: expect.any(Array),
+      });
       expect(response.body.audit_logs.length).toBeLessThanOrEqual(5);
     });
   });
@@ -121,5 +129,6 @@ describe('audit logs controller', () => {
         .get('/api/audit-logs/resources')
         .expect(401);
     });
+  });
   });
 });
