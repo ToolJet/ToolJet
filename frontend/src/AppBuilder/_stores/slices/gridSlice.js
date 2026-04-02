@@ -386,6 +386,13 @@ export const createGridSlice = (set, get) => ({
         },
       };
 
+      // ModalV2 is rendered as an overlay; its body size must not push
+      // sibling components of the trigger button on the canvas.
+      if (componentType === 'ModalV2' && isContainer) {
+        setTemporaryLayouts(updatedLayouts);
+        return;
+      }
+
       // Calculate the new top, bottom, left, right of the changed component
       // Left and Width are always the same as normal component layouts
       const changedCompLeft = changedComponent.layouts[currentLayout].left;
@@ -529,11 +536,25 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
+    const {
+      clearSelectedComponents,
+      isGroupResizing,
+      isGroupDragging,
+      setCanvasHeaderSelected,
+      setCanvasFooterSelected,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
 
+    const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
+    const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
+
+    if (isClickedOnCanvasHeader) {
+      setCanvasHeaderSelected(true);
+    } else if (isClickedOnCanvasFooter) {
+      setCanvasFooterSelected(true);
+    }
     // Check if any inspector popover is currently open
     const isInspectorPopoverOpen = () => {
       const selector = [

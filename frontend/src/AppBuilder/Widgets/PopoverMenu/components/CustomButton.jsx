@@ -22,13 +22,18 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
   // ===== STYLE PROPS =====
   const {
     backgroundColor,
+    hoverBackgroundMode,
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
     textColor,
+    textSize = 14,
+    fontWeight,
     borderRadius,
     loaderColor,
     borderColor,
     boxShadow,
     iconColor,
     direction,
+    contentAlignment,
     iconVisibility,
     icon,
   } = styles;
@@ -63,13 +68,33 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       ? backgroundColor
       : 'transparent';
 
+  const computedHoverBgColor =
+    buttonType === 'primary'
+      ? hoverBackgroundMode === 'manual'
+        ? hoverBackgroundColor || getModifiedColor(computedBgColor, 'hover')
+        : getModifiedColor(computedBgColor, 'hover')
+      : 'transparent';
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const isReverseDirection = direction === 'left';
+  const computedContentAlignment =
+    {
+      left: isReverseDirection ? 'flex-end' : 'flex-start',
+      center: 'center',
+      right: isReverseDirection ? 'flex-start' : 'flex-end',
+    }[contentAlignment] ?? 'center';
+
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height === 36 ? '36px' : height,
-    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked':
       buttonType === 'primary'
         ? getModifiedColor(computedBgColor, 'active')
@@ -162,7 +187,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
               display: !exposedVariablesTemporaryState.isLoading ? 'flex' : 'none',
               alignItems: 'center',
               flexDirection: direction == 'left' ? 'row-reverse' : 'row',
-              justifyContent: 'center',
+              justifyContent: computedContentAlignment,
               gap: label?.length > 0 && '6px',
             }}
           >
@@ -174,7 +199,14 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
                 <p
                   className="tj-text-sm"
-                  style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  style={{
+                    fontWeight: computedFontWeight,
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    margin: '0px',
+                    padding: '0px',
+                    color: computedTextColor,
+                  }}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -187,8 +219,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
                     iconName={icon}
                     fallbackIcon="IconAlignBoxBottomLeft"
                     style={{
-                      width: '16px',
-                      height: '16px',
+                      width: `${computedIconSize}px`,
+                      height: `${computedIconSize}px`,
                       color: computedIconColor,
                     }}
                     stroke={1.5}

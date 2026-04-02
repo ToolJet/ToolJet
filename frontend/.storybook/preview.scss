@@ -4,3 +4,13 @@
 body {
   overflow-y: scroll !important;
 }
+
+.sb-main-padded {
+  padding: 0 !important;
+}
+
+.storybook-docs,
+.storybook-preview-wrapper,
+.sb-show-main {
+  background-color: var(--background-surface-layer-01) !important;
+}
