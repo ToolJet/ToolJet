@@ -101,6 +101,7 @@ type NewRevampedComponent =
   | 'IFrame'
   | 'DropdownV2'
   | 'TreeSelect'
+  | 'Listview'
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
@@ -150,6 +151,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'Listview',
   'ColorPicker',
   'ButtonGroupV2',
   'ModalV2',
@@ -3022,6 +3024,16 @@ function migrateProperties(
       }
       if (!styles.menuCustomWidth) {
         styles.menuCustomWidth = { value: '256' };
+      }
+    }
+
+    // Listview
+    if (componentType === 'Listview') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
+      }
+      if (properties.tooltip === undefined) {
+        properties.tooltip = { value: '' };
       }
     }
   }

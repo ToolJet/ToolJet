@@ -204,6 +204,7 @@ export const baseComponentProperties = (
       'Accordion',
       'ColorPicker',
       'FileButton',
+      'Listview',
     ],
     Layout: [],
   };
