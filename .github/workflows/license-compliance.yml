@@ -1,0 +1,195 @@
+name: License Compliance Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  license-check:
+    name: Check New Package Licenses
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Check licenses of new packages
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const https = require('https');
+
+            // ── Fetch license from npm registry ──────────────────────────────
+
+            function fetchLicense(packageName) {
+              return new Promise((resolve) => {
+                const encoded = packageName.replace('/', '%2F');
+                const url = `https://registry.npmjs.org/${encoded}/latest`;
+                https.get(url, { headers: { 'User-Agent': 'tooljet-license-checker' } }, (res) => {
+                  let data = '';
+                  res.on('data', chunk => data += chunk);
+                  res.on('end', () => {
+                    try {
+                      const json = JSON.parse(data);
+                      resolve(json.license || 'UNKNOWN');
+                    } catch {
+                      resolve('UNKNOWN');
+                    }
+                  });
+                }).on('error', () => resolve('UNKNOWN'));
+              });
+            }
+
+            // ── License check — ONLY exact MIT or Apache-2.0 ─────────────────
+            // Dual licenses like "(MIT OR GPL-3.0-or-later)" are NOT permitted.
+
+            function isPermitted(license) {
+              if (!license || license === 'UNKNOWN') return false;
+              const l = license.trim();
+              return l === 'MIT' || l === 'Apache-2.0';
+            }
+
+            // ── Get PR diff files from GitHub API ─────────────────────────────
+
+            const prFiles = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100,
+            });
+
+            const pkgFiles = prFiles.data.filter(f =>
+              f.filename.endsWith('package.json') &&
+              !f.filename.includes('node_modules')
+            );
+
+            if (pkgFiles.length === 0) {
+              console.log('No package.json files changed in this PR. Skipping.');
+              return;
+            }
+
+            console.log(`package.json files changed: ${pkgFiles.map(f => f.filename).join(', ')}`);
+
+            // ── Extract newly added packages from diff patch ──────────────────
+
+            function extractAddedPackages(patch) {
+              if (!patch) return [];
+              const packages = [];
+              for (const line of patch.split('\n')) {
+                if (!line.startsWith('+') || line.startsWith('+++')) continue;
+                const match = line.match(/^\+\s*"(@?[a-zA-Z0-9][\w\-\.\/]*)"\s*:\s*"\^?[\d~*]/);
+                if (match) {
+                  packages.push(match[1]);
+                }
+              }
+              return packages;
+            }
+
+            // ── Main scan ─────────────────────────────────────────────────────
+
+            const violations = [];
+            const permitted  = [];
+
+            for (const file of pkgFiles) {
+              console.log(`\n── Scanning: ${file.filename}`);
+
+              const addedPackages = extractAddedPackages(file.patch);
+
+              if (addedPackages.length === 0) {
+                console.log('  No new packages added.');
+                continue;
+              }
+
+              console.log(`  New packages found: ${addedPackages.join(', ')}`);
+
+              for (const pkg of addedPackages) {
+                const license = await fetchLicense(pkg);
+                const ok      = isPermitted(license);
+
+                if (ok) {
+                  console.log(`  [OK]       ${pkg} — ${license}`);
+                  permitted.push({ pkg, license, file: file.filename });
+                } else {
+                  console.log(`  [FAIL]     ${pkg} — ${license}`);
+                  violations.push({ pkg, license, file: file.filename });
+                }
+              }
+            }
+
+            console.log(`\n── Summary`);
+            console.log(`   Permitted : ${permitted.length}`);
+            console.log(`   Violations: ${violations.length}`);
+
+            // ── Delete previous bot comment if any ────────────────────────────
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            for (const comment of comments.data) {
+              if (comment.body.includes('<!-- license-compliance-bot -->')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
+              }
+            }
+
+            // ── Skip comment if nothing new was added ─────────────────────────
+
+            if (permitted.length === 0 && violations.length === 0) {
+              console.log('No new packages detected in diff. Skipping comment.');
+              return;
+            }
+
+            // ── Build and post comment ────────────────────────────────────────
+
+            let body = `<!-- license-compliance-bot -->\n`;
+
+            if (violations.length === 0) {
+              body += `## ✅ License Compliance Check Passed\n\n`;
+              body += `All new packages added in this PR use permitted licenses (MIT or Apache-2.0).\n\n`;
+              body += `| Package | License | File |\n|---|---|---|\n`;
+              body += permitted.map(p =>
+                `| \`${p.pkg}\` | \`${p.license}\` | \`${p.file}\` |`
+              ).join('\n');
+              body += '\n';
+            } else {
+              body += `## ❌ License Compliance Check Failed\n\n`;
+              body += `This PR adds package(s) with licenses that are **not permitted**.\n`;
+              body += `Only \`MIT\` and \`Apache-2.0\` licenses are allowed.\n\n`;
+              body += `### 🚫 Not Permitted\n\n`;
+              body += `| Package | License | File |\n|---|---|---|\n`;
+              body += violations.map(v =>
+                `| \`${v.pkg}\` | \`${v.license}\` | \`${v.file}\` |`
+              ).join('\n');
+              body += `\n\n`;
+              body += `> ❌ The package(s) above are not permitted. Please replace them with an equivalent that uses an MIT or Apache-2.0 license.\n`;
+              body += `> If this package genuinely needs to be exempted, a maintainer can bypass this check using the bypass rules option on this PR.\n\n`;
+              if (permitted.length > 0) {
+                body += `### ✅ Permitted Packages\n\n`;
+                body += `| Package | License | File |\n|---|---|---|\n`;
+                body += permitted.map(p =>
+                  `| \`${p.pkg}\` | \`${p.license}\` | \`${p.file}\` |`
+                ).join('\n');
+                body += '\n';
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+            if (violations.length > 0) {
+              core.setFailed(
+                `License check failed: ${violations.length} package(s) with non-permitted licenses. See PR comment for details.`
+              );
+            }
+
+            
