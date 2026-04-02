@@ -189,8 +189,6 @@
     "@pollyjs/adapter-node-http": "^6.0.6",
     "@pollyjs/core": "^6.0.6",
     "@pollyjs/persister-fs": "^6.0.6",
-    "@swc/core": "^1.15.21",
-    "@swc/jest": "^0.2.39",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",

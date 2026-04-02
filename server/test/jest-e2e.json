@@ -8,13 +8,14 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "setupFiles": ["<rootDir>/../test/jest-setup.ts"],
+  "setupFilesAfterEnv": ["<rootDir>/../test/jest-retry-setup.ts"],
   "testRegex": "test/modules/.*/e2e/.*spec\\.ts$",
   "modulePathIgnorePatterns": ["<rootDir>/../dist/"],
   "runner": "groups",
   "testTimeout": 60000,
   "verbose": true,
   "forceExit": true,
-  "slowTestThreshold": 60,
+  "slowTestThreshold": 0,
   "transformIgnorePatterns": [
     "node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)"
   ],
