@@ -328,8 +328,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
     }
 
     // Service Principal (Azure AD) authentication
-    const authType = (finalOptions.auth_type as any)?.value ?? finalOptions.auth_type;
-    const isServicePrincipal = authType === 'service_principal';
+    const isServicePrincipal = finalOptions.auth_type === 'service_principal';
 
     const config: Knex.Config = {
       client: 'mssql',
