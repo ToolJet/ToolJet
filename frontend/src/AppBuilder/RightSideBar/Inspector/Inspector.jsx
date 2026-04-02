@@ -147,6 +147,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'TreeSelect',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
 ];
