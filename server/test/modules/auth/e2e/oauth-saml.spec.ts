@@ -78,7 +78,7 @@ describe('OAuthController', () => {
     jest.clearAllMocks();
   });
 
-  describe('SSO Login', () => {
+  describe('POST /api/oauth/sign-in/:configId | SAML sign-in', () => {
     let current_organization: Organization;
     beforeEach(async () => {
       const fs = require('fs');

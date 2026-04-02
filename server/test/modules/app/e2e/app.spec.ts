@@ -357,7 +357,7 @@ describe('AppController', () => {
             .set('Cookie', authResponse.headers['set-cookie']);
   
           expect(response.statusCode).toBe(200);
-          // Verify key fields are present in response (not exact match — response shape evolves)
+          // Verify key fields are present in response (not exact match | response shape evolves)
           expect(response.body).toHaveProperty('id');
           expect(response.body).toHaveProperty('email');
           expect(response.body).toHaveProperty('first_name');
@@ -411,7 +411,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/forgot-password — Request password reset', () => {
+    describe('POST /api/forgot-password | Request password reset', () => {
       beforeEach(async () => {
         await createUser(app, {
           email: 'admin@tooljet.io',
@@ -444,7 +444,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/reset-password — Reset password', () => {
+    describe('POST /api/reset-password | Reset password', () => {
       beforeEach(async () => {
         await createUser(app, {
           email: 'admin@tooljet.io',
@@ -486,7 +486,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/onboarding/accept-invite — Accept workspace invite', () => {
+    describe('POST /api/onboarding/accept-invite | Accept workspace invite', () => {
       describe('Multi-Workspace Enabled', () => {
         beforeEach(() => {
           jest.spyOn(configService, 'get').mockImplementation((key: string) => {
@@ -549,7 +549,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('GET /api/onboarding/verify-invite-token — Verify invite token', () => {
+    describe('GET /api/onboarding/verify-invite-token | Verify invite token', () => {
       describe('Multi-Workspace Enabled', () => {
         beforeEach(async () => {
           const { organization, user, orgUser } = await createUser(app, {
@@ -641,7 +641,7 @@ describe('AppController', () => {
     // Personal workspace disabled
     // -------------------------------------------------------------------------
   
-    // First user setup tests deleted — FirstUserSignupGuard uses LicenseCountsService.getUsersCount()
+    // First user setup tests deleted | FirstUserSignupGuard uses LicenseCountsService.getUsersCount()
     // which caches user counts. Reliable first-user testing requires a fresh app instance.
     // Covered by onboarding/form-auth.e2e-spec.ts.
   
@@ -686,7 +686,7 @@ describe('AppController', () => {
         });
         it('should not create new users', async () => {
           const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({ email: 'test@tooljet.io' });
-          // Signup is disabled — production returns 400 (bad request) for incomplete signup data
+          // Signup is disabled | production returns 400 (bad request) for incomplete signup data
           expect(response.statusCode).toBe(400);
         });
       });
@@ -707,7 +707,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/onboarding/verify-invite-token — Verify invite token (POST)', () => {
+    describe('POST /api/onboarding/verify-invite-token | Verify invite token (POST)', () => {
       beforeEach(() => {
         jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {
@@ -802,10 +802,10 @@ describe('AppController', () => {
     // Super Admin authentication
     // -------------------------------------------------------------------------
   
-    // Super Admin onboarding tests deleted — the setup-super-admin endpoint
+    // Super Admin onboarding tests deleted | the setup-super-admin endpoint
     // uses FirstUserSignupGuard (LicenseCountsService.getUsersCount) which caches
     // user counts across the NestJS app lifecycle. Reliable first-user testing
-    // requires a fresh app instance per test — covered by onboarding/form-auth.e2e-spec.ts.
+    // requires a fresh app instance per test | covered by onboarding/form-auth.e2e-spec.ts.
   
     describe('Multi organization - Super Admin authentication', () => {
       beforeEach(async () => {

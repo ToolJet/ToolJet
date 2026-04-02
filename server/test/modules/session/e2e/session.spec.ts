@@ -36,7 +36,7 @@ describe('SessionController', () => {
       await closeTestApp(app);
     }, 60000);
 
-    describe('GET /api/authorize — Validate auth token', () => {
+    describe('GET /api/authorize | Validate auth token', () => {
       it('should return 401 if the auth token is invalid', async () => {
         await request.agent(app.getHttpServer()).get('/api/authorize').set('tj-workspace-id', orgId).expect(401);
       });
@@ -65,7 +65,7 @@ describe('SessionController', () => {
       });
     });
 
-    describe('GET /api/profile — Get user profile', () => {
+    describe('GET /api/profile | Get user profile', () => {
       it('should return the user details', async () => {
         await request(app.getHttpServer())
           .get('/api/profile')
@@ -75,7 +75,7 @@ describe('SessionController', () => {
       });
     });
 
-    describe('GET /api/session — Get current session', () => {
+    describe('GET /api/session | Get current session', () => {
       it('should return the current user details', async () => {
         await request(app.getHttpServer())
           .get('/api/session')

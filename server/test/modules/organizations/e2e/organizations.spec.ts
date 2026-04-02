@@ -34,7 +34,7 @@ describe('OrganizationsController', () => {
     jest.clearAllMocks();
   });
 
-  describe('GET /api/organization-users — List organization users', () => {
+  describe('GET /api/organization-users | List organization users', () => {
     it('should allow only authenticated users to list org users', async () => {
       await request(app.getHttpServer()).get('/api/organization-users').expect(401);
     });
@@ -79,7 +79,7 @@ describe('OrganizationsController', () => {
       }
     });
 
-    describe('POST /api/organizations — Create organization', () => {
+    describe('POST /api/organizations | Create organization', () => {
       it('should allow only authenticated users to create organization', async () => {
         await request(app.getHttpServer()).post('/api/organizations').send({ name: 'My workspace' }).expect(401);
       });
@@ -166,7 +166,7 @@ describe('OrganizationsController', () => {
       });
     });
 
-    describe('PATCH /api/organizations — Update organization', () => {
+    describe('PATCH /api/organizations | Update organization', () => {
       it('should change organization params if changes are done by admin / super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -276,7 +276,7 @@ describe('OrganizationsController', () => {
         }
       });
     });
-    describe('PATCH /api/login-configs/organization-sso — Update SSO config', () => {
+    describe('PATCH /api/login-configs/organization-sso | Update SSO config', () => {
       it('should change organization configs if changes are done by admin / super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -337,7 +337,7 @@ describe('OrganizationsController', () => {
         expect(response.statusCode).toBe(403);
       });
     });
-    describe('GET /api/login-configs/organization — Get SSO config', () => {
+    describe('GET /api/login-configs/organization | Get SSO config', () => {
       it('should get organization details if requested by admin/super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -395,7 +395,7 @@ describe('OrganizationsController', () => {
       });
     });
 
-    describe('GET /api/login-configs/:id/public — Get public SSO config', () => {
+    describe('GET /api/login-configs/:id/public | Get public SSO config', () => {
       it('should get organization specific details for all users for multiple organization deployment', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -527,7 +527,7 @@ describe('OrganizationsController', () => {
   });
 
   describe('ALLOW_PERSONAL_WORKSPACE=false', () => {
-    describe('POST /api/organizations — Create organization', () => {
+    describe('POST /api/organizations | Create organization', () => {
       it('should not allow authenticated users to create organization', async () => {
         const { user: userData } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -555,7 +555,7 @@ describe('OrganizationsController', () => {
       });
     });
 
-    describe('PATCH /api/organizations — Update organization', () => {
+    describe('PATCH /api/organizations | Update organization', () => {
       it('should allow admin to change organization name even when personal workspace is disabled', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',

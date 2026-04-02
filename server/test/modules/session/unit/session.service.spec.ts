@@ -2,7 +2,7 @@
  * SessionService Unit Tests
  *
  * Exercises terminateSession and getSessionDetails with fully mocked
- * repositories and utilities — no database or full NestJS app required.
+ * repositories and utilities | no database or full NestJS app required.
  *
  * @group platform
  */
@@ -18,7 +18,7 @@ import { UserSessions } from 'src/entities/user_sessions.entity';
 import { NotFoundException } from '@nestjs/common';
 
 // ---------------------------------------------------------------------------
-// Module-level mocks — replace side-effecting imports before any import runs
+// Module-level mocks | replace side-effecting imports before any import runs
 // ---------------------------------------------------------------------------
 
 // Mock dbTransactionWrap so that the callback is invoked with a mock manager

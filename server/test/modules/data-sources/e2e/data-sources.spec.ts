@@ -38,7 +38,7 @@ describe('DataSourcesController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('POST /api/data-sources — Create data source', () => {
+    describe('POST /api/data-sources | Create data source', () => {
       it('should allow admin to create a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -71,7 +71,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('GET /api/data-sources/:organizationId — List data sources', () => {
+    describe('GET /api/data-sources/:organizationId | List data sources', () => {
       it('should allow admin to list data sources', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -126,7 +126,7 @@ describe('DataSourcesController', () => {
       });
     });
 
-    describe('PUT /api/data-sources/:id — Update data source', () => {
+    describe('PUT /api/data-sources/:id | Update data source', () => {
       it('should allow admin to update a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -185,12 +185,12 @@ describe('DataSourcesController', () => {
           .set('Cookie', loggedAnotherUser.tokenCookie)
           .send({ name: 'hacked_name' });
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });
 
-    describe('DELETE /api/data-sources/:id — Delete data source', () => {
+    describe('DELETE /api/data-sources/:id | Delete data source', () => {
       it('should allow admin to delete a data source', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -242,12 +242,12 @@ describe('DataSourcesController', () => {
           .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedAnotherUser.tokenCookie);
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });
 
-    describe('POST /api/data-sources/:id/authorize_oauth2 — OAuth2 authorization', () => {
+    describe('POST /api/data-sources/:id/authorize_oauth2 | OAuth2 authorization', () => {
       it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
         const adminUserData = await createUser(nestApp, {
           email: 'admin@tooljet.io',
@@ -277,7 +277,7 @@ describe('DataSourcesController', () => {
             code: 'oauth-auth-code',
           });
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
+        // Cross-org access is rejected | either 404 (guard) or 500 (ability resolution)
         expect(response.statusCode).not.toBe(200);
       });
     });

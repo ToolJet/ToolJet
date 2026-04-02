@@ -37,7 +37,7 @@ describe('EE (plan: enterprise)', () => {
     await resetDB();
   });
 
-  describe('.export — serialize app for transfer', () => {
+  describe('.export | serialize app for transfer', () => {
     it('should export app with empty related associations', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
@@ -162,7 +162,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('.import — deserialize and create app from payload', () => {
+  describe('.import | deserialize and create app from payload', () => {
     it('should throw error with invalid params', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',

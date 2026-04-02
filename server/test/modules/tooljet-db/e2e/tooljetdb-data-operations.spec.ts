@@ -39,7 +39,7 @@ describe('EE (plan: enterprise)', () => {
   const mockRows: Record<number, any>[] = [];
 
   // ---------------------------------------------------------------------------
-  // Polly.js setup — intercept PostgREST, passthrough test server
+  // Polly.js setup | intercept PostgREST, passthrough test server
   // ---------------------------------------------------------------------------
   const context = setupPolly({
     adapters: [NodeHttpAdapter as any],
@@ -174,7 +174,7 @@ describe('EE (plan: enterprise)', () => {
       });
 
     // Intercept PostgREST requests (localhost:3001) with mock responses.
-    // POST — create a row
+    // POST | create a row
     context.polly.server.post('http://localhost:3001/*').intercept((req, res) => {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       mockRows.push(body);
@@ -184,7 +184,7 @@ describe('EE (plan: enterprise)', () => {
       res.json([body]);
     });
 
-    // GET — list rows
+    // GET | list rows
     context.polly.server.get('http://localhost:3001/*').intercept((req, res) => {
       res.status(200);
       res.setHeader('Content-Type', 'application/json');
@@ -192,7 +192,7 @@ describe('EE (plan: enterprise)', () => {
       res.json([...mockRows]);
     });
 
-    // PATCH — update rows
+    // PATCH | update rows
     context.polly.server.patch('http://localhost:3001/*').intercept((req, res) => {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       // Parse query for PostgREST filter: ?id=eq.1
@@ -215,7 +215,7 @@ describe('EE (plan: enterprise)', () => {
       }
     });
 
-    // DELETE — delete rows
+    // DELETE | delete rows
     context.polly.server.delete('http://localhost:3001/*').intercept((req, res) => {
       const query = req.query || {};
       const idFilter = query.id;
@@ -241,7 +241,7 @@ describe('EE (plan: enterprise)', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Sequential CRUD tests — each depends on the previous
+  // Sequential CRUD tests | each depends on the previous
   // ---------------------------------------------------------------------------
 
   it('should create a row', async function () {

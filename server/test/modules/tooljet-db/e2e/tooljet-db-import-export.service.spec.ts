@@ -138,7 +138,7 @@ describe('EE (plan: enterprise)', () => {
     await closeTestApp(app);
   }, 60_000);
 
-  describe('.export — serialize table schema for transfer', () => {
+  describe('.export | serialize table schema for transfer', () => {
     it('should export ToolJet DB table schema', async () => {
       const exportResult = await service.export(organizationId, { table_id: usersTableId }, []);
 
@@ -179,7 +179,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('.import — create table from exported schema', () => {
+  describe('.import | create table from exported schema', () => {
     it('should import a single ToolJet DB table', async () => {
       const importData = {
         id: uuidv4(),
@@ -346,7 +346,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('.bulkImport — import multiple tables with foreign keys', () => {
+  describe('.bulkImport | import multiple tables with foreign keys', () => {
     it('should import multiple ToolJet DB tables with foreign key relationships', async () => {
       const importData = {
         app: null,

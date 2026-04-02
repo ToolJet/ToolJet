@@ -81,7 +81,7 @@ const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) =>
 // DELETED: 'Workflow and Webhooks - License Expiry scenarios' describe block
 // Justification: These tests expected error messages ("Not allowed in basic plan",
 // "Workflows are available only in paid plans") that no longer exist anywhere in
-// production code. The license enforcement was restructured — WorkflowGuard,
+// production code. The license enforcement was restructured | WorkflowGuard,
 // WorkflowCountGuard, and WebhookGuard now use LicenseTermsService with different
 // error messages and status codes. The tests were testing deleted behavior.
 
@@ -98,7 +98,7 @@ describe('EE (plan: enterprise)', () => {
     await resetDB();
   });
 
-  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger — without params', () => {
+  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger | without params', () => {
     it('trigger workflows from webhook', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -160,7 +160,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger — with params', () => {
+  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger | with params', () => {
     it('trigger workflows from webhook with valid parameters and its type', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -436,7 +436,7 @@ describe('EE rate limiting (plan: enterprise)', () => {
     process.env.WEBHOOK_THROTTLE_LIMIT = String(RATE_LIMIT);
     process.env.WEBHOOK_THROTTLE_TTL = String(RATE_TTL);
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', freshApp: true }));
-  }, 90_000); // longer timeout — fresh app needed for throttle config
+  }, 90_000); // longer timeout | fresh app needed for throttle config
 
   beforeEach(async () => {
     await resetDB();

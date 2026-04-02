@@ -53,13 +53,13 @@ describe('AppsController', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    describe('GET /api/apps/:id — Get application', () => {
+    describe('GET /api/apps/:id | Get application', () => {
       it('should allow only authenticated users to update app params', async () => {
         await request(app.getHttpServer()).put('/api/apps/uuid').expect(401);
       });
     });
 
-    describe('POST /api/apps — Create application', () => {
+    describe('POST /api/apps | Create application', () => {
       describe('authorization', () => {
         it('should be able to create app if user has admin group', async () => {
           const adminUserData = await createUser(app, {
@@ -194,7 +194,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('GET /api/apps — List applications', () => {
+    describe('GET /api/apps | List applications', () => {
       describe('authorization', () => {
         it('should allow only authenticated users to fetch apps', async () => {
           await request(app.getHttpServer()).get('/api/apps').expect(401);
@@ -515,7 +515,7 @@ describe('AppsController', () => {
           let appNames = apps.map((app) => app.name);
 
           // With granular permissions, the developer has no explicit permissions on folder apps.
-          // They only see apps they own — none are in this folder.
+          // They only see apps they own | none are in this folder.
           expect(new Set(appNames)).toEqual(new Set([]));
           expect(meta).toEqual({
             total_pages: 0,
@@ -557,7 +557,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('POST /api/v2/resources/clone — Clone application', () => {
+    describe('POST /api/v2/resources/clone | Clone application', () => {
       it('should be able to clone the app if user group is admin', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -708,7 +708,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('PUT /api/apps/:id — Update application', () => {
+    describe('PUT /api/apps/:id | Update application', () => {
       it('should be able to update name of the app if admin of same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -851,7 +851,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('DELETE /api/apps/:id — Delete application', () => {
+    describe('DELETE /api/apps/:id | Delete application', () => {
       it('should be possible for the admin to delete an app, cascaded with its versions, queries, and data sources', async () => {
         const admin = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -990,7 +990,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('GET /api/apps/:id/versions — List versions', () => {
+    describe('GET /api/apps/:id/versions | List versions', () => {
       describe('authorization', () => {
         it('should be able to fetch app versions with app read permission group', async () => {
           const adminUserData = await createUser(app, {
@@ -1121,7 +1121,7 @@ describe('AppsController', () => {
         });
       });
 
-      describe('POST /api/apps/:id/versions — Create version', () => {
+      describe('POST /api/apps/:id/versions | Create version', () => {
         describe('authorization', () => {
           it('should not be able to fetch app versions if user of another organization', async () => {
             const adminUserData = await createUser(app, {
@@ -1532,7 +1532,7 @@ describe('AppsController', () => {
       //deleted the definifion spec while with no versionFrom it will return 500 from server
     });
 
-    describe('DELETE /api/apps/:id/versions/:versionId — Delete version', () => {
+    describe('DELETE /api/apps/:id/versions/:versionId | Delete version', () => {
       describe('authorization', () => {
         it('should not be able to delete app versions if user of another organization', async () => {
           const adminUserData = await createUser(app, {
@@ -1713,7 +1713,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('GET /api/apps/:id/versions/:version_id — Get version', () => {
+    describe('GET /api/apps/:id/versions/:version_id | Get version', () => {
       describe('authorization', () => {
         it('should be able to get app version by users having app read permission within same organization', async () => {
           const adminUserData = await createUser(app, {
@@ -1822,7 +1822,7 @@ describe('AppsController', () => {
         });
       });
 
-      describe('PUT /api/apps/:id/versions/:version_id — Update version', () => {
+      describe('PUT /api/apps/:id/versions/:version_id | Update version', () => {
         it('should be able to update app version if has group admin or app update permission group in same organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
@@ -2029,7 +2029,7 @@ describe('AppsController', () => {
       Public apps can be launched by anyone ( even unauthenticated users )
       By view app endpoint, we assume the apps/slugs/:id endpoint
     */
-    describe('GET /api/apps/slugs/:slug — Get app by slug', () => {
+    describe('GET /api/apps/slugs/:slug | Get app by slug', () => {
       it('should be able to fetch app using slug if has read permission within an organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -2176,7 +2176,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('POST /api/v2/resources/export — Export resources', () => {
+    describe('POST /api/v2/resources/export | Export resources', () => {
       it('should be able to export app if user has create permission within an organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -2354,7 +2354,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('POST /api/v2/resources/import — Import resources', () => {
+    describe('POST /api/v2/resources/import | Import resources', () => {
       it('should be able to import app only if user has admin group', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -2487,7 +2487,7 @@ describe('AppsController', () => {
       });
     });
 
-    describe('PUT /api/apps/:id/icons — Update app icon', () => {
+    describe('PUT /api/apps/:id/icons | Update app icon', () => {
       it('should be able to update icon of the app if admin of same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

@@ -46,7 +46,7 @@ describe('OrgConstantsController', () => {
   }, 60_000);
 
   describe('EE (plan: enterprise)', () => {
-    describe('GET /api/organization-constants/decrypted — List constants', () => {
+    describe('GET /api/organization-constants/decrypted | List constants', () => {
       it('should allow only authenticated users to list org users', async () => {
         await request(app.getHttpServer()).get('/api/organization-constants/decrypted').expect(401);
       });
@@ -148,7 +148,7 @@ describe('OrgConstantsController', () => {
       });
     });
 
-    describe('POST /api/organization-constants — Create constant', () => {
+    describe('POST /api/organization-constants | Create constant', () => {
       it('should be able to create a new constant if group is admin or has create permission in the same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -223,7 +223,7 @@ describe('OrgConstantsController', () => {
       });
     });
 
-    describe('PATCH /api/organization-constants/:id — Update constant', () => {
+    describe('PATCH /api/organization-constants/:id | Update constant', () => {
       it('should be able to update an existing variable if group is admin or has update permission in the same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -300,7 +300,7 @@ describe('OrgConstantsController', () => {
       });
     });
 
-    describe('DELETE /api/organization-constants/:id — Delete constant', () => {
+    describe('DELETE /api/organization-constants/:id | Delete constant', () => {
       it('should be able to delete an existing constant if group is admin or has delete permission in the same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

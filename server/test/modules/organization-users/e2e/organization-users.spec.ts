@@ -28,7 +28,7 @@ describe('OrganizationUsersController', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    describe('POST /api/organization-users — Invite user', () => {
+    describe('POST /api/organization-users | Invite user', () => {
       it('should allow only admin/super admin to be able to invite new users', async () => {
         // setup a pre existing user of different organization
         await createUser(app, {
@@ -124,7 +124,7 @@ describe('OrganizationUsersController', () => {
       });
     });
 
-    describe('POST /api/organization-users/:id/archive — Archive user', () => {
+    describe('POST /api/organization-users/:id/archive | Archive user', () => {
       it('should allow only authenticated users to archive org users', async () => {
         await request(app.getHttpServer()).post('/api/organization-users/random-id/archive').send({}).expect(401);
       });
@@ -254,7 +254,7 @@ describe('OrganizationUsersController', () => {
       });
     });
 
-    describe('POST /api/organization-users/:id/unarchive — Unarchive user', () => {
+    describe('POST /api/organization-users/:id/unarchive | Unarchive user', () => {
       it('should allow only authenticated users to unarchive org users', async () => {
         await request(app.getHttpServer()).post('/api/organization-users/random-id/unarchive').send({}).expect(401);
       });
@@ -419,7 +419,7 @@ describe('OrganizationUsersController', () => {
       });
     });
 
-    describe('POST /api/organization-users/:userId/archive-all — Archive from all workspaces', () => {
+    describe('POST /api/organization-users/:userId/archive-all | Archive from all workspaces', () => {
       it('only superadmins can able to archive all users', async () => {
         const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
         const developerUserData = await createUser(app, {

@@ -37,7 +37,7 @@ describe('DataQueriesController', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    describe('POST /api/data-queries/:id/run — Execute query', () => {
+    describe('POST /api/data-queries/:id/run | Execute query', () => {
       it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -120,7 +120,7 @@ describe('DataQueriesController', () => {
           .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
-        // Production allows cross-org query run via QueryAuthGuard — the guard resolves
+        // Production allows cross-org query run via QueryAuthGuard | the guard resolves
         // the query's app and sets it on the request, overriding the tj-workspace-id header
         expect(response.statusCode).toBe(201);
       });

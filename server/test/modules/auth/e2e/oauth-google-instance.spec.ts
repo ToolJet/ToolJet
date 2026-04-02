@@ -43,9 +43,9 @@ describe('OAuthController', () => {
   }, 60_000);
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — non-super-admin flows
+  // Instance SSO | non-super-admin flows
   // ---------------------------------------------------------------------------
-  describe('SSO Login (non-super-admin)', () => {
+  describe('POST /api/oauth/sign-in/:configId | Google instance SSO (non-super-admin)', () => {
     beforeEach(async () => {
       await instanceSettingsRepository.update(
         { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
@@ -111,9 +111,9 @@ describe('OAuthController', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — super-admin flows
+  // Instance SSO | super-admin flows
   // ---------------------------------------------------------------------------
-  describe('SSO Login (super admin)', () => {
+  describe('POST /api/oauth/sign-in/:configId | Google instance SSO (super admin)', () => {
     let current_user: User;
 
     beforeEach(() => {

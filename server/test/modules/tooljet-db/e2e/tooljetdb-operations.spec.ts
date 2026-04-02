@@ -105,13 +105,13 @@ describe('EE (plan: enterprise)', () => {
   }
 
   // ---------------------------------------------------------------------------
-  // Admin DDL tests — skipped when tooljetDb connection is unavailable
+  // Admin DDL tests | skipped when tooljetDb connection is unavailable
   // ---------------------------------------------------------------------------
   const describeIfTooljetDb = () => (tooljetDbAvailable ? describe : describe.skip);
 
   // We use a factory function so the `tooljetDbAvailable` flag is evaluated at
   // runtime rather than at module-parse time.
-  describe('Admin table DDL operations — create, list, delete tables', () => {
+  describe('Admin table DDL operations | create, list, delete tables', () => {
     it('admin can create a table', async function () {
       if (!tooljetDbAvailable) return;
 
@@ -168,10 +168,10 @@ describe('EE (plan: enterprise)', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // End-user denial — this test does NOT require the tooljetDb connection
+  // End-user denial | this test does NOT require the tooljetDb connection
   // because the guard rejects before the service layer touches TJDB.
   // ---------------------------------------------------------------------------
-  describe('End-user access denial — role-based guard', () => {
+  describe('End-user access denial | role-based guard', () => {
     it('end-user is denied table creation (403)', async () => {
       // Create an end-user (no admin group)
       const { user: endUser } = await createUser(app, {

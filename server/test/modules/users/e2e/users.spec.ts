@@ -25,7 +25,7 @@ describe('UsersController', () => {
       await closeTestApp(app);
     }, 60000);
 
-    describe('PATCH /api/profile/password — Change password', () => {
+    describe('PATCH /api/profile/password | Change password', () => {
       it('should allow users to update their password', async () => {
         const userData = await createUser(app, { email: 'admin@tooljet.io' });
         const { user } = userData;
@@ -71,7 +71,7 @@ describe('UsersController', () => {
       });
     });
 
-    describe('PATCH /api/profile — Update profile', () => {
+    describe('PATCH /api/profile | Update profile', () => {
       it('should allow users to update their firstName and lastName', async () => {
         const userData = await createUser(app, { email: 'admin@tooljet.io' });
         const { user } = userData;
@@ -97,7 +97,7 @@ describe('UsersController', () => {
       });
     });
 
-    describe('PATCH /api/profile/avatar — Update avatar', () => {
+    describe('PATCH /api/profile/avatar | Update avatar', () => {
       it('should allow users to add a avatar', async () => {
         const userData = await createUser(app, { email: 'admin@tooljet.io' });
 

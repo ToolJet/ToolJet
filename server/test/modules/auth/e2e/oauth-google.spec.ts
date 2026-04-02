@@ -52,7 +52,7 @@ describe('OAuthController', () => {
     jest.clearAllMocks();
   });
 
-  describe('SSO Login', () => {
+  describe('POST /api/oauth/sign-in/:configId | Google OAuth sign-in', () => {
     let current_organization: Organization;
     beforeEach(async () => {
       const { organization } = await createUser(app, {

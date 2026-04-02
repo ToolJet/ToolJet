@@ -48,9 +48,9 @@ describe('OAuthController', () => {
   }, 60_000);
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — non-super-admin flows
+  // Instance SSO | non-super-admin flows
   // ---------------------------------------------------------------------------
-  describe('SSO Login (non-super-admin)', () => {
+  describe('POST /api/oauth/sign-in/:configId | Git instance SSO (non-super-admin)', () => {
     beforeEach(async () => {
       await instanceSettingsRepository.update(
         { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
@@ -154,9 +154,9 @@ describe('OAuthController', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — super-admin flows
+  // Instance SSO | super-admin flows
   // ---------------------------------------------------------------------------
-  describe('SSO Login (super admin)', () => {
+  describe('POST /api/oauth/sign-in/:configId | Git instance SSO (super admin)', () => {
     let current_organization: Organization;
     let current_user: User;
 
@@ -207,7 +207,7 @@ describe('OAuthController', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        // Production returns a full session — first SSO user is a regular user
+        // Production returns a full session | first SSO user is a regular user
         // (super admin must be set up via /api/onboarding/setup-super-admin)
         expect(response.body.email).toBe('ssousergit@tooljet.io');
         expect(response.body.super_admin).toBe(false);

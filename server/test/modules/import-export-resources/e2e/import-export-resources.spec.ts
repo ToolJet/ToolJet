@@ -2,9 +2,9 @@
  * Import/Export Resources E2E Tests
  *
  * Verifies the v2 import/export/clone endpoints:
- *   POST /api/v2/resources/export — export apps
- *   POST /api/v2/resources/import — import apps (round-trip)
- *   POST /api/v2/resources/clone  — clone an app
+ *   POST /api/v2/resources/export | export apps
+ *   POST /api/v2/resources/import | import apps (round-trip)
+ *   POST /api/v2/resources/clone  | clone an app
  *
  * @group platform
  */
@@ -46,7 +46,7 @@ describe('EE (plan: enterprise)', () => {
     return application;
   }
 
-  describe('POST /api/v2/resources/export — export apps', () => {
+  describe('POST /api/v2/resources/export | export apps', () => {
     it('should allow an admin to export an app (201)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
@@ -86,7 +86,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('POST /api/v2/resources/import — import apps (round-trip)', () => {
+  describe('POST /api/v2/resources/import | import apps (round-trip)', () => {
     it('should allow an admin to import an exported payload (round-trip)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
@@ -119,7 +119,7 @@ describe('EE (plan: enterprise)', () => {
     });
   });
 
-  describe('POST /api/v2/resources/clone — clone an app', () => {
+  describe('POST /api/v2/resources/clone | clone an app', () => {
     it('should allow an admin to clone an app', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
