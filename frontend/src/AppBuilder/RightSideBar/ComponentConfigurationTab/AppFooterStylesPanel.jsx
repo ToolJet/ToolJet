@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { PAGE_CANVAS_FOOTER_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
 
 const AppFooterStylesPanel = () => {
   const { moduleId } = useModuleContext();
@@ -26,6 +28,20 @@ const AppFooterStylesPanel = () => {
       'var(--cc-default-border)',
     shallow
   );
+  const footerHeight = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.height ??
+      PAGE_CANVAS_FOOTER_HEIGHT,
+    shallow
+  );
+
+  const [inputValue, setInputValue] = useState(footerHeight);
+
+  useEffect(() => {
+    setInputValue(footerHeight);
+  }, [footerHeight]);
+
+  const roundToNearest10 = (val) => Math.max(10, Math.round(Number(val) / 10) * 10);
 
   const handleClose = () => {
     setCanvasFooterSelected(false);
@@ -55,7 +71,7 @@ const AppFooterStylesPanel = () => {
             onChange={(value) => updatePageFooterStyle(currentPageId, 'backgroundColor', value)}
           />
         </div>
-        <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="field">
             <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
               Border
@@ -65,6 +81,27 @@ const AppFooterStylesPanel = () => {
             value={footerBorderColor}
             onChange={(value) => updatePageFooterStyle(currentPageId, 'borderColor', value)}
           />
+        </div>
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <div className="field">
+            <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
+              Height
+            </OverflowTooltip>
+          </div>
+          <div
+            onBlur={() => {
+              const rounded = roundToNearest10(inputValue);
+              setInputValue(rounded);
+              updatePageFooterStyle(currentPageId, 'height', rounded);
+            }}
+          >
+            <NumberInput
+              value={inputValue}
+              onChange={(val) => setInputValue(val)}
+              cyLabel="footer-height"
+              meta={{ staticText: 'px' }}
+            />
+          </div>
         </div>
       </div>
     </>

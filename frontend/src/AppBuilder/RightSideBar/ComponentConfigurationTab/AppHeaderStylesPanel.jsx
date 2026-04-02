@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { PAGE_CANVAS_HEADER_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
 
 const AppHeaderStylesPanel = () => {
   const { moduleId } = useModuleContext();
@@ -26,6 +28,20 @@ const AppHeaderStylesPanel = () => {
       'var(--cc-default-border)',
     shallow
   );
+  const headerHeight = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.height ??
+      PAGE_CANVAS_HEADER_HEIGHT,
+    shallow
+  );
+
+  const [inputValue, setInputValue] = useState(headerHeight);
+
+  useEffect(() => {
+    setInputValue(headerHeight);
+  }, [headerHeight]);
+
+  const roundToNearest10 = (val) => Math.max(10, Math.round(Number(val) / 10) * 10);
 
   const handleClose = () => {
     setCanvasHeaderSelected(false);
@@ -55,7 +71,7 @@ const AppHeaderStylesPanel = () => {
             onChange={(value) => updatePageHeaderStyle(currentPageId, 'backgroundColor', value)}
           />
         </div>
-        <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="field">
             <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
               Border
@@ -65,6 +81,27 @@ const AppHeaderStylesPanel = () => {
             value={headerBorderColor}
             onChange={(value) => updatePageHeaderStyle(currentPageId, 'borderColor', value)}
           />
+        </div>
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <div className="field">
+            <OverflowTooltip style={{ width: '120px' }} childrenClassName="tj-text-xsm color-slate12 mb-2">
+              Height
+            </OverflowTooltip>
+          </div>
+          <div
+            onBlur={() => {
+              const rounded = roundToNearest10(inputValue);
+              setInputValue(rounded);
+              updatePageHeaderStyle(currentPageId, 'height', rounded);
+            }}
+          >
+            <NumberInput
+              value={inputValue}
+              onChange={(val) => setInputValue(val)}
+              cyLabel="header-height"
+              meta={{ staticText: 'px' }}
+            />
+          </div>
         </div>
       </div>
     </>

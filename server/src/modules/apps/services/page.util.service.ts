@@ -95,12 +95,14 @@ export class PageHelperService implements IPageHelperService {
       showOnMobile: false,
       backgroundColor: 'var(--cc-surface1-surface)',
       border: 'var(--cc-default-border)',
+      height: 60,
     };
     page.pageFooter = {
       showOnDesktop: false,
       showOnMobile: false,
       backgroundColor: 'var(--cc-surface1-surface)',
       border: 'var(--cc-default-border)',
+      height: 60,
     };
     return page;
   }
