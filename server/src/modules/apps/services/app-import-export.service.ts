@@ -759,9 +759,8 @@ export class AppImportExportService {
     }
 
     // AppVersion.co_relation_id is intentionally NOT updated here.
-    // It is set at creation time to importedApp.co_relation_id (the app's stable cross-workspace
-    // identifier). Using the old source version UUID as the stable identity would be wrong —
-    // all versions of the same app must share the app's co_relation_id.
+    // It is set at creation time from appVersion.id in the imported JSON —
+    // in git, id IS the co_relation_id (ids are swapped with co_relation_ids on push).
   }
 
   async updateEntityReferencesForImportedApp(
@@ -2463,7 +2462,7 @@ export class AppImportExportService {
           versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: importedApp.co_relation_id || null,
+          co_relation_id: appVersion.id || null,
           branchId,
         });
       }

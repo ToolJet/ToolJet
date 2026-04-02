@@ -164,14 +164,19 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
+        // Check if the app is in stub state (pulled from git but not yet hydrated)
+        const stubVersion = await this.versionRepository.findOne({ where: { appId: app.id, isStub: true } });
+        if (stubVersion) {
+          throw new NotFoundException('app-not-ready');
+        }
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
 
@@ -268,7 +273,7 @@ export class AppsService implements IAppsService {
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
       // Block rename if git sync is enabled and app has been pushed
-      if (isGitSyncEnabled  && app.type === APP_TYPES.FRONT_END) {
+      if (isGitSyncEnabled && app.type === APP_TYPES.FRONT_END) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
         if (appGitSync) {
           // Check if on default branch (not a feature branch)
@@ -376,7 +381,20 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type, branchId } = appListDto;
+    const { folderId, page, searchKey, type } = appListDto;
+    // When no branchId is provided (e.g. end users), fall back to the default branch
+    // so that only default-branch apps are shown instead of all apps across all branches.
+    let branchId = appListDto.branchId;
+    if (!branchId && type === 'front-end') {
+      const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+      if (orgGit) {
+        const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        });
+        branchId = defaultBranch?.id;
+      }
+    }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
