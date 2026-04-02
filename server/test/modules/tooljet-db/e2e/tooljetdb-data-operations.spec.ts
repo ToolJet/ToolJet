@@ -25,7 +25,8 @@ import {
   closeTestApp,
 } from 'test-helper';
 
-describe('ToolJet DB data operations (EE, enterprise)', () => {
+describe('TooljetDbDataController', () => {
+describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let adminCookie: string[];
   let adminOrgId: string;
@@ -317,4 +318,5 @@ describe('ToolJet DB data operations (EE, enterprise)', () => {
     expect(Array.isArray(rows)).toBe(true);
     expect(rows.length).toBe(0);
   });
+});
 });

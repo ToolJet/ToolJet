@@ -1,3 +1,6 @@
+/**
+ * @group platform
+ */
 import {
   resetDB,
   createUser,
@@ -11,6 +14,7 @@ import {
   findAppWithRelations,
   findEntityOrFail,
   findEntity,
+  closeTestApp,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
@@ -20,19 +24,20 @@ import { AppImportExportService } from '@ee/apps/services/app-import-export.serv
 jest.setTimeout(120_000);
 
 describe('AppImportExportService', () => {
+describe('EE (plan: enterprise)', () => {
   let nestApp: INestApplication;
   let service: AppImportExportService;
-
-  beforeEach(async () => {
-    await resetDB();
-  });
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
     service = nestApp.get<AppImportExportService>(AppImportExportService);
   });
 
-  describe('.export', () => {
+  beforeEach(async () => {
+    await resetDB();
+  });
+
+  describe('.export — serialize app for transfer', () => {
     it('should export app with empty related associations', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
@@ -157,7 +162,7 @@ describe('AppImportExportService', () => {
     });
   });
 
-  describe('.import', () => {
+  describe('.import — deserialize and create app from payload', () => {
     it('should throw error with invalid params', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
@@ -247,6 +252,7 @@ describe('AppImportExportService', () => {
   });
 
   afterAll(async () => {
-    await nestApp.close();
-  });
+    await closeTestApp(nestApp);
+  }, 60_000);
+});
 });

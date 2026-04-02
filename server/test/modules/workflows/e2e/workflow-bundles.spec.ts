@@ -15,6 +15,7 @@ import {
   createUser,
   initTestApp,
   createUserWorkflowPermissions,
+  closeTestApp,
 } from 'test-helper';
 import { WorkflowBundle } from '../../../../src/entities/workflow_bundle.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -59,7 +60,8 @@ const waitForBundleReady = async (
 /**
  * @group workflows
  */
-describe('Enterprise Edition - workflow bundle management controller', () => {
+describe('WorkflowBundleController', () => {
+describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
 
   const context = setupPolly({
@@ -93,6 +95,10 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     },
   });
 
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee' }));
+  });
+
   beforeEach(async () => {
     await resetDB();
 
@@ -109,15 +115,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     // All other requests (external APIs) will be handled by Polly's recording mechanism
   });
 
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee' }));
-  });
-
   afterEach(async () => {
     await context.polly.stop();
   });
 
-  describe('GET /api/workflows/packages/:language/search', () => {
+  describe('GET /api/workflows/packages/:language/search — search packages', () => {
     it('should search JavaScript packages via unified endpoint', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -300,7 +302,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('GET /api/workflows/packages/:language/:name', () => {
+  describe('GET /api/workflows/packages/:language/:name — get package metadata', () => {
     it('should get JavaScript package info via unified endpoint', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -395,7 +397,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('GET /api/workflows/packages/:language/:name/versions', () => {
+  describe('GET /api/workflows/packages/:language/:name/versions — list versions', () => {
     it('should get JavaScript package versions via unified endpoint', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -461,7 +463,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('GET /api/workflows/:appVersionId/packages/:language', () => {
+  describe('GET /api/workflows/:appVersionId/packages/:language — get workflow packages', () => {
     it('should get empty JavaScript dependencies for new workflow', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -667,7 +669,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('PUT /api/workflows/:appVersionId/packages/:language', () => {
+  describe('PUT /api/workflows/:appVersionId/packages/:language — update packages', () => {
     it('should update JavaScript workflow packages and verify entity', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -922,7 +924,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('GET /api/workflows/:appVersionId/bundle/:language/status', () => {
+  describe('GET /api/workflows/:appVersionId/bundle/:language/status — check bundle status', () => {
     it('should return JavaScript bundle status with type checking', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1115,7 +1117,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('POST /api/workflows/:appVersionId/bundle/:language/rebuild', () => {
+  describe('POST /api/workflows/:appVersionId/bundle/:language/rebuild — rebuild bundle', () => {
     it('should rebuild JavaScript bundle and verify entity consistency', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1322,7 +1324,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
   });
 
-  describe('Complete workflow package management flow', () => {
+  describe('Complete workflow package management flow — end-to-end', () => {
     it('should handle full JavaScript package management workflow with entity verification', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1433,16 +1435,15 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
   });
 
   afterAll(async () => {
-    if (app) {
-      await app.close();
-    }
-  }, 60000);
+    await closeTestApp(app);
+  }, 60_000);
+});
 });
 
 /**
  * @group workflows
  */
-describe('Community Edition - workflow bundle management controller', () => {
+describe('WorkflowBundleController — CE', () => {
   let app: INestApplication;
 
   const context = setupPolly({
@@ -1472,6 +1473,11 @@ describe('Community Edition - workflow bundle management controller', () => {
     },
   });
 
+  beforeAll(async () => {
+    // Use CE edition without EE mock providers
+    ({ app } = await initTestApp({ edition: 'ce' }));
+  });
+
   beforeEach(async () => {
     await resetDB();
 
@@ -1488,22 +1494,15 @@ describe('Community Edition - workflow bundle management controller', () => {
     // All other requests (external APIs) will be handled by Polly's recording mechanism
   });
 
-  beforeAll(async () => {
-    // Use CE edition without EE mock providers
-    ({ app } = await initTestApp({ edition: 'ce' }));
-  });
-
   afterEach(async () => {
     await context.polly.stop();
   });
 
   afterAll(async () => {
-    if (app) {
-      await app.close();
-    }
-  }, 60000);
+    await closeTestApp(app);
+  }, 60_000);
 
-  describe('CE Limitations - All endpoints should return enterprise feature errors', () => {
+  describe('CE Limitations — all endpoints return enterprise feature errors', () => {
     it('should return enterprise feature error for package search', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',

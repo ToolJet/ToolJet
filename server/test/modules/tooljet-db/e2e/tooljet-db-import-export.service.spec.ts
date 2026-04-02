@@ -1,8 +1,11 @@
+/**
+ * @group database
+ */
 import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, createUser, setDataSources } from 'test-helper';
+import { resetDB, createUser, setDataSources, closeTestApp } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -25,6 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 
 describe('TooljetDbImportExportService', () => {
+describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let appManager: EntityManager;
   let tjDbManager: EntityManager;
@@ -131,10 +135,10 @@ describe('TooljetDbImportExportService', () => {
 
   afterAll(async () => {
     await resetDB();
-    await app.close();
-  });
+    await closeTestApp(app);
+  }, 60_000);
 
-  describe('.export', () => {
+  describe('.export — serialize table schema for transfer', () => {
     it('should export ToolJet DB table schema', async () => {
       const exportResult = await service.export(organizationId, { table_id: usersTableId }, []);
 
@@ -175,7 +179,7 @@ describe('TooljetDbImportExportService', () => {
     });
   });
 
-  describe('.import', () => {
+  describe('.import — create table from exported schema', () => {
     it('should import a single ToolJet DB table', async () => {
       const importData = {
         id: uuidv4(),
@@ -342,7 +346,7 @@ describe('TooljetDbImportExportService', () => {
     });
   });
 
-  describe('.bulkImport', () => {
+  describe('.bulkImport — import multiple tables with foreign keys', () => {
     it('should import multiple ToolJet DB tables with foreign key relationships', async () => {
       const importData = {
         app: null,
@@ -566,4 +570,5 @@ describe('TooljetDbImportExportService', () => {
       expect(validTable).toBeNull();
     });
   });
+});
 });

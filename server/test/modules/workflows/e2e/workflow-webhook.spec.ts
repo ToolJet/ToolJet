@@ -85,7 +85,9 @@ const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) =>
 // WorkflowCountGuard, and WebhookGuard now use LicenseTermsService with different
 // error messages and status codes. The tests were testing deleted behavior.
 
-describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workflowId>/trigger', () => {
+/** @group workflows */
+describe('WorkflowWebhookController', () => {
+describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -96,7 +98,7 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
     await resetDB();
   });
 
-  describe('Access workflow from webhook without params', () => {
+  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger — without params', () => {
     it('trigger workflows from webhook', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -158,7 +160,7 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
     });
   });
 
-  describe('Access workflow from webhook with params', () => {
+  describe('POST /api/v2/webhooks/workflows/:workflowId/trigger — with params', () => {
     it('trigger workflows from webhook with valid parameters and its type', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -425,7 +427,7 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
 
 // Rate limiting needs its own app instance because ThrottlerModule reads
 // WEBHOOK_THROTTLE_LIMIT at app creation time (global, not per-workflow).
-describe('Workflow Webhooks - Rate Limiting (EE, enterprise)', () => {
+describe('EE rate limiting (plan: enterprise)', () => {
   let app: INestApplication;
   const RATE_LIMIT = 2;
   const RATE_TTL = 60000;
@@ -483,6 +485,7 @@ describe('Workflow Webhooks - Rate Limiting (EE, enterprise)', () => {
     expect(throttledResponse.statusCode).toBe(429);
     expect(throttledResponse.body.message).toBe('ThrottlerException: Too Many Requests');
   });
+});
 });
 
 // DELETED: 'Workflow and Webhooks - Rate Limit exceeding scenarios' describe block

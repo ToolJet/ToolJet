@@ -20,6 +20,7 @@ import {
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,
+  closeTestApp,
 } from 'test-helper';
 
 const executeWorkflow = async (
@@ -111,6 +112,8 @@ const context = setupPolly({
   },
 });
 
+describe('WorkflowExecutionsController', () => {
+describe('EE (plan: enterprise)', () => {
 let app: INestApplication;
 
 beforeAll(async () => {
@@ -139,12 +142,10 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  if (app) await app.close();
-});
+  await closeTestApp(app);
+}, 60_000);
 
-describe('WorkflowExecutionsController (e2e)', () => {
-
-  describe('POST /api/workflow_executions', () => {
+  describe('POST /api/workflow_executions — execute a workflow', () => {
     describe('basic execution', () => {
       it('should execute a simple workflow with start trigger and response', async () => {
         const { user } = await setupOrganizationAndUser(app, {
@@ -1612,7 +1613,7 @@ result = pydash.sum_(sorted_numbers)
     });
   });
 
-  describe('GET /api/workflow_executions/:id/status', () => {
+  describe('GET /api/workflow_executions/:id/status — poll execution status', () => {
     it('should retrieve workflow execution status', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1652,7 +1653,7 @@ result = pydash.sum_(sorted_numbers)
     });
   });
 
-  describe('GET /api/workflow_executions/:id', () => {
+  describe('GET /api/workflow_executions/:id — get execution details', () => {
     it('should retrieve workflow execution details including logs', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1693,7 +1694,7 @@ result = pydash.sum_(sorted_numbers)
     });
   });
 
-  describe('GET /api/workflow_executions/all/:appVersionId', () => {
+  describe('GET /api/workflow_executions/all/:appVersionId — list executions by version', () => {
     it('should list all executions for an app version', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1739,7 +1740,7 @@ result = pydash.sum_(sorted_numbers)
     });
   });
 
-  describe('GET /api/workflow_executions', () => {
+  describe('GET /api/workflow_executions — list all executions', () => {
     it('should retrieve paginated execution logs', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1783,7 +1784,7 @@ result = pydash.sum_(sorted_numbers)
     });
   });
 
-  describe('GET /api/workflow_executions/:id/nodes', () => {
+  describe('GET /api/workflow_executions/:id/nodes — get execution nodes', () => {
     it('should retrieve execution nodes with pagination', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
@@ -1858,4 +1859,5 @@ result = pydash.sum_(sorted_numbers)
       expect(Array.isArray(nodesResponse.body.data)).toBe(true);
     });
   });
+});
 });

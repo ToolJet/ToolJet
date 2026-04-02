@@ -411,7 +411,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/forgot-password', () => {
+    describe('POST /api/forgot-password — Request password reset', () => {
       beforeEach(async () => {
         await createUser(app, {
           email: 'admin@tooljet.io',
@@ -444,7 +444,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/reset-password', () => {
+    describe('POST /api/reset-password — Reset password', () => {
       beforeEach(async () => {
         await createUser(app, {
           email: 'admin@tooljet.io',
@@ -486,7 +486,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/onboarding/accept-invite', () => {
+    describe('POST /api/onboarding/accept-invite — Accept workspace invite', () => {
       describe('Multi-Workspace Enabled', () => {
         beforeEach(() => {
           jest.spyOn(configService, 'get').mockImplementation((key: string) => {
@@ -549,7 +549,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('GET /api/onboarding/verify-invite-token', () => {
+    describe('GET /api/onboarding/verify-invite-token — Verify invite token', () => {
       describe('Multi-Workspace Enabled', () => {
         beforeEach(async () => {
           const { organization, user, orgUser } = await createUser(app, {
@@ -707,7 +707,7 @@ describe('AppController', () => {
       });
     });
   
-    describe('POST /api/onboarding/verify-invite-token', () => {
+    describe('POST /api/onboarding/verify-invite-token — Verify invite token (POST)', () => {
       beforeEach(() => {
         jest.spyOn(configService, 'get').mockImplementation((key: string) => {
           switch (key) {

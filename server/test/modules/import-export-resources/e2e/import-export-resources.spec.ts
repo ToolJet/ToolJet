@@ -17,9 +17,11 @@ import {
   createEndUser,
   createApplication,
   createApplicationVersion,
+  closeTestApp,
 } from 'test-helper';
 
-describe('import-export-resources controller', () => {
+describe('ImportExportResourcesController', () => {
+describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -31,8 +33,8 @@ describe('import-export-resources controller', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-  });
+    await closeTestApp(app);
+  }, 60_000);
 
   /** Creates an app with a version, ready for export/clone operations. */
   async function seedApp(admin: Awaited<ReturnType<typeof createAdmin>>) {
@@ -44,7 +46,7 @@ describe('import-export-resources controller', () => {
     return application;
   }
 
-  describe('POST /api/v2/resources/export', () => {
+  describe('POST /api/v2/resources/export — export apps', () => {
     it('should allow an admin to export an app (201)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
@@ -84,7 +86,7 @@ describe('import-export-resources controller', () => {
     });
   });
 
-  describe('POST /api/v2/resources/import', () => {
+  describe('POST /api/v2/resources/import — import apps (round-trip)', () => {
     it('should allow an admin to import an exported payload (round-trip)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
@@ -117,7 +119,7 @@ describe('import-export-resources controller', () => {
     });
   });
 
-  describe('POST /api/v2/resources/clone', () => {
+  describe('POST /api/v2/resources/clone — clone an app', () => {
     it('should allow an admin to clone an app', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const application = await seedApp(admin);
@@ -136,4 +138,5 @@ describe('import-export-resources controller', () => {
       expect(response.body.success).toBe(true);
     });
   });
+});
 });
