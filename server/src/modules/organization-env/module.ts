@@ -1,6 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
-import { EncryptionModule } from '@modules/encryption/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
@@ -20,7 +19,7 @@ export class OrganizationEnvModule extends SubModule {
     this.cachedModule = {
       module: OrganizationEnvModule,
       global: true,
-      imports: [await EncryptionModule.register(configs)],
+      imports: [],
       providers: [OrganizationEnvRegistryService, GitSyncEnvUtilService, OrganizationRepository, OrganizationGitSyncRepository],
       exports: [GitSyncEnvUtilService],
     };
