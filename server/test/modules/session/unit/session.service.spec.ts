@@ -1,11 +1,3 @@
-/**
- * SessionService Unit Tests
- *
- * Exercises terminateSession and getSessionDetails with fully mocked
- * repositories and utilities — no database or full NestJS app required.
- *
- * @group platform
- */
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionService } from '@modules/session/service';
 import { UserRepository } from '@modules/users/repositories/repository';
