@@ -102,6 +102,7 @@ type NewRevampedComponent =
   | 'DropdownV2'
   | 'TreeSelect'
   | 'Listview'
+  | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu';
@@ -151,6 +152,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DropdownV2',
   'TreeSelect',
   'Listview',
+  'ColorPicker',
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
