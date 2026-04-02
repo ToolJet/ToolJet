@@ -472,6 +472,7 @@ class DataSourceManagerComponent extends React.Component {
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
         elementsProps={this.props.formProps?.[kind]}
+        isWorkspaceBranchLocked={this.props.isWorkspaceBranchLocked}
       />
     );
   };
@@ -958,9 +959,8 @@ class DataSourceManagerComponent extends React.Component {
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, selectedDataSource?.options, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
@@ -1034,7 +1034,7 @@ class DataSourceManagerComponent extends React.Component {
                             data-cy="data-source-name-input-field"
                             autoFocus
                             autoComplete="off"
-                            disabled={!canUpdateDataSource(selectedDataSource.id)}
+                            disabled={this.props.isWorkspaceBranchLocked || !canUpdateDataSource(selectedDataSource.id)}
                           />
                           {!this.props.isEditing && (
                             <span className="input-icon-addon">
@@ -1225,7 +1225,7 @@ class DataSourceManagerComponent extends React.Component {
                           appId={this.state.appId}
                         />
                       </div>
-                      {!isSampleDb && (
+                      {!isSampleDb && this.props.showSaveBtn !== false && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
                             className={`m-2 datasource-save-btn-white-icon ${isSaving ? 'btn-loading' : ''}`}
@@ -1269,22 +1269,24 @@ class DataSourceManagerComponent extends React.Component {
                           {this.props.t('globals.readDocumentation', 'Read documentation')}
                         </a>
                       </div>
-                      <div className="col-auto" data-cy="db-connection-save-button">
-                        <ButtonSolid
-                          leftIcon="floppydisk"
-                          fill={'#FDFDFE'}
-                          className="m-2 datasource-save-btn-white-icon"
-                          disabled={
-                            isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
-                          }
-                          variant="primary"
-                          onClick={this.createDataSource}
-                        >
-                          {isSaving
-                            ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                            : this.props.t('globals.save', 'Save')}
-                        </ButtonSolid>
-                      </div>
+                      {this.props.showSaveBtn !== false && (
+                        <div className="col-auto" data-cy="db-connection-save-button">
+                          <ButtonSolid
+                            leftIcon="floppydisk"
+                            fill={'#FDFDFE'}
+                            className="m-2"
+                            disabled={
+                              isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                            }
+                            variant="primary"
+                            onClick={this.createDataSource}
+                          >
+                            {isSaving
+                              ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                              : this.props.t('globals.save', 'Save')}
+                          </ButtonSolid>
+                        </div>
+                      )}
                     </Modal.Footer>
                   )}
               </>

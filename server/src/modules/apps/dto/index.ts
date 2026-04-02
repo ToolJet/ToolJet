@@ -27,12 +27,20 @@ export class AppCreateDto {
   @IsOptional()
   @IsString()
   prompt?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class AppUpdateDto {
   @IsString()
   @IsOptional()
   current_version_id: string;
+
+  @IsString()
+  @IsOptional()
+  editingVersionId: string;
 
   @IsBoolean()
   @IsOptional()
@@ -129,6 +137,10 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class VersionReleaseDto {
