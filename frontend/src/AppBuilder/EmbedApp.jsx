@@ -24,7 +24,7 @@ export function getPatToken() {
 
 export default function EmbedAppRedirect() {
   const router = useRouter();
-  const { appId } = router.query;
+  const { appId, appSlug } = router.query;
 
   useEffect(() => {
     // 🔐 Ensure the page is embedded
@@ -68,7 +68,7 @@ export default function EmbedAppRedirect() {
         // ✅ Store PAT in memory
         setPatToken(result.signedPat);
         window.name = result.signedPat;
-        window.location.href = `applications/${appId}`;
+        window.location.href = `applications/${appSlug}`; // Redirect to the app route with slug
       } catch (error) {
         parent?.postMessage({ type: 'TJ_EMBED_APP_LOGOUT', error: 500, message: 'Network error' }, '*');
       }
