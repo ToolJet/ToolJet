@@ -63,7 +63,6 @@ import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
-import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -81,7 +80,6 @@ export class OnboardingService implements IOnboardingService {
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly metadataUtilService: MetadataUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-    protected readonly organizationEnvRegistryService: OrganizationEnvRegistryService
   ) { }
 
   private async getDefaultOrOldestWorkspaceOfInstance(

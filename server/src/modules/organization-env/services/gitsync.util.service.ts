@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
-import { IGitEnvRegistryService } from '@modules/organization-env/interfaces/IGitEnvRegistryService';
+import { IGitSyncEnvUtilService } from '@modules/organization-env/interfaces/IGitSyncEnvUtilService';
 import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig, GitSshEnvConfig } from '@modules/organization-env/types';
 
 @Injectable()
-export class GitEnvRegistryService implements IGitEnvRegistryService {
+export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
   async initialize(): Promise<void> {}
 
   hasGitHttpsConfig(_workspaceId: string): boolean { return false; }

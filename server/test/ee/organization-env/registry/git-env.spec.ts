@@ -2,7 +2,7 @@ jest.mock('@modules/organizations/repository', () => ({
   OrganizationRepository: jest.fn(),
 }));
 
-import { GitEnvRegistryService } from '@ee/organization-env/utils/git-env';
+import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
 import { GIT_ENV_KEYS } from '@modules/organization-env/constants';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
 
@@ -10,7 +10,6 @@ const ORG_ID = '11111111-1111-1111-1111-111111111111';
 
 function makeOrgEnvService(overrides: Partial<Record<string, jest.Mock>> = {}) {
   return {
-    waitForReindex: jest.fn().mockResolvedValue(undefined),
     getResolvedOrganizationIds: jest.fn().mockReturnValue([]),
     has: jest.fn().mockReturnValue(false),
     hasAll: jest.fn().mockReturnValue(false),
@@ -34,7 +33,7 @@ function makeService(orgEnvService: ReturnType<typeof makeOrgEnvService>) {
   const licenseTerms = {
     getLicenseTerms: jest.fn().mockResolvedValue(true),
   };
-  return new GitEnvRegistryService(
+  return new GitSyncEnvUtilService(
     orgEnvService as any,
     orgGitSyncRepo as any,
     logger as any,
@@ -59,7 +58,7 @@ function makeServiceWithMocks(
   const licenseTerms = {
     getLicenseTerms: jest.fn().mockResolvedValue(licenseResult),
   };
-  const service = new GitEnvRegistryService(
+  const service = new GitSyncEnvUtilService(
     orgEnvService as any,
     orgGitSyncRepo as any,
     logger as any,
@@ -68,7 +67,7 @@ function makeServiceWithMocks(
   return { service, orgGitSyncRepo, licenseTerms };
 }
 
-describe('GitEnvRegistryService', () => {
+describe('GitSyncEnvUtilService', () => {
   describe('initialize() — proactive provider state from env store', () => {
     it('sets HTTPS provider isEnabled=true when at least one HTTPS key is mapped', async () => {
       const orgEnvService = makeOrgEnvService({

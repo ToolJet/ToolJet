@@ -5,8 +5,6 @@ import { IOrganizationEnvRegistryService } from '@modules/organization-env/inter
 export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryService {
   async initialize(): Promise<void> {}
 
-  async waitForReindex(): Promise<void> {}
-
   has(_organizationId: string, _key: string): boolean {
     return false;
   }
