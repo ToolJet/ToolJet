@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, createApplication, login, findEntityOrFail, findEntity, findEntities } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, createApplication, login, findEntityOrFail, findEntity, findEntities } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
 

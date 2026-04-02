@@ -19,7 +19,7 @@ import {
   login,
   logout,
   getTooljetDbDataSource,
-} from '../../../test.helper';
+} from 'test-helper';
 
 describe('ToolJet Database Table Operations', () => {
   let app: INestApplication;

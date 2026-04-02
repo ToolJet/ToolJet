@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, logout, login } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, logout, login } from 'test-helper';
 import * as request from 'supertest';
 
 describe('session & new apis', () => {

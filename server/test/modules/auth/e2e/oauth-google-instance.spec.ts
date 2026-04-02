@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs, closeTestApp } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs, closeTestApp } from 'test-helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';

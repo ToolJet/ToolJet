@@ -11,7 +11,7 @@ import {
   findAppWithRelations,
   findEntityOrFail,
   findEntity,
-} from '../../../test.helper';
+} from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';

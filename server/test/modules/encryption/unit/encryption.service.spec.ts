@@ -1,9 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EncryptionService } from '@modules/encryption/service';
 
-/**
- * @group unit
- */
 describe('EncryptionService', () => {
   let service: EncryptionService;
 

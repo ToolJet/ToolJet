@@ -1,12 +1,10 @@
-import { resetDB, initTestApp, createUser, findEntityOrFail, updateEntity } from '../../../test.helper';
+import { resetDB, initTestApp, createUser, findEntityOrFail, updateEntity } from 'test-helper';
 import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 /**
- * @group unit
- *
  * Tests for the EE UsersService (loaded when TOOLJET_EDITION=ee).
  * The CE stub throws "not implemented" for all methods; these tests
  * exercise the real EE implementations of:

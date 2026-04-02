@@ -22,7 +22,7 @@ import {
   findEntities,
   saveEntity,
   updateEntity,
-} from '../../../test.helper';
+} from 'test-helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';

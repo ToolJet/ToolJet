@@ -23,7 +23,7 @@ import {
   login,
   getTooljetDbDataSource,
   closeTestApp,
-} from '../../../test.helper';
+} from 'test-helper';
 
 describe('ToolJet DB data operations (EE, enterprise)', () => {
   let app: INestApplication;

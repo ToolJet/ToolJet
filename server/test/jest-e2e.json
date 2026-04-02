@@ -44,6 +44,7 @@
     "@licensing/(.*)": "<rootDir>/../ee/licensing/$1",
     "@instance-settings/(.*)": "<rootDir>/../ee/instance-settings/$1",
     "@otel/(.*)": "<rootDir>/../src/otel/$1",
-    "^mariadb$": "<rootDir>/__mocks__/mariadb.ts"
+    "^mariadb$": "<rootDir>/__mocks__/mariadb.ts",
+    "^test-helper$": "<rootDir>/../test/test.helper.ts"
   }
 }

@@ -17,7 +17,7 @@ import {
   createEndUser,
   createApplication,
   createApplicationVersion,
-} from '../../../test.helper';
+} from 'test-helper';
 
 describe('import-export-resources controller', () => {
   let app: INestApplication;

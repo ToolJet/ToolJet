@@ -10,7 +10,7 @@ import {
   createUser,
   login,
   getEntityRepository,
-} from '../../../test.helper';
+} from 'test-helper';
 import { Repository } from 'typeorm';
 
 /**

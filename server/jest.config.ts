@@ -35,6 +35,7 @@ const config: Config.InitialOptions = {
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
+    '^test-helper$': '<rootDir>/test/test.helper.ts',
   },
   runner: 'groups',
   testTimeout: 30000,

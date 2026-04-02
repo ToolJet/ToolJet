@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, login, findEntity, countEntities, updateEntity, deleteEntities } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, login, findEntity, countEntities, updateEntity, deleteEntities } from 'test-helper';
 import { Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 

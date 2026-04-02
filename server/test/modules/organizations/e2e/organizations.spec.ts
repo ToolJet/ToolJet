@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, login, getEntityRepository } from '../../../test.helper';
+import { resetDB, createUser, initTestApp, login, getEntityRepository } from 'test-helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from '@entities/sso_config.entity';
 import { User } from '@entities/user.entity';

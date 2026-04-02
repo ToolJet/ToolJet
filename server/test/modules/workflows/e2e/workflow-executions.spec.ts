@@ -20,7 +20,7 @@ import {
   WorkflowNode,
   WorkflowEdge,
   WorkflowQuery,
-} from '../../../test.helper';
+} from 'test-helper';
 
 const executeWorkflow = async (
   nestApp: INestApplication,

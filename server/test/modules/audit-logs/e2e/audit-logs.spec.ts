@@ -9,7 +9,7 @@
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity } from '../../../test.helper';
+import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity } from 'test-helper';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { MODULES } from '@modules/app/constants/modules';
 
