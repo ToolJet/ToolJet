@@ -295,7 +295,7 @@ export const ColorPicker = (props) => {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : '']: true,
+            : 'align-items-center']: true,
           'd-none': !exposedVariablesTemporaryState.isVisible,
           'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
         })}
@@ -319,7 +319,6 @@ export const ColorPicker = (props) => {
           defaultAlignment={alignment}
           isMandatory={isMandatory}
           _width={labelWidth}
-          top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
         />
