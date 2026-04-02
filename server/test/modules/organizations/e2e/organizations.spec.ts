@@ -1,84 +1,91 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, login, getEntityRepository } from 'test-helper';
+import { resetDB, createUser, initTestApp, closeTestApp, login, getEntityRepository } from 'test-helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from '@entities/sso_config.entity';
 import { User } from '@entities/user.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
-describe('organizations controller', () => {
+/** @group platform */
+describe('OrganizationsController', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let userRepository: Repository<User>;
   let configService: ConfigService;
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     configService = app.get(ConfigService);
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     userRepository = getEntityRepository(User);
   });
 
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    await resetDB();
   });
 
-  describe('list organization users', () => {
-    it('should allow only authenticated users to list org users', async () => {
-      await request(app.getHttpServer()).get('/api/organization-users').expect(401);
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60_000);
+
+  describe('EE (plan: enterprise)', () => {
+    describe('GET /api/organization-users', () => {
+      it('should allow only authenticated users to list org users', async () => {
+        await request(app.getHttpServer()).get('/api/organization-users').expect(401);
+      });
+
+      it('should list organization users if the user is admin or super admin', async () => {
+        const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
+        const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
+
+        let loggedUser = await login(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await login(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          adminUserData.organization.id
+        );
+        superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        for (const userData of [adminUserData, superAdminUserData]) {
+          const { user, orgUser } = adminUserData;
+          const response = await request(app.getHttpServer())
+            .get('/api/organization-users?page=1')
+            .set('tj-workspace-id', user.defaultOrganizationId)
+            .set('Cookie', userData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          expect(response.body.users.length).toBe(1);
+
+          await orgUser.reload();
+
+          expect(response.body.users[0]).toMatchObject({
+            email: user.email,
+            user_id: user.id,
+            first_name: user.firstName,
+            id: orgUser.id,
+            last_name: user.lastName,
+            name: `${user.firstName} ${user.lastName}`,
+            role: orgUser.role,
+            status: orgUser.status,
+            avatar_id: user.avatarId,
+          });
+        }
+      });
     });
 
-    it('should list organization users if the user is admin or super admin', async () => {
-      const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
-      const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
-
-      let loggedUser = await login(app);
-      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-      loggedUser = await login(
-        app,
-        superAdminUserData.user.email,
-        'password',
-        adminUserData.organization.id
-      );
-      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
-
-      for (const userData of [adminUserData, superAdminUserData]) {
-        const { user, orgUser } = adminUserData;
-        const response = await request(app.getHttpServer())
-          .get('/api/organization-users?page=1')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', userData['tokenCookie']);
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body.users.length).toBe(1);
-
-        await orgUser.reload();
-
-        expect(response.body.users[0]).toMatchObject({
-          email: user.email,
-          user_id: user.id,
-          first_name: user.firstName,
-          id: orgUser.id,
-          last_name: user.lastName,
-          name: `${user.firstName} ${user.lastName}`,
-          role: orgUser.role,
-          status: orgUser.status,
-          avatar_id: user.avatarId,
-        });
-      }
-    });
-
-    describe('create organization', () => {
+    describe('POST /api/organizations', () => {
       it('should allow only authenticated users to create organization', async () => {
         await request(app.getHttpServer()).post('/api/organizations').send({ name: 'My workspace' }).expect(401);
       });
+
       it('should create new organization if Multi-Workspace supported', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -162,7 +169,7 @@ describe('organizations controller', () => {
       });
     });
 
-    describe('update organization', () => {
+    describe('PATCH /api/organizations', () => {
       it('should change organization params if changes are done by admin / super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -272,7 +279,8 @@ describe('organizations controller', () => {
         }
       });
     });
-    describe('update organization configs', () => {
+
+    describe('PATCH /api/login-configs/organization-sso', () => {
       it('should change organization configs if changes are done by admin / super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -333,7 +341,8 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(403);
       });
     });
-    describe('get organization configs', () => {
+
+    describe('GET /api/login-configs/organization', () => {
       it('should get organization details if requested by admin/super admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -364,8 +373,10 @@ describe('organizations controller', () => {
 
           expect(getResponse.statusCode).toBe(200);
 
-          expect(getResponse.body.organization_details.id).toBe(organization.id);
-          expect(getResponse.body.organization_details.name).toBe(organization.name);
+          expect(getResponse.body.organization_details).toMatchObject({
+            id: organization.id,
+            name: organization.name,
+          });
           // Verify that both form and git SSO configs are present
           const ssoConfigs = getResponse.body.organization_details.sso_configs;
           expect(ssoConfigs.length).toBeGreaterThanOrEqual(2);
@@ -391,7 +402,7 @@ describe('organizations controller', () => {
       });
     });
 
-    describe('get public organization configs', () => {
+    describe('GET /api/login-configs/:id/public', () => {
       it('should get organization specific details for all users for multiple organization deployment', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -410,12 +421,14 @@ describe('organizations controller', () => {
         );
 
         expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body.sso_configs).toBeDefined();
-        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
-        expect(getResponse.body.sso_configs.id).toBe(organization.id);
-        expect(getResponse.body.sso_configs.form).toBeDefined();
-        expect(getResponse.body.sso_configs.form.sso).toBe('form');
-        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+        expect(getResponse.body.sso_configs).toMatchObject({
+          name: `${user.email}'s workspace`,
+          id: organization.id,
+          form: {
+            sso: 'form',
+            enabled: true,
+          },
+        });
       });
 
       it('should get organization specific details with instance level sso and override it with organization sso configs for all users for multiple organization deployment', async () => {
@@ -450,12 +463,14 @@ describe('organizations controller', () => {
         );
 
         expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body.sso_configs).toBeDefined();
-        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
-        expect(getResponse.body.sso_configs.id).toBe(organization.id);
-        expect(getResponse.body.sso_configs.form).toBeDefined();
-        expect(getResponse.body.sso_configs.form.sso).toBe('form');
-        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+        expect(getResponse.body.sso_configs).toMatchObject({
+          name: `${user.email}'s workspace`,
+          id: organization.id,
+          form: {
+            sso: 'form',
+            enabled: true,
+          },
+        });
         // Git config should be present (org-level overrides instance)
         expect(getResponse.body.sso_configs.git).toBeDefined();
         expect(getResponse.body.sso_configs.git.sso).toBe('git');
@@ -485,45 +500,33 @@ describe('organizations controller', () => {
         );
 
         expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body.sso_configs).toBeDefined();
-        expect(getResponse.body.sso_configs.name).toBe(`${user.email}'s workspace`);
-        expect(getResponse.body.sso_configs.id).toBe(organization.id);
-        expect(getResponse.body.sso_configs.form).toBeDefined();
-        expect(getResponse.body.sso_configs.form.sso).toBe('form');
-        expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+        expect(getResponse.body.sso_configs).toMatchObject({
+          name: `${user.email}'s workspace`,
+          id: organization.id,
+          form: {
+            sso: 'form',
+            enabled: true,
+          },
+        });
       });
     });
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-});
+  describe('EE (plan: team, personal workspace disabled)', () => {
+    let instanceSettingsRepository: Repository<InstanceSettings>;
 
-describe('organizations controller (EE, personal workspace disabled)', () => {
-  let app: INestApplication;
-  let instanceSettingsRepository: Repository<InstanceSettings>;
+    beforeAll(() => {
+      instanceSettingsRepository = getEntityRepository(InstanceSettings);
+    });
 
-  beforeEach(async () => {
-    await resetDB();
-    await instanceSettingsRepository.update(
-      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
-      { value: 'false' }
-    );
-  });
+    beforeEach(async () => {
+      await instanceSettingsRepository.update(
+        { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+        { value: 'false' }
+      );
+    });
 
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ plan: 'team' }));
-    instanceSettingsRepository = getEntityRepository(InstanceSettings);
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
-
-  describe('Create/Update organization with ALLOW_PERSONAL_WORKSPACE=false', () => {
-    describe('create organization', () => {
+    describe('POST /api/organizations', () => {
       it('should not allow authenticated users to create organization', async () => {
         const { user: userData } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -536,6 +539,7 @@ describe('organizations controller (EE, personal workspace disabled)', () => {
           .send({ name: 'My workspace' })
           .expect(403);
       });
+
       it('should create new organization for super admin', async () => {
         const superAdminUserData = await createUser(app, {
           email: 'superadmin@tooljet.io',
@@ -551,7 +555,7 @@ describe('organizations controller (EE, personal workspace disabled)', () => {
       });
     });
 
-    describe('update organization', () => {
+    describe('PATCH /api/organizations', () => {
       it('should allow admin to change organization name even when personal workspace is disabled', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -583,9 +587,5 @@ describe('organizations controller (EE, personal workspace disabled)', () => {
         expect(response.statusCode).toBe(200);
       });
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });
