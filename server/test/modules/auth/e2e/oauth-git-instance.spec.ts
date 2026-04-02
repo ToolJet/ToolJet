@@ -14,7 +14,12 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-describe('OAuth Git instance-level SSO', () => {
+/**
+ * @group platform
+ */
+describe('OAuthController', () => {
+  describe('Instance-level SSO', () => {
+  describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let instanceSettingsRepository: Repository<InstanceSettings>;
   let userRepository: Repository<User>;
@@ -24,7 +29,7 @@ describe('OAuth Git instance-level SSO', () => {
   const token = 'some-Token';
 
   beforeAll(async () => {
-    ({ app } = await initTestApp());
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     configService = app.get(ConfigService);
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
@@ -38,15 +43,10 @@ describe('OAuth Git instance-level SSO', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
-
-  afterAll(async () => {
-    await closeTestApp(app);
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — non-super-admin flows
+  // Instance SSO -- non-super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (non-super-admin)', () => {
     beforeEach(async () => {
@@ -69,7 +69,7 @@ describe('OAuth Git instance-level SSO', () => {
     });
 
     describe('Multi-Workspace instance level SSO', () => {
-      describe('sign in via Git OAuth', () => {
+      describe('POST /api/oauth/sign-in/common/git', () => {
         it('Should not login if user workspace status is invited', async () => {
           await createUser(app, {
             firstName: 'SSO',
@@ -152,7 +152,7 @@ describe('OAuth Git instance-level SSO', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Instance SSO — super-admin flows
+  // Instance SSO -- super-admin flows
   // ---------------------------------------------------------------------------
   describe('SSO Login (super admin)', () => {
     let current_organization: Organization;
@@ -205,10 +205,10 @@ describe('OAuth Git instance-level SSO', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        // Production returns a full session — first SSO user is a regular user
-        // (super admin must be set up via /api/onboarding/setup-super-admin)
-        expect(response.body.email).toBe('ssousergit@tooljet.io');
-        expect(response.body.super_admin).toBe(false);
+        expect(response.body).toMatchObject({
+          email: 'ssousergit@tooljet.io',
+          super_admin: false,
+        });
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -245,9 +245,10 @@ describe('OAuth Git instance-level SSO', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        // Second user gets a session but is not super admin
-        expect(response.body.email).toBe('ssousergit@tooljet.io');
-        expect(response.body.super_admin).toBe(false);
+        expect(response.body).toMatchObject({
+          email: 'ssousergit@tooljet.io',
+          super_admin: false,
+        });
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
@@ -262,7 +263,7 @@ describe('OAuth Git instance-level SSO', () => {
         current_organization = organization;
         current_user = user;
       });
-      describe('sign in via Git OAuth', () => {
+      describe('POST /api/oauth/sign-in/common/git (super admin)', () => {
         it('Workspace Login - should return 201 when the super admin log in', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -405,5 +406,11 @@ describe('OAuth Git instance-level SSO', () => {
         });
       });
     });
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60000);
+  });
   });
 });
