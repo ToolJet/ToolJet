@@ -11,17 +11,18 @@ export class OrganizationEnvModule extends SubModule {
       return this.cachedModule;
     }
 
-    const { OrganizationEnvRegistryService, GitSyncEnvUtilService } = await this.getProviders(configs, 'organization-env', [
+    const { OrganizationEnvRegistryService, GitSyncEnvUtilService, OrganizationEnvUtilService } = await this.getProviders(configs, 'organization-env', [
       'service',
       'services/gitsync.util.service',
+      'util.service',
     ]);
 
     this.cachedModule = {
       module: OrganizationEnvModule,
       global: true,
       imports: [],
-      providers: [OrganizationEnvRegistryService, GitSyncEnvUtilService, OrganizationRepository, OrganizationGitSyncRepository],
-      exports: [GitSyncEnvUtilService],
+      providers: [OrganizationEnvRegistryService, GitSyncEnvUtilService, OrganizationEnvUtilService, OrganizationRepository, OrganizationGitSyncRepository],
+      exports: [GitSyncEnvUtilService, OrganizationEnvUtilService],
     };
 
     return this.cachedModule;

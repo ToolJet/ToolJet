@@ -136,14 +136,10 @@ export async function initializeEnvConfigRegistry(app: NestExpressApplication, l
 
     logger.log('Initializing environment config registry...');
     const importPath = await getImportPath(false, tooljetEdition);
-    const { OrganizationEnvRegistryService } = await import(`${importPath}/organization-env/service`);
-    const { GitSyncEnvUtilService } = await import(`${importPath}/organization-env/services/gitsync.util.service`);
+    const { OrganizationEnvUtilService } = await import(`${importPath}/organization-env/util.service`);
 
-    const envRegistryService = app.get(OrganizationEnvRegistryService, { strict: false });
-    await envRegistryService.initialize();
-
-    const gitSyncEnvUtilService = app.get(GitSyncEnvUtilService, { strict: false });
-    await gitSyncEnvUtilService.initialize();
+    const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
+    await orgEnvUtilService.initialize();
     logger.log('✅ Environment config registry initialized successfully');
   } catch (error) {
     logger.error('❌ Failed to initialize environment config registry:', error);
