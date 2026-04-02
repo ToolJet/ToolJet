@@ -162,3 +162,12 @@ export {
   AlertDialogAction,
   AlertDialogCancel,
 } from './AlertDialog/AlertDialog';
+export {
+  Collapsible,
+  collapsibleVariants,
+  CollapsibleTrigger,
+  collapsibleTriggerVariants,
+  CollapsibleIcon,
+  CollapsibleContent,
+  collapsibleContentVariants,
+} from './Collapsible/Collapsible';

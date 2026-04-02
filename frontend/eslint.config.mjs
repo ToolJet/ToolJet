@@ -86,7 +86,14 @@ export default [
       react: {
         version: 'detect',
       },
-      'import-x/resolver': 'webpack',
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
+      },
     },
 
     rules: {
