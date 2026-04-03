@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, ensureInstanceSSOConfigs } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, getEntityRepository, ensureInstanceSSOConfigs } from 'test-helper';
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
@@ -31,10 +31,6 @@ describe('OAuthController', () => {
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
-  });
-
-  beforeEach(async () => {
-    await resetDB();
     await ensureInstanceSSOConfigs();
   });
 
@@ -253,7 +249,7 @@ describe('OAuthController', () => {
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
-      beforeEach(async () => {
+      beforeAll(async () => {
         const { organization, user } = await createUser(app, {
           email: 'superadmin@tooljet.io',
           userType: 'instance',

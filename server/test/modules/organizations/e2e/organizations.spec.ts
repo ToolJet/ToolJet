@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, login, getEntityRepository, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, login, getEntityRepository, closeTestApp } from 'test-helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from '@entities/sso_config.entity';
 import { User } from '@entities/user.entity';
@@ -23,10 +23,6 @@ describe('OrganizationsController', () => {
     configService = app.get(ConfigService);
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
     userRepository = getEntityRepository(User);
-  });
-
-  beforeEach(async () => {
-    await resetDB();
   });
 
   afterEach(() => {
@@ -514,7 +510,6 @@ describe('OrganizationsController', () => {
     });
 
     beforeEach(async () => {
-      await resetDB();
       await instanceSettingsRepository.update(
         { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
         { value: 'false' }

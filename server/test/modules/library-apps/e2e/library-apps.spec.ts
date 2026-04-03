@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, login, saveEntity } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, login, saveEntity } from 'test-helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
 /** Create the built-in static data sources that templates expect to exist. */
@@ -25,10 +25,6 @@ describe('LibraryAppsController', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-  });
-
-  beforeEach(async () => {
-    await resetDB();
   });
 
   afterEach(() => {

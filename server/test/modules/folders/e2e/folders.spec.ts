@@ -30,10 +30,6 @@ describe('FoldersController', () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   afterEach(() => {
     jest.resetAllMocks();
   });

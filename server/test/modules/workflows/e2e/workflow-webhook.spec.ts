@@ -94,10 +94,6 @@ describe('EE (plan: enterprise)', () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   describe('POST /api/v2/webhooks/workflows/:workflowId/trigger | without params', () => {
     it('trigger workflows from webhook', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
@@ -437,10 +433,6 @@ describe('EE rate limiting (plan: enterprise)', () => {
     process.env.WEBHOOK_THROTTLE_TTL = String(RATE_TTL);
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', freshApp: true }));
   }, 90_000); // longer timeout | fresh app needed for throttle config
-
-  beforeEach(async () => {
-    await resetDB();
-  });
 
   afterAll(async () => {
     delete process.env.WEBHOOK_THROTTLE_LIMIT;

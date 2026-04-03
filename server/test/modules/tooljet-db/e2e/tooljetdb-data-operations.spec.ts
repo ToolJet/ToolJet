@@ -129,9 +129,6 @@ describe('EE (plan: enterprise)', () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     tooljetDbAvailable = !!getTooljetDbDataSource();
 
-    // Clean slate before sequential tests
-    await resetDB();
-
     // Create admin user and login
     const { user } = await createUser(app, {
       email: 'admin@tooljet.io',

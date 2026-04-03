@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -46,10 +46,6 @@ describe('OAuthController', () => {
     orgRepository = getEntityRepository(Organization);
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   afterEach(() => {
     jest.resetAllMocks();
     jest.clearAllMocks();
@@ -57,7 +53,7 @@ describe('OAuthController', () => {
 
   describe('POST /api/oauth/sign-in/:configId | Git OAuth sign-in', () => {
     let current_organization: Organization;
-    beforeEach(async () => {
+    beforeAll(async () => {
       const { organization } = await createUser(app, {
         email: 'anotherUser@tooljet.io',
         ssoConfigs: [
@@ -77,7 +73,7 @@ describe('OAuthController', () => {
       describe('sign in via Git OAuth', () => {
         let sso_configs;
         const token = 'some-Token';
-        beforeEach(() => {
+        beforeAll(() => {
           sso_configs = current_organization.ssoConfigs.find((conf) => conf.sso === 'git');
         });
         it('should return 401 if git sign in is disabled', async () => {

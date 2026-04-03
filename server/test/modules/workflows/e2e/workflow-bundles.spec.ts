@@ -100,8 +100,6 @@ describe('EE (plan: enterprise)', () => {
   });
 
   beforeEach(async () => {
-    await resetDB();
-
     // Configure Polly.js to only pass through localhost calls
     // External API calls (like NPM registry) will be recorded
     context.polly.server
@@ -1479,8 +1477,6 @@ describe('WorkflowBundleController | CE', () => {
   });
 
   beforeEach(async () => {
-    await resetDB();
-
     // Configure Polly.js to only pass through localhost calls
     // External API calls (like NPM registry) will be recorded
     context.polly.server

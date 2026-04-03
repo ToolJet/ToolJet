@@ -33,10 +33,6 @@ describe('EE (plan: enterprise)', () => {
     service = nestApp.get<AppImportExportService>(AppImportExportService);
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   describe('.export | serialize app for transfer', () => {
     it('should export app with empty related associations', async () => {
       const adminUserData = await createUser(nestApp, {

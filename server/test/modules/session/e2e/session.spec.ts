@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, logout, login, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, logout, login, closeTestApp } from 'test-helper';
 import * as request from 'supertest';
 
 /**
@@ -13,10 +13,6 @@ describe('SessionController', () => {
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    });
-
-    beforeEach(async () => {
-      await resetDB();
       const { organization } = await createUser(app, {
         email: 'admin@tooljet.io',
         firstName: 'user',

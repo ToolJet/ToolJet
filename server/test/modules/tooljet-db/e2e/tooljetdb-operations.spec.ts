@@ -44,10 +44,7 @@ describe('EE (plan: enterprise)', () => {
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     tooljetDbAvailable = !!getTooljetDbDataSource();
-  });
 
-  beforeEach(async () => {
-    await resetDB();
     const { user } = await createUser(app, {
       email: 'admin@tooljet.io',
       firstName: 'Admin',

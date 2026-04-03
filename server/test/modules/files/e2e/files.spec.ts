@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createFile, resetDB, createUser, initTestApp, login, closeTestApp } from 'test-helper';
+import { createFile, createUser, initTestApp, login, closeTestApp } from 'test-helper';
 
 /**
  * @group platform
@@ -11,10 +11,6 @@ describe('FilesController', () => {
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    });
-
-    beforeEach(async () => {
-      await resetDB();
     });
 
     afterEach(() => {

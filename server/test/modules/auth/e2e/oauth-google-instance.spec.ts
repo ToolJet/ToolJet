@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, getEntityRepository, ensureInstanceSSOConfigs, closeTestApp } from 'test-helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
@@ -26,10 +26,6 @@ describe('OAuthController', () => {
     instanceSettingsRepository = getEntityRepository(InstanceSettings);
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
-  });
-
-  beforeEach(async () => {
-    await resetDB();
     await ensureInstanceSSOConfigs();
   });
 
@@ -184,7 +180,7 @@ describe('OAuthController', () => {
     });
 
     describe('sign in via Google OAuth', () => {
-      beforeEach(async () => {
+      beforeAll(async () => {
         const { user } = await createUser(app, {
           email: 'superadmin@tooljet.io',
           userType: 'instance',

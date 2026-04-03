@@ -60,9 +60,12 @@ export class AppModuleLoader {
           ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
           // In test mode: disable ioredis reconnection to prevent zombie connections
           // accumulating across test files in a long-lived Node.js process.
+          // lazyConnect defers the TCP connection until a command is actually sent,
+          // preventing open handles when unit tests don't use BullMQ queues.
           ...(isTest && {
             maxRetriesPerRequest: null,
             retryStrategy: () => null,
+            lazyConnect: true,
           }),
         },
       }),

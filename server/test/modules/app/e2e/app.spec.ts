@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { Repository, Not } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, createUser, initTestApp, closeTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, login, getEntityRepository, findEntity, findEntityOrFail, updateEntity } from 'test-helper';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
@@ -35,10 +35,6 @@ describe('AppController', () => {
       orgUserRepository = getEntityRepository(OrganizationUser);
       ssoConfigsRepository = getEntityRepository(SSOConfigs);
       instanceSettingsRepository = getEntityRepository(InstanceSettings);
-    });
-
-    beforeEach(async () => {
-      await resetDB();
     });
 
     afterEach(() => {

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, getEntityRepository } from 'test-helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -43,10 +43,6 @@ describe('OAuthController', () => {
     orgRepository = getEntityRepository(Organization);
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   afterEach(() => {
     jest.resetAllMocks();
     jest.clearAllMocks();
@@ -54,7 +50,7 @@ describe('OAuthController', () => {
 
   describe('POST /api/oauth/sign-in/:configId | Google OAuth sign-in', () => {
     let current_organization: Organization;
-    beforeEach(async () => {
+    beforeAll(async () => {
       const { organization } = await createUser(app, {
         email: 'anotherUser@tooljet.io',
         ssoConfigs: [{ sso: 'google', enabled: true, configs: { clientId: 'client-id' }, configScope: 'organization' }],
@@ -67,7 +63,7 @@ describe('OAuthController', () => {
       describe('sign in via Google OAuth', () => {
         let sso_configs;
         const token = 'some-Token';
-        beforeEach(() => {
+        beforeAll(() => {
           sso_configs = current_organization.ssoConfigs.find((conf) => conf.sso === 'google');
         });
         it('should return 401 if google sign in is disabled', async () => {

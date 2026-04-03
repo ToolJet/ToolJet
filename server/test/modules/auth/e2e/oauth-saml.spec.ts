@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, getEntityRepository, saveEntity } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, getEntityRepository, saveEntity } from 'test-helper';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -68,8 +68,7 @@ describe('OAuthController', () => {
     orgRepository = getEntityRepository(Organization);
   });
 
-  beforeEach(async () => {
-    await resetDB();
+  beforeEach(() => {
     setupSAMLMocks();
   });
 
@@ -80,7 +79,7 @@ describe('OAuthController', () => {
 
   describe('POST /api/oauth/sign-in/:configId | SAML sign-in', () => {
     let current_organization: Organization;
-    beforeEach(async () => {
+    beforeAll(async () => {
       const fs = require('fs');
       const idp = fs.readFileSync('./test/__mocks__/test_idp_metadata.xml').toString('utf8');
       const { organization } = await createUser(app, {
@@ -108,7 +107,7 @@ describe('OAuthController', () => {
     describe('Multi-Workspace', () => {
       describe('sign in via Ldap SSO', () => {
         let sso_configs: any;
-        beforeEach(() => {
+        beforeAll(() => {
           sso_configs = current_organization.ssoConfigs.find((conf) => conf.sso === 'saml');
         });
 

@@ -121,8 +121,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await resetDB();
-
   // Configure Polly.js to only pass through localhost calls
   // External API calls will be recorded
   context.polly.server

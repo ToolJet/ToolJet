@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { resetDB, createUser, initTestApp, login, buildTestSession, getEntityRepository, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, login, buildTestSession, getEntityRepository, closeTestApp } from 'test-helper';
 
 /** @group platform */
 describe('OrganizationUsersController', () => {
@@ -14,10 +14,6 @@ describe('OrganizationUsersController', () => {
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
       userRepository = getEntityRepository(User);
-    });
-
-    beforeEach(async () => {
-      await resetDB();
     });
 
     afterEach(() => {

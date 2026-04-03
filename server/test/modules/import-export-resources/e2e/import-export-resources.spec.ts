@@ -28,10 +28,6 @@ describe('EE (plan: enterprise)', () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
-  beforeEach(async () => {
-    await resetDB();
-  });
-
   afterAll(async () => {
     await closeTestApp(app);
   }, 60_000);

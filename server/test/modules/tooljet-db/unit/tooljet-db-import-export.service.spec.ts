@@ -5,7 +5,7 @@ import { BadRequestException, ConflictException, INestApplication, NotFoundExcep
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, createUser, setDataSources, closeTestApp } from 'test-helper';
+import { resetDB, withRealTransactions, createUser, setDataSources, closeTestApp } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -530,6 +530,7 @@ describe('EE (plan: enterprise)', () => {
       );
     });
     it('should rollback changes on error during bulk import', async () => {
+      await withRealTransactions(async () => {
       const importData = {
         organization_id: organizationId,
         tooljet_version: '2.50.5.5.8',
@@ -568,6 +569,7 @@ describe('EE (plan: enterprise)', () => {
       // Verify that the valid table was not created due to rollback
       const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
       expect(validTable).toBeNull();
+      });
     });
   });
 });

@@ -34,7 +34,6 @@ describe('OnboardingController', () => {
   });
 
   beforeEach(async () => {
-    await resetDB();
     jest.spyOn(configService, 'get').mockImplementation((key: string) => {
       switch (key) {
         case 'DISABLE_MULTI_WORKSPACE':

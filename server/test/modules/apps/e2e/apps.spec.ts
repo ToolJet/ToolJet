@@ -41,10 +41,6 @@ describe('AppsController', () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     });
 
-    beforeEach(async () => {
-      await resetDB();
-    });
-
     afterEach(() => {
       jest.resetAllMocks();
     });

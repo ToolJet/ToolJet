@@ -9,7 +9,7 @@
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, initTestApp, createAdmin, createEndUser, saveEntity, closeTestApp } from 'test-helper';
+import { initTestApp, createAdmin, createEndUser, saveEntity, closeTestApp } from 'test-helper';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { MODULES } from '@modules/app/constants/modules';
 
@@ -19,10 +19,6 @@ describe('AuditLogsController', () => {
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    });
-
-    beforeEach(async () => {
-      await resetDB();
     });
 
     afterEach(() => {

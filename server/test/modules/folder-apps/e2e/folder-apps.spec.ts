@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { login, resetDB, initTestApp, closeTestApp, createUser, createApplication, saveEntity } from 'test-helper';
+import { login, initTestApp, closeTestApp, createUser, createApplication, saveEntity } from 'test-helper';
 import * as request from 'supertest';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
@@ -27,10 +27,6 @@ describe('FolderAppsController', () => {
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-  });
-
-  beforeEach(async () => {
-    await resetDB();
   });
 
   afterEach(() => {

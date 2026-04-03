@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, createUser, initTestApp, closeTestApp, login, findEntityOrFail } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, login, findEntityOrFail } from 'test-helper';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
 
@@ -11,10 +11,6 @@ describe('UsersController', () => {
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    });
-
-    beforeEach(async () => {
-      await resetDB();
     });
 
     afterEach(() => {
