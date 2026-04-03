@@ -14,7 +14,24 @@ const preview = {
       },
     },
   },
-  decorators: [withRouter, withColorScheme], // Adding the decorators to the decorators array
+  globalTypes: {
+    theme: {
+      description: "Color scheme",
+      toolbar: {
+        title: "Theme",
+        icon: "mirror",
+        items: [
+          { value: "light", title: "Light", icon: "sun" },
+          { value: "dark", title: "Dark", icon: "moon" },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: {
+    theme: "light",
+  },
+  decorators: [withRouter, withColorScheme],
 };
 
 export default preview;
