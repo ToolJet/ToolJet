@@ -34,11 +34,49 @@ for (const [key, value] of Object.entries(_testEnvVars)) {
 let _defaultDataSource: TypeOrmDataSource;
 let _tooljetDbDataSource: TypeOrmDataSource;
 
+/**
+ * Unref all connections in a TypeORM DataSource's pg pool so they don't
+ * prevent graceful process exit. The connections still work normally —
+ * unref() only tells Node.js not to wait for them when the event loop is empty.
+ */
+function unrefPoolConnections(ds: TypeOrmDataSource) {
+  const pool = (ds.driver as any)?.master;
+  if (!pool) return;
+  // Unref existing connections (idle + active)
+  for (const client of pool._clients || []) {
+    client?.connection?.stream?.unref?.();
+  }
+  for (const client of pool._idle || []) {
+    client?.connection?.stream?.unref?.();
+  }
+}
+
+/**
+ * Unref all pool connections on all known DataSources.
+ * Call after tests complete (afterAll) so pools have had time to fill.
+ */
+export function unrefAllPoolConnections() {
+  if (_defaultDataSource) unrefPoolConnections(_defaultDataSource);
+  if (_tooljetDbDataSource) unrefPoolConnections(_tooljetDbDataSource);
+}
+
+/** Hook new pool connections to unref their sockets on creation. */
+function hookPoolUnref(ds: TypeOrmDataSource) {
+  const pool = (ds.driver as any)?.master;
+  if (!pool || pool._unrefHooked) return;
+  pool._unrefHooked = true;
+  pool.on('connect', (client: any) => {
+    client?.connection?.stream?.unref?.();
+  });
+}
+
 /** Captures TypeORM DataSource singletons from the NestJS app for use by test helpers. */
 export function setDataSources(nestApp: INestApplication) {
   _defaultDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  hookPoolUnref(_defaultDataSource);
   try {
     _tooljetDbDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
+    if (_tooljetDbDataSource) hookPoolUnref(_tooljetDbDataSource);
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
@@ -69,6 +107,26 @@ interface CachedAppSlot {
 
 const _cache: Record<string, CachedAppSlot> = {};
 
+/**
+ * Closes all cached NestJS apps so DB connections are released gracefully.
+ *
+ * Called automatically via a deferred timer in jest-transaction-setup.ts's
+ * afterAll. The timer fires after the last spec file in the worker — if
+ * another spec starts, beforeEach cancels the timer and apps stay alive.
+ * A globalTeardown can't help because it runs in the main Jest process,
+ * not the worker where the cache lives.
+ */
+export async function closeAllCachedApps(): Promise<void> {
+  for (const [key, slot] of Object.entries(_cache)) {
+    try {
+      await slot.realClose();
+    } catch {
+      // Best-effort — process is exiting anyway
+    }
+    delete _cache[key];
+  }
+}
+
 function isCachedApp(app: INestApplication): boolean {
   return Object.values(_cache).some((slot) => slot.app === app);
 }
@@ -92,100 +150,152 @@ export async function closeTestApp(app: INestApplication | undefined): Promise<v
 }
 
 // ---------------------------------------------------------------------------
-// Transaction-per-test rollback
+// Two-level transaction isolation (no-op proxy)
 //
-// Wraps each test in a DB transaction. ROLLBACK undoes all changes instead of
-// TRUNCATE — significantly faster. PostgreSQL transactional DDL means
-// CREATE/DROP TABLE are also rolled back.
+// Suite transaction: wraps the entire spec (beforeAll seed + all tests).
+// Test savepoints:   isolate individual tests within the suite.
+//
+// The QR proxy is a no-op: service code's start/commit/rollback are silently
+// ignored. All queries route through the suite transaction. No savepoints
+// from the proxy = no concurrent collision.
+//
+// Suite TX (real BEGIN/ROLLBACK)
+//   └─ beforeAll seed data
+//   └─ SAVEPOINT test_1    ← beginTestTransaction
+//   │    └─ test body
+//   └─ ROLLBACK TO test_1  ← rollbackTestTransaction
+//   └─ SAVEPOINT test_2
+//   └─ ...
+// ROLLBACK                  ← rollbackSuiteTransaction
 // ---------------------------------------------------------------------------
 
-let _testQR: QueryRunner | undefined;
-let _testQR_tj: QueryRunner | undefined;
-let _origCreateQR: ((...args: any[]) => QueryRunner) | undefined;
-let _origCreateQR_tj: ((...args: any[]) => QueryRunner) | undefined;
+// Suite-level: one real transaction per spec file
+let _suiteQR: QueryRunner | undefined;
+let _suiteQR_tj: QueryRunner | undefined;
+let _suiteOrigCreateQR: ((...args: any[]) => QueryRunner) | undefined;
+let _suiteOrigCreateQR_tj: ((...args: any[]) => QueryRunner) | undefined;
+// Track which DataSource the suite TX was created on (for edition-switch detection)
+let _suiteDS: TypeOrmDataSource | undefined;
 
-/** Creates a proxy around the test's QueryRunner that prevents release() and maps nested transactions to SAVEPOINTs. */
+// Test-level: SAVEPOINT name within the suite transaction
+let _testSavepoint: string | undefined;
+let _testSavepointId = 0;
+
+/** No-op proxy: routes all queries through the suite QR, ignores transaction management. */
 function createQRProxy(realQR: QueryRunner): QueryRunner {
-  let savepointId = 0;
-  const savepointStack: string[] = [];
-
   return new Proxy(realQR, {
     get(target, prop, receiver) {
       if (prop === 'release') return async () => {};
-
-      if (prop === 'startTransaction') {
-        return async () => {
-          const sp = `sp_${++savepointId}`;
-          savepointStack.push(sp);
-          await realQR.query(`SAVEPOINT ${sp}`);
-        };
-      }
-
-      if (prop === 'commitTransaction') {
-        return async () => {
-          const sp = savepointStack.pop();
-          if (sp) await realQR.query(`RELEASE SAVEPOINT ${sp}`);
-        };
-      }
-
-      if (prop === 'rollbackTransaction') {
-        return async () => {
-          const sp = savepointStack.pop();
-          if (sp) await realQR.query(`ROLLBACK TO SAVEPOINT ${sp}`);
-        };
-      }
-
+      if (prop === 'startTransaction') return async () => {};
+      if (prop === 'commitTransaction') return async () => {};
+      if (prop === 'rollbackTransaction') return async () => {};
       if (prop === 'isTransactionActive') return true;
-
       return Reflect.get(target, prop, receiver);
     },
   });
 }
 
-/** Starts a test transaction on both DataSources. Call in beforeEach. */
-export async function beginTestTransaction() {
-  // Skip if DataSource isn't initialized yet (beforeAll hasn't run initTestApp)
+/** Starts a suite-level transaction. Installs the no-op proxy on both DataSources. */
+export async function beginSuiteTransaction() {
   if (!_defaultDataSource) return;
   const ds = getDefaultDataSource();
-  _origCreateQR = ds.createQueryRunner.bind(ds);
-  _testQR = _origCreateQR();
-  await _testQR.connect();
-  await _testQR.startTransaction();
-  ds.createQueryRunner = () => createQRProxy(_testQR!);
+
+  // Edition switch: suite TX is on a different DataSource. Rollback the old one
+  // so we can start fresh on the new DataSource (the no-op proxy must be
+  // installed on the DataSource that tests actually use).
+  if (_suiteQR && _suiteDS && _suiteDS !== ds) {
+    const origDs = _defaultDataSource;
+    _defaultDataSource = _suiteDS;
+    await rollbackSuiteTransaction();
+    _defaultDataSource = origDs;
+  }
+
+  if (_suiteQR) return;
+  _suiteDS = ds;
+  _suiteOrigCreateQR = ds.createQueryRunner.bind(ds);
+  _suiteQR = _suiteOrigCreateQR();
+  await _suiteQR.connect();
+  await _suiteQR.startTransaction();
+  ds.createQueryRunner = () => createQRProxy(_suiteQR!);
 
   const tjDs = getTooljetDbDataSource();
   if (tjDs) {
-    _origCreateQR_tj = tjDs.createQueryRunner.bind(tjDs);
-    _testQR_tj = _origCreateQR_tj();
-    await _testQR_tj.connect();
-    await _testQR_tj.startTransaction();
-    tjDs.createQueryRunner = () => createQRProxy(_testQR_tj!);
+    _suiteOrigCreateQR_tj = tjDs.createQueryRunner.bind(tjDs);
+    _suiteQR_tj = _suiteOrigCreateQR_tj();
+    await _suiteQR_tj.connect();
+    await _suiteQR_tj.startTransaction();
+    tjDs.createQueryRunner = () => createQRProxy(_suiteQR_tj!);
   }
 }
 
-/** Rolls back the test transaction on both DataSources. Call in afterEach. */
-export async function rollbackTestTransaction() {
-  if (!_testQR) return; // no transaction active (beforeAll hasn't run yet)
+/** Rolls back the suite-level transaction. Call in afterAll. */
+export async function rollbackSuiteTransaction() {
+  if (!_suiteQR) return;
   const ds = getDefaultDataSource();
-  if (_testQR) {
-    await _testQR.rollbackTransaction();
-    await _testQR.release();
-    _testQR = undefined;
-  }
-  if (_origCreateQR) {
-    ds.createQueryRunner = _origCreateQR as any;
-    _origCreateQR = undefined;
+  await _suiteQR.rollbackTransaction();
+  await _suiteQR.release();
+  _suiteQR = undefined;
+  if (_suiteOrigCreateQR) {
+    ds.createQueryRunner = _suiteOrigCreateQR as any;
+    _suiteOrigCreateQR = undefined;
   }
 
-  const tjDs = getTooljetDbDataSource();
-  if (tjDs && _testQR_tj) {
-    await _testQR_tj.rollbackTransaction();
-    await _testQR_tj.release();
-    _testQR_tj = undefined;
+  // Clean up tooljetDb QR regardless of whether the DataSource ref still exists.
+  // closeTestApp() on a non-cached app can clear _tooljetDbDataSource while
+  // the suite TX is still active — unconditional cleanup prevents a QR leak.
+  if (_suiteQR_tj) {
+    try {
+      await _suiteQR_tj.rollbackTransaction();
+      await _suiteQR_tj.release();
+    } catch { /* best effort */ }
+    _suiteQR_tj = undefined;
   }
-  if (tjDs && _origCreateQR_tj) {
-    tjDs.createQueryRunner = _origCreateQR_tj as any;
-    _origCreateQR_tj = undefined;
+  const tjDs = getTooljetDbDataSource();
+  if (tjDs && _suiteOrigCreateQR_tj) {
+    tjDs.createQueryRunner = _suiteOrigCreateQR_tj as any;
+  }
+  _suiteOrigCreateQR_tj = undefined;
+  _suiteDS = undefined;
+  _testSavepointId = 0;
+}
+
+/** Creates a SAVEPOINT within the suite transaction. Call in beforeEach. */
+export async function beginTestTransaction() {
+  if (!_defaultDataSource) return;
+  // Lazy start: spec's beforeAll (initTestApp) set up the DataSource,
+  // but our beforeAll ran first (no DataSource yet). Start now.
+  if (!_suiteQR) await beginSuiteTransaction();
+  if (!_suiteQR) return;
+  _testSavepoint = `test_${++_testSavepointId}`;
+  await _suiteQR.query(`SAVEPOINT ${_testSavepoint}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`SAVEPOINT ${_testSavepoint}`);
+  }
+}
+
+/** Rolls back to the test SAVEPOINT. Call in afterEach. */
+export async function rollbackTestTransaction() {
+  if (!_suiteQR || !_testSavepoint) return;
+  await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  }
+  _testSavepoint = undefined;
+}
+
+/**
+ * Opt out of the no-op proxy for tests that verify real transaction semantics.
+ * Rolls back the suite transaction, runs the callback with real DB transactions,
+ * then re-enters the suite transaction. Safe even if the callback throws.
+ *
+ * Currently used by: tooljet-db-import-export.service.spec.ts (bulk import rollback test).
+ */
+export async function withRealTransactions(fn: () => Promise<void>) {
+  await rollbackSuiteTransaction();
+  try {
+    await fn();
+  } finally {
+    await beginSuiteTransaction();
   }
 }
 
@@ -316,6 +426,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
         // but returning undefined — poisoning the next describe's service calls.
         jest.restoreAllMocks();
         setDataSources(slot.app);
+        await beginSuiteTransaction();
         configurePlanMock(slot.app, plan);
         return { app: slot.app };
       }
@@ -343,6 +454,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   await configureApp(app, moduleRef);
   await app.init();
   setDataSources(app);
+  await beginSuiteTransaction();
   configurePlanMock(app, plan);
 
   // Cache the app for reuse by subsequent files with the same edition.
@@ -377,8 +489,8 @@ async function dropTooljetDbTables() {
 /** Resets the test database. No-op when transaction rollback is active. */
 export async function resetDB() {
   if (process.env.NODE_ENV !== 'test') return;
-  // Transaction rollback handles cleanup — previous test's changes were rolled back.
-  if (_testQR) return;
+  // Transaction rollback active — no TRUNCATE needed.
+  if (_suiteQR) return;
   await dropTooljetDbTables();
 
   const ds = getDefaultDataSource();

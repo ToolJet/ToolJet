@@ -41,7 +41,7 @@ export function coverageConfig(prefix: string = ''): Partial<Config.InitialOptio
       '/migrations/',
       '/data-migrations/',
     ],
-    coverageReporters: ['text', 'html', 'lcov', 'json'],
+    coverageReporters: ['html', 'lcov', 'json'],
     coverageProvider: 'v8',
     // Permissive baseline — tighten as coverage improves.
     // Run `npm test -- --coverage` to see current numbers, then ratchet up.
