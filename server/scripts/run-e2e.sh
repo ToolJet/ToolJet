@@ -1,33 +1,22 @@
 #!/usr/bin/env bash
-# Runs the e2e suite in sequential shards to prevent V8 OOM.
-# Each shard runs in its own Node.js process — memory resets between shards.
-# All output streams to stdout; a combined summary prints at the end.
+# Unified e2e test runner.
+#
+# Default: sequential (--runInBand) with live output — ideal for local dev.
+# --parallel: parallel shards with per-shard output — ideal for full suite.
+# --coverage: implies --parallel, adds coverage collection + merge.
 #
 # Usage:
-#   npm run test:e2e                              # run all 30 specs
-#   npm run test:e2e -- --testPathPatterns "auth"  # run only auth specs
-#   npm run test:e2e -- --group=platform           # run only @group platform
+#   npm run test:e2e                                  # sequential, live output
+#   npm run test:e2e -- --parallel                    # parallel shards
+#   npm run test:e2e -- --testPathPatterns "auth"     # single spec, live output
+#   npm run test:e2e:cov                              # parallel + coverage + merge
 
 set -o pipefail
 
-SHARDS=3
 JEST_CONFIG="./test/jest-e2e.config.ts"
 NODE_OPTS="--max-old-space-size=8192"
-JEST_ARGS="--runInBand --colors"
+SHARDS=3
 
-# Detect --coverage in args so we can route each shard to its own directory
-HAS_COVERAGE=false
-for arg in "$@"; do
-  [ "$arg" = "--coverage" ] && HAS_COVERAGE=true
-done
-
-total_passed=0
-total_failed=0
-total_suites=0
-tests_passed=0
-tests_failed=0
-failed_suites=""
-exit_code=0
 start_time=$SECONDS
 
 extract_num() { echo "$1" | grep -Eo "[0-9]+ $2" | awk '{print $1}'; }
@@ -43,22 +32,67 @@ fmt_duration() {
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Parse flags: extract --parallel and --coverage, pass rest to jest
+# ---------------------------------------------------------------------------
+parallel=false
+coverage=false
+jest_extra_args=()
+
+for arg in "$@"; do
+  case "$arg" in
+    --parallel) parallel=true ;;
+    --coverage) coverage=true; parallel=true ;;
+    *) jest_extra_args+=("$arg") ;;
+  esac
+done
+
+# ---------------------------------------------------------------------------
+# Sequential mode (default): single jest process, live output
+# ---------------------------------------------------------------------------
+if [ "$parallel" = false ]; then
+  NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
+    --config "$JEST_CONFIG" --runInBand --colors \
+    "${jest_extra_args[@]}"
+  exit $?
+fi
+
+# ---------------------------------------------------------------------------
+# Parallel mode: pre-reset DB, launch shards, collect results
+# ---------------------------------------------------------------------------
+printf "\033[1m━━━ Pre-reset database ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n"
+NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/truncate-test-db.ts
+printf "\n"
+
+# Build shard jest args as an array for safe expansion
+SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests)
+[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
+
+# Temp dir for shard logs (avoids collisions on shared CI machines)
+SHARD_LOG_DIR=$(mktemp -d)
+trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
+
+total_passed=0; total_failed=0; total_suites=0
+tests_passed=0; tests_failed=0
+failed_suites=""
+exit_code=0
+
+# Run shards sequentially — suite TX uses a shared DB, so parallel shards
+# would block on unique constraints. Sequential shards keep peak memory low
+# (each shard's Jest process exits before the next starts).
 for s in $(seq 1 $SHARDS); do
-  printf "\n\033[1m━━━ Shard %d/%d ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n" "$s" "$SHARDS"
+  printf "\033[1m━━━ Running shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
 
-  COV_ARGS=""
-  if [ "$HAS_COVERAGE" = true ]; then
-    COV_ARGS="--coverageDirectory=.coverage/shard-$s"
-  fi
-
-  NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest --config "$JEST_CONFIG" \
-    --shard="$s/$SHARDS" $JEST_ARGS $COV_ARGS "$@" 2>&1 | tee /tmp/e2e-shard-$s.log
+  SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
+    --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
+    --coverageDirectory=.coverage/shard-$s \
+    "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
 
   shard_exit=${PIPESTATUS[0]}
   [ $shard_exit -ne 0 ] && exit_code=1
 
-  suites_line=$(grep "Test Suites:" /tmp/e2e-shard-$s.log | tail -1)
-  tests_line=$(grep "Tests:" /tmp/e2e-shard-$s.log | tail -1)
+  suites_line=$(grep "Test Suites:" "$SHARD_LOG_DIR/shard-$s.log" | tail -1)
+  tests_line=$(grep "Tests:" "$SHARD_LOG_DIR/shard-$s.log" | tail -1)
 
   if [ -n "$suites_line" ]; then
     n=$(extract_num "$suites_line" "passed"); total_passed=$((total_passed + ${n:-0}))
@@ -71,22 +105,21 @@ for s in $(seq 1 $SHARDS); do
     n=$(extract_num "$tests_line" "failed"); tests_failed=$((tests_failed + ${n:-0}))
   fi
 
-  shard_failed=$(grep "FAIL " /tmp/e2e-shard-$s.log | head -20)
+  shard_failed=$(grep "FAIL " "$SHARD_LOG_DIR/shard-$s.log" | head -20)
   [ -n "$shard_failed" ] && failed_suites="$failed_suites$shard_failed"$'\n'
 done
 
-# Merge per-shard coverage into a single report
-if [ "$HAS_COVERAGE" = true ]; then
-  printf "\n\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
+# Merge coverage if requested
+if [ "$coverage" = true ]; then
+  printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
   mkdir -p .coverage/merged
   npx nyc merge .coverage .coverage/merged/coverage-final.json 2>/dev/null
   npx nyc report \
     --temp-dir .coverage/merged \
-    --reporter=text --reporter=html --reporter=lcov \
-    --report-dir=coverage 2>/dev/null
-  cp .coverage/merged/coverage-final.json coverage/coverage-final.json
-  printf "\033[32mCoverage report written to coverage/\033[0m\n"
-  printf "\033[2mOpen coverage/index.html in a browser for the full report.\033[0m\n"
+    --reporter=html --reporter=lcov --reporter=json \
+    --report-dir=coverage-e2e 2>/dev/null
+  cp .coverage/merged/coverage-final.json coverage-e2e/coverage-final.json 2>/dev/null
+  printf "\033[32mCoverage report written to coverage-e2e/\033[0m\n"
   rm -rf .coverage
 fi
 
