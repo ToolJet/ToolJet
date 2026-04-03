@@ -12,9 +12,9 @@ describe("GCS", () => {
         .replaceAll("[^A-Za-z]", "");
     const gcsDataSourceName = `cypress-${data.dataSourceName}-gcs`;
     beforeEach(() => {
-        cy.on("uncaught:exception", () => false);
         cy.apiLogin();
         cy.viewport(1400, 1600);
+        cy.on("uncaught:exception", () => false);
     });
 
     afterEach(() => {
@@ -27,7 +27,7 @@ describe("GCS", () => {
             `${gcsDataSourceName}`,
             "gcs",
             [
-                { key: "private_key", value: null, encrypted: true }
+                { key: "private_key", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -42,7 +42,7 @@ describe("GCS", () => {
             `${gcsDataSourceName}`,
             "gcs",
             [
-                { key: "private_key", value: null, encrypted: true }
+                { key: "private_key", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -60,7 +60,7 @@ describe("GCS", () => {
             `${gcsDataSourceName}`,
             "gcs",
             [
-                { key: "private_key", value: null, encrypted: true }
+                { key: "private_key", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -73,3 +73,26 @@ describe("GCS", () => {
         verifyDSConnection("failed", "Unexpected token");
     });
 });
+
+/*
+ * Test Cases for GCS
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with null private_key (encrypted)
+ *   - Steps: Navigate to data sources page -> Click on data source -> Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states match manifest
+ *   - Fields verified: Private key (encrypted, placeholder: "**************", disabled with edit button)
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with null private_key (encrypted)
+ *   - Steps: Navigate to data sources page -> Click on data source -> Fill valid credentials -> Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: gcs_private_key (JSON stringified service account key)
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with null private_key (encrypted)
+ *   - Steps: Navigate -> Verify UI -> Fill invalid private key -> Test connection
+ *   - Expected:
+ *     - Invalid Private key: Connection fails with "Unexpected token"
+ */

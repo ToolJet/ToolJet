@@ -9,6 +9,7 @@ import {
   BaseEntity,
   OneToOne,
 } from 'typeorm';
+import { OrganizationAiKey } from './organization_ai_key.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
@@ -119,4 +120,7 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => OrganizationAiCreditHistory, (aiCreditHistory) => aiCreditHistory.organization)
   aiCreditHistory: OrganizationAiCreditHistory[];
+
+  @OneToOne(() => OrganizationAiKey, (aiKey) => aiKey.organization, { onDelete: 'CASCADE' })
+  organizationAiKey: OrganizationAiKey;
 }
