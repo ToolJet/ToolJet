@@ -220,9 +220,9 @@ export default class MysqlQueryService implements QueryService {
     try {
       const url = new URL(trimmed);
       if (url.protocol && url.protocol.startsWith('mysql')) {
-        if (url.username) parsed.username = decodeURIComponent(url.username);
-        if (url.password) parsed.password = decodeURIComponent(url.password);
-        if (url.hostname) parsed.host = decodeURIComponent(url.hostname);
+        if (url.username) parsed.username = url.username;
+        if (url.password) parsed.password = url.password;
+        if (url.hostname) parsed.host = url.hostname;
 
         if (url.port) {
           const p = parseInt(url.port, 10);
@@ -230,7 +230,7 @@ export default class MysqlQueryService implements QueryService {
         }
 
         if (url.pathname && url.pathname !== '/') {
-          parsed.database = decodeURIComponent(url.pathname.slice(1));
+          parsed.database = url.pathname.slice(1);
         }
 
         const queryParams: Record<string, string> = {};
@@ -270,16 +270,16 @@ export default class MysqlQueryService implements QueryService {
       const query = m[6];
 
       if (user) {
-        try { parsed.username = decodeURIComponent(user); } catch { parsed.username = user; }
+        try { parsed.username = user; } catch { parsed.username = user; }
       }
       if (pass !== undefined) {
-        try { parsed.password = decodeURIComponent(pass); } catch { parsed.password = pass; }
+        try { parsed.password = pass; } catch { parsed.password = pass; }
       }
 
       if (hostRaw) {
         let host = hostRaw;
         if (host.startsWith('[') && host.endsWith(']')) host = host.slice(1, -1);
-        try { parsed.host = decodeURIComponent(host); } catch { parsed.host = host; }
+        try { parsed.host = host; } catch { parsed.host = host; }
       }
 
       if (portRaw) {
@@ -288,7 +288,7 @@ export default class MysqlQueryService implements QueryService {
       }
 
       if (db) {
-        try { parsed.database = decodeURIComponent(db); } catch { parsed.database = db; }
+        try { parsed.database = db; } catch { parsed.database = db; }
       }
 
       if (query) {
@@ -297,11 +297,11 @@ export default class MysqlQueryService implements QueryService {
           if (!part) return;
           const idx = part.indexOf('=');
           if (idx === -1) {
-            q[decodeURIComponent(part)] = '';
+            q[part] = '';
           } else {
             const k = part.slice(0, idx);
             const v = part.slice(idx + 1);
-            try { q[decodeURIComponent(k)] = decodeURIComponent(v); } catch { q[k] = v; }
+            try { q[k] = v; } catch { q[k] = v; }
           }
         });
 
