@@ -146,6 +146,22 @@ export default class MssqlQueryService implements QueryService {
     }
   }
 
+  /** Coerces UI-supplied values (boolean or string) to a proper boolean. */
+  private _normalizeBool(val: unknown): boolean | undefined {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return undefined;
+  }
+
+  /** Normalises the result from knex.raw() for MSSQL so that both SELECT-like
+   *  results (plain array) and DML-with-OUTPUT results (object with .recordset)
+   *  are returned as a consistent array of rows. */
+  private _extractRecordset(result: any): unknown[] {
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.recordset)) return result.recordset;
+    return [];
+  }
+
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
     const { operation, table, schema } = queryOptions;
     const queryBuilder = createQueryBuilder('mssql');
@@ -175,14 +191,15 @@ export default class MssqlQueryService implements QueryService {
         };
         const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
         const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        return { status: 'ok', data: result.recordset ?? [] };
+        return { status: 'ok', data: this._extractRecordset(result) };
       }
 
       case 'update_rows': {
-        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
         const { columns, where_filters } = queryOptions.update_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
-        if (!allow_multiple_updates && !hasAtLeastOneFilter) {
+        if (allow_multiple_updates !== true && !hasAtLeastOneFilter) {
           throw new Error(
             'At least one filter condition is required. Enable "Allow this query to update multiple rows" to update without filters.'
           );
@@ -200,7 +217,9 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'upsert_rows': {
-        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { primary_key_columns } = queryOptions;
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
         const { columns } = queryOptions.upsert_rows || {};
         const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
           query: string;
@@ -215,7 +234,8 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'delete_rows': {
-        const { limit, zero_records_as_success } = queryOptions;
+        const { limit } = queryOptions;
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
         const { where_filters } = queryOptions.delete_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
         const hasLimit = limit != null && limit !== '';
@@ -230,7 +250,7 @@ export default class MssqlQueryService implements QueryService {
         };
         const queryWithOutput = this.injectMssqlOutput(query, 'DELETED');
         const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        const deletedRecords = (result.recordset ?? []).length;
+        const deletedRecords = this._extractRecordset(result).length;
 
         if (zero_records_as_success === false && deletedRecords === 0) {
           throw new Error('No rows were deleted.');
@@ -247,7 +267,7 @@ export default class MssqlQueryService implements QueryService {
         };
         const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
         const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        return { status: 'ok', data: result.recordset ?? [] };
+        return { status: 'ok', data: this._extractRecordset(result) };
       }
 
       case 'bulk_update_pkey': {
@@ -289,11 +309,23 @@ export default class MssqlQueryService implements QueryService {
   private injectMssqlOutput(query: string, outputType: 'INSERTED' | 'DELETED'): string {
     const outputClause = `OUTPUT ${outputType}.*`;
 
-    // MERGE statement — inject OUTPUT before the trailing semicolon
     const trimmedQuery = query.trimEnd();
+
+    // IF EXISTS / IF NOT EXISTS — OUTPUT clauses are already embedded in each branch
+    if (/^IF\s+(?:NOT\s+)?EXISTS\b/i.test(trimmedQuery)) {
+      return trimmedQuery;
+    }
+
+    // MERGE statement — inject OUTPUT before the trailing semicolon
     if (trimmedQuery.toUpperCase().startsWith('MERGE')) {
       const base = trimmedQuery.endsWith(';') ? trimmedQuery.slice(0, -1) : trimmedQuery;
       return `${base} ${outputClause};`;
+    }
+
+    // INSERT with DEFAULT VALUES — inject OUTPUT before the DEFAULT VALUES clause
+    const defaultValuesMatch = /\bDEFAULT\s+VALUES\b/i;
+    if (defaultValuesMatch.test(trimmedQuery)) {
+      return trimmedQuery.replace(defaultValuesMatch, `${outputClause} DEFAULT VALUES`);
     }
 
     // INSERT statement — inject OUTPUT before the VALUES keyword
@@ -330,13 +362,13 @@ export default class MssqlQueryService implements QueryService {
 
     if (!hasConstraints) {
       const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-      return result.recordset ?? [];
+      return this._extractRecordset(result);
     }
 
     // Wrap in a transaction so any thrown error automatically rolls back the write
     return knexInstance.transaction(async (trx) => {
       const result = await trx.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-      const affectedRows: unknown[] = result.recordset ?? [];
+      const affectedRows: unknown[] = this._extractRecordset(result);
 
       if (allow_multiple_updates === false && affectedRows.length > 1) {
         throw new Error(
@@ -676,6 +708,7 @@ export default class MssqlQueryService implements QueryService {
            WHERE TABLE_TYPE = 'BASE TABLE'
            AND TABLE_CATALOG = ?
            AND TABLE_SCHEMA = ?
+           AND OBJECTPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), 'IsMSShipped') = 0
            ORDER BY TABLE_NAME`,
           [sourceOptions.database, schema]
         )
