@@ -21,6 +21,6 @@ export class DataQueryFoldersService implements IDataQueryFoldersService {
   }
 
   async getFolders(_appVersionId: string): Promise<any> {
-    throw new Error('Method not implemented.');
+    return { folders: [], folderMappings: [] };
   }
 }

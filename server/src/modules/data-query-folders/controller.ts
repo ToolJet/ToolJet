@@ -41,7 +41,7 @@ export class DataQueryFoldersController implements IDataQueryFoldersController {
 
   @InitFeature(FEATURE_KEY.GET)
   @Get()
-  async getFolders(@Query('appVersionId') _appVersionId: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async getFolders(@Query('appVersionId') appVersionId: string): Promise<any> {
+    return this.dataQueryFoldersService.getFolders(appVersionId);
   }
 }
