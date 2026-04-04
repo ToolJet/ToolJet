@@ -99,8 +99,8 @@ export default ({
           <AddRectangle
             width="15"
             fill={isDisabled ? '#C1C8CD' : '#3E63DD'}
-            opacity={isDisabled ? '0.3' : '1'}           
-            secondaryFill={isDisabled ? '#ffffff' : '#ffffff'} 
+            opacity={isDisabled ? '0.3' : '1'}
+            secondaryFill={isDisabled ? '#ffffff' : '#ffffff'}
           />
           &nbsp;&nbsp;Add
         </ButtonSolid>

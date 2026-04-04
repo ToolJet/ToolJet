@@ -84,6 +84,7 @@ const CodeHinter = ({
           handleTogglePopupExapand,
           forceUpdate,
           onPortalDimensionsChange,
+          canRefresh: restProps.canRefresh,
         }}
         componentName={componentName}
         disabled={disabled}

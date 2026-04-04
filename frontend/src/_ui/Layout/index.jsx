@@ -87,10 +87,13 @@ function Layout({
   }, []);
 
   // Initialize workspace branches store after feature access is available
+  // End users should only see default branch data — skip branch store initialization for them
   useEffect(() => {
     if (featureAccess?.gitSync) {
-      const workspaceId = authenticationService?.currentSessionValue?.current_organization_id;
-      if (workspaceId) {
+      const currentSession = authenticationService?.currentSessionValue;
+      const isAdminOrBuilder = currentSession?.admin || currentSession?.user_permissions?.is_builder;
+      const workspaceId = currentSession?.current_organization_id;
+      if (workspaceId && isAdminOrBuilder) {
         useWorkspaceBranchesStore.getState().actions.initialize(workspaceId);
       }
     }

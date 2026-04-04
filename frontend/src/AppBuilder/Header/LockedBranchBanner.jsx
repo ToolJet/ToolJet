@@ -41,7 +41,7 @@ const LockedBranchBanner = ({ isVisible = false, branchName = '', reason = 'merg
             strokeWidth="1.2"
           /> 
         </svg> */}
-        <SolidIcon name="lock" width="16" />  
+        <SolidIcon name="lock" width="16" />
         <div className="locked-branch-banner-text">
           <span className="locked-branch-banner-message">{reasonText}</span>
           {/* {branchName && (

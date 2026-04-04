@@ -311,6 +311,16 @@ export class UpdateUserMetadataDto {
   userDetails: UserDetailKeyValueDto[];
 }
 
+export class AutoDeployBodyDto {
+  @IsString()
+  @IsOptional()
+  versionId?: string;
+
+  @IsString()
+  @IsOptional()
+  versionName?: string;
+}
+
 // Export groups DTOs
 export {
   CreateGroupExternalDto,
@@ -319,6 +329,7 @@ export {
   AppEnvironment,
   AppPermissionsDto,
   DataSourcePermissionsDto,
+  FolderPermissionsDto,
   WorkspacePermissionsDto,
   WorkflowPermissionsDto,
 } from './groups.dto';
