@@ -16,15 +16,15 @@ import Plus from '@/_ui/Icon/solidIcons/Plus';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
 import useStore from '@/AppBuilder/_stores/store';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
-import QueryCardMenu from './QueryCardMenu';
+import QueryCardMenuBase from './QueryCardMenu';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
+const QueryCardMenu = withEditionSpecificComponent(QueryCardMenuBase, 'Appbuilder');
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
@@ -50,6 +50,7 @@ export const QueryDataPane = ({ darkMode }) => {
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const isFreezed = useStore((state) => state.getShouldFreeze());
+  const folders = useStore((state) => state.queryFolders?.folders ?? []);
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -108,15 +109,15 @@ export const QueryDataPane = ({ darkMode }) => {
   return (
     <div className="data-pane">
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className="queries-header row d-flex align-items-center justify-content-between">
-          <div className="col-auto d-flex" style={{ gap: '2px' }}>
+        <div className="queries-header">
+          <AddDataSourceButton darkMode={darkMode} />
+          <div style={{ display: 'flex', gap: '2px' }}>
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
-
             <ToolTip message="Open quick search" placement="bottom">
               <Button
                 isLucid
@@ -135,13 +136,9 @@ export const QueryDataPane = ({ darkMode }) => {
               />
             </ToolTip>
           </div>
-          <div className="col-auto d-flex" style={{ gap: '2px' }}>
-            {licenseValid && <AddFolderButton darkMode={darkMode} />}
-            <AddDataSourceButton darkMode={darkMode} />
-          </div>
         </div>
         <div
-          className={cx('queries-header row d-flex align-items-center justify-content-between', {
+          className={cx('queries-header', {
             'd-none': !showSearchBox,
           })}
         >
@@ -185,10 +182,12 @@ export const QueryDataPane = ({ darkMode }) => {
         ) : (
           <div
             className={`query-list tj-scrollbar overflow-auto ${
-              filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
+              filteredQueries.length === 0 && folders.length === 0
+                ? 'flex-grow-1 align-items-center justify-content-center'
+                : ''
             }`}
           >
-            <div>
+            <div style={{ padding: '4px' }}>
               <QueryFolderTree
                 filteredQueries={filteredQueries}
                 searchActive={!!searchTermForFilters}
@@ -223,10 +222,9 @@ export const QueryDataPane = ({ darkMode }) => {
                 />
               )}
             </div>
-            {filteredQueries.length === 0 && (
-              <div className=" d-flex  flex-column align-items-center justify-content-start">
-                {filteredQueries.length === 0 ? <EmptyDataSource /> : ''}
-                <br />
+            {filteredQueries.length === 0 && folders.length === 0 && (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <EmptyDataSource />
               </div>
             )}
           </div>
@@ -237,39 +235,44 @@ export const QueryDataPane = ({ darkMode }) => {
 };
 
 const EmptyDataSource = () => (
-  <div>
-    <div className="text-center">
-      <span
-        className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
-        style={{ width: '32px', height: '32px' }}
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+    <div
+      style={{
+        width: '52px',
+        height: '52px',
+        borderRadius: '8px',
+        background: 'var(--surfaces-surface-02, #f6f8fa)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '6px',
+        flexShrink: 0,
+      }}
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--text-placeholder, #6a727c)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <FolderEmpty style={{ height: '16px' }} />
-      </span>
+        <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="m5 12-3 3 3 3" />
+        <path d="m9 18 3-3-3-3" />
+      </svg>
     </div>
-    <span data-cy="label-no-queries">No queries have been added. </span>
+    <span
+      data-cy="label-no-queries"
+      style={{ fontSize: '12px', lineHeight: '18px', color: 'var(--text-placeholder, #6a727c)', textAlign: 'center' }}
+    >
+      No queries yet
+    </span>
   </div>
 );
-
-const AddFolderButton = ({ darkMode: _darkMode }) => {
-  const appVersionId = useStore((state) => state.currentVersionId);
-  const createFolder = useStore((state) => state.queryFolders.createFolder);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
-
-  return (
-    <ToolTip message="Add folder" placement="bottom">
-      <Button
-        isLucid
-        iconOnly
-        size="medium"
-        variant="ghost"
-        leadingIcon="folder"
-        disabled={shouldFreeze}
-        onClick={() => createFolder('New Folder', appVersionId)}
-        data-cy="add-folder-button"
-      />
-    </ToolTip>
-  );
-};
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
@@ -302,8 +305,15 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
         <Popover
           key={'page.i'}
           id="query-add-ds-popover"
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
-          style={{ width: '244px', maxWidth: '246px' }}
+          className={`ds-select-popover ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
+          style={{
+            width: 'auto',
+            maxWidth: 'none',
+            border: 'none',
+            background: 'transparent',
+            boxShadow: 'none',
+            padding: 0,
+          }}
         >
           <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} />
         </Popover>

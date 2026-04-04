@@ -1,19 +1,56 @@
 import React, { useState, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-// import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
-//TODO: Remove this
-import { Confirm } from '@/AppBuilder/Viewer/Confirm';
-// TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { Modal } from 'react-bootstrap';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+
+const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
+  <Modal
+    show={show}
+    onHide={onCancel}
+    animation={false}
+    centered
+    contentClassName={`query-folder-delete-modal ${darkMode ? 'dark-theme' : ''}`}
+    dialogClassName="query-folder-delete-modal-dialog"
+    backdropClassName="query-delete-modal-backdrop"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <Modal.Header style={{ border: 'none', padding: '16px 16px 8px' }}>
+      <Modal.Title style={{ fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Delete {queryName}?</Modal.Title>
+    </Modal.Header>
+    <Modal.Body style={{ padding: '0 16px 16px', fontSize: '12px', lineHeight: '18px' }}>
+      Are you sure you want to delete this query? This action is irreversible.
+    </Modal.Body>
+    <Modal.Footer
+      style={{
+        border: 'none',
+        padding: '0 16px 16px',
+        display: 'flex',
+        flexWrap: 'nowrap',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '8px',
+      }}
+    >
+      <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="cancel-delete-query">
+        Cancel
+      </ButtonSolid>
+      <ButtonSolid size="sm" variant="dangerPrimary" onClick={onDelete} data-cy="confirm-delete-query">
+        <SolidIcon name="trash" width="14" fill="#fff" />
+        Delete
+      </ButtonSolid>
+    </Modal.Footer>
+  </Modal>
+);
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const queryNameEleRef = useRef(null);
@@ -22,7 +59,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
-  const isDeletingQueryInProcess = useStore((state) => state.dataQuery.isDeletingQueryInProcess);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
@@ -164,7 +200,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           )}
         </div>
         {!shouldFreeze && hasPermissions && (
-          <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
+          <div
+            className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <ButtonComponent
               iconOnly
               leadingIcon="morevertical01"
@@ -178,13 +217,12 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           </div>
         )}
       </div>
-      <Confirm
+      <DeleteQueryModal
         show={isDeleting}
-        message={'Do you really want to delete this query?'}
-        confirmButtonLoading={isDeletingQueryInProcess}
-        onConfirm={executeDataQueryDeletion}
-        onCancel={() => deleteDataQuery(null)}
+        queryName={dataQuery.name}
         darkMode={darkMode}
+        onCancel={() => deleteDataQuery(null)}
+        onDelete={executeDataQueryDeletion}
       />
     </>
   );
