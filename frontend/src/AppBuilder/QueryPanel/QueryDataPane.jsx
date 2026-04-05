@@ -52,7 +52,8 @@ export const QueryDataPane = ({ darkMode }) => {
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const { isModuleEditor } = useModuleContext();
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
-  const folders = useStore((state) => state.queryFolders?.folders ?? []);
+  const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
+  const folders = featureAccess?.queryFolders ? allFolders : [];
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -195,6 +196,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 searchActive={!!searchTermForFilters}
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
+                allowFolders={!!featureAccess?.queryFolders}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
               {licenseValid && (
@@ -281,6 +283,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   // const { isVersionReleased, isEditorFreezed } = useStore(
   //   (state) => ({
   //     isVersionReleased: state.isVersionReleased,
@@ -318,7 +321,12 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             padding: 0,
           }}
         >
-          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} allowNewFolder />
+          <DataSourceSelect
+            selectRef={selectRef}
+            closePopup={() => setShowMenu(false)}
+            allowNewFolder
+            queryFoldersLicensed={!!featureAccess?.queryFolders}
+          />
         </Popover>
       }
     >

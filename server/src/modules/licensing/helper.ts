@@ -162,6 +162,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_HISTORY:
       return licenseInstance.appHistory;
 
+    case LICENSE_FIELD.QUERY_FOLDERS:
+      return licenseInstance.queryFolders;
+
     default:
       return licenseInstance.terms;
   }
