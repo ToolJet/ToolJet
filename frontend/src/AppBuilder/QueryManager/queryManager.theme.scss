@@ -208,7 +208,8 @@
   }
 }
 
-.theme-dark {
+.theme-dark,
+.dark-theme {
   .ds-select-item {
     &:hover {
       background-color: var(--surfaces-app-bg, #2c2e33) !important;
