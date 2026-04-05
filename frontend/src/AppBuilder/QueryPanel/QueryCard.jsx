@@ -169,7 +169,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 show={queryNameEleRef.current?.offsetWidth > 150}
                 tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
               >
-                <span ref={queryNameEleRef} className="text-truncate">
+                <span
+                  ref={queryNameEleRef}
+                  className="text-truncate"
+                  style={{ cursor: 'text' }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                  }}
+                >
                   {decodeEntities(dataQuery.name)}
                 </span>
               </ToolTip>
