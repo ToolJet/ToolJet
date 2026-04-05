@@ -212,7 +212,13 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             <ButtonComponent
               iconOnly
               leadingIcon="morevertical01"
-              onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+              onClick={(e) => {
+                if (!isQuerySelected) {
+                  setSelectedQuery(dataQuery?.id);
+                  setPreviewData(null);
+                }
+                toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
+              }}
               size="small"
               variant="outline"
               className=""
