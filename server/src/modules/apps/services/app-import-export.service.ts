@@ -42,6 +42,8 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
@@ -220,12 +222,7 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
-  'TextInput',
-  'PasswordInput',
-  'NumberInput',
-  'DropdownV2',
-];
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -461,11 +458,26 @@ export class AppImportExportService {
         })
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
+
+      const appVersionIds = appVersions.map((v) => v.id);
+      const dataQueryFolders = await manager.find(DataQueryFolder, {
+        where: { appVersionId: In(appVersionIds) },
+      });
+      const folderIds = dataQueryFolders.map((f) => f.id);
+      const dataQueryIds = queriesWithPermissionGroups.map((q: any) => q.id);
+      const allChildIds = [...folderIds, ...dataQueryIds];
+      const dataQueryFolderMappings =
+        allChildIds.length > 0
+          ? await manager.find(DataQueryFolderMapping, { where: { childId: In(allChildIds) } })
+          : [];
+
       appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
       appToExport['dataQueries'] = queriesWithPermissionGroups;
       appToExport['dataSources'] = dataSources;
+      appToExport['dataQueryFolders'] = dataQueryFolders;
+      appToExport['dataQueryFolderMappings'] = dataQueryFolderMappings;
       appToExport['appVersions'] = appVersions;
       appToExport['appEnvironments'] = appEnvironments;
       appToExport['dataSourceOptions'] = dataSourceOptions;
@@ -919,6 +931,8 @@ export class AppImportExportService {
     importingPages: Page[];
     importingComponents: Component[];
     importingEvents: EventHandler[];
+    importingDataQueryFolders: DataQueryFolder[];
+    importingDataQueryFolderMappings: DataQueryFolderMapping[];
   } {
     const importingDataSources = appParams?.dataSources || [];
     const importingDataQueries = appParams?.dataQueries || [];
@@ -932,6 +946,8 @@ export class AppImportExportService {
     const importingPages = appParams?.pages || [];
     const importingComponents = appParams?.components || [];
     const importingEvents = appParams?.events || [];
+    const importingDataQueryFolders = appParams?.dataQueryFolders || [];
+    const importingDataQueryFolderMappings = appParams?.dataQueryFolderMappings || [];
 
     return {
       importingDataSources,
@@ -943,6 +959,8 @@ export class AppImportExportService {
       importingPages,
       importingComponents,
       importingEvents,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings,
     };
   }
 
@@ -994,6 +1012,8 @@ export class AppImportExportService {
       importingPages,
       importingComponents,
       importingEvents,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings,
     } = this.extractImportDataFromAppParams(appParams);
 
     // When importing multiple versions, skip branch-type versions — only import regular versions.
@@ -1039,7 +1059,9 @@ export class AppImportExportService {
       importingEvents,
       tooljetVersion,
       moduleResourceMappings,
-      branchId
+      branchId,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1274,7 +1296,9 @@ export class AppImportExportService {
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
     moduleResourceMappings?: any,
-    branchId?: string
+    branchId?: string,
+    importingDataQueryFolders: DataQueryFolder[] = [],
+    importingDataQueryFolderMappings: DataQueryFolderMapping[] = []
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1408,6 +1432,42 @@ export class AppImportExportService {
           externalResourceMappings
         );
         appResourceMappings.dataQueryMapping = dataQueryMapping;
+      }
+
+      // Import query folders and their mappings for this app version
+      const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+      const foldersForVersion = importingDataQueryFolders.filter((f) => f.appVersionId === importingAppVersion.id);
+      const folderIdMapping: Record<string, string> = {};
+
+      for (const folder of foldersForVersion) {
+        const newFolder = manager.create(DataQueryFolder, {
+          name: folder.name,
+          appVersionId: newAppVersionId,
+        });
+        const savedFolder = await manager.save(DataQueryFolder, newFolder);
+        folderIdMapping[folder.id] = savedFolder.id;
+      }
+
+      const mappingsForVersion = importingDataQueryFolderMappings.filter(
+        (m) =>
+          (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
+          (m.childType === ChildType.QUERY && appResourceMappings.dataQueryMapping[m.childId])
+      );
+
+      for (const mapping of mappingsForVersion) {
+        const newChildId =
+          mapping.childType === ChildType.FOLDER
+            ? folderIdMapping[mapping.childId]
+            : appResourceMappings.dataQueryMapping[mapping.childId];
+        const newParentId = mapping.parentId ? (folderIdMapping[mapping.parentId] ?? null) : null;
+        if (!newChildId) continue;
+        const newMapping = manager.create(DataQueryFolderMapping, {
+          parentId: newParentId,
+          childId: newChildId,
+          childType: mapping.childType,
+          index: mapping.index,
+        });
+        await manager.save(DataQueryFolderMapping, newMapping);
       }
 
       const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
