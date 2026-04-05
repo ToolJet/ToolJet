@@ -146,7 +146,7 @@ export class FolderAppsService implements IFolderAppsService {
     if (folderPermissions) {
       // If user has "all" level access for any permission tier, show all folders
       if (folderPermissions.isAllEditable || folderPermissions.isAllEditApps || folderPermissions.isAllViewable) {
-        return folders.filter((f) => f.createdBy === user.id || f.folderApps.length > 0);
+        return folders.filter((f) => f.createdBy === user.id || f.folderApps.length >= 0);
       }
 
       const accessibleFolderIds = new Set([

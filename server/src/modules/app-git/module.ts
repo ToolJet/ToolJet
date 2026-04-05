@@ -87,6 +87,7 @@ export class AppGitModule extends SubModule {
         GitLabAppGitUtilityService,
         BranchingBusinessUtil,
         DataSourceBranchUtil,
+        HTTPSAppGitService,
       ],
     };
   }
