@@ -105,12 +105,7 @@ export class FolderAppsService implements IFolderAppsService {
         userFolderPermissions
       );
 
-      // When branch filtering is active, hide folders with 0 visible apps
-      const result = branchId
-        ? visibleFolders.filter((folder) => folder.folderApps && folder.folderApps.length > 0)
-        : visibleFolders;
-
-      return decamelizeKeys({ folders: result });
+      return decamelizeKeys({ folders: visibleFolders });
     });
   }
 
