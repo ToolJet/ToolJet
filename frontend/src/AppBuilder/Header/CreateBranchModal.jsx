@@ -11,8 +11,6 @@ import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import '@/_styles/create-branch-modal.scss';
 
-const LATEST_MAIN_OPTION = { label: 'Latest (main)', commitSha: null };
-
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
