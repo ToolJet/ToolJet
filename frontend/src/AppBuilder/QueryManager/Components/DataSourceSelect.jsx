@@ -12,6 +12,8 @@ import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
+import { ToolTip } from '@/_components';
 
 function DataSourceSelect({
   isDisabled,
@@ -25,6 +27,7 @@ function DataSourceSelect({
   sampleDataSources = [],
   allowNewFolder = false,
   onQueryStart,
+  queryFoldersLicensed = true,
 }) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
@@ -211,15 +214,37 @@ function DataSourceSelect({
             {!defaultsCollapsed && (
               <div style={{ padding: '0 8px 8px' }}>
                 {showNewFolder && (
-                  <button
-                    style={itemStyle}
-                    className="ds-select-item"
-                    onClick={handleNewFolder}
-                    data-cy="new-folder-ds-select"
+                  <ToolTip
+                    message="Keep queries organized in folders. Available on paid plans."
+                    placement="right"
+                    show={!queryFoldersLicensed}
                   >
-                    <SolidIcon name="folder" width="16" height="16" />
-                    <span style={itemTextStyle}>New folder</span>
-                  </button>
+                    <button
+                      style={{ ...itemStyle, cursor: queryFoldersLicensed ? 'pointer' : 'default' }}
+                      className="ds-select-item"
+                      onClick={queryFoldersLicensed ? handleNewFolder : undefined}
+                      data-cy="new-folder-ds-select"
+                    >
+                      <DynamicIcon
+                        name="folder-plus"
+                        size={16}
+                        style={{
+                          flexShrink: 0,
+                          color: queryFoldersLicensed ? 'var(--icon-default, #6a727c)' : '#9E9EA8',
+                        }}
+                      />
+                      <span
+                        style={{
+                          ...itemTextStyle,
+                          flex: 1,
+                          color: queryFoldersLicensed ? 'var(--text-default, #1b1f24)' : '#9E9EA8',
+                        }}
+                      >
+                        New folder
+                      </span>
+                      {!queryFoldersLicensed && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+                    </button>
+                  </ToolTip>
                 )}
                 {filteredDefaults.map((source) => {
                   const displayName = workflowDataSources

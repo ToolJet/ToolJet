@@ -53,6 +53,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isQueryFolders: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -76,6 +77,7 @@ export default class LicenseBase {
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isCustomThemes = true;
+      this._isQueryFolders = true;
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
@@ -139,6 +141,7 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
+    this._isQueryFolders = this.getFeatureValue('queryFolders');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
@@ -412,6 +415,13 @@ export default class LicenseBase {
     return this._isGitSync;
   }
 
+  public get queryFolders(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
+    }
+    return this._isQueryFolders;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -552,6 +562,7 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      queryFolders: this.queryFolders,
     };
   }
 

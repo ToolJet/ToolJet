@@ -36,6 +36,7 @@ export interface Terms {
     google?: boolean;
     github?: boolean;
     observability?: boolean;
+    queryFolders?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
