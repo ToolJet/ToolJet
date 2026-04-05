@@ -71,7 +71,7 @@ export const WithoutAction = {
         </EmptyMedia>
         <EmptyHeader>
           <EmptyTitle>No results</EmptyTitle>
-          <EmptyDescription>Try adjusting your search or filter to find what you're looking for.</EmptyDescription>
+          <EmptyDescription>Try adjusting your search or filter to find what you&apos;re looking for.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     </div>

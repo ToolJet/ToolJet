@@ -62,15 +62,25 @@ export const AllVariants = {
         <div key={variant} className="tw-flex tw-items-center tw-gap-3">
           <span className="tw-w-28 tw-text-sm tw-text-text-medium">{variant}</span>
           <Button variant={variant}>Default</Button>
-          <Button variant={variant} disabled>Disabled</Button>
-          <Button variant={variant} loading>Loading</Button>
+          <Button variant={variant} disabled>
+            Disabled
+          </Button>
+          <Button variant={variant} loading>
+            Loading
+          </Button>
         </div>
       ))}
       <div className="tw-flex tw-items-center tw-gap-3">
         <span className="tw-w-28 tw-text-sm tw-text-text-medium">danger</span>
-        <Button variant="primary" danger>Delete</Button>
-        <Button variant="secondary" danger>Delete</Button>
-        <Button variant="primary" danger disabled>Disabled</Button>
+        <Button variant="primary" danger>
+          Delete
+        </Button>
+        <Button variant="secondary" danger>
+          Delete
+        </Button>
+        <Button variant="primary" danger disabled>
+          Disabled
+        </Button>
       </div>
     </div>
   ),
@@ -94,10 +104,18 @@ export const Sizes = {
 export const IconSizes = {
   render: () => (
     <div className="tw-flex tw-items-end tw-gap-3 tw-p-4">
-      <Button size="large" leadingVisual={<Plus size={16} />}>Large</Button>
-      <Button size="default" leadingVisual={<Plus size={14} />}>Default</Button>
-      <Button size="medium" leadingVisual={<Plus size={12} />}>Medium</Button>
-      <Button size="small" leadingVisual={<Plus size={12} />}>Small</Button>
+      <Button size="large" leadingVisual={<Plus size={16} />}>
+        Large
+      </Button>
+      <Button size="default" leadingVisual={<Plus size={14} />}>
+        Default
+      </Button>
+      <Button size="medium" leadingVisual={<Plus size={12} />}>
+        Medium
+      </Button>
+      <Button size="small" leadingVisual={<Plus size={12} />}>
+        Small
+      </Button>
     </div>
   ),
   parameters: { layout: 'padded' },

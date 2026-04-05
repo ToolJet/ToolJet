@@ -35,7 +35,9 @@ export const Default = {
           <PaginationLink href="#">1</PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#" isActive>2</PaginationLink>
+          <PaginationLink href="#" isActive>
+            2
+          </PaginationLink>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink href="#">3</PaginationLink>
@@ -69,7 +71,9 @@ export const ManyPages = {
           <PaginationLink href="#">2</PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#" isActive>3</PaginationLink>
+          <PaginationLink href="#" isActive>
+            3
+          </PaginationLink>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink href="#">4</PaginationLink>
@@ -103,7 +107,9 @@ export const FirstPage = {
           <PaginationPrevious href="#" />
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#" isActive>1</PaginationLink>
+          <PaginationLink href="#" isActive>
+            1
+          </PaginationLink>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink href="#">2</PaginationLink>
@@ -141,7 +147,9 @@ export const Sizes = {
                 <PaginationLink href="#">1</PaginationLink>
               </PaginationItem>
               <PaginationItem>
-                <PaginationLink href="#" isActive>2</PaginationLink>
+                <PaginationLink href="#" isActive>
+                  2
+                </PaginationLink>
               </PaginationItem>
               <PaginationItem>
                 <PaginationLink href="#">3</PaginationLink>

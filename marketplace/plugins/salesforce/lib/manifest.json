@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Salesforce datasource",
   "description": "A schema defining Salesforce datasource",
+  "version": "1.0.1",
   "type": "api",
   "source": {
     "name": "Salesforce",
