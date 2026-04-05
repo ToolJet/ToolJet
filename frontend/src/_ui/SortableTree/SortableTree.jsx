@@ -73,6 +73,7 @@ export function SortableTree({
   handlerClassName,
   nestedStyle,
   containerElement,
+  dragOverlayModifiers,
   ...restProps
 }) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
@@ -331,7 +332,12 @@ export function SortableTree({
           })}
         </Container>
         {createPortal(
-          <DragOverlay dropAnimation={dropAnimationConfig} modifiers={indicator ? [adjustTranslate] : undefined}>
+          <DragOverlay
+            dropAnimation={dropAnimationConfig}
+            modifiers={
+              dragOverlayModifiers !== undefined ? dragOverlayModifiers : indicator ? [adjustTranslate] : undefined
+            }
+          >
             {activeId && activeItem && renderGhost ? renderGhost(activeItem, { darkMode }) : null}
           </DragOverlay>,
           document.body
