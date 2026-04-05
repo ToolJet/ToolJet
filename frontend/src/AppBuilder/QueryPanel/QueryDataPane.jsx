@@ -318,7 +318,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             padding: 0,
           }}
         >
-          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} />
+          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} allowNewFolder />
         </Popover>
       }
     >

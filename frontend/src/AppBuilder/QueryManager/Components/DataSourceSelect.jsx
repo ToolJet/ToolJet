@@ -23,6 +23,8 @@ function DataSourceSelect({
   onQueryCreate,
   skipClosePopup = false,
   sampleDataSources = [],
+  allowNewFolder = false,
+  onQueryStart,
 }) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
@@ -57,6 +59,7 @@ function DataSourceSelect({
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source, false, {}, 'canvas', null, { callbackFunction: onQueryCreate });
+    onQueryStart?.(useStore.getState().dataQuery.creatingQueryInProcessId);
     setPreviewData(null);
     if (!skipClosePopup) closePopup();
   };
@@ -151,7 +154,7 @@ function DataSourceSelect({
   });
   const groupedSampleDS = Object.entries(groupBy(filteredSampleDS, 'kind'));
 
-  const showNewFolder = !workflowDataSources && !!createFolder;
+  const showNewFolder = allowNewFolder && !workflowDataSources && !!createFolder;
   const showDefaultsSection = showNewFolder ? true : filteredDefaults.length > 0;
 
   return (
