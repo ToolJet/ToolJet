@@ -105,21 +105,26 @@ export const TableData = ({
     [virtualItemList, cellHeight, expansionHeight]
   );
 
+  // Each item gets a stable cache key that does not change when rows above are inserted or removed.
+  // Without stable keys, TanStack keys items by virtual index, so expanding row N shifts every subsequent index and reuses the wrong cached sizes.
+  // With stable keys the itemSizeCache survives expand/collapse reorderings, which also removes the need for measure() entirely.
+  const getItemKey = useCallback(
+    (i) => {
+      const item = virtualItemList[i];
+      if (!item) return i;
+      return item.type === 'expansion' ? `expansion-${item.rowIndex}` : item.row.id;
+    },
+    [virtualItemList]
+  );
+
   const rowVirtualizer = useVirtualizer({
     count: virtualItemList.length,
     getScrollElement: () => tableBodyRef.current,
     estimateSize,
+    getItemKey,
     overscan: 5,
     scrollMargin: 0,
   });
-
-  // When virtualItemList length changes (row expanded/collapsed), clear the entire
-  // measurement cache and re-run estimateSize. This prevents stale index-N cache entries
-  // from causing expansion rows to render at wrong positions (overlap bug).
-  useEffect(() => {
-    rowVirtualizer.measure();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [virtualItemList.length, expansionHeight, dynamicHeightForExpansion]);
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
@@ -195,7 +200,7 @@ export const TableData = ({
                   canvasWidth={canvasWidth}
                   expansionHeight={expansionHeight}
                   dynamicHeightForExpansion={dynamicHeightForExpansion}
-                  measureElement={(el) => (dynamicHeightForExpansion ? rowVirtualizer.measureElement(el) : undefined)}
+                  virtualizer={rowVirtualizer}
                   virtualItemIndex={virtualRow.index}
                 />
               );

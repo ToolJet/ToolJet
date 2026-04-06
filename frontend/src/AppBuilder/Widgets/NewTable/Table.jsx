@@ -286,7 +286,7 @@ const Table = memo(
         data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: isDynamicHeightEnabled ? '100%' : `${height}px`,
+          height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
