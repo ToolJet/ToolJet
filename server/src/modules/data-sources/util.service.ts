@@ -1239,7 +1239,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   protected async deleteAllUserTokenData(dataSourceOptionId: string, manager: EntityManager): Promise<void> {
-    await manager.delete(DatasourceUserTokenData, { dataSourceOptionId });
+    await manager.delete(DatasourceUserTokenData, { dataSourceVersionOptionId: dataSourceOptionId });
   }
 
   protected async upsertUserTokenData(
