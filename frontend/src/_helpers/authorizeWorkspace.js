@@ -1,4 +1,4 @@
-import { organizationService, authenticationService, sessionService } from '@/_services';
+import { organizationService, authenticationService, sessionService, appsService } from '@/_services';
 import {
   pathnameToArray,
   getSubpath,
@@ -124,7 +124,7 @@ export const authorizeWorkspace = async () => {
           fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
-      .catch((error) => {
+      .catch(async (error) => {
         fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
@@ -159,10 +159,23 @@ export const authorizeWorkspace = async () => {
             authentication_status: false,
           });
         } else if (isApplicationsPath) {
-          /* CASE-4: For app viewer paths, redirect to app-scoped login page */
+          /* CASE-4: For app viewer paths, check if app is public before redirecting to login */
           const pathSegments = getPathname(null, true).split('/').filter(Boolean);
           const appSlug = pathSegments[1]; // /applications/:slug/...
           if (appSlug) {
+            try {
+              const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
+              if (appConfig?.isPublic) {
+                // Public app — let the Viewer load it without authentication
+                updateCurrentSession({
+                  authentication_failed: true,
+                  load_app: true,
+                });
+                return;
+              }
+            } catch {
+              // Config fetch failed — fall through to login redirect
+            }
             const subpath = getSubpath() ?? '';
             window.location.href = `${subpath}/applications/${appSlug}/login`;
             return;
