@@ -9,7 +9,7 @@ import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppD
 import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const initialState = {
-  sortBy: 'updated_at',
+  sortBy: 'custom',
   sortOrder: 'desc',
   isDeletingQueryInProcess: false,
   creatingQueryInProcessId: null,
@@ -49,7 +49,11 @@ export const createDataQuerySlice = (set, get) => ({
     },
     sortDataQueries: (sortBy, sortOrder, moduleId = 'canvas') => {
       set((state) => {
-        const newSortOrder = sortOrder ? sortOrder : state.sortOrder === 'asc' ? 'desc' : 'asc';
+        if (sortBy === 'custom') {
+          state.dataQuery.sortBy = 'custom';
+          return;
+        }
+        const newSortOrder = sortOrder ? sortOrder : state.dataQuery.sortOrder === 'asc' ? 'desc' : 'asc';
         state.dataQuery.sortBy = sortBy;
         state.dataQuery.sortOrder = newSortOrder;
         state.dataQuery.queries.modules[moduleId] = sortByAttribute(

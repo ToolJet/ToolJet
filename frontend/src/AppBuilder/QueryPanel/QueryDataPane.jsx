@@ -52,6 +52,7 @@ export const QueryDataPane = ({ darkMode }) => {
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const { isModuleEditor } = useModuleContext();
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const sortBy = useStore((state) => state.dataQuery.sortBy);
   const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
   const folders = featureAccess?.queryFolders ? allFolders : [];
 
@@ -193,7 +194,7 @@ export const QueryDataPane = ({ darkMode }) => {
             <div style={{ padding: '4px' }}>
               <QueryFolderTree
                 filteredQueries={filteredQueries}
-                searchActive={!!searchTermForFilters}
+                searchActive={!!searchTermForFilters || dataSourcesForFilters.length > 0 || sortBy !== 'custom'}
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
                 allowFolders={!!featureAccess?.queryFolders}
