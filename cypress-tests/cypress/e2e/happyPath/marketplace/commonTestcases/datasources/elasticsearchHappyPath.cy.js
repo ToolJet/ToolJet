@@ -106,3 +106,28 @@ describe("Elasticsearch", () => {
         verifyDSConnection("failed", "TimeoutError: Request timed out");
     });
 });
+
+/*
+ * Test Cases for Elasticsearch
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with http scheme and SSL enabled
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: scheme, host, port, ssl_enabled, ssl_certificate, username, password, ca_cert, client_key, client_cert, root_cert
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with http scheme and SSL disabled
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses elasticsearchFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with http scheme and SSL disabled
+ *   - Steps: Navigate to data sources page → Click on data source → Test invalid SSL → Test invalid host → Test invalid port → Verify error messages
+ *   - Expected:
+ *     - Invalid SSL: Connection fails with "wrong version number"
+ *     - Invalid host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid port: Connection fails with "TimeoutError: Request timed out"
+ */
