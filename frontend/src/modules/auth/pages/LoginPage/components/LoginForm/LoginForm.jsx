@@ -203,6 +203,7 @@ const LoginForm = ({
                 organizationSlug={paramOrganizationSlug}
                 setRedirectUrlToCookie={setRedirectUrlToCookie}
                 buttonText="Sign in with"
+                redirectTo={redirectTo}
               />
               {currentOrganizationName && organizationId && !appName && (
                 <div
