@@ -14,6 +14,7 @@ import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
 import { AppService } from './service';
+import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -73,6 +74,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { BackgroundProcessorModule } from '@modules/background-processor/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -149,6 +151,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
+      await BackgroundProcessorModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -185,6 +188,8 @@ export class AppModule implements OnModuleInit, NestModule {
       providers: [
         ShutdownHook,
         GetConnection,
+        AppService,
+        AppUtilService,
         ClearSSOResponseScheduler,
         SampleDBScheduler,
         SessionScheduler,
