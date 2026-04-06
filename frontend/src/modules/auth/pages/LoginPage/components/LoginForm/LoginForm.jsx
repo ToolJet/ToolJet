@@ -141,10 +141,16 @@ const LoginForm = ({
                       <span className="workspace-name" data-cy="app-name">
                         {appName}
                       </span>
-                      . Don&apos;t have an account?{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
-                        Create an account
-                      </Link>
+                      {isSignUpCTAEnabled ? (
+                        <>
+                          . Don&apos;t have an account?{' '}
+                          <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
+                            Create an account
+                          </Link>
+                        </>
+                      ) : (
+                        '.'
+                      )}
                     </>
                   ) : organizationId ? (
                     <>
