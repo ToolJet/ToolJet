@@ -112,7 +112,7 @@ export const dividerConfig = {
       displayName: 'Text wrap',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'nowrap',
+        defaultValue: 'wrap',
       },
       options: [
         { displayName: 'Wrap', value: 'wrap' },

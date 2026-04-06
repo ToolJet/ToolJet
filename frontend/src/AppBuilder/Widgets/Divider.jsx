@@ -44,6 +44,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
       ? {
           // Wrap mode: show multiple lines, clip vertical overflow
           overflow: 'hidden',
+          overflowWrap: 'anywhere',
         }
       : {
           // No-wrap mode: single line, ellipsis for overflow
