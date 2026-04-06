@@ -10,7 +10,7 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
-const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
+const SelectTrigger = React.forwardRef(({ className, children, showIcon = false, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -20,9 +20,12 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
     {...props}
   >
     {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="tw-h-4 tw-w-4 tw-opacity-50" />
-    </SelectPrimitive.Icon>
+
+    {showIcon && (
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="tw-h-4 tw-w-4 tw-opacity-50" />
+      </SelectPrimitive.Icon>
+    )}
   </SelectPrimitive.Trigger>
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
@@ -101,7 +104,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
         <Check className="tw-h-4 tw-w-4" />
       </SelectPrimitive.ItemIndicator>
     </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    {typeof children === 'string' ? <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText> : children}
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;

@@ -143,6 +143,9 @@ module.exports = {
         extrabold: '800',
         black: '900',
       },
+      fontFamily: {
+        inter: 'var(--font-family-inter)',
+      },
     },
   },
   plugins: [

@@ -10,6 +10,7 @@ import configPrettier from 'eslint-config-prettier';
 import pluginStorybook from 'eslint-plugin-storybook';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import pluginQuery from '@tanstack/eslint-plugin-query';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -263,4 +264,7 @@ export default [
 
   // Storybook config
   ...pluginStorybook.configs['flat/recommended'],
+
+  // react-query rules
+  ...pluginQuery.configs['flat/recommended'],
 ];

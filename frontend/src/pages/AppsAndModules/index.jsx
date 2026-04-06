@@ -1,0 +1,212 @@
+import React, { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { Button } from '@/components/ui/Button/Button';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { useAppsStore } from '@/_stores/appsStore';
+import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
+import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
+import { useFetchApps, useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
+import Layout from '@/_ui/Layout';
+
+import { canUserPerformAppAction } from './appsAndModulesPermissions';
+
+import AppList from '../shared/components/AppList';
+import EmptyState from '../shared/components/EmptyState';
+import AppsFooter from '../shared/components/AppsFooter';
+import PageHeader from '../shared/components/PageHeader';
+import ContentToolbar from '../shared/components/ContentToolbar';
+import CreateAppButton from '../shared/components/CreateAppButton';
+import MoreAppsActionMenu from '../shared/components/MoreAppsActionMenu';
+import Dialogs from './components/Dialogs';
+import AppsAndModulesTab from './components/AppsAndModulesTab';
+import BuildWithAIAssistant from './components/BuildWithAIAssistant';
+import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
+
+const classes = { contentContainer: 'tw-h-dvh tw-grid tw-grid-rows-[auto_1fr_auto]', contentBody: 'tw-pt-0' };
+
+export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
+  const setAppSearchQuery = useAppsStore((state) => state.setAppSearchQuery);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
+    useHandleAppCreationFromLandingPage();
+
+  const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
+
+  // TODO: Discuss with team that folder search param should have id and not name
+  const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
+  const folderQueryParam = searchParams.get('folder') || '';
+  const currentSelectedFolder =
+    folders?.find((folder) => folder.label?.toLowerCase() === folderQueryParam?.toLowerCase()) ?? null;
+  const selectedFolderId = currentSelectedFolder?.value ?? '';
+
+  const { data: apps, isSuccess: isAppsFetchedOnce } = useFetchApps(
+    { appType, folderId: selectedFolderId, appSearchQuery, pageNo: currentPage },
+    { enabled: isFoldersSuccess }
+  );
+  const { data: featureAccess } = useFetchFeatureAccess();
+  const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
+
+  useEffect(() => {
+    if (hasFromTemplateSearchParam) {
+      setAppDialogState({ type: 'choose-from-template' });
+    }
+  }, [hasFromTemplateSearchParam]);
+
+  const setSelectedFolder = (folderId) => {
+    if (folderId === 'all') {
+      setSearchParams(undefined);
+      return;
+    }
+
+    const newSelectedFolderLabel = folders?.find((folder) => folder.value === folderId)?.label ?? '';
+
+    setSearchParams({ folder: newSelectedFolderLabel }, { replace: true });
+  };
+
+  const handleClearSearchTerm = () => {
+    setAppSearchQuery('');
+  };
+
+  const checkUserPermissions = (app) => canUserPerformAppAction(appType, app);
+  const { hasCreatePermission } = useMemo(() => checkUserPermissions(), []);
+
+  const totalAppCount = selectedFolderId ? apps?.meta?.folder_count : apps?.meta?.total_count;
+
+  const isCreationDisabled =
+    appType === 'front-end'
+      ? !isAppsLimitFetchedSuccessfully || appsLimit?.appsCount?.percentage >= 100
+      : !featureAccess?.modulesEnabled;
+
+  const canCreateApp = appType === 'front-end' ? hasCreatePermission : true; // always true for modules
+
+  const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+  // Only exclude env param if license is invalid/expired (basic plan)
+  // If license is valid but multi-environment feature is not available, still include env param
+  const shouldExcludeEnvParam = invalidLicense;
+  const moduleEnabled = featureAccess?.modulesEnabled || false;
+
+  if (showAIOnboardingLoadingScreen) {
+    return <TJLoader />;
+  }
+
+  return (
+    <Layout
+      showNewHeader
+      contentAsChild
+      classes={classes}
+      darkMode={darkMode}
+      shouldWrapContentBody={false}
+      switchDarkMode={switchDarkMode}
+    >
+      <main className="tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
+        <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
+          {appType === 'front-end' ? (
+            <LicenseBanner
+              type="apps"
+              size="small"
+              showNewBanner
+              bannerVariant="inline"
+              limits={appsLimit?.appsCount ?? {}}
+            >
+              {canCreateApp && (
+                <div className="tw-flex tw-items-center tw-gap-2">
+                  <CreateAppButton
+                    label={t('homePage.header.createNewApplication', 'Create new app')}
+                    disabled={isCreationDisabled}
+                  />
+
+                  <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
+
+                  <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
+                </div>
+              )}
+            </LicenseBanner>
+          ) : (
+            <div className="tw-flex tw-items-center tw-gap-2">
+              <CreateAppButton label={'Create new module'} disabled={isCreationDisabled} />
+
+              <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
+            </div>
+          )}
+        </PageHeader>
+
+        <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
+          <ContentToolbar
+            folderList={folders ?? []}
+            selectedFolder={selectedFolderId || 'all'}
+            onChangeSelectedFolder={setSelectedFolder}
+            leadingSlot={<AppsAndModulesTab />}
+            // TODO: remove appType check to enable folder for module
+            showFolderBreadcrumb={appType === 'front-end'}
+          />
+
+          <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
+            {isAppsFetchedOnce ? (
+              apps?.apps?.length ? (
+                <AppList
+                  apps={apps.apps}
+                  appType={appType}
+                  currentFolderId={selectedFolderId}
+                  checkUserPermissions={checkUserPermissions}
+                  basicPlan={shouldExcludeEnvParam}
+                  moduleEnabled={moduleEnabled}
+                />
+              ) : (
+                <EmptyState
+                  resourceType={appType}
+                  title={
+                    selectedFolderId && !appSearchQuery?.length
+                      ? 'No apps found in this folder'
+                      : appSearchQuery?.length
+                      ? `No results found for "${appSearchQuery}"`
+                      : appType === 'front-end'
+                      ? 'You don’t have any apps yet'
+                      : 'You don’t have any modules yet'
+                  }
+                  description={
+                    appSearchQuery?.length || selectedFolderId
+                      ? ''
+                      : appType === 'front-end'
+                      ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
+                      : 'Create reusable groups of components and queries via modules.'
+                  }
+                >
+                  {Boolean(appSearchQuery?.length) && (
+                    <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
+                      Clear search
+                    </Button>
+                  )}
+                </EmptyState>
+              )
+            ) : (
+              <></>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
+
+      <Dialogs
+        appType={appType}
+        limits={appsLimit?.appsCount ?? {}}
+        showLimitBanner={appType === 'front-end'}
+        isAppCreationDisabled={!canCreateApp || isCreationDisabled}
+        showInsufficentPermissionModalstate={showInsufficentPermissionModalstate}
+        handleClosePermissionDeniedModal={handleClosePermissionDeniedModal}
+      />
+    </Layout>
+  );
+}
