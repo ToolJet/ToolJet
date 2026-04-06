@@ -19,11 +19,17 @@ const AppLoginPage = () => {
   const [error, setError] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
 
+  // Read redirectTo from URL params (set by authorizeWorkspace CASE-4 for preview URLs)
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectToParam = searchParams.get('redirectTo');
+  // Validate: only allow /applications/ paths to prevent open redirects
+  const appRedirectPath = redirectToParam?.startsWith('/applications/') ? redirectToParam : `/applications/${slug}`;
+
   useEffect(() => {
     // If user is already authenticated, redirect directly to the app
     const currentSession = authenticationService.currentSessionValue;
     if (currentSession?.current_user?.id) {
-      window.location.href = `/applications/${slug}`;
+      window.location.href = appRedirectPath;
       return;
     }
     loadAppConfig();
@@ -36,7 +42,7 @@ const AppLoginPage = () => {
 
       // Public app: redirect directly to the app
       if (config.isPublic) {
-        window.location.href = `/applications/${slug}`;
+        window.location.href = appRedirectPath;
         return;
       }
 
@@ -55,10 +61,9 @@ const AppLoginPage = () => {
   };
 
   const setRedirectUrlToCookie = () => {
-    const redirectPath = `/applications/${slug}`;
     const iframe = window !== window.top;
     authenticationService.saveLoginOrganizationId(appConfig?.organizationId);
-    setCookie('redirectPath', redirectPath, iframe);
+    setCookie('redirectPath', appRedirectPath, iframe);
   };
 
   const handleLogin = (email, password, onError) => {
@@ -72,7 +77,7 @@ const AppLoginPage = () => {
           workspace_id: organizationId,
           app_slug: slug,
         });
-        window.location.href = `/applications/${slug}`;
+        window.location.href = appRedirectPath;
       },
       (err) => {
         onError();
@@ -115,7 +120,7 @@ const AppLoginPage = () => {
           configs={ssoConfigs}
           organizationId={appConfig.organizationId}
           paramOrganizationSlug={appConfig.organizationId}
-          redirectTo={`/applications/${slug}`}
+          redirectTo={appRedirectPath}
           setRedirectUrlToCookie={setRedirectUrlToCookie}
           onSubmit={handleLogin}
           whiteLabelText={whiteLabelText}

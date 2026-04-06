@@ -19,11 +19,16 @@ const AppSignupPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Preserve preview URL params from the login page's redirectTo
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectToParam = searchParams.get('redirectTo');
+  const appRedirectPath = redirectToParam?.startsWith('/applications/') ? redirectToParam : `/applications/${slug}`;
+
   useEffect(() => {
     // If user is already authenticated, redirect directly to the app
     const currentSession = authenticationService.currentSessionValue;
     if (currentSession?.current_user?.id) {
-      window.location.href = `/applications/${slug}`;
+      window.location.href = appRedirectPath;
       return;
     }
     loadAppConfig();
@@ -36,7 +41,7 @@ const AppSignupPage = () => {
 
       // Public app: redirect directly to the app
       if (config.isPublic) {
-        window.location.href = `/applications/${slug}`;
+        window.location.href = appRedirectPath;
         return;
       }
 
@@ -76,7 +81,7 @@ const AppSignupPage = () => {
             isUserLoggingIn: false,
           });
 
-          window.location.href = `/applications/${slug}`;
+          window.location.href = appRedirectPath;
         } else {
           // For editions requiring email verification, redirect to app login
           onSuccess();

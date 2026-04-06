@@ -55,7 +55,9 @@ const LoginForm = ({
     ? t('loginSignupPage.newToWorkspace', 'New to this workspace?')
     : t('loginSignupPage.newToTooljet', 'New to {whiteLabelText}?', { whiteLabelText });
   const signUpUrl = appSlug
-    ? `/applications/${appSlug}/signup`
+    ? `/applications/${appSlug}/signup${
+        redirectTo && redirectTo !== `/applications/${appSlug}` ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''
+      }`
     : `/signup${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
         redirectTo ? `?redirectTo=${redirectTo}` : ''
       }`;

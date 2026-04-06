@@ -178,7 +178,14 @@ export const authorizeWorkspace = async () => {
               // Config fetch failed — fall through to login redirect
             }
             const subpath = getSubpath() ?? '';
-            window.location.href = `${subpath}/applications/${appSlug}/login`;
+            const currentPath = getPathname(null, true);
+            const currentSearch = window.location.search;
+            const fullRedirectPath = `${currentPath}${currentSearch}`;
+            const redirectParam =
+              fullRedirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(fullRedirectPath)}`
+                : '';
+            window.location.href = `${subpath}/applications/${appSlug}/login${redirectParam}`;
             return;
           }
           updateCurrentSession({
