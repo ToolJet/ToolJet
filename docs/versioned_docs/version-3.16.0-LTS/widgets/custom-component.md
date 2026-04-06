@@ -68,6 +68,10 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
+:::warning CAUTION
+While named imports from `@material-ui/core/+esm` may work in simple cases, they can break in more complex scenarios due to incomplete ESM support in Material UI v4. If you encounter issues, try importing components individually.
+:::
+
 <img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
 ### Update Data Function
