@@ -6,7 +6,7 @@ import { loginConfigsService } from '@/_services/login_configs.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { setCookie } from '@/_helpers/cookie';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import { GeneralFeatureImage, SSOAuthModule } from '@/modules/common/components';
 import { LoginForm } from '../LoginPage/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -17,6 +17,7 @@ const AppLoginPage = () => {
   const [ssoConfigs, setSsoConfigs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ssoTriggered, setSsoTriggered] = useState(false);
   const whiteLabelText = retrieveWhiteLabelText();
 
   // Read redirectTo from URL params (set by authorizeWorkspace CASE-4 for preview URLs)
@@ -49,6 +50,30 @@ const AppLoginPage = () => {
       // Fetch SSO configs for the workspace
       const configs = await loginConfigsService.getOrganizationConfigs(config.organizationId);
       setSsoConfigs(configs);
+
+      // Auto-SSO: if exactly one SSO is enabled, no form login, and auto-SSO is on → trigger it
+      const shouldAttemptAutoSSO =
+        window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true'
+          ? configs?.automatic_sso_login
+          : window.public_config?.AUTOMATIC_SSO_LOGIN === 'true';
+
+      if (shouldAttemptAutoSSO) {
+        const hasEnabledOidc = Array.isArray(configs?.openid)
+          ? configs.openid.some((c) => c.enabled)
+          : configs?.openid?.enabled;
+        const enabledSSOs = [
+          configs?.google?.enabled,
+          configs?.git?.enabled,
+          configs?.ldap?.enabled,
+          configs?.saml?.enabled,
+          hasEnabledOidc,
+        ].filter(Boolean);
+
+        if (enabledSSOs.length === 1 && !configs?.form?.enabled) {
+          setSsoTriggered(true);
+        }
+      }
+
       setLoading(false);
     } catch (err) {
       setError('Application not found');
@@ -109,6 +134,19 @@ const AppLoginPage = () => {
           </div>
         )}
         RightSideComponent={GeneralFeatureImage}
+      />
+    );
+  }
+
+  if (ssoTriggered) {
+    return (
+      <SSOAuthModule
+        configs={ssoConfigs}
+        organizationSlug={appConfig.organizationId}
+        setRedirectUrlToCookie={setRedirectUrlToCookie}
+        buttonText="Sign in with"
+        ssoTriggered={ssoTriggered}
+        redirectTo={appRedirectPath}
       />
     );
   }
