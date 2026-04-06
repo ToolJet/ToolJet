@@ -18,9 +18,13 @@ import {
   closeAllCachedApps,
 } from './helpers/setup';
 
-// Deferred shutdown: after the last spec file in the worker, close cached apps
-// so the worker can exit gracefully. If another spec starts before the timer
-// fires, the timer is cancelled and the apps stay alive.
+// Capture esbuild ref at load time — require() fails after Jest tears down the module env.
+let esbuildRef: { stop: () => void } | undefined;
+try { esbuildRef = require('esbuild'); } catch {}
+
+// Deferred shutdown: after the last spec file in the worker, destroy
+// DataSources so the worker can exit. If another spec starts before
+// the timer fires, the timer is cancelled.
 let _shutdownTimer: ReturnType<typeof setTimeout> | undefined;
 
 // NOTE: No beforeAll hook for beginSuiteTransaction(). It starts lazily inside
@@ -28,7 +32,6 @@ let _shutdownTimer: ReturnType<typeof setTimeout> | undefined;
 // beforeAll runs BEFORE the spec's beforeAll (where initTestApp sets up the
 // DataSource). The lazy start waits until the DataSource is available.
 beforeEach(async () => {
-  // Cancel deferred shutdown — another spec file is starting.
   if (_shutdownTimer) { clearTimeout(_shutdownTimer); _shutdownTimer = undefined; }
   try {
     await beginTestTransaction();
@@ -51,12 +54,13 @@ afterAll(async () => {
   } catch (e) {
     console.error('[TXN] rollbackSuiteTransaction FAILED:', (e as Error).message);
   }
-  // Unref pg pool connections so they don't prevent graceful process exit.
   unrefAllPoolConnections();
-  // Schedule cached app teardown. If this was the last spec file in the
-  // worker, the timer fires and closes apps → worker exits gracefully.
-  // If another spec starts, beforeEach cancels the timer.
+  try { esbuildRef?.stop(); } catch {}
+  // Deferred app teardown: if no more spec files start, close cached apps
+  // so the worker/process can exit. beforeEach cancels if another spec starts.
   if (_shutdownTimer) clearTimeout(_shutdownTimer);
-  _shutdownTimer = setTimeout(() => { closeAllCachedApps().catch(() => {}); }, 0);
+  _shutdownTimer = setTimeout(() => {
+    closeAllCachedApps().catch(() => {});
+  }, 0);
   _shutdownTimer.unref();
 });

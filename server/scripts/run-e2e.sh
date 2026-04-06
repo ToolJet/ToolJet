@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Unified e2e test runner.
+# Unified e2e test runner — always uses shards.
 #
-# Default: sequential (--runInBand) with live output — ideal for local dev.
-# --parallel: parallel shards with per-shard output — ideal for full suite.
-# --coverage: implies --parallel, adds coverage collection + merge.
+# Default: sequential shards (~9min local).
+# --ci: parallel shards with per-shard databases (~3min on CI hardware).
+# --coverage: adds coverage collection + merge to either mode.
 #
 # Usage:
-#   npm run test:e2e                                  # sequential, live output
-#   npm run test:e2e -- --parallel                    # parallel shards
-#   npm run test:e2e -- --testPathPatterns "auth"     # single spec, live output
-#   npm run test:e2e:cov                              # parallel + coverage + merge
+#   npm run test:e2e                                  # sequential shards
+#   npm run test:e2e -- --testPathPatterns "auth"     # sequential shards, filtered
+#   npm run test:e2e -- --ci                          # parallel per-shard DBs (CI)
+#   npm run test:e2e:cov                              # sequential shards + coverage
+#   npm run test:e2e:cov -- --ci                      # parallel + coverage (CI)
 
 set -o pipefail
 
@@ -33,42 +34,56 @@ fmt_duration() {
 }
 
 # ---------------------------------------------------------------------------
-# Parse flags: extract --parallel and --coverage, pass rest to jest
+# Parse flags
 # ---------------------------------------------------------------------------
-parallel=false
+mode="sequential"   # sequential | ci
 coverage=false
 jest_extra_args=()
 
 for arg in "$@"; do
   case "$arg" in
-    --parallel) parallel=true ;;
-    --coverage) coverage=true; parallel=true ;;
+    --ci)       mode="ci" ;;
+    --coverage) coverage=true ;;
     *) jest_extra_args+=("$arg") ;;
   esac
 done
 
 # ---------------------------------------------------------------------------
-# Sequential mode (default): single jest process, live output
+# Load DB config from .env.test
 # ---------------------------------------------------------------------------
-if [ "$parallel" = false ]; then
-  NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
-    --config "$JEST_CONFIG" --runInBand --colors \
-    "${jest_extra_args[@]}"
-  exit $?
+ENV_FILE="$(cd "$(dirname "$0")/.." && pwd)/../.env.test"
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  eval "$(grep -E '^(PG_|TOOLJET_DB)' "$ENV_FILE" | grep -v '^#')"
+  set +a
 fi
 
+PG_HOST="${PG_HOST:-localhost}"
+PG_PORT="${PG_PORT:-5432}"
+PG_USER="${PG_USER:-postgres}"
+PG_PASS="${PG_PASS:-postgres}"
+PG_DB="${PG_DB:-tooljet_ee_test}"
+TOOLJET_DB_NAME="${TOOLJET_DB:-tooljet_db_test}"
+
+export PGPASSWORD="$PG_PASS"
+
+psql_cmd() {
+  psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -v ON_ERROR_STOP=1 "$@" 2>&1
+}
+
 # ---------------------------------------------------------------------------
-# Parallel mode: pre-reset DB, launch shards, collect results
+# Pre-reset database
 # ---------------------------------------------------------------------------
 printf "\033[1m━━━ Pre-reset database ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n"
 NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/truncate-test-db.ts
 printf "\n"
 
-# Build shard jest args as an array for safe expansion
+# ---------------------------------------------------------------------------
+# Shared shard config
+# ---------------------------------------------------------------------------
 SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests)
 [ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
 
-# Temp dir for shard logs (avoids collisions on shared CI machines)
 SHARD_LOG_DIR=$(mktemp -d)
 trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
 
@@ -77,20 +92,8 @@ tests_passed=0; tests_failed=0
 failed_suites=""
 exit_code=0
 
-# Run shards sequentially — suite TX uses a shared DB, so parallel shards
-# would block on unique constraints. Sequential shards keep peak memory low
-# (each shard's Jest process exits before the next starts).
-for s in $(seq 1 $SHARDS); do
-  printf "\033[1m━━━ Running shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
-
-  SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
-    --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
-    --coverageDirectory=.coverage/shard-$s \
-    "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
-
-  shard_exit=${PIPESTATUS[0]}
-  [ $shard_exit -ne 0 ] && exit_code=1
-
+collect_shard_results() {
+  local s=$1
   suites_line=$(grep "Test Suites:" "$SHARD_LOG_DIR/shard-$s.log" | tail -1)
   tests_line=$(grep "Tests:" "$SHARD_LOG_DIR/shard-$s.log" | tail -1)
 
@@ -99,17 +102,103 @@ for s in $(seq 1 $SHARDS); do
     n=$(extract_num "$suites_line" "failed"); total_failed=$((total_failed + ${n:-0}))
     n=$(extract_num "$suites_line" "total");  total_suites=$((total_suites + ${n:-0}))
   fi
-
   if [ -n "$tests_line" ]; then
     n=$(extract_num "$tests_line" "passed"); tests_passed=$((tests_passed + ${n:-0}))
     n=$(extract_num "$tests_line" "failed"); tests_failed=$((tests_failed + ${n:-0}))
   fi
-
   shard_failed=$(grep "FAIL " "$SHARD_LOG_DIR/shard-$s.log" | head -20)
   [ -n "$shard_failed" ] && failed_suites="$failed_suites$shard_failed"$'\n'
-done
+}
 
-# Merge coverage if requested
+# ---------------------------------------------------------------------------
+# Sequential mode (default): one shard at a time, shared DB
+# ---------------------------------------------------------------------------
+if [ "$mode" = "sequential" ]; then
+  for s in $(seq 1 $SHARDS); do
+    printf "\033[1m━━━ Running shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
+
+    SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
+      --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
+      --coverageDirectory=.coverage/shard-$s \
+      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
+
+    shard_exit=${PIPESTATUS[0]}
+    [ $shard_exit -ne 0 ] && exit_code=1
+    collect_shard_results "$s"
+  done
+fi
+
+# ---------------------------------------------------------------------------
+# CI mode: per-shard databases, parallel execution
+# ---------------------------------------------------------------------------
+if [ "$mode" = "ci" ]; then
+  printf "\033[1m━━━ Creating %d shard databases ━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n" "$SHARDS"
+
+  clone_template() {
+    local template="$1"
+    psql_cmd -d postgres -c "ALTER DATABASE \"$template\" WITH ALLOW_CONNECTIONS = false" > /dev/null 2>&1
+    psql_cmd -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$template' AND pid <> pg_backend_pid();" > /dev/null 2>&1
+    sleep 0.3
+    for s in $(seq 1 $SHARDS); do
+      local target="${template}_shard_${s}"
+      psql_cmd -d postgres -c "DROP DATABASE IF EXISTS \"$target\"" > /dev/null 2>&1
+      if ! psql_cmd -d postgres -c "CREATE DATABASE \"$target\" TEMPLATE \"$template\"" > /dev/null; then
+        psql_cmd -d postgres -c "ALTER DATABASE \"$template\" WITH ALLOW_CONNECTIONS = true" > /dev/null 2>&1
+        printf "\033[31m  FAILED to clone %s → %s\033[0m\n" "$template" "$target"; exit 1
+      fi
+    done
+    psql_cmd -d postgres -c "ALTER DATABASE \"$template\" WITH ALLOW_CONNECTIONS = true" > /dev/null 2>&1
+  }
+
+  shard_dbs=(); shard_tjdbs=()
+  clone_template "$PG_DB"
+  clone_template "$TOOLJET_DB_NAME"
+  for s in $(seq 1 $SHARDS); do
+    shard_dbs+=("${PG_DB}_shard_${s}")
+    shard_tjdbs+=("${TOOLJET_DB_NAME}_shard_${s}")
+    printf "  shard %d: %s + %s\n" "$s" "${shard_dbs[$((s-1))]}" "${shard_tjdbs[$((s-1))]}"
+  done
+  printf "\n"
+
+  cleanup_shard_dbs() {
+    printf "\n\033[2mCleaning up shard databases...\033[0m\n"
+    for s in $(seq 1 $SHARDS); do
+      psql_cmd -d postgres -c "DROP DATABASE IF EXISTS \"${shard_dbs[$((s-1))]}\"" > /dev/null 2>&1
+      psql_cmd -d postgres -c "DROP DATABASE IF EXISTS \"${shard_tjdbs[$((s-1))]}\"" > /dev/null 2>&1
+    done
+  }
+  trap 'rm -rf "$SHARD_LOG_DIR"; cleanup_shard_dbs' EXIT
+
+  pids=()
+  for s in $(seq 1 $SHARDS); do
+    printf "\033[1m━━━ Launching shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
+    PG_DB="${shard_dbs[$((s-1))]}" TOOLJET_DB="${shard_tjdbs[$((s-1))]}" \
+    SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" \
+    npx jest --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
+      --coverageDirectory=.coverage/shard-$s \
+      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" \
+      > "$SHARD_LOG_DIR/shard-$s.log" 2>&1 &
+    pids+=($!)
+    [ "$s" -lt "$SHARDS" ] && sleep 30
+  done
+
+  printf "\nWaiting for %d parallel shards...\n\n" "$SHARDS"
+
+  for i in "${!pids[@]}"; do
+    s=$((i + 1))
+    wait "${pids[$i]}"
+    shard_exit=$?
+    [ $shard_exit -ne 0 ] && exit_code=1
+    printf "\033[1m━━━ Shard %d/%d (exit %d) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n" "$s" "$SHARDS" "$shard_exit"
+    cat "$SHARD_LOG_DIR/shard-$s.log"
+    printf "\n"
+    collect_shard_results "$s"
+  done
+fi
+
+# ---------------------------------------------------------------------------
+# Merge coverage
+# ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
   mkdir -p .coverage/merged
@@ -123,6 +212,9 @@ if [ "$coverage" = true ]; then
   rm -rf .coverage
 fi
 
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
 total_tests=$((tests_passed + tests_failed))
 elapsed=$((SECONDS - start_time))
 

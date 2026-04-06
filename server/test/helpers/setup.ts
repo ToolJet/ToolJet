@@ -60,6 +60,20 @@ export function unrefAllPoolConnections() {
   if (_tooljetDbDataSource) unrefPoolConnections(_tooljetDbDataSource);
 }
 
+/**
+ * Destroy all known TypeORM DataSources (closes pool connections).
+ * Lighter than closeAllCachedApps() — skips NestJS lifecycle hooks that
+ * can create new handles during teardown. Use for clean process exit.
+ */
+export async function destroyAllDataSources() {
+  if (_defaultDataSource?.isInitialized) {
+    await _defaultDataSource.destroy().catch(() => {});
+  }
+  if (_tooljetDbDataSource?.isInitialized) {
+    await _tooljetDbDataSource.destroy().catch(() => {});
+  }
+}
+
 /** Hook new pool connections to unref their sockets on creation. */
 function hookPoolUnref(ds: TypeOrmDataSource) {
   const pool = (ds.driver as any)?.master;
