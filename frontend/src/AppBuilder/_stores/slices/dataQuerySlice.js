@@ -466,10 +466,14 @@ export const createDataQuerySlice = (set, get) => ({
         const optionsPath = `queries.${selectedQuery.id}.__options__`;
         const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
         if (depGraph && depGraph.hasNode(optionsPath)) {
-          set((state) => {
-            state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
-            return { ...state };
-          }, false, 'clearQueryOptionsDeps');
+          set(
+            (state) => {
+              state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+              return { ...state };
+            },
+            false,
+            'clearQueryOptionsDeps'
+          );
         }
       }
 
