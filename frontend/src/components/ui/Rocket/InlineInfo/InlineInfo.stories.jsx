@@ -39,7 +39,11 @@ export const WithAction = {
     variant: 'outline',
     title: 'Title',
     description: 'Info description',
-    action: <Button variant="outline" size="medium">Button</Button>,
+    action: (
+      <Button variant="outline" size="medium">
+        Button
+      </Button>
+    ),
   },
 };
 
@@ -67,7 +71,11 @@ export const AllVariants = {
                     variant={v}
                     title="Title"
                     description="Info description"
-                    action={<Button variant="outline" size="medium">Button</Button>}
+                    action={
+                      <Button variant="outline" size="medium">
+                        Button
+                      </Button>
+                    }
                   />
                 </div>
               ))}
@@ -90,7 +98,11 @@ export const TypesGhost = {
           type={type}
           title="Title"
           description="Info description"
-          action={<Button variant="outline" size="medium">Button</Button>}
+          action={
+            <Button variant="outline" size="medium">
+              Button
+            </Button>
+          }
         />
       ))}
     </div>

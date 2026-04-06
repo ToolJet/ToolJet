@@ -232,10 +232,7 @@ const ComboboxLabel = forwardRef(function ComboboxLabel({ className, ...props },
   return (
     <ShadcnComboboxLabel
       ref={ref}
-      className={cn(
-        'tw-text-text-placeholder tw-text-xs tw-font-semibold',
-        className
-      )}
+      className={cn('tw-text-text-placeholder tw-text-xs tw-font-semibold', className)}
       {...props}
     />
   );
@@ -245,13 +242,7 @@ ComboboxLabel.displayName = 'ComboboxLabel';
 // ── ComboboxSeparator ────────────────────────────────────────────────────
 
 const ComboboxSeparator = forwardRef(function ComboboxSeparator({ className, ...props }, ref) {
-  return (
-    <ShadcnComboboxSeparator
-      ref={ref}
-      className={cn('tw-bg-border-weak', className)}
-      {...props}
-    />
-  );
+  return <ShadcnComboboxSeparator ref={ref} className={cn('tw-bg-border-weak', className)} {...props} />;
 });
 ComboboxSeparator.displayName = 'ComboboxSeparator';
 
