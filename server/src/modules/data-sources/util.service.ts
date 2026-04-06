@@ -18,7 +18,6 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { OrganizationConstantsUtilService } from '@modules/organization-constants/util.service';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
@@ -262,38 +261,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         // Strip OAuth flow keys and token keys from options
         options = options.filter(
-          (option) => !['provider', 'code', 'oauth2', 'tokenData', 'access_token', 'refresh_token'].includes(option['key'])
+          (option) =>
+            !['provider', 'code', 'oauth2', 'tokenData', 'access_token', 'refresh_token'].includes(option['key'])
         );
         return options;
       }
-
-      // //can remove this
-      // if (isMultiAuthEnabled) {
-      //   const newTokenDataObj = { user_id: userId };
-      //   for (const [key, value] of accessDetails) {
-      //     newTokenDataObj[key] = value;
-      //   }
-      //   const existingTokenArray = findOption(options, 'token_data')?.['value'];
-
-      //   const updatedTokenData = this.getCurrentToken(isMultiAuthEnabled, existingTokenArray, newTokenDataObj, userId);
-      //   options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
-
-      //   options.push({
-      //     key: 'tokenData',
-      //     value: updatedTokenData,
-      //     encrypted: false,
-      //   });
-      //   return options;
-      // } else {
-      //   for (const row of accessDetails) {
-      //     const option = {};
-      //     option['key'] = row[0];
-      //     option['value'] = row[1];
-      //     option['encrypted'] = true;
-
-      //     options.push(option);
-      //   }
-      // }
       options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
     }
 
@@ -360,8 +332,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           dataSource.options = dso.options;
 
           const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
-          const authModeToggled =
-            incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
+          const authModeToggled = incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
           if (shouldClearTokens || authModeToggled) {
             await this.deleteAllUserTokenData(dso.id, manager);
           }
@@ -488,7 +459,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           }
 
           for (const env of allEnvs) {
-            const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id, nonMultiEnvBranchId);
+            const dso = await this.appEnvironmentUtilService.getOptions(
+              dataSourceId,
+              organizationId,
+              env.id,
+              nonMultiEnvBranchId
+            );
             dataSource.options = dso.options;
 
             const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
@@ -1232,18 +1208,20 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   protected async getUserTokenData(
-    dataSourceOptionId: string,
+    dataSourceVersionOptionId: string,
     userId: string | null,
     manager?: EntityManager
   ): Promise<{ access_token: string | null; refresh_token: string | null } | null> {
     return await dbTransactionWrap(async (mgr: EntityManager) => {
       let row: DatasourceUserTokenData | null;
       if (userId !== null) {
-        row = await mgr.findOne(DatasourceUserTokenData, { where: { dataSourceOptionId, userId } });
+        row = await mgr.findOne(DatasourceUserTokenData, { where: { dataSourceVersionOptionId, userId } });
       } else {
         row = await mgr
           .createQueryBuilder(DatasourceUserTokenData, 'dst')
-          .where('dst.data_source_option_id = :dataSourceOptionId AND dst.user_id IS NULL', { dataSourceOptionId })
+          .where('dst.data_source_version_option_id = :dataSourceVersionOptionId AND dst.user_id IS NULL', {
+            dataSourceVersionOptionId,
+          })
           .getOne();
       }
       if (!row) return null;
@@ -1262,7 +1240,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   protected async upsertUserTokenData(
-    dataSourceOptionId: string,
+    dataSourceVersionOptionId: string,
     userId: string | null,
     accessToken: string | null,
     refreshToken: string | null,
@@ -1277,11 +1255,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     let existing: DatasourceUserTokenData | null;
     if (userId !== null) {
-      existing = await manager.findOne(DatasourceUserTokenData, { where: { dataSourceOptionId, userId } });
+      existing = await manager.findOne(DatasourceUserTokenData, { where: { dataSourceVersionOptionId, userId } });
     } else {
       existing = await manager
         .createQueryBuilder(DatasourceUserTokenData, 'dst')
-        .where('dst.data_source_option_id = :dataSourceOptionId AND dst.user_id IS NULL', { dataSourceOptionId })
+        .where('dst.data_source_version_option_id = :dataSourceVersionOptionId AND dst.user_id IS NULL', {
+          dataSourceVersionOptionId,
+        })
         .getOne();
     }
 
@@ -1293,7 +1273,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     } else {
       const row = manager.create(DatasourceUserTokenData, {
         userId,
-        dataSourceOptionId,
+        dataSourceVersionOptionId,
         authToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         moreDetails: {},

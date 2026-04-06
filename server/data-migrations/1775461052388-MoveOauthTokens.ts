@@ -8,7 +8,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 
 const BATCH_SIZE = 1000;
 
-export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
+export class MoveOauthTokens1775461052388 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
@@ -30,7 +30,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
       const batch: Array<{ id: string; options: Record<string, any> }> = await queryRunner.query(
         `
           SELECT id, options
-          FROM   data_source_options
+          FROM   data_source_version_options
           WHERE  ($1::uuid IS NULL OR id > $1::uuid)
           AND    (
                    -- multi-auth ON: has tokenData array
@@ -97,7 +97,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
               await manager.query(
                 `
                 DELETE FROM datasource_user_token_data
-                WHERE  data_source_option_id = $1::uuid
+                WHERE  data_source_version_option_id = $1::uuid
                 AND    user_id = $2::uuid
                 `,
                 [row.id, tokenEntry.user_id]
@@ -106,7 +106,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
               await manager.query(
                 `
                 INSERT INTO datasource_user_token_data
-                  (id, user_id, data_source_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+                  (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
                 VALUES
                   (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
                 `,
@@ -143,7 +143,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
             await manager.query(
               `
               INSERT INTO datasource_user_token_data
-                (id, user_id, data_source_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+                (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
               VALUES
                 (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
               `,
@@ -170,7 +170,7 @@ export class MoveOauthTokensToDB1773127399691 implements MigrationInterface {
           // ── Update options JSON (strip migrated token fields) ──────────────
           await manager.query(
             `
-            UPDATE data_source_options
+            UPDATE data_source_version_options
             SET    options    = $1::json,
                    updated_at = now()
             WHERE  id         = $2::uuid

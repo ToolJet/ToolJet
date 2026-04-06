@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
-export class AddDataSourceUserTokenData1772710222596 implements MigrationInterface {
+export class AddDsUserTokenData1775460960818  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -20,7 +20,7 @@ export class AddDataSourceUserTokenData1772710222596 implements MigrationInterfa
             isNullable: true,
           },
           {
-            name: 'data_source_option_id',
+            name: 'data_source_version_option_id',
             type: 'uuid',
             isNullable: false,
           },
@@ -62,9 +62,9 @@ export class AddDataSourceUserTokenData1772710222596 implements MigrationInterfa
     await queryRunner.createForeignKey(
       'datasource_user_token_data',
       new TableForeignKey({
-        name: 'fk_datasource_user_token_data_source_option',
-        columnNames: ['data_source_option_id'],
-        referencedTableName: 'data_source_options',
+        name: 'fk_datasource_user_token_data_source_version_option',
+        columnNames: ['data_source_version_option_id'],
+        referencedTableName: 'data_source_version_options',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),
@@ -73,14 +73,14 @@ export class AddDataSourceUserTokenData1772710222596 implements MigrationInterfa
     // Partial unique index: one row per (option + user) for multi-auth rows
     await queryRunner.query(`
       CREATE UNIQUE INDEX idx_datasource_user_token_data_option_user
-      ON datasource_user_token_data (data_source_option_id, user_id)
+      ON datasource_user_token_data (data_source_version_option_id, user_id)
       WHERE user_id IS NOT NULL
     `);
 
     // Partial unique index: one row per option for single-auth rows (user_id = NULL)
     await queryRunner.query(`
       CREATE UNIQUE INDEX idx_datasource_user_token_data_option_no_user
-      ON datasource_user_token_data (data_source_option_id)
+      ON datasource_user_token_data (data_source_version_option_id)
       WHERE user_id IS NULL
     `);
   }
