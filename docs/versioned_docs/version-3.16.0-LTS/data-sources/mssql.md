@@ -68,6 +68,8 @@ Provide the following details:
 - **Client ID** – The Application (client) ID from the Azure app registration
 - **Client Secret** – The client secret value generated for the app
 
+<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
+
 ### Enabling Encryption with a Self-Signed Certificate
 
 To enhance security during data transfer, encryption can be enabled even with a self-signed certificate.
