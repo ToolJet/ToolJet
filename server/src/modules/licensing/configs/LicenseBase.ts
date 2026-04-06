@@ -54,6 +54,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _aiPlan: 'byok' | 'selfhostai' | 'credits';
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -81,6 +82,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._aiPlan = 'credits';
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -145,6 +147,7 @@ export default class LicenseBase {
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
     this._isEnvMapping = this.getFeatureValue('workspaceEnv');
+    this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
   private getFeatureValue(key: string) {
@@ -508,6 +511,13 @@ export default class LicenseBase {
     return this._isAi;
   }
 
+  public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
+    if (this.IsBasicPlan) {
+      return (this.BASIC_PLAN_TERMS.ai?.plan as 'byok' | 'selfhostai' | 'credits') || 'credits';
+    }
+    return this._aiPlan || 'credits';
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -555,6 +565,7 @@ export default class LicenseBase {
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
       workspaceEnv: this.workspaceEnv,
+      aiPlan: this.aiPlan,
     };
   }
 

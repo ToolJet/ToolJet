@@ -119,6 +119,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.AI_FEATURE:
       return licenseInstance.aiFeature;
 
+    case LICENSE_FIELD.AI_PLAN:
+      return licenseInstance.aiPlan;
+
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
 

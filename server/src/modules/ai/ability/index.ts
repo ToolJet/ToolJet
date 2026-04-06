@@ -37,5 +37,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         AiConversation
       );
     }
+
+    if (isAdmin || superAdmin) {
+      can([FEATURE_KEY.UPDATE_KEY], AiConversation);
+      can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
+    }
   }
 }

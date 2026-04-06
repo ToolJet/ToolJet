@@ -122,6 +122,7 @@ export enum LICENSE_FIELD {
   WORKSPACE_ENV = 'workspaceEnvEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
   APP_HISTORY = 'appHistoryEnabled',
   SCIM = 'scimEnabled',

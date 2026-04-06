@@ -97,5 +97,6 @@ export interface Terms {
   };
   ai?: {
     apiKey?: string;
+    plan?: 'byok' | 'selfhostai' | 'credits';
   };
 }

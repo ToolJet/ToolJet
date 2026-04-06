@@ -28,7 +28,7 @@ async function validateAndReloadPlugins(nestApp: INestApplicationContext) {
   const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
   const { PluginsService } = await import(`${await getImportPath(true, edition)}/plugins/service`);
   const pluginsService = nestApp.get(PluginsService);
-  const pluginsToReload = fetchPluginsToReload();
+  const pluginsToReload = await fetchPluginsToReload(pluginsService);
   const validPluginDtos: CreatePluginDto[] = [];
   const invalidPluginDtos: CreatePluginDto[] = [];
 
@@ -75,7 +75,12 @@ function findPluginDetails(pluginId: string) {
   return availablePlugins.find((p: { id: string }) => p.id === pluginId);
 }
 
-function fetchPluginsToReload(): string[] {
+async function fetchPluginsToReload(pluginsService: PluginsService): Promise<string[]> {
+  const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+  if (edition !== TOOLJET_EDITIONS.Cloud) {
+    //Update all the Installed plugins
+    return await pluginsService.findAll().then((plugins) => plugins.map((plugin) => plugin.pluginId));
+  }
   if (!ENV_VARS.PLUGINS_TO_RELOAD) return [];
   return sanitizeArray(ENV_VARS.PLUGINS_TO_RELOAD);
 }
@@ -84,5 +89,4 @@ function sanitizeArray(pluginsToReload: string): string[] {
   return [...new Set(pluginsToReload.split(',').map((pluginId: string) => pluginId.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
