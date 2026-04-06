@@ -327,20 +327,35 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
       port = +finalOptions.port;
     }
 
+    // Service Principal (Azure AD) authentication
+    const isServicePrincipal = finalOptions.auth_type === 'service_principal';
+
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
-        host: host,
-        user: finalOptions.username,
-        password: finalOptions.password,
+        ...(isServicePrincipal
+          ? {
+              // Knex mssql dialect builds the tedious auth block from these FLAT fields.
+              // It ignores any nested 'authentication' object entirely.
+              server: host,
+              type: 'azure-active-directory-service-principal-secret',
+              tenantId: finalOptions.sp_tenant_id,
+              clientId: finalOptions.sp_client_id,
+              clientSecret: finalOptions.sp_client_secret,
+            }
+          : {
+              host: host,
+              user: finalOptions.username,
+              password: finalOptions.password,
+            }),
         database: finalOptions.database,
         port: port,
         options: {
-          encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
+          encrypt: isServicePrincipal ? true : ((finalOptions.azure ?? false) || shouldUseSSL),
           instanceName: finalOptions.instanceName,
-          trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          trustServerCertificate: !isServicePrincipal && shouldUseSSL && finalOptions.ssl_certificate === 'none',
           requestTimeout: this.STATEMENT_TIMEOUT,
-          ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
+          ...(shouldUseSSL && !isServicePrincipal ? { cryptoCredentialsDetails: sslObject } : {}),
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
       },
