@@ -3,6 +3,23 @@ id: tj-ai-enterprise
 title: ToolJet AI Enterprise
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 ToolJet AI Enterprise is designed for organizations that require complete control over where their data is processed. Rather than routing AI requests through ToolJet AI Cloud, you deploy a ToolJet-provided server image within your own environment. All AI workloads execute on your servers, using your own LLM API key, no data is transmitted to or processed by ToolJet at any point.
 
 This is particularly relevant for organizations operating under strict data residency regulations, internal compliance policies, or those running in air-gapped or private-cloud environments where external network calls to third-party servers are not permitted.
@@ -11,9 +28,10 @@ Unlike [Bring Your Own Key (BYOK)](/docs/build-with-ai/bring-your-own-key), whic
 
 Benefits of ToolJet AI Enterprise:
 
+- **Cost control**: Usage is billed directly to your LLM provider account. ToolJet does not charge ToolJet AI credits for these requests.
+- **Visibility**: You can monitor usage and set spending limits through your LLM provider's dashboard.
 - **Full data isolation**: All AI execution happens on infrastructure you control. ToolJet servers are not involved in processing requests.
 - **Flexible key management**: Supply your API key through the ToolJet UI or inject it directly as an environment variable on the server. Using an environment variable is preferable for secrets management in automated or containerized deployments.
-- **No ToolJet AI credits required**: AI usage is billed directly to your LLM provider account.
 
 :::info Not available on ToolJet Cloud
 ToolJet AI Enterprise requires that you deploy and operate the ToolJet-provided server image yourself.
