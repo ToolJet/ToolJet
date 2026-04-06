@@ -134,6 +134,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small data-cy="label-sort-by">Sort By</small>
             </div>
+            <MenuButton id="custom" text="Custom order" callback={handleSort} active={sortBy === 'custom'} />
             <MenuButton
               id="name"
               order="asc"
