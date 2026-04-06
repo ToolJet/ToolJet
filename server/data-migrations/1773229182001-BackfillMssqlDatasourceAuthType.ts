@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class BackfillMssqlDatasourceAuthType1775059620510 implements MigrationInterface {
+export class BackfillMssqlDatasourceAuthType1773229182001 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
 
