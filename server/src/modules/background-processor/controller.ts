@@ -43,7 +43,7 @@ import { User, UserEntity } from '@modules/app/decorators/user.decorator';
  * ## Client Usage
  *
  * 1. Call your endpoint to start a job → receive `{ jobId, processInfo }`
- * 2. Subscribe to SSE: `new EventSource('/jobs/:jobId/events?token=<jwt>')`
+ * 2. Subscribe to SSE: `new EventSource('/jobs/:jobId/events', { withCredentials: true })`
  * 3. Handle events: 'running', 'completed', 'failed', 'done'
  *
  * ## Multi-Pod Support
