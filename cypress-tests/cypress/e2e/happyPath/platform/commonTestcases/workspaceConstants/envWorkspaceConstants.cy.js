@@ -47,7 +47,7 @@ describe("Workspace constants", () => {
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
 
-        // Show envconstant details
+       // Show envconstant details
         cy.get('[data-cy="envconstant-constant-visibility"]').click();
 
         // Validate the value for the envConstant entry
@@ -84,6 +84,7 @@ describe("Workspace constants", () => {
 
         importConstantsApp("cypress/fixtures/templates/env_constants-export.json");
         cy.wait(2000);
+        
         cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         //******Workflow bug*************************//

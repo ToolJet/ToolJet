@@ -288,25 +288,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
 }
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    let finalOptions: SourceOptions;
-    
-    if (sourceOptions.connection_type === 'string') {
-      const parsedOptions = this.parseConnectionString(sourceOptions.connection_string || '');
-      
-
-       finalOptions = { ...sourceOptions };
-        if (parsedOptions.host) finalOptions.host= finalOptions.host || parsedOptions.host;
-        if (parsedOptions.port) finalOptions.port=finalOptions.port || parsedOptions.port;
-        if (parsedOptions.database) finalOptions.database=finalOptions.database || parsedOptions.database;
-        if (parsedOptions.username) finalOptions.username=finalOptions.username || parsedOptions.username;
-        if (parsedOptions.password) finalOptions.password=finalOptions.password || parsedOptions.password;
-        if (parsedOptions.instanceName) finalOptions.instanceName =finalOptions.instanceName|| parsedOptions.instanceName;
-        if (parsedOptions.azure !== undefined) finalOptions.azure=finalOptions.azure|| parsedOptions.azure;
-
-    } else {
-      finalOptions = sourceOptions;
-    }
-
+    const finalOptions: SourceOptions = sourceOptions;
    // SSL config 
     const shouldUseSSL = finalOptions.ssl_enabled === true;
     let sslObject: any = null;
@@ -345,19 +327,35 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
       port = +finalOptions.port;
     }
 
+    // Service Principal (Azure AD) authentication
+    const isServicePrincipal = finalOptions.auth_type === 'service_principal';
+
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
-        host: host,
-        user: finalOptions.username,
-        password: finalOptions.password,
+        ...(isServicePrincipal
+          ? {
+              // Knex mssql dialect builds the tedious auth block from these FLAT fields.
+              // It ignores any nested 'authentication' object entirely.
+              server: host,
+              type: 'azure-active-directory-service-principal-secret',
+              tenantId: finalOptions.sp_tenant_id,
+              clientId: finalOptions.sp_client_id,
+              clientSecret: finalOptions.sp_client_secret,
+            }
+          : {
+              host: host,
+              user: finalOptions.username,
+              password: finalOptions.password,
+            }),
         database: finalOptions.database,
         port: port,
         options: {
-          encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
+          encrypt: isServicePrincipal ? true : ((finalOptions.azure ?? false) || shouldUseSSL),
           instanceName: finalOptions.instanceName,
-          trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
-          ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
+          trustServerCertificate: !isServicePrincipal && shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          requestTimeout: this.STATEMENT_TIMEOUT,
+          ...(shouldUseSSL && !isServicePrincipal ? { cryptoCredentialsDetails: sslObject } : {}),
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
       },
