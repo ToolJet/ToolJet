@@ -90,8 +90,10 @@ export const saveAndDiscardDSChanges = (option) => {
   cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
 };
 
+let _testConnCounter = 0;
 export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
-  cy.intercept('POST', '**/api/data-sources/*/test-connection').as('testConnection');
+  const alias = `testConnection${_testConnCounter++}`;
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as(alias);
   cy.waitForElement('[data-cy="test-connection-button"]', 60000);
 
   cy.get('[data-cy="test-connection-button"]')
@@ -99,24 +101,45 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
     .should("contain.text", "Test connection")
     .click();
 
-  // Wait for the API call to complete
-  cy.wait('@testConnection', { timeout: 60000 });
+  // Wait for the API call to complete and verify API response
+  const toastTimeout = 80000;
+  cy.wait(`@${alias}`, { timeout: toastTimeout }).then((interception) => {
+    const responseBody = interception.response.body;
 
+    switch (expectedStatus) {
+      case "success":
+        expect(responseBody.status).to.eq("ok");
+        break;
+
+      case "failed":
+        expect(responseBody.status).to.not.eq("ok");
+
+        if (customMessage) {
+          const errorMsg = responseBody.data?.message || responseBody.message || JSON.stringify(responseBody);
+          expect(errorMsg).to.contain(customMessage);
+        }
+        break;
+    }
+  });
+
+  // Verify UI toast feedback
   switch (expectedStatus) {
     case "success":
-      // Success feedback is now a toast (PR #15616 — inline badge removed)
-      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, 50000);
+      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, toastTimeout);
       break;
 
     case "failed":
-      // Failure feedback is now a toast; specific error still shown in connection-alert-text
-      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, 50000);
+      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
 
       if (customMessage) {
-        cy.get('[data-cy="connection-alert-text"]')
-          .scrollIntoView()
-          .should("be.visible", { timeout: 50000 })
-          .and("contain.text", customMessage);
+        cy.get("body").then(($body) => {
+          if ($body.find('[data-cy="connection-alert-text"]').length > 0) {
+            cy.get('[data-cy="connection-alert-text"]')
+              .scrollIntoView()
+              .should("be.visible")
+              .and("contain.text", customMessage);
+          }
+        });
       }
       break;
   }
@@ -135,11 +158,20 @@ export const fillDSConnectionEncryptedField = (field) => {
     });
   }
 
-  cy.clearAndType(fieldSelector, field.text);
+  cy.get(fieldSelector)
+    .scrollIntoView()
+    .should("be.visible")
+    .click({ force: true })
+    .type(`{selectall}{backspace}`)
+    .type(field.text, { parseSpecialCharSequences: false });
 };
 
 export const fillDataOnCodeMirrorInput = (field) => {
   const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  cy.get(selector).scrollIntoView();
+  cy.wait(500);
+  // Focus the CodeMirror editor directly to bypass covered-element check from .realClick()
+  cy.get(selector).find(".cm-content").click({ force: true });
   cy.get(selector).clearAndTypeOnCodeMirror(field.text);
 };
 

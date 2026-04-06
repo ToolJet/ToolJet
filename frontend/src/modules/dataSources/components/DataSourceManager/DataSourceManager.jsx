@@ -33,6 +33,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import InfoIcon from '@assets/images/info.svg';
 import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
@@ -1070,7 +1071,14 @@ class DataSourceManagerComponent extends React.Component {
                     </span>
                   )}
                 </div>
-                <div className="tw-pt-[15px]">
+                <div className="tw-flex tw-items-center tw-pt-[15px] tw-gap-2">
+                  {selectedDataSource?.pluginId && dataSourceSchema?.version && (
+                    <ToolTip message={`Version ${dataSourceSchema?.version}`} placement="right">
+                      <span className="datasource-version-info-icon" data-cy="datasource-version-info">
+                        <InfoIcon style={{ width: '20px', height: '20px' }} />
+                      </span>
+                    </ToolTip>
+                  )}
                   {this.props.tags &&
                     this.props.tags.map((tag) => {
                       if (tag === 'AI') {

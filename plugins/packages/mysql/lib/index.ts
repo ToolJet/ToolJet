@@ -359,74 +359,64 @@ export default class MysqlQueryService implements QueryService {
   
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-  let effectiveOptions = { ...sourceOptions };
-  if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
-    const parsed = this.parseConnectionString(sourceOptions.connection_string);
-      effectiveOptions.host= effectiveOptions.host || parsed.host;
-      effectiveOptions.port= effectiveOptions.port|| parsed.port;
-      effectiveOptions.database=effectiveOptions.database || parsed.database;
-      effectiveOptions.username=effectiveOptions.username || parsed.username;
-      effectiveOptions.password=effectiveOptions.password || parsed.password;
-      if (parsed.socket_path) effectiveOptions.socket_path =effectiveOptions.socket_path ||  parsed.socket_path;
-      if (parsed.ssl_enabled !== undefined) effectiveOptions.ssl_enabled = effectiveOptions.ssl_enabled || parsed.ssl_enabled;
-  }
+    let effectiveOptions = { ...sourceOptions };
 
-  const shouldUseSSL = effectiveOptions.ssl_enabled;
-  let sslObject: any = null;
+    const shouldUseSSL = effectiveOptions.ssl_enabled;
+    let sslObject: any = null;
 
-  if (shouldUseSSL) {
-    sslObject = { rejectUnauthorized: (effectiveOptions.ssl_certificate ?? 'none') !== 'none' };
-    
-    if (effectiveOptions.ssl_certificate === 'ca_certificate') {
-      sslObject.ca = effectiveOptions.ca_cert;
-      sslObject.key = effectiveOptions.client_key;
-      sslObject.cert = effectiveOptions.client_cert;
-    } else if (effectiveOptions.ssl_certificate === 'self_signed') {
-      sslObject.ca = effectiveOptions.root_cert;
-      sslObject.key = effectiveOptions.client_key;
-      sslObject.cert = effectiveOptions.client_cert;
+    if (shouldUseSSL) {
+      sslObject = { rejectUnauthorized: (effectiveOptions.ssl_certificate ?? 'none') !== 'none' };
+      
+      if (effectiveOptions.ssl_certificate === 'ca_certificate') {
+        sslObject.ca = effectiveOptions.ca_cert;
+        sslObject.key = effectiveOptions.client_key;
+        sslObject.cert = effectiveOptions.client_cert;
+      } else if (effectiveOptions.ssl_certificate === 'self_signed') {
+        sslObject.ca = effectiveOptions.root_cert;
+        sslObject.key = effectiveOptions.client_key;
+        sslObject.cert = effectiveOptions.client_cert;
+      }
     }
-  }
-  let connectionConfig: any ;
-  if (effectiveOptions.ssh_enabled=='enabled') {
-    connectionConfig = async () => {
-      const ssh = await createSSHStream(effectiveOptions);
-      return {
-        stream: ssh.stream,
+    let connectionConfig: any ;
+    if (effectiveOptions.ssh_enabled=='enabled') {
+      connectionConfig = async () => {
+        const ssh = await createSSHStream(effectiveOptions);
+        return {
+          stream: ssh.stream,
+          user: effectiveOptions.username,
+          password: effectiveOptions.password,
+          database: effectiveOptions.database,
+          multipleStatements: true,
+          ...(shouldUseSSL ? { ssl: sslObject } : {}),
+        };
+      };
+    }else{
+      connectionConfig = {
         user: effectiveOptions.username,
         password: effectiveOptions.password,
         database: effectiveOptions.database,
         multipleStatements: true,
         ...(shouldUseSSL ? { ssl: sslObject } : {}),
       };
-    };
-  }else{
-     connectionConfig = {
-      user: effectiveOptions.username,
-      password: effectiveOptions.password,
-      database: effectiveOptions.database,
-      multipleStatements: true,
-      ...(shouldUseSSL ? { ssl: sslObject } : {}),
-    };
-    
-    if (effectiveOptions.socket_path) {
-      connectionConfig.socketPath = effectiveOptions.socket_path;
-    }else{
-      connectionConfig.host = effectiveOptions.host;
-      connectionConfig.port =  Number(effectiveOptions.port);
+      
+      if (effectiveOptions.socket_path) {
+        connectionConfig.socketPath = effectiveOptions.socket_path;
+      }else{
+        connectionConfig.host = effectiveOptions.host;
+        connectionConfig.port =  Number(effectiveOptions.port);
+      }
     }
+
+    const config: Knex.Config = {
+      client: 'mysql2',
+      connection: connectionConfig,
+      ...this.connectionOptions(effectiveOptions),
+    };
+
+    const knexInstance = knex(config);
+
+    return knexInstance;
   }
-
-  const config: Knex.Config = {
-    client: 'mysql2',
-    connection: connectionConfig,
-    ...this.connectionOptions(effectiveOptions),
-  };
-
-  const knexInstance = knex(config);
-
-  return knexInstance;
-}
 
   async getConnection(
     sourceOptions: SourceOptions,
