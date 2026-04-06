@@ -1213,24 +1213,27 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     manager?: EntityManager
   ): Promise<{ access_token: string | null; refresh_token: string | null } | null> {
     return await dbTransactionWrap(async (mgr: EntityManager) => {
-      let row: DatasourceUserTokenData | null;
+      const qb = mgr
+        .createQueryBuilder(DatasourceUserTokenData, 'dst')
+        .select(['dst.authToken', 'dst.refreshToken'])
+        .where('dst.data_source_version_option_id = :dataSourceVersionOptionId', { dataSourceVersionOptionId });
+
       if (userId !== null) {
-        row = await mgr.findOne(DatasourceUserTokenData, { where: { dataSourceVersionOptionId, userId } });
+        qb.andWhere('dst.user_id = :userId', { userId }); //Multi auth
       } else {
-        row = await mgr
-          .createQueryBuilder(DatasourceUserTokenData, 'dst')
-          .where('dst.data_source_version_option_id = :dataSourceVersionOptionId AND dst.user_id IS NULL', {
-            dataSourceVersionOptionId,
-          })
-          .getOne();
+        qb.andWhere('dst.user_id IS NULL'); //Single auth
       }
+
+      const row = await qb.getOne();
       if (!row) return null;
+
       const access_token = row.authToken
         ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.authToken)
         : null;
       const refresh_token = row.refreshToken
         ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
         : null;
+
       return { access_token, refresh_token };
     }, manager);
   }
@@ -1253,34 +1256,40 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', refreshToken)
       : null;
 
-    let existing: DatasourceUserTokenData | null;
-    if (userId !== null) {
-      existing = await manager.findOne(DatasourceUserTokenData, { where: { dataSourceVersionOptionId, userId } });
-    } else {
-      existing = await manager
-        .createQueryBuilder(DatasourceUserTokenData, 'dst')
-        .where('dst.data_source_version_option_id = :dataSourceVersionOptionId AND dst.user_id IS NULL', {
-          dataSourceVersionOptionId,
-        })
-        .getOne();
-    }
+    //Single Query instead of fetch and update uses On Conflict
 
-    if (existing) {
-      existing.authToken = encryptedAccessToken;
-      existing.refreshToken = encryptedRefreshToken;
-      existing.updatedAt = new Date();
-      await manager.save(existing);
+    if (userId !== null) {
+      // Multi-auth: conflict target is the partial unique index on (option_id, user_id) WHERE user_id IS NOT NULL
+      await manager.query(
+        `
+        INSERT INTO datasource_user_token_data
+          (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+        VALUES
+          (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
+        ON CONFLICT (data_source_version_option_id, user_id) WHERE user_id IS NOT NULL
+        DO UPDATE SET
+          auth_token    = EXCLUDED.auth_token,
+          refresh_token = EXCLUDED.refresh_token,
+          updated_at    = now()
+        `,
+        [userId, dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+      );
     } else {
-      const row = manager.create(DatasourceUserTokenData, {
-        userId,
-        dataSourceVersionOptionId,
-        authToken: encryptedAccessToken,
-        refreshToken: encryptedRefreshToken,
-        moreDetails: {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(row);
+      // Single-auth: conflict target is the partial unique index on (option_id) WHERE user_id IS NULL
+      await manager.query(
+        `
+        INSERT INTO datasource_user_token_data
+          (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+        VALUES
+          (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
+        ON CONFLICT (data_source_version_option_id) WHERE user_id IS NULL
+        DO UPDATE SET
+          auth_token    = EXCLUDED.auth_token,
+          refresh_token = EXCLUDED.refresh_token,
+          updated_at    = now()
+        `,
+        [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+      );
     }
   }
 
