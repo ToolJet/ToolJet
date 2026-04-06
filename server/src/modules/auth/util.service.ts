@@ -295,14 +295,20 @@ export class AuthUtilService implements IAuthUtilService {
           }
         }
       } else {
-        // No explicit role group mapped from IdP — preserve the user's current role
-        // to avoid demoting admins/builders when only custom groups are synced.
+        // No explicit role group mapped from IdP — derive role from custom groups if present,
+        // only elevating (never demoting). If no custom groups, preserve existing role.
         const existingRoleObj = await this.rolesRepository.getUserRole(userId, organizationId, manager);
         const existingRole = existingRoleObj?.name as USER_ROLE;
 
         if (existingRole) {
-          // User already has a role — keep it (group sync should be additive)
-          newRole = existingRole;
+          if (customGroups.length > 0) {
+            // Infer required role from custom groups. If it demands a higher privilege
+            // than the user currently holds, elevate — never demote.
+            const inferredRole = await this.findUserRoleFromGroups(customGroups, manager);
+            newRole = rolePriority[inferredRole] < rolePriority[existingRole] ? inferredRole : existingRole;
+          } else {
+            newRole = existingRole;
+          }
         } else {
           // New user with no existing role — infer from custom group permissions
           newRole = await this.findUserRoleFromGroups(customGroups, manager);
