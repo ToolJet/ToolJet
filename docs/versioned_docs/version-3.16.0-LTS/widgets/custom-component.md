@@ -52,9 +52,9 @@ To access the data passed through the [data](#data) field, define the `data` par
 #### Example
 
 ```js
-import React from 'https://cdn.skypack.dev/react';
-import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({data}) => (
   <Container>
@@ -77,9 +77,10 @@ To update the data in the data object, you can use the in-built `updateData` fun
 #### Example
 
 ```js
-import React from 'https://cdn.skypack.dev/react';
-import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Button from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Button/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({data, updateData}) => (
   <Container>
@@ -108,9 +109,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 #### Example
 
 ```js
-import React from "https://cdn.skypack.dev/react";
-import ReactDOM from "https://cdn.skypack.dev/react-dom";
-import { Button, Container } from "https://cdn.skypack.dev/@material-ui/core";
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Button from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Button/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({ data, runQuery }) => (
   <Container>
