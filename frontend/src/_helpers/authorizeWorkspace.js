@@ -152,6 +152,7 @@ export const authorizeWorkspace = async () => {
             const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
+          return;
         }
         if (!isApplicationsPath) {
           /* CASE-3 */
