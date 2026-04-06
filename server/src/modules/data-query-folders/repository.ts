@@ -87,13 +87,4 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
       .getMany();
   }
 
-  async getMaxIndexAtRoot(manager?: EntityManager): Promise<number> {
-    const repo = manager ? manager.getRepository(DataQueryFolderMapping) : this;
-    const result = await repo
-      .createQueryBuilder('mapping')
-      .select('MAX(mapping.index)', 'max')
-      .where('mapping.parentId IS NULL')
-      .getRawOne();
-    return result?.max ?? -1;
-  }
 }
