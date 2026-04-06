@@ -72,7 +72,7 @@
   },
   "properties": {
     "use_tns_alias": {
-      "label": "Connection Mode",
+      "label": "Connection mode",
       "key": "use_tns_alias",
       "type": "dropdown-component-flip",
       "description": "Select the connection mode to use",
