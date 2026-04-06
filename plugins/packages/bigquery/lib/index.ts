@@ -177,12 +177,110 @@ export default class Bigquery implements QueryService {
       const datasetId = args?.values?.datasetId || '';
       return await this._fetchTables(sourceOptions, datasetId, args?.search, args?.page, args?.limit);
     }
+    if (methodName === 'getTables') {
+      const datasetId = args?.values?.datasetId || '';
+      const isPaginated = !!args?.limit;
+
+      const result = await this.listTables(sourceOptions, '', '', {
+        datasetId,
+        search: args?.search,
+        page:   args?.page,
+        limit:  args?.limit,
+      });
+
+      const payload = (result as any)?.data ?? [];
+
+      if (isPaginated) {
+        const rows       = (payload as any)?.rows ?? [];
+        const totalCount = (payload as any)?.totalCount ?? 0;
+        const formattedTables = rows.map((row: any) => ({
+          label: String(row.table_name),
+          value: String(row.table_name),
+          dataset_id: String(row.dataset_id),   
+        }));
+        return { items: formattedTables, totalCount };
+      }
+
+      const rows = Array.isArray(payload) ? payload : [];
+      const formattedTables = rows.map((row: any) => ({
+        label: String(row.table_name),
+        value: String(row.table_name),
+        dataset_id: String(row.dataset_id),    
+      }));
+
+      return { status: 'ok', data: formattedTables };
+    }
 
     throw new QueryError(
       'Method not found',
-      `Method ${methodName} is not supported for BigQuery plugin`,
-      { availableMethods: ['listDatasets', 'listTables'] }
+      `Method ${methodName} is not supported`,
+      {}
     );
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    queryOptions?: { datasetId?: string; search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
+    try {
+      const client = await this.getConnection(sourceOptions);
+      const search   = queryOptions?.search || '';
+      const page     = queryOptions?.page   || 1;
+      const limit    = queryOptions?.limit;
+      const datasetId = queryOptions?.datasetId || '';
+      // Decide which datasets to query
+      let datasetIds: string[] = [];
+      if (datasetId) {
+        datasetIds = [datasetId];
+      } else {
+        // No datasetId provided — fetch from all datasets
+        const [datasets] = await client.getDatasets();
+        datasetIds = datasets.map((d: any) => d.id);
+      }
+
+      // Fetch tables from all datasets in parallel
+      const allTablesRaw = await Promise.all(
+        datasetIds.map(async (dsId: string) => {
+          const [tables] = await client.dataset(dsId).getTables();
+          return tables.map((t: any) => ({
+            table_name: t.id,
+            dataset_id: dsId,         
+          }));
+        })
+      );
+
+      // Flatten all tables into a single array
+      let allTables = allTablesRaw.flat();
+      // Apply search across all tables
+      if (search) {
+        const searchLower = search.toLowerCase();
+        allTables = allTables.filter((t) =>
+          t.table_name.toLowerCase().includes(searchLower)
+        );
+      }
+
+      const totalCount = allTables.length;
+
+      // Apply pagination
+      if (limit) {
+        const offset = (page - 1) * limit;
+        const paged  = allTables.slice(offset, offset + limit);
+        return {
+          status: 'ok',
+          data: { rows: paged, totalCount },
+        };
+      }
+
+      return {
+        status: 'ok',
+        data: allTables,
+      };
+    } catch (error) {
+      const errorMessage = error.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
   }
 
   private async _fetchDatasets(sourceOptions: SourceOptions, search = '', page?: number, limit?: number): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
@@ -242,14 +340,16 @@ export default class Bigquery implements QueryService {
         const paged = filtered.slice(offset, offset + limit);
 
         const result = {
-          items: paged.map((t: any) => ({ value: t.id, label: t.id })),
+          items: paged.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id,      
+      dataset_id: datasetId })),
           totalCount,
         };
 
         return result;
       }
 
-      const result = filtered.map((t: any) => ({ value: t.id, label: t.id }));
+      const result = filtered.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id,      
+      dataset_id: datasetId }));
 
       return result;
     } catch (error) {
