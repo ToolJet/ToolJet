@@ -1,3 +1,4 @@
+import { max, min } from 'lodash';
 import React from 'react';
 
 const DASH_WIDTH = 4;
@@ -39,18 +40,14 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '16px',
-    minWidth: 0,
     ...(shouldWrap
-      ? {
-          // Wrap mode: show multiple lines, clip vertical overflow
-          overflow: 'hidden',
-          overflowWrap: 'anywhere',
-        }
+      ? {}
       : {
-          // No-wrap mode: single line, ellipsis for overflow
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          maxWidth: labelAlignment === 'center' ? '80%' : '90%',
+          flexShrink: 0,
         }),
   };
 
@@ -86,7 +83,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     >
       {labelAlignment === 'left' && (
         <>
-          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px', flexShrink: 1 }}>{label}</span>
+          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px' }}>{label}</span>
           <div style={dividerLineStyle}></div>
         </>
       )}
@@ -102,7 +99,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
           }}
         >
           <div style={{ ...dividerLineStyle }}></div>
-          <span style={{ ...labelStyles, padding: '0px 8px', flexShrink: 1 }}>{label}</span>
+          <span style={{ ...labelStyles, padding: '0px 8px' }}>{label}</span>
           <div style={{ ...dividerLineStyle }}></div>
         </div>
       )}
@@ -110,7 +107,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
       {labelAlignment === 'right' && (
         <>
           <div style={dividerLineStyle}></div>
-          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px', flexShrink: 1 }}>{label}</span>
+          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px' }}>{label}</span>
         </>
       )}
     </div>
