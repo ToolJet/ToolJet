@@ -61,19 +61,6 @@ export default function ErrorPage({ darkMode }) {
 export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
   const { t } = useTranslation();
 
-  // Detect if the user arrived from an app context (e.g., /applications/:slug)
-  const referrerPath = document.referrer ? new URL(document.referrer).pathname : '';
-  const appContextMatch = referrerPath.match(/^\/applications\/([^/]+)/);
-
-  const handleBackToHome = () => {
-    if (appContextMatch) {
-      // Redirect back to the app instead of workspace dashboard
-      window.location.href = `/applications/${appContextMatch[1]}`;
-    } else {
-      redirectToDashboard();
-    }
-  };
-
   // Redirect to edit app URL in a new tab
   const openAppEditorInNewTab = () => {
     const subpath = getSubpath();
@@ -158,7 +145,7 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
           {errorMsg?.cta ? (
             <button
               className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
-              onClick={handleBackToHome}
+              onClick={() => redirectToDashboard()}
               data-cy="back-to-home-button"
             >
               {t('globals.workspace-modal.continue-btn', errorMsg.cta)}
