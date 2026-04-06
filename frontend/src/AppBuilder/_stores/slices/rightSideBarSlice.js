@@ -22,6 +22,8 @@ export const createRightSideBarSlice = (set, get) => ({
     set(
       (state) => {
         state.isCanvasHeaderSelected = selected;
+        state.isCanvasFooterSelected = false;
+        state.selectedComponents = [];
         if (selected) {
           state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
           if (!state.isRightSidebarOpen) {
@@ -37,6 +39,8 @@ export const createRightSideBarSlice = (set, get) => ({
     set(
       (state) => {
         state.isCanvasFooterSelected = selected;
+        state.isCanvasHeaderSelected = false;
+        state.selectedComponents = [];
         if (selected) {
           state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
           if (!state.isRightSidebarOpen) {

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { PAGE_CANVAS_HEADER_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
+import { Button } from '@/components/ui/Button/Button';
 
 const AppHeaderStylesPanel = () => {
   const { moduleId } = useModuleContext();
@@ -53,11 +53,22 @@ const AppHeaderStylesPanel = () => {
 
   return (
     <>
-      <div className="tw-flex tw-px-[18px] tw-py-[7.5px] tw-items-center tw-justify-between tw-border-b tw-border-t-0 tw-border-l-0 tw-border-r-0 tw-border-solid tw-border-[color:var(--border-weak)]">
-        <div className="tw-font-medium tw-leading-[18px]">App header</div>
-        <div className="cursor-pointer" onClick={handleClose}>
-          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="14" height="14" viewBox="0 0 14 14" />
+      <div className="tw-flex tw-p-4 tw-items-center tw-justify-between tw-border-b tw-border-t-0 tw-border-l-0 tw-border-r-0 tw-border-solid tw-border-[color:var(--border-weak)]">
+        <div
+          className="tw-font-medium tw-leading-[18px] tw-px-[6px] tw-py-[5px]"
+          style={{ color: 'var(--text-default)' }}
+        >
+          App header
         </div>
+        <Button
+          iconOnly
+          leadingIcon="x"
+          onClick={handleClose}
+          variant="ghost"
+          size="medium"
+          isLucid={true}
+          data-cy="pages-close-button"
+        />
       </div>
       <div className="tw-p-[16px] tj-text-xsm color-slate12">
         <div className="d-flex align-items-center justify-content-between mb-3">
@@ -88,20 +99,19 @@ const AppHeaderStylesPanel = () => {
               Height
             </OverflowTooltip>
           </div>
-          <div
-            onBlur={() => {
-              const rounded = roundToNearest10(inputValue);
+          <NumberInput
+            value={inputValue}
+            onChange={(val) => {
+              const rounded = roundToNearest10(val);
               setInputValue(rounded);
               updatePageHeaderStyle(currentPageId, 'height', rounded);
             }}
-          >
-            <NumberInput
-              value={inputValue}
-              onChange={(val) => setInputValue(val)}
-              cyLabel="header-height"
-              meta={{ staticText: 'px' }}
-            />
-          </div>
+            cyLabel="header-height"
+            meta={{ staticText: 'px' }}
+            step={10}
+            allowTyping={false}
+            showNativeStepper
+          />
         </div>
       </div>
     </>
