@@ -54,6 +54,27 @@
       "title": "Password",
       "description": "Enter password"
     },
+    "auth_type": {
+      "type": "string",
+      "title": "Authentication type",
+      "enum": ["sql", "service_principal"],
+      "default": "sql"
+    },
+    "sp_tenant_id": {
+      "type": "string",
+      "title": "Tenant ID",
+      "description": "Enter Azure AD Tenant ID"
+    },
+    "sp_client_id": {
+      "type": "string",
+      "title": "Client ID",
+      "description": "Enter Azure AD Client (Application) ID"
+    },
+    "sp_client_secret": {
+      "type": "string",
+      "title": "Client secret",
+      "description": "Enter client secret value"
+    },
     "connection_options": {
       "type": "array",
       "title": "Connection options",
@@ -202,7 +223,8 @@
     "ssh_private_key",
     "ssh_password",
     "ssh_passphrase",
-    "connection_string"
+    "connection_string",
+    "sp_client_secret"
   ],
   "required": [
     "connection_type"
@@ -261,22 +283,65 @@
         "description": "Enter name of the database",
         "widget": "text-v3"
       },
-      "username": {
-        "order": 50,
-        "$ref": "#/properties/username",
-        "key": "username",
-        "label": "Username",
-        "description": "Enter username",
-        "widget": "text-v3"
+      "auth_type": {
+        "order": 45,
+        "$ref": "#/properties/auth_type",
+        "key": "auth_type",
+        "label": "Authentication type",
+        "widget": "dropdown-component-flip",
+        "default": "sql",
+        "list": [
+          { "value": "sql", "name": "SQL Server" },
+          { "value": "service_principal", "name": "Azure AD \u2013 Service Principal" }
+        ]
       },
-      "password": {
-        "order": 60,
-        "$ref": "#/properties/password",
-        "key": "password",
-        "label": "Password",
-        "description": "Enter password",
-        "widget": "password-v3",
-        "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+      "sql": {
+        "username": {
+          "order": 50,
+          "$ref": "#/properties/username",
+          "key": "username",
+          "label": "Username",
+          "description": "Enter username",
+          "widget": "text-v3"
+        },
+        "password": {
+          "order": 60,
+          "$ref": "#/properties/password",
+          "key": "password",
+          "label": "Password",
+          "description": "Enter password",
+          "widget": "password-v3",
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+        }
+      },
+      "service_principal": {
+        "sp_tenant_id": {
+          "order": 50,
+          "$ref": "#/properties/sp_tenant_id",
+          "key": "sp_tenant_id",
+          "label": "Tenant ID",
+          "description": "Enter Azure AD Tenant ID",
+          "widget": "text-v3",
+          "required": true
+        },
+        "sp_client_id": {
+          "order": 51,
+          "$ref": "#/properties/sp_client_id",
+          "key": "sp_client_id",
+          "label": "Client ID",
+          "description": "Enter Azure AD Client (Application) ID",
+          "widget": "text-v3",
+          "required": true
+        },
+        "sp_client_secret": {
+          "order": 52,
+          "$ref": "#/properties/sp_client_secret",
+          "key": "sp_client_secret",
+          "label": "Client secret",
+          "description": "Enter client secret value",
+          "widget": "password-v3",
+          "required": true
+        }
       },
       "connection_options": {
         "order": 70,
@@ -489,22 +554,65 @@
         "description": "Enter the name of the database instance",
         "widget": "text-v3"
       },
-      "username": {
-        "order": 40,
-        "$ref": "#/properties/username",
-        "key": "username",
-        "label": "Username",
-        "description": "Enter username",
-        "widget": "text-v3"
+      "auth_type": {
+        "order": 36,
+        "$ref": "#/properties/auth_type",
+        "key": "auth_type",
+        "label": "Authentication type",
+        "widget": "dropdown-component-flip",
+        "default": "sql",
+        "list": [
+          { "value": "sql", "name": "SQL Server" },
+          { "value": "service_principal", "name": "Azure AD – Service Principal" }
+        ]
       },
-      "password": {
-        "order": 50,
-        "$ref": "#/properties/password",
-        "key": "password",
-        "label": "Password",
-        "description": "Enter password",
-        "widget": "password-v3",
-        "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+      "sql": {
+        "username": {
+          "order": 40,
+          "$ref": "#/properties/username",
+          "key": "username",
+          "label": "Username",
+          "description": "Enter username",
+          "widget": "text-v3"
+        },
+        "password": {
+          "order": 50,
+          "$ref": "#/properties/password",
+          "key": "password",
+          "label": "Password",
+          "description": "Enter password",
+          "widget": "password-v3",
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
+        }
+      },
+      "service_principal": {
+        "sp_tenant_id": {
+          "order": 40,
+          "$ref": "#/properties/sp_tenant_id",
+          "key": "sp_tenant_id",
+          "label": "Tenant ID",
+          "description": "Enter Azure AD Tenant ID",
+          "widget": "text-v3",
+          "required": true
+        },
+        "sp_client_id": {
+          "order": 41,
+          "$ref": "#/properties/sp_client_id",
+          "key": "sp_client_id",
+          "label": "Client ID",
+          "description": "Enter Azure AD Client (Application) ID",
+          "widget": "text-v3",
+          "required": true
+        },
+        "sp_client_secret": {
+          "order": 42,
+          "$ref": "#/properties/sp_client_secret",
+          "key": "sp_client_secret",
+          "label": "Client secret",
+          "description": "Enter client secret value",
+          "widget": "password-v3",
+          "required": true
+        }
       },
       "connection_options": {
         "order": 60,
