@@ -46,4 +46,5 @@ export enum MODULES {
   APP_HISTORY = 'AppHistory',
   CRM = 'CRM',
   SCIM = 'SCIM',
+  CUSTOM_DOMAINS = 'customDomains',
 }

@@ -21,6 +21,10 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const renderSuggestion = (suggestion) =>
+    // eslint-disable-next-line no-constant-binary-expression
+    suggestion?.first_name?.slice(0, 1) ?? '' + suggestion?.last_name?.slice(0, 1) ?? '';
+
   return (
     <MentionsInput
       style={{
@@ -100,7 +104,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
                 textTransform: 'uppercase',
               }}
             >
-              {suggestion?.first_name?.slice(0, 1) ?? '' + suggestion?.last_name?.slice(0, 1) ?? ''}
+              {renderSuggestion(suggestion)}
             </div>
             <div
               style={{

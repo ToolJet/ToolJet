@@ -20,8 +20,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     menuId,
     showSearchInput,
     menuBackgroundColor,
-  } =
-    selectProps;
+    menuWidthStyle,
+    placeholderTextColor,
+    iconColor,
+  } = selectProps;
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
@@ -42,6 +44,14 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   const firstSelectedIndex = props?.options?.findIndex(
     (opt) => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value)
   );
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForSearchIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const searchIconColor = shouldUsePlaceholderTextColorForSearchIcon ? placeholderTextColor : 'var(--cc-default-icon)';
 
   useEffect(() => {
     if (!selectProps?.menuIsOpen) {
@@ -65,12 +75,13 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       style={{
         ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
         '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
+        ...(menuWidthStyle || {}),
       }}
     >
       {showSearchInput && (
         <div className="dropdown-multiselect-widget-search-box-wrapper">
           <span>
-            <SolidIcon name="search01" width="14" fill="var(--cc-default-icon)" />
+            <SolidIcon name="search01" width="14" fill={searchIconColor} />
           </span>
           <input
             autoCorrect="off"
@@ -94,6 +105,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             onFocus={onMenuInputFocus}
             placeholder="Search"
             className="dropdown-multiselect-widget-search-box"
+            style={shouldOverridePlaceholderTextColor ? { '--cc-placeholder-text': placeholderTextColor } : undefined}
           />
         </div>
       )}
@@ -103,6 +115,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           className="dropdown-multiselect-widget-custom-menu-list-body"
           style={{
             maxHeight: selectProps.maxMenuHeight || 300,
+            ...(menuWidthStyle || {}),
           }}
         >
           <div

@@ -5,14 +5,10 @@ export const validatePostgresConnectionString = (connectionString) => {
 
   const trimmed = connectionString.trim();
 
-  if (
-    !trimmed.startsWith('postgres://') &&
-    !trimmed.startsWith('postgresql://')
-  ) {
+  if (!trimmed.startsWith('postgres://') && !trimmed.startsWith('postgresql://')) {
     return {
       valid: false,
-      error:
-        "Invalid protocol. Connection string must start with 'postgres://' or 'postgresql://'",
+      error: "Invalid protocol. Connection string must start with 'postgres://' or 'postgresql://'",
     };
   }
 
@@ -31,6 +27,17 @@ export const validatePostgresConnectionString = (connectionString) => {
           error: 'Invalid port number. Must be between 1 and 65535',
         };
       }
+    }
+
+    try {
+      if (url.username) decodeURIComponent(url.username);
+      if (url.password) decodeURIComponent(url.password);
+      if (url.pathname) decodeURIComponent(url.pathname.replace(/^\//, ''));
+    } catch {
+      return {
+        valid: false,
+        error: 'Invalid URL encoding in connection string credentials',
+      };
     }
 
     return { valid: true, error: '' };
@@ -56,12 +63,20 @@ export const parsePostgresConnectionString = (connectionString) => {
       sslmode === 'verify-ca' ||
       sslmode === 'prefer' ||
       sslmode === 'allow' ||
+      sslmode === 'on' ||
+      sslmode === 'yes' ||
       ssl === 'true' ||
+      ssl === 'on' ||
+      ssl === 'yes' ||
       ssl === '1';
 
     const isSslOff =
       sslmode === 'disable' ||
+      sslmode === 'off' ||
+      sslmode === 'no' ||
       ssl === 'false' ||
+      ssl === 'off' ||
+      ssl === 'no' ||
       ssl === '0';
 
     return {
@@ -69,8 +84,8 @@ export const parsePostgresConnectionString = (connectionString) => {
       port: url.port || '5432',
       username: decodeURIComponent(url.username || ''),
       password: decodeURIComponent(url.password || ''),
-      database: url.pathname.replace(/^\//, '') || '',
-      ssl_enabled: isSslOn ? 'enabled' : isSslOff ? 'disabled' : undefined,
+      database: decodeURIComponent(url.pathname.replace(/^\//, '') || ''),
+      ssl_enabled: isSslOn ? true : isSslOff ? false : undefined,
       query_params: url.search || '',
       protocol: url.protocol.replace(':', ''),
     };
@@ -79,10 +94,7 @@ export const parsePostgresConnectionString = (connectionString) => {
   }
 };
 
-export const detectPostgresConnectionStringChange = (
-  oldString,
-  newString
-) => {
+export const detectPostgresConnectionStringChange = (oldString, newString) => {
   if (!oldString || !newString) return null;
 
   const oldParsed = parsePostgresConnectionString(oldString);

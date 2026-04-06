@@ -20,7 +20,7 @@ const OptionItem = ({
   getResolvedValue,
   getItemStyle,
   // Configurable props for reuse
-  dataCyPrefix = 'inspector-popover-menu',
+  dataCyPrefix = '',
   popoverFields,
   popoverClassName,
   ...restProps
@@ -52,6 +52,8 @@ const OptionItem = ({
                   fields={popoverFields}
                   dataCyPrefix={dataCyPrefix}
                   popoverClassName={popoverClassName}
+                  onDefaultChange={restProps.onDefaultChange}
+                  componentType={restProps?.component?.component?.component}
                 />
               }
               onToggle={(isOpen) => {

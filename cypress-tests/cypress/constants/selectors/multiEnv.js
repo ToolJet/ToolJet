@@ -14,7 +14,7 @@ export const appEditorSelector = {
             componentsNode: '[data-cy="inspector-components-node"]',
             menuIcon: '[data-cy="inspector-menu-icon"]',
             popoverBody: '.popover-body',
-            anyDeleteInPopover: '[data-cy*="delete"]',
+            anyDeleteInPopover: '.popover-body [data-cy*="delete"]',
             fxButtonAny: '[data-cy*="fx-button"]',
             codeInputFieldAny: '[data-cy*="input-field"]',
             codeEditorContent: '.cm-content',

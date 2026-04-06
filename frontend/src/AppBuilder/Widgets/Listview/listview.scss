@@ -1,11 +1,11 @@
 .viewer {
     .dynamic-height-target {
-        .canvas-component {
+        > .canvas-component {
             .list-item  {
-                .sub-canvas {
+                > .sub-canvas {
                     overflow-y: hidden !important;
                 }
             }
         }
     }
-}   
+}

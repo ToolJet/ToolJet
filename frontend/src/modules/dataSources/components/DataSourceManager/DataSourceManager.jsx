@@ -33,6 +33,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import InfoIcon from '@assets/images/info.svg';
 import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
@@ -265,7 +266,8 @@ class DataSourceManagerComponent extends React.Component {
       'hubspot',
       'gmail',
       'googlesheetsv2',
-      'xero'];
+      'xero',
+    ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -437,11 +439,11 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ validationMessages: errorMap });
     const filteredValidationBanner = interactedFields
       ? Object.keys(this.state.validationMessages)
-        .filter((key) => interactedFields.has(key))
-        .reduce((result, key) => {
-          result.push(this.state.validationMessages[key]);
-          return result;
-        }, [])
+          .filter((key) => interactedFields.has(key))
+          .reduce((result, key) => {
+            result.push(this.state.validationMessages[key]);
+            return result;
+          }, [])
       : Object.values(this.state.validationMessages);
     this.setState({ validationError: filteredValidationBanner });
   };
@@ -958,15 +960,15 @@ class DataSourceManagerComponent extends React.Component {
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-        selectedDataSource?.name === datasourceName) ||
-      !isEmpty(validationMessages)
+          selectedDataSource?.name === datasourceName) ||
+        !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -983,7 +985,12 @@ class DataSourceManagerComponent extends React.Component {
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
     return (
       pluginsLoaded && (
-        <div>
+        <div className="datasource-manager-container">
+          <style>{`
+            .datasource-save-btn-white-icon:disabled svg path {
+              fill: #FDFDFE !important;
+            }
+          `}</style>
           <Modal
             show={this.props.showDataSourceManagerModal}
             size={selectedDataSource ? 'lg' : 'xl'}
@@ -1064,7 +1071,14 @@ class DataSourceManagerComponent extends React.Component {
                     </span>
                   )}
                 </div>
-                <div className="tw-pt-[15px]">
+                <div className="tw-flex tw-items-center tw-pt-[15px] tw-gap-2">
+                  {selectedDataSource?.pluginId && dataSourceSchema?.version && (
+                    <ToolTip message={`Version ${dataSourceSchema?.version}`} placement="right">
+                      <span className="datasource-version-info-icon" data-cy="datasource-version-info">
+                        <InfoIcon style={{ width: '20px', height: '20px' }} />
+                      </span>
+                    </ToolTip>
+                  )}
                   {this.props.tags &&
                     this.props.tags.map((tag) => {
                       if (tag === 'AI') {
@@ -1222,7 +1236,7 @@ class DataSourceManagerComponent extends React.Component {
                       {!isSampleDb && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
-                            className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                            className={`m-2 datasource-save-btn-white-icon ${isSaving ? 'btn-loading' : ''}`}
                             isLoading={isSaving}
                             disabled={
                               isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
@@ -1267,7 +1281,7 @@ class DataSourceManagerComponent extends React.Component {
                         <ButtonSolid
                           leftIcon="floppydisk"
                           fill={'#FDFDFE'}
-                          className="m-2"
+                          className="m-2 datasource-save-btn-white-icon"
                           disabled={
                             isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
                           }

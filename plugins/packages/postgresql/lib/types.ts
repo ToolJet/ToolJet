@@ -5,7 +5,7 @@ export type SourceOptions = {
   username: string;
   password: string;
   // SSL
-  ssl_enabled?: 'enabled' | 'disabled';
+  ssl_enabled?: boolean;
   ssl_certificate: string;
   ca_cert: string;
   client_cert: string;

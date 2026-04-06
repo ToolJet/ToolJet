@@ -6,11 +6,29 @@ import {
   getPathname,
   getRedirectToWithParams,
   redirectToErrorPage,
+  isCustomDomain,
+  redirectToMainHost,
+  excludeWorkspaceIdFromURL,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
+import { customDomainService } from '@/_services/custom-domain.service';
+import { sessionTransferService } from '@/_services/session-transfer.service';
+const REDIRECT_KEY = 'tj_cd_redirect_ts';
+const REDIRECT_COOLDOWN_MS = 10 * 1000; // 10 seconds
+
+function hasRecentRedirectAttempt() {
+  const ts = sessionStorage.getItem(REDIRECT_KEY);
+  if (!ts) return false;
+  return Date.now() - Number(ts) < REDIRECT_COOLDOWN_MS;
+}
+
+function setRedirectAttempt() {
+  sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
+}
+
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -22,10 +40,29 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
     CASE-4. If the page is app viewer and there is no valid session. consider the app is public 
 */
 
-export const authorizeWorkspace = () => {
-  /* Default APIs */
-  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-  // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
+export const authorizeWorkspace = async () => {
+  let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+
+  // On a custom domain, resolve which workspace owns it.
+  // Note: clearRedirectAttempt() is NOT called here because sessionStorage is
+  // origin-scoped — the custom domain cannot clear the base domain's flag.
+  // The base domain's cooldown expires naturally after REDIRECT_COOLDOWN_MS.
+  if (isCustomDomain()) {
+    try {
+      const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
+      const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+
+      // A custom domain maps to exactly one workspace — always trust the
+      // resolved slug. The URL's first path segment may be a page route
+      // (e.g., 'home', 'database') rather than a real workspace slug when
+      // the base domain redirect strips the slug from the URL.
+      workspaceIdOrSlug = resolvedSlug;
+    } catch (e) {
+      console.error('[authorizeWorkspace] Failed to resolve custom domain:', e);
+      if (redirectToMainHost()) return;
+    }
+  }
+
   if (!isThisExistedRoute()) {
     updateCurrentSession({
       triggeredOnce: true,
@@ -130,7 +167,6 @@ export const authorizeWorkspace = () => {
         }
       });
   }
-  // });
 };
 
 const isThisExistedRoute = () => {
@@ -185,7 +221,28 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
 
   authenticationService
     .authorize()
-    .then((data) => {
+    .then(async (data) => {
+      // Redirect to custom domain via session transfer token to carry auth
+      // across domains. The CF Worker proxies /api/* with redirect:'manual',
+      // so the backend's 302 + Set-Cookie flows through to the browser.
+      const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
+        const slug = data.current_organization_slug || data.current_organization_id;
+        const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
+        setRedirectAttempt();
+        try {
+          const { token } = await sessionTransferService.createTransferToken();
+          const redirect = encodeURIComponent(
+            `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+          );
+          window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
+          return;
+        } catch (e) {
+          console.error('[authorizeWorkspace] Transfer token failed:', e);
+          // Fall through to normal store hydration — user stays on base domain
+        }
+      }
+
       useStore.getState().setUser({
         email: data.current_user.email,
         firstName: data.current_user.first_name,

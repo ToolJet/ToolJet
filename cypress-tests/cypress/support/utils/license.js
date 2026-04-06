@@ -675,12 +675,12 @@ export const multiEnvAppSetup = (appName) => {
 
   createAndUpdateConstant(
     "rest_api_url",
-    "http://20.29.40.108:4000/development",
+    "http://130.131.160.149:4000/development",
     ["Secret"],
     ["development", "staging", "production"],
     {
-      staging: "http://20.29.40.108:4000/staging",
-      production: "http://20.29.40.108:4000/production",
+      staging: "http://130.131.160.149:4000/staging",
+      production: "http://130.131.160.149:4000/production",
     }
   );
 

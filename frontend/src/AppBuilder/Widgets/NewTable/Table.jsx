@@ -32,6 +32,7 @@ const Table = memo(
     currentLayout,
     currentMode,
     subContainerIndex,
+    componentType,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -245,6 +246,7 @@ const Table = memo(
       width,
       visibility: exposedVariablesTemporaryState.isVisible,
       subContainerIndex,
+      componentType,
     });
 
     return (

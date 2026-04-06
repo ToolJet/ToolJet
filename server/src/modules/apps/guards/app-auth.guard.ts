@@ -50,6 +50,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
 
     if (app.isPublic === true) {
       // No need to do user validation
+      this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;
     }
 

@@ -13,8 +13,9 @@ const OptionDetailsPopover = forwardRef(
       onDeleteOption,
       getResolvedValue,
       fields,
-      dataCyPrefix = 'inspector-popover-menu',
+      dataCyPrefix = '',
       popoverClassName = 'pm-option-popover',
+      componentType,
       ...restProps
     },
     ref
@@ -170,6 +171,29 @@ const OptionDetailsPopover = forwardRef(
                     fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                     paramType={'icon'}
                     iconVisibility={iconVisibility}
+                  />
+                </div>
+              )}
+
+              {showField('default') && (
+                <div data-cy={`${dataCyPrefix}-option-details-default-field`} className="field mb-2">
+                  <CodeHinter
+                    {...fxEditorCodeHinterProps}
+                    data-cy={`${dataCyPrefix}-option-details-default-input`}
+                    initialValue={item?.default?.value}
+                    paramLabel={['ButtonGroupV2'].includes(componentType) ? 'Selected' : 'Default option'}
+                    paramName={'optionDefault'}
+                    onChange={(value) => {
+                      restProps.onDefaultChange(value, index);
+                    }}
+                    onFxPress={(active) => onOptionChange('default.fxActive', active, index)}
+                    fxActive={item?.default?.fxActive}
+                    fieldMeta={{
+                      type: 'toggle',
+                      displayName: 'Default option',
+                      isFxNotRequired: true,
+                    }}
+                    paramType={'toggle'}
                   />
                 </div>
               )}

@@ -31,6 +31,20 @@ export const TreeItemWrapper = forwardRef(
     const shouldHighlight = groupToHighlight === value?.id;
     const nested = isNested !== undefined ? isNested : depth > 0;
 
+    // Render guide lines for each ancestor depth level
+    const guideLines =
+      nested && !nestedStyle && depth > 0
+        ? Array.from({ length: depth }, (_, i) => (
+            <div
+              key={i}
+              className={styles.ChildIndentation}
+              style={{
+                left: `${indentationWidth * i}px`,
+              }}
+            />
+          ))
+        : null;
+
     return (
       <li
         {...handleProps}
@@ -48,18 +62,17 @@ export const TreeItemWrapper = forwardRef(
         ref={wrapperRef}
         style={{
           '--spacing': `${indentationWidth * depth}px`,
+          position: guideLines ? 'relative' : undefined,
         }}
       >
+        {guideLines}
         <div
           className={styles.TreeItem}
           ref={ref}
           style={{
             ...style,
             width: '100%',
-            ...(nested && (nestedStyle || {
-              borderLeft: '1px dashed var(--icon-weak)',
-              padding: '0 0 0 16px',
-            })),
+            ...(nested && nestedStyle ? nestedStyle : {}),
           }}
         >
           {renderItem(value, {

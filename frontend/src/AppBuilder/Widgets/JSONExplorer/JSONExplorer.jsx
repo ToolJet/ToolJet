@@ -20,6 +20,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     width,
     currentMode,
     subContainerIndex,
+    componentType,
   } = props;
 
   const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState, theme } =
@@ -47,6 +48,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   // ===== HELPER FUNCTIONS =====

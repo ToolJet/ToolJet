@@ -37,6 +37,7 @@ export const NumberInput = (props) => {
     e.preventDefault();
     const newValue = (inputLogic.value || 0) + 1;
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
@@ -46,6 +47,7 @@ export const NumberInput = (props) => {
     e.preventDefault();
     const newValue = (inputLogic.value || 0) - 1;
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
@@ -54,7 +56,7 @@ export const NumberInput = (props) => {
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: showClearBtn ? '30px' : '0px', 
+      paddingRight: showClearBtn ? '30px' : '0px',
     };
   };
 

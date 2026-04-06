@@ -33,6 +33,7 @@ export const Text = function Text({
   currentLayout,
   currentMode,
   subContainerIndex,
+  componentType,
 }) {
   let {
     textSize,
@@ -86,6 +87,7 @@ export const Text = function Text({
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {
@@ -167,8 +169,11 @@ export const Text = function Text({
     textTransform: transformation ?? 'none',
     fontStyle: fontStyle ?? 'none',
     fontVariant: fontVariant ?? 'normal',
+    // eslint-disable-next-line no-constant-binary-expression
     textIndent: `${textIndent}px` ?? '0px',
+    // eslint-disable-next-line no-constant-binary-expression
     letterSpacing: `${letterSpacing}px` ?? '0px',
+    // eslint-disable-next-line no-constant-binary-expression
     wordSpacing: `${wordSpacing}px` ?? '0px',
     boxShadow,
     border: '1px solid',

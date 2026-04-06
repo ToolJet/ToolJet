@@ -16,6 +16,7 @@ import { AppModule } from '@modules/app/module';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
+import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -23,6 +24,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   handleLicensingInit,
   replaceSubpathPlaceHoldersInStaticAssets,
+  setupCsrfOriginCheck,
   setSecurityHeaders,
   buildVersion,
   rawBodyBuffer,
@@ -103,6 +105,9 @@ async function bootstrap() {
     setupBodyParsers(app, configService);
     appLogger.log('✅ Body parsers configured');
 
+    // Setup CSRF origin check (only active when custom domains are enabled)
+    setupCsrfOriginCheck(app, configService);
+
     // Enable versioning
     appLogger.log('Enabling API versioning...');
     app.enableVersioning({
@@ -166,7 +171,10 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
 
 async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {
   app.useLogger(appLogger);
-  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)));
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)),
+    new SsoInfoUpdatedInterceptor()
+  );
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));

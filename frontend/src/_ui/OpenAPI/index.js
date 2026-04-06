@@ -198,7 +198,9 @@ const OpenApi = ({
         isDisabled={isDisabled}
       />
       <div className="col-md-12" data-cy="definition-section">
-        <label className="form-label text-muted mt-3" data-cy="label-definition">Definition</label>
+        <label className="form-label text-muted mt-3" data-cy="label-definition">
+          Definition
+        </label>
         <Textarea
           data-cy="definition-input-field"
           placehlder="Enter spec definition"
