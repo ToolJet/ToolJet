@@ -14,10 +14,6 @@ title: Bring Your Own Key (BYOK)
  <span>Paid feature</span>
 </div>
 
-<div className="badge badge--self-hosted heading-badge" >   
- <span>Self Hosted</span>
-</div>
-
 </div>
 
 Bring Your Own Key (BYOK) allows you to configure an API key from a supported LLM provider directly within ToolJet's settings. Instead of routing AI requests through ToolJet's managed credentials and consuming ToolJet AI credits, ToolJet will authenticate all AI requests using your own key.
