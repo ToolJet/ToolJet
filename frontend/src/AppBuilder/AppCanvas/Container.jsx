@@ -10,7 +10,12 @@ import {
   getSubContainerWidthAfterPadding,
   getSubContainerHeightAfterPadding,
 } from './appCanvasUtils';
-import { NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  GRID_HEIGHT,
+  HOVER_CLICK_OUTLINE_BORDER,
+  PAGE_CANVAS_HEADER_FOOTER_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -119,6 +124,9 @@ const Container = React.memo(
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
         return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
       }
       return realCanvasRef?.current?.offsetWidth;
     }

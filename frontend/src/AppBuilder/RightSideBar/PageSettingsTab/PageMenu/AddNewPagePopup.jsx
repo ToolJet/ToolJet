@@ -382,112 +382,6 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
                 {error}
               </div>
-              <div className="section-header pb-2 pt-2">Page header</div>
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                  Show page header on desktop
-                  <LicenseTooltip
-                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                    placement="bottom"
-                    show={!hasCanvasPageHeaderEnabled}
-                  >
-                    <div className="d-flex align-items-center">
-                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                    </div>
-                  </LicenseTooltip>
-                </label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={showPageHeaderOnDesktop ?? false}
-                    disabled={!hasCanvasPageHeaderEnabled}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      togglePageHeader(page?.id, checked, 'desktop');
-                    }}
-                  />
-                </label>
-              </div>
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                  Show page header on mobile
-                  <LicenseTooltip
-                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                    placement="bottom"
-                    show={!hasCanvasPageHeaderEnabled}
-                  >
-                    <div className="d-flex align-items-center">
-                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                    </div>
-                  </LicenseTooltip>
-                </label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={showPageHeaderOnMobile ?? false}
-                    disabled={!hasCanvasPageHeaderEnabled}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      togglePageHeader(page?.id, checked, 'mobile');
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="section-header pb-2 pt-2">Page footer</div>
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                  Show page footer on desktop
-                  <LicenseTooltip
-                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                    placement="bottom"
-                    show={!hasCanvasPageFooterEnabled}
-                  >
-                    <div className="d-flex align-items-center">
-                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                    </div>
-                  </LicenseTooltip>
-                </label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={showPageFooterOnDesktop ?? false}
-                    disabled={!hasCanvasPageFooterEnabled}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      togglePageFooter(page?.id, checked, 'desktop');
-                    }}
-                  />
-                </label>
-              </div>
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                  Show page footer on mobile
-                  <LicenseTooltip
-                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                    placement="bottom"
-                    show={!hasCanvasPageFooterEnabled}
-                  >
-                    <div className="d-flex align-items-center">
-                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                    </div>
-                  </LicenseTooltip>
-                </label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={showPageFooterOnMobile ?? false}
-                    disabled={!hasCanvasPageFooterEnabled}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      togglePageFooter(page?.id, checked, 'mobile');
-                    }}
-                  />
-                </label>
-              </div>
             </div>
           </div>
         )}
@@ -593,6 +487,116 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               </label>
             </div>
           )}
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page header</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show page header on desktop
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnDesktop ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show page header on mobile
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnMobile ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page footer</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on desktop
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnDesktop ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on mobile
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnMobile ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
         </div>
         {['default', 'custom'].includes(type) && <PageEvents type={type} page={page} allPages={pages} />}
       </Popover.Body>
