@@ -15,6 +15,8 @@ export interface IDataSourcesUtilService {
     options: Array<object>,
     manager: EntityManager,
     userId?: string,
+    organizationId?: string,
+    environmentId?: string,
     dataSourceOptionId?: string
   ): Promise<any>;
 
@@ -38,6 +40,8 @@ export interface IDataSourcesUtilService {
     options: Array<object>,
     resetSecureData?: boolean,
     userId?: string,
+    organizationId?: string,
+    environmentId?: string,
     dataSourceOptionId?: string,
     manager?: EntityManager
   ): Promise<Array<object>>;
