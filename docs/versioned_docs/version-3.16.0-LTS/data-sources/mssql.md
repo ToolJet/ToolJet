@@ -38,6 +38,38 @@ You can add optional configurations in **key-value pairs** for the MS SQL data s
 
 These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
 
+### Authentication Type
+
+ToolJet supports multiple authentication methods for the MSSQL data source through the **Authentication type** dropdown. Select the appropriate authentication method based on your SQL Server or Azure SQL setup.
+
+#### SQL Server  
+
+Select **SQL Server** if you want to connect using the existing SQL authentication flow.
+
+Provide the following credentials:
+
+- **Host**
+- **Port**
+- **Database name**
+- **Username**
+- **Password**
+
+This is the default authentication method and requires no additional configuration changes.
+
+#### Azure AD – Service Principal  
+
+Select **Azure AD – Service Principal** to authenticate using an Azure application registered in Microsoft Entra ID. This option is recommended when connecting to **Azure SQL Database** using application-based authentication instead of SQL logins.
+
+Azure AD's encryption takes precedence over the manual SSL configuration when using this auth type.
+
+Provide the following details:
+
+- **Tenant ID** – The Microsoft Entra tenant (directory) ID
+- **Client ID** – The Application (client) ID from the Azure app registration
+- **Client Secret** – The client secret value generated for the app
+
+<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
+
 ### Enabling Encryption with a Self-Signed Certificate
 
 To enhance security during data transfer, encryption can be enabled even with a self-signed certificate.
