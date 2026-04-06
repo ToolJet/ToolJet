@@ -2,6 +2,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SeedWorkspaceBranchData1773229179000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Disable statement timeout for this migration — heavy multi-table JOINs on large
+    // datasets can exceed the DB default. SET LOCAL resets automatically after the txn.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // 1. Create default branch for every org that has git sync configured
     //    Uses the actual branch name from the provider config (HTTPS / SSH / GitLab),
     //    falling back to 'main' only if no provider config exists.
