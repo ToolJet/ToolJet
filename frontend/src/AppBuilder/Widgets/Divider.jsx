@@ -4,15 +4,19 @@ const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
 export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
-  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding } = styles;
+  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding, textWrap } = styles;
   const { label, visibility } = properties;
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
+
+  const shouldWrap = textWrap !== 'nowrap';
 
   const dividerLineStyle = {
     width: '100%',
     padding: '0rem',
     boxShadow,
+    flexShrink: 1,
+    minWidth: '10%',
     ...(dividerStyle === 'dashed'
       ? {
           backgroundImage: `linear-gradient(to right, ${color} ${DASH_WIDTH}px, transparent ${DASH_GAP}px)`,
@@ -35,6 +39,18 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '16px',
+    minWidth: 0,
+    ...(shouldWrap
+      ? {
+          // Wrap mode: show multiple lines, clip vertical overflow
+          overflow: 'hidden',
+        }
+      : {
+          // No-wrap mode: single line, ellipsis for overflow
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }),
   };
 
   // If no label, render the original divider
@@ -62,13 +78,14 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
         width: '100%',
         height: '100%',
         alignItems: 'center',
+        overflow: 'hidden',
         justifyContent: labelAlignment === 'left' ? 'flex-start' : labelAlignment === 'right' ? 'flex-end' : 'center',
       }}
       data-cy={dataCy}
     >
       {labelAlignment === 'left' && (
         <>
-          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px' }}>{label}</span>
+          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px', flexShrink: 1 }}>{label}</span>
           <div style={dividerLineStyle}></div>
         </>
       )}
@@ -80,10 +97,11 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
             alignItems: 'center',
             width: '100%',
             justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
           <div style={{ ...dividerLineStyle }}></div>
-          <span style={{ ...labelStyles, padding: '0px 8px' }}>{label}</span>
+          <span style={{ ...labelStyles, padding: '0px 8px', flexShrink: 1 }}>{label}</span>
           <div style={{ ...dividerLineStyle }}></div>
         </div>
       )}
@@ -91,7 +109,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
       {labelAlignment === 'right' && (
         <>
           <div style={dividerLineStyle}></div>
-          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px' }}>{label}</span>
+          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px', flexShrink: 1 }}>{label}</span>
         </>
       )}
     </div>
