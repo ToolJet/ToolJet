@@ -1,31 +1,19 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import Redis from 'ioredis';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CustomDomainRepository } from './repository';
+import { RedisService } from '@modules/redis/service';
 
 @Injectable()
-export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
+export class CustomDomainCacheService implements OnModuleInit {
   private readonly logger = new Logger(CustomDomainCacheService.name);
-  private redis: Redis;
   private readonly CACHE_PREFIX = 'custom_domain:org:';
   private readonly TTL_SECONDS = 300; // 5 minutes
 
-  constructor(private readonly repository: CustomDomainRepository) {}
+  constructor(
+    private readonly repository: CustomDomainRepository,
+    private readonly redisService: RedisService
+  ) {}
 
   onModuleInit() {
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      maxRetriesPerRequest: 3,
-      connectTimeout: 5000,
-      ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
-      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
-      ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
-      ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
-    });
-    this.redis.on('error', (err) => {
-      this.logger.error(`Redis connection error: ${err.message}`, err.stack);
-    });
-
     // Seed the CORS origins set so it's available before the first request
     this.rebuildOriginsSet().catch((err) => {
       this.logger.error(`Failed to seed CORS origins on startup: ${err.message}`);
@@ -37,10 +25,6 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  onModuleDestroy() {
-    this.redis?.disconnect();
-  }
-
   /**
    * Returns the active custom domain for an organization, or null if none.
    * Cache stores empty string for orgs with no active domain (negative cache).
@@ -48,13 +32,14 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
    */
   async getActiveDomainForOrg(organizationId: string): Promise<string | null> {
     try {
+      const redis = this.redisService.getClient();
       const key = `${this.CACHE_PREFIX}${organizationId}`;
-      const cached = await this.redis.get(key);
+      const cached = await redis.get(key);
       if (cached !== null) return cached || null;
 
       const record = await this.repository.findActiveByOrganizationId(organizationId);
       const domain = record?.domain ?? '';
-      await this.redis.set(key, domain, 'EX', this.TTL_SECONDS).catch(() => {});
+      await redis.set(key, domain, 'EX', this.TTL_SECONDS).catch(() => {});
       return domain || null;
     } catch (error) {
       this.logger.error(`Failed to get active domain for org ${organizationId}: ${error.message}`);
@@ -70,7 +55,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
 
   async invalidate(organizationId: string): Promise<void> {
     try {
-      await this.redis.del(`${this.CACHE_PREFIX}${organizationId}`);
+      await this.redisService.getClient().del(`${this.CACHE_PREFIX}${organizationId}`);
     } catch (error) {
       this.logger.error(`Failed to invalidate cache for org ${organizationId}: ${error.message}`);
     }
@@ -88,9 +73,10 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
    */
   async rebuildOriginsSet(): Promise<void> {
     try {
+      const redis = this.redisService.getClient();
       const activeDomains = await this.repository.find({ where: { status: 'active' }, select: ['domain'] });
       const origins = activeDomains.map((d) => `https://${d.domain}`);
-      const pipeline = this.redis.pipeline();
+      const pipeline = redis.pipeline();
       pipeline.del(this.ORIGINS_KEY);
       if (origins.length > 0) {
         pipeline.sadd(this.ORIGINS_KEY, ...origins);
@@ -120,7 +106,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
    */
   async getOriginsSet(): Promise<Set<string> | null> {
     try {
-      const members = await this.redis.smembers(this.ORIGINS_KEY);
+      const members = await this.redisService.getClient().smembers(this.ORIGINS_KEY);
       if (members.length === 0) return null;
       return new Set(members);
     } catch (error) {
@@ -135,7 +121,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
 
   async setPendingFlag(): Promise<void> {
     try {
-      await this.redis.set(this.PENDING_FLAG_KEY, '1');
+      await this.redisService.getClient().set(this.PENDING_FLAG_KEY, '1');
     } catch (error) {
       this.logger.error(`Failed to set pending flag: ${error.message}`);
     }
@@ -143,7 +129,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
 
   async clearPendingFlag(): Promise<void> {
     try {
-      await this.redis.del(this.PENDING_FLAG_KEY);
+      await this.redisService.getClient().del(this.PENDING_FLAG_KEY);
     } catch (error) {
       this.logger.error(`Failed to clear pending flag: ${error.message}`);
     }
@@ -151,7 +137,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
 
   async hasPendingDomains(): Promise<boolean> {
     try {
-      const value = await this.redis.get(this.PENDING_FLAG_KEY);
+      const value = await this.redisService.getClient().get(this.PENDING_FLAG_KEY);
       return value === '1';
     } catch (error) {
       this.logger.error(`Failed to check pending flag: ${error.message}`);
@@ -160,12 +146,13 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async seedPendingFlag(): Promise<void> {
+    const redis = this.redisService.getClient();
     const pending = await this.repository.findPendingDomains(1);
     if (pending.length > 0) {
-      await this.redis.set(this.PENDING_FLAG_KEY, '1');
+      await redis.set(this.PENDING_FLAG_KEY, '1');
       this.logger.log('Pending-domains flag seeded: pending domains found');
     } else {
-      await this.redis.del(this.PENDING_FLAG_KEY);
+      await redis.del(this.PENDING_FLAG_KEY);
       this.logger.log('Pending-domains flag seeded: no pending domains');
     }
   }
