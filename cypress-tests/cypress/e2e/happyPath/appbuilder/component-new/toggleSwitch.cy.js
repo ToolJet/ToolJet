@@ -7,6 +7,7 @@ import {
 import { componentCommonSelectors } from "Selectors/appBuilder/components/common";
 import {
   verifyToggleSwitchAlignment,
+  verifyToggleDefaultValue,
   verifyToggleSwitchClick,
   verifyToggleSwitchColor,
   verifyToggleSwitchLabel,
@@ -41,6 +42,7 @@ describe("Toggle Switch Component - Feature Validation", { baseUrl: null }, () =
   const handleColorPicker =
     '[data-cy="draggable-widget-handle_colorpicker"] .d-flex';
   const alignmentDropdown = '[data-cy="draggable-widget-alignment"]';
+  const defaultvalueDropdown = '[data-cy="draggable-widget-defaultvalue"]';
 
   const appUrl =
     "https://appbuilder-v3-lts-eetestsystem.tooljet.com/applications/8bb55540-a1d0-445f-bfe8-94dbf48487d8";
@@ -108,6 +110,11 @@ describe("Toggle Switch Component - Feature Validation", { baseUrl: null }, () =
       { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
     ]);
 
+    verifyToggleDefaultValue(componentSelector, defaultvalueDropdown, [
+      { label: "on" },
+      { label: "off" },
+    ]);
+
     verifyToggleSwitchColor("checked", componentSelector, checkedColorPicker, [
       { hex: "00ff00", expectedColor: "rgb(0, 255, 0)" },
       { hex: "0000ff", expectedColor: "rgb(0, 0, 255)" },
@@ -124,8 +131,8 @@ describe("Toggle Switch Component - Feature Validation", { baseUrl: null }, () =
     ]);
 
     verifyToggleSwitchAlignment(componentSelector, alignmentDropdown, [
-      { label: "left", expectedClass: "flex-row" },
       { label: "right", expectedClass: "flex-row-reverse" },
+      { label: "left", expectedClass: "flex-row" },
     ]);
   });
 

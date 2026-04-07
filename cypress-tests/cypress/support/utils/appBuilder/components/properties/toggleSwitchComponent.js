@@ -1,5 +1,6 @@
 import { verifyTooltip } from "Support/utils/common";
 import { selectDropdownOption, setColorPickerValue } from "./common";
+import { commonSelectors } from "Selectors/common";
 
 const getToggleInput = (componentSelector) =>
     cy.get(componentSelector).find('input[type="checkbox"]');
@@ -14,11 +15,11 @@ const ensureToggleState = (componentSelector, checked) => {
     getToggleInput(componentSelector).should(checked ? "be.checked" : "not.be.checked");
 };
 
-export const verifyToggleSwitchLabel = (componentSelector, inputSelector, labelCases) => {
+export const verifyToggleSwitchLabel = (componentSelector, inputSelector, labelCases, tag="label") => {
     labelCases.forEach(({ input }) => {
         cy.get(inputSelector).click().clear().type(input);
         cy.get(componentSelector)
-            .find("label")
+            .find(tag)
             .should("contain.text", input);
     });
 };
@@ -39,8 +40,9 @@ export const verifyToggleSwitchColor = (
 ) => {
     const configMap = {
         text: {
-            target: "label",
+            target: "label, span",
             cssProperty: "color",
+            filterTextNodes: true,
         },
         border: {
             target: 'input[type="checkbox"] + span',
@@ -60,6 +62,11 @@ export const verifyToggleSwitchColor = (
             target: 'input[type="checkbox"] + span > span',
             cssProperty: "background-color",
         },
+        toggleswitch: {
+             target: 'input[type="checkbox"]',
+                cssProperty: "background-color",
+            checked: true,
+        }
     };
 
     const config = configMap[type];
@@ -71,9 +78,66 @@ export const verifyToggleSwitchColor = (
             ensureToggleState(componentSelector, config.checked);
         }
 
+        if (config.filterTextNodes) {
+            cy.get(componentSelector).then(($component) => {
+                const $target = $component
+                    .find(config.target)
+                    .filter((_, el) => Cypress.$(el).text().trim().length > 0)
+                    .first();
+
+                expect($target.length).to.be.greaterThan(0);
+                cy.wrap($target).should("have.css", config.cssProperty, expectedColor);
+            });
+            return;
+        }
+
         cy.get(componentSelector)
             .find(config.target)
             .should("have.css", config.cssProperty, expectedColor);
+    });
+};
+
+export const verifyToggleDefaultValue = (
+    componentSelector,
+    controlSelector,
+    styleOptions
+) => {
+    const derivedDefaults = {
+        on: {
+            expectedChecked: true,
+        },
+        off: {
+            expectedChecked: false,
+        },
+    };
+
+    styleOptions.forEach((option) => {
+        const {
+            label,
+            expectedChecked,
+        } = {
+            ...derivedDefaults[option.label],
+            ...option,
+        };
+
+        cy.get(controlSelector).then(($control) => {
+            const $checkbox =
+                $control.is('input[type="checkbox"]')
+                    ? $control
+                    : $control.find('input[type="checkbox"]').first();
+
+            if ($checkbox.length) {
+                if ($checkbox.prop("checked") !== expectedChecked) {
+                    cy.wrap($checkbox).click({ force: true });
+                }
+            } else {
+                selectDropdownOption(controlSelector, label);
+            }
+        });
+
+        getToggleInput(componentSelector).should(
+            expectedChecked ? "be.checked" : "not.be.checked"
+        );
     });
 };
 
@@ -95,6 +159,10 @@ export const verifyToggleSwitchClick = (componentSelector) => {
         .should("not.be.checked")
         .click({ force: true })
         .should("be.checked");
+    cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "updated toggleswitch"
+  );
 
     getToggleInput(componentSelector)
         .click({ force: true })
