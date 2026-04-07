@@ -103,6 +103,8 @@ type NewRevampedComponent =
   | 'IFrame'
   | 'DropdownV2'
   | 'TreeSelect'
+  | 'Listview'
+  | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu';
@@ -151,6 +153,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'Listview',
+  'ColorPicker',
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
@@ -203,12 +207,7 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
-  'TextInput',
-  'PasswordInput',
-  'NumberInput',
-  'DropdownV2',
-];
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -3089,6 +3088,16 @@ function migrateProperties(
       }
       if (!styles.menuCustomWidth) {
         styles.menuCustomWidth = { value: '256' };
+      }
+    }
+
+    // Listview
+    if (componentType === 'Listview') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
+      }
+      if (properties.tooltip === undefined) {
+        properties.tooltip = { value: '' };
       }
     }
   }
