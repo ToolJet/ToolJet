@@ -7,6 +7,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from '@/components/ui/Rocket/Empty/Empty';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 function WorkflowsEmptyStateSVG() {
   return (
@@ -190,11 +191,15 @@ export default function EmptyState({
   };
 
   return (
-    <Empty className={className}>
+    <Empty className={className} data-cy={`${generateCypressDataCy(resourceType)}-empty-state`}>
       <EmptyHeader>
-        <EmptyMedia variant="default">{resolvedIconName()}</EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
+        <EmptyMedia variant="default" data-cy={`${generateCypressDataCy(resourceType)}-empty-state-image`}>
+          {resolvedIconName()}
+        </EmptyMedia>
+        <EmptyTitle data-cy={`${generateCypressDataCy(resourceType)}-empty-state-header`}>{title}</EmptyTitle>
+        <EmptyDescription data-cy={`${generateCypressDataCy(resourceType)}-empty-state-description`}>
+          {description}
+        </EmptyDescription>
         <EmptyContent>{children}</EmptyContent>
       </EmptyHeader>
     </Empty>

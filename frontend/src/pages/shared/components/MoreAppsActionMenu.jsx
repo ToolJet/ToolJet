@@ -139,7 +139,7 @@ export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems 
           )}
 
           <DropdownMenuItem
-            data-cy="import-option-label"
+            data-cy="button-import-an-app"
             className="tw-text-text-default tw-font-body-default"
             onClick={handleOpenFilePicker}
           >

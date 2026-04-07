@@ -13,7 +13,10 @@ export default function ContentToolbar({
   leadingSlot = null,
 }) {
   return (
-    <div className="tw-flex tw-items-center tw-gap-4 tw-h-10 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
+    <div
+      data-cy="content-toolbar"
+      className="tw-flex tw-items-center tw-gap-4 tw-h-10 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
+    >
       {leadingSlot}
 
       <div className="tw-flex-1 tw-flex tw-justify-end tw-items-center tw-gap-3">

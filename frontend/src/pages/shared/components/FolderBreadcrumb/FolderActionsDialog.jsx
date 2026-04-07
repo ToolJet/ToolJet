@@ -17,6 +17,7 @@ import {
   useUpdateFolder,
 } from '@/_services/hooks/foldersServiceHooks';
 import { authenticationService } from '@/_services/authentication.service';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useSearch } from '@/_hooks/useSearch';
 
 import ActionDialog from '../ActionDialog';
@@ -147,7 +148,7 @@ export default function FolderActionsDialog({
           disabled: isSubmitBtnDisabled,
           isLoading: isFormBeingSubmitted,
           form: `${actionType}-folder-form`,
-          'data-cy': `${actionType}-folder-button`,
+          'data-cy': `${actionType}-button`,
           ...(isRemoveAppFromFolderOrDeleteFolder && { variant: 'dangerPrimary' }),
           ...(!isCreateOrEditFolder && { onClick: handleSubmitForm }),
         },
@@ -212,7 +213,7 @@ function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p className="tw-font-body-default tw-text-text-default">
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
         {actionType === 'remove-app-from-folder'
           ? t('homePage.removeAppFromFolder', 'The app will be removed from this folder, do you want to continue?')
           : t(
@@ -259,7 +260,10 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
         );
 
   return (
-    <div className="tw-px-6 tw-py-4 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
+    <div
+      data-cy="select-folder"
+      className="tw-px-6 tw-py-4 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
+    >
       <SearchBar
         placeholder="Search folders"
         searchTerm={searchTerm}
@@ -267,13 +271,14 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
         classes={{ searchInputContainer: 'tw-mb-4' }}
       />
 
-      <ul className="tw-list-none tw-h-56 tw-overflow-y-auto tw-pl-0 tw-mb-0">
+      <ul data-cy="folder-list" className="tw-list-none tw-h-56 tw-overflow-y-auto tw-pl-0 tw-mb-0">
         {filteredFolder.length ? (
           filteredFolder.map((folder) => (
             <li
               role="button"
               key={folder.value}
               onClick={() => setSelectedFolder(folder.value)}
+              data-cy={`folder-option-${generateCypressDataCy(folder.value)}`}
               className="tw-flex tw-items-center tw-gap-2 tw-px-2 tw-py-1.5 tw-rounded-md tw-transition hover:tw-bg-interactive-default"
             >
               <div className="tw-size-4">

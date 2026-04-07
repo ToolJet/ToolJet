@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useSearch } from '@/_hooks/useSearch';
 import { useChangeAppIcon } from '@/_services/hooks/appsServiceHooks';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 import SearchBar from './SearchBar';
 import ActionDialog from './ActionDialog';
@@ -67,7 +68,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
           label: t('homePage.change', 'Change'),
           disabled: isSubmitBtnDisabled,
           isLoading: isFormBeingSubmitted,
-          'data-cy': 'submit-button',
+          'data-cy': 'change-button',
           onClick: handleChangeIcon,
         },
       ]}
@@ -102,13 +103,17 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
                     className={cn('tw-text-icon-default', {
                       'tw-text-icon-brand': selectedIcon === filteredIcons[index],
                     })}
+                    data-cy={`icon-${generateCypressDataCy(filteredIcons[index].replace(/^Icon/, ''))}`}
                   />
                 </div>
               );
             }}
           />
         ) : (
-          <div className="tw-flex tw-items-center tw-justify-center tw-h-[18.75rem] ">
+          <div
+            data-cy="no-matching-results-found-text"
+            className="tw-flex tw-items-center tw-justify-center tw-h-[18.75rem] "
+          >
             <p className="tw-text-body-large tw-text-text-placeholder">No matching results found</p>
           </div>
         )}

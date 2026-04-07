@@ -4,6 +4,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export default function ActionDialog({
   open,
@@ -26,6 +27,7 @@ export default function ActionDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={modality}>
       <DialogContent
+        data-cy="modal-component"
         showCloseButton={false}
         className={cn(
           'tw-w-full tw-max-w-96 tw-p-0 tw-gap-0 tw-border-border-weak',
@@ -35,7 +37,12 @@ export default function ActionDialog({
       >
         {title && (
           <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4">
-            <DialogTitle className="tw-font-title-x-large tw-text-text-default">{title}</DialogTitle>
+            <DialogTitle
+              className="tw-font-title-x-large tw-text-text-default"
+              data-cy={`${generateCypressDataCy(title)}-title`}
+            >
+              {title}
+            </DialogTitle>
           </DialogHeader>
         )}
 

@@ -21,7 +21,7 @@ export default function CreateAppButton({ label, disabled, appType, isWorkspaceB
       isLucid
       variant="secondary"
       leadingIcon="plus"
-      data-cy="create-new-app-button"
+      data-cy={`create-new-${appType}-button`}
       disabled={disabled}
       onClick={handleOpenCreateAppDialog}
     >

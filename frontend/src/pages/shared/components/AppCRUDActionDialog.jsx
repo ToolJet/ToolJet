@@ -405,7 +405,9 @@ function DeleteAppBody({ appType, appName }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p className="tw-font-body-default tw-text-text-default">{message}</p>
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
+        {message}
+      </p>
     </div>
   );
 }

@@ -41,10 +41,15 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
     <div className="tw-h-12 tw-flex tw-items-center tw-justify-between tw-px-20 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak">
       {/* Left: page-size selector + item count */}
       <div className="tw-flex tw-items-center tw-gap-1.5">
-        <span className="tw-text-xs tw-text-text-placeholder">Showing</span>
+        <span data-cy="pagination-showing-label" className="tw-text-xs tw-text-text-placeholder">
+          Showing
+        </span>
 
         <Select value={String(pageSize)} onValueChange={(val) => onPageSizeChange?.(Number(val))}>
-          <SelectTrigger className="tw-h-7 tw-w-14 tw-text-xs tw-px-1.5 tw-py-1 tw-rounded-md tw-border-border-default">
+          <SelectTrigger
+            data-cy="pagination-page-size-selector"
+            className="tw-h-7 tw-w-14 tw-text-xs tw-px-1.5 tw-py-1 tw-rounded-md tw-border-border-default"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className={cn('tw-border-solid tw-border-border-weak', { 'dark-theme theme-dark': darkMode })}>
@@ -56,7 +61,9 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
           </SelectContent>
         </Select>
 
-        <span className="tw-text-xs tw-text-text-default">of {totalItems} apps</span>
+        <span data-cy="pagination-apps-count" className="tw-text-xs tw-text-text-default">
+          of {totalItems} apps
+        </span>
       </div>
 
       {/* Right: pagination */}
@@ -65,6 +72,7 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
           <PaginationItem>
             <PaginationPrevious
               size="medium"
+              data-cy="pagination-previous-button"
               onClick={() => currentPage > 1 && onPageChange?.(currentPage - 1)}
               className={currentPage === 1 ? 'tw-pointer-events-none tw-opacity-40' : 'tw-cursor-pointer'}
             />
@@ -92,6 +100,7 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
           <PaginationItem>
             <PaginationNext
               size="medium"
+              data-cy="pagination-next-button"
               onClick={() => currentPage < totalPages && onPageChange?.(currentPage + 1)}
               className={currentPage === totalPages ? 'tw-pointer-events-none tw-opacity-40' : 'tw-cursor-pointer'}
             />

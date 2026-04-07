@@ -57,6 +57,7 @@ export default function WorkspaceSelector() {
       <Select value={selectedWorkspaceId} onValueChange={handleChangeWorkspace}>
         <SelectTrigger
           showIcon
+          data-cy="workspace-selector-trigger"
           className="tw-rounded-md tw-max-w-40 tw-shadow-none tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-border-0 hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
         >
           <SelectValue />

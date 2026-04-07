@@ -10,6 +10,7 @@ export default function SearchInput({ searchTerm, onSearchTermChange, placeholde
       <Input
         size="small"
         type="text"
+        data-cy="header-search-bar"
         value={searchTerm}
         placeholder={placeholder}
         onChange={onSearchTermChange}
