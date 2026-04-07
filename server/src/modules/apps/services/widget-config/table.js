@@ -296,7 +296,6 @@ export const tableConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
     },
     expansionHeight: {
       type: 'number',
@@ -305,7 +304,6 @@ export const tableConfig = {
         schema: { type: 'number' },
         defaultValue: 250,
       },
-      section: 'additionalActions',
       conditionallyRender: {
         key: 'enableExpandableRows',
         value: true,

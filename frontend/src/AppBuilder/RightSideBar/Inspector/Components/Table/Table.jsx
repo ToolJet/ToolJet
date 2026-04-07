@@ -393,6 +393,8 @@ export const Table = (props) => {
       ...(allowSelection
         ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
         : []),
+      'enableExpandableRows',
+      'expansionHeight',
     ],
     [allowSelection]
   );
@@ -429,8 +431,6 @@ export const Table = (props) => {
     'visibility',
     'disabledState',
     'dynamicHeight',
-    'enableExpandableRows',
-    'expansionHeight',
   ];
 
   // Accordion items
