@@ -127,7 +127,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                 ''
               )}
             </div>
-            <div class="border-bottom mt-1"></div>
+            <div className="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small data-cy="label-sort-by">Sort By</small>
             </div>
