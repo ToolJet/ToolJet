@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
-import { libraryAppService } from '@/_services';
+import { libraryAppService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
     id: categoryId,
@@ -63,6 +63,15 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
+  const { currentBranch, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
+    currentBranch: state.currentBranch,
+    orgGitConfig: state.orgGitConfig,
+  }));
+
+  const isOnDefaultBranch =
+    (orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled) &&
+    (currentBranch?.is_default || currentBranch?.isDefault);
+
   return (
     <Modal
       show={props.show}
@@ -108,6 +117,12 @@ export default function TemplateLibraryModal(props) {
                       </ButtonSolid>
                       <ButtonSolid
                         onClick={() => {
+                          if (isOnDefaultBranch) {
+                            toast.error('Master is locked. Create a branch to create an app from template.', {
+                              position: 'top-center',
+                            });
+                            return;
+                          }
                           props.openCreateAppFromTemplateModal(selectedApp);
                           setShowCreateAppFromTemplateModal(false);
                           props.onCloseButtonClick();

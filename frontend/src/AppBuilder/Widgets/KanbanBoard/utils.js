@@ -107,6 +107,7 @@ export const updateCardData = (currentData, cards, newData) => {
 
 const findCard = (state, cardId) => {
   for (let i = 0; i < state.length; i++) {
+    // eslint-disable-next-line no-constant-binary-expression
     for (let j = 0; j < state[i].cards?.length ?? 0; j++) {
       if (state[i].cards[j].id === cardId) {
         return state[i].cards[j];

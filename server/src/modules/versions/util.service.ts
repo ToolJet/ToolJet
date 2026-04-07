@@ -4,7 +4,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, Not } from 'typeorm';
+import { EntityManager, IsNull, Not } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { Component } from '@entities/component.entity';
 import { User } from '@entities/user.entity';
@@ -138,17 +138,39 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription, versionType, branchId } = versionCreateDto;
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
-    await this.validateDraftVersionConstraints(app, versionType, organizationId, manager);
+    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
+      organizationId,
+      manager
+    );
+    if (organizationGit && organizationGit.isBranchingEnabled) {
+      // Only allow one draft version of type 'version' (not branch) per branch.
+      // Scoping by branchId ensures drafts on different branches don't conflict.
+      const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
+
+      if (!isCreatingBranchVersion) {
+        const existingDraftVersion = await this.versionRepository.findOne({
+          where: {
+            appId: app.id,
+            status: AppVersionStatus.DRAFT,
+            versionType: Not(AppVersionType.BRANCH),
+            branchId: branchId ?? IsNull(),
+          },
+        });
+        if (existingDraftVersion) {
+          throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+        }
+      }
+    }
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },
-        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+        relations: ['dataSources', 'dataSources.dataQueries'],
       });
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
@@ -167,7 +189,8 @@ export class VersionUtilService implements IVersionUtilService {
           description: versionDescription ? versionDescription : null,
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
-          co_relation_id: versionFrom.co_relation_id,
+          co_relation_id: app.co_relation_id,
+          ...(branchId && { branchId }),
         })
       );
 
@@ -219,7 +242,16 @@ export class VersionUtilService implements IVersionUtilService {
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const numVersions = await this.versionRepository.getCount(app.id);
+      const versionToDelete = app.appVersions[0];
+      const branchId = versionToDelete?.branchId ?? null;
+
+      // For platform git sync apps, count only versions on the same branch so that
+      // versions on other branches don't inflate the count and bypass the guard.
+      // For all other apps (branchId=null), fall back to the original count across
+      // all versions — behaviour is unchanged.
+      const numVersions = branchId
+        ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
+        : await this.versionRepository.getCount(app.id);
 
       if (numVersions <= 1) {
         throw new ForbiddenException('Cannot delete only version of app');

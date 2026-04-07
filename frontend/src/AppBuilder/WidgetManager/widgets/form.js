@@ -221,7 +221,7 @@ export const formConfig = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'header',
     },
@@ -247,7 +247,7 @@ export const formConfig = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'footer',
     },
@@ -344,8 +344,8 @@ export const formConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },
-      headerDividerColor: { value: 'var(--cc-default-border)' },
-      footerDividerColor: { value: 'var(--cc-default-border)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+      footerDividerColor: { value: 'var(--cc-weak-border)' },
     },
   },
 };

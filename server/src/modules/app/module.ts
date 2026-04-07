@@ -13,6 +13,8 @@ import { MetaModule } from '@modules/meta/module';
 import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
+import { AppService } from './service';
+import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -47,6 +49,8 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
+import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
+import { BranchContextModule } from '@modules/branch-context/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -71,6 +75,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { BackgroundProcessorModule } from '@modules/background-processor/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -97,6 +102,7 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
+      await BranchContextModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
@@ -139,6 +145,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
       await AppGitModule.register(configs, true),
+      await WorkspaceBranchesModule.register(configs, true),
       await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
@@ -146,6 +153,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
+      await BackgroundProcessorModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -182,12 +190,15 @@ export class AppModule implements OnModuleInit, NestModule {
       providers: [
         ShutdownHook,
         GetConnection,
+        AppService,
+        AppUtilService,
         ClearSSOResponseScheduler,
         SampleDBScheduler,
         SessionScheduler,
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
         CustomDomainStatusScheduler,
+        AppService,
       ],
     };
   }

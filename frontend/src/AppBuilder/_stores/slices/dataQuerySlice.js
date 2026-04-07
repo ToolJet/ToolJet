@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
+import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const initialState = {
   sortBy: 'updated_at',
@@ -263,6 +264,7 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .finally(() => setIsAppSaving(false));
 
+      clearQueryRerunTimer(queryId);
       get().removeNode(`queries.${queryId}`, moduleId);
       get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
@@ -332,6 +334,7 @@ export const createDataQuerySlice = (set, get) => ({
             const eventsToCreate = events
               .filter((event) => event?.event && event?.target && event?.index != null)
               .map((event) => ({
+                name: event.name,
                 event: {
                   ...event.event,
                 },
@@ -353,10 +356,10 @@ export const createDataQuerySlice = (set, get) => ({
               type: queryToClone.permissions[0]?.type,
               ...(queryToClone.permissions[0]?.type === 'GROUP'
                 ? {
-                  groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
-                    (group) => group.permissionGroupsId || group.permission_groups_id
-                  ),
-                }
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
                 : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
             };
             appPermissionService
@@ -452,6 +455,28 @@ export const createDataQuerySlice = (set, get) => ({
           return query;
         });
       });
+
+      // Update query dependency registrations when options change.
+      // Pass `options` (with entity names), not `newOptions` (with IDs), because
+      // registerQueryDependencies uses extractAndReplaceReferencesFromString which handles name→ID mapping.
+      if (options.runOnDependencyChange) {
+        get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
+      } else {
+        // Toggle turned off — clean up __options__ sentinel node if it exists
+        const optionsPath = `queries.${selectedQuery.id}.__options__`;
+        const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+        if (depGraph && depGraph.hasNode(optionsPath)) {
+          set(
+            (state) => {
+              state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+              return { ...state };
+            },
+            false,
+            'clearQueryOptionsDeps'
+          );
+        }
+      }
+
       setSelectedQuery(selectedQuery?.id);
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {

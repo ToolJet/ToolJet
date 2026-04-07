@@ -11,14 +11,10 @@ const initialState = {
 };
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
-  toggleGitSyncModal: (creationMode) => {
+  toggleGitSyncModal: () => {
     const featureAccess = useStore.getState()?.license?.featureAccess;
-    const selectedEnvironment = useStore.getState()?.selectedEnvironment;
-    const isEditorFreezed = useStore.getState()?.isEditorFreezed;
-
-    return featureAccess?.gitSync && selectedEnvironment?.priority === 1
-      ? set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal')
-      : () => {};
+    if (!featureAccess?.gitSync) return;
+    set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal');
   },
   fetchAppGit: async (currentOrganizationId, currentAppVersionId) => {
     set((state) => ({ appLoading: true }), false, 'setAppLoading');

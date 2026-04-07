@@ -38,7 +38,10 @@ export const Header = memo(
     // Loading state for header
     if (loadingState) {
       return (
-        <div className={'table-card-header d-flex justify-content-between align-items-center'} data-cy={`${componentName}-header-section`}>
+        <div
+          className={'table-card-header d-flex justify-content-between align-items-center'}
+          data-cy={`${componentName}-header-section`}
+        >
           <Loader width={83} height={28} />
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
             <Loader width={100} height={28} />
@@ -121,7 +124,14 @@ export const Header = memo(
           </div>
         </div>
         {showFilter && (
-          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} componentName={componentName} />
+          <Filter
+            id={id}
+            table={table}
+            darkMode={darkMode}
+            setFilters={setFilters}
+            setShowFilter={setShowFilter}
+            componentName={componentName}
+          />
         )}
       </>
     );

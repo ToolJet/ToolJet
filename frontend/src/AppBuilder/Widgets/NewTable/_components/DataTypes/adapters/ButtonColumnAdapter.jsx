@@ -21,8 +21,7 @@ export const ButtonColumn = ({
   tooltip,
   onClick,
 }) => {
-  const handleClick = (e) => {
-    e.stopPropagation();
+  const handleClick = () => {
     if (onClick) onClick();
   };
 

@@ -1,5 +1,7 @@
 import { gitSyncService } from '@/_services';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import useStore from '@/AppBuilder/_stores/store';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const initialState = {
   currentBranch: null,
@@ -10,6 +12,7 @@ const initialState = {
   isLoadingBranches: false,
   isLoadingPRs: false,
   branchError: null,
+  initialAutoSwitchDone: false,
 };
 
 export const createBranchSlice = (set, get) => ({
@@ -34,9 +37,28 @@ export const createBranchSlice = (set, get) => ({
 
       let defaultBranch = get().currentBranch;
       if (isOnBranch) {
-        const matchingBranch = branches.find((b) => b.name === selectedVersion.name);
+        // Branch-type versions use UUID names — match by branchId first, name as fallback.
+        const versionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
+        const matchingBranch =
+          (versionBranchId ? branches.find((b) => b.id === versionBranchId) : null) ||
+          branches.find((b) => b.name === selectedVersion.name);
         if (matchingBranch) {
           defaultBranch = matchingBranch;
+          if (matchingBranch.id) {
+            // matchingBranch already has a workspace branch UUID — persist directly.
+            setActiveBranch(matchingBranch);
+          } else if (versionBranchId) {
+            // Branches from gitSyncService.getAllBranches don't carry the workspace branch UUID.
+            // Calling setActiveBranch with a branch that has no id stores { id: undefined }
+            // in localStorage, which breaks getActiveBranchId() for all subsequent API calls.
+            // Instead, look up the proper workspace branch from the workspace store.
+            const wsBranch = useWorkspaceBranchesStore.getState().branches?.find((b) => b.id === versionBranchId);
+            if (wsBranch) {
+              setActiveBranch(wsBranch);
+            }
+            // If workspace store hasn't loaded yet, leave localStorage unchanged —
+            // workspaceBranchesStore.initialize() will set it correctly when it completes.
+          }
         } else if (!defaultBranch && branches.length) {
           defaultBranch =
             branches.find((b) => b.name === 'main') || branches.find((b) => b.name === 'master') || branches[0];
@@ -178,12 +200,19 @@ export const createBranchSlice = (set, get) => ({
         return { success: true, data: state.selectedVersion };
       }
 
-      // Update current branch first
+      // Update current branch first + mark auto-switch as done to prevent revert
       const targetBranch = state.allBranches.find((b) => b.name === branchName) || { name: branchName };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (targetBranch.id) {
+        setActiveBranch(targetBranch);
+      }
+
       set(
         (state) => ({
           ...state,
           currentBranch: targetBranch,
+          initialAutoSwitchDone: true,
         }),
         false,
         'switchBranch:updating-branch'
@@ -269,9 +298,6 @@ export const createBranchSlice = (set, get) => ({
     try {
       const state = get();
 
-      // Get feature branch names (exclude default branch) to help with filtering
-      const featureBranchNames = state.allBranches.filter((b) => b.name !== defaultBranchName).map((b) => b.name);
-
       // Branches always work in Development environment - ALWAYS use developmentVersions
       // This matches the PRD scenarios where all branch work happens in Development
       const developmentVersions = state.developmentVersions || [];
@@ -329,9 +355,6 @@ export const createBranchSlice = (set, get) => ({
 
       // If no version found, error
       if (!targetVersion) {
-        console.error('switchToDefaultBranch - no versions found!');
-        console.error('switchToDefaultBranch - developmentVersions:', developmentVersions);
-        console.error('switchToDefaultBranch - defaultBranchVersions:', defaultBranchVersions);
         throw new Error('No versions found for the default branch. Please create a version first.');
       }
 
@@ -344,7 +367,6 @@ export const createBranchSlice = (set, get) => ({
       // Check if already on this version AND in Development environment
       const alreadyOnVersion = state.selectedVersion?.id === targetVersion.id;
       const alreadyInDevelopment = state.selectedEnvironment?.id === developmentEnv.id;
-
       if (alreadyOnVersion && alreadyInDevelopment) {
         const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
           name: defaultBranchName,
@@ -354,6 +376,7 @@ export const createBranchSlice = (set, get) => ({
           (state) => ({
             ...state,
             currentBranch: defaultBranch,
+            initialAutoSwitchDone: true,
           }),
           false,
           'switchToDefaultBranch:already-on-version'
@@ -362,15 +385,21 @@ export const createBranchSlice = (set, get) => ({
         return { success: true, data: state.selectedVersion, version: targetVersion };
       }
 
-      // Update current branch first
+      // Update current branch first + mark auto-switch as done to prevent revert
       const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
         name: defaultBranchName,
       };
+
+      // Save branch to localStorage (no longer writing to DB)
+      if (defaultBranch.id) {
+        setActiveBranch(defaultBranch);
+      }
 
       set(
         (state) => ({
           ...state,
           currentBranch: defaultBranch,
+          initialAutoSwitchDone: true,
         }),
         false,
         'switchToDefaultBranch:updating-branch'
@@ -515,6 +544,19 @@ export const createBranchSlice = (set, get) => ({
       }),
       false,
       'setCurrentBranch'
+    ),
+
+  /**
+   * Set initial auto-switch done flag (survives component remounts)
+   * @param {boolean} done
+   */
+  setInitialAutoSwitchDone: (done) =>
+    set(
+      () => ({
+        initialAutoSwitchDone: done,
+      }),
+      false,
+      'setInitialAutoSwitchDone'
     ),
 
   /**

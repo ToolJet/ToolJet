@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import tinycolor from 'tinycolor2';
 
 function extractCssVarName(cssVarExpression) {
@@ -50,9 +51,12 @@ export function getSafeRenderableValue(value) {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
     ? value
     : (() => {
-      try { return String(value ?? ''); }
-      catch { return ''; }
-    })();
+        try {
+          return String(value ?? '');
+        } catch {
+          return '';
+        }
+      })();
 }
 
 export const getFormattedSteps = (steps) => {

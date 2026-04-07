@@ -218,6 +218,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/white-labelling',
     '/instance-login',
     '/smtp',
+    '/llm-key',
     '/license',
   ];
   if (isUserLoggingIn && !path) {

@@ -127,7 +127,8 @@ export class ImportExportResourcesService {
             isGitApp,
             importResourcesDto.tooljet_version,
             cloning,
-            manager
+            manager,
+            importResourcesDto.branchId
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });

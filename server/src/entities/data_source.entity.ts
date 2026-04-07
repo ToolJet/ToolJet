@@ -16,11 +16,11 @@ import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSourceGroupPermission } from './data_source_group_permission.entity';
-import { DataSourceOptions } from './data_source_options.entity';
 import { GroupPermission } from './group_permission.entity';
 import { Plugin } from './plugin.entity';
 import { GroupDataSources } from './group_data_source.entity';
 import { DataSourceTypes } from '@modules/data-sources/constants';
+import { DataSourceVersion } from './data_source_version.entity';
 
 @Entity({ name: 'data_sources' })
 export class DataSource extends BaseEntity {
@@ -109,8 +109,8 @@ export class DataSource extends BaseEntity {
   @JoinColumn({ name: 'plugin_id' })
   plugin: Plugin;
 
-  @OneToMany(() => DataSourceOptions, (dso) => dso.dataSource)
-  dataSourceOptions: DataSourceOptions[];
+  @OneToMany(() => DataSourceVersion, (dsv) => dsv.dataSource)
+  dataSourceVersions: DataSourceVersion[];
 
   @OneToMany(() => DataQuery, (dq) => dq.dataSource)
   dataQueries: DataQuery[];

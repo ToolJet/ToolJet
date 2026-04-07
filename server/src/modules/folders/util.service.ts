@@ -10,6 +10,7 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { decamelizeKeys } from 'humps';
 @Injectable()
 export class FoldersUtilService implements IFoldersUtilService {
+  constructor() {}
   async allFolders(user: User, manager: EntityManager, type = 'front-end'): Promise<Folder[]> {
     return this.getAllFoldersQuery(user.organizationId, manager, type).getMany();
   }
@@ -34,6 +35,7 @@ export class FoldersUtilService implements IFoldersUtilService {
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user?.organizationId,
+            createdBy: user?.id,
             type,
           })
         );

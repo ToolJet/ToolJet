@@ -27,6 +27,10 @@ export class AppCreateDto {
   @IsOptional()
   @IsString()
   prompt?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class AppUpdateDto {
@@ -133,6 +137,10 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class VersionReleaseDto {

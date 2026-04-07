@@ -5,7 +5,8 @@ import { App } from '@entities/app.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { Component } from '@entities/component.entity';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { EventHandler } from '@entities/event_handler.entity';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
@@ -112,13 +113,14 @@ async function getUuidFieldsForExport(
 
     const dataQueryIds = dataQueries.map((dq) => dq.id);
 
-    // Get Data Source Option IDs only
+    // Get Data Source Option IDs only (from data_source_version_options via default DSV)
     const dataSourceOptions = allDataSourceIds.length
       ? await manager
-          .createQueryBuilder(DataSourceOptions, 'data_source_options')
-          .select('data_source_options.id')
+          .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
+          .select('dsvo.id')
+          .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
           .where(
-            'data_source_options.environmentId IN(:...environmentId) AND data_source_options.dataSourceId IN(:...dataSourceId)',
+            'dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)',
             {
               environmentId: environmentIds,
               dataSourceId: allDataSourceIds,

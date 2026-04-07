@@ -26,8 +26,7 @@ export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
   return (
     <input
       data-cy={`query-edit-input-field`}
-      className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'
-        }`}
+      className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'}`}
       type="text"
       value={value}
       onChange={handleChange}

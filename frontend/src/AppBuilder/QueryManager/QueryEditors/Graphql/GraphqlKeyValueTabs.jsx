@@ -37,11 +37,11 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
   };
 
   const handleInputChange = (tabKey, rowIndex) => (value) => {
-      const rows = getRows(tabKey);
-      if (rows.length > 0 && rows.length - 1 === rowIndex && value) { 
-        addNewKeyValuePair(tabKey);
-      }
-    };
+    const rows = getRows(tabKey);
+    if (rows.length > 0 && rows.length - 1 === rowIndex && value) {
+      addNewKeyValuePair(tabKey);
+    }
+  };
 
   if (!tabs.length) return null;
 
@@ -51,11 +51,7 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
         <div className="keys d-flex justify-content-between query-pane-tabs-header graphql-tabs-header">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map(({ label, key }) => (
-              <ListGroup.Item
-                key={key}
-                eventKey={key}
-                data-cy={generateCypressDataCy(`graphql-tab-${key}-button`)}
-              >
+              <ListGroup.Item key={key} eventKey={key} data-cy={generateCypressDataCy(`graphql-tab-${key}-button`)}>
                 <span>{label}</span>
               </ListGroup.Item>
             ))}
@@ -76,11 +72,7 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
         </div>
 
         <div className="col tw-pl-0">
-          
-          <Tab.Content
-            bsPrefix="graphql-tab-content"
-            className="query-manager-border-color rounded"
-          >
+          <Tab.Content bsPrefix="graphql-tab-content" className="query-manager-border-color rounded">
             {tabs.map(({ key }) => (
               <Tab.Pane
                 key={key}
@@ -94,7 +86,7 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
                   onChange={handleChange}
                   removeKeyValuePair={removeKeyValuePair}
                   addNewKeyValuePair={addNewKeyValuePair}
-                  onInputChange={handleInputChange} 
+                  onInputChange={handleInputChange}
                   componentName={componentName ?? 'graphql'}
                   tabType={key}
                   paramType={key}

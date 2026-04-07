@@ -69,7 +69,6 @@ export class AppsModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
-        await AppEnvironmentsModule.register(configs),
       ],
       controllers: isMainImport ? [AppsController, WorkflowController] : [],
       providers: [
