@@ -130,14 +130,16 @@ function DataSourcePicker({ darkMode }) {
             <span className="ds-source-label">Sample database</span>
           </button>
         )}
-        <button
-          className="d-flex align-items-center query-datasource-quick-action"
-          onClick={handleNewFolder}
-          data-cy="new-folder-add-query-card"
-        >
-          <SolidIcon name="folder" width="16" height="16" />
-          <span className="ds-source-label">New folder</span>
-        </button>
+        {typeof createFolder === 'function' && (
+          <button
+            className="d-flex align-items-center query-datasource-quick-action"
+            onClick={handleNewFolder}
+            data-cy="new-folder-add-query-card"
+          >
+            <SolidIcon name="folder" width="16" height="16" />
+            <span className="ds-source-label">New folder</span>
+          </button>
+        )}
       </div>
 
       {/* Section divider */}

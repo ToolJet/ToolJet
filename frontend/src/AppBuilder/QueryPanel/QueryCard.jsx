@@ -29,7 +29,7 @@ const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => 
     onClick={(e) => e.stopPropagation()}
   >
     <Modal.Header>
-      <Modal.Title>Delete {queryName}?</Modal.Title>
+      <Modal.Title>Delete {decodeEntities(queryName)}?</Modal.Title>
     </Modal.Header>
     <Modal.Body>Are you sure you want to delete this query? This action is irreversible.</Modal.Body>
     <Modal.Footer>
