@@ -172,3 +172,17 @@ export {
   collapsibleContentVariants,
 } from './Collapsible/Collapsible';
 export { Toaster, toast } from './Sonner/Sonner';
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetPortal,
+  SheetOverlay,
+  SheetContent,
+  sheetContentVariants,
+  SheetHeader,
+  SheetBody,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from './Sheet/Sheet';
