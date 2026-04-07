@@ -83,6 +83,7 @@ export default function generateColumnsData({
   id,
   darkMode,
   fireEvent,
+  setExposedVariables,
   tableRef,
   handleCellValueChange,
   validateDates,
@@ -476,6 +477,13 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   rowData={rowData}
                   onClick={(buttonId, tableColumnEvents) => {
+                    if (setExposedVariables) {
+                      setExposedVariables({
+                        selectedRow: rowData ?? {},
+                        selectedRowId: row.index,
+                      });
+                    }
+
                     const buttonEvents = tableColumnEvents.filter(
                       (event) => event?.event?.ref === `${columnKey}::${buttonId}`
                     );
