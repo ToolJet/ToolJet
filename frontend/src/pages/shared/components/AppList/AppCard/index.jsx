@@ -24,12 +24,13 @@ export default function AppCard({
   appType,
   basicPlan,
   moduleEnabled,
-  currentFolderId,
+  currentSelectedFolder,
   onMenuItemClick,
   checkUserPermissions,
+  ownedFolders,
 }) {
   const { t } = useTranslation();
-  const { id, name, icon, editing_version, created_at, updated_at, slug, home_page_handle } = appDetails;
+  const { id, name, icon, editing_version, created_at, updated_at, slug, home_page_handle, app_versions } = appDetails;
 
   const { hasCreatePermission, hasUpdatePermission, hasDeletePermission, hasViewPermission } = useMemo(
     () => checkUserPermissions(appDetails),
@@ -38,8 +39,15 @@ export default function AppCard({
 
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;
+
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, id);
-  const hasNonReleasedAccess =
+
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
+
+  const hasNonReleasedPreviewAccess =
     environmentAccess.development || environmentAccess.staging || environmentAccess.production;
 
   const updatedAt = editing_version?.updated_at || updated_at;
@@ -47,13 +55,15 @@ export default function AppCard({
 
   const isAppTypeModuleAndModuleNotEnabled = appType === 'module' && !moduleEnabled;
 
+  const isStub = app_versions?.[0]?.is_stub;
+
   const handleEditClick = () => {
     posthogHelper.captureEvent('click_edit_button_on_card', {
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,
       app_id: id,
-      folder_id: currentFolderId,
+      folder_id: currentSelectedFolder?.value,
     });
   };
 
@@ -110,17 +120,25 @@ export default function AppCard({
           {textBlock}
 
           <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-w-full">
-            {!hasUpdatePermission && hasViewPermission && appType !== 'module' && hasNonReleasedAccess && (
-              <ViewBtn appId={id} appSlug={slug} homePageHandle={home_page_handle} basicPlan={basicPlan} />
+            {!hasUpdatePermission && hasViewPermission && appType !== 'module' && hasNonReleasedPreviewAccess && (
+              <ViewBtn
+                appId={id}
+                appSlug={slug}
+                homePageHandle={home_page_handle}
+                basicPlan={basicPlan}
+                isBuilder={isBuilder}
+                environmentAccess={environmentAccess}
+              />
             )}
 
-            {appType !== 'module' && (
+            {!isStub && appType !== 'module' && (
               <LaunchBtn
-                appId={id}
                 appSlug={slug}
                 appType={appType}
                 currentVersionId={appDetails.current_version_id}
                 isMaintenanceOn={appDetails.is_maintenance_on}
+                isBuilder={isBuilder}
+                environmentAccess={environmentAccess}
               />
             )}
 
@@ -146,7 +164,7 @@ export default function AppCard({
                 </TooltipComp>
               )}
 
-              {(hasCreatePermission || hasDeletePermission || hasUpdatePermission || appType === 'module') && (
+              {(hasDeletePermission || hasUpdatePermission || appType === 'module') && (
                 <AppMenu
                   appType={appType}
                   appDetails={appDetails}
@@ -154,7 +172,8 @@ export default function AppCard({
                   hasUpdatePermission={hasUpdatePermission}
                   hasDeletePermission={hasDeletePermission}
                   onMenuItemClick={onMenuItemClick}
-                  currentFolderId={currentFolderId}
+                  currentSelectedFolder={currentSelectedFolder}
+                  ownedFolders={ownedFolders}
                 />
               )}
             </div>
@@ -165,19 +184,12 @@ export default function AppCard({
   );
 }
 
-function ViewBtn({ appId, appSlug, homePageHandle, basicPlan }) {
+function ViewBtn({ appId, appSlug, homePageHandle, basicPlan, isBuilder, environmentAccess }) {
   const { t } = useTranslation();
 
   const handlePreview = () => {
     const pageHandle = homePageHandle || 'home';
     const slugOrId = isValidSlug(appSlug) ? appSlug : appId;
-
-    const session = authenticationService.currentSessionValue;
-    const appPerms = session?.app_group_permissions;
-    const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, appId);
-
-    // Check if user is a builder
-    const isBuilder = appPerms?.is_all_editable || appPerms?.editable_apps_id?.includes(appId) || false;
 
     // For preview, use first available environment from user's actual permissions
     const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
@@ -197,19 +209,11 @@ function ViewBtn({ appId, appSlug, homePageHandle, basicPlan }) {
   );
 }
 
-function LaunchBtn({ appId, appSlug, appType, currentVersionId, isMaintenanceOn }) {
+function LaunchBtn({ appSlug, appType, currentVersionId, isMaintenanceOn, isBuilder, environmentAccess }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const session = authenticationService.currentSessionValue;
-  const appPerms = session?.app_group_permissions;
-  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, appId);
-
-  // Check if user is a builder based on role, not just editable apps
-  const isBuilder = hasBuilderRole(session?.role ?? {});
-
-  // End-users (non-builders) always have released app access
-  // Builders need explicit canAccessReleased permission
+  // Builders need explicit released access. End users can launch if the app is released.
   const canAccessReleased = !isBuilder || environmentAccess.released;
 
   const isDisabled = appType === 'workflow' ? true : currentVersionId === null || isMaintenanceOn || !canAccessReleased;

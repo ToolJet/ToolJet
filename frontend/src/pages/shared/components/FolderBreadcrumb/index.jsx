@@ -20,16 +20,20 @@ import {
 } from '@/components/ui/Rocket/Select/Select';
 import { authenticationService } from '@/_services/authentication.service';
 import { useAppsStore } from '@/_stores/appsStore';
+import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
 
 // import SearchBar from '../SearchBar';
 
 export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeSelectedFolder }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const hasFolderCRUDPermission = authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d ?? false;
+
+  const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+  const folderGroupPermissions = authenticationService.currentSessionValue?.folder_group_permissions;
+
+  const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
 
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
-
-  const selectedFolderLabel = folderList?.find((folder) => folder.value === selectedFolder)?.label ?? '';
+  const selectedFolderDetails = folderList?.find((folder) => folder.value === selectedFolder) ?? null;
 
   const handleCreateNewFolder = () => {
     setFolderDialogState({ type: 'create-folder' });
@@ -39,7 +43,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
     setFolderDialogState({
       type: 'edit-folder',
       currentFolderId: selectedFolder,
-      initialFolderName: selectedFolderLabel,
+      initialFolderName: selectedFolderDetails?.label ?? '',
     });
   };
 
@@ -49,6 +53,35 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
       currentFolderId: selectedFolder,
     });
   };
+
+  // Check if user can edit a specific folder (granular permission)
+  const canEditSpecificFolder = (folderId) => {
+    if (!folderGroupPermissions) return false;
+
+    return Boolean(
+      folderGroupPermissions.is_all_editable || folderGroupPermissions.editable_folders_id?.includes(folderId)
+    );
+  };
+
+  const isOwnerOfFolder = (folder) => {
+    return folder?.createdBy === currentUserId;
+  };
+
+  const hasOverallCreateFolderPermission =
+    authenticationService.currentSessionValue?.user_permissions?.folder_create ?? false;
+  const hasOverallDeleteFolderPermission =
+    authenticationService.currentSessionValue?.user_permissions?.folder_delete ?? false;
+
+  const hasCreateFolderPermission = !isWorkspaceBranchLocked && hasOverallCreateFolderPermission;
+
+  // Determine if user can update/delete a specific folder
+  // Rename: requires granular canEditFolder OR (folderCreate + ownership)
+  // Delete: requires master Delete OR (folderCreate + ownership)
+  const hasDeleteFolderPermission =
+    (!isWorkspaceBranchLocked && hasOverallDeleteFolderPermission) || isOwnerOfFolder(selectedFolderDetails);
+  const hasUpdateFolderPermission = canEditSpecificFolder(selectedFolder) || isOwnerOfFolder(selectedFolderDetails);
+
+  const hasDeleteOrUpdateFolderPermission = hasDeleteFolderPermission || hasUpdateFolderPermission;
 
   return (
     <Breadcrumb>
@@ -74,32 +107,36 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
             >
               <header className="tw-p-2">
                 <div className="tw-flex tw-justify-between tw-items-center tw-gap-1">
-                  <p className="tw-font-title-default tw-text-text-default tw-flex tw-items-center tw-gap-1.5">
+                  <p className="tw-font-title-default tw-text-text-default tw-flex tw-items-center tw-gap-1.5 tw-mb-0">
                     <span className="tw-p-1.5 tw-rounded-lg tw-bg-background-accent-weak">
                       <FolderOpen size={16} color="var(--icon-accent)" />
                     </span>
-                    {selectedFolderLabel}
+                    {selectedFolderDetails?.label ?? ''}
                   </p>
 
-                  {selectedFolder && selectedFolder !== 'all' && hasFolderCRUDPermission && (
+                  {selectedFolder && selectedFolder !== 'all' && hasDeleteOrUpdateFolderPermission && (
                     <div className="tw-flex tw-items-center">
-                      <Button
-                        isLucid
-                        iconOnly
-                        size="medium"
-                        variant="ghost"
-                        leadingIcon="square-pen"
-                        onClick={handleEditFolder}
-                      />
+                      {hasUpdateFolderPermission && (
+                        <Button
+                          isLucid
+                          iconOnly
+                          size="medium"
+                          variant="ghost"
+                          leadingIcon="square-pen"
+                          onClick={handleEditFolder}
+                        />
+                      )}
 
-                      <Button
-                        isLucid
-                        iconOnly
-                        size="medium"
-                        variant="ghost"
-                        leadingIcon="trash"
-                        onClick={handleDeleteFolder}
-                      />
+                      {hasDeleteFolderPermission && (
+                        <Button
+                          isLucid
+                          iconOnly
+                          size="medium"
+                          variant="ghost"
+                          leadingIcon="trash"
+                          onClick={handleDeleteFolder}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
@@ -121,7 +158,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                 ))}
               </SelectGroup>
 
-              {hasFolderCRUDPermission && (
+              {hasCreateFolderPermission && (
                 <>
                   <SelectSeparator className="tw-bg-border-weak" />
 

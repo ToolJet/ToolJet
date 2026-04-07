@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button/Button';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -8,7 +9,10 @@ import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { useAppsStore } from '@/_stores/appsStore';
 import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
 import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
+import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
 import { useFetchApps, useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
+import { authenticationService } from '@/_services/authentication.service';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import Layout from '@/_ui/Layout';
 
 import { canUserPerformAppAction } from './appsAndModulesPermissions';
@@ -25,10 +29,9 @@ import AppsAndModulesTab from './components/AppsAndModulesTab';
 import BuildWithAIAssistant from './components/BuildWithAIAssistant';
 import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
 
-const classes = { contentContainer: 'tw-h-dvh tw-grid tw-grid-rows-[auto_1fr_auto]', contentBody: 'tw-pt-0' };
+const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
 
 export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const currentPage = useAppsStore((state) => state.currentPage);
@@ -38,6 +41,8 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
 
   const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
     useHandleAppCreationFromLandingPage();
@@ -57,6 +62,21 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   );
   const { data: featureAccess } = useFetchFeatureAccess();
   const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
+
+  useEffect(() => {
+    let timeoutId;
+
+    const gitSyncToast = sessionStorage.getItem('git_sync_toast');
+
+    if (gitSyncToast) {
+      sessionStorage.removeItem('git_sync_toast');
+      timeoutId = setTimeout(() => toast.error(gitSyncToast), 500);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   useEffect(() => {
     if (hasFromTemplateSearchParam) {
@@ -97,6 +117,11 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const shouldExcludeEnvParam = invalidLicense;
   const moduleEnabled = featureAccess?.modulesEnabled || false;
 
+  const ownedFolders = (folders ?? []).filter(
+    (folder) =>
+      folder.value !== 'all' && folder.createdBy === authenticationService.currentSessionValue?.current_user?.id
+  );
+
   if (showAIOnboardingLoadingScreen) {
     return <TJLoader />;
   }
@@ -110,7 +135,9 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       shouldWrapContentBody={false}
       switchDarkMode={switchDarkMode}
     >
-      <main className="tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
+      {appType === 'front-end' && <WorkspaceLockedBanner pageContext="apps" />}
+
+      <main className="tw-flex-1 tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
         <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
           {appType === 'front-end' ? (
             <LicenseBanner
@@ -124,7 +151,9 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 <div className="tw-flex tw-items-center tw-gap-2">
                   <CreateAppButton
                     label={t('homePage.header.createNewApplication', 'Create new app')}
+                    appType={appType}
                     disabled={isCreationDisabled}
+                    isWorkspaceBranchLocked={isWorkspaceBranchLocked}
                   />
 
                   <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
@@ -135,7 +164,12 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
             </LicenseBanner>
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
-              <CreateAppButton label={'Create new module'} disabled={isCreationDisabled} />
+              <CreateAppButton
+                label="Create new module"
+                appType={appType}
+                disabled={isCreationDisabled}
+                isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+              />
 
               <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
             </div>
@@ -158,10 +192,11 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 <AppList
                   apps={apps.apps}
                   appType={appType}
-                  currentFolderId={selectedFolderId}
+                  currentSelectedFolder={currentSelectedFolder}
                   checkUserPermissions={checkUserPermissions}
                   basicPlan={shouldExcludeEnvParam}
                   moduleEnabled={moduleEnabled}
+                  ownedFolders={ownedFolders}
                 />
               ) : (
                 <EmptyState

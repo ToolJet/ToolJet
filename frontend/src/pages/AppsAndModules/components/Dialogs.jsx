@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+// eslint-disable-next-line import/no-unresolved
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useAppsStore } from '@/_stores/appsStore';
 import { useFetchTemplateDependentPlugins } from '@/_services/hooks/libraryAppServiceHooks';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import PermissionDeniedDialog from './PermissionDeniedDialog';
@@ -20,12 +23,19 @@ export default function Dialogs({
   showInsufficentPermissionModalstate,
   handleClosePermissionDeniedModal,
 }) {
+  const queryClient = useQueryClient();
+
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+
   const appDialogState = useAppsStore((state) => state.appDialogState);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
 
   const folderDialogState = useAppsStore((state) => state.folderDialogState);
   const resetFolderDialogState = useAppsStore((state) => state.resetFolderDialogState);
+
+  const openSwitchBranchModal = useAppsStore((state) => state.openSwitchBranchModal);
+  const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
 
   const [setSearchParams] = useSearchParams();
   const [templateToCreate, setTemplateToCreate] = useState(null);
@@ -69,6 +79,15 @@ export default function Dialogs({
   const handleCloseTemplateDialog = () => {
     resetAppDialogState();
     setSearchParams({}, { replace: true });
+  };
+
+  const handleCloseSwitchBranchModal = () => setOpenSwitchBranchModal(false);
+
+  const handleOnBranchSwitch = () => {
+    handleCloseSwitchBranchModal();
+    setCurrentPage(1);
+    queryClient.invalidateQueries({ queryKey: ['apps'] });
+    setAppDialogState({ type: 'create' });
   };
 
   const isExportAppDialogOpen = appDialogState.type === 'export';
@@ -137,6 +156,12 @@ export default function Dialogs({
       {showInsufficentPermissionModalstate && (
         <PermissionDeniedDialog open={showInsufficentPermissionModalstate} onClose={handleClosePermissionDeniedModal} />
       )}
+
+      <WorkspaceSwitchBranchModal
+        show={openSwitchBranchModal}
+        onClose={handleCloseSwitchBranchModal}
+        onBranchSwitch={handleOnBranchSwitch}
+      />
 
       {showLimitBanner && (
         <LicenseBanner

@@ -21,11 +21,49 @@ export default function AppMenu({
   hasUpdatePermission,
   hasCreatePermission,
   hasDeletePermission,
-  currentFolderId,
+  currentSelectedFolder,
+  ownedFolders,
 }) {
   const { t } = useTranslation();
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const currentSession = authenticationService.currentSessionValue;
+  const currentUserId = currentSession?.current_user?.id;
+
+  // ─── Ownership ────────────────────────────────────────────────────────────────
+  const isAppOwner = !!(appDetails.user_id && currentUserId && appDetails.user_id === currentUserId);
+
+  // ─── App-level edit access ────────────────────────────────────────────────────
+  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
+  // already covers apps in folders owned by or explicitly shared with the user.
+  const canEditApp =
+    currentSession?.app_group_permissions?.is_all_editable ||
+    currentSession?.app_group_permissions?.editable_apps_id?.includes(appDetails.id);
+
+  const canModifyApp = canEditApp || isAppOwner;
+
+  const folderGroupPermissions = currentSession?.folder_group_permissions;
+
+  const canEditAnyFolderViaGroup =
+    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
+
+  // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
+  const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
+
+  const canAddAppToFolder =
+    canModifyApp &&
+    (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders);
+
+  // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
+  const canRemoveFromFolder =
+    !!currentSelectedFolder?.value &&
+    canModifyApp &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      folderGroupPermissions?.is_all_editable ||
+      folderGroupPermissions?.editable_folders_id?.includes(currentSelectedFolder?.value) ||
+      currentSelectedFolder?.createdBy === currentUserId);
 
   return (
     <DropdownMenu>
@@ -59,31 +97,30 @@ export default function AppMenu({
           )}
 
           {/* TODO: remove appType check to enable folder for module */}
-          {hasCreatePermission && appType !== 'module' && (
-            <>
-              <AppMenuItem
-                icon={FolderInput}
-                label={t('homePage.appCard.addToFolder', 'Add to folder')}
-                onItemClick={() => {
-                  onMenuItemClick('add-to-folder', appDetails);
+          {canAddAppToFolder && appType !== 'module' && (
+            <AppMenuItem
+              icon={FolderInput}
+              label={t('homePage.appCard.addToFolder', 'Add to folder')}
+              onItemClick={() => {
+                onMenuItemClick('add-to-folder', appDetails);
 
-                  posthogHelper.captureEvent('click_add_to_folder_option', {
-                    workspace_id:
-                      authenticationService?.currentUserValue?.organization_id ||
-                      authenticationService?.currentSessionValue?.current_organization_id,
-                    app_id: appDetails.id,
-                  });
-                }}
-              />
+                posthogHelper.captureEvent('click_add_to_folder_option', {
+                  workspace_id:
+                    authenticationService?.currentUserValue?.organization_id ||
+                    authenticationService?.currentSessionValue?.current_organization_id,
+                  app_id: appDetails.id,
+                });
+              }}
+            />
+          )}
 
-              {currentFolderId && (
-                <AppMenuItem
-                  icon={FolderOutput}
-                  label={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-                  onItemClick={() => onMenuItemClick('remove-app-from-folder', appDetails, currentFolderId)}
-                />
-              )}
-            </>
+          {/* TODO: remove appType check to enable folder for module */}
+          {canRemoveFromFolder && appType !== 'module' && (
+            <AppMenuItem
+              icon={FolderOutput}
+              label={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+              onItemClick={() => onMenuItemClick('remove-app-from-folder', appDetails, currentSelectedFolder?.value)}
+            />
           )}
 
           {hasUpdatePermission && hasCreatePermission && (

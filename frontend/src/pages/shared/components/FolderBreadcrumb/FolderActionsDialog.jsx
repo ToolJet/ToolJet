@@ -16,6 +16,7 @@ import {
   useRemoveAppFromFolder,
   useUpdateFolder,
 } from '@/_services/hooks/foldersServiceHooks';
+import { authenticationService } from '@/_services/authentication.service';
 import { useSearch } from '@/_hooks/useSearch';
 
 import ActionDialog from '../ActionDialog';
@@ -234,11 +235,27 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
     setSearchTerm(e.target.value);
   };
 
+  const baseFolderFilterLogic = (folder) => {
+    if (folder.value === 'all') return false;
+
+    const currentSession = authenticationService.currentSessionValue;
+    if (currentSession?.super_admin || currentSession?.admin) return true;
+
+    // Check if user has edit permissions for the folder
+    const folderPermissions = currentSession?.user_permissions?.folder;
+    if (folderPermissions?.is_all_editable || folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
+
+    // Allow folder owners to add apps to their own folders
+    const currentUserId = currentSession?.current_user?.id;
+    return !!(currentUserId && folder.created_by === currentUserId);
+  };
+
   const filteredFolder =
     debouncedSearchTerm.trim() === ''
-      ? folders.filter((folder) => folder.value !== 'all')
+      ? folders.filter(baseFolderFilterLogic)
       : folders.filter(
-          (folder) => folder.value !== 'all' && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+          (folder) =>
+            baseFolderFilterLogic(folder) && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
         );
 
   return (
@@ -250,7 +267,7 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
         classes={{ searchInputContainer: 'tw-mb-4' }}
       />
 
-      <ul className="tw-list-none tw-h-56 tw-overflow-y-auto">
+      <ul className="tw-list-none tw-h-56 tw-overflow-y-auto tw-pl-0 tw-mb-0">
         {filteredFolder.length ? (
           filteredFolder.map((folder) => (
             <li

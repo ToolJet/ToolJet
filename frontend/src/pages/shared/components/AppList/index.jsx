@@ -5,20 +5,37 @@ import { useAppsStore } from '@/_stores/appsStore';
 import { useAppsFilter } from '../../hooks/useAppsFilter';
 import AppCard from './AppCard';
 
-export default function AppList({ apps, appType, currentFolderId, checkUserPermissions, basicPlan, moduleEnabled }) {
+export default function AppList({
+  apps,
+  appType,
+  currentSelectedFolder,
+  checkUserPermissions,
+  basicPlan,
+  moduleEnabled,
+  ownedFolders,
+}) {
   return (
     <GridLayoutContainer
       apps={apps}
       appType={appType}
-      currentFolderId={currentFolderId}
+      currentSelectedFolder={currentSelectedFolder}
       checkUserPermissions={checkUserPermissions}
       basicPlan={basicPlan}
       moduleEnabled={moduleEnabled}
+      ownedFolders={ownedFolders}
     />
   );
 }
 
-function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissions, basicPlan, moduleEnabled }) {
+function GridLayoutContainer({
+  apps,
+  appType,
+  currentSelectedFolder,
+  checkUserPermissions,
+  basicPlan,
+  moduleEnabled,
+  ownedFolders,
+}) {
   const { folderId } = useAppsFilter({ appType });
 
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -59,12 +76,13 @@ function GridLayoutContainer({ apps, appType, currentFolderId, checkUserPermissi
             key={app.id}
             appDetails={app}
             appType={appType}
-            currentFolderId={currentFolderId}
+            currentSelectedFolder={currentSelectedFolder}
             onMenuItemClick={handleMenuItemClick}
             isUserNotInAllFolder={Boolean(folderId)}
             checkUserPermissions={checkUserPermissions}
             basicPlan={basicPlan}
             moduleEnabled={moduleEnabled}
+            ownedFolders={ownedFolders}
           />
         );
       })}

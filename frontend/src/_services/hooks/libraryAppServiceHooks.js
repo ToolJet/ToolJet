@@ -5,14 +5,17 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { libraryAppService } from '@/_services/library-app.service';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export function useDeployTemplateApp() {
   const navigate = useNavigate();
 
+  const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+
   return useMutation({
     mutationFn: ({ identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false }) =>
-      libraryAppService.deploy(identifier, appName, dependentPlugins, shouldAutoImportPlugin),
+      libraryAppService.deploy(identifier, appName, dependentPlugins, shouldAutoImportPlugin, activeBranchId),
     onError: (error) => {
       toast.error(error?.error ?? '');
     },

@@ -17,7 +17,12 @@ const defaultFolder = (appType) => ({
 
 const selectFolders = (appType) => (raw) => {
   const formattedFolderList =
-    raw?.folders?.map((folder) => ({ label: folder.name, value: folder.id, count: folder.count })) || [];
+    raw?.folders?.map((folder) => ({
+      label: folder.name,
+      value: folder.id,
+      count: folder.count,
+      createdBy: folder.created_by,
+    })) || [];
 
   return [defaultFolder(appType), ...formattedFolderList];
 };

@@ -18,6 +18,7 @@ const initialState = {
   appSearchQuery: '',
   appDialogState: { ...appDialogInitialState },
   folderDialogState: { ...folderDialogInitialState },
+  openSwitchBranchModal: false,
 };
 
 // For apps, workflow and module list page
@@ -51,6 +52,10 @@ export const useAppsStore = createZustandStoreWithImmer(
     resetFolderDialogState: () =>
       set((state) => {
         state.folderDialogState = { ...folderDialogInitialState };
+      }),
+    setOpenSwitchBranchModal: (isOpen) =>
+      set((state) => {
+        state.openSwitchBranchModal = isOpen;
       }),
     //  TODO: Might need to reset store on page change as its used across multiple pages
   }),

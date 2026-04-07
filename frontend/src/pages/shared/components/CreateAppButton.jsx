@@ -1,15 +1,18 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { useAppsStore } from '@/_stores/appsStore';
 import { Button } from '@/components/ui/Button/Button';
 
-export default function CreateAppButton({ label, disabled }) {
-  const { t } = useTranslation();
-
+export default function CreateAppButton({ label, disabled, appType, isWorkspaceBranchLocked }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+  const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
 
   const handleOpenCreateAppDialog = () => {
+    if (isWorkspaceBranchLocked && appType === 'front-end') {
+      setOpenSwitchBranchModal(true);
+      return;
+    }
+
     setAppDialogState({ type: 'create' });
   };
 
