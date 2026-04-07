@@ -81,6 +81,20 @@ export const dividerConfig = {
       },
       accordian: 'Divider',
     },
+    textWrap: {
+      type: 'switch',
+      displayName: 'Text wrap',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'wrap',
+      },
+      options: [
+        { displayName: 'Wrap', value: 'wrap' },
+        { displayName: 'No wrap', value: 'nowrap' },
+      ],
+      accordian: 'Divider',
+      isFxNotRequired: true,
+    },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box Shadow',
@@ -122,6 +136,7 @@ export const dividerConfig = {
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
       labelColor: { value: 'var(--cc-placeholder-text)' },
+      textWrap: { value: 'wrap' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
