@@ -43,32 +43,6 @@ export const dividerConfig = {
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-      section: 'additionalActions',
-    },
-    tooltip: {
-      type: 'code',
-      displayName: 'Tooltip',
-      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
-      section: 'additionalActions',
-      placeholder: 'Enter tooltip text',
-    },
-  },
-  events: {},
-  styles: {
-    dividerColor: {
-      type: 'colorSwatches',
-      displayName: 'Divider color',
-      validation: {
-        schema: { type: 'string' },
         defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'Divider',
@@ -106,6 +80,20 @@ export const dividerConfig = {
         schema: { type: 'string' },
       },
       accordian: 'Divider',
+    },
+    textWrap: {
+      type: 'switch',
+      displayName: 'Text wrap',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'wrap',
+      },
+      options: [
+        { displayName: 'Wrap', value: 'wrap' },
+        { displayName: 'No wrap', value: 'nowrap' },
+      ],
+      accordian: 'Divider',
+      isFxNotRequired: true,
     },
     boxShadow: {
       type: 'boxShadow',
@@ -148,6 +136,7 @@ export const dividerConfig = {
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
       labelColor: { value: 'var(--cc-placeholder-text)' },
+      textWrap: { value: 'wrap' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

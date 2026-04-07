@@ -83,6 +83,7 @@ export default function generateColumnsData({
   id,
   darkMode,
   fireEvent,
+  setExposedVariables,
   tableRef,
   handleCellValueChange,
   validateDates,
@@ -99,7 +100,7 @@ export default function generateColumnsData({
     .map((column) => {
       if (!column) return null;
 
-      const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
+      const columnSize = column.columnSize || columnSizes[column?.id] || columnSizes[column?.name];
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -476,6 +477,13 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   rowData={rowData}
                   onClick={(buttonId, tableColumnEvents) => {
+                    if (setExposedVariables) {
+                      setExposedVariables({
+                        selectedRow: rowData ?? {},
+                        selectedRowId: row.index,
+                      });
+                    }
+
                     const buttonEvents = tableColumnEvents.filter(
                       (event) => event?.event?.ref === `${columnKey}::${buttonId}`
                     );

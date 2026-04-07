@@ -1374,6 +1374,13 @@ $border-radius: 4px;
         color: var(--slate11);
       }
     }
+
+    .query-hinter {
+      // Gets applied to multiline codeeditor only inside query panel
+      .cm-editor {
+          border-radius: 0 0 8px 8px;
+      }
+    }
   }
 
   .runjs-editor {
@@ -1508,19 +1515,9 @@ $border-radius: 4px;
 }
 
 .runps-editor {
-  .query-hinter {
-    border-radius: 6px !important;
-  }
-
   .CodeMirror.cm-s-monokai.CodeMirror-wrap,
   .cm-s-monokai .CodeMirror-gutters {
     background-color: var(--slate3) !important;
-  }
-}
-
-.rest-api-tabpanes-body {
-  .query-hinter {
-    border-radius: 6px !important;
   }
 }
 
@@ -1802,8 +1799,8 @@ $border-radius: 4px;
 .copilot-section-header {
   background-color: var(--surfaces-surface-01);
   border: 1px solid var(--borders-disabled-on-white);
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
 .query-manager-input-elem {
@@ -1814,8 +1811,6 @@ $border-radius: 4px;
 }
 
 .query-hinter {
-  border-radius: 0px 0px 6px 6px;
-
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {

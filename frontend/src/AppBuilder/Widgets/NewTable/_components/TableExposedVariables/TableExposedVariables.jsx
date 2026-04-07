@@ -244,7 +244,6 @@ export const TableExposedVariables = ({
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
 
-
   // Clear dataUpdates & changeSet when data is changed
   useEffect(() => {
     if (!hasDataChanged) return;

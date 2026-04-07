@@ -1,17 +1,18 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
-import nodemailer from 'nodemailer';
+import nodemailer, { Transporter } from 'nodemailer';
+import type { Attachment } from 'nodemailer/lib/mailer';
 
 export default class Smtp implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const nodemailerTransport = await this.getConnection(sourceOptions);
+    const nodemailerTransport: Transporter = await this.getConnection(sourceOptions);
     const { from, to, cc, bcc, from_name, subject, textContent, htmlContent } = queryOptions;
-    const attachments =
+    const attachments: { name: string; dataURL: string }[] | undefined =
       queryOptions['attachment_array'] && typeof queryOptions['attachment_array'] === 'string'
         ? JSON.parse(queryOptions['attachment_array'])
         : queryOptions['attachment_array'];
 
-    const filesData = (array: any) => {
+    const filesData = (array: { name: string; dataURL: string }[]): Attachment[] => {
       const newFiles = array.map((x) => {
         return { filename: x.name, content: Buffer.from(x.dataURL, 'base64') };
       });
@@ -45,7 +46,7 @@ export default class Smtp implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const transporter = await this.getConnection(sourceOptions);
+    const transporter: Transporter = await this.getConnection(sourceOptions);
 
     if (!transporter) {
       throw new Error('Invalid credentials');
@@ -62,14 +63,14 @@ export default class Smtp implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<Transporter> {
     const { host, user, password } = sourceOptions;
     const port = Number(sourceOptions.port);
 
-    const transport = nodemailer.createTransport({
+    const transport: Transporter = nodemailer.createTransport({
       port,
       host,
-      secure: port == 465,
+      secure: port === 465,
       auth: {
         user,
         pass: password,

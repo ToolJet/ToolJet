@@ -34,7 +34,6 @@ export const getFormattedSelectTimestamp = (selectedTime, displayFormat) => {
   return val === 'Invalid date' ? null : val;
 };
 
-
 // The above functions are the new ones
 
 export const getUnixTime = (date, displayFormat) => {
@@ -70,7 +69,6 @@ export const convertToIsoWithTimezoneOffset = (timestamp, timezone) => {
   const val = moment.tz(timestamp, timezone).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   return val === 'Invalid date' ? null : val;
 };
-
 
 export const is24HourFormat = (displayFormat) => {
   const uses24HourTokens = /H{1,2}/.test(displayFormat);

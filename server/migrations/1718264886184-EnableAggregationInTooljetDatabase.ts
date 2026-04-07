@@ -16,7 +16,7 @@ export class EnableAggregationInTooljetDatabase1718264886184 implements Migratio
         await transactionalEntityManager.queryRunner.query('CREATE SCHEMA IF NOT EXISTS postgrest');
         console.log(`Migration: EnableAggregationInTooljetDatabase --- Created new schema 'postgrest'`);
 
-        await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to ${tooljetDbUser}`);
+        await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to "${tooljetDbUser}"`);
         console.log(
           `Migration: EnableAggregationInTooljetDatabase --- Granted 'postgrest' schema access to tooljet database user`
         );

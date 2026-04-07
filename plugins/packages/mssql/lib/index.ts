@@ -288,25 +288,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
 }
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    let finalOptions: SourceOptions;
-    
-    if (sourceOptions.connection_type === 'string') {
-      const parsedOptions = this.parseConnectionString(sourceOptions.connection_string || '');
-      
-
-       finalOptions = { ...sourceOptions };
-        if (parsedOptions.host) finalOptions.host= finalOptions.host || parsedOptions.host;
-        if (parsedOptions.port) finalOptions.port=finalOptions.port || parsedOptions.port;
-        if (parsedOptions.database) finalOptions.database=finalOptions.database || parsedOptions.database;
-        if (parsedOptions.username) finalOptions.username=finalOptions.username || parsedOptions.username;
-        if (parsedOptions.password) finalOptions.password=finalOptions.password || parsedOptions.password;
-        if (parsedOptions.instanceName) finalOptions.instanceName =finalOptions.instanceName|| parsedOptions.instanceName;
-        if (parsedOptions.azure !== undefined) finalOptions.azure=finalOptions.azure|| parsedOptions.azure;
-
-    } else {
-      finalOptions = sourceOptions;
-    }
-
+    const finalOptions: SourceOptions = sourceOptions;
    // SSL config 
     const shouldUseSSL = finalOptions.ssl_enabled === true;
     let sslObject: any = null;
@@ -345,19 +327,35 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
       port = +finalOptions.port;
     }
 
+    // Service Principal (Azure AD) authentication
+    const isServicePrincipal = finalOptions.auth_type === 'service_principal';
+
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
-        host: host,
-        user: finalOptions.username,
-        password: finalOptions.password,
+        ...(isServicePrincipal
+          ? {
+              // Knex mssql dialect builds the tedious auth block from these FLAT fields.
+              // It ignores any nested 'authentication' object entirely.
+              server: host,
+              type: 'azure-active-directory-service-principal-secret',
+              tenantId: finalOptions.sp_tenant_id,
+              clientId: finalOptions.sp_client_id,
+              clientSecret: finalOptions.sp_client_secret,
+            }
+          : {
+              host: host,
+              user: finalOptions.username,
+              password: finalOptions.password,
+            }),
         database: finalOptions.database,
         port: port,
         options: {
-          encrypt: (finalOptions.azure ?? false) || shouldUseSSL,
+          encrypt: isServicePrincipal ? true : ((finalOptions.azure ?? false) || shouldUseSSL),
           instanceName: finalOptions.instanceName,
-          trustServerCertificate: shouldUseSSL && finalOptions.ssl_certificate === 'none',
-          ...(shouldUseSSL ? { cryptoCredentialsDetails: sslObject } : {}), // MSSQL uses cryptoCredentialsDetails for TLS
+          trustServerCertificate: !isServicePrincipal && shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          requestTimeout: this.STATEMENT_TIMEOUT,
+          ...(shouldUseSSL && !isServicePrincipal ? { cryptoCredentialsDetails: sslObject } : {}),
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
       },
@@ -438,20 +436,48 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
   }
 
   async listTables(
-    sourceOptions: SourceOptions
+    sourceOptions: SourceOptions,
+    queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
-      
+
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search}%`;
+      const db = sourceOptions.database;
+
+      if (queryOptions?.limit) {
+        const limit = queryOptions.limit;
+        const page = queryOptions.page || 1;
+        const offset = (page - 1) * limit;
+
+        const [dataResult, countResult] = await Promise.all([
+          knexInstance
+            .raw(
+              `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME OFFSET ? ROWS FETCH NEXT ? ROWS ONLY`,
+              [db, searchPattern, offset, limit]
+            )
+            .timeout(this.STATEMENT_TIMEOUT),
+          knexInstance
+            .raw(
+              `SELECT COUNT(*) AS total FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ?`,
+              [db, searchPattern]
+            )
+            .timeout(this.STATEMENT_TIMEOUT),
+        ]);
+
+        const rows = dataResult.map((row: any) => ({ label: row.TABLE_NAME, value: row.TABLE_NAME }));
+        const totalCount = parseInt(countResult?.[0]?.total ?? '0', 10);
+
+        return { status: 'ok', data: { rows, totalCount } };
+      }
+
       const result = await knexInstance
-        .raw(`
-          SELECT TABLE_NAME 
-          FROM INFORMATION_SCHEMA.TABLES 
-          WHERE TABLE_TYPE = 'BASE TABLE' 
-          AND TABLE_CATALOG = ?
-          ORDER BY TABLE_NAME
-        `, [sourceOptions.database])
+        .raw(
+          `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
+          [db, searchPattern]
+        )
         .timeout(this.STATEMENT_TIMEOUT);
 
       const tables = result.map((row: any) => ({
@@ -459,10 +485,7 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
         value: row.TABLE_NAME,
       }));
 
-      return {
-        status: 'ok',
-        data: tables,
-      };
+      return { status: 'ok', data: tables };
     } catch (err) {
       const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
@@ -481,7 +504,22 @@ private parseConnectionString(connectionString: string): Partial<SourceOptions> 
   ): Promise<any> {
     try {
       if (methodName === 'getTables') {
-        return await this.listTables(sourceOptions);
+        const isPaginated = !!args?.limit;
+        const result = await this.listTables(sourceOptions, {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        });
+
+        const payload = (result as any)?.data ?? [];
+
+        if (isPaginated) {
+          const rows = (payload as any)?.rows ?? [];
+          const totalCount = (payload as any)?.totalCount ?? 0;
+          return { items: rows, totalCount };
+        }
+
+        return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
       }
       throw new QueryError(
         'Method not found', 

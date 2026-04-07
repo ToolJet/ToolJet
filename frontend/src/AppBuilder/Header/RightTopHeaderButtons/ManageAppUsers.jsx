@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Share2 } from 'lucide-react';
 
 class ManageAppUsersComponent extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.isUserAdmin = authenticationService.currentSessionValue?.admin;
     this.whiteLabelText = retrieveWhiteLabelText();
@@ -54,7 +54,7 @@ class ManageAppUsersComponent extends React.Component {
     });
   };
 
-  componentDidMount () {
+  componentDidMount() {
     const appId = this.props.appId;
     this.setState({ appId });
   }
@@ -180,7 +180,7 @@ class ManageAppUsersComponent extends React.Component {
   handleMouseLeave = () => {
     this.setState({ isHovered: false });
   };
-  render () {
+  render() {
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
