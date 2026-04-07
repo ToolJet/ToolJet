@@ -158,7 +158,7 @@ Retrieve records from the selected table with optional filtering, sorting, and p
 ### Create Rows
 Insert a new row into the selected table by providing values for the required columns.
 
-In the editor, ensure to the input the **Columns** in `string` format.
+In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Required Parameters
 - **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
@@ -168,7 +168,7 @@ In the editor, ensure to the input the **Columns** in `string` format.
 ### Update Rows
 Modify existing row values in the selected table based on the specified conditions or identifiers.
 
-In the editor, ensure to the input the **Columns** in `string` format.
+In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Required Parameters
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
@@ -190,10 +190,10 @@ Remove one or more rows from the selected table that match the given conditions.
 ### Upsert Rows
 Insert a new row or update an existing row if a matching primary or unique key already exists.
 
-In the editor, ensure to the input the **Columns** in `string` format.
+In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Required Parameters
-- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
 - **Columns**: Provide the column names and values to be inserted or updated.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/upsertrow-gui.png" alt="Mysql Upsert Rows GUI"/>
@@ -203,7 +203,7 @@ Inserts multiple rows into the table in a single operation using an array of rec
 
 #### Required Parameters
 - **Table** : Select the table into which multiple rows need to be inserted.
-- **Records to Insert**: Provide the set of rows and corresponding column values to be inserted in a single operation.
+- **Records to insert**: Provide the set of rows and corresponding column values to be inserted in a single operation.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -230,8 +230,8 @@ Inserts multiple rows into the table in a single operation using an array of rec
 Update multiple existing rows at once by matching records using their primary key values.
 
 #### Required Parameters
-- **Primary Key columns**: Specify the primary key column(s) used to identify the rows that need to be updated.
-- **Records to Update**: Provide multiple records with updated column values for the matching primary key rows. 
+- **Primary key column(s)**: Specify the primary key column(s) used to identify the rows that need to be updated.
+- **Records to update**: Provide multiple records with updated column values for the matching primary key rows. 
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -252,10 +252,10 @@ Update multiple existing rows at once by matching records using their primary ke
 Insert multiple new rows or update existing ones by matching rows using primary key values.
 
 #### Required Parameters
-- **Primary Key columns**: Specify the primary key column(s) used to determine whether each record should be updated or inserted.
-- **Records to Update**: Provide multiple records that will be inserted as new rows or updated if matching primary key values already exist.
+- **Primary key column(s)**: Specify the primary key column(s) used to determine whether each record should be updated or inserted.
+- **Records to upsert**: Provide multiple records that will be inserted as new rows or updated if matching primary key values already exist.
 
-This basically means If the row exists then update, if not do insert. 
+In this operation, if a row with the matching primary key exists, it is updated; otherwise, a new row is inserted.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/bulk-upsert-pk-gui.png" alt="Mysql Bulk Upsert key GUI"/>
 
