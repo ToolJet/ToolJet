@@ -109,8 +109,9 @@ export function handleResponse(
           edition: edition,
         });
 
-        if (!message?.includes('expired') && !avoidUpgradeModal) {
-          ReactDOM.render(modalEl, document.getElementById('modal-div'));
+        const modalContainer = document.getElementById('modal-div');
+        if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
+          ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         redirectToSwitchOrArchivedAppPage(data);
