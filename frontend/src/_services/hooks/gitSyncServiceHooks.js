@@ -18,15 +18,66 @@ export function useFetchOrgGitStatus() {
 const formatRepoApps = (raw) => ({
   reposObj: raw?.meta_data,
   reposOptionList: !isEmpty(raw?.meta_data)
-    ? Object.keys(raw.meta_data).map((gitAppId) => ({ label: raw.meta_data[gitAppId].git_app_name, value: gitAppId }))
+    ? Object.keys(raw.meta_data)
+        .filter((key) => key !== 'has_latest_changes' && key !== 'tags' && raw.meta_data[key]?.git_app_name) // Filter out non-app keys like 'has_latest_changes' and 'tags'
+        .map((gitAppId) => ({ label: raw.meta_data[gitAppId].git_app_name, value: gitAppId }))
     : [],
 });
 
-export function useFetchRepoApps() {
+export function useFetchRepoApps(data) {
+  const { selectedBranch, currentBranch } = data;
+
   return useQuery({
-    queryKey: ['repoApps'],
-    queryFn: () => gitSyncService.gitPull(),
+    queryKey: ['repoApps', { selectedBranch, currentBranch }],
+    queryFn: () => gitSyncService.gitPull(selectedBranch, currentBranch),
     select: formatRepoApps,
+    enabled: !!selectedBranch,
+  });
+}
+
+const formatGitAppUpdatesByName = (raw) => {
+  const latestCommitData = raw?.metaData ?? null;
+  const tags = raw?.metaData?.tags ?? null;
+
+  return {
+    latestCommitData,
+    tags,
+    versionOptions: [
+      ...(latestCommitData?.latestCommit?.[0]
+        ? [
+            {
+              label: 'Latest commit',
+              value: 'latest',
+              isLatest: true,
+              isDraft: true,
+              sha: latestCommitData.latestCommit[0].commitId,
+            },
+          ]
+        : []),
+      ...(Array.isArray(tags)
+        ? tags.map((tag) => {
+            const [, version] = tag.name.split('/');
+
+            return {
+              label: version,
+              value: tag.name,
+              isLatest: false,
+              isDraft: false,
+            };
+          })
+        : []),
+    ],
+  };
+};
+
+export function useFetchGitAppUpdatesByName(data) {
+  const { appName, branchName = '' } = data;
+
+  return useQuery({
+    queryKey: ['gitAppUpdates', { appName, branchName }],
+    queryFn: () => gitSyncService.checkForUpdatesByAppName(appName, branchName),
+    enabled: !!appName,
+    select: formatGitAppUpdatesByName,
   });
 }
 

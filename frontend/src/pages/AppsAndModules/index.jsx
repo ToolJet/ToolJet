@@ -2,6 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+// eslint-disable-next-line import/no-unresolved
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button/Button';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -11,6 +13,7 @@ import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
 import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
 import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
 import { useFetchApps, useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import Layout from '@/_ui/Layout';
@@ -33,6 +36,7 @@ const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody:
 
 export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
@@ -43,6 +47,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
+  const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
 
   const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
     useHandleAppCreationFromLandingPage();
@@ -77,6 +82,14 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       clearTimeout(timeoutId);
     };
   }, []);
+
+  useEffect(() => {
+    if (activeBranchId) {
+      setCurrentPage(1);
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['apps'] });
+    }
+  }, [activeBranchId]);
 
   useEffect(() => {
     if (hasFromTemplateSearchParam) {
@@ -140,6 +153,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       <main className="tw-flex-1 tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
         <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
           {appType === 'front-end' ? (
+            // TODO: LicenseBanner should render only when limit is completely exhausted
             <LicenseBanner
               type="apps"
               size="small"
