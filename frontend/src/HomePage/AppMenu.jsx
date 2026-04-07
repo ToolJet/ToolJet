@@ -109,13 +109,13 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canAddAppToFolder && appType !== 'module' && (
+                {canAddAppToFolder && (
                   <Field
                     text={t('homePage.appCard.addToFolder', 'Add to folder')}
                     onClick={() => openAppActionModal('add-to-folder')}
                   />
                 )}
-                {canRemoveFromFolder && appType !== 'module' && (
+                {canRemoveFromFolder && (
                   <Field
                     text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
                     onClick={() => openAppActionModal('remove-app-from-folder')}
