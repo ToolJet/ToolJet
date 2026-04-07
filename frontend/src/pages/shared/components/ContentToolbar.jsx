@@ -11,21 +11,18 @@ export default function ContentToolbar({
   onAddNewFolder,
   onToggleContentView,
   leadingSlot = null,
-  showFolderBreadcrumb = false,
 }) {
   return (
     <div className="tw-flex tw-items-center tw-gap-4 tw-h-10 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
       {leadingSlot}
 
       <div className="tw-flex-1 tw-flex tw-justify-end tw-items-center tw-gap-3">
-        {showFolderBreadcrumb && (
-          <FolderBreadcrumb
-            selectedFolder={selectedFolder}
-            folderList={folderList}
-            onAddNewFolder={onAddNewFolder}
-            onChangeSelectedFolder={onChangeSelectedFolder}
-          />
-        )}
+        <FolderBreadcrumb
+          selectedFolder={selectedFolder}
+          folderList={folderList}
+          onAddNewFolder={onAddNewFolder}
+          onChangeSelectedFolder={onChangeSelectedFolder}
+        />
 
         {/* <div className="tw-flex tw-items-center tw-gap-1">
         <Button isLucid variant="outline" leadingIcon="rows-3" onClick={onToggleContentView} />

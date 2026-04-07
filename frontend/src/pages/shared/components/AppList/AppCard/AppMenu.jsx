@@ -96,8 +96,7 @@ export default function AppMenu({
             </>
           )}
 
-          {/* TODO: remove appType check to enable folder for module */}
-          {canAddAppToFolder && appType !== 'module' && (
+          {canAddAppToFolder && (
             <AppMenuItem
               icon={FolderInput}
               label={t('homePage.appCard.addToFolder', 'Add to folder')}
@@ -114,8 +113,7 @@ export default function AppMenu({
             />
           )}
 
-          {/* TODO: remove appType check to enable folder for module */}
-          {canRemoveFromFolder && appType !== 'module' && (
+          {canRemoveFromFolder && (
             <AppMenuItem
               icon={FolderOutput}
               label={t('homePage.appCard.removeFromFolder', 'Remove from folder')}

@@ -11,7 +11,7 @@ import { useAppsFilter } from '@/pages/shared/hooks/useAppsFilter';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const defaultFolder = (appType) => ({
-  label: `All ${appType === 'workflow' ? 'workflows' : 'applications'}`,
+  label: `All ${appType === 'front-end' ? 'applications' : `${appType}s`}`,
   value: 'all',
 });
 

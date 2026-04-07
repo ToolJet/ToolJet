@@ -182,8 +182,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
             selectedFolder={selectedFolderId || 'all'}
             onChangeSelectedFolder={setSelectedFolder}
             leadingSlot={<AppsAndModulesTab />}
-            // TODO: remove appType check to enable folder for module
-            showFolderBreadcrumb={appType === 'front-end'}
           />
 
           <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
