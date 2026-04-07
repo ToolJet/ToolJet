@@ -40,6 +40,7 @@ const Table = memo(
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
     const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
     const lastExpandedRowIndex = useTableStore((state) => state.components[id]?.lastExpandedRowIndex ?? null, shallow);
+    const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
     const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
     const setTableActions = useTableStore((state) => state.setTableActions, shallow);
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
@@ -131,6 +132,15 @@ const Table = memo(
       const rowDataItems = data.map((row) => ({ rowData: row }));
       updateCustomResolvables(id, rowDataItems, 'rowData', moduleId, []);
     }, [data, enableExpandableRows, id, moduleId, updateCustomResolvables]);
+
+    // Collapse all rows and clear exposed variables when expandable rows is toggled
+    const prevEnableExpandableRowsRef = useRef(enableExpandableRows);
+    useEffect(() => {
+      if (prevEnableExpandableRowsRef.current === enableExpandableRows) return;
+      prevEnableExpandableRowsRef.current = enableExpandableRows;
+      collapseAllRows(id);
+      setExposedVariables({ currentExpandedRows: [], lastExpandedRow: null });
+    }, [enableExpandableRows, collapseAllRows, id, setExposedVariables]);
 
     // Expose currentExpandedRows / lastExpandedRow and fire onExpand on new expansions
     const prevExpandedRowsRef = useRef({});
