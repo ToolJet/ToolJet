@@ -4,7 +4,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, IsNull, Not } from 'typeorm';
+import { EntityManager, IsNull, Not, In } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { VersionsCreateService } from './services/create.service';
@@ -15,6 +15,9 @@ import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -245,7 +248,9 @@ export class VersionUtilService implements IVersionUtilService {
         throw new BadRequestException('You cannot delete a released version');
       }
 
-      await this.versionRepository.deleteById(app.appVersions[0].id, manager);
+      const versionId = app.appVersions[0].id;
+      await this.cleanupQueryFolderData(manager, versionId);
+      await this.versionRepository.deleteById(versionId, manager);
 
       // TODO: Add audit logs
       return;
@@ -257,10 +262,29 @@ export class VersionUtilService implements IVersionUtilService {
       if (app.currentVersionId && app.currentVersionId === version.id) {
         throw new BadRequestException('You cannot delete a released version');
       }
+
+      await this.cleanupQueryFolderData(manager, version.id);
       await this.versionRepository.deleteById(version.id, manager);
 
       // TODO: Add audit logs
       return;
     }, manager);
+  }
+
+  // DataQuery has CASCADE on AppVersion, but DataQueryFolder and
+  // DataQueryFolderMapping do not — delete them explicitly to avoid orphans.
+  private async cleanupQueryFolderData(manager: EntityManager, versionId: string): Promise<void> {
+    const folders = await manager.find(DataQueryFolder, { where: { appVersionId: versionId } });
+    const folderIds = folders.map((f) => f.id);
+    const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: versionId } });
+    const queryIds = queries.map((q) => q.id);
+    const allChildIds = [...folderIds, ...queryIds];
+
+    if (allChildIds.length > 0) {
+      await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+    }
+    if (folderIds.length > 0) {
+      await manager.delete(DataQueryFolder, { appVersionId: versionId });
+    }
   }
 }
