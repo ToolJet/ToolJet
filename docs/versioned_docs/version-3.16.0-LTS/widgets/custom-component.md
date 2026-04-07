@@ -52,9 +52,9 @@ To access the data passed through the [data](#data) field, define the `data` par
 #### Example
 
 ```js
-import React from 'https://cdn.skypack.dev/react';
-import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({data}) => (
   <Container>
@@ -68,6 +68,10 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
+:::warning CAUTION
+While named imports from `@material-ui/core/+esm` may work in simple cases, they can break in more complex scenarios due to incomplete ESM support in Material UI v4. If you encounter issues, try importing components individually.
+:::
+
 <img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
 ### Update Data Function
@@ -77,9 +81,10 @@ To update the data in the data object, you can use the in-built `updateData` fun
 #### Example
 
 ```js
-import React from 'https://cdn.skypack.dev/react';
-import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Button from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Button/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({data, updateData}) => (
   <Container>
@@ -108,9 +113,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 #### Example
 
 ```js
-import React from "https://cdn.skypack.dev/react";
-import ReactDOM from "https://cdn.skypack.dev/react-dom";
-import { Button, Container } from "https://cdn.skypack.dev/@material-ui/core";
+import React from "https://cdn.jsdelivr.net/npm/react@17.0.2/+esm";
+import ReactDOM from "https://cdn.jsdelivr.net/npm/react-dom@17.0.2/+esm";
+import Button from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Button/+esm";
+import Container from "https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.4/Container/+esm";
 
 const MyCustomComponent = ({ data, runQuery }) => (
   <Container>
