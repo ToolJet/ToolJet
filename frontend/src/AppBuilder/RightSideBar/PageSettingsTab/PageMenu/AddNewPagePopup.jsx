@@ -492,7 +492,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
           <div className="section-header pb-2">Page header</div>
           <div className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show page header on desktop
+              Show on desktop
               <LicenseTooltip
                 message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                 placement="bottom"
@@ -518,7 +518,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
           </div>
           <div className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show page header on mobile
+              Show on mobile
               <LicenseTooltip
                 message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                 placement="bottom"
