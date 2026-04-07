@@ -24,6 +24,10 @@
           "name": "List Tables"
         },
         {
+          "value": "get_dataset_info",
+          "name": "Get Dataset Info"
+        },
+        {
           "value": "create_table",
           "name": "Create Table"
         },
@@ -330,6 +334,19 @@
         "description": "Enter Query results options",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      }
+    },
+    "get_dataset_info": {
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset id"
       }
     },
     "list_tables": {

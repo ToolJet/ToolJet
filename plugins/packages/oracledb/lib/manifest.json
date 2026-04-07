@@ -72,7 +72,7 @@
   },
   "properties": {
     "use_tns_alias": {
-      "label": "Connection Mode",
+      "label": "Connection mode",
       "key": "use_tns_alias",
       "type": "dropdown-component-flip",
       "description": "Select the connection mode to use",
@@ -191,25 +191,25 @@
     },
     "thick": {
       "tns_alias": {
-        "label": "TNS Alias",
+        "label": "TNS alias",
         "key": "tns_alias",
         "type": "text",
         "description": "Enter the TNS Alias (e.g., ORCL)"
       },
       "config_dir": {
-        "label": "Configuration Directory",
+        "label": "Configuration directory",
         "key": "config_dir",
         "type": "text",
         "description": "Enter the directory containing Oracle client configuration files (e.g., tnsnames.ora)"
       },
       "wallet_file_path": {
-        "label": "Oracle Wallet Path",
+        "label": "Oracle wallet path",
         "key": "wallet_file_path",
         "type": "text",
         "description": "Enter the Oracle Wallet directory path"
       },
       "wallet_password": {
-        "label": "Wallet Password",
+        "label": "Wallet password",
         "key": "wallet_password",
         "type": "password",
         "description": "Enter the wallet password (if required)"
@@ -259,20 +259,20 @@
     },
     "thin": {
       "tns_alias": {
-        "label": "TNS Alias",
+        "label": "TNS alias",
         "key": "tns_alias",
         "type": "text",
         "description": "Enter the TNS Alias (e.g., ORCL)"
       },
       "wallet_file": {
-        "label": "Oracle Wallet (.zip)",
+        "label": "Oracle wallet (.zip)",
         "key": "wallet_file",
         "type": "react-component-oracle-wallet",
         "description": "Upload the Oracle Wallet (.zip format) for Thin mode",
         "widget": "react-component-oracle-wallet"
       },
       "wallet_password": {
-        "label": "Wallet Password",
+        "label": "Wallet password",
         "key": "wallet_password",
         "type": "password",
         "description": "Enter the wallet password (if required)"
