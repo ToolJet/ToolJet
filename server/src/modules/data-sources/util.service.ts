@@ -1204,6 +1204,38 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
       await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
+      // Propagate OAuth token to ALL branches (tokens are branch-invariant)
+
+      //Need to check this
+      // await this.propagateTokenToAllBranches(dataSourceId, environmentId, updatedTokenData);
+    });
+  }
+
+  /**
+   * When an OAuth token refreshes, propagate the tokenData to all branch versions
+   * of this data source so tokens stay in sync across branches.
+   */
+  protected async propagateTokenToAllBranches(
+    dataSourceId: string,
+    environmentId: string,
+    updatedTokenData: any
+  ): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // Find all branch versions for this DS
+      const allDSVs = await manager.find(DataSourceVersion, {
+        where: { dataSourceId, isActive: true },
+      });
+
+      for (const dsv of allDSVs) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: dsv.id, environmentId },
+        });
+        if (dsvo) {
+          const opts = dsvo.options || {};
+          opts['tokenData'] = { value: updatedTokenData, encrypted: false };
+          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options: opts, updatedAt: new Date() });
+        }
+      }
     });
   }
 
