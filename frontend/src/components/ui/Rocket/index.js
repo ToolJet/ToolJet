@@ -197,3 +197,5 @@ export {
   TableCaption,
 } from './Table/Table';
 export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
+export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
+export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
