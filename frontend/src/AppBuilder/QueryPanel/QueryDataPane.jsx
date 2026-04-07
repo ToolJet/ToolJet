@@ -115,7 +115,7 @@ export const QueryDataPane = ({ darkMode }) => {
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
         <div className="queries-header">
           <AddDataSourceButton darkMode={darkMode} />
-          <div style={{ display: 'flex', gap: '2px' }}>
+          <div className="queries-header-actions">
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
@@ -191,7 +191,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 : ''
             }`}
           >
-            <div style={{ padding: '4px' }}>
+            <div className="query-list-inner">
               <QueryFolderTree
                 filteredQueries={filteredQueries}
                 searchActive={!!searchTermForFilters || dataSourcesForFilters.length > 0 || sortBy !== 'custom'}
@@ -228,7 +228,7 @@ export const QueryDataPane = ({ darkMode }) => {
               )}
             </div>
             {filteredQueries.length === 0 && folders.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="query-empty-state-wrapper">
                 <EmptyDataSource />
               </div>
             )}
@@ -240,20 +240,8 @@ export const QueryDataPane = ({ darkMode }) => {
 };
 
 const EmptyDataSource = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-    <div
-      style={{
-        width: '52px',
-        height: '52px',
-        borderRadius: '8px',
-        background: 'var(--surfaces-surface-02, #f6f8fa)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '6px',
-        flexShrink: 0,
-      }}
-    >
+  <div className="empty-data-source">
+    <div className="empty-data-source__icon">
       <svg
         width="28"
         height="28"
@@ -270,10 +258,7 @@ const EmptyDataSource = () => (
         <path d="m9 18 3-3-3-3" />
       </svg>
     </div>
-    <span
-      data-cy="label-no-queries"
-      style={{ fontSize: '12px', lineHeight: '18px', color: 'var(--text-placeholder, #6a727c)', textAlign: 'center' }}
-    >
+    <span data-cy="label-no-queries" className="empty-data-source__label">
       No queries yet
     </span>
   </div>
@@ -312,15 +297,9 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
         <Popover
           key={'page.i'}
           id="query-add-ds-popover"
-          className={`ds-select-popover ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
-          style={{
-            width: 'auto',
-            maxWidth: 'none',
-            border: 'none',
-            background: 'transparent',
-            boxShadow: 'none',
-            padding: 0,
-          }}
+          className={`ds-select-popover transparent-popover ${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          }`}
         >
           <DataSourceSelect
             selectRef={selectRef}

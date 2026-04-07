@@ -153,6 +153,15 @@
 }
 
 .query-datasource-quick-action {
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  // Default width for the top quick-action grid (w-100 on accordion items overrides this)
+  width: calc(50% - 4px);
+
   &:hover {
     background-color: var(--surfaces-app-bg, #f1f3f5) !important;
   }
@@ -280,4 +289,93 @@
       background-color: var(--surfaces-app-bg, #2c2e33) !important;
     }
   }
+}
+
+// ─── DataSourcePicker ─────────────────────────────────────────────────────────
+
+// Header: "Start building queries" title block
+.datasource-picker-header {
+  gap: 4px;
+}
+
+.datasource-picker-title {
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.datasource-picker-subtitle {
+  color: var(--text-placeholder);
+  font-size: 12px;
+  max-width: 400px;
+  margin-bottom: 0;
+}
+
+// Quick actions 2-column grid
+.datasource-picker-quick-actions {
+  gap: 8px;
+}
+
+// Label span inside quick-action buttons and accordion source rows
+.ds-source-label {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+// "Available data sources" divider row
+.datasource-picker-divider {
+  gap: 6px;
+}
+
+.datasource-picker-divider-hr {
+  flex: 1;
+  margin: 0;
+  border-color: var(--border-weak);
+}
+
+.datasource-picker-section-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-placeholder);
+  white-space: nowrap;
+}
+
+// Search + Add button row
+.datasource-picker-search-row {
+  gap: 8px;
+}
+
+.datasource-picker-search-wrap {
+  flex: 1;
+}
+
+// Grouped datasource accordion
+.datasource-picker-group {
+  border-bottom: 1px solid var(--border-weak);
+}
+
+.datasource-picker-group-btn {
+  height: 40px;
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.datasource-picker-group-label {
+  gap: 12px;
+}
+
+.datasource-picker-group-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.datasource-picker-sources-list {
+  padding: 0 8px 8px;
+}
+
+// Empty state banner
+.datasource-picker-empty-banner {
+  border-radius: 6px;
 }

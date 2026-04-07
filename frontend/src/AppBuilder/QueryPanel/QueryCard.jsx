@@ -28,23 +28,11 @@ const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => 
     backdropClassName="query-delete-modal-backdrop"
     onClick={(e) => e.stopPropagation()}
   >
-    <Modal.Header style={{ border: 'none', padding: '16px 16px 8px' }}>
-      <Modal.Title style={{ fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Delete {queryName}?</Modal.Title>
+    <Modal.Header>
+      <Modal.Title>Delete {queryName}?</Modal.Title>
     </Modal.Header>
-    <Modal.Body style={{ padding: '0 16px 16px', fontSize: '12px', lineHeight: '18px' }}>
-      Are you sure you want to delete this query? This action is irreversible.
-    </Modal.Body>
-    <Modal.Footer
-      style={{
-        border: 'none',
-        padding: '0 16px 16px',
-        display: 'flex',
-        flexWrap: 'nowrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '8px',
-      }}
-    >
+    <Modal.Body>Are you sure you want to delete this query? This action is irreversible.</Modal.Body>
+    <Modal.Footer>
       <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="cancel-delete-query">
         Cancel
       </ButtonSolid>
@@ -177,7 +165,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 <span
                   ref={queryNameEleRef}
                   className="text-truncate"
-                  style={{ cursor: 'text' }}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
                     if (!shouldFreeze) setRenamingQuery(dataQuery.id);
@@ -187,7 +174,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 </span>
               </ToolTip>
               <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
-                <div className="d-flex align-items-center" style={{ marginLeft: '8px', marginRight: 'auto' }}>
+                <div className="d-flex align-items-center query-card-lock-wrapper">
                   {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                 </div>
               </ToolTip>{' '}
@@ -201,7 +188,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <img src={`assets/images/icons/warning.svg`} style={{ height: '20px' }} alt="Warning" />
+                    <img src={`assets/images/icons/warning.svg`} className="query-card-local-ds-icon" alt="Warning" />
                   </a>{' '}
                   <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
                     Important <br />
