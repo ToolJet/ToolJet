@@ -83,15 +83,15 @@ export const EditorHeader = ({ darkMode }) => {
                     <>
                       <PreviewAndShareIcons />
                       {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                      {/* Hide version dropdown when on a feature branch */}
-                      {selectedVersion?.versionType !== 'branch' && (
-                        <VersionManagerErrorBoundary>
-                          <VersionManagerDropdown darkMode={darkMode} />
-                        </VersionManagerErrorBoundary>
-                      )}
-                      <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                     </>
                   )}
+                  {/* Hide version dropdown when on a feature branch */}
+                  {selectedVersion?.versionType !== 'branch' && (
+                    <VersionManagerErrorBoundary>
+                      <VersionManagerDropdown darkMode={darkMode} />
+                    </VersionManagerErrorBoundary>
+                  )}
+                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                 </div>
               </div>
             </div>
