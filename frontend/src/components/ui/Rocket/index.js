@@ -196,3 +196,4 @@ export {
   TableCell,
   TableCaption,
 } from './Table/Table';
+export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
