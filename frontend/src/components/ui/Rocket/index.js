@@ -186,3 +186,13 @@ export {
   SheetTitle,
   SheetDescription,
 } from './Sheet/Sheet';
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from './Table/Table';
