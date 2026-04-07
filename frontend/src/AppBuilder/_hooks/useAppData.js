@@ -240,11 +240,16 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      const moduleDefinition = getModuleDefinition(appId);
-      if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+      if (versionId) {
+        // Module version pinning: load the specific pinned version
+        appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
-        appDataPromise = appService.fetchApp(appId);
+        const moduleDefinition = getModuleDefinition(appId);
+        if (moduleDefinition) {
+          appDataPromise = Promise.resolve(moduleDefinition);
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       }
     } else {
       if (isPublicAccess) {
@@ -553,7 +558,8 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setApp, setEditorLoading, currentSession, mode, versionId]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
