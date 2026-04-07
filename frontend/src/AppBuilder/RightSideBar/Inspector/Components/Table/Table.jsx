@@ -431,7 +431,6 @@ export const Table = (props) => {
     'dynamicHeight',
     'enableExpandableRows',
     'expansionHeight',
-    'dynamicHeightForExpansion',
   ];
 
   // Accordion items

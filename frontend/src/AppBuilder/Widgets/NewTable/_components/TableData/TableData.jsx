@@ -28,7 +28,6 @@ export const TableData = ({
   enableExpandableRows,
   expandedRows,
   expansionHeight = DEFAULT_EXPANSION_HEIGHT,
-  dynamicHeightForExpansion,
   canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -199,7 +198,6 @@ export const TableData = ({
                   darkMode={darkMode}
                   canvasWidth={canvasWidth}
                   expansionHeight={expansionHeight}
-                  dynamicHeightForExpansion={dynamicHeightForExpansion}
                   virtualizer={rowVirtualizer}
                   virtualItemIndex={virtualRow.index}
                 />

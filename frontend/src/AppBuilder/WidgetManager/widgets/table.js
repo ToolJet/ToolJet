@@ -311,19 +311,6 @@ export const tableConfig = {
         value: true,
       },
     },
-    dynamicHeightForExpansion: {
-      type: 'toggle',
-      displayName: 'Dynamic height for expanded rows',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-      conditionallyRender: {
-        key: 'enableExpandableRows',
-        value: true,
-      },
-      section: 'additionalActions',
-    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -791,7 +778,6 @@ export const tableConfig = {
       selectRowOnCellEdit: { value: '{{false}}' },
       enableExpandableRows: { value: '{{false}}' },
       expansionHeight: { value: '{{250}}' },
-      dynamicHeightForExpansion: { value: '{{false}}' },
     },
     events: [],
     styles: {
