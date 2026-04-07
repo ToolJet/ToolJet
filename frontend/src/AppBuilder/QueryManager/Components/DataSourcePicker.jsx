@@ -97,88 +97,61 @@ function DataSourcePicker({ darkMode }) {
 
   return (
     <>
-      <div className="d-flex flex-column align-items-center text-center mb-3" style={{ gap: '4px' }}>
-        <h4 style={{ fontWeight: 500, marginBottom: 0 }} data-cy={'label-select-datasource'}>
+      <div className="d-flex flex-column align-items-center text-center mb-3 datasource-picker-header">
+        <h4 className="datasource-picker-title" data-cy={'label-select-datasource'}>
           Start building queries
         </h4>
-        <p className="mb-0" style={{ color: 'var(--text-placeholder)', fontSize: '12px', maxWidth: '400px' }}>
+        <p className="datasource-picker-subtitle">
           Bring your apps to life by connecting data sources and workflows. Or explore with sample data to get started
         </p>
       </div>
 
       {/* Quick actions grid */}
-      <div className="d-flex flex-wrap mb-3" style={{ gap: '8px' }}>
+      <div className="d-flex flex-wrap mb-3 datasource-picker-quick-actions">
         {updatedStaticDataSources.map((source) => (
           <button
             key={`${source.id}-${source.kind}`}
             className="d-flex align-items-center query-datasource-quick-action"
-            style={{
-              gap: '6px',
-              padding: '6px 8px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              width: 'calc(50% - 4px)',
-            }}
             onClick={() => handleChangeDataSource(source)}
             data-cy={`${source.kind.toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
           >
             <DataSourceIcon source={source} height={16} />
-            <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{source.shortName}</span>
+            <span className="ds-source-label">{source.shortName}</span>
           </button>
         ))}
         {!!sampleDataSource && (
           <button
             key={`${sampleDataSource.id}-${sampleDataSource.kind}`}
             className="d-flex align-items-center query-datasource-quick-action"
-            style={{
-              gap: '6px',
-              padding: '6px 8px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              width: 'calc(50% - 4px)',
-            }}
             onClick={() => handleChangeDataSource(sampleDataSource)}
             data-cy={`${sampleDataSource.kind.toLowerCase().replace(/\s+/g, '-')}-sample-db-add-query-card`}
           >
             <DataSourceIcon source={sampleDataSource} height={16} />
-            <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>Sample database</span>
+            <span className="ds-source-label">Sample database</span>
           </button>
         )}
         <button
           className="d-flex align-items-center query-datasource-quick-action"
-          style={{
-            gap: '6px',
-            padding: '6px 8px',
-            borderRadius: '6px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            width: 'calc(50% - 4px)',
-          }}
           onClick={handleNewFolder}
           data-cy="new-folder-add-query-card"
         >
           <SolidIcon name="folder" width="16" height="16" />
-          <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>New folder</span>
+          <span className="ds-source-label">New folder</span>
         </button>
       </div>
 
       {/* Section divider */}
-      <div className="d-flex align-items-center mb-2" style={{ gap: '6px' }}>
-        <hr style={{ flex: 1, margin: 0, borderColor: 'var(--border-weak)' }} />
-        <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-placeholder)', whiteSpace: 'nowrap' }}>
+      <div className="d-flex align-items-center mb-2 datasource-picker-divider">
+        <hr className="datasource-picker-divider-hr" />
+        <span className="datasource-picker-section-label">
           {`Available data sources${!isEmpty(allUserDefinedSources) ? ` (${allUserDefinedSources.length})` : ''}`}
         </span>
-        <hr style={{ flex: 1, margin: 0, borderColor: 'var(--border-weak)' }} />
+        <hr className="datasource-picker-divider-hr" />
       </div>
 
       {/* Search + Add */}
-      <div className="d-flex mb-2" style={{ gap: '8px' }}>
-        <div style={{ flex: 1 }}>
+      <div className="d-flex mb-2 datasource-picker-search-row">
+        <div className="datasource-picker-search-wrap">
           <SearchBox2
             width="100%"
             placeholder="Search for datasources"
@@ -211,49 +184,30 @@ function DataSourcePicker({ darkMode }) {
           {Object.entries(groupedSources).map(([kind, { sources, representative }]) => {
             const isCollapsed = collapsedGroups.has(kind);
             return (
-              <div key={kind} style={{ borderBottom: '1px solid var(--border-weak)' }}>
+              <div key={kind} className="datasource-picker-group">
                 <button
-                  className="d-flex align-items-center justify-content-between w-100"
-                  style={{
-                    height: '40px',
-                    padding: '6px 16px',
-                    border: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
+                  className="d-flex align-items-center justify-content-between w-100 datasource-picker-group-btn"
                   onClick={() => toggleGroup(kind)}
                   data-cy={`ds-group-${kind}`}
                 >
-                  <div className="d-flex align-items-center" style={{ gap: '12px' }}>
+                  <div className="d-flex align-items-center datasource-picker-group-label">
                     <DataSourceIcon source={representative} height={16} />
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                      {kind.charAt(0).toUpperCase() + kind.slice(1)}
-                    </span>
+                    <span className="datasource-picker-group-name">{kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
                   </div>
                   <SolidIcon name={isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
                 </button>
                 {!isCollapsed && (
-                  <div style={{ padding: '0 8px 8px' }}>
+                  <div className="datasource-picker-sources-list">
                     {sources.map((source) => (
                       <button
                         key={source.id}
                         className="d-flex align-items-center w-100 query-datasource-quick-action"
-                        style={{
-                          gap: '6px',
-                          padding: '6px 8px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                        }}
                         onClick={() => handleChangeDataSource(source)}
                         data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
                         data-tooltip-content={decodeEntities(source.name)}
                         data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                       >
-                        <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
-                          {decodeEntities(source.name)}
-                        </span>
+                        <span className="ds-source-label">{decodeEntities(source.name)}</span>
                         <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
                       </button>
                     ))}
@@ -269,7 +223,7 @@ function DataSourcePicker({ darkMode }) {
 }
 
 const EmptyDataSourceBanner = () => (
-  <div className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2" style={{ borderRadius: '6px' }}>
+  <div className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2 datasource-picker-empty-banner">
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>

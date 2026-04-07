@@ -1929,3 +1929,147 @@ $border-radius: 4px;
   max-width: 400px;
   width: 330px;
 }
+
+// ─── Query Folder Feature ──────────────────────────────────────────────────────
+
+// Cursor hint on query/folder name spans (enables text selection on double-click)
+.query-name .text-truncate {
+  cursor: text;
+}
+
+// Shared rename input used in QueryRenameInput.jsx and FolderCard.jsx
+.query-rename-input {
+  flex: 1;
+  width: 100%;
+  height: 28px;
+  border: 2px solid #4368e3;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text-default, #1b1f24);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 6px;
+  outline: none;
+
+  .dark-theme &,
+  .theme-dark & {
+    background: var(--surfaces-surface-02, #1f2936);
+    color: #fff;
+  }
+}
+
+// Shared delete-confirm modal structure (DeleteQueryModal + DeleteFolderModal)
+.query-folder-delete-modal {
+  .modal-header {
+    border: none;
+    padding: 16px 16px 8px;
+  }
+
+  .modal-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .modal-body {
+    padding: 0 16px 16px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .modal-footer {
+    border: none;
+    padding: 0 16px 16px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// Lock / restricted-access icon wrapper in QueryCard
+.query-card-lock-wrapper {
+  margin-left: 8px;
+  margin-right: auto;
+}
+
+// Local-DS deprecation warning icon in QueryCard
+.query-card-local-ds-icon {
+  height: 20px;
+}
+
+// Filter + search icon row in QueryDataPane header
+.queries-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+// Inner padding wrapper inside .query-list scroll container
+.query-list-inner {
+  padding: 4px;
+}
+
+// Centered empty-state wrapper inside .query-list
+.query-empty-state-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Empty datasource illustration (QueryDataPane)
+.empty-data-source {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  &__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    background: var(--surfaces-surface-02, #f6f8fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder, #6a727c);
+    text-align: center;
+  }
+}
+
+// Transparent popover shell – strips Bootstrap's border/shadow/bg
+// Used by AddDataSourceButton (QueryDataPane) and folder overlays (FolderCard)
+.transparent-popover {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+// Filter/sort trigger button – active (open) state
+.btn-query-panel-header {
+  &.active {
+    background: var(--slate5);
+  }
+}
+
+// Sort/filter main menu scroll body
+.query-editor-sort-filter-body {
+  height: 315px;
+  overflow-y: auto;
+}
+
+// Datasource filter list scroll body
+.query-ds-filter-list {
+  height: 281px;
+  overflow-y: auto;
+}

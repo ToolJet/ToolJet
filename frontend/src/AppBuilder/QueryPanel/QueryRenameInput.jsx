@@ -36,20 +36,7 @@ export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
   return (
     <input
       data-cy={`query-edit-input-field`}
-      className="query-name"
-      style={{
-        flex: 1,
-        width: '100%',
-        height: '28px',
-        border: '2px solid #4368e3',
-        borderRadius: '6px',
-        background: darkMode ? 'var(--surfaces-surface-02, #1f2936)' : '#fff',
-        color: darkMode ? '#fff' : 'var(--text-default, #1b1f24)',
-        fontSize: '12px',
-        lineHeight: '18px',
-        padding: '0 6px',
-        outline: 'none',
-      }}
+      className="query-name query-rename-input"
       type="text"
       value={value}
       onChange={handleChange}
