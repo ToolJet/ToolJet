@@ -259,6 +259,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
         }
 
+        //Propagate token to all branches since tokens are branch-invariant
+        //this.propagateTokenToAllBranches(dataSourceOptionId, environmentId, { access_token, refresh_token });
+
         // Strip OAuth flow keys and token keys from options
         options = options.filter(
           (option) =>
@@ -472,6 +475,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
             if (shouldClearTokens || authModeToggled) {
               await this.deleteAllUserTokenData(dso.id, manager);
+              //Propagae required ?
             }
 
             const newOptions = await this.parseOptionsForUpdate(
