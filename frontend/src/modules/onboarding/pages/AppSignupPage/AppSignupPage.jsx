@@ -92,9 +92,15 @@ const AppSignupPage = () => {
         const errorMsg = e?.error || '';
         const isUserLimitError =
           errorMsg.toLowerCase().includes('user limit') || errorMsg.toLowerCase().includes('license violation');
-        const message = isUserLimitError
-          ? 'The user limit for this workspace has been reached. Please contact the workspace admin.'
-          : errorMsg || 'Something went wrong!';
+        const message = isUserLimitError ? (
+          <span>
+            User limit reached.
+            <br />
+            Please contact workspace admin.
+          </span>
+        ) : (
+          errorMsg || 'Something went wrong!'
+        );
         toast.error(message, {
           position: 'top-center',
         });
