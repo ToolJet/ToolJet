@@ -100,7 +100,6 @@ export class VersionUtilService implements IVersionUtilService {
     }
 
     await this.versionRepository.update(appVersion.id, editableParams);
-    return;
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -123,24 +122,17 @@ export class VersionUtilService implements IVersionUtilService {
       manager
     );
 
-    if (organizationGit && organizationGit.isBranchingEnabled) {
-      // Only allow one draft version of type 'version' (not branch)
-      // Branch versions can have multiple drafts
-      // If versionType is not provided or is not BRANCH, check for existing draft
-      const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
+    if (organizationGit && organizationGit.isBranchingEnabled && versionType !== AppVersionType.BRANCH) {
+      const existingDraftVersion = await this.versionRepository.findOne({
+        where: {
+          appId: app.id,
+          status: AppVersionStatus.DRAFT,
+          versionType: Not(AppVersionType.BRANCH),
+        },
+      });
 
-      if (!isCreatingBranchVersion) {
-        const existingDraftVersion = await this.versionRepository.findOne({
-          where: {
-            appId: app.id,
-            status: AppVersionStatus.DRAFT,
-            versionType: Not(AppVersionType.BRANCH),
-          },
-        });
-
-        if (existingDraftVersion) {
-          throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
-        }
+      if (existingDraftVersion) {
+        throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
       }
     }
   }
@@ -148,33 +140,10 @@ export class VersionUtilService implements IVersionUtilService {
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
     if (!versionName || versionName.trim().length === 0) {
-      // need to add logic to get the version name -> from the version created at from
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
-    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-      organizationId,
-      manager
-    );
-    if (organizationGit && organizationGit.isBranchingEnabled) {
-      // Only allow one draft version of type 'version' (not branch)
-      // Branch versions can have multiple drafts
-      // If versionType is not provided or is not BRANCH, check for existing draft
-      const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
-
-      if (!isCreatingBranchVersion) {
-        const existingDraftVersion = await this.versionRepository.findOne({
-          where: {
-            appId: app.id,
-            status: AppVersionStatus.DRAFT,
-            versionType: Not(AppVersionType.BRANCH),
-          },
-        });
-        if (existingDraftVersion) {
-          throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
-        }
-      }
-    }
+    await this.validateDraftVersionConstraints(app, versionType, organizationId, manager);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
@@ -225,21 +194,26 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
-    const moduleViewers = await manager.find(Component, {
-      where: { type: 'ModuleViewer' },
-      relations: ['page', 'page.appVersion', 'page.appVersion.app'],
-    });
+    try {
+      const results = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(App, 'app', 'app.id = appVersion.appId')
+        .select('DISTINCT app.name', 'appName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = :versionId", { versionId })
+        .getRawMany();
 
-    const consumingAppNames = moduleViewers
-      .filter((c) => c.properties?.moduleVersionId?.value === versionId)
-      .map((c) => (c as any).page?.appVersion?.app?.name)
-      .filter(Boolean);
-
-    const uniqueApps = [...new Set(consumingAppNames)];
-    if (uniqueApps.length > 0) {
-      throw new BadRequestException(
-        `Cannot delete this version — it is used by: ${uniqueApps.join(', ')}`
-      );
+      const appNames = results.map((r) => r.appName).filter(Boolean);
+      if (appNames.length > 0) {
+        throw new BadRequestException(
+          `Cannot delete this version — it is used by: ${appNames.join(', ')}`
+        );
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException('Failed to check if module version is in use');
     }
   }
 
@@ -258,24 +232,17 @@ export class VersionUtilService implements IVersionUtilService {
       await this.checkModuleVersionInUse(app.appVersions[0].id, manager);
 
       await this.versionRepository.deleteById(app.appVersions[0].id, manager);
-
-      // TODO: Add audit logs
-      return;
     }, manager);
   }
+
   async deleteVersionGit(app: App, version: AppVersion, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Check if the version being deleted is the currently released version
       if (app.currentVersionId && app.currentVersionId === version.id) {
         throw new BadRequestException('You cannot delete a released version');
       }
 
       await this.checkModuleVersionInUse(version.id, manager);
-
       await this.versionRepository.deleteById(version.id, manager);
-
-      // TODO: Add audit logs
-      return;
     }, manager);
   }
 }
