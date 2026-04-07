@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppsStore } from '@/_stores/appsStore';
 import { Button } from '@/components/ui/Button/Button';
 
-export default function CreateAppButton({ label, disabled, appType, isWorkspaceBranchLocked }) {
+export default function CreateAppButton({ label, disabled, appType, isWorkspaceBranchLocked = false }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
 
