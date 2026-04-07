@@ -6,6 +6,7 @@ import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, Not } from 'typeorm';
 import { App } from '@entities/app.entity';
+import { Component } from '@entities/component.entity';
 import { User } from '@entities/user.entity';
 import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
@@ -223,6 +224,25 @@ export class VersionUtilService implements IVersionUtilService {
     return result;
   }
 
+  protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
+    const moduleViewers = await manager.find(Component, {
+      where: { type: 'ModuleViewer' },
+      relations: ['page', 'page.appVersion', 'page.appVersion.app'],
+    });
+
+    const consumingAppNames = moduleViewers
+      .filter((c) => c.properties?.moduleVersionId?.value === versionId)
+      .map((c) => (c as any).page?.appVersion?.app?.name)
+      .filter(Boolean);
+
+    const uniqueApps = [...new Set(consumingAppNames)];
+    if (uniqueApps.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete this version — it is used by: ${uniqueApps.join(', ')}`
+      );
+    }
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const numVersions = await this.versionRepository.getCount(app.id);
@@ -234,6 +254,8 @@ export class VersionUtilService implements IVersionUtilService {
       if (app.currentVersionId === app.appVersions[0].id) {
         throw new BadRequestException('You cannot delete a released version');
       }
+
+      await this.checkModuleVersionInUse(app.appVersions[0].id, manager);
 
       await this.versionRepository.deleteById(app.appVersions[0].id, manager);
 
@@ -247,6 +269,9 @@ export class VersionUtilService implements IVersionUtilService {
       if (app.currentVersionId && app.currentVersionId === version.id) {
         throw new BadRequestException('You cannot delete a released version');
       }
+
+      await this.checkModuleVersionInUse(version.id, manager);
+
       await this.versionRepository.deleteById(version.id, manager);
 
       // TODO: Add audit logs
