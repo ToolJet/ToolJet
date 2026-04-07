@@ -1,0 +1,26 @@
+.button-group-widget {
+    .button-group-content-wrapper {
+        display: flex;
+        width: 100%;
+
+        .button-group-content {
+            height: max-content;
+            display: flex;
+            gap: 10px;
+    
+            .button-group-button {
+                width: max-content;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 36px;
+                padding: 8px 12px;
+                gap: 6px;
+                font-family: 'IBM Plex Sans';
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 20px;
+            }
+        }
+    }
+}

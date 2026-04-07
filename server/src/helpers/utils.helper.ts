@@ -11,8 +11,7 @@ import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 
-const PASSWORD_REGEX =
-  /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
 
 export function validatePasswordServer(password: string | undefined | null) {
   if (!password) {
@@ -603,6 +602,37 @@ export const isHttpsEnabled = () => {
 };
 
 /**
+ * Returns the root domain for cross-subdomain cookie sharing (e.g. `.tooljet.com`).
+ * Allows cookies set on one subdomain (albecs.tooljet.com) to be sent by the browser
+ * to other subdomains (app.tooljet.com).
+ * Returns undefined for localhost/IP so local dev is unaffected.
+ */
+export const getCookieDomain = (): string | undefined => {
+  const host = process.env.TOOLJET_HOST;
+
+  if (!host) return undefined;
+
+  try {
+    // new URL() throws if TOOLJET_HOST is not a valid URL (e.g. missing protocol)
+    const hostname = new URL(host).hostname;
+
+    if (hostname === 'localhost') return undefined;
+
+    // Skip raw IPv4 addresses like 192.168.1.1 — domain scoping doesn't apply to IPs
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
+
+    // Extract root domain: "sub.tooljet.com" → ".tooljet.com"
+    const parts = hostname.split('.');
+
+    if (parts.length >= 2) {
+      return '.' + parts.slice(-2).join('.');
+    }
+  } catch {
+    return undefined;
+  }
+};
+
+/**
  * Applies SameSite=None; Secure cookie options when custom domains are enabled over HTTPS.
  * Custom domains require cross-origin cookie support. SameSite=None requires Secure=true,
  * which browsers reject on plain HTTP — hence the isHttpsEnabled() guard.
@@ -747,9 +777,7 @@ export async function validateSSODomain(
   }
 
   // Fetch instance settings
-  const instanceSettings = await instanceSettingsUtilService.getSettings([
-    INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
-  ]);
+  const instanceSettings = await instanceSettingsUtilService.getSettings([INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS]);
   const instanceAllowedDomains = instanceSettings?.ALLOWED_DOMAINS;
 
   return isValidSSODomain(email, orgDomain, instanceAllowedDomains);

@@ -68,7 +68,9 @@ export const TestConnection = ({
         variant="tertiary"
         leftIcon="arrowsort"
       >
-        {isTesting ? t('globals.testingConnection', 'Testing connection...') : t('globals.testConnection', 'Test connection')}
+        {isTesting
+          ? t('globals.testingConnection', 'Testing connection...')
+          : t('globals.testConnection', 'Test connection')}
       </ButtonSolid>
     </div>
   );

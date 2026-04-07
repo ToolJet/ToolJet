@@ -82,7 +82,7 @@ describe("Workspace constants", () => {
 
         createAndUpdateConstant(
             "gconst",
-            "108",
+            "149",
             ["Global"],
             ["development", "staging", "production"]
         );

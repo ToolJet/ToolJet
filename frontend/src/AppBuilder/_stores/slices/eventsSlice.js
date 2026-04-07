@@ -271,7 +271,7 @@ export const createEventsSlice = (set, get) => ({
       const latestEvents = get().eventsSlice.getModuleEvents(moduleId);
       const filteredEvents = latestEvents.filter((event) => {
         const foundEvent = events.find((e) => e.id === event.id);
-        return foundEvent && foundEvent.name === eventName;
+        return foundEvent;
       });
       try {
         return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode, moduleId);
@@ -435,7 +435,7 @@ export const createEventsSlice = (set, get) => ({
     executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
-        ?.filter((event) => event?.event.eventId === eventId)
+        ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
@@ -520,6 +520,10 @@ export const createEventsSlice = (set, get) => ({
     executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
+
+      if (event?.disabled) {
+        return false;
+      }
 
       if (event?.runOnlyIf) {
         const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);

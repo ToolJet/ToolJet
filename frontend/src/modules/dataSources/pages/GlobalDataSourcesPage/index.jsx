@@ -63,12 +63,7 @@ export const GlobalDataSourcesPage = (props) => {
 
   // Auto-select datasource from URL param on initial load
   useEffect(() => {
-    if (
-      selectedIdFromUrl &&
-      !initialUrlSelectionHandled.current &&
-      dataSources.length > 0 &&
-      environments.length > 0
-    ) {
+    if (selectedIdFromUrl && !initialUrlSelectionHandled.current && dataSources.length > 0 && environments.length > 0) {
       const dsFromUrl = dataSources.find((ds) => ds.id === selectedIdFromUrl);
       if (dsFromUrl) {
         initialUrlSelectionHandled.current = true;

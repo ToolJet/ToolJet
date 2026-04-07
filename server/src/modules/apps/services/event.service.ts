@@ -204,7 +204,7 @@ export class EventsService implements IEventsService {
       }
 
       const newEvent = new EventHandler();
-      newEvent.name = eventHandler.event.eventId;
+      newEvent.name = eventHandler?.name
       newEvent.sourceId = eventHandler.attachedTo;
       newEvent.target = eventHandler.eventType;
       newEvent.event = eventHandler.event;
@@ -281,7 +281,7 @@ export class EventsService implements IEventsService {
       }
 
       const newEvent = new EventHandler();
-      newEvent.name = eventHandler.event.eventId;
+      newEvent.name = eventHandler?.name;
       newEvent.sourceId = eventHandler.attachedTo;
       newEvent.target = eventHandler.eventType;
       newEvent.event = eventHandler.event;
@@ -346,8 +346,8 @@ export class EventsService implements IEventsService {
           };
 
           if (updateType === 'update') {
-            updatedEvent.name = eventDiff?.eventId;
-            updatedEvent.event = eventDiff;
+            updatedEvent.name = diff?.name;
+            updatedEvent.event = eventDiff
           }
 
           if (updateType === 'reorder') {

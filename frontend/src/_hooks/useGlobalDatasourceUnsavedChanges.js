@@ -42,7 +42,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
   const handleDiscardChanges = useCallback(
     (passedRoute) => {
       const routeToNavigate = typeof passedRoute === 'string' && passedRoute ? passedRoute : nextRoute;
-      
+
       if (!routeToNavigate) {
         action && action();
       } else {

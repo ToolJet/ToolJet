@@ -8,6 +8,10 @@ export interface SourceOptions {
   password: string;
   instanceName?: string;
   azure?: boolean;
+  auth_type?: 'sql' | 'service_principal';
+  sp_tenant_id?: string;
+  sp_client_id?: string;
+  sp_client_secret?: string;
   connection_options?: string[][];
   allow_dynamic_connection_parameters?: boolean;
   ssl_enabled?: boolean;
