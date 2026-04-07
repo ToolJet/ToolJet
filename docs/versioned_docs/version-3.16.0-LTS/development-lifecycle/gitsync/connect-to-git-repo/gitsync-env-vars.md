@@ -81,13 +81,23 @@ The `.tj_env.*` file must be accessible at `/app/` inside the container at the t
 
 ### 4. Restart the Server
 
-Once the file is mounted, restart the ToolJet server. On startup, ToolJet automatically reads all `.tj_env.*` files from `/app/`, matches each file to a workspace by its suffix, and activates the configured git provider. No UI configuration is needed.
+Once the file is mounted, restart the ToolJet server.
+On startup, ToolJet reads all `.tj_env.*` files from `/app/` and maps them to their respective workspaces.  
+To apply this configuration, you must enable **Apply configuration from environment variables** in the UI (see next step).
  
 If the file is removed, ToolJet will automatically deactivate the configuration on the next restart.
  
 :::note
 Environment files are only read at startup. Any changes made to a `.tj_env.*` file while the server is running will not take effect until the server is restarted.
 :::
+
+### 5. Enable Environment Based Configuration
+
+Once the `.tj_env.<workspace>` file is mounted and the server is running, you need to enable environment based configuration from the ToolJet UI.
+
+1. Go to **Workspace Settings > Configure Git Sync**
+2. Enable your desired provider (GitHub, GitLab, or Git SSH)
+3. Toggle **Apply configuration from environment variables**
  
 ## Docker Compose Setup
 
