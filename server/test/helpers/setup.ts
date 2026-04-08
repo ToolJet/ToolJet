@@ -10,6 +10,17 @@ import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import LicenseBase from '@modules/licensing/configs/LicenseBase';
+import { getLicenseFieldValue } from '@modules/licensing/helper';
+import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
+import {
+  BASIC_PLAN_TERMS,
+  STARTER_PLAN_TERMS_CLOUD,
+  PRO_PLAN_TERMS_CLOUD,
+  TEAM_PLAN_TERMS_CLOUD,
+} from '@ee/licensing/constants/PlanTerms';
+import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
+import { Terms } from '@modules/licensing/interfaces/terms';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -318,53 +329,77 @@ export async function withRealTransactions(fn: () => Promise<void>) {
 // ---------------------------------------------------------------------------
 
 /**
- * Per-field mock values for license terms (enterprise plan — all unlocked).
- * Guards and services expect specific shapes for certain fields.
+ * Enterprise Terms — all features enabled, all limits unlimited.
+ * In production, these are encoded in the encrypted license key (no constant exists).
+ * Defined here so enterprise tests go through the same LicenseBase parsing path
+ * as every other plan — no test-mode shortcuts.
  */
-const LICENSE_FIELD_DEFAULTS: Record<string, any> = {
-  workflows: {
-    execution_timeout: 'UNLIMITED',
-    workspace: {
-      total: 'UNLIMITED',
-      daily_executions: 'UNLIMITED',
-      monthly_executions: 'UNLIMITED',
-    },
-    instance: {
-      total: 'UNLIMITED',
-      daily_executions: 'UNLIMITED',
-      monthly_executions: 'UNLIMITED',
-    },
+const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
+  apps: 'UNLIMITED',
+  workspaces: 'UNLIMITED',
+  users: { total: 'UNLIMITED', editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+  database: { table: 'UNLIMITED' },
+  type: LICENSE_TYPE.ENTERPRISE,
+  features: {
+    auditLogs: true, oidc: true, ldap: true, saml: true,
+    customStyling: true, whiteLabelling: true, appWhiteLabelling: true, customThemes: true,
+    serverSideGlobalResolve: true, multiEnvironment: true, multiPlayerEdit: true,
+    comments: true, gitSync: true, ai: true, externalApi: true, scim: true,
+    customDomains: true, google: true, github: true,
   },
-  status: { licenseType: 'ENTERPRISE' },
-  maxDaysForAuditLogs: 365,
+  auditLogs: { maximumDays: 365 },
+  app: {
+    pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
+    permissions: { component: true, query: true, pages: true },
+    features: { promote: true, release: true, history: true },
+  },
+  modules: { enabled: true },
+  permissions: { customGroups: true },
+  observability: { enabled: true },
+  workflows: {
+    enabled: true, execution_timeout: 0,
+    workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
+    instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
+  },
+  ai: { plan: 'credits' },
 };
 
 /**
- * Plan-specific overrides merged on top of LICENSE_FIELD_DEFAULTS.
- * Extensible — add plan-specific values as tests need them.
+ * Plan → Terms mapping.
+ * Mirrors the production flow where Terms are resolved per plan:
+ *   EE:    License key is decrypted into Terms (server/ee/licensing/configs/License.ts)
+ *   Cloud: Terms are pre-computed at payment time and stored in organization_license.terms
+ *          (server/ee/organization-payments/service.ts → webhookInvoicePaidHandler)
+ *          At runtime, OrganizationLicense falls back to plan defaults
+ *          (server/ee/licensing/configs/organization-license.ts → getDefaultPlanTerms)
  */
-const PLAN_TERMS: Record<string, Record<string, any>> = {
-  enterprise: {},
-  team: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 90 },
-  trial: { status: { licenseType: 'TRIAL' }, maxDaysForAuditLogs: 7 },
-  basic: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 30 },
-  starter: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 30 },
-  pro: { status: { licenseType: 'BUSINESS' }, maxDaysForAuditLogs: 180 },
+const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
+  enterprise: ENTERPRISE_TEST_TERMS,
+  trial: ENTERPRISE_TEST_TERMS,
+  team: TEAM_PLAN_TERMS_CLOUD as Partial<Terms>,
+  starter: STARTER_PLAN_TERMS_CLOUD as Partial<Terms>,
+  pro: PRO_PLAN_TERMS_CLOUD as Partial<Terms>,
+  basic: BASIC_PLAN_TERMS as Partial<Terms>,
 };
+
+/** Creates a real LicenseBase instance for the given plan. */
+function createLicenseInstance(plan: string): LicenseBase {
+  const terms = PLAN_TO_TERMS[plan] ?? ENTERPRISE_TEST_TERMS;
+  const futureDate = new Date();
+  futureDate.setMinutes(futureDate.getMinutes() + 30);
+  return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);
+}
 
 /**
  * Creates a LicenseTermsService mock that survives jest.resetAllMocks().
- * Uses plain functions instead of jest.fn() so mock resets cannot clear them.
- * The mock is plan-aware — call configurePlanMock() to switch plans.
+ * Uses real LicenseBase + getLicenseFieldValue — same resolution as production.
  */
-function createResilientLicenseTermsMock() {
+function createResilientLicenseTermsMock(plan: string) {
   const mock = {
-    _fieldValues: { ...LICENSE_FIELD_DEFAULTS } as Record<string, any>,
+    _licenseInstance: createLicenseInstance(plan),
 
     getLicenseTerms(field: string | string[]) {
-      const resolve = (f: string) =>
-        f in mock._fieldValues ? mock._fieldValues[f] : 'UNLIMITED';
-
+      const resolve = (f: string) => getLicenseFieldValue(f as LICENSE_FIELD, mock._licenseInstance);
       if (Array.isArray(field)) {
         const result: Record<string, any> = {};
         for (const key of field) result[key] = resolve(key);
@@ -373,16 +408,27 @@ function createResilientLicenseTermsMock() {
       return Promise.resolve(resolve(field));
     },
 
-    getLicenseTermsInstance: () => Promise.resolve('UNLIMITED'),
+    getLicenseTermsInstance(field?: string | string[]) {
+      if (field) {
+        const resolve = (f: string) => getLicenseFieldValue(f as LICENSE_FIELD, mock._licenseInstance);
+        if (Array.isArray(field)) {
+          const result: Record<string, any> = {};
+          for (const key of field) result[key] = resolve(key);
+          return Promise.resolve(result);
+        }
+        return Promise.resolve(resolve(field));
+      }
+      return Promise.resolve(getLicenseFieldValue(LICENSE_FIELD.ALL, mock._licenseInstance));
+    },
   };
   return mock;
 }
 
-/** Reconfigures the resilient mock's field values for the given plan. */
+/** Reconfigures the mock's LicenseBase instance for the given plan. */
 function configurePlanMock(app: INestApplication, plan: string) {
   const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
-  if (!lts._fieldValues) return; // not our mock — skip
-  lts._fieldValues = { ...LICENSE_FIELD_DEFAULTS, ...(PLAN_TERMS[plan] ?? {}) };
+  if (!lts._licenseInstance) return; // not our mock — skip
+  lts._licenseInstance = createLicenseInstance(plan);
 }
 
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
@@ -460,7 +506,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     ],
   });
 
-  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock());
+  moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock(plan));
 
   const moduleRef = await moduleBuilder.compile();
   const app = moduleRef.createNestApplication();

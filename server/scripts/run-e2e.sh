@@ -81,7 +81,7 @@ printf "\n"
 # ---------------------------------------------------------------------------
 # Shared shard config
 # ---------------------------------------------------------------------------
-SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests)
+SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
 [ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
 
 SHARD_LOG_DIR=$(mktemp -d)

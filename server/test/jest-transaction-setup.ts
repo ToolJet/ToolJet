@@ -16,6 +16,7 @@ import {
   rollbackTestTransaction,
   unrefAllPoolConnections,
   closeAllCachedApps,
+  destroyAllDataSources,
 } from './helpers/setup';
 
 // Capture esbuild ref at load time — require() fails after Jest tears down the module env.
@@ -56,11 +57,14 @@ afterAll(async () => {
   }
   unrefAllPoolConnections();
   try { esbuildRef?.stop(); } catch {}
-  // Deferred app teardown: if no more spec files start, close cached apps
-  // so the worker/process can exit. beforeEach cancels if another spec starts.
+  // Deferred teardown: if no more spec files start, destroy DB pools and
+  // close cached apps. destroyAllDataSources() kills pools directly (no
+  // NestJS lifecycle hooks). closeAllCachedApps() runs full NestJS shutdown.
+  // --forceExit in the runner handles any lingering handles from lifecycle.
   if (_shutdownTimer) clearTimeout(_shutdownTimer);
-  _shutdownTimer = setTimeout(() => {
-    closeAllCachedApps().catch(() => {});
+  _shutdownTimer = setTimeout(async () => {
+    await destroyAllDataSources().catch(() => {});
+    await closeAllCachedApps().catch(() => {});
   }, 0);
   _shutdownTimer.unref();
 });
