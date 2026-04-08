@@ -3,12 +3,28 @@ id: gitsync-env-vars
 title: Configure GitSync via Environment Variables
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+</div>
+
 :::warning BETA
 Configuring Git Sync using environment variables is currently in beta and is not recommended for production use.
 :::
 
-GitSync can be configured using environment variables instead of the ToolJet UI. This lets you supply git credentials directly on the host machine, scoped per workspace.  
-This approach is designed for self-hosted deployments where credentials are managed externally using tools like Docker volumes, secrets managers, or CI/CD pipelines, allowing workspace configurations to be set up and reused seamlessly across deployments.
+GitSync can be configured using environment variables instead of the ToolJet UI. This allows you to supply Git credentials directly on the host machine, scoped per workspace, and is particularly useful for self-hosted deployments where configuration needs to be reproducible and automated.
+
+This approach supports two primary use cases:
+
+* **Static configuration:** Credentials are defined once via environment variables, making it easy to spin up new ToolJet instances with preconfigured GitSync settings.
+* **Dynamic credential management:** Sensitive credentials such as GitHub App private keys or access tokens are often rotated periodically due to security and compliance requirements. Managing these through environment variables enables seamless integration with external secret management systems (e.g., AWS Secrets Manager, Vault, CI/CD pipelines), allowing automated rotation without manual updates through the UI.
 
 ## Setup
 
@@ -83,21 +99,12 @@ The `.tj_env.*` file must be accessible at `/app/` inside the container at the t
 
 Once the file is mounted, restart the ToolJet server.
 On startup, ToolJet reads all `.tj_env.*` files from `/app/` and maps them to their respective workspaces.  
-To apply this configuration, you must enable **Apply configuration from environment variables** in the UI (see next step).
  
 If the file is removed, ToolJet will automatically deactivate the configuration on the next restart.
  
 :::note
 Environment files are only read at startup. Any changes made to a `.tj_env.*` file while the server is running will not take effect until the server is restarted.
 :::
-
-### 5. Enable Environment Based Configuration
-
-Once the `.tj_env.<workspace>` file is mounted and the server is running, you need to enable environment based configuration from the ToolJet UI.
-
-1. Go to **Workspace Settings > Configure Git Sync**
-2. Enable your desired provider (GitHub, GitLab, or Git SSH)
-3. Toggle **Apply configuration from environment variables**
  
 ## Docker Compose Setup
 
