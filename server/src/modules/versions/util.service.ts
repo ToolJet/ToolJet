@@ -231,7 +231,7 @@ export class VersionUtilService implements IVersionUtilService {
       const appNames = results.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
         throw new BadRequestException(
-          `Cannot delete this version — it is used by: ${appNames.join(', ')}`
+          `Cannot delete this version.\nUsed by: ${appNames.join(', ')}`
         );
       }
     } catch (error) {

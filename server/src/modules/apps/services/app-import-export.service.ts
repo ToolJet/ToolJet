@@ -526,16 +526,31 @@ export class AppImportExportService {
           // Module exists - map old IDs to existing module's IDs
           moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
 
-          const latestVersion = existingModule.editingVersion?.id;
-          const defaultEnvironment = existingModule?.editingVersion?.currentEnvironmentId;
+          // Fetch existing module's versions to map by name
+          const existingVersions = await this.entityManager.find(AppVersion, {
+            where: { appId: existingModule.id },
+            order: { createdAt: 'DESC' },
+          });
 
-          if (latestVersion) {
-            moduleResourceMappings.moduleVersions[importedModule?.appV2?.editingVersion.id] = latestVersion;
+          // Map all exported module versions to existing versions by name match
+          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          for (const importedVersion of importedModuleVersions) {
+            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
+            if (matchingVersion) {
+              moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
+              if (!moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId]) {
+                moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId] =
+                  matchingVersion.currentEnvironmentId;
+              }
+            }
           }
 
-          if (defaultEnvironment) {
-            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion.currentEnvironmentId] =
-              defaultEnvironment;
+          // Also map the editingVersion if not already mapped
+          const editingVersionId = importedModule?.appV2?.editingVersion?.id;
+          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+            moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
+            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion?.currentEnvironmentId] =
+              existingVersions[0].currentEnvironmentId;
           }
         } else {
           // Module doesn't exist - need to import it
@@ -551,10 +566,14 @@ export class AppImportExportService {
           );
 
           moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
-          moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
-          moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
+
+          // Map ALL version IDs from the import, not just editingVersion
+          for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
+            moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
+          }
+          for (const [oldEnvId, newEnvId] of Object.entries(resourceMapping.appEnvironmentMapping)) {
+            moduleResourceMappings.moduleEnvironments[oldEnvId] = newEnvId;
+          }
         }
       }
     }
@@ -2472,7 +2491,7 @@ export class AppImportExportService {
         version.globalSettings = appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
-        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
