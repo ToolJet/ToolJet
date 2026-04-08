@@ -24,12 +24,49 @@
   .navigation-horizontal-menu {
     width: 100%;
 
+    // Radix NavigationMenuList injects a wrapper <div style="position: relative">
+    // between <nav> and <ul>. It needs flex: 1 to allow the <ul> to expand.
+    > div {
+      flex: 1;
+      display: flex;
+    }
+
     .navigation-horizontal-list {
       padding: 0px !important;
       margin: 0px !important;
       height: 32px;
       width: 100%;
       gap: 6px;
+
+      &.nav-equal-width {
+        > li {
+          flex: 1;
+
+          .tj-list-item,
+          .page-group-wrapper {
+            width: 100% !important;
+            justify-content: center !important;
+            gap: 4px;
+          }
+
+          .page-group-wrapper .group-info {
+            width: auto;
+          }
+        }
+
+        &.nav-align-left > li {
+          .tj-list-item,
+          .page-group-wrapper { justify-content: flex-start !important; }
+        }
+        &.nav-align-center > li {
+          .tj-list-item,
+          .page-group-wrapper { justify-content: center !important; }
+        }
+        &.nav-align-right > li {
+          .tj-list-item,
+          .page-group-wrapper { justify-content: flex-end !important; }
+        }
+      }
     }
   }
 
@@ -40,6 +77,33 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+
+    &.nav-equal-width {
+      width: 100%;
+
+      .tj-list-item,
+      .page-group-wrapper {
+        width: 100%;
+        gap: 4px;
+      }
+
+      .page-group-wrapper .group-info {
+        width: auto;
+      }
+
+      &.nav-align-left {
+        .tj-list-item,
+        .page-group-wrapper { justify-content: flex-start; }
+      }
+      &.nav-align-center {
+        .tj-list-item,
+        .page-group-wrapper { justify-content: center; }
+      }
+      &.nav-align-right {
+        .tj-list-item,
+        .page-group-wrapper { justify-content: flex-end; }
+      }
+    }
   }
 
   // Nav item styles - matches .tj-list-item from page navigation
