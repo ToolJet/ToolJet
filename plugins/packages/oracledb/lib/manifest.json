@@ -76,6 +76,7 @@
       "key": "use_tns_alias",
       "type": "dropdown-component-flip",
       "description": "Select the connection mode to use",
+      "default": "no",
       "list": [
         {
           "name": "Basic Connection (No TNS/Wallet)",
