@@ -306,10 +306,7 @@ const useAppData = (
           try {
             const queryParams = { slug: slug };
 
-            const viewerEnvironment =
-              moduleMode && isPublicAccess
-                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
-                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
