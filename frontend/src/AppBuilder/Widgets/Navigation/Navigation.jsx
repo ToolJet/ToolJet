@@ -212,6 +212,7 @@ export const Navigation = function Navigation(props) {
   const {
     orientation,
     displayStyle,
+    navItemSize = 'equalWidth',
     loadingState,
     disabledState,
     visibility,
@@ -491,11 +492,13 @@ export const Navigation = function Navigation(props) {
         <NavigationMenu
           viewport={false}
           className={`navigation-horizontal-menu ${justifyTwClass}`}
-          style={{ flex: 'none' }}
+          style={{ flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
         >
           <NavigationMenuList
-            className={`navigation-horizontal-list ${justifyTwClass}`}
-            style={{ ...navItemStyles, flex: 'none' }}
+            className={`navigation-horizontal-list ${justifyTwClass} ${
+              navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
+            }`}
+            style={{ ...navItemStyles, flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
           >
             {links.visible.map((item) => {
               if (item.isGroup) {
@@ -582,7 +585,12 @@ export const Navigation = function Navigation(props) {
     };
 
     return (
-      <div className="navigation-vertical-menu" style={verticalMenuStyle}>
+      <div
+        className={`navigation-vertical-menu ${
+          navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
+        }`}
+        style={verticalMenuStyle}
+      >
         {visibleMenuItems.map((item) => {
           if (item.isGroup) {
             return (
