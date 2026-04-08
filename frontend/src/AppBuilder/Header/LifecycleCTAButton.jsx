@@ -31,7 +31,7 @@ const LifecycleCTAButton = () => {
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
-  // Hide for modules (git sync for modules is Phase 2) and when not in plan
+  // Git sync banners not applicable for modules
   if (!isGitSyncEnabled || isModuleEditor) {
     return null;
   }
