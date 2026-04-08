@@ -14,7 +14,6 @@ import {
   rollbackSuiteTransaction,
   beginTestTransaction,
   rollbackTestTransaction,
-  unrefAllPoolConnections,
   closeAllCachedApps,
   destroyAllDataSources,
 } from './helpers/setup';
@@ -55,7 +54,6 @@ afterAll(async () => {
   } catch (e) {
     console.error('[TXN] rollbackSuiteTransaction FAILED:', (e as Error).message);
   }
-  unrefAllPoolConnections();
   try { esbuildRef?.stop(); } catch {}
   // Deferred teardown: if no more spec files start, destroy DB pools and
   // close cached apps. destroyAllDataSources() kills pools directly (no

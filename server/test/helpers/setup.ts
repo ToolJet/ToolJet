@@ -46,32 +46,6 @@ let _defaultDataSource: TypeOrmDataSource;
 let _tooljetDbDataSource: TypeOrmDataSource;
 
 /**
- * Unref all connections in a TypeORM DataSource's pg pool so they don't
- * prevent graceful process exit. The connections still work normally —
- * unref() only tells Node.js not to wait for them when the event loop is empty.
- */
-function unrefPoolConnections(ds: TypeOrmDataSource) {
-  const pool = (ds.driver as any)?.master;
-  if (!pool) return;
-  // Unref existing connections (idle + active)
-  for (const client of pool._clients || []) {
-    client?.connection?.stream?.unref?.();
-  }
-  for (const client of pool._idle || []) {
-    client?.connection?.stream?.unref?.();
-  }
-}
-
-/**
- * Unref all pool connections on all known DataSources.
- * Call after tests complete (afterAll) so pools have had time to fill.
- */
-export function unrefAllPoolConnections() {
-  if (_defaultDataSource) unrefPoolConnections(_defaultDataSource);
-  if (_tooljetDbDataSource) unrefPoolConnections(_tooljetDbDataSource);
-}
-
-/**
  * Destroy all known TypeORM DataSources (closes pool connections).
  * Lighter than closeAllCachedApps() — skips NestJS lifecycle hooks that
  * can create new handles during teardown. Use for clean process exit.
@@ -85,23 +59,11 @@ export async function destroyAllDataSources() {
   }
 }
 
-/** Hook new pool connections to unref their sockets on creation. */
-function hookPoolUnref(ds: TypeOrmDataSource) {
-  const pool = (ds.driver as any)?.master;
-  if (!pool || pool._unrefHooked) return;
-  pool._unrefHooked = true;
-  pool.on('connect', (client: any) => {
-    client?.connection?.stream?.unref?.();
-  });
-}
-
 /** Captures TypeORM DataSource singletons from the NestJS app for use by test helpers. */
 export function setDataSources(nestApp: INestApplication) {
   _defaultDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
-  hookPoolUnref(_defaultDataSource);
   try {
     _tooljetDbDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
-    if (_tooljetDbDataSource) hookPoolUnref(_tooljetDbDataSource);
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
