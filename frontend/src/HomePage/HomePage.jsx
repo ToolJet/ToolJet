@@ -398,7 +398,13 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
+      // Fetch current editing version for the app
+      const versionsResp = await appsService.getVersions(appId);
+      const versions = versionsResp?.versions || [];
+      const currentEditingVersion = versions.find((version) => version?.isCurrentEditingVersion);
+      const editingVersionId = currentEditingVersion?.id;
+      const savePayload = editingVersionId ? { name: newAppName, editingVersionId } : { name: newAppName };
+      await appsService.saveApp(appId, savePayload, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
