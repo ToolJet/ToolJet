@@ -5,6 +5,8 @@ import { authenticationService, appsService } from '@/_services';
 import { loginConfigsService } from '@/_services/login_configs.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { setCookie } from '@/_helpers/cookie';
+import { getSubpath } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { GeneralFeatureImage } from '@/modules/common/components';
 import { SignupForm } from '../SignupPage/components';
@@ -50,6 +52,10 @@ const AppSignupPage = () => {
       setSsoConfigs(configs);
       setLoading(false);
     } catch (err) {
+      if (err?.data?.statusCode === 404) {
+        window.location = `${getSubpath() ?? ''}/error/${ERROR_TYPES.INVALID}`;
+        return;
+      }
       setError('Application not found');
       toast.error('Application not found', {
         id: 'toast-app-signup-error',

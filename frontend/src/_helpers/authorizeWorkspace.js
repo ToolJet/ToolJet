@@ -174,8 +174,13 @@ export const authorizeWorkspace = async () => {
                 });
                 return;
               }
-            } catch {
-              // Config fetch failed — fall through to login redirect
+            } catch (configErr) {
+              // App doesn't exist (e.g., slug was changed) — show invalid-link error
+              if (configErr?.data?.statusCode === 404) {
+                redirectToErrorPage(ERROR_TYPES.INVALID);
+                return;
+              }
+              // For other errors (network), fall through to login redirect
             }
             const subpath = getSubpath() ?? '';
             const currentPath = getPathname(null, true);
