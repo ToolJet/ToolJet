@@ -192,7 +192,8 @@ export const QueryDataPane = ({ darkMode }) => {
             <div className="query-list-inner">
               <QueryFolderTree
                 filteredQueries={filteredQueries}
-                searchActive={!!searchTermForFilters || dataSourcesForFilters.length > 0 || sortBy !== 'custom'}
+                searchActive={!!searchTermForFilters}
+                filteredQueryIds={dataSourcesForFilters.length > 0 ? new Set(filteredQueries.map((q) => q.id)) : null}
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
                 allowFolders={!!featureAccess?.queryFolders}
@@ -225,11 +226,12 @@ export const QueryDataPane = ({ darkMode }) => {
                 />
               )}
             </div>
-            {filteredQueries.length === 0 && folders.length === 0 && (
-              <div className="query-empty-state-wrapper">
-                <EmptyDataSource />
-              </div>
-            )}
+            {filteredQueries.length === 0 &&
+              (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
+                <div className="query-empty-state-wrapper">
+                  <EmptyDataSource />
+                </div>
+              )}
           </div>
         )}
       </div>
