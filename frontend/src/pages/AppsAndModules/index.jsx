@@ -18,6 +18,8 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import Layout from '@/_ui/Layout';
+import EmptyFolderIllustration from '@/pages/shared/illustrations/EmptyFolder';
+import NoSearchResultIllustration from '@/pages/shared/illustrations/NoSearchResult';
 
 import { canUserPerformAppAction } from './appsAndModulesPermissions';
 
@@ -28,6 +30,8 @@ import PageHeader from '../shared/components/PageHeader';
 import ContentToolbar from '../shared/components/ContentToolbar';
 import CreateAppButton from '../shared/components/CreateAppButton';
 import MoreAppsActionMenu from '../shared/components/MoreAppsActionMenu';
+import AppsEmptyState from './illustrations/AppsEmptyState';
+import ModulesEmptyState from './illustrations/ModulesEmptyState';
 import Dialogs from './components/Dialogs';
 import AppsAndModulesTab from './components/AppsAndModulesTab';
 import BuildWithAIAssistant from './components/BuildWithAIAssistant';
@@ -137,6 +141,9 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       folder.value !== 'all' && folder.createdBy === authenticationService.currentSessionValue?.current_user?.id
   );
 
+  const showEmptyFolderState = selectedFolderId && apps?.apps?.length === 0;
+  const showEmptySearchState = searchQuery?.length > 0 && apps?.apps?.length === 0;
+
   if (showAIOnboardingLoadingScreen) {
     return <TJLoader />;
   }
@@ -214,6 +221,17 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 />
               ) : (
                 <EmptyState
+                  illustrationSlot={
+                    showEmptySearchState ? (
+                      <NoSearchResultIllustration />
+                    ) : showEmptyFolderState ? (
+                      <EmptyFolderIllustration />
+                    ) : appType === 'module' ? (
+                      <ModulesEmptyState />
+                    ) : (
+                      <AppsEmptyState />
+                    )
+                  }
                   resourceType={appType}
                   title={
                     selectedFolderId && !searchQuery?.length
@@ -232,10 +250,28 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                       : 'Create reusable groups of components and queries via modules.'
                   }
                 >
-                  {Boolean(searchQuery?.length) && (
+                  {selectedFolderId && !searchQuery?.length ? (
+                    <></>
+                  ) : searchQuery?.length ? (
                     <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
                       Clear search
                     </Button>
+                  ) : appType === 'module' ? (
+                    <CreateAppButton
+                      label="Create new module"
+                      appType={appType}
+                      disabled={isCreationDisabled}
+                      isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+                    />
+                  ) : appType === 'front-end' && canCreateApp ? (
+                    <CreateAppButton
+                      label={t('homePage.header.createNewApplication', 'Create new app')}
+                      appType={appType}
+                      disabled={isCreationDisabled}
+                      isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+                    />
+                  ) : (
+                    <></>
                   )}
                 </EmptyState>
               )

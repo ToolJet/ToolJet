@@ -155,6 +155,7 @@ function AppsEmptyStateSVG() {
 }
 
 export default function EmptyState({
+  illustrationSlot,
   title = "You don't have any resources yet",
   description = 'You can start creating resources using the options available in your interface.',
   iconName = '',
@@ -194,12 +195,15 @@ export default function EmptyState({
     <Empty className={className} data-cy={`${generateCypressDataCy(resourceType)}-empty-state`}>
       <EmptyHeader>
         <EmptyMedia variant="default" data-cy={`${generateCypressDataCy(resourceType)}-empty-state-image`}>
-          {resolvedIconName()}
+          {illustrationSlot}
         </EmptyMedia>
+
         <EmptyTitle data-cy={`${generateCypressDataCy(resourceType)}-empty-state-header`}>{title}</EmptyTitle>
+
         <EmptyDescription data-cy={`${generateCypressDataCy(resourceType)}-empty-state-description`}>
           {description}
         </EmptyDescription>
+
         <EmptyContent>{children}</EmptyContent>
       </EmptyHeader>
     </Empty>
