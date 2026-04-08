@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
-import { sessionService } from '@/_services';
+import { sessionService, authenticationService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -54,7 +54,11 @@ export function handleResponse(
         const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(
           window.location.pathname
         );
-        if (!isAppAuthPage) {
+        // Skip reload for public app viewers — they operate without auth,
+        // so 401 on authenticated-only endpoints is expected and not an error
+        const currentSession = authenticationService?.currentSessionValue;
+        const isPublicAppAccess = currentSession?.authentication_failed && currentSession?.load_app;
+        if (!isAppAuthPage && !isPublicAppAccess) {
           // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
           let errorMessageJson;
           try {
