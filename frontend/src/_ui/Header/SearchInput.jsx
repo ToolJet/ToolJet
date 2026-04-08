@@ -9,7 +9,6 @@ export default function SearchInput({ classes = null }) {
   const timeoutIdRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const placeholder = useSearchStore((state) => state.placeholder);
   const setSearchQuery = useSearchStore((state) => state.setSearchQuery);
   const clearSearchQuery = useSearchStore((state) => state.clearSearchQuery);
   const setClearSearchQuery = useSearchStore((state) => state.setClearSearchQuery);
@@ -40,7 +39,7 @@ export default function SearchInput({ classes = null }) {
         type="text"
         data-cy="header-search-bar"
         value={searchTerm}
-        placeholder={placeholder}
+        placeholder="Search"
         onChange={handleSearchChange}
         className="tw-pl-20 tw-pr-4 tw-py-1 tw-h-8 !tw-font-body-default tw-bg-background-surface-layer-01 tw-border-0 tw-outline-0 hover:tw-bg-interactive-hover focus:tw-bg-interactive-hover focus:tw-pl-7 tw-transition-all tw-duration-200"
       />

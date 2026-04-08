@@ -111,7 +111,7 @@ export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild disabled={disabled}>
         <Button
           isLucid
           iconOnly

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import cx from 'classnames';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { cn } from '@/lib/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { Button } from '@/components/ui/Button/Button';
@@ -527,9 +528,10 @@ export function WorkspaceBranchDropdown() {
   return (
     <>
       <div
-        className={`branch-dropdown-container ${showDropdown ? 'selected' : ''} ${
-          darkMode ? 'dark-theme' : ''
-        } !tw-mx-0`}
+        className={cn(`branch-dropdown-container !tw-mx-0`, {
+          'tw-bg-button-outline-pressed': showDropdown,
+          'dark-theme': darkMode,
+        })}
         ref={buttonRef}
         data-cy="workspace-branch-dropdown-container"
       >

@@ -122,13 +122,14 @@ const BaseLeftNavSideBar = ({
         <li className="tj-leftsidebar-icon-items-bottom text-center">
           <NotificationCenter darkMode={darkMode} />
           <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
-            <Link
+            <div
+              role="button"
               className="cursor-pointer tj-leftsidebar-icon-items"
               onClick={() => switchDarkMode(!darkMode)}
               data-cy="mode-switch-button"
             >
               {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-            </Link>
+            </div>
           </ToolTip>
           <SettingsMenu
             featureAccess={featureAccess}
