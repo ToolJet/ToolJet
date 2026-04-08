@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize, isEmpty, sample } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { CircleAlert, Trash } from 'lucide-react';
 
 import config from 'config';
 import { cn } from '@/lib/utils';
+import { defaultAppIconList } from '@/_helpers/appUtils';
 import { validateName, getWorkspaceId } from '@/_helpers/utils';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/Field/Field';
@@ -81,10 +82,9 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
 
     switch (actionType) {
       case 'create':
-        // TODO: Icon to be random from tabler icons & prompt required for app case
         createNewApp(
           {
-            body: { name: formattedAppName, type: appType, icon: 'share', prompt: undefined },
+            body: { name: formattedAppName, type: appType, icon: sample(defaultAppIconList), prompt: undefined },
             isCommitEnabled: false, // TODO: This should not be hardcoded
           },
           { onError: handle409Error, onSuccess: handleResetState }

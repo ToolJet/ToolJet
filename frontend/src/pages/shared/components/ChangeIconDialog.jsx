@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import * as TablerIcons from '@tabler/icons-react';
 import { toast } from 'react-hot-toast';
 import { VirtuosoGrid } from 'react-virtuoso';
@@ -53,10 +53,13 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
   const isCancelBtnDisabled = isFormBeingSubmitted;
   const isSubmitBtnDisabled = isFormBeingSubmitted;
 
-  const filteredIcons =
-    debouncedSearchTerm.trim() === ''
-      ? allIconsList.current
-      : allIconsList.current.filter((icon) => icon.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+  const filteredIcons = useMemo(
+    () =>
+      debouncedSearchTerm.trim() === ''
+        ? allIconsList.current
+        : allIconsList.current.filter((icon) => icon.toLowerCase().includes(debouncedSearchTerm.toLowerCase())),
+    [debouncedSearchTerm]
+  );
 
   return (
     <ActionDialog

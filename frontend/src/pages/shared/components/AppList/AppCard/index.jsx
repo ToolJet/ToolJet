@@ -2,12 +2,14 @@ import React, { useMemo } from 'react';
 import moment from 'moment';
 import urlJoin from 'url-join';
 import queryString from 'query-string';
+import * as TablerIcons from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { appIconNameMappingForTablerIcons } from '@/_helpers/appUtils';
 import { authenticationService } from '@/_services/authentication.service';
 import { decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
@@ -17,7 +19,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import AppMenu from './AppMenu';
 import TruncatedText from '../../TruncatedText';
 
-import { appIconNameMappingForLucideIcon, isValidSlug } from './helper';
+import { isValidSlug } from './helper';
 
 export default function AppCard({
   appDetails,
@@ -91,7 +93,11 @@ export default function AppCard({
     </div>
   );
 
-  const IconComponent = appIconNameMappingForLucideIcon[icon] ?? appIconNameMappingForLucideIcon.apps;
+  const oldCustomIconNameMappingToTablerIconName =
+    appIconNameMappingForTablerIcons[icon] ?? appIconNameMappingForTablerIcons.apps;
+
+  // eslint-disable-next-line import/namespace
+  const IconComponent = TablerIcons[icon] ?? TablerIcons[oldCustomIconNameMappingToTablerIconName];
 
   return (
     <TooltipComp content={isAppTypeModuleAndModuleNotEnabled ? 'Modules are not available on your current plan.' : ''}>

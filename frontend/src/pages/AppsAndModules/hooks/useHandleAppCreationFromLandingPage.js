@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { sample } from 'lodash';
 
+import { defaultAppIconList } from '@/_helpers/appUtils';
 import { authenticationService } from '@/_services/authentication.service.js';
 import { useCreateApp } from '@/_services/hooks/appsServiceHooks';
 import { useDeployTemplateApp } from '@/_services/hooks/libraryAppServiceHooks';
@@ -38,7 +40,7 @@ export default function useHandleAppCreationFromLandingPage() {
         createApp(
           {
             body: {
-              icon: 'share', // TODO: Add a random icon for the app
+              icon: sample(defaultAppIconList),
               name: `Untitled App: ${uuidv4()}`,
               type: 'front-end',
               prompt: decodeURIComponent(latestPrompt),
