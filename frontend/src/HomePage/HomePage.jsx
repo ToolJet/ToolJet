@@ -1051,12 +1051,19 @@ class HomePageComponent extends React.Component {
           showCloneAppModal: true,
         });
         break;
-      case 'rename-app':
+      case 'rename-app': {
+        const branchState = useWorkspaceBranchesStore.getState();
+        const isOnDefaultBranch = branchState.currentBranch?.is_default || branchState.currentBranch?.isDefault;
+        if (app?.app_versions?.[0]?.is_stub && isOnDefaultBranch) {
+          toast.error("Renaming isn't allowed on master. Switch branch to update name.");
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,
         });
         break;
+      }
     }
   };
 
