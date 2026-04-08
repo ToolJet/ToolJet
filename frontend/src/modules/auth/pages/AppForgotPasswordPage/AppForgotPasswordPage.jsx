@@ -13,9 +13,14 @@ const AppForgotPasswordPage = () => {
   const [showInfoScreen, setShowInfoScreen] = useState(false);
   const [email, setEmail] = useState('');
 
+  // Preserve app redirect context through the password reset flow
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectToParam = searchParams.get('redirectTo');
+  const redirectTo = redirectToParam?.startsWith('/applications/') ? redirectToParam : `/applications/${slug}`;
+
   const handleForgotPassword = async (email) => {
     try {
-      await authenticationService.forgotPassword(email, slug);
+      await authenticationService.forgotPassword(email, redirectTo);
       toast.success(
         t('forgotPasswordPage.checkEmailForResetLink', 'Please check your email for the password reset link'),
         { id: 'toast-forgot-password-confirmation-code' }
@@ -31,7 +36,9 @@ const AppForgotPasswordPage = () => {
 
   if (showInfoScreen) {
     return (
-      <OnboardingBackgroundWrapper MiddleComponent={() => <ForgotPasswordInfoScreen email={email} appSlug={slug} />} />
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <ForgotPasswordInfoScreen email={email} appSlug={slug} redirectTo={redirectTo} />}
+      />
     );
   }
 

@@ -11,6 +11,11 @@ const AppResetPasswordPage = () => {
   const navigate = useNavigate();
   const [showResponseScreen, setShowResponseScreen] = useState(false);
 
+  // Preserve app redirect context from the email reset link
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectToParam = searchParams.get('redirectTo');
+  const redirectTo = redirectToParam?.startsWith('/applications/') ? redirectToParam : `/applications/${slug}`;
+
   useEffect(() => {
     const fetchWhiteLabel = async () => {
       const settings = await fetchWhiteLabelDetails();
@@ -20,8 +25,7 @@ const AppResetPasswordPage = () => {
   }, []);
 
   const handleResetSuccess = () => {
-    // Redirect to app sign-in page after successful password reset
-    window.location.href = `/applications/${slug}/login`;
+    window.location.href = `/applications/${slug}/login?redirectTo=${encodeURIComponent(redirectTo)}`;
   };
 
   return (
