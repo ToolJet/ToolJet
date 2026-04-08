@@ -162,15 +162,16 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       <main className="tw-flex-1 tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
         <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
           {appType === 'front-end' ? (
-            // TODO: LicenseBanner should render only when limit is completely exhausted
-            <LicenseBanner
-              type="apps"
-              size="small"
-              showNewBanner
-              bannerVariant="inline"
-              limits={appsLimit?.appsCount ?? {}}
-            >
-              {canCreateApp && (
+            !appsLimit?.appsCount?.canAddUnlimited && appsLimit?.appsCount?.percentage >= 100 ? ( // Show license banner only when app limit is reached and unlimited apps cannot be added
+              <LicenseBanner
+                type="apps"
+                size="small"
+                showNewBanner
+                bannerVariant="inline"
+                limits={appsLimit?.appsCount ?? {}}
+              />
+            ) : (
+              canCreateApp && (
                 <div className="tw-flex tw-items-center tw-gap-2">
                   <CreateAppButton
                     label={t('homePage.header.createNewApplication', 'Create new app')}
@@ -183,8 +184,8 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
                   <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
                 </div>
-              )}
-            </LicenseBanner>
+              )
+            )
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
               <CreateAppButton
