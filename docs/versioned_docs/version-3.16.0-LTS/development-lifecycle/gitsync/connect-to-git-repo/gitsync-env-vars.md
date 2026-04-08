@@ -13,6 +13,11 @@ title: Configure GitSync via Environment Variables
   />
  <span>Paid feature</span>
 </div>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
 </div>
 
 :::warning BETA
