@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const licenseService = {
   get,
   update,
+  updateEnvSetting,
   getFeatureAccess,
   generateCloudTrial,
   getDomainsList,
@@ -29,6 +30,11 @@ async function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   const updatedData = await fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
   return updatedData;
+}
+
+async function updateEnvSetting(body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/env-setting`, requestOptions).then(handleResponse);
 }
 
 function getFeatureAccess() {
