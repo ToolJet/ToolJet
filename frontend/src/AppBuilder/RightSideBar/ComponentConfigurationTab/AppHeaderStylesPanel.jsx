@@ -25,7 +25,7 @@ const AppHeaderStylesPanel = () => {
   const headerBorderColor = useStore(
     (state) =>
       state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.borderColor ||
-      'var(--cc-default-border)',
+      'var(--cc-weak-border)',
     shallow
   );
   const headerHeight = useStore(

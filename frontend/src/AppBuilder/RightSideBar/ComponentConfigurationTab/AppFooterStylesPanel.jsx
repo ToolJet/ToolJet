@@ -25,7 +25,7 @@ const AppFooterStylesPanel = () => {
   const footerBorderColor = useStore(
     (state) =>
       state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.borderColor ||
-      'var(--cc-default-border)',
+      'var(--cc-weak-border)',
     shallow
   );
   const footerHeight = useStore(
