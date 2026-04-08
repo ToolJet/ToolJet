@@ -65,7 +65,8 @@ export const Pagination = function Pagination({
   };
 
   const pageNumbers = getPageNumbers();
-  const showPagesPopupBtn = !serverSidePagination && ((tableWidth <= 460 && pageCount > 1) || pageCount > 3);
+  const showFirstLastBtns = !serverSidePagination && ((tableWidth <= 460 && pageCount > 1) || pageCount > 3);
+  const showPagesPopupBtn = showFirstLastBtns && !pageNumbers.includes(pageCount);
 
   const PaginationPopoverContent = () => {
     const ref = useRef(null);
@@ -94,21 +95,7 @@ export const Pagination = function Pagination({
 
     return (
       <Popover.Body>
-        <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-b tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
-          <PaginationButton
-            key={'firstpage'}
-            onClick={(e) => {
-              goToPage(1);
-              e.target.blur(); // To remove focus styling that gets applied after clicking on the button
-            }}
-            dataCy={`first-page-button-option`}
-            currentPageIndex={pageIndex}
-            pageIndex={'First page'}
-            className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-          />
-        </div>
-
-        <div ref={ref} className="tw-px-[8px] tw-overflow-auto tw-flex-1">
+        <div ref={ref} className="tw-p-[8px] tw-overflow-auto tw-flex-1">
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const pageNum = virtualItem.index + 1;
@@ -135,20 +122,6 @@ export const Pagination = function Pagination({
             })}
           </div>
         </div>
-
-        <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-t tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
-          <PaginationButton
-            key={'lastpage'}
-            onClick={(e) => {
-              goToPage(pageCount);
-              e.target.blur(); // To remove focus styling that gets applied after clicking on the button
-            }}
-            dataCy={`last-page-button-option`}
-            currentPageIndex={pageIndex}
-            pageIndex={'Last page'}
-            className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-          />
-        </div>
       </Popover.Body>
     );
   };
@@ -160,7 +133,7 @@ export const Pagination = function Pagination({
         data-cy="popover-card"
         className={`table-widget-popup pagination-popup ${darkMode && 'dark-theme'}`}
         style={{
-          maxHeight: height - 79 > 128 ? `${height - 79}px` : '128px', // This is to ensure that if table height is small, the popover is still always showing the first, last and a single page buttons
+          maxHeight: height - 79 > 128 ? `${height - 79}px` : '128px',
         }}
         placement="top-end"
       >
@@ -172,6 +145,17 @@ export const Pagination = function Pagination({
   return (
     <div className={'d-flex align-items-center h-100'}>
       <div className="pagination-container d-flex h-100 align-items-center tw-space-x-1" data-cy="pagination-section">
+        {showFirstLastBtns && (
+          <PaginationButton
+            onClick={() => {
+              goToPage(1);
+            }}
+            disabled={pageIndex === 1}
+            icon="IconChevronsLeft"
+            dataCy="pagination-button-to-first"
+          />
+        )}
+
         <PaginationButton
           onClick={() => {
             goToPreviousPage();
@@ -213,6 +197,17 @@ export const Pagination = function Pagination({
           icon="IconChevronRight"
           dataCy="pagination-button-to-next"
         />
+
+        {showFirstLastBtns && (
+          <PaginationButton
+            onClick={() => {
+              goToPage(pageCount);
+            }}
+            disabled={pageIndex === pageCount}
+            icon="IconChevronsRight"
+            dataCy="pagination-button-to-last"
+          />
+        )}
       </div>
     </div>
   );
