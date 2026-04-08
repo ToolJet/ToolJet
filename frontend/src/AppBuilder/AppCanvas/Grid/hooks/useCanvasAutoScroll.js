@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { positionGhostElement, getCanvasBottomBound } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
@@ -156,6 +156,12 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     // Right bound: newX <= canvasWidth - elementWidth
     newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
     newY = Math.max(0, newY);
+
+    // Bottom bound: widget should not go past footer
+    const canvasBottomBound = getCanvasBottomBound();
+    if (canvasBottomBound !== Infinity) {
+      newY = Math.min(newY, canvasBottomBound - element.clientHeight);
+    }
 
     // Update element transform immediately
     element.style.transform = `translate(${newX}px, ${newY}px)`;

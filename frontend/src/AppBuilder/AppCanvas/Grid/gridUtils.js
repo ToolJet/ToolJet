@@ -724,3 +724,13 @@ export const isDroppingRestrictedWidget = (target, dragged) => {
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
   return restrictedWidgets.includes(dragged.widgetType);
 };
+
+export function getCanvasBottomBound() {
+  const footerElement = document.querySelector('[component-id="canvas-footer"]');
+  const realCanvas = document.getElementById('real-canvas');
+  if (!footerElement || !realCanvas) return Infinity;
+
+  const footerRect = footerElement.getBoundingClientRect();
+  const realCanvasRect = realCanvas.getBoundingClientRect();
+  return footerRect.top - realCanvasRect.top;
+}

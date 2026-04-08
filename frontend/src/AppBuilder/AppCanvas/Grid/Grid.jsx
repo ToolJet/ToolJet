@@ -26,6 +26,7 @@ import {
   isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
+  getCanvasBottomBound,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -1099,6 +1100,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
               top = Math.max(0, top);
+
+              const canvasBottomBound = getCanvasBottomBound();
+              if (canvasBottomBound !== Infinity) {
+                top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+              }
             }
 
             // Apply bounds clamping to prevent widget from going out of canvas
@@ -1166,6 +1172,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _canvasWidth = NO_OF_GRIDS * _gridWidth;
             left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
             top = Math.max(0, top);
+
+            const canvasBottomBound = getCanvasBottomBound();
+            if (canvasBottomBound !== Infinity) {
+              top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+            }
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
