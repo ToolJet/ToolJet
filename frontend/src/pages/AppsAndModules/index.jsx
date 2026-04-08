@@ -18,6 +18,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import Layout from '@/_ui/Layout';
+import TooltipComp from '@/components/ui/Rocket/Tooltip';
 import EmptyFolderIllustration from '@/pages/shared/illustrations/EmptyFolder';
 import NoSearchResultIllustration from '@/pages/shared/illustrations/NoSearchResult';
 
@@ -188,12 +189,17 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
             )
           ) : (
             <div className="tw-flex tw-items-center tw-gap-2">
-              <CreateAppButton
-                label="Create new module"
-                appType={appType}
-                disabled={isCreationDisabled}
-                isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-              />
+              <TooltipComp
+                content={!moduleEnabled ? 'Modules are not available on your current plan.' : ''}
+                isTooltipForInteractiveDisabledElement={isCreationDisabled}
+              >
+                <CreateAppButton
+                  label="Create new module"
+                  appType={appType}
+                  disabled={isCreationDisabled}
+                  isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+                />
+              </TooltipComp>
 
               <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
             </div>
@@ -258,12 +264,17 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                       Clear search
                     </Button>
                   ) : appType === 'module' ? (
-                    <CreateAppButton
-                      label="Create new module"
-                      appType={appType}
-                      disabled={isCreationDisabled}
-                      isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-                    />
+                    <TooltipComp
+                      content={!moduleEnabled ? 'Modules are not available on your current plan.' : ''}
+                      isTooltipForInteractiveDisabledElement={isCreationDisabled}
+                    >
+                      <CreateAppButton
+                        label="Create new module"
+                        appType={appType}
+                        disabled={isCreationDisabled}
+                        isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+                      />
+                    </TooltipComp>
                   ) : appType === 'front-end' && canCreateApp ? (
                     <CreateAppButton
                       label={t('homePage.header.createNewApplication', 'Create new app')}
