@@ -1,5 +1,5 @@
 import React from 'react';
-import { Triangle } from 'lucide-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = ({
   value,
@@ -66,55 +66,38 @@ export const NumberInput = ({
       />
       {showNativeStepper && (
         <div
-          style={{
-            position: 'absolute',
-            right: '28px',
-            top: '3px',
-            display: 'flex',
-            flexDirection: 'column',
-            width: '14px',
-            height: '26px',
-          }}
+          className="tw-w-5 tw-shrink-0 tw-self-stretch tw-flex tw-flex-col tw-border-0 tw-border-l tw-border-solid tw-border-[var(--cc-default-border)]"
+          style={{ position: 'absolute', right: '0px', top: '0px' }}
         >
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={-1}
             aria-label={`Increase ${String(cyLabel)}`}
             data-cy={`${inputId}-increment`}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleStepChange(1)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              padding: 0,
-              height: '13px',
-              lineHeight: 1,
-              fontSize: '8px',
-              color: 'var(--slate11)',
-            }}
+            className="tw-grid tw-place-items-center tw-cursor-pointer tw-border-0 tw-border-b tw-border-solid tw-border-[var(--cc-default-border)] tw-flex-1 number-input-arrow"
           >
-            <Triangle size={8} fill="var(--slate11)" color="var(--slate11)" style={{ transform: 'rotate(0deg)' }} />
-          </button>
-          <button
-            type="button"
+            <SolidIcon width="16" fill="var(--icons-default)" name="TriangleDownCenter" />
+          </div>
+          <div
+            role="button"
+            tabIndex={-1}
             aria-label={`Decrease ${String(cyLabel)}`}
             data-cy={`${inputId}-decrement`}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleStepChange(-1)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              padding: 0,
-              height: '13px',
-              lineHeight: 1,
-              fontSize: '8px',
-              color: 'var(--slate11)',
-            }}
+            className="tw-grid tw-place-items-center tw-cursor-pointer tw-flex-1 number-input-arrow"
           >
-            <Triangle size={8} fill="var(--slate11)" color="var(--slate11)" style={{ transform: 'rotate(180deg)' }} />
-          </button>
+            <SolidIcon width="16" fill="var(--icons-default)" name="TriangleUpCenter" />
+          </div>
         </div>
       )}
-      <label htmlFor={inputId} className="static-value tj-text-xsm">
+      <label
+        htmlFor={inputId}
+        className="static-value tj-text-xsm"
+        style={{ right: showNativeStepper ? '26px' : undefined }}
+      >
         {meta.staticText?.length > 0 ? meta.staticText : meta.staticText?.length == 0 ? '' : 'px'}
       </label>
     </div>

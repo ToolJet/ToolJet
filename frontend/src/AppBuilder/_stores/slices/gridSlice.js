@@ -542,6 +542,8 @@ export const createGridSlice = (set, get) => ({
       isGroupDragging,
       setCanvasHeaderSelected,
       setCanvasFooterSelected,
+      draggingComponentId,
+      resizingComponentId,
     } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
@@ -550,9 +552,11 @@ export const createGridSlice = (set, get) => ({
     const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
     const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
 
-    if (isClickedOnCanvasHeader) {
+    const isMovingComponent = draggingComponentId || resizingComponentId || isGroupDragging || isGroupResizing;
+
+    if (!isMovingComponent && isClickedOnCanvasHeader) {
       setCanvasHeaderSelected(true);
-    } else if (isClickedOnCanvasFooter) {
+    } else if (!isMovingComponent && isClickedOnCanvasFooter) {
       setCanvasFooterSelected(true);
     }
 

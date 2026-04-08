@@ -95,14 +95,14 @@ export class AppsUtilService implements IAppsUtilService {
             showOnDesktop: false,
             showOnMobile: false,
             backgroundColor: 'var(--cc-surface1-surface)',
-            border: 'var(--cc-default-border)',
+            border: 'var(--cc-weak-border)',
             height: 60,
           },
           pageFooter: {
             showOnDesktop: false,
             showOnMobile: false,
             backgroundColor: 'var(--cc-surface1-surface)',
-            border: 'var(--cc-default-border)',
+            border: 'var(--cc-weak-border)',
             height: 60,
           },
         })
