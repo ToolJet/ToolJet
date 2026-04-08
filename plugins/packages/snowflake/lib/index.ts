@@ -11,6 +11,7 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  getCurrentToken,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
@@ -177,6 +178,12 @@ export default class Snowflake implements QueryService {
     const client_auth = getOptionValue('client_auth');
     const custom_auth_params = sanitizeParams(getOptionValue('custom_auth_params'));
 
+    // Append offline_access to scope so Snowflake returns a refresh token during initial auth code exchange
+    const userScope: string = getOptionValue('scope') || '';
+    const scopeParts = userScope.split(' ').filter(Boolean);
+    if (!scopeParts.includes('offline_access')) scopeParts.push('offline_access');
+    const scope = scopeParts.join(' ');
+
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
@@ -186,6 +193,7 @@ export default class Snowflake implements QueryService {
       grant_type: 'authorization_code',
       code: authCode,
       redirect_uri: redirectUri,
+      scope,
       ...custom_auth_params,
     };
 
@@ -225,6 +233,107 @@ export default class Snowflake implements QueryService {
       return authDetails;
     } catch (error) {
       throw new QueryError('Authorization Error', error.message, {});
+    }
+  }
+
+  async refreshToken(sourceOptions: SourceOptions, _error: any, userId: string, isAppPublic: boolean): Promise<object> {
+    let refreshToken: string;
+
+    if (sourceOptions?.multiple_auth_enabled) {
+      const currentToken = getCurrentToken(
+        sourceOptions.multiple_auth_enabled,
+        sourceOptions['tokenData'],
+        userId,
+        isAppPublic
+      );
+      if (!currentToken?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = currentToken['refresh_token'];
+    } else {
+      if (!sourceOptions?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = sourceOptions['refresh_token'];
+    }
+
+    const oauth_type = sourceOptions['oauth_type'];
+    let client_id = sourceOptions['client_id'];
+    let client_secret = sourceOptions['client_secret'];
+
+    if (oauth_type === 'tooljet_app') {
+      client_id = process.env.SNOWFLAKE_CLIENT_ID;
+      client_secret = process.env.SNOWFLAKE_CLIENT_SECRET;
+    }
+
+    if (!client_id || !client_secret) {
+      throw new QueryError(
+        'OAuth credentials missing',
+        'client_id and client_secret are required for token refresh',
+        {}
+      );
+    }
+
+    const access_token_url = sourceOptions['access_token_url'];
+    if (!access_token_url) {
+      throw new QueryError('Access token URL missing', 'access_token_url is required for token refresh', {});
+    }
+
+    const client_auth = sourceOptions['client_auth'];
+    const custom_auth_params = sanitizeParams(sourceOptions['custom_auth_params']);
+
+    // Append offline_access if not already present to ensure Snowflake returns a new refresh token (token rotation)
+    const userScope: string = sourceOptions['scope'] || '';
+    const scopeParts = userScope.split(' ').filter(Boolean);
+    if (!scopeParts.includes('offline_access')) {
+      scopeParts.push('offline_access');
+    }
+    const scope = scopeParts.join(' ');
+
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
+
+    const tokenRequestBody: any = {
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      redirect_uri: redirectUri,
+      scope,
+      ...custom_auth_params,
+    };
+
+    // Snowflake OAuth token refresh requires application/x-www-form-urlencoded
+    const headers: any = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    if (client_auth === 'header') {
+      const credentials = Buffer.from(`${client_id}:${client_secret}`).toString('base64');
+      headers['Authorization'] = `Basic ${credentials}`;
+    } else {
+      tokenRequestBody['client_id'] = client_id;
+      tokenRequestBody['client_secret'] = client_secret;
+    }
+
+    try {
+      const response = await got(access_token_url, {
+        method: 'post',
+        headers,
+        form: tokenRequestBody,
+      });
+
+      const tokenData = JSON.parse(response.body);
+      const accessTokenDetails: any = {};
+
+      if (tokenData.access_token) accessTokenDetails['access_token'] = tokenData.access_token;
+      if (tokenData.refresh_token) accessTokenDetails['refresh_token'] = tokenData.refresh_token;
+      if (tokenData.expires_in) accessTokenDetails['expires_in'] = tokenData.expires_in.toString();
+      if (tokenData.token_type) accessTokenDetails['token_type'] = tokenData.token_type;
+
+      return accessTokenDetails;
+    } catch (err) {
+      throw new QueryError('Token Refresh Error', err.message, {});
     }
   }
 
