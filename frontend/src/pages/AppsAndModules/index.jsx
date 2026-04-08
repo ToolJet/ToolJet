@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { useAppsStore } from '@/_stores/appsStore';
+import { useSearchStore } from '@/_stores/searchStore';
 import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
 import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
 import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
@@ -38,10 +39,11 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+  const setClearSearchQuery = useSearchStore((state) => state.setClearSearchQuery);
+
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
-  const setAppSearchQuery = useAppsStore((state) => state.setAppSearchQuery);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,7 +64,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const selectedFolderId = currentSelectedFolder?.value ?? '';
 
   const { data: apps, isSuccess: isAppsFetchedOnce } = useFetchApps(
-    { appType, folderId: selectedFolderId, appSearchQuery, pageNo: currentPage },
+    { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage },
     { enabled: isFoldersSuccess }
   );
   const { data: featureAccess } = useFetchFeatureAccess();
@@ -109,7 +111,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   };
 
   const handleClearSearchTerm = () => {
-    setAppSearchQuery('');
+    setClearSearchQuery(true);
   };
 
   const checkUserPermissions = (app) => canUserPerformAppAction(appType, app);
@@ -214,23 +216,23 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 <EmptyState
                   resourceType={appType}
                   title={
-                    selectedFolderId && !appSearchQuery?.length
+                    selectedFolderId && !searchQuery?.length
                       ? 'No apps found in this folder'
-                      : appSearchQuery?.length
-                      ? `No results found for "${appSearchQuery}"`
+                      : searchQuery?.length
+                      ? `No results found for "${searchQuery}"`
                       : appType === 'front-end'
                       ? 'You don’t have any apps yet'
                       : 'You don’t have any modules yet'
                   }
                   description={
-                    appSearchQuery?.length || selectedFolderId
+                    searchQuery?.length || selectedFolderId
                       ? ''
                       : appType === 'front-end'
                       ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
                       : 'Create reusable groups of components and queries via modules.'
                   }
                 >
-                  {Boolean(appSearchQuery?.length) && (
+                  {Boolean(searchQuery?.length) && (
                     <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
                       Clear search
                     </Button>

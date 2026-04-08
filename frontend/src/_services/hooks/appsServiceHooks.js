@@ -81,7 +81,6 @@ export function useRenameApp({ appType }) {
 
   const { folderId } = useAppsFilter({ appType });
   const currentPage = useAppsStore((state) => state.currentPage);
-  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ appId, name, appType }) => appsService.saveApp(appId, { name }, appType),
@@ -92,7 +91,7 @@ export function useRenameApp({ appType }) {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} name has been updated!`);
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId, appSearchQuery, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId, appType: variables.appType }],
       });
     },
   });
@@ -136,7 +135,6 @@ export function useDeleteApp({ appType }) {
 
   const { folderId } = useAppsFilter({ appType });
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -149,7 +147,7 @@ export function useDeleteApp({ appType }) {
       // queryClient.invalidateQueries({ queryKey: ['folders'] });
       setCurrentPage(1);
       queryClient.invalidateQueries({
-        queryKey: ['apps', { folderId, appSearchQuery, appType: variables.appType }],
+        queryKey: ['apps', { folderId, appType: variables.appType }],
       });
 
       // TODO: re-fetch apps list
@@ -177,7 +175,6 @@ export function useChangeAppIcon({ appType }) {
 
   const { folderId } = useAppsFilter({ appType });
   const currentPage = useAppsStore((state) => state.currentPage);
-  const appSearchQuery = useAppsStore((state) => state.appSearchQuery);
 
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
@@ -188,7 +185,7 @@ export function useChangeAppIcon({ appType }) {
       toast.success('Icon updated.');
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId, appSearchQuery, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId, appType: variables.appType }],
       });
     },
   });

@@ -15,7 +15,6 @@ const appDialogInitialState = {
 const initialState = {
   pageSize: 9,
   currentPage: 1,
-  appSearchQuery: '',
   appDialogState: { ...appDialogInitialState },
   folderDialogState: { ...folderDialogInitialState },
   openSwitchBranchModal: false,
@@ -28,10 +27,6 @@ export const useAppsStore = createZustandStoreWithImmer(
     setCurrentPage: (page) =>
       set((state) => {
         state.currentPage = page;
-      }),
-    setAppSearchQuery: (query) =>
-      set((state) => {
-        state.appSearchQuery = query;
       }),
     setPageSize: (size) =>
       set((state) => {
