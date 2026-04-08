@@ -64,7 +64,9 @@ const Table = memo(
     );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
-    const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
+    const updateCustomResolvablesLazy = useStore((state) => state.updateCustomResolvablesLazy, shallow);
+    const resolveExpandedRows = useStore((state) => state.resolveExpandedRows, shallow);
+    const clearLazyRowIndices = useStore((state) => state.clearLazyRowIndices, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
@@ -125,13 +127,25 @@ const Table = memo(
 
     const enableExpandableRows = restOfProperties?.enableExpandableRows ?? false;
 
-    // When expandable rows are enabled and table data changes, update the customResolvables
-    // so that {{rowData.fieldName}} resolves correctly inside expansion containers.
+    // Store rowData for all rows WITHOUT triggering resolution.
+    // Resolution is deferred until a row is actually expanded (see effect below).
     useEffect(() => {
       if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
       const rowDataItems = data.map((row) => ({ rowData: row }));
-      updateCustomResolvables(id, rowDataItems, 'rowData', moduleId, []);
-    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvables]);
+      updateCustomResolvablesLazy(id, rowDataItems, moduleId, []);
+    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvablesLazy]);
+
+    // When rows expand/collapse or data changes, resolve only expanded rows.
+    // resolveExpandedRows syncs indices to the resolved store and calls updateDependencyValues,
+    // which scopes to expanded rows via the guard in updateChildComponentResolvedValues.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) {
+        clearLazyRowIndices(id, moduleId);
+        return;
+      }
+      const indices = Object.values(expandedRows).filter((v) => typeof v === 'number' && v < data.length);
+      resolveExpandedRows(id, indices, moduleId);
+    }, [expandedRows, data, enableExpandableRows, id, moduleId, resolveExpandedRows, clearLazyRowIndices]);
 
     // Collapse all rows and clear exposed variables when expandable rows is toggled
     const prevEnableExpandableRowsRef = useRef(enableExpandableRows);

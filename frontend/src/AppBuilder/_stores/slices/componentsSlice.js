@@ -609,11 +609,21 @@ export const createComponentsSlice = (set, get) => ({
         // per-row { listItem } objects. Now resolve the expression for each row, with
         // row-scoped components so that {{components.checkbox1.value}} returns the
         // row-specific value, not the full per-row array.
+
+        // For lazy parents (eg. Table expandable rows),
+        // only resolve index 0 (template) + any currently needed rows.
+        // Remaining rows are resolved on-demand.
+        const isLazy = get().resolvedStore.modules[moduleId].lazyResolvableParents?.[innermostListview];
+        const indicesToResolve = isLazy
+          ? new Set([0, ...(get().resolvedStore.modules[moduleId].lazyRowIndices?.[innermostListview] || [])])
+          : null;
+
         const state = getAllExposedValues(moduleId);
         const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
         const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
         for (let i = 0; i < resolvables.length; i++) {
+          if (indicesToResolve && !indicesToResolve.has(i)) continue;
           const fullIndices = [...currentIndices, i];
           if (scopeCtx) updateRowScope(scopeCtx, i);
           const resolvedValue = shouldResolve
@@ -2393,8 +2403,20 @@ export const createComponentsSlice = (set, get) => ({
     const scopeCtx = resolvableParentId ? prepareRowScope(state.components, resolvableParentId, moduleId) : null;
     const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
+    // For lazy parents (eg. Table expandable rows),
+    // Only resolve required rows instead of all 0..length-1.
+    // This is a no-op for ListView/Kanban.
+    const isLazy = get().resolvedStore.modules[moduleId].lazyResolvableParents?.[resolvableParentId];
+    let indicesToResolve;
+    if (isLazy) {
+      indicesToResolve = get().resolvedStore.modules[moduleId].lazyRowIndices?.[resolvableParentId] || [];
+      if (indicesToResolve.length === 0) return;
+    } else {
+      indicesToResolve = Array.from({ length }, (_, i) => i);
+    }
+
     const updates = [];
-    for (let i = 0; i < length; i++) {
+    for (const i of indicesToResolve) {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
       if (scopeCtx) updateRowScope(scopeCtx, i);
       const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
