@@ -1018,7 +1018,7 @@
             "text": "Sources",
             "tip": "Add or edit datasources",
             "dataSources": "Data sources",
-            "addDataSource": "+ Add datasource"
+            "addDataSource": "+ Add data source"
         },
         "Debugger": {
             "text": "Debugger",
