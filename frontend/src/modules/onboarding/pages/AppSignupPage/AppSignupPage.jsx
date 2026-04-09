@@ -68,7 +68,7 @@ const AppSignupPage = () => {
   const handleSignup = (formData, onSuccess = () => {}, onFailure = () => {}) => {
     const { email, name, password } = formData;
     const organizationId = appConfig?.organizationId;
-    const redirectTo = `/applications/${slug}`;
+    const redirectTo = appRedirectPath;
 
     authenticationService
       .signup(email, name, password, organizationId, redirectTo)
@@ -89,9 +89,11 @@ const AppSignupPage = () => {
 
           window.location.href = appRedirectPath;
         } else {
-          // For editions requiring email verification, redirect to app login
+          // For editions requiring email verification, redirect to app login with redirectTo preserved
           onSuccess();
-          navigate(`/applications/${slug}/login`, { replace: true });
+          const loginRedirectParam =
+            appRedirectPath !== `/applications/${slug}` ? `?redirectTo=${encodeURIComponent(appRedirectPath)}` : '';
+          navigate(`/applications/${slug}/login${loginRedirectParam}`, { replace: true });
         }
       })
       .catch((e) => {
@@ -137,6 +139,12 @@ const AppSignupPage = () => {
     );
   }
 
+  const setRedirectUrlToCookie = () => {
+    const iframe = window !== window.top;
+    authenticationService.saveLoginOrganizationId(appConfig?.organizationId);
+    setCookie('redirectPath', appRedirectPath, iframe);
+  };
+
   const setSignupOrganizationDetails = () => {
     authenticationService.setSignUpOrganizationDetails(appConfig.organizationId, appConfig.organizationId, null);
   };
@@ -148,7 +156,8 @@ const AppSignupPage = () => {
           configs={ssoConfigs}
           organizationId={appConfig.organizationId}
           paramOrganizationSlug={appConfig.organizationId}
-          redirectTo={`/applications/${slug}`}
+          redirectTo={appRedirectPath}
+          setRedirectUrlToCookie={setRedirectUrlToCookie}
           onSubmit={handleSignup}
           setSignupOrganizationDetails={setSignupOrganizationDetails}
           initialData={{ email: '', name: '' }}

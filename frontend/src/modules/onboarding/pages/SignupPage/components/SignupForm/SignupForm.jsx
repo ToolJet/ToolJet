@@ -23,6 +23,7 @@ const SignupForm = ({
   organizationToken,
   inviteeEmail,
   redirectTo,
+  setRedirectUrlToCookie,
   onSubmit,
   setSignupOrganizationDetails,
   initialData,
@@ -171,7 +172,11 @@ const SignupForm = ({
                   </span>
                   . Already have an account?{' '}
                   <Link
-                    to={`/applications/${appSlug}/login`}
+                    to={`/applications/${appSlug}/login${
+                      redirectTo && redirectTo !== `/applications/${appSlug}`
+                        ? `?redirectTo=${encodeURIComponent(redirectTo)}`
+                        : ''
+                    }`}
                     className="signin-link"
                     tabIndex="-1"
                     data-cy="signin-link"
@@ -254,6 +259,8 @@ const SignupForm = ({
                 organizationSlug={paramOrganizationSlug}
                 buttonText="Sign up with"
                 setSignupOrganizationDetails={() => setSignupOrganizationDetails()}
+                setRedirectUrlToCookie={setRedirectUrlToCookie}
+                redirectTo={redirectTo}
               />
               {defaultState && <TermsAndPrivacyInfo />}
             </>
