@@ -154,14 +154,14 @@ export const verifyToggleSwitchAlignment = (
     });
 };
 
-export const verifyToggleSwitchClick = (componentSelector) => {
+export const verifyToggleSwitchClick = (componentSelector, toastMessage) => {
     getToggleInput(componentSelector)
         .should("not.be.checked")
         .click({ force: true })
         .should("be.checked");
     cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    "updated toggleswitch"
+   toastMessage
   );
 
     getToggleInput(componentSelector)

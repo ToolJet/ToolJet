@@ -138,6 +138,6 @@ describe("Toggle Switch Component - Feature Validation", { baseUrl: null }, () =
 
   it("should verify events", () => {
     setup();
-    verifyToggleSwitchClick(componentSelector);
+    verifyToggleSwitchClick(componentSelector, "Toggleswitch value updated");
   });
 });

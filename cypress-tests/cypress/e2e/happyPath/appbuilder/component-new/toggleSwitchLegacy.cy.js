@@ -48,7 +48,7 @@ describe("Toggle Switch Legacy Component - Feature Validation", { baseUrl: null 
     genralProperties(componentSelector, visibilityToggle, {
       state: "be.visible",
     });
-    
+
     genralProperties(componentSelector, visibilityToggle, {
       state: "not.be.visible",
     });
@@ -58,7 +58,7 @@ describe("Toggle Switch Legacy Component - Feature Validation", { baseUrl: null 
     });
 
     genralProperties(componentSelector, disableToogle, {
-       assertClass: "disabled" 
+      assertClass: "disabled"
     });
   });
 
@@ -92,6 +92,7 @@ describe("Toggle Switch Legacy Component - Feature Validation", { baseUrl: null 
 
   it("should verify events", () => {
     setup();
-    verifyToggleSwitchClick(componentSelector);
+    verifyToggleSwitchClick(componentSelector,
+      "updated toggleswitch");
   });
 });
