@@ -244,6 +244,8 @@ function importResource(body, appType) {
 }
 
 function cloneResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

@@ -154,7 +154,7 @@ export class ImportExportResourcesService {
     };
   }
 
-  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }] }: CloneResourcesDto) {
+  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }], branchId }: CloneResourcesDto) {
     const tablesForApp = await this.internalTableRepository.findTables(appId);
     const exportResourcesDto: ExportResourcesDto = {
       organization_id,
@@ -170,6 +170,7 @@ export class ImportExportResourcesService {
     const importResourcesDto: ImportResourcesDto = {
       organization_id,
       tooljet_version: globalThis.TOOLJET_VERSION,
+      ...(branchId && { branchId }),
       app: [
         {
           appName: newAppName,
