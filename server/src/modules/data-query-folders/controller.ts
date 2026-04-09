@@ -7,7 +7,7 @@ import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { DataQueryFoldersService } from './service';
 import { IDataQueryFoldersController } from './interfaces/IController';
-import { CreateFolderDto, DeleteFolderDto, RenameFolderDto, ReorderDto } from './dto';
+import { BatchReorderDto, CreateFolderDto, DeleteFolderDto, RenameFolderDto, ReorderDto } from './dto';
 
 @InitModule(MODULES.DATA_QUERY_FOLDERS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -36,6 +36,12 @@ export class DataQueryFoldersController implements IDataQueryFoldersController {
   @InitFeature(FEATURE_KEY.REORDER)
   @Patch('/reorder')
   async reorder(@Body() _dto: ReorderDto): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.REORDER)
+  @Patch('/batch-reorder')
+  async batchReorder(@Body() _dto: BatchReorderDto): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

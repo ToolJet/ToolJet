@@ -29,7 +29,7 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
     const repo = manager ? manager.getRepository(DataQueryFolderMapping) : this;
     return repo.find({
       where: { parentId },
-      order: { index: 'ASC', updatedAt: 'DESC' },
+      order: { index: 'ASC' },
     });
   }
 
@@ -46,7 +46,7 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
     const repo = manager ? manager.getRepository(DataQueryFolderMapping) : this;
     return repo.find({
       where: { parentId },
-      order: { index: 'ASC', updatedAt: 'DESC' },
+      order: { index: 'ASC' },
     });
   }
 
@@ -72,7 +72,6 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
       .where('mapping.parentId IS NULL')
       .andWhere('mapping.childId IN (:...childIds)', { childIds })
       .orderBy('mapping.index', 'ASC')
-      .addOrderBy('mapping.updatedAt', 'DESC')
       .getMany();
   }
 
@@ -83,7 +82,6 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
       .createQueryBuilder('mapping')
       .where('mapping.childId IN (:...childIds)', { childIds })
       .orderBy('mapping.index', 'ASC')
-      .addOrderBy('mapping.updatedAt', 'DESC')
       .getMany();
   }
 

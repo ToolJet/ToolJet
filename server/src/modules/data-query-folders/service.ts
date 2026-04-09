@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IDataQueryFoldersService } from './interfaces/IService';
-import { CreateFolderDto, DeleteFolderDto, RenameFolderDto, ReorderDto } from './dto';
+import { BatchReorderDto, CreateFolderDto, DeleteFolderDto, RenameFolderDto, ReorderDto } from './dto';
 
 @Injectable()
 export class DataQueryFoldersService implements IDataQueryFoldersService {
@@ -17,6 +17,10 @@ export class DataQueryFoldersService implements IDataQueryFoldersService {
   }
 
   async reorder(_dto: ReorderDto): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  async batchReorder(_dto: BatchReorderDto): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

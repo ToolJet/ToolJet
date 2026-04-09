@@ -100,6 +100,8 @@ export const createDataQuerySlice = (set, get) => ({
         delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
       }
 
+      const folderId = extraProperties?.folderId;
+
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
@@ -117,8 +119,6 @@ export const createDataQuerySlice = (set, get) => ({
       });
       setSelectedQuery(tempId);
       setNameInputFocused(true);
-
-      const folderId = extraProperties?.folderId;
       dataqueryService
         .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
         .then((data) => {
@@ -135,6 +135,10 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
+          // EE: add the real folder mapping from the backend response
+          if (data.folderMapping) {
+            get().queryFolders?.addRealQueryMapping?.(data.folderMapping);
+          }
           setSelectedQuery(data.id);
           if (shouldRunQuery) setQueryToBeRun(data);
 
@@ -255,13 +259,9 @@ export const createDataQuerySlice = (set, get) => ({
               (query) => query.id !== queryId
             );
             delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
-            // Clean up folder mapping for the deleted query
-            if (state.queryFolders?.folderMappings) {
-              state.queryFolders.folderMappings = state.queryFolders.folderMappings.filter(
-                (m) => !(m.childId === queryId && m.childType === 'query')
-              );
-            }
           });
+          // EE: clean up folder mapping for the deleted query
+          get().queryFolders?.removeQueryMapping?.(queryId);
         })
         .catch((e) => {
           if (e.statusCode === 403) {

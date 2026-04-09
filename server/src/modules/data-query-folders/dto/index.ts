@@ -1,5 +1,5 @@
-import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { ChildType, DeleteMode } from '../types';
 
@@ -43,4 +43,29 @@ export class ReorderDto {
   @IsUUID()
   @IsOptional()
   parentId: string | null;
+}
+
+export class ReorderItemDto {
+  @IsUUID()
+  @IsNotEmpty()
+  childId: string;
+
+  @IsEnum(ChildType)
+  @IsNotEmpty()
+  childType: ChildType;
+
+  @IsInt()
+  @IsNotEmpty()
+  index: number;
+
+  @IsUUID()
+  @IsOptional()
+  parentId: string | null;
+}
+
+export class BatchReorderDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReorderItemDto)
+  items: ReorderItemDto[];
 }
