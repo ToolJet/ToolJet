@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { authenticationService, appsService } from '@/_services';
+import { authenticationService, appsService, sessionService } from '@/_services';
 import { loginConfigsService } from '@/_services/login_configs.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { setCookie } from '@/_helpers/cookie';
@@ -29,13 +29,16 @@ const AppLoginPage = () => {
   const appRedirectPath = redirectToParam?.startsWith('/applications/') ? redirectToParam : `/applications/${slug}`;
 
   useEffect(() => {
-    // If user is already authenticated, redirect directly to the app
-    const currentSession = authenticationService.currentSessionValue;
-    if (currentSession?.current_user?.id) {
-      window.location.href = appRedirectPath;
-      return;
-    }
-    loadAppConfig();
+    // Check server-side session (not in-memory BehaviorSubject) because app auth pages
+    // skip authorizeWorkspace, so the BehaviorSubject is never populated on fresh page loads.
+    sessionService
+      .validateSession()
+      .then(() => {
+        window.location.href = appRedirectPath;
+      })
+      .catch(() => {
+        loadAppConfig();
+      });
   }, [slug]);
 
   const loadAppConfig = async () => {
