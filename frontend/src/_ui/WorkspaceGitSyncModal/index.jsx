@@ -237,12 +237,23 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // Use remote branches for dropdown, fall back to local branches
   const dropdownBranches = remoteBranches.length > 0 ? remoteBranches : branches;
 
+  const branchExistsLocally = branches.some((b) => b.name === selectedBranch);
+
   // ---- Confirmation view for importing a different branch ----
   const renderImportConfirmation = () => (
     <div className="import-confirmation-section">
       <p>
-        <strong>{selectedBranch}</strong> branch does not exist in ToolJet, pulling this will import it as a new branch
-        with the latest commit. Do you want to proceed?
+        {branchExistsLocally ? (
+          <>
+            <strong>{selectedBranch}</strong> branch already exists in ToolJet. Pulling this will update it with the
+            latest commit from git. Do you want to proceed?
+          </>
+        ) : (
+          <>
+            <strong>{selectedBranch}</strong> branch does not exist in ToolJet, pulling this will import it as a new
+            branch with the latest commit. Do you want to proceed?
+          </>
+        )}
       </p>
     </div>
   );
@@ -537,7 +548,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // Modal title changes based on mode
   const modalTitle = (() => {
     if (actionChoiceMode) {
-      return `Import ${selectedBranch} from git`;
+      return branchExistsLocally ? `Update ${selectedBranch} from git` : `Import ${selectedBranch} from git`;
     }
 
     if (isOnDefaultBranch) return 'Pull Commit';
