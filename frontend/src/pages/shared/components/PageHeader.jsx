@@ -7,7 +7,7 @@ export default function PageHeader({ children, title, classes = null }) {
     <header className="tw-flex tw-justify-between tw-items-center tw-gap-4">
       <h1
         data-cy="breadcrumb-page-title"
-        className="tw-text-text-medium tw-text-[22px] tw-font-inter tw-font-medium tw-leading-9 tw-tracking-[var(--letter-spacing-display-medium)]"
+        className="tw-text-text-medium tw-text-[22px] tw-font-inter tw-font-medium tw-leading-9 tw-tracking-[var(--letter-spacing-display-medium)] tw-mb-0"
       >
         {title}
       </h1>

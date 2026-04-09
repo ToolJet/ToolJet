@@ -152,7 +152,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   return (
     <Layout
       showNewHeader
-      contentAsChild
       classes={classes}
       darkMode={darkMode}
       shouldWrapContentBody={false}

@@ -148,7 +148,7 @@ const Button = forwardRef(
   ) => {
     const iconFillColor =
       !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
-    const lucideIconClassName = getLucideIconClassName(variant, iconOnly);
+    const lucideIconClassName = fill || getLucideIconClassName(variant, iconOnly);
     const Comp = asChild ? Slot : component;
     const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
 
