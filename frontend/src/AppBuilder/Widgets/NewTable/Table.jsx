@@ -66,7 +66,7 @@ const Table = memo(
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const updateCustomResolvablesLazy = useStore((state) => state.updateCustomResolvablesLazy, shallow);
     const resolveExpandedRows = useStore((state) => state.resolveExpandedRows, shallow);
-    const clearLazyRowIndices = useStore((state) => state.clearLazyRowIndices, shallow);
+    const cleanupLazyResolvables = useStore((state) => state.cleanupLazyResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
@@ -127,25 +127,24 @@ const Table = memo(
 
     const enableExpandableRows = restOfProperties?.enableExpandableRows ?? false;
 
-    // Store rowData for all rows WITHOUT triggering resolution.
-    // Resolution is deferred until a row is actually expanded (see effect below).
-    useEffect(() => {
-      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
-      const rowDataItems = data.map((row) => ({ rowData: row }));
-      updateCustomResolvablesLazy(id, rowDataItems, moduleId, []);
-    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvablesLazy]);
-
-    // When rows expand/collapse or data changes, resolve only expanded rows.
-    // resolveExpandedRows syncs indices to the resolved store and calls updateDependencyValues,
-    // which scopes to expanded rows via the guard in updateChildComponentResolvedValues.
+    // Store only index 0 as template for initial component setup (setResolvedComponentByProperty).
+    // Full row data is populated on-demand in resolveExpandedRows when rows expand.
     useEffect(() => {
       if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) {
-        clearLazyRowIndices(id, moduleId);
+        cleanupLazyResolvables(id, moduleId);
         return;
       }
+      updateCustomResolvablesLazy(id, [{ rowData: data[0] }], moduleId, []);
+    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvablesLazy, cleanupLazyResolvables]);
+
+    // When rows expand/collapse or data changes, resolve only expanded rows.
+    // resolveExpandedRows populates customResolvables for expanded indices,
+    // then reuses updateDependencyValues which scopes to those rows via the guard.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
       const indices = Object.values(expandedRows).filter((v) => typeof v === 'number' && v < data.length);
-      resolveExpandedRows(id, indices, moduleId);
-    }, [expandedRows, data, enableExpandableRows, id, moduleId, resolveExpandedRows, clearLazyRowIndices]);
+      resolveExpandedRows(id, indices, data, moduleId);
+    }, [expandedRows, data, enableExpandableRows, id, moduleId, resolveExpandedRows]);
 
     // Collapse all rows and clear exposed variables when expandable rows is toggled
     const prevEnableExpandableRowsRef = useRef(enableExpandableRows);
@@ -180,8 +179,11 @@ const Table = memo(
     // Initialize component on the table store
     useEffect(() => {
       initializeComponent(id);
-      return () => removeComponent(id);
-    }, [id, initializeComponent, removeComponent]);
+      return () => {
+        removeComponent(id);
+        cleanupLazyResolvables(id, moduleId);
+      };
+    }, [id, initializeComponent, removeComponent, cleanupLazyResolvables, moduleId]);
 
     // Set properties to the table store
     useEffect(() => {
