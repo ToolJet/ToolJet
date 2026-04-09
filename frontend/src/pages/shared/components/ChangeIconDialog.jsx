@@ -85,6 +85,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
           classes={{ searchInputContainer: 'tw-mb-4' }}
+          dataCy="change-icon-search"
         />
 
         {filteredIcons.length ? (

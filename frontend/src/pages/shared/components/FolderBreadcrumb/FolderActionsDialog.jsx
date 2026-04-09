@@ -269,6 +269,7 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         classes={{ searchInputContainer: 'tw-mb-4' }}
+        dataCy="search-folder-input"
       />
 
       <ul data-cy="folder-list" className="tw-list-none tw-h-56 tw-overflow-y-auto tw-pl-0 tw-mb-0">
