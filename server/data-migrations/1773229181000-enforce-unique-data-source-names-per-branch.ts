@@ -58,30 +58,26 @@ export class EnforceUniqueDataSourceNamesPerBranch1773229181000 implements Migra
       WHERE is_active = true AND app_version_id IS NOT NULL
     `);
 
-    // Conflicts for idx_unique_default_name_org (is_active=true, is_default=true)
-    const orgConflicts = await manager.query(`
+    // Conflicts for idx_unique_default_name (is_active=true, is_default=true)
+    const defaultConflicts = await manager.query(`
       SELECT 
         name,
         COALESCE(branch_id::text, 'NULL') as branch_id,
-        organization_id,
         COUNT(*) as count
       FROM data_source_versions
       WHERE is_active = true AND is_default = true
-      GROUP BY LOWER(name), organization_id, name, branch_id
+      GROUP BY LOWER(name), name, branch_id
       HAVING COUNT(*) > 1
     `);
-    console.log(`[INFO] Conflicts for idx_unique_default_name_org: ${orgConflicts.length}`);
-    for (const row of orgConflicts) {
-      console.log(
-        `  - name: "${row.name}", branch_id: ${row.branch_id}, org_id: ${row.organization_id}, count: ${row.count}`
-      );
+    console.log(`[INFO] Conflicts for idx_unique_default_name: ${defaultConflicts.length}`);
+    for (const row of defaultConflicts) {
+      console.log(`  - name: "${row.name}", branch_id: ${row.branch_id}, count: ${row.count}`);
     }
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX idx_unique_default_name_org
+      CREATE UNIQUE INDEX idx_unique_default_name
       ON data_source_versions (
-        LOWER(name),
-        organization_id
+        LOWER(name)
       )
       WHERE is_active = true AND is_default = true
     `);
@@ -91,7 +87,7 @@ export class EnforceUniqueDataSourceNamesPerBranch1773229181000 implements Migra
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      DROP INDEX IF EXISTS idx_unique_default_name_org
+      DROP INDEX IF EXISTS idx_unique_default_name
     `);
     await queryRunner.query(`
       DROP INDEX IF EXISTS idx_unique_name_app_version
