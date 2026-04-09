@@ -417,7 +417,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       {},
       organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      undefined,
+      dataSourceOptions.id
     );
 
     return await service.listTables(

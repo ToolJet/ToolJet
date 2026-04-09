@@ -260,7 +260,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
 
         //Propagate token to all branches since tokens are branch-invariant
-        //this.propagateTokenToAllBranches(dataSourceOptionId, environmentId, { access_token, refresh_token });
+        this.propagateTokenToAllBranches(dataSourceOptionId, environmentId, userId, access_token, refresh_token);
 
         // Strip OAuth flow keys and token keys from options
         options = options.filter(
@@ -1208,21 +1208,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
       await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
-      // Propagate OAuth token to ALL branches (tokens are branch-invariant)
 
-      //Need to check this
-      // await this.propagateTokenToAllBranches(dataSourceId, environmentId, updatedTokenData);
+      // Propagate OAuth token to ALL branches (tokens are branch-invariant)
+      await this.propagateTokenToAllBranches(dataSourceId, environmentId, tokenUserId, accessToken, refreshToken);
     });
   }
 
   /**
-   * When an OAuth token refreshes, propagate the tokenData to all branch versions
+   * When an OAuth token refreshes, propagate the token to all branch versions
    * of this data source so tokens stay in sync across branches.
    */
   protected async propagateTokenToAllBranches(
     dataSourceId: string,
     environmentId: string,
-    updatedTokenData: any
+    userId: string | null,
+    accessToken: string | null,
+    refreshToken: string | null
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Find all branch versions for this DS
@@ -1235,9 +1236,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           where: { dataSourceVersionId: dsv.id, environmentId },
         });
         if (dsvo) {
-          const opts = dsvo.options || {};
-          opts['tokenData'] = { value: updatedTokenData, encrypted: false };
-          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options: opts, updatedAt: new Date() });
+          await this.upsertUserTokenData(dsvo.id, userId, accessToken, refreshToken, manager);
         }
       }
     });
