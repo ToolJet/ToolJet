@@ -28,6 +28,7 @@ function DataSourceSelect({
   allowNewFolder = false,
   onQueryStart,
   queryFoldersLicensed = true,
+  folderId,
 }) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
@@ -61,7 +62,9 @@ function DataSourceSelect({
   }, [selectRef]);
 
   const handleChangeDataSource = (source) => {
-    createDataQuery(source, false, {}, 'canvas', null, { callbackFunction: onQueryCreate });
+    const extraProps = { callbackFunction: onQueryCreate };
+    if (folderId) extraProps.folderId = folderId;
+    createDataQuery(source, false, {}, 'canvas', null, extraProps);
     onQueryStart?.(useStore.getState().dataQuery.creatingQueryInProcessId);
     setPreviewData(null);
     if (!skipClosePopup) closePopup();

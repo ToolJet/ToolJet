@@ -118,8 +118,9 @@ export const createDataQuerySlice = (set, get) => ({
       setSelectedQuery(tempId);
       setNameInputFocused(true);
 
+      const folderId = extraProperties?.folderId;
       dataqueryService
-        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
+        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
         .then((data) => {
           set((state) => {
             state.dataQuery.creatingQueryInProcessId = null;
@@ -254,6 +255,12 @@ export const createDataQuerySlice = (set, get) => ({
               (query) => query.id !== queryId
             );
             delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
+            // Clean up folder mapping for the deleted query
+            if (state.queryFolders?.folderMappings) {
+              state.queryFolders.folderMappings = state.queryFolders.folderMappings.filter(
+                (m) => !(m.childId === queryId && m.childType === 'query')
+              );
+            }
           });
         })
         .catch((e) => {
