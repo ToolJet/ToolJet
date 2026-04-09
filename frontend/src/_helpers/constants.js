@@ -69,7 +69,7 @@ export const ERROR_MESSAGES = {
   },
   'ws-login-restricted': {
     title: 'Restricted access',
-    message: 'Workspace login is not enabled for this instance. Contact your super administrator to configure access.',
+    message: 'Workspace login is not enabled for this instance. Contact your super admin to configure access.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
