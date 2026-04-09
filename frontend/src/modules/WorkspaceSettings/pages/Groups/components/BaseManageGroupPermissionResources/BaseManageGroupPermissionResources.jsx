@@ -25,6 +25,7 @@ import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -498,6 +499,91 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ updateParam });
   };
 
+  renderFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
+    const showConsolidated = isCE;
+    const folderCRUD = groupPermission.folderCreate || groupPermission.folderDelete;
+
+    if (showConsolidated) {
+      return (
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={folderCRUD}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              const newValue = !folderCRUD;
+              this.updateGroupPermission(groupPermission.id, { folderCreate: newValue, folderDelete: newValue });
+              this.setState({ updateParam: { folderCreate: newValue, folderDelete: newValue } });
+            }}
+            data-cy="folder-crud-checkbox"
+          />
+          <span className="form-check-label" data-cy="folder-crud-label">
+            {this.props.t(
+              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+              'Create/Update/Delete'
+            )}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="folder-crud-helper-text"
+          >
+            All operations on folders
+          </span>
+        </label>
+      );
+    }
+
+    return (
+      <>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.folderCreate}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, { folderCreate: !groupPermission.folderCreate });
+              this.setState({ updateParam: { folderCreate: !groupPermission.folderCreate } });
+            }}
+            data-cy="folder-create-checkbox"
+          />
+          <span className="form-check-label" data-cy="folder-create-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.create', 'Create')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="folder-create-helper-text"
+          >
+            Create new folders in this workspace
+          </span>
+        </label>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.folderDelete}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, { folderDelete: !groupPermission.folderDelete });
+              this.setState({ updateParam: { folderDelete: !groupPermission.folderDelete } });
+            }}
+            data-cy="folder-delete-checkbox"
+          />
+          <span className="form-check-label" data-cy="folder-delete-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.delete', 'Delete')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="folder-delete-helper-text"
+          >
+            Delete any folders in this workspace
+          </span>
+        </label>
+      </>
+    );
+  };
+
   render() {
     if (!this.props.groupPermissionId) return null;
 
@@ -530,8 +616,9 @@ class BaseManageGroupPermissionResources extends React.Component {
 
     const { featureAccess } = this.props;
 
-    const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
+    const { licenseStatus: { isExpired, isLicenseValid } = {}, plan } = featureAccess || {};
     // Treat both basic and starter plans as restricted plans
+    const isCE = fetchEdition() === 'ce';
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
     const { customGroups: isFeatureEnabled } = featureAccess || {};
@@ -1015,7 +1102,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
-                                {/* Worklfow Permission */}
+                                {/* Workflow Permission */}
                                 <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
                                   disablePermissionUpdate={disableNonPromoteReleasePermissions}
@@ -1039,37 +1126,12 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   <div className="text-muted">
                                     <div className="d-flex apps-permission-wrap flex-column">
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              folderCRUD: !groupPermission.folderCRUD,
-                                            });
-                                            this.setState({
-                                              updateParam: { folderCRUD: !groupPermission.folderCRUD },
-                                            });
-                                          }}
-                                          checked={groupPermission.folderCRUD}
-                                          disabled={disableNonPromoteReleasePermissions}
-                                          data-cy="folder-create-checkbox"
-                                        />
-                                        <span className="form-check-label" data-cy="folder-create-label">
-                                          {this.props.t(
-                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
-                                            'Create/Update/Delete'
-                                          )}
-                                        </span>
-                                        <span
-                                          class={`tj-text-xxsm ${
-                                            disableNonPromoteReleasePermissions && 'check-label-disable'
-                                          }`}
-                                          data-cy="folder-helper-text"
-                                        >
-                                          All operations on folders
-                                        </span>
-                                      </label>
+                                      {this.renderFolderPermissions({
+                                        groupPermission,
+                                        isCE,
+                                        isBasicPlan,
+                                        disableNonPromoteReleasePermissions,
+                                      })}
                                     </div>
                                   </div>
                                 </div>

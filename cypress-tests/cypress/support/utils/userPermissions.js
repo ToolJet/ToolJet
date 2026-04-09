@@ -54,13 +54,15 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       workflowDelete: flag,
       dataSourceCreate: flag,
       dataSourceDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
     }
     : {
       appCreate: flag,
       appDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
     };
 };

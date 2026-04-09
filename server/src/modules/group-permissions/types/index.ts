@@ -10,7 +10,8 @@ export interface CreateDefaultGroupObject {
   appDelete?: boolean;
   workflowCreate?: boolean;
   workflowDelete?: boolean;
-  folderCRUD?: boolean;
+  folderCreate?: boolean;
+  folderDelete?: boolean;
   orgConstantCRUD?: boolean;
   dataSourceCreate?: boolean;
   dataSourceDelete?: boolean;
@@ -64,6 +65,10 @@ interface Features {
   [FEATURE_KEY.UPDATE_GRANULAR_DATA_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_DS]: FeatureConfig;
   [FEATURE_KEY.USER_ROLE_CHANGE]: FeatureConfig;
+  [FEATURE_KEY.CREATE_GRANULAR_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_GRANULAR_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GRANULAR_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.GET_ADDABLE_FOLDERS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

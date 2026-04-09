@@ -12,6 +12,7 @@ import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 
 export class VersionModule extends SubModule {
@@ -64,6 +65,7 @@ export class VersionModule extends SubModule {
         DataQueryRepository,
         DataSourcesRepository,
         VersionRepository,
+        OrganizationGitSyncRepository,
         AppsRepository,
         AppGitRepository,
         VersionsCreateService,

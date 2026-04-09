@@ -1,0 +1,373 @@
+// Workspace Git Sync Modal — mirrors the app-level git-sync-modal.scss
+.git-sync-modal,
+.modal-base {
+  .create-commit-container,
+  .commit-info,
+  .pull-container,
+  .pushpull-container {
+    height: 300px !important;
+
+    .pull-section,
+    .push-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+
+      &.pull-section--centered {
+        align-items: center;
+      }
+
+      .selected-commit-header {
+        margin-bottom: 8px;
+        color: var(--slate11);
+      }
+
+      .selected-commit-info {
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
+
+        .commit-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          flex-shrink: 0;
+        }
+
+        .commit-content {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 0;
+
+          .commit-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 18px;
+            color: var(--slate12);
+          }
+
+          .commit-metadata {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 18px;
+            color: var(--slate11);
+          }
+        }
+      }
+    }
+
+    .form-control {
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 20px;
+      color: var(--slate12);
+    }
+
+    .form-group {
+      .tj-input-error-state {
+        border: 1px solid var(--tomato9) !important;
+      }
+
+      .tj-input-error {
+        color: var(--tomato10) !important;
+      }
+    }
+
+    .info-text {
+      color: var(--slate10);
+    }
+
+    .tj-input-error {
+      color: var(--tomato10);
+    }
+
+    .form-control.disabled {
+      background-color: var(--slate3) !important;
+      color: var(--slate9) !important;
+    }
+
+    .last-commit-info {
+      background: var(--slate3);
+
+      .message-info {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .author-info {
+        font-size: 10px;
+        color: var(--slate11);
+      }
+    }
+
+    .check-for-updates {
+      display: flex;
+      align-items: center;
+      color: var(--indigo9);
+
+      svg {
+        path {
+          fill: var(--indigo9);
+        }
+
+        rect {
+          fill: none;
+        }
+      }
+
+      .loader-container {
+        height: unset !important;
+
+        .primary-spin-loader {
+          width: 18px;
+          height: 18px;
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--slate5);
+    padding: 1rem;
+    position: relative;
+    z-index: 3;
+
+    .tj-btn-left-icon {
+      svg {
+        width: 20px;
+        height: 20px;
+
+        path {
+          fill: var(--indigo1);
+        }
+      }
+    }
+
+    .tj-large-btn {
+      font-weight: 500;
+      font-size: 14px;
+    }
+  }
+
+  .modal-body {
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+    }
+  }
+
+  .modal-base {
+    .tj-text-xxsm {
+      color: var(--slate11);
+    }
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--slate5) !important;
+
+    .modal-title {
+      color: var(--slate12);
+    }
+  }
+}
+
+.git-sync-modal {
+  width: 400px !important;
+  height: 470px !important;
+
+  .pushpull-container {
+    height: 230px !important;
+  }
+
+  .pull-container {
+    height: 260px !important;
+  }
+
+  .modal-body {
+    height: 240px !important;
+
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+    }
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--slate5) !important;
+    height: auto !important;
+    min-height: 90px !important;
+
+    .modal-title {
+      color: var(--slate12);
+    }
+  }
+}
+
+.dark-theme.git-sync-modal {
+  .modal-header {
+    border-bottom: 1px solid var(--slate5) !important;
+  }
+}
+
+.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-push.active,
+.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
+  border-bottom: 2px solid var(--indigo9) !important;
+}
+
+.git-sync-modal .git-sync-title .helper-text {
+  color: var(--text-placeholder, #6a727c);
+  font-family: var(--family-regular, Inter);
+  font-size: var(--size-default, 12px);
+  font-style: normal;
+  font-weight: var(--weight-regular, 400);
+  line-height: var(--line-height-default, 18px);
+  letter-spacing: var(--letter-spacing-default, -0.24px);
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: auto;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+}
+
+.git-sync-modal .pull-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border-default, #ccd1d5);
+  border-radius: 6px;
+  min-height: 70px;
+
+  svg {
+    color: var(--text-medium, #2d343b);
+    flex-shrink: 0;
+  }
+}
+
+.git-sync-modal .pull-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+.git-sync-modal .pull-info-title {
+  color: var(--text-medium, #2d343b);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.git-sync-modal .pull-info-subtitle {
+  color: var(--text-placeholder, #6a727c);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.git-sync-modal .pull-info-box svg {
+  color: var(--icon-warning, #bf4f03);
+  flex-shrink: 0;
+}
+
+// Action choice section (Import vs Pull into current branch)
+.git-sync-modal .action-choice-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+
+  .action-choice-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--slate5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+
+    &:hover,
+    &.active {
+      border-color: var(--indigo9);
+    }
+
+    input[type='radio'] {
+      margin-top: 2px;
+      accent-color: var(--indigo9);
+      flex-shrink: 0;
+    }
+
+    .option-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .option-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate12);
+      line-height: 20px;
+    }
+
+    .option-description {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--slate11);
+      line-height: 18px;
+    }
+  }
+}
+
+.git-sync-modal .no-commits-empty-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border-default, #ccd1d5);
+  border-radius: 6px;
+  min-height: 70px;
+
+  svg {
+    color: var(--icon-warning, #bf4f03);
+    flex-shrink: 0;
+  }
+
+  .empty-state-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+  }
+
+  .empty-state-title {
+    color: var(--text-medium, #2d343b);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+
+  .empty-state-description {
+    color: var(--text-placeholder, #6a727c);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+  }
+}

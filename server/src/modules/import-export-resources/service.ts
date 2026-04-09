@@ -95,13 +95,13 @@ export class ImportExportResourcesService {
           const pages = appParams?.pages;
           const queries = appParams?.dataQueries;
           const components = appParams?.components;
-          (pages?.length || queries?.length || components?.length) &&
-            (await this.appImportExportService.checkIfGroupPermissionsExist(
+          if (pages?.length || queries?.length || components?.length)
+            await this.appImportExportService.checkIfGroupPermissionsExist(
               pages,
               queries,
               components,
               user.organizationId
-            ));
+            );
         }
       }
     }
@@ -127,7 +127,8 @@ export class ImportExportResourcesService {
             isGitApp,
             importResourcesDto.tooljet_version,
             cloning,
-            manager
+            manager,
+            importResourcesDto.branchId
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });

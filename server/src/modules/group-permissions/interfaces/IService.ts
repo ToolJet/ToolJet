@@ -8,6 +8,7 @@ import { GranularPermissionQuerySearchParam } from '../types';
 import { GetUsersResponse } from '../types';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { User } from '@entities/user.entity';
 
 export interface IGranularPermissionsService {
@@ -42,6 +43,11 @@ export interface IGroupPermissionsDuplicateService {
   ): Promise<void>;
   duplicationDataSourcePermissions(
     dataSourcePermissions: DataSourcesGroupPermissions,
+    granularPermissionId: string,
+    manager: EntityManager
+  ): Promise<void>;
+  duplicationFolderPermissions(
+    folderPermissions: FoldersGroupPermissions,
     granularPermissionId: string,
     manager: EntityManager
   ): Promise<void>;

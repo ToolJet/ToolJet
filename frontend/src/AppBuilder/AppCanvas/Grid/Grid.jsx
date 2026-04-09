@@ -176,7 +176,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   const handleResizeStop = useCallback(
     (boxList) => {

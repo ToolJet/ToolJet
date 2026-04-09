@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   appEnvironmentService,
   appService,
@@ -26,7 +26,6 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
-
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
@@ -117,6 +116,25 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+
+  const fetchAllModules = useCallback(async () => {
+    const allModules = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    while (currentPage <= totalPages) {
+      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const pageModules = data?.apps || [];
+
+      allModules.push(...pageModules);
+
+      const pageCount = Number(data?.meta?.total_pages);
+      totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+      currentPage += 1;
+    }
+
+    return allModules;
+  }, []);
 
   const themeAccess = useThemeAccess();
   const detectThemeChange = useStore((state) => state.detectThemeChange);
@@ -304,7 +322,7 @@ const useAppData = (
           }
         }
 
-        if (mode === 'edit') {
+        if (mode === 'edit' && editorEnvironment?.id) {
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
@@ -341,7 +359,7 @@ const useAppData = (
 
         setApp(
           {
-            appName: appData.name,
+            appName: appData.branch_app_name || appData.name,
             appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
             currentAppEnvironmentId: editorEnvironment.id,
@@ -537,6 +555,8 @@ const useAppData = (
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
+          // On workspace feature branches, set releasedVersionId to null so that
+          // selectedVersionId === releasedVersionId doesn't falsely trigger freeze
           updateReleasedVersionId(appData.current_version_id);
         }
 
@@ -547,9 +567,9 @@ const useAppData = (
           document.title = retrieveWhiteLabelText();
         };
       })
-      .catch((error) => {
+      .catch((_error) => {
+        setEditorLoading(false, moduleId);
         if (moduleMode) {
-          setEditorLoading(false, moduleId);
           toast.error('Error fetching module data');
         }
       });
@@ -629,7 +649,7 @@ const useAppData = (
         setPreviewData(null);
         const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
-          appName: appData.name,
+          appName: appData.branch_app_name || appData.name,
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,
@@ -683,6 +703,9 @@ const useAppData = (
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
           setResolvedConstants(orgConstants);
           setSecrets(orgSecrets);
+        } else if (isVersionChanged) {
+          // Re-fetch datasources on version/branch switch (branch may have different active datasources)
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);
@@ -729,15 +752,21 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(0, '', '', 'module').then((data) => {
-            setModulesIsLoading(false);
-            setModulesList(data.apps);
-          });
+          fetchAllModules()
+            .then((modules) => {
+              setModulesList(modules);
+            })
+            .catch((error) => {
+              console.error('Failed to preload modules', error);
+            })
+            .finally(() => {
+              setModulesIsLoading(false);
+            });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
 
   return appTypeRef.current;
 };

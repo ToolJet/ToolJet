@@ -6,24 +6,32 @@ import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
-import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
-
+import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { BranchDropdown } from './BranchDropdown';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
+      appId: state.appStore.modules[moduleId].app.appId,
+      organizationId: state.appStore.modules[moduleId].app.organizationId,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
+
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnWorkspaceFeatureBranch =
+    workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -51,7 +59,7 @@ export const EditorHeader = ({ darkMode }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
-                      {isModuleEditor && <ModuleEditorBanner />}
+                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
                     <div>
@@ -78,9 +86,14 @@ export const EditorHeader = ({ darkMode }) => {
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                   {!isModuleEditor && (
                     <>
-                      <VersionManagerErrorBoundary>
-                        <VersionManagerDropdown darkMode={darkMode} />
-                      </VersionManagerErrorBoundary>
+                      <PreviewAndShareIcons />
+                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
+                      {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
+                      {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
+                      )}
                       <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                     </>
                   )}
