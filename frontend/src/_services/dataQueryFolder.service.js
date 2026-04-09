@@ -7,6 +7,7 @@ export const dataQueryFolderService = {
   rename,
   del,
   reorder,
+  batchReorder,
 };
 
 function getAll(appVersionId) {
@@ -41,4 +42,10 @@ function reorder(childId, childType, newIndex, parentId) {
   const body = { childId, childType, newIndex, parentId };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data-query-folders/reorder`, requestOptions).then(handleResponse);
+}
+
+function batchReorder(items) {
+  const body = { items };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data-query-folders/batch-reorder`, requestOptions).then(handleResponse);
 }
