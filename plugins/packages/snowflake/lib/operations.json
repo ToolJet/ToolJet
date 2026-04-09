@@ -17,7 +17,36 @@
           "name": "SQL mode",
           "value": "sql"
         }
-      ]
+      ],
+      "commonFields": {
+        "database": {
+          "label": "Database",
+          "placeholder": "Leave empty to use default",
+          "key": "database",
+          "type": "codehinter",
+          "description": "Enter database name",
+          "height": "36px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        },
+        "warehouse": {
+          "label": "Warehouse",
+          "placeholder": "Leave empty to use default",
+          "key": "warehouse",
+          "type": "codehinter",
+          "description": "Enter warehouse name",
+          "height": "36px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        },
+        "role": {
+          "label": "Role",
+          "placeholder": "Leave empty to use default",
+          "key": "role",
+          "type": "codehinter",
+          "description": "Enter role",
+          "height": "36px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        }
+      }
     },
     "sql": {
       "query": {
@@ -25,7 +54,8 @@
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
-        "editorType": "multiline"
+        "editorType": "multiline",
+        "placeholder": "SELECT * FROM users"
       }
     }
   }

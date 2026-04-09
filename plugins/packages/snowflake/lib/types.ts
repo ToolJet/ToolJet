@@ -6,6 +6,9 @@ export type SourceOptions = {
   schema: string;
   role: string;
   password: string;
+  bearer_token?: string;
+  private_key?: string;
+  private_key_passphrase?: string;
   client_id: string;
   client_secret: string;
   redirect_uri: string;
@@ -23,7 +26,11 @@ export type SourceOptions = {
   tokenData?: any;
   refresh_token?: string;
   scope?: string;
+  allow_dynamic_connection_parameters?: boolean;
 };
 export type QueryOptions = {
   query: string;
+  database?: string;
+  warehouse?: string;
+  role?: string;
 };

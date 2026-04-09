@@ -55,10 +55,18 @@ export default class Snowflake implements QueryService {
       if (authValidatedRequestOptions.status === 'needs_oauth') return authValidatedRequestOptions;
     }
 
+    if (sourceOptions.allow_dynamic_connection_parameters) {
+      if (queryOptions.database) sourceOptions.database = queryOptions.database;
+      if (queryOptions.warehouse) sourceOptions.warehouse = queryOptions.warehouse;
+      if (queryOptions.role) sourceOptions.role = queryOptions.role;
+    }
+
+    const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
+
     const connection: snowflake.Connection = await this.getConnection(
       sourceOptions,
       {},
-      true,
+      checkCache,
       dataSourceId,
       dataSourceUpdatedAt,
       context
@@ -71,17 +79,36 @@ export default class Snowflake implements QueryService {
 
       return { status: 'ok', data: result.rows };
     } catch (err) {
-      throw new QueryError('Query could not be completed', err.message, {});
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (err) {
+        errorDetails.code = err.code ?? null;
+        errorDetails.sqlState = err.sqlState ?? null;
+        errorDetails.data = err.data ?? null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const connection = await this.getConnection(sourceOptions, {}, false);
-    const isConnectionValid = await connection.isValidAsync();
+    try {
+      const connection = await this.getConnection(sourceOptions, {}, false);
+      const isConnectionValid = await connection.isValidAsync();
 
-    if (isConnectionValid) return { status: 'ok' };
+      if (isConnectionValid) return { status: 'ok' };
 
-    throw new Error('Connection is invalid');
+      throw new QueryError('Connection test failed', 'Connection is invalid', {});
+    } catch (err) {
+      if (err instanceof QueryError) throw err;
+      const errorMessage = err.message || 'Connection test failed';
+      const errorDetails: any = {};
+      if (err) {
+        errorDetails.code = err.code ?? null;
+        errorDetails.sqlState = err.sqlState ?? null;
+        errorDetails.data = err.data ?? null;
+      }
+      throw new QueryError('Connection test failed', errorMessage, errorDetails);
+    }
   }
 
   async connAsync(connection: snowflake.Connection) {
@@ -121,6 +148,25 @@ export default class Snowflake implements QueryService {
         connectionConfig.authenticator = 'OAUTH';
       } else {
         throw new QueryError('OAuth access token not found', 'Access token is required for OAuth authentication', {});
+      }
+    } else if (sourceOptions.auth_type === 'bearer_token') {
+      if (!sourceOptions.bearer_token) {
+        throw new QueryError('Bearer token not found', 'Bearer token is required for bearer token authentication', {});
+      }
+      connectionConfig.token = sourceOptions.bearer_token;
+      connectionConfig.authenticator = 'OAUTH';
+    } else if (sourceOptions.auth_type === 'key_pair') {
+      if (!sourceOptions.username) {
+        throw new QueryError('Username not found', 'Username is required for key pair authentication', {});
+      }
+      if (!sourceOptions.private_key) {
+        throw new QueryError('Private key not found', 'Private key is required for key pair authentication', {});
+      }
+      connectionConfig.username = sourceOptions.username;
+      connectionConfig.authenticator = 'SNOWFLAKE_JWT';
+      connectionConfig.privateKey = sourceOptions.private_key;
+      if (sourceOptions.private_key_passphrase) {
+        connectionConfig.privateKeyPass = sourceOptions.private_key_passphrase;
       }
     } else if (sourceOptions.auth_type === 'basic') {
       connectionConfig.password = sourceOptions.password;
