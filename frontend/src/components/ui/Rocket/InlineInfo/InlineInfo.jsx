@@ -5,20 +5,17 @@ import { AlertCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert as ShadcnAlert } from '@/components/ui/Rocket/shadcn/alert';
 
-const inlineInfoVariants = cva(
-  'tw-flex tw-gap-1.5 tw-items-start',
-  {
-    variants: {
-      variant: {
-        ghost: '',
-        secondary: 'tw-bg-interactive-default tw-p-3 tw-rounded-md',
-        outline: 'tw-bg-background-surface-layer-01 tw-p-3 tw-rounded-md tw-shadow-elevation-100',
-        filled: 'tw-p-3 tw-rounded-md',
-      },
+const inlineInfoVariants = cva('tw-flex tw-gap-1.5 tw-items-start', {
+  variants: {
+    variant: {
+      ghost: '',
+      secondary: 'tw-bg-interactive-default tw-p-3 tw-rounded-md',
+      outline: 'tw-bg-background-surface-layer-01 tw-p-3 tw-rounded-md tw-shadow-elevation-100',
+      filled: 'tw-p-3 tw-rounded-md',
     },
-    defaultVariants: { variant: 'ghost' },
-  }
-);
+  },
+  defaultVariants: { variant: 'ghost' },
+});
 
 const filledBg = {
   info: 'tw-bg-background-accent-weak',
@@ -39,16 +36,7 @@ const defaultIcons = {
 };
 
 const InlineInfo = forwardRef(function InlineInfo(
-  {
-    className,
-    type = 'info',
-    variant = 'ghost',
-    title,
-    description,
-    action,
-    icon,
-    ...props
-  },
+  { className, type = 'info', variant = 'ghost', title, description, action, icon, ...props },
   ref
 ) {
   const IconComp = defaultIcons[type];
@@ -57,27 +45,15 @@ const InlineInfo = forwardRef(function InlineInfo(
   return (
     <ShadcnAlert
       ref={ref}
-      className={cn(
-        inlineInfoVariants({ variant }),
-        variant === 'filled' && filledBg[type],
-        className
-      )}
+      className={cn(inlineInfoVariants({ variant }), variant === 'filled' && filledBg[type], className)}
       {...props}
     >
-      <span className={cn('tw-shrink-0 tw-size-[18px]', iconColorMap[type])}>
-        {resolvedIcon}
-      </span>
+      <span className={cn('tw-shrink-0 tw-size-[18px]', iconColorMap[type])}>{resolvedIcon}</span>
       <div className="tw-flex tw-flex-col tw-gap-2 tw-items-start">
         <div className="tw-flex tw-flex-col">
-          {title && (
-            <p className="tw-m-0 tw-text-base tw-leading-[18px] tw-font-medium tw-text-text-medium">
-              {title}
-            </p>
-          )}
+          {title && <p className="tw-m-0 tw-text-base tw-leading-[18px] tw-font-medium tw-text-text-medium">{title}</p>}
           {description && (
-            <p className="tw-m-0 tw-text-base tw-leading-[18px] tw-text-text-placeholder">
-              {description}
-            </p>
+            <p className="tw-m-0 tw-text-base tw-leading-[18px] tw-text-text-placeholder">{description}</p>
           )}
         </div>
         {action}

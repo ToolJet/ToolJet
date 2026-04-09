@@ -38,10 +38,18 @@ export const IconOptions = {
   args: { type: 'single', defaultValue: 'left' },
   render: (args) => (
     <ToggleGroup {...args}>
-      <ToggleGroupItem value="left" aria-label="Align left"><AlignLeft size={18} /></ToggleGroupItem>
-      <ToggleGroupItem value="center" aria-label="Align center"><AlignCenter size={18} /></ToggleGroupItem>
-      <ToggleGroupItem value="right" aria-label="Align right"><AlignRight size={18} /></ToggleGroupItem>
-      <ToggleGroupItem value="justify" aria-label="Align justify"><AlignJustify size={18} /></ToggleGroupItem>
+      <ToggleGroupItem value="left" aria-label="Align left">
+        <AlignLeft size={18} />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="center" aria-label="Align center">
+        <AlignCenter size={18} />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="right" aria-label="Align right">
+        <AlignRight size={18} />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="justify" aria-label="Align justify">
+        <AlignJustify size={18} />
+      </ToggleGroupItem>
     </ToggleGroup>
   ),
 };
@@ -51,9 +59,15 @@ export const Multiple = {
   args: { type: 'multiple', defaultValue: ['grid'] },
   render: (args) => (
     <ToggleGroup {...args}>
-      <ToggleGroupItem value="grid" aria-label="Grid view"><Grid size={18} /></ToggleGroupItem>
-      <ToggleGroupItem value="list" aria-label="List view"><List size={18} /></ToggleGroupItem>
-      <ToggleGroupItem value="columns" aria-label="Column view"><Columns size={18} /></ToggleGroupItem>
+      <ToggleGroupItem value="grid" aria-label="Grid view">
+        <Grid size={18} />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="list" aria-label="List view">
+        <List size={18} />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="columns" aria-label="Column view">
+        <Columns size={18} />
+      </ToggleGroupItem>
     </ToggleGroup>
   ),
 };
@@ -86,10 +100,18 @@ export const TextVsIcon = {
       <div className="tw-flex tw-items-center tw-gap-3">
         <span className="tw-w-16 tw-text-sm tw-text-text-medium">icon</span>
         <ToggleGroup type="single" defaultValue="left">
-          <ToggleGroupItem value="left" aria-label="Align left"><AlignLeft size={18} /></ToggleGroupItem>
-          <ToggleGroupItem value="center" aria-label="Align center"><AlignCenter size={18} /></ToggleGroupItem>
-          <ToggleGroupItem value="right" aria-label="Align right"><AlignRight size={18} /></ToggleGroupItem>
-          <ToggleGroupItem value="justify" aria-label="Align justify"><AlignJustify size={18} /></ToggleGroupItem>
+          <ToggleGroupItem value="left" aria-label="Align left">
+            <AlignLeft size={18} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="center" aria-label="Align center">
+            <AlignCenter size={18} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right" aria-label="Align right">
+            <AlignRight size={18} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="justify" aria-label="Align justify">
+            <AlignJustify size={18} />
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
     </div>

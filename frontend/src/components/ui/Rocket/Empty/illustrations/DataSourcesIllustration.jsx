@@ -2,7 +2,14 @@ import React from 'react';
 
 const DataSourcesIllustration = ({ className = '', width = '24', height = '24', fill = 'currentColor' }) => {
   return (
-    <svg width={width} height={height} viewBox="0 0 300 207" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 300 207"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
       <g clipPath="url(#clip0_110_9016)">
         <rect width="300" height="207" rx="16" fill="var(--illu-surface)" />
         <rect width="300" height="193" rx="16" fill="var(--illu-card)" />
@@ -112,9 +119,24 @@ const DataSourcesIllustration = ({ className = '', width = '24', height = '24', 
             strokeWidth="1.72127"
             strokeDasharray="5.16 5.16"
           />
-          <path d="M139.423 116.186V142.005" stroke="var(--illu-accent)" strokeWidth="1.72127" strokeDasharray="5.16 5.16" />
-          <path d="M213.438 116.186V142.865" stroke="var(--illu-accent)" strokeWidth="1.72127" strokeDasharray="5.16 5.16" />
-          <path d="M284.259 115.551V142.23" stroke="var(--illu-accent)" strokeWidth="1.72127" strokeDasharray="5.16 5.16" />
+          <path
+            d="M139.423 116.186V142.005"
+            stroke="var(--illu-accent)"
+            strokeWidth="1.72127"
+            strokeDasharray="5.16 5.16"
+          />
+          <path
+            d="M213.438 116.186V142.865"
+            stroke="var(--illu-accent)"
+            strokeWidth="1.72127"
+            strokeDasharray="5.16 5.16"
+          />
+          <path
+            d="M284.259 115.551V142.23"
+            stroke="var(--illu-accent)"
+            strokeWidth="1.72127"
+            strokeDasharray="5.16 5.16"
+          />
         </g>
       </g>
       <rect

@@ -105,6 +105,7 @@ export default function Chart({
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
   const layout = {
+    ...chartLayout,
     width: width - 6,
     height: height - 2,
     plot_bgcolor: updatedBgColor,

@@ -33,7 +33,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) { }
+  ) {}
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -41,9 +41,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -424,6 +424,14 @@ export class VersionsCreateService implements IVersionsCreateService {
           hidden: page.hidden,
           pageHeader: page.pageHeader,
           pageFooter: page.pageFooter,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
         })
       );
