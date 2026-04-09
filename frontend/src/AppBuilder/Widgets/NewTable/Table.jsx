@@ -94,7 +94,33 @@ const Table = memo(
 
     const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
-    const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
+    const firstRowOfTable = useMemo(() => {
+      if (!Array.isArray(data) || data.length === 0 || isEmpty(data[0])) return undefined;
+
+      const firstRow = data[0];
+      const hasNullValues = Object.values(firstRow).some(
+        (columnValue) => columnValue === null || columnValue === undefined
+      );
+      if (!hasNullValues) return firstRow;
+
+      const representative = { ...firstRow };
+      const nullColumns = Object.keys(firstRow).filter(
+        (columnKey) => firstRow[columnKey] === null || firstRow[columnKey] === undefined
+      );
+
+      for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+        if (nullColumns.length === 0) break;
+        const row = data[rowIndex];
+        for (let i = nullColumns.length - 1; i >= 0; i--) {
+          const key = nullColumns[i];
+          if (row[key] !== null && row[key] !== undefined) {
+            representative[key] = row[key];
+            nullColumns.splice(i, 1);
+          }
+        }
+      }
+      return representative;
+    }, [data]);
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
