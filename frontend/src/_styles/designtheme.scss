@@ -148,6 +148,10 @@
     --interactive-overlay-border-pressed: #1B1F2429;
     --interactive-overlay-fill-pressed: #1B1F241A;
     --interactive-overlay-column-resize: #1B1F244D;
+
+    --background-premium: #FCA23F;
+
+    --linear-gradient-01: linear-gradient(98deg, rgba(255, 255, 255, 0.04) 1.67%, rgba(142, 78, 198, 0.04) 39.08%, rgba(252, 95, 112, 0.04) 73.14%, rgba(252, 162, 63, 0.04) 100%);
 }
 
 .dark-theme {
@@ -239,4 +243,6 @@
     --interactive-overlay-border-pressed: #FFFFFF47;
     --interactive-overlay-fill-pressed: #FFFFFF33;
     --interactive-overlay-column-resize: #FFFFFF80;
+
+    --linear-gradient-01: linear-gradient(98deg, rgba(30, 34, 38, 0.04) 1.67%, rgba(142, 78, 198, 0.04) 39.08%, rgba(252, 95, 112, 0.04) 73.14%, rgba(252, 162, 63, 0.04) 100%);
 }

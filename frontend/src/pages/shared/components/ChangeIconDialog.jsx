@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useSearch } from '@/_hooks/useSearch';
 import { useChangeAppIcon } from '@/_services/hooks/appsServiceHooks';
+import { appIconNameMappingForTablerIcons } from '@/_helpers/appUtils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 import SearchBar from './SearchBar';
@@ -15,8 +16,12 @@ import ActionDialog from './ActionDialog';
 export default function ChangeIconDialog({ open, onClose, appDetails }) {
   const { t } = useTranslation();
 
+  const currentAppIcon = appDetails?.icon ?? '';
+
   const allIconsList = useRef(Object.keys(TablerIcons));
-  const [selectedIcon, setSelectedIcon] = useState(appDetails?.icon ?? '');
+  const [selectedIcon, setSelectedIcon] = useState(
+    appIconNameMappingForTablerIcons[currentAppIcon] ?? currentAppIcon ?? ''
+  );
 
   const { mutate: changeAppIcon, isPending: isUpdatingAppIcon } = useChangeAppIcon({ appType: appDetails?.type });
   const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
@@ -51,7 +56,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
 
   const isFormBeingSubmitted = isUpdatingAppIcon;
   const isCancelBtnDisabled = isFormBeingSubmitted;
-  const isSubmitBtnDisabled = isFormBeingSubmitted;
+  const isSubmitBtnDisabled = isFormBeingSubmitted || !selectedIcon;
 
   const filteredIcons = useMemo(
     () =>

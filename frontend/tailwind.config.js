@@ -31,6 +31,7 @@ module.exports = {
         'background-warning-strong': 'var(--background-warning-strong)',
         'background-warning-weak': 'var(--background-warning-weak)',
         'background-inverse': 'var(--background-inverse)',
+        'background-premium': 'var(--background-premium)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
@@ -101,6 +102,9 @@ module.exports = {
         'slider-handle': 'var(--slider-handle)',
         'slider-track': 'var(--slider-track)',
         'slider-fill': 'var(--slider-fill)',
+      },
+      backgroundImage: {
+        'linear-gradient-01': 'var(--linear-gradient-01)',
       },
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',

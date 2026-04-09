@@ -31,7 +31,14 @@ function getPageNumbers(currentPage, totalPages) {
   return [null, currentPage - 1, currentPage, currentPage + 1, null];
 }
 
-export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize = 50, onPageChange, onPageSizeChange }) {
+export default function AppsFooter({
+  currentPage = 1,
+  totalItems = 0,
+  pageSize = 50,
+  onPageChange,
+  onPageSizeChange,
+  itemType,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -62,7 +69,7 @@ export default function AppsFooter({ currentPage = 1, totalItems = 0, pageSize =
         </Select>
 
         <span data-cy="pagination-apps-count" className="tw-text-xs tw-text-text-default">
-          of {totalItems} apps
+          of {totalItems} {itemType}
         </span>
       </div>
 

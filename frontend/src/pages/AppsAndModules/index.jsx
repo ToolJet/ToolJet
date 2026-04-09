@@ -61,7 +61,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
 
-  // TODO: Discuss with team that folder search param should have id and not name
   const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
   const folderQueryParam = searchParams.get('folder') || '';
   const currentSelectedFolder =
@@ -229,19 +228,19 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 <EmptyState
                   illustrationSlot={
                     showEmptySearchState ? (
-                      <NoSearchResultIllustration />
+                      <NoSearchResultIllustration width="174" height="120" />
                     ) : showEmptyFolderState ? (
-                      <EmptyFolderIllustration />
+                      <EmptyFolderIllustration width="174" height="120" />
                     ) : appType === 'module' ? (
-                      <ModulesEmptyState />
+                      <ModulesEmptyState width="174" height="120" />
                     ) : (
-                      <AppsEmptyState />
+                      <AppsEmptyState width="174" height="120" />
                     )
                   }
                   resourceType={appType}
                   title={
                     selectedFolderId && !searchQuery?.length
-                      ? 'No apps found in this folder'
+                      ? `No ${appType === 'front-end' ? 'apps' : 'modules'} found in this folder`
                       : searchQuery?.length
                       ? `No results found for "${searchQuery}"`
                       : appType === 'front-end'
@@ -293,7 +292,13 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
         </div>
       </main>
 
-      <AppsFooter currentPage={currentPage} pageSize={9} totalItems={totalAppCount} onPageChange={setCurrentPage} />
+      <AppsFooter
+        itemType={appType === 'front-end' ? 'apps' : 'modules'}
+        currentPage={currentPage}
+        pageSize={9}
+        totalItems={totalAppCount}
+        onPageChange={setCurrentPage}
+      />
 
       <Dialogs
         appType={appType}

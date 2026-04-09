@@ -1,8 +1,8 @@
 import React, { SVGProps } from 'react';
 
-type IllustrationProps = SVGProps<SVGSVGElement> & { isFolderEmpty?: boolean; noSearchResultFound?: boolean };
+type IllustrationProps = SVGProps<SVGSVGElement>;
 
-export default function AppsEmptyState({ isFolderEmpty, noSearchResultFound, ...svgProps }: IllustrationProps) {
+export default function AppsEmptyState({ ...svgProps }: IllustrationProps) {
   const isDarkMode = localStorage.getItem('darkMode') === 'true';
 
   return isDarkMode ? <AppsDark {...svgProps} /> : <AppsLight {...svgProps} />;
