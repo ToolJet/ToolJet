@@ -139,14 +139,18 @@ ComboboxInput.propTypes = {
 
 // ── ComboboxContent ───────────────────────────────────────────────────────
 
-const ComboboxContent = forwardRef(function ComboboxContent({ className, ...props }, ref) {
+const ComboboxContent = forwardRef(function ComboboxContent({ anchor, className, ...props }, ref) {
   const anchorRef = useContext(ComboboxAnchorContext);
+  // Use custom anchor prop if provided. Default to the context ref (full-width input wrapper).
+  // Pass `anchor={false}` to skip the custom anchor and let Base UI anchor to the trigger element
+  // (useful when using ComboboxTrigger with a custom render button).
+  const resolvedAnchor = anchor !== undefined ? anchor || undefined : anchorRef;
   return (
     <ShadcnComboboxContent
       ref={ref}
-      anchor={anchorRef}
+      anchor={resolvedAnchor}
       className={cn(
-        'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-[10px] tw-shadow-elevation-300 tw-p-2',
+        'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-lg tw-shadow-elevation-300 tw-p-2',
         className
       )}
       {...props}
@@ -232,10 +236,7 @@ const ComboboxLabel = forwardRef(function ComboboxLabel({ className, ...props },
   return (
     <ShadcnComboboxLabel
       ref={ref}
-      className={cn(
-        'tw-text-text-placeholder tw-text-xs tw-font-semibold',
-        className
-      )}
+      className={cn('tw-text-text-placeholder tw-text-xs tw-font-semibold', className)}
       {...props}
     />
   );
@@ -245,13 +246,7 @@ ComboboxLabel.displayName = 'ComboboxLabel';
 // ── ComboboxSeparator ────────────────────────────────────────────────────
 
 const ComboboxSeparator = forwardRef(function ComboboxSeparator({ className, ...props }, ref) {
-  return (
-    <ShadcnComboboxSeparator
-      ref={ref}
-      className={cn('tw-bg-border-weak', className)}
-      {...props}
-    />
-  );
+  return <ShadcnComboboxSeparator ref={ref} className={cn('tw-bg-border-weak', className)} {...props} />;
 });
 ComboboxSeparator.displayName = 'ComboboxSeparator';
 

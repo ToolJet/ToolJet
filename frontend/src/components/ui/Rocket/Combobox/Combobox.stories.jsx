@@ -1,7 +1,10 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import {
   Combobox,
   ComboboxInput,
+  ComboboxTrigger,
+  ComboboxValue,
   ComboboxContent,
   ComboboxList,
   ComboboxItem,
@@ -11,6 +14,7 @@ import {
   ComboboxSeparator,
 } from './Combobox';
 import { Field, FieldLabel, FieldDescription, FieldError } from '../Field/Field';
+import { ChevronDown } from 'lucide-react';
 
 const frameworks = ['React', 'Vue', 'Angular', 'Svelte', 'Solid', 'Qwik'];
 
@@ -58,9 +62,7 @@ export const Sizes = {
     <div className="tw-flex tw-flex-col tw-gap-3 tw-w-72 tw-p-4">
       {['large', 'default', 'small'].map((size) => (
         <div key={size}>
-          <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block tw-capitalize">
-            {size}
-          </span>
+          <span className="tw-text-sm tw-text-text-placeholder tw-mb-1 tw-block tw-capitalize">{size}</span>
           <Combobox items={frameworks.slice(0, 3)}>
             <ComboboxInput size={size} placeholder={`${size} size`} />
             <ComboboxContent>
@@ -320,6 +322,57 @@ export const EmptyState = {
       </Combobox>
     </div>
   ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Custom Trigger ───────────────────────────────────────────────────────
+// Button-style trigger (e.g. workspace selector) instead of the default input.
+export const CustomTrigger = {
+  render: () => {
+    const workspaces = [
+      { label: 'ABC cargo main team', value: 'abc-cargo-main-team' },
+      { label: 'Design system', value: 'design-system' },
+      { label: 'Backend API', value: 'backend-api' },
+    ];
+
+    return (
+      <div className="tw-w-72 tw-p-4">
+        <Combobox value={workspaces[0]} items={workspaces}>
+          <ComboboxTrigger
+            render={
+              <button
+                className={cn(
+                  'tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-py-1.5',
+                  'tw-font-title-default tw-text-text-default tw-max-w-48',
+                  'tw-rounded-md tw-border-0 tw-bg-transparent',
+                  'hover:tw-bg-interactive-default',
+                  'data-[pressed]:tw-bg-interactive-selected',
+                  'data-[popup-open]:tw-bg-interactive-selected'
+                )}
+              >
+                <ComboboxValue>
+                  {(value) => <span className="tw-flex-1 tw-truncate">{value?.label ?? ''}</span>}
+                </ComboboxValue>
+                <ChevronDown className="tw-size-4 tw-text-icon-default tw-shrink-0" />
+              </button>
+            }
+          />
+
+          <ComboboxContent anchor={false} align="start" className="tw-flex tw-flex-col tw-gap-2">
+            <ComboboxInput showTrigger={false} placeholder="Search workspace..." />
+            <ComboboxList>
+              {(item) => (
+                <ComboboxItem key={item.value} value={item}>
+                  {item.label}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+            <ComboboxEmpty>No workspaces found.</ComboboxEmpty>
+          </ComboboxContent>
+        </Combobox>
+      </div>
+    );
+  },
   parameters: { layout: 'padded' },
 };
 

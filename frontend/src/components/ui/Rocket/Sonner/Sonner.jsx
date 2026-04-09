@@ -48,7 +48,7 @@ function Toaster({
   position = 'top-center',
   closeButton = true,
   richColors = true,
-  duration = 80000,
+  duration = 4000,
   className,
   ...props
 }) {

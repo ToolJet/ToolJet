@@ -50,7 +50,20 @@ const alertDialogContentVariants = cva(
   }
 );
 
-const AlertDialogContent = forwardRef(function AlertDialogContent({ className, children, size, ...props }, ref) {
+const AlertDialogContent = forwardRef(function AlertDialogContent(
+  { className, children, size, preventClose = true, ...props },
+  ref
+) {
+  const handleInteractOutside = (e) => {
+    if (preventClose) e.preventDefault();
+    props.onInteractOutside?.(e);
+  };
+
+  const handleEscapeKeyDown = (e) => {
+    if (preventClose) e.preventDefault();
+    props.onEscapeKeyDown?.(e);
+  };
+
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -58,7 +71,8 @@ const AlertDialogContent = forwardRef(function AlertDialogContent({ className, c
         ref={ref}
         data-slot="alert-dialog-content"
         data-size={size || 'default'}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={handleInteractOutside}
+        onEscapeKeyDown={handleEscapeKeyDown}
         className={cn(
           'tw-group/alert-dialog-content tw-fixed tw-inset-0 tw-z-50 tw-m-auto tw-h-fit tw-w-full tw-max-w-[calc(100%-2rem)] tw-outline-none',
           'data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
@@ -75,6 +89,7 @@ const AlertDialogContent = forwardRef(function AlertDialogContent({ className, c
 AlertDialogContent.displayName = 'AlertDialogContent';
 AlertDialogContent.propTypes = {
   size: PropTypes.oneOf(['default', 'small']),
+  preventClose: PropTypes.bool,
   className: PropTypes.string,
   children: PropTypes.node,
 };

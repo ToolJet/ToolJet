@@ -92,7 +92,6 @@
     "lucide-react": "^0.525.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
-    "next-themes": "^0.4.6",
     "papaparse": "^5.3.2",
     "path-browserify": "^1.0.1",
     "pdfjs-dist": "5.3.93",

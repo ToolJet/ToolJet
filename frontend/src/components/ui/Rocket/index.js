@@ -199,3 +199,5 @@ export {
 export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
 export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
 export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
+export { Textarea, textareaVariants } from './Textarea/Textarea';
+export { Spinner, spinnerVariants } from './Spinner/Spinner';
