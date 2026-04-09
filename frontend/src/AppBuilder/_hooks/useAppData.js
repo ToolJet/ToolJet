@@ -242,7 +242,7 @@ const useAppData = (
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -308,10 +308,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
