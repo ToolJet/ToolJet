@@ -854,11 +854,14 @@ export const createResolvedSlice = (set, get) => ({
       state.resolvedStore.modules[moduleId].exposedValues.output = {};
     });
   },
-  clearLazyRowIndices: (componentId, moduleId = 'canvas') => {
+
+  // Cleans up all lazy resolution state for a component (customResolvables, lazyResolvableParents, lazyRowIndices)
+  cleanupLazyResolvables: (componentId, moduleId = 'canvas') => {
     set((state) => {
-      if (state.resolvedStore.modules[moduleId].lazyRowIndices) {
-        delete state.resolvedStore.modules[moduleId].lazyRowIndices[componentId];
-      }
+      const mod = state.resolvedStore.modules[moduleId];
+      delete mod.customResolvables[componentId];
+      delete mod.lazyResolvableParents[componentId];
+      delete mod.lazyRowIndices[componentId];
     });
   },
 
