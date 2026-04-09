@@ -37,18 +37,24 @@ export const verifyRadioColor = (
     });
 };
 
-export const verifyRadioSelection = (componentSelector) => {
+export const verifyRadioSelection = (
+    componentSelector,
+    toastMessage
+) => {
     getRadioInputs(componentSelector).should("have.length.at.least", 2);
     getRadioInputs(componentSelector).eq(1).click({ force: true }).should("be.checked");
     getRadioInputs(componentSelector).eq(0).should("not.be.checked");
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            toastMessage
+        );
 
     getRadioInputs(componentSelector).eq(0).click({ force: true }).should("be.checked");
     getRadioInputs(componentSelector).eq(1).should("not.be.checked");
-
-    cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        "Option selected successfully"
-    );
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            toastMessage
+        );
 };
 
 export const verifyRadioMandatoryTextAndMark = (

@@ -134,7 +134,7 @@ describe("Radio Button Component - Feature Validation", { baseUrl: null }, () =>
       ],
     );
 
-    verifyRadioSelection(componentSelector);
+verifyRadioSelection(componentSelector, "Option selected successfully");
     verifyRadioColor(
       componentSelector,
       checkedBackgroundColorPicker,
@@ -146,7 +146,7 @@ describe("Radio Button Component - Feature Validation", { baseUrl: null }, () =>
       "background-color",
     );
 
-    verifyRadioSelection(componentSelector);
+   verifyRadioSelection(componentSelector, "Option selected successfully");
     verifyRadioColor(
       componentSelector,
       uncheckedBackgroundColorPicker,
@@ -222,6 +222,6 @@ describe("Radio Button Component - Feature Validation", { baseUrl: null }, () =>
 
   it("should verify events", () => {
     setup();
-    verifyRadioSelection(componentSelector);
+    verifyRadioSelection(componentSelector, "Option selected successfully");
   });
 });
