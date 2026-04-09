@@ -74,11 +74,9 @@ Cypress.Commands.add("createApp", (appName) => {
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
+    cy.get(getAppButtonSelector($title), { timeout: 20000 }).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
+    cy.get('[data-cy="create-an-app-button"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();

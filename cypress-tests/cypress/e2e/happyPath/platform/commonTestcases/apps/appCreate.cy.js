@@ -185,6 +185,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.createAppButton).should("be.disabled");
     });
+
     it("Should verify the import app flow", () => {
         data.appName = `${fake.companyName}-App`;
 
@@ -249,6 +250,7 @@ describe("App creation", () => {
             .and("have.text", importText.appImportedToastMessage);
         cy.backToApps();
     });
+
     it("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;
 

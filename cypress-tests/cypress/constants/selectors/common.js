@@ -40,7 +40,7 @@ export const commonSelectors = {
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
   dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
-  appCreateButton: "[data-cy=create-new-apps-button]",
+  appCreateButton: "[data-cy=create-an-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
   launchButton: "[data-cy=launch-button]",
@@ -52,9 +52,9 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".react-select__menu-list",
-  empytyFolderImage: "[data-cy=empty-folder-image]",
-  emptyFolderText: "[data-cy=empty-folder-text]",
+  folderList: '[data-cy="folder-list"]',
+  empytyFolderImage: '[data-cy="front-end-empty-state-image"]',
+  emptyFolderText: '[data-cy="front-end-empty-state-header"]',
   allApplicationsLink: "[data-cy=all-applications-link]",
   folderInfo: "[data-cy=folder-info]",
   folderInfoText: "[data-cy=folder-info-text]",
@@ -72,7 +72,7 @@ export const commonSelectors = {
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
   createWorkspaceButton: '[data-cy="create-workspace-button"]',
   workspaceLoginUrl: "[data-cy=workspace-login-url]",
-  workspaceName: '[data-cy="workspace-name"]:eq(0)',
+  workspaceName: '[data-cy="workspace-selector-trigger"]',
   signInHeader: '[data-cy="sign-in-header"]',
   signInSubHeader: '[data-cy="signup-info"]',
   createAnAccountLink: '[data-cy="create-an-account-link"]',
@@ -309,7 +309,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
   pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy="page-logo"]',
-  homePageIcon: '[data-cy="home-page-icon"]',
+  homePageIcon: '[data-cy="icon-home"]',
 };
 
 export const commonWidgetSelector = {

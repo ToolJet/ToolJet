@@ -46,6 +46,54 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   });
 });
 
+Cypress.Commands.add("apiCreateModule", (moduleName = "module") => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
+    cy.request({
+      method: "POST",
+      url: `${Cypress.env("server_host")}/api/modules`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      },
+      body: {
+        name: moduleName,
+        type: "module",
+        icon: "IconLayersSubtract",
+      },
+    }).then((response) => {
+      expect(response.status).to.equal(201);
+      Cypress.env("moduleId", response.body.id);
+      Cypress.log({
+        name: "Module create",
+        displayName: "MODULE CREATED",
+        message: `: ${response.body.name}`,
+      });
+    });
+  });
+});
+
+Cypress.Commands.add("apiDeleteModule", (moduleId = Cypress.env("moduleId")) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/modules/${moduleId}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: Cypress.env("authToken"),
+      },
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      Cypress.log({
+        name: "Module Delete",
+        displayName: "MODULE DELETED",
+        message: `:${moduleId}`,
+      });
+    });
+  });
+});
+
 Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
   cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
     Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
