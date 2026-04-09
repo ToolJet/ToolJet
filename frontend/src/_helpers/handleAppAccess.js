@@ -25,7 +25,8 @@ export const handleAppAccess = async (componentType, slug, version_id, environme
   if (componentType === 'editor' || isLocalPreview || isOldLocalPreview) {
     /* Editor or app preview */
     return appsService.validatePrivateApp(slug, apiQueryParams).catch((error) => {
-      handleError(componentType, error, slug, redirectPath);
+      const editPermission = error?.error?.editPermission;
+      handleError(componentType, error, redirectPath, editPermission, slug);
     });
   } else {
     /* Released app link [launch/sharable link] */
@@ -80,12 +81,26 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
         }
         case 401: {
           const errorObj = safelyParseJSON(error.data?.message);
-          // For released app URLs, redirect to app-scoped login page
-          if (appSlug && componentType === 'viewer') {
-            window.location = `${getSubpath() ?? ''}/applications/${appSlug}/login`;
+          const subpath = getSubpath() ?? '';
+          const currentSession = authenticationService.currentSessionValue;
+          // If user is already authenticated but still got 401, they lack app-level access.
+          // Show restricted error page instead of redirecting to login (which would loop).
+          if (currentSession?.current_user?.id) {
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED);
             return;
           }
-          window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
+          // For unauthenticated app viewer URLs, redirect to app-scoped login preserving the original URL
+          if (appSlug && componentType === 'viewer') {
+            const redirectParam =
+              redirectPath && redirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(redirectPath)}`
+                : '';
+            window.location = `${subpath}/applications/${appSlug}/login${redirectParam}`;
+            return;
+          }
+          window.location = `${subpath}/login/${errorObj?.organizationId}?redirectTo=${encodeURIComponent(
+            redirectPath
+          )}`;
           return;
         }
         case 501: {

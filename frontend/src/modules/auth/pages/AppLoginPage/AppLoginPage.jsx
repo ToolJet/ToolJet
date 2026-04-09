@@ -72,6 +72,12 @@ const AppLoginPage = () => {
         ].filter(Boolean);
 
         if (enabledSSOs.length === 1 && !configs?.form?.enabled) {
+          // Set redirect cookie before auto-SSO trigger — the SSO callback reads this
+          // cookie to know where to redirect after authentication. Can't use
+          // setRedirectUrlToCookie() here because appConfig state hasn't updated yet.
+          const iframe = window !== window.top;
+          authenticationService.saveLoginOrganizationId(config.organizationId);
+          setCookie('redirectPath', appRedirectPath, iframe);
           setSsoTriggered(true);
         }
       }
