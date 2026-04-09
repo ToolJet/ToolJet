@@ -102,7 +102,7 @@ const AppSignupPage = () => {
           <span>
             User limit reached.
             <br />
-            Please contact workspace admin.
+            Please contact admin to know more.
           </span>
         ) : (
           errorMsg || 'Something went wrong!'
