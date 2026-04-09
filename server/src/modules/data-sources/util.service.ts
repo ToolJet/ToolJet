@@ -1277,7 +1277,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     await manager.delete(DatasourceUserTokenData, { dataSourceVersionOptionId: dataSourceOptionId });
   }
 
-  protected async upsertUserTokenData(
+  async upsertUserTokenData(
     dataSourceVersionOptionId: string,
     userId: string | null,
     accessToken: string | null,
