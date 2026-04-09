@@ -613,17 +613,18 @@ export const createComponentsSlice = (set, get) => ({
         // For lazy parents (eg. Table expandable rows),
         // only resolve index 0 (template) + any currently needed rows.
         // Remaining rows are resolved on-demand.
-        const isLazy = get().resolvedStore.modules[moduleId].lazyResolvableParents?.[innermostListview];
+        const { isLazyResolvableParent, getLazyRowIndices } = get();
+        const isLazy = isLazyResolvableParent(innermostListview, moduleId);
         const indicesToResolve = isLazy
-          ? new Set([0, ...(get().resolvedStore.modules[moduleId].lazyRowIndices?.[innermostListview] || [])])
-          : null;
+          ? getLazyRowIndices(innermostListview, moduleId, true)
+          : Array.from({ length: resolvables.length }, (_, i) => i);
 
         const state = getAllExposedValues(moduleId);
         const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
         const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
-        for (let i = 0; i < resolvables.length; i++) {
-          if (indicesToResolve && !indicesToResolve.has(i)) continue;
+        for (const i of indicesToResolve) {
+          if (i >= resolvables.length) continue;
           const fullIndices = [...currentIndices, i];
           if (scopeCtx) updateRowScope(scopeCtx, i);
           const resolvedValue = shouldResolve
@@ -2404,16 +2405,14 @@ export const createComponentsSlice = (set, get) => ({
     const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
     // For lazy parents (eg. Table expandable rows),
-    // Only resolve required rows instead of all 0..length-1.
+    // only resolve required rows instead of all 0..length-1.
     // This is a no-op for ListView/Kanban.
-    const isLazy = get().resolvedStore.modules[moduleId].lazyResolvableParents?.[resolvableParentId];
-    let indicesToResolve;
-    if (isLazy) {
-      indicesToResolve = get().resolvedStore.modules[moduleId].lazyRowIndices?.[resolvableParentId] || [];
-      if (indicesToResolve.length === 0) return;
-    } else {
-      indicesToResolve = Array.from({ length }, (_, i) => i);
-    }
+    const { isLazyResolvableParent, getLazyRowIndices } = get();
+    const isLazy = isLazyResolvableParent(resolvableParentId, moduleId);
+    const indicesToResolve = isLazy
+      ? getLazyRowIndices(resolvableParentId, moduleId)
+      : Array.from({ length }, (_, i) => i);
+    if (isLazy && indicesToResolve.length === 0) return;
 
     const updates = [];
     for (const i of indicesToResolve) {

@@ -861,4 +861,13 @@ export const createResolvedSlice = (set, get) => ({
       }
     });
   },
+
+  isLazyResolvableParent: (componentId, moduleId = 'canvas') =>
+    !!get().resolvedStore.modules[moduleId].lazyResolvableParents?.[componentId],
+
+  getLazyRowIndices: (componentId, moduleId = 'canvas', includeZero = false) => {
+    const indices = get().resolvedStore.modules[moduleId].lazyRowIndices?.[componentId] || [];
+    if (includeZero && !indices.includes(0)) return [0, ...indices];
+    return indices;
+  },
 });
