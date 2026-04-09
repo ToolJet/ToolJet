@@ -62,17 +62,7 @@ export class EnforceUniqueDataSourceNames1773229178900 implements MigrationInter
         }
       }
     }
-
-    await manager.query(`
-      CREATE UNIQUE INDEX idx_unique_ds_name_org
-      ON data_sources (LOWER(name), organization_id)
-    `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    const manager = queryRunner.manager;
-    await manager.query(`
-      DROP INDEX IF EXISTS idx_unique_ds_name_org
-    `);
-  }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
