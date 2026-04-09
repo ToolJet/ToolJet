@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, ValidateNested } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { ChildType, DeleteMode } from '../types';
 
@@ -7,6 +7,7 @@ export class CreateFolderDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
+  @Matches(/^[a-zA-Z0-9 ]+$/, { message: 'Folder name must be alphanumeric' })
   name: string;
 
   @IsUUID()
@@ -18,6 +19,7 @@ export class RenameFolderDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
+  @Matches(/^[a-zA-Z0-9 ]+$/, { message: 'Folder name must be alphanumeric' })
   name: string;
 }
 
