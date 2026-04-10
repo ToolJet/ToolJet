@@ -49,7 +49,6 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { Component } from '@entities/component.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -333,26 +332,6 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      // Prevent deletion of modules that are in use by consuming apps
-      if (app.type === APP_TYPES.MODULE) {
-        const consumingApps = await manager
-          .createQueryBuilder(Component, 'component')
-          .innerJoin('component.page', 'page')
-          .innerJoin('page.appVersion', 'appVersion')
-          .innerJoin(App, 'app', 'app.id = appVersion.appId')
-          .select('DISTINCT app.name', 'appName')
-          .where('component.type = :type', { type: 'ModuleViewer' })
-          .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId", { moduleAppId: id })
-          .getRawMany();
-
-        const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
-        if (appNames.length > 0) {
-          throw new BadRequestException(
-            `Cannot delete this module.\nUsed by: ${appNames.join(', ')}`
-          );
-        }
-      }
-
       const schedules = await manager
         .createQueryBuilder(WorkflowSchedule, 'workflowSchedule')
         .innerJoinAndSelect('workflowSchedule.workflow', 'appVersion')
@@ -656,29 +635,6 @@ export class AppsService implements IAppsService {
 
       if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
-      }
-
-      // Check that all pinned module versions are released (module's current_version_id must match)
-      if (app.type === APP_TYPES.FRONT_END) {
-        const unreleasedModules = await manager
-          .createQueryBuilder(Component, 'component')
-          .innerJoin('component.page', 'page')
-          .innerJoin('page.appVersion', 'appVersion')
-          .innerJoin('app_versions', 'mod_ver', 'mod_ver.id::text = component.properties::jsonb -> \'moduleVersionId\' ->> \'value\'')
-          .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-          .select('mod_app.name', 'moduleName')
-          .addSelect('mod_ver.name', 'versionName')
-          .where('component.type = :type', { type: 'ModuleViewer' })
-          .andWhere('appVersion.id = :versionId', { versionId: versionToBeReleased })
-          .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
-          .getRawMany();
-
-        if (unreleasedModules.length > 0) {
-          const details = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
-          throw new BadRequestException(
-            `Cannot release this app.\nModules not released: ${details}`
-          );
-        }
       }
 
       // Get version details for audit log
