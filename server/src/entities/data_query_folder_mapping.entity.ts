@@ -6,7 +6,7 @@ export enum ChildType {
 }
 
 @Entity({ name: 'data_query_folder_mappings' })
-@Unique(['parentId', 'childId', 'childType'])
+@Unique(['childId', 'childType'])
 export class DataQueryFolderMapping {
   @PrimaryGeneratedColumn('uuid')
   id: string;
