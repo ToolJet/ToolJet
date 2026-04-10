@@ -40,8 +40,8 @@ export const exportAppModalSelectors = {
 export const importSelectors = {
   dropDownMenu: '[data-cy="import-dropdown-menu"]',
   importAnApplication: '[data-cy="import-an-application"]',
-  importOptionLabel: '[data-cy="import-option-label"]',
+  importOptionLabel: '[data-cy="button-import-an-app"]',
   importOptionInput: '[data-cy="import-option-input"]',
   importAppTitle: '[data-cy="import-app-title"]',
-  importAppButton: '[data-cy="import-app"]',
+  importAppButton: '[data-cy="import-front-end-button"]',
 };

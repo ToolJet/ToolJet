@@ -45,15 +45,10 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.createAppButton).verifyVisibleElement(
             "have.text",
-            "+ Create app"
+            "Create app"
         );
         cy.get(commonSelectors.createAppButton).should("be.disabled");
-        cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
-        cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-
-        cy.get(commonSelectors.appCreateButton).click();
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.cancelButton).click();
 
@@ -62,7 +57,6 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.enabled").click();
 
         cy.backToApps();
-        // cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
         viewAppCardOptions(data.appName);
         cy.get(commonSelectors.appCardOptions("Rename app")).verifyVisibleElement(
@@ -95,17 +89,6 @@ describe("App creation", () => {
             commonText.renameApp
         );
         cy.get(commonSelectors.renameAppButton).should("be.disabled");
-        cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
-
-        cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-
-        viewAppCardOptions(data.appName);
-        cy.get(commonSelectors.appCardOptions("Rename app")).click();
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-            "have.value",
-            data.appName
-        );
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
         cy.get(commonSelectors.cancelButton).click();
 
@@ -149,17 +132,6 @@ describe("App creation", () => {
             commonText.cloneAppOption
         );
         cy.get(commonSelectors.cloneAppButton).should("be.enabled");
-        cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
-
-        cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-
-        viewAppCardOptions(data.rename);
-        cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-            "have.value",
-            `${data.rename}_Copy`
-        );
         cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
         cy.get(commonSelectors.cancelButton).click();
 
@@ -185,6 +157,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.createAppButton).should("be.disabled");
     });
+
     it("Should verify the import app flow", () => {
         data.appName = `${fake.companyName}-App`;
 
@@ -218,15 +191,7 @@ describe("App creation", () => {
             "Import app"
         );
         cy.get(commonSelectors.importAppButton).should("be.enabled");
-        cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
-        cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-
-        cy.get(importSelectors.dropDownMenu).click();
-        cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
-            force: true,
-        });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
             "one_version"
@@ -249,6 +214,7 @@ describe("App creation", () => {
             .and("have.text", importText.appImportedToastMessage);
         cy.backToApps();
     });
+
     it("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;
 
@@ -281,13 +247,11 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.createAppButton).verifyVisibleElement(
             "have.text",
-            "+ Create app"
+            "Create app"
         );
         cy.get(commonSelectors.createAppButton).should("be.enabled");
-        cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();

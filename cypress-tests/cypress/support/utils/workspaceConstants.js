@@ -116,7 +116,7 @@ export const verifySearch = (data) => {
 
   addAndVerifyConstants("globalconst", "globalvalue");
 
-  cy.get('[data-cy="home-page-icon"]').click();
+  cy.get('[data-cy="icon-home"]').click();
   cy.wait(500);
   cy.get(commonSelectors.workspaceConstantsIcon).click();
 
@@ -147,7 +147,7 @@ export const verifySearch = (data) => {
   cy.get(workspaceConstantsSelectors.searchField).clear();
   deleteConstant("globalconst");
 
-  cy.get('[data-cy="home-page-icon"]').click();
+  cy.get('[data-cy="icon-home"]').click();
   cy.wait(500);
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   switchToConstantTab("Secrets");
@@ -216,7 +216,7 @@ export const VerifyConstantsFormInputValidation = () => {
 };
 
 export const constantsCRUDAndValidations = (data) => {
-  cy.get('[data-cy="home-page-icon"]').click();
+  cy.get('[data-cy="icon-home"]').click();
   cy.wait(500);
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   selectEnv(data.envName);

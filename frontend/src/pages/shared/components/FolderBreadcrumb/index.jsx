@@ -129,6 +129,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                           size="medium"
                           variant="ghost"
                           leadingIcon="square-pen"
+                          data-cy="edit-folder-icon-button"
                           onClick={handleEditFolder}
                         />
                       )}
@@ -140,6 +141,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
                           size="medium"
                           variant="ghost"
                           leadingIcon="trash"
+                          data-cy="delete-folder-icon-button"
                           onClick={handleDeleteFolder}
                         />
                       )}

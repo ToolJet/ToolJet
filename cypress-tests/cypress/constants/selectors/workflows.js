@@ -13,7 +13,7 @@ export const workflowSelector = {
   startNodeHandleRight: '[data-cy="start-node-handle-right"]',
   optionsColumn: '[data-cy="options-column"]',
   importWorkFlowsOption: '[data-cy="import-dropdown-menu"]',
-  importWorkFlowsLabel: '[data-cy="import-option-label"]',
+  importWorkFlowsLabel: '[data-cy="button-import-an-app"]',
   importWorkFlowsButton: '[data-cy="import-workflow"]',
   runjsInputField:
     '[data-cy="runjs-input-field"] .cm-content[contenteditable="true"]',

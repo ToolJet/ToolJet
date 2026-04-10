@@ -167,7 +167,7 @@ describe("LDAP SSO", () => {
         cy.clearAndType(ssoEeSelector.passwordInputField, ldapUser.password);
         cy.get(commonSelectors.signUpButton).click();
 
-        cy.get(commonSelectors.pageSectionHeader).should(
+        cy.get(commonSelectors.breadcrumbPageTitle).should(
             "have.text",
             "Applications"
         );

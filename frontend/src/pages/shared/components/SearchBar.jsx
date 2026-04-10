@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-export default function SearchBar({ searchTerm, onSearchChange, classes = null, placeholder = 'Search' }) {
+export default function SearchBar({ searchTerm, onSearchChange, classes = null, placeholder = 'Search', dataCy }) {
   return (
     <div
       className={cn(
@@ -19,6 +19,7 @@ export default function SearchBar({ searchTerm, onSearchChange, classes = null, 
         value={searchTerm}
         onChange={onSearchChange}
         placeholder={placeholder}
+        data-cy={dataCy}
         className="tw-flex-1 tw-text-body-large tw-text-text-default placeholder:tw-text-text-placeholder tw-border-0 tw-outline-0 tw-bg-transparent tw-overflow-ellipsis tw-overflow-hidden tw-whitespace-nowrap tw-p-0"
       />
     </div>

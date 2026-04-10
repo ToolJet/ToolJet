@@ -74,11 +74,9 @@ Cypress.Commands.add("createApp", (appName) => {
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
+    cy.get(getAppButtonSelector($title), { timeout: 20000 }).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
+    cy.get('[data-cy="create-front-end-button"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -245,7 +243,7 @@ Cypress.Commands.add("deleteApp", (appName) => {
     appName,
     commonSelectors.appCardOptions(commonText.deleteAppOption)
   );
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.get('[data-cy="delete-front-end-button"]').click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.appDeletedToast
