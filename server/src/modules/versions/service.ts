@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { Component } from '@entities/component.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -340,7 +341,7 @@ export class VersionService implements IVersionService {
         });
 
         // Block promotion if pinned module versions aren't promoted to the target environment
-        if (app.type === 'front-end') {
+        if (app.type === APP_TYPES.FRONT_END) {
           const unpromotedModules = await manager
             .createQueryBuilder(Component, 'component')
             .innerJoin('component.page', 'page')

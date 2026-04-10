@@ -658,7 +658,7 @@ export class AppsService implements IAppsService {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
 
-      // Check that all pinned module versions are released
+      // Check that all pinned module versions are released (module's current_version_id must match)
       if (app.type === APP_TYPES.FRONT_END) {
         const unreleasedModules = await manager
           .createQueryBuilder(Component, 'component')
@@ -668,16 +668,15 @@ export class AppsService implements IAppsService {
           .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
           .select('mod_app.name', 'moduleName')
           .addSelect('mod_ver.name', 'versionName')
-          .addSelect('mod_ver.status', 'status')
           .where('component.type = :type', { type: 'ModuleViewer' })
           .andWhere('appVersion.id = :versionId', { versionId: versionToBeReleased })
-          .andWhere('mod_ver.status = :draftStatus', { draftStatus: 'DRAFT' })
+          .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
           .getRawMany();
 
         if (unreleasedModules.length > 0) {
           const details = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
           throw new BadRequestException(
-            `Cannot release this app.\nModules not saved: ${details}`
+            `Cannot release this app.\nModules not released: ${details}`
           );
         }
       }
