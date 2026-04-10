@@ -28,7 +28,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -656,6 +656,28 @@ export class AppsService implements IAppsService {
 
       if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
+      }
+
+      // Check that all pinned module versions are released
+      if (app.type === APP_TYPES.FRONT_END) {
+        const unreleasedModules = await manager
+          .createQueryBuilder(Component, 'component')
+          .innerJoin('component.page', 'page')
+          .innerJoin('page.appVersion', 'appVersion')
+          .innerJoin(AppVersion, 'moduleVersion', "moduleVersion.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
+          .innerJoin(App, 'moduleApp', 'moduleApp.id = moduleVersion.appId')
+          .select(['moduleApp.name AS "moduleName"', 'moduleVersion.name AS "versionName"', 'moduleVersion.status AS "status"'])
+          .where('component.type = :type', { type: 'ModuleViewer' })
+          .andWhere('appVersion.id = :versionId', { versionId: versionToBeReleased })
+          .andWhere('moduleVersion.status != :releasedStatus', { releasedStatus: 'RELEASED' })
+          .getRawMany();
+
+        if (unreleasedModules.length > 0) {
+          const details = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+          throw new BadRequestException(
+            `Cannot release this app.\nModules not released: ${details}`
+          );
+        }
       }
 
       // Get version details for audit log
