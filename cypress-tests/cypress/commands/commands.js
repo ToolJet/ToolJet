@@ -288,10 +288,7 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
+  cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,

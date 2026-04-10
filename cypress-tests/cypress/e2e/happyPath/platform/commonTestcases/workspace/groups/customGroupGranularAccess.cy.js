@@ -214,7 +214,7 @@ const verifyBuilderAccessAsPerTheConfig = ({
     cy.ifEnv("Enterprise", () => {
         //Verify workflow edit button number
         cy.get(commonSelectors.globalWorkFlowsIcon).click();
-        cy.get('[data-cy="create-new-workflows-button"]').should("not.exist");
+        cy.get('[data-cy="create-new-workflow-button"]').should("not.exist");
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
             "have.lengthOf",
             1

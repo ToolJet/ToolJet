@@ -1,13 +1,18 @@
 import { commonSelectors } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardUiSelector } from "Selectors/dashboardUi";
 import { workflowSelector } from "Selectors/workflows";
-import { deleteFolder } from "Support/utils/common";
+import {
+  closeFolderDropdown,
+  createFolder,
+  deleteFolder,
+  openFolderDropdown,
+  viewAppCardOptions,
+} from "Support/utils/common";
 import {
   addAndVerifyConstants,
   deleteConstant,
 } from "Support/utils/workspaceConstants";
-import { commonText } from "Texts/common";
-import { openFolderDropdown, closeFolderDropdown, createFolder } from "Support/utils/common";
-import { dashboardSelector } from "Selectors/dashboard";
 
 export const uiCreateApp = (appName) => {
   cy.createApp(appName);
@@ -52,14 +57,12 @@ export const uiVerifyFolderCreatePrivilege = (hasPrivilege = true) => {
   const assertion = hasPrivilege ? "exist" : "not.exist";
 
   openFolderDropdown();
-  cy.get(commonSelectors.createNewFolderButton).should(
-    assertion
-  );
+  cy.get(commonSelectors.createNewFolderButton).should(assertion);
   closeFolderDropdown();
 };
 
 export const uiVerifyWorkspaceConstantCreatePrivilege = (
-  hasPrivilege = true
+  hasPrivilege = true,
 ) => {
   const assertion = hasPrivilege ? "exist" : "not.exist";
   cy.get(commonSelectors.workspaceConstantsIcon).should(assertion);
@@ -67,7 +70,7 @@ export const uiVerifyWorkspaceConstantCreatePrivilege = (
 
 export const uiCreateDataSource = (
   datasourceName,
-  datasourceType = "restapi"
+  datasourceType = "restapi",
 ) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
   // cy.get(commonSelectors.addNewDataSourceButton).click();
@@ -97,29 +100,28 @@ export const uiVerifyDataSourceCreatePrivilege = (hasPrivilege = true) => {
 export const uiCreateWorkflow = (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
 
-  cy.get('[data-cy="button-new-workflow-from-scratch"]').click();
+  cy.get('[data-cy="create-new-workflow-button"]').click();
   cy.get(workflowSelector.workFlowNameInputField).type(workflowName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
   cy.wait(3000);
   cy.go("back");
-  cy.waitForElement('[data-cy="home-page-logo"]');
+  cy.waitForElement('[data-cy="home-page-logo"]')
 };
 
 export const uiVerifyWorkflowCreated = (workflowName) => {
+  cy.reload();
+  cy.wait(2000);
   cy.get(commonSelectors.globalWorkFlowsIcon).click();
+  cy.wait(500);
   cy.get(`[data-cy="${workflowName.toLowerCase()}-card"]`)
     .contains(workflowName)
     .should("exist");
 };
 
-export const uiDeleteWorkflow = () => {
-  cy.get(".homepage-app-card .home-app-card-header .menu-ico").then(($el) => {
-    $el[0].style.setProperty("visibility", "visible", "important");
-  });
-  cy.get(".homepage-app-card").realHover();
-  cy.get('[data-cy="app-card-menu-icon"]').click();
-  cy.get(workflowSelector.deleteWorkFlowOption).click();
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+export const uiDeleteWorkflow = (workflowName) => {
+  viewAppCardOptions(workflowName);
+  cy.get(dashboardUiSelector.deleteWorkflowCardOption).click();
+  cy.get(dashboardUiSelector.deleteWorkflowButton).click();
 };
 
 export const uiVerifyWorkflowDeleted = (workflowName) => {
@@ -136,7 +138,7 @@ export const uiVerifyAllCreatePrivileges = (
   hasFolderCreate = true,
   hasConstantCreate = true,
   hasDataSourceCreate = true,
-  hasWorkflowCreate = true
+  hasWorkflowCreate = true,
 ) => {
   uiVerifyAppCreatePrivilege(hasAppCreate);
   uiVerifyFolderCreatePrivilege(hasFolderCreate);
@@ -177,7 +179,7 @@ export const uiFolderCRUDWorkflow = (folderName) => {
 
 export const uiWorkspaceConstantCRUDWorkflow = (
   constantName,
-  constantValue
+  constantValue,
 ) => {
   cy.get(commonSelectors.workspaceConstantsIcon).click();
 
@@ -188,7 +190,7 @@ export const uiWorkspaceConstantCRUDWorkflow = (
 
 export const uiDataSourceCRUDWorkflow = (
   datasourceName,
-  datasourceType = "restapi"
+  datasourceType = "restapi",
 ) => {
   cy.ifEnv("Enterprise", () => {
     uiCreateDataSource(datasourceName, datasourceType);
@@ -205,7 +207,7 @@ export const uiWorkflowCRUDWorkflow = (workflowName) => {
     uiCreateWorkflow(workflowName);
     uiVerifyWorkflowCreated(workflowName);
 
-    uiDeleteWorkflow();
+    uiDeleteWorkflow(workflowName);
     uiVerifyWorkflowDeleted(workflowName);
   });
 };

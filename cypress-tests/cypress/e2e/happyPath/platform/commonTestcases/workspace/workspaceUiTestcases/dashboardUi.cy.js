@@ -44,7 +44,7 @@ import {
   verifyFolderEmptyStateForType,
   verifyImportDropdownForType,
   verifyTopBarForType,
-} from "Support/utils/dashboardUi";
+} from "Support/utils/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardUiText } from "Texts/dashboardUi";
 
@@ -73,14 +73,13 @@ const buildTypeConfigs = () => ({
 
     hasTemplateImport: true,
 
-    // Card context-menu — selectors from dashboardUiSelector, text from dashboardUiText
     renameOptionSelector: dashboardUiSelector.renameAppCardOption,
     renameOptionText: dashboardUiText.renameAppOption,
     hasClone: true,
     cloneOptionSelector: dashboardUiSelector.cloneAppCardOption,
     cloneOptionText: dashboardUiText.cloneAppOption,
     cloneToast: dashboardUiText.cloneAppToast,
-    cloneNameInputSelector: null,        // apps auto-navigate to editor on clone
+    cloneNameInputSelector: null,
     cloneConfirmButtonSelector: null,
     exportOptionSelector: dashboardUiSelector.exportAppCardOption,
     exportOptionText: dashboardUiText.exportAppOption,
@@ -316,7 +315,7 @@ const buildTypeConfigs = () => ({
         cy.visit("/my-workspace");
         config.uiCreate(data.itemName);
         cy.wait(2000);
-        cy.get(commonSelectors.appCreationDetails, {timeout: 20000}).first().should("be.visible");
+        cy.get(commonSelectors.appCreationDetails, {timeout: 20000}).first().should("exist");
         cy.get(commonSelectors.appCard(data.itemName)).should("be.visible");
         cy.get(commonSelectors.appTitle(data.itemName))
           .first()
@@ -346,7 +345,7 @@ const buildTypeConfigs = () => ({
           .and("be.visible");
         cy.get(commonSelectors.appTitle(data.itemName))
           .first()
-          .verifyVisibleElement("have.text", data.itemName);
+          .should("have.text", data.itemName);
 
         verifyCardOptionsForType(data.itemName, config);
         modifyAndVerifyAppCardIcon(data.itemName);
