@@ -22,6 +22,17 @@ export const Pagination = function Pagination({
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
   const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
+  const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
+  const totalRecords = useTableStore((state) => state.getTableProperties(id)?.totalRecords, shallow);
+
+  const parsedServerSideRowsPerPage = Number(serverSideRowsPerPage);
+  const parsedTotalRecords = Number(totalRecords);
+  const knowTotalPages = serverSidePagination && parsedServerSideRowsPerPage > 0 && parsedTotalRecords > 0;
+  const effectivePageCount = knowTotalPages
+    ? Math.ceil(parsedTotalRecords / parsedServerSideRowsPerPage)
+    : serverSidePagination
+    ? 0
+    : pageCount;
 
   const canGoToNextPage = serverSidePagination ? enableNextButton : table.getCanNextPage();
   const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();
@@ -43,9 +54,10 @@ export const Pagination = function Pagination({
 
   const getPageNumbers = () => {
     const currentPage = pageIndex;
-    const totalPages = pageCount;
+    const totalPages = effectivePageCount;
 
-    if (serverSidePagination || tableWidth <= 460) {
+    // Server-side without known totalPages: show only current page
+    if ((serverSidePagination && !knowTotalPages) || tableWidth <= 460) {
       return [currentPage];
     }
 
@@ -65,13 +77,16 @@ export const Pagination = function Pagination({
   };
 
   const pageNumbers = getPageNumbers();
-  const showFirstLastBtns = !serverSidePagination && ((tableWidth <= 460 && pageCount > 1) || pageCount > 3);
-  const showPagesPopupBtn = showFirstLastBtns && !pageNumbers.includes(pageCount);
+  const showFirstLastBtns =
+    serverSidePagination && !knowTotalPages
+      ? false
+      : (tableWidth <= 460 && effectivePageCount > 1) || effectivePageCount > 3;
+  const showPagesPopupBtn = showFirstLastBtns && pageNumbers.length < effectivePageCount;
 
   const PaginationPopoverContent = () => {
     const ref = useRef(null);
     const virtualizer = useVirtualizer({
-      count: pageCount || 0,
+      count: effectivePageCount || 0,
       getScrollElement: () => ref.current,
       estimateSize: () => 32,
       overscan: 15,
@@ -150,7 +165,7 @@ export const Pagination = function Pagination({
             onClick={() => {
               goToPage(1);
             }}
-            disabled={pageIndex === 1}
+            disabled={pageIndex === 1 || (serverSidePagination && !enablePrevButton)}
             icon="IconChevronsLeft"
             dataCy="pagination-button-to-first"
           />
@@ -201,9 +216,9 @@ export const Pagination = function Pagination({
         {showFirstLastBtns && (
           <PaginationButton
             onClick={() => {
-              goToPage(pageCount);
+              goToPage(effectivePageCount);
             }}
-            disabled={pageIndex === pageCount}
+            disabled={pageIndex === effectivePageCount || (serverSidePagination && !enableNextButton)}
             icon="IconChevronsRight"
             dataCy="pagination-button-to-last"
           />

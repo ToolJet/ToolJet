@@ -110,6 +110,10 @@ export const tableConfig = {
         defaultValue: 10,
       },
     },
+    serverSideRowsPerPage: {
+      type: 'code',
+      displayName: 'Number of rows per page',
+    },
     enablePagination: {
       type: 'toggle',
       displayName: 'Enable pagination',
