@@ -94,6 +94,7 @@ export default function generateColumnsData({
   const getResolvedValue = useStore.getState().getResolvedValue;
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
+  const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
   if (!columnProperties) return [];
 
   return columnProperties
@@ -121,7 +122,15 @@ export default function generateColumnsData({
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
-      const pinPosition = column.pinPosition ?? 'unpinned';
+      let pinPosition = column.pinPosition ?? 'unpinned';
+      if (useDynamicColumn && column.freezeColumn !== undefined && column.freezeColumn !== null) {
+        const resolvedFreeze = getResolvedValue(column.freezeColumn);
+        if (resolvedFreeze === 'left' || resolvedFreeze === 'right') {
+          pinPosition = resolvedFreeze;
+        } else {
+          pinPosition = 'unpinned';
+        }
+      }
 
       if (!isVisible) return null;
 
@@ -146,8 +155,8 @@ export default function generateColumnsData({
           transformation: column.transformation,
           validation: column.validation,
           columnVisibility: isVisible,
-          pinPosition,
           ...column,
+          pinPosition,
         },
 
         cell: ({ cell, row }) => {
