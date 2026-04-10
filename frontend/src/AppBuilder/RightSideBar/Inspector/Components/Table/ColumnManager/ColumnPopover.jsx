@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
@@ -105,13 +105,18 @@ export const ColumnPopoverContent = ({
     }
   };
 
+  const tableColumnContextValue = useMemo(
+    () => ({ tableId: component?.id, columnKey: column?.key }),
+    [component?.id, column?.key]
+  );
+
   {
-    /* TableColumnContext provides the table's component ID to all nested CodeHinters,
-        enabling rowData/cellValue autocomplete hints in column editors (properties, styles, etc.).
-        This avoids threading a tableColumnComponentId prop through every intermediate component. */
+    /* TableColumnContext provides the table's component ID and active column key to all
+        nested CodeHinters, enabling rowData/cellValue autocomplete hints and preview
+        resolution in column editors (properties, styles, etc.). */
   }
   return (
-    <TableColumnContext.Provider value={component?.id}>
+    <TableColumnContext.Provider value={tableColumnContextValue}>
       <Popover.Header style={{ padding: '8px 16px 0 16px' }}>
         <div className="d-flex align-items-center justify-content-between">
           <div className="d-flex custom-gap-6 flex-row items-center justify-start">

@@ -1,5 +1,7 @@
 import { createContext } from 'react';
 
-// Provides the table component ID to all CodeHinter instances inside a column popover,
-// so they can show rowData/cellValue context hints without manual prop threading.
+// Provides the table component ID and active column key to all CodeHinter instances
+// inside a column popover. Used for:
+//   - rowData/cellValue autocomplete hints (via codeHinterSlice)
+//   - rowData/cellValue preview resolution (via SingleLineCodeEditor customVariables)
 export const TableColumnContext = createContext(null);

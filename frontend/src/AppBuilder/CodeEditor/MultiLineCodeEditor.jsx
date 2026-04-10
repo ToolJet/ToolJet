@@ -72,7 +72,7 @@ const MultiLineCodeEditor = (props) => {
   // Context-aware hints for components inside ListView/Kanban and table columns
   const getContextHints = useStore((state) => state.getContextHints, shallow);
   const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
-  const tableColumnComponentId = useContext(TableColumnContext); // Set at ColumnPopover level
+  const tableColumnComponentId = useContext(TableColumnContext)?.tableId; // Set at ColumnPopover level
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow

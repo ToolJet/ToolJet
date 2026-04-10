@@ -51,7 +51,24 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
-  const customVariables = customResolvables?.[parentId]?.[0] || {};
+  const baseCustomVariables = customResolvables?.[parentId]?.[0] || {};
+
+  // Table column context: inject cellValue/rowData for preview resolution
+  const tableColumnContext = useContext(TableColumnContext);
+  const tableCurrentData = useStore((state) => {
+    if (!tableColumnContext?.tableId) return null;
+    return state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[tableColumnContext.tableId]?.currentData;
+  }, shallow);
+
+  const customVariables = useMemo(() => {
+    if (!Array.isArray(tableCurrentData) || tableCurrentData.length === 0) return baseCustomVariables;
+    const firstRow = tableCurrentData[0];
+    return {
+      ...baseCustomVariables,
+      rowData: firstRow,
+      cellValue: tableColumnContext?.columnKey != null ? firstRow?.[tableColumnContext.columnKey] : undefined,
+    };
+  }, [baseCustomVariables, tableCurrentData, tableColumnContext?.columnKey]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -257,7 +274,8 @@ const EditorInput = ({
   const codeHinterContext = useContext(CodeHinterContext);
   // TableColumnContext provides the table component ID for rowData/cellValue hints.
   // Set once at ColumnPopover level, consumed automatically by all nested CodeHinters.
-  const tableColumnComponentId = useContext(TableColumnContext);
+  const tableColumnContext = useContext(TableColumnContext);
+  const tableColumnComponentId = tableColumnContext?.tableId;
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
