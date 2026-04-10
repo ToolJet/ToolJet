@@ -88,8 +88,8 @@ export class CreateDataQueryFolderTables1743251000000 implements MigrationInterf
         ],
         uniques: [
           {
-            name: 'UQ_data_query_folder_mapping_parent_child',
-            columnNames: ['parent_id', 'child_id', 'child_type'],
+            name: 'UQ_data_query_folder_mapping_child',
+            columnNames: ['child_id', 'child_type'],
           },
         ],
       }),

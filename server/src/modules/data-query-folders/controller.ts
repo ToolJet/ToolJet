@@ -21,18 +21,14 @@ export class DataQueryFoldersController implements IDataQueryFoldersController {
     throw new Error('Method not implemented.');
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE)
-  @Patch('/:id')
-  async renameFolder(@Param('id') _id: string, @Body() _dto: RenameFolderDto): Promise<any> {
-    throw new Error('Method not implemented.');
+  @InitFeature(FEATURE_KEY.GET)
+  @Get()
+  async getFolders(@Query('appVersionId') appVersionId: string): Promise<any> {
+    return this.dataQueryFoldersService.getFolders(appVersionId);
   }
 
-  @InitFeature(FEATURE_KEY.DELETE)
-  @Delete('/:id')
-  async deleteFolder(@Param('id') _id: string, @Body() _dto: DeleteFolderDto): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
+  // Static PATCH routes MUST be registered before parameterized /:id route
+  // otherwise Express matches /:id first (e.g., id = "reorder")
   @InitFeature(FEATURE_KEY.REORDER)
   @Patch('/reorder')
   async reorder(@Body() _dto: ReorderDto): Promise<void> {
@@ -45,9 +41,15 @@ export class DataQueryFoldersController implements IDataQueryFoldersController {
     throw new Error('Method not implemented.');
   }
 
-  @InitFeature(FEATURE_KEY.GET)
-  @Get()
-  async getFolders(@Query('appVersionId') appVersionId: string): Promise<any> {
-    return this.dataQueryFoldersService.getFolders(appVersionId);
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @Patch('/:id')
+  async renameFolder(@Param('id') _id: string, @Body() _dto: RenameFolderDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE)
+  @Delete('/:id')
+  async deleteFolder(@Param('id') _id: string, @Body() _dto: DeleteFolderDto): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
