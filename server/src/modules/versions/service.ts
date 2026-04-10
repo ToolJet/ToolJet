@@ -2,6 +2,7 @@ import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { Component } from '@entities/component.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -337,6 +338,31 @@ export class VersionService implements IVersionService {
           },
           order: { priority: 'ASC' },
         });
+
+        // Block promotion if pinned module versions aren't promoted to the target environment
+        if (app.type === 'front-end') {
+          const unpromotedModules = await manager
+            .createQueryBuilder(Component, 'component')
+            .innerJoin('component.page', 'page')
+            .innerJoin('page.appVersion', 'appVersion')
+            .innerJoin(AppVersion, 'moduleVersion',
+              "moduleVersion.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
+            .innerJoin(AppEnvironment, 'moduleEnv', 'moduleEnv.id = moduleVersion.currentEnvironmentId')
+            .innerJoin(App, 'moduleApp', 'moduleApp.id = moduleVersion.appId')
+            .select(['moduleApp.name AS "moduleName"', 'moduleVersion.name AS "versionName"'])
+            .where('component.type = :type', { type: 'ModuleViewer' })
+            .andWhere('appVersion.id = :versionId', { versionId: version.id })
+            .andWhere('moduleEnv.priority < :targetPriority', { targetPriority: nextEnvironment.priority })
+            .getRawMany();
+
+          if (unpromotedModules.length > 0) {
+            const details = unpromotedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+            throw new BadRequestException(
+              `Cannot promote.\nModules not promoted to ${nextEnvironment.name}: ${details}`
+            );
+          }
+        }
+
         editableParams['currentEnvironmentId'] = nextEnvironment.id;
 
         if (version.promotedFrom) {
