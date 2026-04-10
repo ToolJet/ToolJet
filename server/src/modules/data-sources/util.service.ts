@@ -75,7 +75,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const finalName = await this.generateUniqueName(createArgumentsDto.name, manager);
+      const finalName = await this.generateUniqueName(createArgumentsDto.name, user.organizationId, manager);
       const newDataSource = manager.create(DataSource, {
         name: finalName,
         kind: createArgumentsDto.kind,
@@ -402,7 +402,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
             // Also update DSV name if DS name changed
             if (name) {
-              await this.ensureUniqueActiveNameForUpdate(name, dsv.id, manager);
+              await this.ensureUniqueActiveNameForUpdate(name, dataSource.id, organizationId, manager);
               await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
             }
           }
@@ -1430,25 +1430,24 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  async generateUniqueName(baseName: string, manager: EntityManager): Promise<string> {
+  async generateUniqueName(baseName: string, organizationId: string, manager: EntityManager): Promise<string> {
     const escapedBase = baseName.replace(/[%_\\]/g, '\\$&');
 
-    const qb = manager
-      .createQueryBuilder(DataSourceVersion, 'dsv')
-      .where('dsv.isActive = true')
-      .andWhere('dsv.name LIKE :name', { name: `${escapedBase}%` });
-
-    const existing = await qb.getMany();
+    const existing = await manager
+      .createQueryBuilder(DataSource, 'ds')
+      .where('ds.organizationId = :organizationId', { organizationId })
+      .andWhere('LOWER(ds.name) LIKE LOWER(:name)', { name: `${escapedBase}%` })
+      .getMany();
 
     if (!existing.length) return baseName;
 
-    const exactMatch = existing.some((dsv) => dsv.name === baseName);
+    const exactMatch = existing.some((ds) => ds.name.toLowerCase() === baseName.toLowerCase());
     if (!exactMatch) return baseName;
 
     const usedNumbers = new Set(
       existing
-        .map((dsv) => {
-          const match = dsv.name.match(new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`));
+        .map((ds) => {
+          const match = ds.name.match(new RegExp(`^${this.escapeRegExp(baseName)}_(\\d+)$`, 'i'));
           return match ? parseInt(match[1], 10) : null;
         })
         .filter((n): n is number => n !== null)
@@ -1464,30 +1463,19 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   private async ensureUniqueActiveNameForUpdate(
     name: string,
-    currentDsvId: string,
+    currentDataSourceId: string,
+    organizationId: string,
     manager: EntityManager
   ): Promise<void> {
-    const currentDsv = await manager.findOne(DataSourceVersion, {
-      where: { id: currentDsvId },
-      select: ['id', 'branchId'],
-    });
-
-    const qb = manager
-      .createQueryBuilder(DataSourceVersion, 'dsv')
-      .where('LOWER(dsv.name) = LOWER(:name)', { name })
-      .andWhere('dsv.isActive = true')
-      .andWhere('dsv.id != :currentDsvId', { currentDsvId });
-
-    if (currentDsv?.branchId) {
-      qb.andWhere('dsv.branchId = :branchId', { branchId: currentDsv.branchId });
-    } else {
-      qb.andWhere('dsv.branchId IS NULL');
-    }
-
-    const existing = await qb.getOne();
+    const existing = await manager
+      .createQueryBuilder(DataSource, 'ds')
+      .where('LOWER(ds.name) = LOWER(:name)', { name })
+      .andWhere('ds.organizationId = :organizationId', { organizationId })
+      .andWhere('ds.id != :currentDataSourceId', { currentDataSourceId })
+      .getOne();
 
     if (existing) {
-      throw new BadRequestException(`An active data source with name "${name}" already exists in this branch`);
+      throw new BadRequestException(`A data source with name "${name}" already exists in this workspace`);
     }
   }
 }
