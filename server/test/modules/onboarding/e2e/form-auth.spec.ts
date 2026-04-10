@@ -335,14 +335,6 @@ describe('OnboardingController', () => {
   });
 
   describe('POST /api/onboarding/activate-account-with-token | Invite token handling', () => {
-    /**
-     * Regression: activateOrganization was called unconditionally on the defaultOrganizationUser.
-     * When defaultOrg === invitedOrg (brand-new invite), that cleared invitationToken on the org-user
-     * row before the accept-invite page could consume it, causing the guard to return null and throw
-     * "Invalid invitation link".
-     *
-     * Fix: only activate the default org when its ID differs from the invited org's ID.
-     */
     it('should preserve org-user invitationToken when invited org equals default org', async () => {
       const { user: admin, organization: orgA } = await createUser(app, {
         email: 'admin-token-preserve@tooljet.com',
@@ -350,7 +342,6 @@ describe('OnboardingController', () => {
       });
       const adminSession = await login(app, admin.email);
 
-      // Invite a brand-new user to org A
       await request(app.getHttpServer())
         .post('/api/organization-users')
         .send({ email: 'invited-token-preserve@tooljet.com', firstName: 'Token', lastName: 'Test', role: 'end-user' })
@@ -358,7 +349,6 @@ describe('OnboardingController', () => {
         .set('Cookie', adminSession.tokenCookie)
         .expect(201);
 
-      // Capture the org-user's invitationToken before activation
       const invitedUserRecord = await userRepository.findOneOrFail({
         where: { email: 'invited-token-preserve@tooljet.com' },
       });
@@ -368,7 +358,6 @@ describe('OnboardingController', () => {
       const orgInviteToken = orgUserBefore.invitationToken;
       expect(orgInviteToken).not.toBeNull();
 
-      // Activate account — simulates the signup redirect flow
       await request(app.getHttpServer())
         .post('/api/onboarding/activate-account-with-token')
         .send({
@@ -378,13 +367,12 @@ describe('OnboardingController', () => {
         })
         .expect(201);
 
-      // Token must still be in the org-user row — accept-invite page hasn't consumed it yet
       const orgUserAfter = await orgUserRepository.findOneOrFail({
         where: { userId: invitedUserRecord.id, organizationId: orgA.id },
       });
       expect(orgUserAfter.invitationToken).toBe(orgInviteToken);
 
-      // verify-organization-token must resolve — this is what the accept-invite page calls
+      // verify-organization-token is what the accept-invite page calls after redirect
       const verifyResponse = await request(app.getHttpServer()).get(
         `/api/onboarding/verify-organization-token?token=${orgInviteToken}`
       );
@@ -392,32 +380,24 @@ describe('OnboardingController', () => {
       expect(verifyResponse.body.email).toBe('invited-token-preserve@tooljet.com');
     });
 
-    /**
-     * Super-admin cross-org path: user's defaultOrg (A) differs from the invited org (B).
-     * activateOrganization SHOULD fire on org A's org-user (existing behavior).
-     * Org B's invitationToken must remain intact for the accept-invite step.
-     */
     it('should activate default-org user and preserve invited-org token when orgs differ', async () => {
-      // Create org A — this becomes crossUser's defaultOrg
       const { organization: orgA } = await createUser(app, {
         email: 'orgA-admin-crossorg@tooljet.com',
         status: 'active',
       });
 
-      // crossUser is created with defaultOrg = orgA, org-user in orgA has status 'invited'
       const { user: crossUser } = await createUser(app, {
         email: 'cross-org-user@tooljet.com',
         status: 'invited',
         organization: orgA,
       });
 
-      // Create org B (separate workspace)
       const { organization: orgB } = await createUser(app, {
         email: 'orgB-admin-crossorg@tooljet.com',
         status: 'active',
       });
 
-      // Manually seed org B's org-user for crossUser (simulates super-admin invite)
+      // Direct seed: simulates super-admin inviting crossUser to a different org than their defaultOrg
       const orgBInviteToken = uuidv4();
       await orgUserRepository.save(
         orgUserRepository.create({
@@ -431,7 +411,6 @@ describe('OnboardingController', () => {
         })
       );
 
-      // Activate using org B's token (crossUser's defaultOrg is org A — they differ)
       await request(app.getHttpServer())
         .post('/api/onboarding/activate-account-with-token')
         .send({
@@ -441,14 +420,12 @@ describe('OnboardingController', () => {
         })
         .expect(201);
 
-      // Org A's org-user (the default org) must now be ACTIVE with its token cleared
       const orgAUserAfter = await orgUserRepository.findOneOrFail({
         where: { userId: crossUser.id, organizationId: orgA.id },
       });
       expect(orgAUserAfter.status).toBe('active');
       expect(orgAUserAfter.invitationToken).toBeNull();
 
-      // Org B's invitationToken must be intact — accept-invite page still needs it
       const orgBUserAfter = await orgUserRepository.findOneOrFail({
         where: { userId: crossUser.id, organizationId: orgB.id },
       });
