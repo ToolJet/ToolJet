@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { capitalize, isEmpty, sample } from 'lodash';
+import { capitalize, cloneDeep, isEmpty, sample } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -132,7 +132,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
             installedPluginsInfo = installedPluginsData?.installedPluginsInfo ?? [];
           }
 
-          let importJSON = fileContent;
+          let importJSON = cloneDeep(fileContent);
           const isLegacyImport = isEmpty(importJSON.tooljet_version);
 
           if (isLegacyImport) {
