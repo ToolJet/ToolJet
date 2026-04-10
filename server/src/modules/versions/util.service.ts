@@ -261,7 +261,9 @@ export class VersionUtilService implements IVersionUtilService {
         throw new BadRequestException('You cannot delete a released version');
       }
 
-      await this.checkModuleVersionInUse(app.appVersions[0].id, manager);
+      if (app.type === 'module') {
+        await this.checkModuleVersionInUse(app.appVersions[0].id, manager);
+      }
 
       await this.versionRepository.deleteById(app.appVersions[0].id, manager);
     }, manager);
@@ -273,7 +275,9 @@ export class VersionUtilService implements IVersionUtilService {
         throw new BadRequestException('You cannot delete a released version');
       }
 
-      await this.checkModuleVersionInUse(version.id, manager);
+      if (app.type === 'module') {
+        await this.checkModuleVersionInUse(version.id, manager);
+      }
       await this.versionRepository.deleteById(version.id, manager);
     }, manager);
   }
