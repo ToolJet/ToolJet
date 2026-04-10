@@ -269,7 +269,10 @@ export class OnboardingService implements IOnboardingService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user: User | undefined = await manager.findOne(User, { where: { invitationToken: token } });
+      const user: User | undefined = await manager.findOne(User, {
+        where: { invitationToken: token },
+        relations: ['organizationUsers'],
+      });
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 

@@ -62,6 +62,7 @@ export const buildTableColumn = (
       id,
       darkMode,
       fireEvent,
+      setExposedVariables,
       tableRef: tableBodyRef,
       handleCellValueChange,
       searchText: globalFilter,
