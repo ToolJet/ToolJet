@@ -54,10 +54,11 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         toast.error(errorMessage);
         useStore.getState().debugger.log({
           logLevel: 'error',
-          type: 'Custom Log',
+          type: 'component',
           key: 'Release Failed',
           message: errorMessage,
-          error: { message: errorMessage },
+          description: errorMessage,
+          error: { message: errorMessage, description: errorMessage },
           errorTarget: 'Version',
           timestamp: new Date().toISOString(),
         });

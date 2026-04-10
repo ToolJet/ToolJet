@@ -109,10 +109,11 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
         toast.error(errorMessage);
         useStore.getState().debugger.log({
           logLevel: 'error',
-          type: 'Custom Log',
+          type: 'component',
           key: 'Promote Failed',
           message: errorMessage,
-          error: { message: errorMessage },
+          description: errorMessage,
+          error: { message: errorMessage, description: errorMessage },
           errorTarget: 'Version',
           timestamp: new Date().toISOString(),
         });
