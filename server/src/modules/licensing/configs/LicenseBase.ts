@@ -66,7 +66,7 @@ export default class LicenseBase {
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' && !licenseData) {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
       // Setting expiry 30 minutes

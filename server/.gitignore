@@ -13,8 +13,13 @@ lerna-debug.log*
 # OS
 .DS_Store
 
-# Tests
+# Tests & coverage
 /coverage
+/coverage-unit
+/coverage-e2e
+/coverage-combined
+/.coverage
+/.coverage-all
 /.nyc_output
 
 # IDEs and editors
@@ -34,4 +39,4 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # Postgrest configuration
-**/postgrest.conf
+**/postgrest.confautoresearch-results.tsv
