@@ -345,15 +345,15 @@ export class VersionService implements IVersionService {
             .createQueryBuilder(Component, 'component')
             .innerJoin('component.page', 'page')
             .innerJoin('page.appVersion', 'appVersion')
-            .innerJoin('app_versions', 'moduleVersion',
-              '"moduleVersion".id::text = component.properties::jsonb -> \'moduleVersionId\' ->> \'value\'')
-            .innerJoin('app_environments', 'moduleEnv', '"moduleEnv".id = "moduleVersion".current_environment_id')
-            .innerJoin('apps', 'moduleApp', '"moduleApp".id = "moduleVersion".app_id')
-            .select('"moduleApp".name', 'moduleName')
-            .addSelect('"moduleVersion".name', 'versionName')
+            .innerJoin('app_versions', 'mod_ver',
+              'mod_ver.id::text = component.properties::jsonb -> \'moduleVersionId\' ->> \'value\'')
+            .innerJoin('app_environments', 'mod_env', 'mod_env.id = mod_ver.current_environment_id')
+            .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+            .select('mod_app.name', 'moduleName')
+            .addSelect('mod_ver.name', 'versionName')
             .where('component.type = :type', { type: 'ModuleViewer' })
             .andWhere('appVersion.id = :versionId', { versionId: version.id })
-            .andWhere('"moduleEnv".priority < :targetPriority', { targetPriority: nextEnvironment.priority })
+            .andWhere('mod_env.priority < :targetPriority', { targetPriority: nextEnvironment.priority })
             .getRawMany();
 
           if (unpromotedModules.length > 0) {

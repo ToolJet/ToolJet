@@ -664,20 +664,20 @@ export class AppsService implements IAppsService {
           .createQueryBuilder(Component, 'component')
           .innerJoin('component.page', 'page')
           .innerJoin('page.appVersion', 'appVersion')
-          .innerJoin('app_versions', 'moduleVersion', "moduleVersion.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
-          .innerJoin('apps', 'moduleApp', '"moduleApp".id = "moduleVersion".app_id')
-          .select('"moduleApp".name', 'moduleName')
-          .addSelect('"moduleVersion".name', 'versionName')
-          .addSelect('"moduleVersion".status', 'status')
+          .innerJoin('app_versions', 'mod_ver', 'mod_ver.id::text = component.properties::jsonb -> \'moduleVersionId\' ->> \'value\'')
+          .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+          .select('mod_app.name', 'moduleName')
+          .addSelect('mod_ver.name', 'versionName')
+          .addSelect('mod_ver.status', 'status')
           .where('component.type = :type', { type: 'ModuleViewer' })
           .andWhere('appVersion.id = :versionId', { versionId: versionToBeReleased })
-          .andWhere('"moduleVersion".status != :releasedStatus', { releasedStatus: 'RELEASED' })
+          .andWhere('mod_ver.status = :draftStatus', { draftStatus: 'DRAFT' })
           .getRawMany();
 
         if (unreleasedModules.length > 0) {
           const details = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
           throw new BadRequestException(
-            `Cannot release this app.\nModules not released: ${details}`
+            `Cannot release this app.\nModules not saved: ${details}`
           );
         }
       }
