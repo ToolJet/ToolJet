@@ -55,7 +55,7 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
       id: `${position}Actions`,
       accessorKey: 'actions',
       enableResizing: false,
-      meta: { columnType: 'action', position, skipFilter: true, skipAddNewRow: true },
+      meta: { columnType: 'action', position, skipFilter: true, skipAddNewRow: true, pinPosition: 'unpinned' },
       size: calculatedWidth,
       header: 'Actions',
       cell: ({ row, cell }) => (

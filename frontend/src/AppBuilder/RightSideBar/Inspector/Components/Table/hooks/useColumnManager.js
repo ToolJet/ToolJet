@@ -49,6 +49,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         ...modifiedColumn,
         columnVisibility: true,
         horizontalAlignment: 'left',
+        pinPosition: modifiedColumn.pinPosition ?? 'unpinned',
         buttons: [],
       };
     }
@@ -97,6 +98,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       namePrefix: 'new_column',
       defaultItemProps: {
         includeKey: true,
+        pinPosition: 'unpinned',
       },
       onPropertyChange: handlePropertyChange,
       onRemove: handleRemove,

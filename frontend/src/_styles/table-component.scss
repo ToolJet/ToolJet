@@ -395,6 +395,30 @@
       .th {
         white-space: normal;
       }
+
+      .pinned-column {
+        background-clip: padding-box;
+      }
+
+      td.pinned-column {
+        background-color: var(--cc-table-pinned-column-bg, var(--cc-surface1-surface));
+      }
+
+      .th.pinned-column {
+        z-index: 3;
+      }
+
+      td.pinned-column {
+        z-index: 2;
+      }
+
+      .pinned-column-boundary-left {
+        border-right: 1px solid var(--cc-weak-border);
+      }
+
+      .pinned-column-boundary-right {
+        border-left: 1px solid var(--cc-weak-border);
+      }
     }
 
     .jet-data-table>table:not(.table-resizing) {
@@ -1239,6 +1263,10 @@
 
     .ToggleGroupItem {
       flex: 1 1 0;
+    }
+
+    .pin-column-control .ToggleGroupItem[data-state='on'] .toggle-item svg path {
+      fill: none !important;
     }
 
     .table-column-date-picker-accordion {

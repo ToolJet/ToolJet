@@ -121,6 +121,7 @@ export default function generateColumnsData({
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+      const pinPosition = column.pinPosition ?? 'unpinned';
 
       if (!isVisible) return null;
 
@@ -145,6 +146,7 @@ export default function generateColumnsData({
           transformation: column.transformation,
           validation: column.validation,
           columnVisibility: isVisible,
+          pinPosition,
           ...column,
         },
 
