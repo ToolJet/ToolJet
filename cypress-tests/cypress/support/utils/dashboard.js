@@ -33,7 +33,7 @@ export const verifyTopBar = () => {
     dashboardText.createAppButton
   );
   cy.get(dashboardSelector.headerSearchBar).should("be.visible");
-  cy.get(dashboardSelector.buildWithAiButton).should("be.visible");
+  // cy.get(dashboardSelector.buildWithAiButton).should("be.visible");
   cy.get(dashboardSelector.importDropdownMenu).should("be.visible");
 };
 

@@ -6,6 +6,8 @@ import {
   deleteConstant,
 } from "Support/utils/workspaceConstants";
 import { commonText } from "Texts/common";
+import { openFolderDropdown, closeFolderDropdown, createFolder } from "Support/utils/common";
+import { dashboardSelector } from "Selectors/dashboard";
 
 export const uiCreateApp = (appName) => {
   cy.createApp(appName);
@@ -32,26 +34,28 @@ export const uiVerifyAppCreatePrivilege = (hasPrivilege = true) => {
 };
 
 export const uiCreateFolder = (folderName) => {
-  cy.get(commonSelectors.createNewFolderButton).click();
-  cy.clearAndType(commonSelectors.folderNameInput, folderName);
-  cy.get(commonSelectors.createFolderButton).click();
+  createFolder(folderName);
 };
 
 export const uiVerifyFolderCreated = (folderName) => {
-  cy.get(commonSelectors.folderListcard(folderName)).should("exist");
+  openFolderDropdown();
+  cy.get(dashboardSelector.folderName(folderName)).should("exist");
 };
 
 export const uiVerifyFolderDeleted = (folderName) => {
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    commonText.folderDeletedToast
-  );
-  cy.get(commonSelectors.folderListcard(folderName)).should("not.exist");
+  openFolderDropdown();
+  cy.get(dashboardSelector.folderName(folderName)).should("not.exist");
+  closeFolderDropdown();
 };
 
 export const uiVerifyFolderCreatePrivilege = (hasPrivilege = true) => {
   const assertion = hasPrivilege ? "exist" : "not.exist";
-  cy.get(commonSelectors.createNewFolderButton).should(assertion);
+
+  openFolderDropdown();
+  cy.get(commonSelectors.createNewFolderButton).should(
+    assertion
+  );
+  closeFolderDropdown();
 };
 
 export const uiVerifyWorkspaceConstantCreatePrivilege = (

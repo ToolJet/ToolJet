@@ -92,6 +92,7 @@ describe("App Import", () => {
       importText.couldNotImportAppToastMessage
     );
 
+    cy.get(importSelectors.dropDownMenu).click();
     cy.get(dashboardSelector.importAppButton).should("be.visible").click();
     importAndVerifyApp(
       TEST_DATA.invalidApp,

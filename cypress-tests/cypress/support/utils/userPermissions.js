@@ -5,6 +5,7 @@ import { groupsSelector } from "Constants/selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 import { versionSwitcherSelectors } from "Constants/selectors/version";
 import { multiEnvSelector } from "Constants/selectors/eeCommon";
+import { openFolderDropdown, closeFolderDropdown } from "Support/utils/common";
 
 export const constantsOperations = {
   createConstant: (name, value) => {
@@ -110,11 +111,13 @@ export const verifyBuilderPermissions = (
 
 export const verifyBasicPermissions = (canCreate = true) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(
-    canCreate ? "be.enabled" : "be.disabled"
+    canCreate ? "exist" : "not.exist"
   );
+  openFolderDropdown();
   cy.get(commonSelectors.createNewFolderButton).should(
     canCreate ? "exist" : "not.exist"
   );
+  closeFolderDropdown();
   cy.get('[data-cy="database-icon"]').should(canCreate ? "exist" : "not.exist");
 
   cy.ifEnv("Enterprise", () => {

@@ -76,7 +76,7 @@ Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title), { timeout: 20000 }).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-an-app-button"]').click();
+    cy.get('[data-cy="create-front-end-button"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -243,7 +243,7 @@ Cypress.Commands.add("deleteApp", (appName) => {
     appName,
     commonSelectors.appCardOptions(commonText.deleteAppOption)
   );
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.get('[data-cy="delete-front-end-button"]').click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.appDeletedToast

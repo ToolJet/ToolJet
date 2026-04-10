@@ -120,7 +120,7 @@ describe("Verify OIDC user onboarding", () => {
         cy.apiLogin();
         cy.visit(`${data.workspaceName}/workspace-settings/users`);
         common.searchUser("superadmin@tooljet.com");
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+        cy.get('[data-cy="workspace-name"]').verifyVisibleElement(
             "have.text",
             data.workspaceName
         );

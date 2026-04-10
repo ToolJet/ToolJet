@@ -16,7 +16,7 @@ export const commonText = {
   loginErrorToast: "Invalid email or password",
   welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
-    "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+    "You don’t have any apps yet",
   changeIconOption: "Change Icon",
   addToFolderOption: "Add to folder",
   removeFromFolderOption: "Remove from folder",
