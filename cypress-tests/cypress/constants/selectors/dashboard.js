@@ -1,12 +1,13 @@
 import { cyParamName } from "./common";
 
 export const dashboardSelector = {
-  emptyPageImage: '[data-cy="empty-home-page-image"]',
-  emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
-  emptyPageDescription: "[data-cy=empty-homepage-description]",
+  emptyPageImage: '[data-cy="front-end-empty-state-image"]',
+  emptyPageHeader: '[data-cy="front-end-empty-state-header"]',
+  emptyPageDescription: '[data-cy="front-end-empty-state-description"]',
+  emptyPageContainer: '[data-cy="front-end-empty-state"]',
   createAppButton: "[data-cy=create-new-application]",
   importAppButton: '[data-cy="button-import-an-app"]',
-  chooseFromTemplate: "[data-cy=choose-from-template]",
+  chooseFromTemplate: "[data-cy='choose-from-template-button']",
   modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
   dropdown: "[data-cy=dropdown-organization-list]",
@@ -21,24 +22,41 @@ export const dashboardSelector = {
   appCardDefaultIcon: "[data-cy=app-card-apps-icon]",
   changeButton: "[data-cy=change-button]",
   updateFolderTitle: "[data-cy=update-folder-title]",
-  moveAppText: "[data-cy=move-selected-app-to-text]",
-  selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
+  selectFolder: '[data-cy="select-folder"]',
   addToFolderButton: "[data-cy=add-to-folder-button]",
   appTemplateRow: '[data-cy="app-template-row"]',
+  importDropdownMenu: '[data-cy="import-dropdown-menu"]',
+  buildWithAiButton: '[data-cy="build-with-ai-button"]',
+  contentToolbar: '[data-cy="content-toolbar"]',
+  appsTab: '[data-cy="apps-tab"]',
+  modulesTab: '[data-cy="modules-tab"]',
+  folderDropdownList: '[data-cy="folder-dropdown-list"]',
+  createAppTitle: '[data-cy="create-app-title"]',
+  createFolderTitle: '[data-cy="create-folder-title"]',
+  headerSearchBar: '[data-cy="header-search-bar"]',
+  workspaceSelectorTrigger: '[data-cy="workspace-selector-trigger"]',
+  paginationShowingLabel: '[data-cy="pagination-showing-label"]',
+  paginationPageSizeSelector: '[data-cy="pagination-page-size-selector"]',
+  paginationAppsCount: '[data-cy="pagination-apps-count"]',
+  paginationPreviousButton: '[data-cy="pagination-previous-button"]',
+  paginationNextButton: '[data-cy="pagination-next-button"]',
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
   dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
 
+  changeIconSearch: '[data-cy="change-icon-search"]',
+  noMatchingIconsText: '[data-cy="no-matching-results-found-text"]',
+
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },
   appIcon: (iconName) => {
-    return `[data-cy="${cyParamName(iconName)}-icon"]`;
+    return `[data-cy="icon-${cyParamName(iconName)}"]`;
   },
   folderName: (folderName) => {
-    return `[data-cy="${cyParamName(folderName)}-name"]`;
+    return `[data-cy="${cyParamName(folderName)}-folder-name"]`;
   },
 
   createWorkspaceTitle: '[data-cy="create-workspace-title"]',

@@ -32,14 +32,22 @@ describe("License - App & Workflow Limits", () => {
       expect(counts.total).to.equal(2);
     });
 
-    cy.apiCreateApp(app2Name);
-    cy.get(commonSelectors.homePageIcon).click();
-    cy.get(commonSelectors.dashboardIcon).click();
     cy.get('[data-cy="apps-limit-heading"]')
-      .should("be.visible")
-      .and("contain.text", "App limit reached");
+      .verifyVisibleElement("have.text", "App limit nearing - 1/2");
 
-    cy.get(commonSelectors.appCreateButton).should("be.disabled");
+    cy.apiCreateApp(app2Name);
+    cy.reload();
+    cy.wait(3000);
+    cy.get(commonSelectors.dashboardIcon).click();
+
+    cy.get('[data-cy="modal-component"]').within(() => {
+      cy.get('[data-cy="apps-limit-heading"]', { timeout: 20000 }).verifyVisibleElement("have.text", "App limit reached");
+    })
+
+    cy.get('[data-cy="apps-limit-banner"]').within(() => {
+      cy.get('[data-cy="apps-limit-heading"]', { timeout: 20000 }).verifyVisibleElement("have.text", "App limit reached");
+      cy.get('[data-cy="upgrade-button"]').should("be.visible");
+    })
 
     // Step 5: Verify clone button disabled at limit (Bug)
     // cy.contains(app1Name).parents('[data-cy="app-card"]').within(() => {
@@ -50,7 +58,8 @@ describe("License - App & Workflow Limits", () => {
     cy.apiGetAppIdByName(app1Name).then((id) => {
       cy.apiDeleteApp(id);
     });
-    cy.get(commonSelectors.homePageIcon).click();
+    cy.reload();
+    cy.wait(3000);
     cy.get(commonSelectors.dashboardIcon).click();
 
     cy.get(commonSelectors.appCreateButton).should("be.enabled");
@@ -79,23 +88,33 @@ describe("License - App & Workflow Limits", () => {
       expect(counts.current).to.be.gte(1);
       expect(counts.total).to.equal(2);
     });
-
-    cy.apiCreateWorkflow(workflow2Name);
-
-    cy.get(commonSelectors.homePageIcon).click();
-    cy.get(workflowSelector.globalWorkFlowsIcon).click();
-
     cy.get('[data-cy="workflow-limit-heading"]')
       .should("be.visible")
-      .and("contain.text", "Workflow limit reached");
-    cy.get(workflowSelector.workflowsCreateButton).should("be.disabled");
+      .and("contain.text", "Workflow limit nearing - 1/2");
 
-    cy.apiDeleteWorkflow(workflow1Name);
-
+    cy.apiCreateWorkflow(workflow2Name);
+    cy.reload();
+    cy.wait(3000);
     cy.get(commonSelectors.homePageIcon).click();
     cy.get(workflowSelector.globalWorkFlowsIcon).click();
 
-    cy.get(workflowSelector.workflowsCreateButton).should("be.enabled");
+
+    cy.get('[data-cy="modal-component"]').within(() => {
+      cy.get('[data-cy="workflow-limit-heading"]', { timeout: 20000 }).verifyVisibleElement("have.text", "Workflow limit reached");
+    })
+
+    cy.get('[data-cy="workflow-limit-banner"]').within(() => {
+      cy.get('[data-cy="workflow-limit-heading"]', { timeout: 20000 }).verifyVisibleElement("have.text", "Workflow limit reached");
+      cy.get('[data-cy="upgrade-button"]').should("be.visible");
+    })
+
+    cy.apiDeleteWorkflow(workflow1Name);
+    cy.reload();
+    cy.wait(3000);
+    cy.get(commonSelectors.homePageIcon).click();
+    cy.get(workflowSelector.globalWorkFlowsIcon).click();
+
+    cy.get('[data-cy="create-new-workflow-button"]').should("be.enabled");
 
     getCurrentCountFromBanner("workflow").then((counts) => {
       expect(counts.current).to.equal(1);

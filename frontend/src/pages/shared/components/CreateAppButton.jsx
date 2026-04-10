@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useAppsStore } from '@/_stores/appsStore';
 import { Button } from '@/components/ui/Button/Button';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default function CreateAppButton({ label, disabled, appType, isWorkspaceBranchLocked = false }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -21,7 +22,7 @@ export default function CreateAppButton({ label, disabled, appType, isWorkspaceB
       isLucid
       variant="secondary"
       leadingIcon="plus"
-      data-cy={`create-new-${appType}-button`}
+      data-cy={`${generateCypressDataCy(label)}-button`}
       disabled={disabled}
       onClick={handleOpenCreateAppDialog}
     >
