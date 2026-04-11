@@ -197,6 +197,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
                 allowFolders={!!featureAccess?.queryFolders}
+                shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
               {licenseValid && (
