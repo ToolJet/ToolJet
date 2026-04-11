@@ -74,6 +74,7 @@ export function SortableTree({
   nestedStyle,
   containerElement,
   dragOverlayModifiers,
+  disabled = false,
   ...restProps
 }) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
@@ -116,7 +117,7 @@ export function SortableTree({
         )
       : null;
 
-  const sensors = useSensors(
+  const activeSensors = useSensors(
     useSensor(CustomPointerSensor, {
       activationConstraint: {
         delay: 250,
@@ -124,6 +125,8 @@ export function SortableTree({
       },
     })
   );
+  const emptySensors = useSensors();
+  const sensors = disabled ? emptySensors : activeSensors;
 
   const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [flattenedItems]);
   const activeItem = activeId ? flattenedItems.find(({ id }) => id === activeId) : null;
