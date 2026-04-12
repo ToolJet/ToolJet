@@ -12,6 +12,7 @@ import { Modal } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+import { EllipsisVerticalIcon } from 'lucide-react';
 
 const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
   <Modal
@@ -125,7 +126,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   return (
     <>
       <div
-        className={`row query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
+        className={`query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
         key={dataQuery.id}
         onClick={(e) => {
           if (isQuerySelected) return;
@@ -144,55 +145,57 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         }}
         role="button"
       >
-        <div className="col-auto query-icon d-flex">
-          <DataSourceIcon source={dataQuery} height={16} />
-        </div>
-        <div className="col query-row-query-name">
-          {isRenaming ? (
-            <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
-          ) : (
-            <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-              <ToolTip
-                message={decodeEntities(dataQuery.name)}
-                show={queryNameEleRef.current?.offsetWidth > 150}
-                tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
-              >
-                <span
-                  ref={queryNameEleRef}
-                  className="text-truncate"
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    if (!shouldFreeze) setRenamingQuery(dataQuery.id);
-                  }}
+        <div className="query-card-leading">
+          <div className="query-icon d-flex">
+            <DataSourceIcon source={dataQuery} height={16} />
+          </div>
+          <div className="query-row-query-name">
+            {isRenaming ? (
+              <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
+            ) : (
+              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+                <ToolTip
+                  message={decodeEntities(dataQuery.name)}
+                  show={queryNameEleRef.current?.offsetWidth > 150}
+                  tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
                 >
-                  {decodeEntities(dataQuery.name)}
-                </span>
-              </ToolTip>
-              <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
-                <div className="d-flex align-items-center query-card-lock-wrapper">
-                  {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
-                </div>
-              </ToolTip>{' '}
-              {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
-              {localDs && (
-                <>
-                  <a
+                  <span
+                    ref={queryNameEleRef}
                     className="text-truncate"
-                    data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
-                    target="_blank"
-                    rel="noreferrer"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                    }}
                   >
-                    <img src={`assets/images/icons/warning.svg`} className="query-card-local-ds-icon" alt="Warning" />
-                  </a>{' '}
-                  <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
-                    Important <br />
-                    Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
-                  </Tooltip>
-                </>
-              )}
-            </div>
-          )}
+                    {decodeEntities(dataQuery.name)}
+                  </span>
+                </ToolTip>
+                <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+                  <div className="d-flex align-items-center query-card-lock-wrapper">
+                    {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                  </div>
+                </ToolTip>{' '}
+                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+                {localDs && (
+                  <>
+                    <a
+                      className="text-truncate"
+                      data-tooltip-id="query-card-local-ds-info"
+                      href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <img src={`assets/images/icons/warning.svg`} className="query-card-local-ds-icon" alt="Warning" />
+                    </a>{' '}
+                    <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
+                      Important <br />
+                      Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         {!shouldFreeze && hasPermissions && (
           <div
@@ -201,7 +204,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           >
             <ButtonComponent
               iconOnly
-              leadingIcon="morevertical01"
               onClick={(e) => {
                 if (!isQuerySelected) {
                   setSelectedQuery(dataQuery?.id);
@@ -214,7 +216,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
               className=""
               id={`query-handler-menu-${dataQuery?.id}`}
               data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
-            />
+            >
+              <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
+            </ButtonComponent>
           </div>
         )}
       </div>

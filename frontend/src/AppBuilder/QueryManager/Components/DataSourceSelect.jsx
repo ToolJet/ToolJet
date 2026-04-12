@@ -179,8 +179,10 @@ function DataSourceSelect({
     >
       {/* Search */}
       <div style={{ padding: '4px 2px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', height: '32px', padding: '7px 12px' }}>
-          <Search style={{ width: '16px', height: '16px', flexShrink: 0, color: 'var(--text-placeholder, #6a727c)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '7px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
+            <Search width="13.33" viewBox="0 0 20 20" fill="var(--icon-default)" />
+          </div>
           <input
             ref={inputRef}
             className="ds-select-search-input"
@@ -212,7 +214,7 @@ function DataSourceSelect({
           <div style={{ borderBottom: '1px solid var(--border-weak, #e4e7eb)' }}>
             <button style={accordionHeaderStyle} onClick={() => setDefaultsCollapsed((v) => !v)}>
               <span style={{ fontWeight: 500, fontSize: '12px', color: 'var(--text-default, #1b1f24)' }}>Defaults</span>
-              <SolidIcon name={defaultsCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
+              <SolidIcon name={defaultsCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
             </button>
             {!defaultsCollapsed && (
               <div style={{ padding: '0 8px 8px' }}>
@@ -293,7 +295,7 @@ function DataSourceSelect({
                     {kindName}
                   </span>
                 </div>
-                <SolidIcon name={isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
+                <SolidIcon name={isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
               </button>
               {!isCollapsed && (
                 <div style={{ padding: '0 8px 8px' }}>
@@ -342,7 +344,7 @@ function DataSourceSelect({
                     {kindName}
                   </span>
                 </div>
-                <SolidIcon name={isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
+                <SolidIcon name={isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
               </button>
               {!isCollapsed && (
                 <div style={{ padding: '0 8px 8px' }}>

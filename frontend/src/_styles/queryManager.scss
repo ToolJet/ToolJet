@@ -177,13 +177,12 @@ $border-radius: 4px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0px;
+    padding: 7px 8px;
     font-weight: 500;
     width: 100%;
     height: 32px;
     color: var(--slate12);
     border-radius: 6px;
-    margin-bottom: 4px;
 
     .query-copy-button {
       display: none;
@@ -213,7 +212,11 @@ $border-radius: 4px;
     }
 
     .query-icon {
-      margin: auto 8px auto 12px;
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 18px;
     }
 
     .delete-query,
@@ -231,12 +234,13 @@ $border-radius: 4px;
       background: var(--slate3) !important;
 
     }
+  }
 
-    .query-row-query-name {
-      padding-top: '4px';
-      padding-bottom: '4px';
-      transition-delay: '10ms';
-    }
+  .query-card-leading {
+    display: flex;
+    align-items: center;
+    flex: 1 0 0;
+    min-width: 0;
   }
 
   .query-row.border {
@@ -244,7 +248,7 @@ $border-radius: 4px;
   }
 
   .query-row-selected {
-    background: var(--indigo4) !important;
+    background: var(--interactive-selected) !important;
 
     .delete-query {
       svg:hover {
@@ -506,7 +510,7 @@ $border-radius: 4px;
       .query-list {
         display: flex;
         flex-direction: column;
-        padding: 8px 8px 8px 8px; // Reduced right padding to minimize gap when scrollbar is visible
+        padding: 4px;
         gap: 2px;
         width: 100%;
 
@@ -2007,7 +2011,7 @@ $border-radius: 4px;
 
 // Inner padding wrapper inside .query-list scroll container
 .query-list-inner {
-  padding: 4px;
+  padding: 0px;
 }
 
 // Centered empty-state wrapper inside .query-list
@@ -2072,4 +2076,45 @@ $border-radius: 4px;
 .query-ds-filter-list {
   height: 281px;
   overflow-y: auto;
+}
+
+.query-folder-handler.ghost {
+
+  .query-row {
+    cursor: pointer;
+    border-radius: $border-radius;
+    --tblr-gutter-x: 0rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 7px 8px;
+    font-weight: 500;
+    width: 100%;
+    height: 32px;
+    color: var(--slate12);
+    border-radius: 6px;
+
+    .query-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      display: flex;
+      font-weight: 400;
+    }
+    .query-icon {
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 18px;
+    }
+    .query-card-leading {
+      display: flex;
+      align-items: center;
+      flex: 1 0 0;
+      min-width: 0;
+    }
+  }
+
 }
