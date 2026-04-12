@@ -17,7 +17,15 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import { LicenseTooltip } from '@/LicenseTooltip';
 import './styles.scss';
+
+// Map of widget component name → featureAccess key. Widgets listed here are gated
+// behind a license check and rendered as a locked card in the picker when the
+// corresponding featureAccess flag is false.
+const PAID_WIDGETS = {
+  Navigation: 'navigation',
+};
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
   constructor(props) {
@@ -71,9 +79,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
   const edition = fetchEdition();
 
-  const { hasModuleAccess } = useLicenseStore(
+  const { hasModuleAccess, featureAccess } = useLicenseStore(
     (state) => ({
       hasModuleAccess: state.hasModuleAccess,
+      featureAccess: state.featureAccess,
     }),
     shallow
   );
@@ -139,11 +148,34 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const { t } = useTranslation();
 
   function renderComponentCard(component, index) {
-    return (
-      <div className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer index={index} component={componentTypeDefinitionMap[component]} key={component} />
+    const paidFeatureKey = PAID_WIDGETS[component];
+    const isLocked = paidFeatureKey && !featureAccess?.[paidFeatureKey];
+
+    const card = (
+      <div className={`text-center align-items-center clearfix draggable-box-wrapper${isLocked ? ' locked' : ''}`}>
+        {isLocked && (
+          <div className="paid-widget-crown">
+            <SolidIcon name="enterprisecrown" width="14" />
+          </div>
+        )}
+        <DragLayer
+          index={index}
+          component={componentTypeDefinitionMap[component]}
+          key={component}
+          disabled={isLocked}
+        />
       </div>
     );
+
+    if (isLocked) {
+      return (
+        <LicenseTooltip key={component} limits={featureAccess} feature={component} isAvailable={false}>
+          {card}
+        </LicenseTooltip>
+      );
+    }
+
+    return card;
   }
 
   function renderList(items) {

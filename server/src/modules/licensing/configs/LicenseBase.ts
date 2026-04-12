@@ -54,6 +54,7 @@ export default class LicenseBase {
   private _isGithub: boolean;
   private _isObservability: object;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
+  private _isNavigation: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -85,6 +86,7 @@ export default class LicenseBase {
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
+      this._isNavigation = true;
       this._plan = plan;
       return;
     }
@@ -145,6 +147,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isNavigation = this.getFeatureValue('navigation');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -457,6 +460,13 @@ export default class LicenseBase {
     return this._isCustomThemes;
   }
 
+  public get navigation(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.navigation;
+    }
+    return this._isNavigation;
+  }
+
   public get serverSideGlobalResolve(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobalResolve;
@@ -536,6 +546,7 @@ export default class LicenseBase {
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       customThemes: this.customThemes,
+      navigation: this.navigation,
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
