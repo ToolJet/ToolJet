@@ -9,7 +9,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -49,6 +49,10 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -345,6 +349,24 @@ export class AppsService implements IAppsService {
           appId: id,
           scheduleIds: scheduleIds,
         });
+      }
+
+      // Clean up query folder data — no CASCADE exists for these tables
+      const versions = await manager.find(AppVersion, { select: ['id'], where: { appId: id } });
+      const versionIds = versions.map((v) => v.id);
+      if (versionIds.length > 0) {
+        const folders = await manager.find(DataQueryFolder, { where: { appVersionId: In(versionIds) } });
+        const folderIds = folders.map((f) => f.id);
+        const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: In(versionIds) } });
+        const queryIds = queries.map((q) => q.id);
+        const allChildIds = [...folderIds, ...queryIds];
+
+        if (allChildIds.length > 0) {
+          await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+        }
+        if (folderIds.length > 0) {
+          await manager.delete(DataQueryFolder, { appVersionId: In(versionIds) });
+        }
       }
 
       await manager.delete(App, { id, organizationId });
