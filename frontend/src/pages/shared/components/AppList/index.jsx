@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useAppsStore } from '@/_stores/appsStore';
 
-import { useAppsFilter } from '../../hooks/useAppsFilter';
 import AppCard from './AppCard';
 
 export default function AppList({
@@ -36,10 +35,9 @@ function GridLayoutContainer({
   moduleEnabled,
   ownedFolders,
 }) {
-  const { folderId } = useAppsFilter({ appType });
-
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
   const handleMenuItemClick = (actionType, appDetails, currentFolderId) => {
     switch (actionType) {
@@ -78,7 +76,7 @@ function GridLayoutContainer({
             appType={appType}
             currentSelectedFolder={currentSelectedFolder}
             onMenuItemClick={handleMenuItemClick}
-            isUserNotInAllFolder={Boolean(folderId)}
+            isUserNotInAllFolder={Boolean(currentFolderId)}
             checkUserPermissions={checkUserPermissions}
             basicPlan={basicPlan}
             moduleEnabled={moduleEnabled}

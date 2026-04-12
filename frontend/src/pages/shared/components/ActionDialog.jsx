@@ -46,16 +46,13 @@ export default function ActionDialog({
           </DialogHeader>
         )}
 
-        <DialogBody className={cn('tw-px-6 tw-py-4', classes?.dialogBody)} {...dialogBodyProps}>
+        <DialogBody className={cn('tw-p-6', classes?.dialogBody)} {...dialogBodyProps}>
           {children}
         </DialogBody>
 
         {hasFooter && (
           <DialogFooter
-            className={cn(
-              'tw-px-6 tw-py-4 tw-border-0 sm:tw-justify-between sm:tw-items-center',
-              classes?.dialogFooter
-            )}
+            className={cn('tw-p-6 tw-border-0 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}
           >
             <Button variant="outline" size="default" {...cancelBtnPropsRest}>
               {cancelBtnLabel ?? 'Cancel'}

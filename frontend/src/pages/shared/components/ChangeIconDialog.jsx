@@ -23,7 +23,7 @@ export default function ChangeIconDialog({ open, onClose, appDetails }) {
     appIconNameMappingForTablerIcons[currentAppIcon] ?? currentAppIcon ?? ''
   );
 
-  const { mutate: changeAppIcon, isPending: isUpdatingAppIcon } = useChangeAppIcon({ appType: appDetails?.type });
+  const { mutate: changeAppIcon, isPending: isUpdatingAppIcon } = useChangeAppIcon();
   const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
 
   const handleSelectIcon = (iconName) => {

@@ -42,8 +42,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
   const { mutate: createNewApp, isPending: isCreatingApp } = useCreateApp();
-  const { mutate: renameApp, isPending: isRenamingApp } = useRenameApp({ appType });
-  const { mutate: deleteApp, isPending: isDeletingApp } = useDeleteApp({ appType });
+  const { mutate: renameApp, isPending: isRenamingApp } = useRenameApp();
+  const { mutate: deleteApp, isPending: isDeletingApp } = useDeleteApp();
   const { mutate: cloneApp, isPending: isCloningApp } = useCloneApp();
   const { mutateAsync: installDependentPlugins, isPending: isInstallingDependentPlugins } =
     useInstallDependentPlugins();
@@ -380,7 +380,7 @@ function MissingGroupsDialogBody({ missingGroups }) {
           <p className="tw-font-body-default tw-text-text-default tw-mb-0">{groupNames}</p>
         </Collapsible>
 
-        <p className="tw-font-body-default tw-text-text-default">
+        <p className="tw-font-body-default tw-text-text-default tw-mb-0">
           Without these groups, restricted pages, queries, and components may become accessible to unintended users. To
           prevent this, create the missing groups before importing or review permissions after.
         </p>
@@ -405,7 +405,7 @@ function DeleteAppBody({ appType, appName }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
         {message}
       </p>
     </div>

@@ -7,7 +7,6 @@ import { handleHttpErrorMessages } from '@/_helpers/utils';
 import { folderService } from '@/_services/folder.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { useAppsStore } from '@/_stores/appsStore';
-import { useAppsFilter } from '@/pages/shared/hooks/useAppsFilter';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const defaultFolder = (appType) => ({
@@ -27,21 +26,22 @@ const selectFolders = (appType) => (raw) => {
   return [defaultFolder(appType), ...formattedFolderList];
 };
 
-export function useFetchFolders(queryParams, options) {
+export function useFetchFolders(queryParams) {
   const { appSearchQuery = '', appType = 'front-end' } = queryParams;
-  const { enabled = true } = options; // Will be required on modules page
 
   return useQuery({
     queryKey: ['folders', { appSearchQuery, appType }],
-    queryFn: () => folderService.getAll('', appType),
+    queryFn: () => folderService.getAll(appSearchQuery, appType),
     select: selectFolders(appType),
-    enabled,
-    staleTime: Infinity,
+    staleTime: Infinity, // TODO: Check if actually need this
   });
 }
 
 export function useCreateFolder() {
   const queryClient = useQueryClient();
+  const [, setSearchParams] = useSearchParams();
+
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
     mutationFn: ({ name, appType }) => folderService.create(name, appType),
@@ -50,7 +50,6 @@ export function useCreateFolder() {
     },
     onSuccess: (response, variables) => {
       toast.success('Folder created.');
-      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
 
       posthogHelper.captureEvent('create_folder', {
         workspace_id:
@@ -58,16 +57,22 @@ export function useCreateFolder() {
           authenticationService?.currentSessionValue?.current_organization_id,
         folder_id: response?.id,
       });
+
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+
+      setCurrentPage(1);
+      response?.name &&
+        setSearchParams((prev) => {
+          prev.set('folder', response.name);
+          return prev;
+        });
     },
   });
 }
 
-export function useUpdateFolder({ appType }) {
-  const { setFilters } = useAppsFilter({ appType });
+export function useUpdateFolder() {
   const queryClient = useQueryClient();
-  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-
-  // const [setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
   return useMutation({
     mutationFn: ({ name, folderId }) => folderService.updateFolder(name, folderId),
@@ -77,39 +82,45 @@ export function useUpdateFolder({ appType }) {
     onSuccess: (response, variables) => {
       toast.success('Folder has been updated.');
 
-      setCurrentPage(1);
-      setFilters({ folderName: variables.name ?? '' });
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
-      // setSearchParams({ folder: variables.name }); // TODO: Should we reset pagination??
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+
+      setSearchParams((prev) => {
+        prev.set('folder', variables.name ?? '');
+        return prev;
+      });
     },
   });
 }
 
-export function useDeleteFolder({ appType }) {
-  const { setFilters } = useAppsFilter({ appType });
+export function useDeleteFolder() {
   const queryClient = useQueryClient();
+  const [, setSearchParams] = useSearchParams();
+
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
-    mutationFn: (folderId) => folderService.deleteFolder(folderId),
+    mutationFn: ({ folderId }) => folderService.deleteFolder(folderId),
     onError: (error) => {
       toast.error(error?.error ?? '');
     },
-    onSuccess: () => {
+    onSuccess: (response, variables) => {
       toast.success('Folder has been deleted.');
 
-      setCurrentPage(1);
-      setFilters({ folderName: '' });
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
 
-      // setSearchParams(undefined); // TODO: Navigate to all folder, Should we reset pagination??
+      setCurrentPage(1);
+      setSearchParams((prev) => {
+        prev.delete('folder');
+        return prev;
+      });
     },
   });
 }
 
-export function useAddAppToFolder({ appType }) {
-  const { folderId } = useAppsFilter({ appType });
+export function useAddAppToFolder() {
+  const queryClient = useQueryClient();
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.addToFolder(appId, folderId),
@@ -117,11 +128,7 @@ export function useAddAppToFolder({ appType }) {
       toast.error(error?.error ?? '');
     },
     onSuccess: (response, variables) => {
-      toast.success('Added to folder.');
-
-      if (folderId) {
-        setCurrentPage(1);
-      }
+      toast.success('Application added to folder successfully!');
 
       posthogHelper.captureEvent('click_add_to_folder_button', {
         workspace_id:
@@ -130,12 +137,21 @@ export function useAddAppToFolder({ appType }) {
         app_id: variables?.appId,
         folder_id: variables?.folderId,
       });
+
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+
+      // Case 1: if you are in All apps/modules/workflows folder, then no need to refetch apps as anyways the app will be still shown in All apps/modules/workflows folder
+      // Case 2: if you are in a specific folder and you move an app to another folder, then we need to refetch the apps for that specific folder to remove that app from the list
+      if (currentFolderId) {
+        setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
+        queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType }] });
+      }
     },
   });
 }
 
-export function useRemoveAppFromFolder({ appType }) {
-  const { folderId } = useAppsFilter({ appType });
+export function useRemoveAppFromFolder() {
+  const queryClient = useQueryClient();
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
@@ -143,12 +159,13 @@ export function useRemoveAppFromFolder({ appType }) {
     onError: (error) => {
       toast.error(error?.error ?? '');
     },
-    onSuccess: () => {
-      toast.success('Removed from folder.');
+    onSuccess: (response, variables) => {
+      toast.success('Application removed from folder successfully!');
 
-      if (folderId) {
-        setCurrentPage(1);
-      }
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+
+      setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
+      queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType }] });
     },
   });
 }

@@ -50,6 +50,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+  const setCurrentFolderDetails = useAppsStore((state) => state.setCurrentFolderDetails);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -59,7 +60,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
     useHandleAppCreationFromLandingPage();
 
-  const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
+  const { data: folders, isFetching: isFetchingFolders } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 
   const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
   const folderQueryParam = searchParams.get('folder') || '';
@@ -69,7 +70,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
   const { data: apps, isSuccess: isAppsFetchedOnce } = useFetchApps(
     { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage },
-    { enabled: isFoldersSuccess }
+    { enabled: !isFetchingFolders }
   );
   const { data: featureAccess } = useFetchFeatureAccess();
   const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
@@ -97,11 +98,21 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     }
   }, [activeBranchId]);
 
+  // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
+  useEffect(() => () => queryClient.invalidateQueries({ queryKey: ['folders', { appType }] }), [queryClient, appType]);
+
   useEffect(() => {
     if (hasFromTemplateSearchParam) {
       setAppDialogState({ type: 'choose-from-template' });
     }
   }, [hasFromTemplateSearchParam]);
+
+  useEffect(() => {
+    setCurrentFolderDetails(currentSelectedFolder);
+  }, [currentSelectedFolder, setCurrentFolderDetails]);
+
+  // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
+  useEffect(() => () => queryClient.invalidateQueries({ queryKey: ['folders', { appType }] }), [queryClient, appType]);
 
   const setSelectedFolder = (folderId) => {
     if (folderId === 'all') {

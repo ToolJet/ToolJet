@@ -101,7 +101,7 @@ export default function AppMenu({
               icon={FolderInput}
               label={t('homePage.appCard.addToFolder', 'Add to folder')}
               onItemClick={() => {
-                onMenuItemClick('add-to-folder', appDetails);
+                onMenuItemClick('add-to-folder', appDetails, currentSelectedFolder?.value);
 
                 posthogHelper.captureEvent('click_add_to_folder_option', {
                   workspace_id:

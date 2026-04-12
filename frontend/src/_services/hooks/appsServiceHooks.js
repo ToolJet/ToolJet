@@ -7,7 +7,6 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { useAppsStore } from '@/_stores/appsStore';
 import { appsService } from '@/_services/apps.service';
 import { authenticationService } from '@/_services/authentication.service';
-import { useAppsFilter } from '@/pages/shared/hooks/useAppsFilter';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const appTypeToDisplayNameMapping = {
@@ -76,11 +75,11 @@ export function useCloneApp() {
   });
 }
 
-export function useRenameApp({ appType }) {
+export function useRenameApp() {
   const queryClient = useQueryClient();
 
-  const { folderId } = useAppsFilter({ appType });
   const currentPage = useAppsStore((state) => state.currentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
   return useMutation({
     mutationFn: ({ appId, name, appType }) => appsService.saveApp(appId, { name }, appType),
@@ -91,7 +90,7 @@ export function useRenameApp({ appType }) {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} name has been updated!`);
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
       });
     },
   });
@@ -130,11 +129,11 @@ export function useCreateApp() {
   });
 }
 
-export function useDeleteApp({ appType }) {
+export function useDeleteApp() {
   const queryClient = useQueryClient();
 
-  const { folderId } = useAppsFilter({ appType });
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -147,7 +146,7 @@ export function useDeleteApp({ appType }) {
       // queryClient.invalidateQueries({ queryKey: ['folders'] });
       setCurrentPage(1);
       queryClient.invalidateQueries({
-        queryKey: ['apps', { folderId, appType: variables.appType }],
+        queryKey: ['apps', { folderId: currentFolderId, appType: variables.appType }],
       });
 
       // TODO: re-fetch apps list
@@ -170,11 +169,11 @@ export function useDeleteApp({ appType }) {
   });
 }
 
-export function useChangeAppIcon({ appType }) {
+export function useChangeAppIcon() {
   const queryClient = useQueryClient();
 
-  const { folderId } = useAppsFilter({ appType });
   const currentPage = useAppsStore((state) => state.currentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
@@ -185,7 +184,7 @@ export function useChangeAppIcon({ appType }) {
       toast.success('Icon updated.');
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
       });
     },
   });
