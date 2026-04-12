@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
@@ -163,6 +163,15 @@ export class ImportExportResourcesService {
     };
 
     const resourceExport = await this.export(user, exportResourcesDto);
+
+    // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
+    // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.
+    const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
+    const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
+    if (exportedVersions.length > 0 && !hasNonStubVersion) {
+      throw new BadRequestException('Cannot clone an app that has not been pulled from git yet');
+    }
+
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
