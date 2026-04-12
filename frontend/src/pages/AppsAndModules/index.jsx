@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 // eslint-disable-next-line import/no-unresolved
 import { useQueryClient } from '@tanstack/react-query';
@@ -8,10 +7,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { useAppsStore } from '@/_stores/appsStore';
 import { useSearchStore } from '@/_stores/searchStore';
-import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
 import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
 import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
-import { useFetchApps, useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
+import { useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
@@ -27,12 +25,13 @@ import Dialogs from './components/Dialogs';
 import EmptyStates from './components/EmptyStates';
 import CreateAppActions from './components/CreateAppActions';
 import AppsAndModulesTab from './components/AppsAndModulesTab';
+
+import useFetchFolderAndApps from '../shared/components/hooks/useFetchFolderAndApps';
 import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
 
 const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
 
 export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const searchQuery = useSearchStore((state) => state.searchQuery);
@@ -40,7 +39,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
-  const setCurrentFolderDetails = useAppsStore((state) => state.setCurrentFolderDetails);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -50,22 +48,10 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
     useHandleAppCreationFromLandingPage();
 
-  const {
-    data: folders,
-    isLoading: isLoadingFolders,
-    isFetching: isFetchingFolders,
-  } = useFetchFolders({ appType, appSearchQuery: searchQuery });
+  const { folders, isLoadingFolders, apps, isLoadingApps, currentFolderDetails } = useFetchFolderAndApps({ appType });
 
   const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
-  const folderQueryParam = searchParams.get('folder') || '';
-  const currentSelectedFolder =
-    folders?.find((folder) => folder.label?.toLowerCase() === folderQueryParam?.toLowerCase()) ?? null;
-  const selectedFolderId = currentSelectedFolder?.value ?? '';
 
-  const { data: apps, isLoading: isLoadingApps } = useFetchApps(
-    { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage },
-    { enabled: !isFetchingFolders }
-  );
   const { data: featureAccess } = useFetchFeatureAccess();
   const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
 
@@ -98,19 +84,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     }
   }, [hasFromTemplateSearchParam]);
 
-  useEffect(() => {
-    setCurrentFolderDetails(currentSelectedFolder);
-  }, [currentSelectedFolder, setCurrentFolderDetails]);
-
-  useEffect(
-    () => () => {
-      setCurrentPage(1);
-      // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
-      queryClient.invalidateQueries({ queryKey: ['folders', { appType }] });
-    },
-    [appType, setCurrentPage, queryClient]
-  );
-
   const setSelectedFolder = (folderId) => {
     if (folderId === 'all') {
       setSearchParams(undefined);
@@ -125,7 +98,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const checkUserPermissions = (app) => canUserPerformAppAction(appType, app);
   const { hasCreatePermission } = useMemo(() => checkUserPermissions(), []);
 
-  const totalAppCount = selectedFolderId ? apps?.meta?.folder_count : apps?.meta?.total_count;
+  const totalAppCount = currentFolderDetails?.value ? apps?.meta?.folder_count : apps?.meta?.total_count;
 
   const isCreationDisabled =
     appType === 'front-end'
@@ -178,7 +151,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
         <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
           <ContentToolbar
             folderList={folders ?? []}
-            selectedFolder={selectedFolderId || 'all'}
+            selectedFolder={currentFolderDetails?.value || 'all'}
             onChangeSelectedFolder={setSelectedFolder}
             leadingSlot={<AppsAndModulesTab />}
             showLoadingSkeleton={showLoadingSkeleton}
@@ -190,7 +163,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 apps={apps?.apps ?? []}
                 appType={appType}
                 showLoadingSkeleton={showLoadingSkeleton}
-                currentSelectedFolder={currentSelectedFolder}
+                currentSelectedFolder={currentFolderDetails}
                 checkUserPermissions={checkUserPermissions}
                 basicPlan={shouldExcludeEnvParam}
                 moduleEnabled={moduleEnabled}
@@ -204,7 +177,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
                 searchQuery={searchQuery}
                 canCreateApp={canCreateApp}
                 moduleEnabled={moduleEnabled}
-                selectedFolderId={selectedFolderId}
+                selectedFolderId={currentFolderDetails?.value}
                 appsLength={apps?.apps?.length ?? 0}
                 isCreationDisabled={isCreationDisabled}
                 isWorkspaceBranchLocked={isWorkspaceBranchLocked}
