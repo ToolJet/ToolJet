@@ -1,5 +1,7 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+// eslint-disable-next-line import/no-unresolved
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -14,5 +16,10 @@ const queryClient = new QueryClient({
 });
 
 export default function ReactQueryClientProvider({ children }) {
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
 }
