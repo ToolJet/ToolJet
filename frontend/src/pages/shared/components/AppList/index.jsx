@@ -2,11 +2,12 @@ import React from 'react';
 
 import { useAppsStore } from '@/_stores/appsStore';
 
-import AppCard from './AppCard';
+import AppCard, { AppCardSkeleton } from './AppCard';
 
 export default function AppList({
   apps,
   appType,
+  showLoadingSkeleton,
   currentSelectedFolder,
   checkUserPermissions,
   basicPlan,
@@ -17,6 +18,7 @@ export default function AppList({
     <GridLayoutContainer
       apps={apps}
       appType={appType}
+      showLoadingSkeleton={showLoadingSkeleton}
       currentSelectedFolder={currentSelectedFolder}
       checkUserPermissions={checkUserPermissions}
       basicPlan={basicPlan}
@@ -34,6 +36,7 @@ function GridLayoutContainer({
   basicPlan,
   moduleEnabled,
   ownedFolders,
+  showLoadingSkeleton,
 }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
@@ -68,22 +71,24 @@ function GridLayoutContainer({
 
   return (
     <section className="tw-grid tw-grid-cols-[repeat(auto-fill,minmax(292px,1fr))] tw-gap-6">
-      {apps.map((app) => {
-        return (
-          <AppCard
-            key={app.id}
-            appDetails={app}
-            appType={appType}
-            currentSelectedFolder={currentSelectedFolder}
-            onMenuItemClick={handleMenuItemClick}
-            isUserNotInAllFolder={Boolean(currentFolderId)}
-            checkUserPermissions={checkUserPermissions}
-            basicPlan={basicPlan}
-            moduleEnabled={moduleEnabled}
-            ownedFolders={ownedFolders}
-          />
-        );
-      })}
+      {showLoadingSkeleton
+        ? Array.from({ length: 4 }).map((_, index) => <AppCardSkeleton key={index} />)
+        : apps.map((app) => {
+            return (
+              <AppCard
+                key={app.id}
+                appDetails={app}
+                appType={appType}
+                currentSelectedFolder={currentSelectedFolder}
+                onMenuItemClick={handleMenuItemClick}
+                isUserNotInAllFolder={Boolean(currentFolderId)}
+                checkUserPermissions={checkUserPermissions}
+                basicPlan={basicPlan}
+                moduleEnabled={moduleEnabled}
+                ownedFolders={ownedFolders}
+              />
+            );
+          })}
     </section>
   );
 }

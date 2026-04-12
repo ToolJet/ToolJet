@@ -11,6 +11,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/Rocket/Pagination/Pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Rocket/Select/Select';
+import ShimmerEffectSkeleton from './ShimmerEffectSkeleton';
 
 const PAGE_SIZE_OPTIONS = ['9'];
 
@@ -38,14 +39,24 @@ export default function AppsFooter({
   onPageChange,
   onPageSizeChange,
   itemType,
+  showLoadingSkeleton,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const totalPages = Math.ceil(totalItems / pageSize);
   const pages = getPageNumbers(currentPage, totalPages);
 
+  if (showLoadingSkeleton) {
+    return (
+      <FooterContainer>
+        <ShimmerEffectSkeleton className="tw-w-28" />
+        <ShimmerEffectSkeleton className="tw-w-28" />
+      </FooterContainer>
+    );
+  }
+
   return (
-    <div className="tw-h-12 tw-flex tw-items-center tw-justify-between tw-px-20 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak">
+    <FooterContainer>
       {/* Left: page-size selector + item count */}
       <div className="tw-flex tw-items-center tw-gap-1.5">
         <span data-cy="pagination-showing-label" className="tw-text-xs tw-text-text-placeholder">
@@ -114,6 +125,14 @@ export default function AppsFooter({
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+    </FooterContainer>
+  );
+}
+
+function FooterContainer({ children }) {
+  return (
+    <div className="tw-h-12 tw-flex tw-items-center tw-justify-between tw-px-20 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak">
+      {children}
     </div>
   );
 }

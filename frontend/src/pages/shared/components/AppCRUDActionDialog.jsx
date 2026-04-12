@@ -7,8 +7,8 @@ import { CircleAlert, Trash } from 'lucide-react';
 
 import config from 'config';
 import { cn } from '@/lib/utils';
-import { defaultAppIconList } from '@/_helpers/appUtils';
 import { validateName, getWorkspaceId } from '@/_helpers/utils';
+import { defaultAppIconList, appTypeToDisplayNameMapping } from '@/_helpers/appUtils';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { Field, FieldLabel, FieldError } from '@/components/ui/Rocket/Field/Field';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
@@ -27,12 +27,6 @@ import { useInstallDependentPlugins, useUninstallPlugins } from '@/_services/hoo
 
 import Collapsible from './Collapsible';
 import ActionDialog from './ActionDialog';
-
-const appTypeToDisplayNameMapping = {
-  module: 'Module',
-  'front-end': 'App',
-  workflow: 'Workflow',
-};
 
 export default function AppCRUDActionDialog({ open, onClose, actionType, appDetails, appType, limits }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];

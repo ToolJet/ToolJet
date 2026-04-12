@@ -7,13 +7,8 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { useAppsStore } from '@/_stores/appsStore';
 import { appsService } from '@/_services/apps.service';
 import { authenticationService } from '@/_services/authentication.service';
+import { appTypeToDisplayNameMapping } from '@/_helpers/appUtils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-
-const appTypeToDisplayNameMapping = {
-  module: 'Module',
-  'front-end': 'App',
-  workflow: 'Workflow',
-};
 
 export const handleError = (error) => {
   if ([409, 451].includes(error.statusCode)) return;

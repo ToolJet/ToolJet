@@ -5,9 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 // eslint-disable-next-line import/no-unresolved
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/Button/Button';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { useAppsStore } from '@/_stores/appsStore';
 import { useSearchStore } from '@/_stores/searchStore';
 import { useFetchFolders } from '@/_services/hooks/foldersServiceHooks';
@@ -18,24 +16,17 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import Layout from '@/_ui/Layout';
-import TooltipComp from '@/components/ui/Rocket/Tooltip';
-import EmptyFolderIllustration from '@/pages/shared/illustrations/EmptyFolder';
-import NoSearchResultIllustration from '@/pages/shared/illustrations/NoSearchResult';
 
 import { canUserPerformAppAction } from './appsAndModulesPermissions';
 
 import AppList from '../shared/components/AppList';
-import EmptyState from '../shared/components/EmptyState';
 import AppsFooter from '../shared/components/AppsFooter';
 import PageHeader from '../shared/components/PageHeader';
 import ContentToolbar from '../shared/components/ContentToolbar';
-import CreateAppButton from '../shared/components/CreateAppButton';
-import MoreAppsActionMenu from '../shared/components/MoreAppsActionMenu';
-import AppsEmptyState from './illustrations/AppsEmptyState';
-import ModulesEmptyState from './illustrations/ModulesEmptyState';
 import Dialogs from './components/Dialogs';
+import EmptyStates from './components/EmptyStates';
+import CreateAppActions from './components/CreateAppActions';
 import AppsAndModulesTab from './components/AppsAndModulesTab';
-import BuildWithAIAssistant from './components/BuildWithAIAssistant';
 import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFromLandingPage';
 
 const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
@@ -45,7 +36,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const queryClient = useQueryClient();
 
   const searchQuery = useSearchStore((state) => state.searchQuery);
-  const setClearSearchQuery = useSearchStore((state) => state.setClearSearchQuery);
 
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
@@ -60,7 +50,11 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const { showAIOnboardingLoadingScreen, showInsufficentPermissionModalstate, handleClosePermissionDeniedModal } =
     useHandleAppCreationFromLandingPage();
 
-  const { data: folders, isFetching: isFetchingFolders } = useFetchFolders({ appType, appSearchQuery: searchQuery });
+  const {
+    data: folders,
+    isLoading: isLoadingFolders,
+    isFetching: isFetchingFolders,
+  } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 
   const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
   const folderQueryParam = searchParams.get('folder') || '';
@@ -68,7 +62,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     folders?.find((folder) => folder.label?.toLowerCase() === folderQueryParam?.toLowerCase()) ?? null;
   const selectedFolderId = currentSelectedFolder?.value ?? '';
 
-  const { data: apps, isSuccess: isAppsFetchedOnce } = useFetchApps(
+  const { data: apps, isLoading: isLoadingApps } = useFetchApps(
     { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage },
     { enabled: !isFetchingFolders }
   );
@@ -98,9 +92,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     }
   }, [activeBranchId]);
 
-  // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
-  useEffect(() => () => queryClient.invalidateQueries({ queryKey: ['folders', { appType }] }), [queryClient, appType]);
-
   useEffect(() => {
     if (hasFromTemplateSearchParam) {
       setAppDialogState({ type: 'choose-from-template' });
@@ -111,8 +102,14 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     setCurrentFolderDetails(currentSelectedFolder);
   }, [currentSelectedFolder, setCurrentFolderDetails]);
 
-  // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
-  useEffect(() => () => queryClient.invalidateQueries({ queryKey: ['folders', { appType }] }), [queryClient, appType]);
+  useEffect(
+    () => () => {
+      setCurrentPage(1);
+      // Invalidate folders query when page unmounts to ensure folder list is refetched when user comes back to this page. This is required because staleTime for folders query is set to Infinity to avoid unnecessary refetched.
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType }] });
+    },
+    [appType, setCurrentPage, queryClient]
+  );
 
   const setSelectedFolder = (folderId) => {
     if (folderId === 'all') {
@@ -123,10 +120,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     const newSelectedFolderLabel = folders?.find((folder) => folder.value === folderId)?.label ?? '';
 
     setSearchParams({ folder: newSelectedFolderLabel }, { replace: true });
-  };
-
-  const handleClearSearchTerm = () => {
-    setClearSearchQuery(true);
   };
 
   const checkUserPermissions = (app) => canUserPerformAppAction(appType, app);
@@ -152,8 +145,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       folder.value !== 'all' && folder.createdBy === authenticationService.currentSessionValue?.current_user?.id
   );
 
-  const showEmptyFolderState = selectedFolderId && apps?.apps?.length === 0;
-  const showEmptySearchState = searchQuery?.length > 0 && apps?.apps?.length === 0;
+  const showLoadingSkeleton = isLoadingFolders || isLoadingApps;
 
   if (showAIOnboardingLoadingScreen) {
     return <TJLoader />;
@@ -171,48 +163,16 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
       <main className="tw-flex-1 tw-min-h-0 tw-grid tw-grid-rows-[auto_1fr] tw-gap-5 tw-px-20 tw-py-10">
         <PageHeader title={appType === 'front-end' ? 'Applications' : 'Modules'}>
-          {appType === 'front-end' ? (
-            !appsLimit?.appsCount?.canAddUnlimited && appsLimit?.appsCount?.percentage >= 100 ? ( // Show license banner only when app limit is reached and unlimited apps cannot be added
-              <LicenseBanner
-                type="apps"
-                size="small"
-                showNewBanner
-                bannerVariant="inline"
-                limits={appsLimit?.appsCount ?? {}}
-              />
-            ) : (
-              canCreateApp && (
-                <div className="tw-flex tw-items-center tw-gap-2">
-                  <CreateAppButton
-                    label={t('homePage.header.createNewApplication', 'Create new app')}
-                    appType={appType}
-                    disabled={isCreationDisabled}
-                    isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-                  />
-
-                  <BuildWithAIAssistant isCreationDisabled={isCreationDisabled} />
-
-                  <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} featureAccess={featureAccess} />
-                </div>
-              )
-            )
-          ) : (
-            <div className="tw-flex tw-items-center tw-gap-2">
-              <TooltipComp
-                content={!moduleEnabled ? 'Modules are not available on your current plan.' : ''}
-                isTooltipForInteractiveDisabledElement={isCreationDisabled}
-              >
-                <CreateAppButton
-                  label="Create new module"
-                  appType={appType}
-                  disabled={isCreationDisabled}
-                  isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-                />
-              </TooltipComp>
-
-              <MoreAppsActionMenu appType={appType} disabled={isCreationDisabled} />
-            </div>
-          )}
+          <CreateAppActions
+            appType={appType}
+            canCreateApp={canCreateApp}
+            isCreationDisabled={isCreationDisabled}
+            isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+            appsLimit={appsLimit}
+            featureAccess={featureAccess}
+            moduleEnabled={moduleEnabled}
+            showLoadingSkeleton={showLoadingSkeleton}
+          />
         </PageHeader>
 
         <div className="tw-flex-1 tw-min-h-0 tw-flex tw-flex-col">
@@ -221,83 +181,34 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
             selectedFolder={selectedFolderId || 'all'}
             onChangeSelectedFolder={setSelectedFolder}
             leadingSlot={<AppsAndModulesTab />}
+            showLoadingSkeleton={showLoadingSkeleton}
           />
 
           <div className="tw-flex-1 tw-overflow-y-scroll tw-hide-scrollbar tw-mt-6">
-            {isAppsFetchedOnce ? (
-              apps?.apps?.length ? (
-                <AppList
-                  apps={apps.apps}
-                  appType={appType}
-                  currentSelectedFolder={currentSelectedFolder}
-                  checkUserPermissions={checkUserPermissions}
-                  basicPlan={shouldExcludeEnvParam}
-                  moduleEnabled={moduleEnabled}
-                  ownedFolders={ownedFolders}
-                />
-              ) : (
-                <EmptyState
-                  illustrationSlot={
-                    showEmptySearchState ? (
-                      <NoSearchResultIllustration width="174" height="120" />
-                    ) : showEmptyFolderState ? (
-                      <EmptyFolderIllustration width="174" height="120" />
-                    ) : appType === 'module' ? (
-                      <ModulesEmptyState width="174" height="120" />
-                    ) : (
-                      <AppsEmptyState width="174" height="120" />
-                    )
-                  }
-                  resourceType={appType}
-                  title={
-                    selectedFolderId && !searchQuery?.length
-                      ? `No ${appType === 'front-end' ? 'apps' : 'modules'} found in this folder`
-                      : searchQuery?.length
-                      ? `No results found for "${searchQuery}"`
-                      : appType === 'front-end'
-                      ? 'You don’t have any apps yet'
-                      : 'You don’t have any modules yet'
-                  }
-                  description={
-                    searchQuery?.length || selectedFolderId
-                      ? ''
-                      : appType === 'front-end'
-                      ? 'You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow'
-                      : 'Create reusable groups of components and queries via modules.'
-                  }
-                >
-                  {selectedFolderId && !searchQuery?.length ? (
-                    <></>
-                  ) : searchQuery?.length ? (
-                    <Button size="large" variant="ghost" onClick={handleClearSearchTerm}>
-                      Clear search
-                    </Button>
-                  ) : appType === 'module' ? (
-                    <TooltipComp
-                      content={!moduleEnabled ? 'Modules are not available on your current plan.' : ''}
-                      isTooltipForInteractiveDisabledElement={isCreationDisabled}
-                    >
-                      <CreateAppButton
-                        label="Create new module"
-                        appType={appType}
-                        disabled={isCreationDisabled}
-                        isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-                      />
-                    </TooltipComp>
-                  ) : appType === 'front-end' && canCreateApp ? (
-                    <CreateAppButton
-                      label={t('homePage.header.createNewApplication', 'Create new app')}
-                      appType={appType}
-                      disabled={isCreationDisabled}
-                      isWorkspaceBranchLocked={isWorkspaceBranchLocked}
-                    />
-                  ) : (
-                    <></>
-                  )}
-                </EmptyState>
-              )
-            ) : (
-              <></>
+            {(showLoadingSkeleton || Boolean(apps?.apps?.length)) && (
+              <AppList
+                apps={apps?.apps ?? []}
+                appType={appType}
+                showLoadingSkeleton={showLoadingSkeleton}
+                currentSelectedFolder={currentSelectedFolder}
+                checkUserPermissions={checkUserPermissions}
+                basicPlan={shouldExcludeEnvParam}
+                moduleEnabled={moduleEnabled}
+                ownedFolders={ownedFolders}
+              />
+            )}
+
+            {!showLoadingSkeleton && !apps?.apps?.length && (
+              <EmptyStates
+                appType={appType}
+                searchQuery={searchQuery}
+                canCreateApp={canCreateApp}
+                moduleEnabled={moduleEnabled}
+                selectedFolderId={selectedFolderId}
+                appsLength={apps?.apps?.length ?? 0}
+                isCreationDisabled={isCreationDisabled}
+                isWorkspaceBranchLocked={isWorkspaceBranchLocked}
+              />
             )}
           </div>
         </div>
@@ -309,6 +220,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
         pageSize={9}
         totalItems={totalAppCount}
         onPageChange={setCurrentPage}
+        showLoadingSkeleton={showLoadingSkeleton}
       />
 
       <Dialogs
