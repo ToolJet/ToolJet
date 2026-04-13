@@ -37,7 +37,7 @@ export default function Dialogs({
   const openSwitchBranchModal = useAppsStore((state) => state.openSwitchBranchModal);
   const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
 
-  const [setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const [templateToCreate, setTemplateToCreate] = useState(null);
 
   const { data: dependentPluginsInTemplate, error: dependentPluginsInTemplateError } = useFetchTemplateDependentPlugins(
@@ -45,7 +45,7 @@ export default function Dialogs({
   );
 
   useEffect(() => {
-    // TODO: Revisit this logic
+    // TODO: Revisit this logic //
     if (!templateToCreate) return;
 
     if (dependentPluginsInTemplate) {
