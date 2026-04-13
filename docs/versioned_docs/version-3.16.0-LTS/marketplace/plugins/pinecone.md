@@ -38,7 +38,7 @@ This operation retrieves statistics about a specific index in your Pinecone data
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/get-index-query.png" alt="Get Index Stats Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```json
 {
@@ -70,7 +70,7 @@ This operation retrieves a list of vector IDs from a specified index.
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/list-vector-query.png" alt="List Vector IDs Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```yaml
 {
@@ -111,7 +111,7 @@ This operation retrieves specific vectors by their IDs from an index.
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/fetch-vec-query.png" alt="Fetch Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```yaml
 { "records": {}, "namespace": "", "usage": { "readUnits": 1 } }
@@ -139,7 +139,7 @@ This operation inserts or updates vectors in an index.
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/upsert-query.png" alt="Upsert Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```yaml
 Upsert Successful
@@ -166,7 +166,7 @@ This operation updates a single vector's values or metadata.
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/update-vec-query.png" alt="Update Vector Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```yaml
 Update Successful
@@ -192,7 +192,7 @@ This operation deletes vectors from an index.
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/delete-query.png" alt="Delete Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Example Response**</summary>
+<summary>**Response Example**</summary>
 
 ```yaml
 Delete Successful
