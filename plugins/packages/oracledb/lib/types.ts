@@ -9,6 +9,13 @@ export type SourceOptions = {
   client_path_type: string;
   path: string;
   instant_client_version: string;
+  use_tns_alias: string;
+  tns_alias: string;
+  config_dir: string;
+  wallet_file?: string;
+  wallet_file_path:string;
+  wallet_password?: string; 
+
 };
 export type QueryOptions = {
   operation: string;

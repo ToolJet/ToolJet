@@ -160,6 +160,7 @@ describe("Bulk User Upload", () => {
 
   it("Should successfully upload valid users", () => {
     const file = getFile(TEST_FILES.VALID_USERS);
+    cy.mhDeleteAll();
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
@@ -179,7 +180,7 @@ describe("Bulk User Upload", () => {
       .within(() => {
         cy.get("td small").should("have.text", "invited");
       });
-    cy.wait(15000);
+    cy.wait(5000);
     cy.mhGetAllMails().should("have.length", 3);
 
     common.navigateToManageGroups();
