@@ -11,7 +11,9 @@ import { FormWrapper } from '@/_components/FormWrapper';
 import { toast } from 'react-hot-toast';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
+import OrganizationDialog from './OrganizationDialog';
+
+export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg, variant = 'legacy' }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState({ value: null, error: '' });
   const [slug, setSlug] = useState({ value: null, error: '' });
@@ -209,6 +211,42 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     slug?.error ||
     name?.error;
 
+  // Extracted display conditions and handlers for new UI
+  const showSlugCheckmark = !slugProgress && slug.value !== null && !slug.error;
+  const showLinkSuccess = !!(slug.value && !slug.error && !slugProgress);
+  const showNameSuccess = !!(name.value && !workspaceNameProgress && !name.error);
+  const handleNameInputChange = async (e) => {
+    e.persist();
+    await delayedNameChange(e.target.value);
+  };
+  const handleSlugInputChange = async (e) => {
+    e.persist();
+    await delayedSlugChange(e.target.value);
+  };
+
+  if (variant === 'new') {
+    return (
+      <OrganizationDialog
+        mode="create"
+        show={showCreateOrg}
+        onClose={closeModal}
+        onSubmit={createOrganization}
+        isSubmitting={isCreating}
+        isDisabled={!!isDisabled}
+        name={name}
+        slug={slug}
+        slugProgress={slugProgress}
+        showSlugCheckmark={showSlugCheckmark}
+        showLinkSuccess={showLinkSuccess}
+        showNameSuccess={showNameSuccess}
+        onNameChange={handleNameInputChange}
+        onSlugChange={handleSlugInputChange}
+        slugInputRef={sluginput}
+        baseHostURL={getBaseHostURL()}
+      />
+    );
+  }
+
   return (
     <AlertDialog
       show={showCreateOrg}
@@ -222,10 +260,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               <label data-cy="workspace-name-label">Workspace name</label>
               <input
                 type="text"
-                onChange={async (e) => {
-                  e.persist();
-                  await delayedNameChange(e.target.value);
-                }}
+                onChange={handleNameInputChange}
                 className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
                 placeholder={t('header.organization.workspaceName', 'Workspace name')}
                 disabled={isCreating}
@@ -237,7 +272,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 <label className="label tj-input-error mt-1" data-cy="workspace-error-label">
                   {name?.error || ''}
                 </label>
-              ) : name.value && !workspaceNameProgress ? (
+              ) : showNameSuccess ? (
                 <label className="label label-success" data-cy="slug-sucess-label">{`Workspace name accepted!`}</label>
               ) : (
                 <label className="label label-info mt-1" data-cy="workspace-name-info-label">
@@ -257,14 +292,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 ref={sluginput}
                 maxLength={50}
                 defaultValue={slug.value || ''}
-                onChange={async (e) => {
-                  e.persist();
-                  await delayedSlugChange(e.target.value);
-                }}
+                onChange={handleSlugInputChange}
                 data-cy="workspace-slug-input-field"
                 autoFocusfields
               />
-              {!slugProgress && slug.value !== null && !slug.error && (
+              {showSlugCheckmark && (
                 <div className="icon-container">
                   <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -281,7 +313,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 <label className="label tj-input-error mt-1" data-cy="input-label-error">
                   {slug?.error || ''}
                 </label>
-              ) : slug.value && !slugProgress ? (
+              ) : showSlugCheckmark ? (
                 <label className="label label-success mt-1" data-cy="slug-sucess-label">{`Slug accepted!`}</label>
               ) : (
                 <label
@@ -307,7 +339,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 )}
               </div>
               <label className="label label-success label-updated" data-cy="slug-error-label">
-                {slug.value && !slug.error && !slugProgress ? `Link updated successfully!` : ''}
+                {showLinkSuccess ? `Link updated successfully!` : ''}
               </label>
             </div>
           </div>
