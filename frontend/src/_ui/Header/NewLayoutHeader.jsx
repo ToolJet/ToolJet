@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { Separator } from '@/components/ui/Rocket/shadcn/separator';
+import { OrganizationList } from '@/modules/dashboard/components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 import SearchInput from './SearchInput';
-import WorkspaceSelector from './WorkspaceSelector';
 
 export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
   const isHomePageRoute = useMatch('/:workspaceId/home');
@@ -21,7 +21,7 @@ export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
       )}
     >
       <div className="tw-flex tw-items-center tw-gap-1">
-        <WorkspaceSelector />
+        <OrganizationList variant="new" />
 
         <Separator orientation="vertical" className={cn('tw-bg-border-weak tw-h-4 tw-hidden has-[+*]:tw-block')} />
 
