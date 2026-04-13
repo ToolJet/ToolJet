@@ -44,9 +44,9 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     username: data.PG_USER,
     password: data.PG_PASS,
     host: data.PG_HOST,
-    connectTimeoutMS: 5000,
+    connectTimeoutMS: data.NODE_ENV === 'test' ? 30000 : 5000,
     extra: {
-      max: 25,
+      max: data.NODE_ENV === 'test' ? 10 : 25,
     },
     maxQueryExecutionTime: data.SLOW_QUERY_LOGGING_THRESHOLD || (data.DISABLE_CUSTOM_QUERY_LOGGING === 'true' ? 30 : 1), // Set 1ms to log all queries by default with execution time. Set 30ms in case custom query logging is disabled
     ...dbSslConfig(data),
@@ -64,7 +64,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
-    migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+    migrations: data.NODE_ENV === 'test' ? [] : [__dirname + '/migrations/**/*{.ts,.js}'],
   };
 }
 
@@ -75,10 +75,10 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     username: data.TOOLJET_DB_USER,
     password: data.TOOLJET_DB_PASS,
     host: data.TOOLJET_DB_HOST,
-    connectTimeoutMS: 5000,
+    connectTimeoutMS: data.NODE_ENV === 'test' ? 30000 : 5000,
     logging: data.ORM_LOGGING || false,
     extra: {
-      max: 25,
+      max: data.NODE_ENV === 'test' ? 10 : 25,
       statement_timeout: data.TOOLJET_DB_STATEMENT_TIMEOUT || 60000,
     },
     ...tooljetDbSslConfig(data),

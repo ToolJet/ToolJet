@@ -19,6 +19,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
     "paths": {
       "@ee/*": [
         "ee/*"
