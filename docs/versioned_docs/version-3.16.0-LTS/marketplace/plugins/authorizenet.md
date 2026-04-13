@@ -61,7 +61,7 @@ Creates and submits an auth-and-capture transaction.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 refId:"123456"
 messages : resultCode:"Ok"
@@ -123,7 +123,7 @@ Places a hold on the amount without capturing the funds.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 refId:"123456"
 networkTransId:"BR11UQFRDSM16890455GKA5"
@@ -151,7 +151,7 @@ Captures funds from a previously authorized transaction.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 ========= ORDER INFORMATION =========
 Invoice :
@@ -178,7 +178,7 @@ Refunds a previously captured transaction.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 ============== RESULTS ==============
 Response : Refund has been successful.
@@ -202,7 +202,7 @@ Voids an unsettled transaction.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 refId:"optional-ref-123"
 resultCode:"Ok"
@@ -248,7 +248,7 @@ Charges a saved customer payment profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
   "refId": "ref-789456",
   "resultCode": "Ok",
@@ -284,7 +284,7 @@ Creates a new customer profile in Authorize.net.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 resultCode:"Ok"
 code:"I00001"
@@ -308,7 +308,7 @@ Fetches the details of an existing customer profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 code:"I00001"
 text:"Successful."
@@ -340,7 +340,7 @@ Updates an existing customer profile.
 }
 ```
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 resultCode:"Ok"
 code:"I00001"
@@ -360,7 +360,7 @@ Deletes an existing customer profile.
 }
 ```
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 resultCode:"Ok"
 code:"I00001"
@@ -396,7 +396,7 @@ Creates a new payment profile under an existing customer profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 Invoice : none
 Description : Test transaction for ValidateCustomerPaymentProfile.
@@ -424,7 +424,7 @@ Fetches details of a specific payment profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 "refId": "get-payment-001",
   "resultCode": "Ok",
@@ -449,7 +449,7 @@ Validates a saved customer payment profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 "resultCode": "Ok",
   "customerProfileId": "123456",
@@ -487,7 +487,7 @@ Updates an existing customer payment profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 "resultCode": "Ok",
   "customerProfileId": "10000",
@@ -512,7 +512,7 @@ Deletes a payment profile under a customer profile.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 "code": "I00001",
 "text": "Customer payment profile deleted successfully."
@@ -539,7 +539,7 @@ Creates a customer and payment profile using a successful transaction.
 ```
 
 <details id="tj-dropdown">
-<summary>**Output Example**</summary>
+<summary>**Response Example**</summary>
 
 "refId": "create-profile-001",
   "resultCode": "Ok",
