@@ -332,13 +332,11 @@ export class PluginsUtilService implements IPluginsUtilService {
     const specFilesMap: Record<string, string> = {};
     await Promise.all(
       Object.entries(specFiles).map(async ([specName, specContent]) => {
-        return await dbTransactionWrap(async (manager: EntityManager) => {
-          const fileDto = new CreateFileDto();
-          fileDto.data = encode(specContent);
-          fileDto.filename = specName;
-          const savedFile = await this.filesRepository.createOne(fileDto, manager);
-          specFilesMap[specName] = savedFile.id;
-        });
+        const fileDto = new CreateFileDto();
+        fileDto.data = encode(specContent);
+        fileDto.filename = specName;
+        const savedFile = await this.filesRepository.createOne(fileDto, manager);
+        specFilesMap[specName] = savedFile.id;
       })
     );
     return specFilesMap;
@@ -365,23 +363,21 @@ export class PluginsUtilService implements IPluginsUtilService {
 
     await Promise.all(
       Object.entries(newSpecFiles).map(async ([specName, specContent]) => {
-        return await dbTransactionWrap(async (manager: EntityManager) => {
-          if (existingMap[specName]) {
-            // Update existing file in place
-            const fileDto = new UpdateFileDto();
-            fileDto.data = encode(specContent);
-            fileDto.filename = specName;
-            await this.filesRepository.updateOne(existingMap[specName], fileDto, manager);
-            updatedMap[specName] = existingMap[specName];
-          } else {
-            // Create new file
-            const fileDto = new CreateFileDto();
-            fileDto.data = encode(specContent);
-            fileDto.filename = specName;
-            const savedFile = await this.filesRepository.createOne(fileDto, manager);
-            updatedMap[specName] = savedFile.id;
-          }
-        });
+        if (existingMap[specName]) {
+          // Update existing file in place
+          const fileDto = new UpdateFileDto();
+          fileDto.data = encode(specContent);
+          fileDto.filename = specName;
+          await this.filesRepository.updateOne(existingMap[specName], fileDto, manager);
+          updatedMap[specName] = existingMap[specName];
+        } else {
+          // Create new file
+          const fileDto = new CreateFileDto();
+          fileDto.data = encode(specContent);
+          fileDto.filename = specName;
+          const savedFile = await this.filesRepository.createOne(fileDto, manager);
+          updatedMap[specName] = savedFile.id;
+        }
       })
     );
 
