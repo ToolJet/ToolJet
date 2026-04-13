@@ -96,6 +96,7 @@ async function createLocalSSHTunnel(
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
+  private static readonly BATCH_SIZE = 1000;
   private STATEMENT_TIMEOUT;
   private tooljet_edition: string;
 
@@ -616,33 +617,47 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
-          query: string;
-          params: unknown[];
-        };
-        const rows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
+        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const batchInsertQueries: { query: string; params: unknown[] }[] = recordBatches.map((batchRecords) => {
+          const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: batchRecords }) as {
+            query: string;
+            params: unknown[];
+          };
+          return { query, params };
+        });
+        const rows = await this.executeBulkQueriesInTransaction(knexInstance, batchInsertQueries);
         return { status: 'ok', data: rows };
       }
 
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          schema,
-          primary_key: primary_key_columns,
-          rows_update: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const allUpdateQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            rows_update: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpdateQueries.push(...queries);
+        }
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpdateQueries);
         return { status: 'ok', data, bulk_update_status: 'success' } as unknown as QueryResult;
       }
 
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          schema,
-          primary_key: primary_key_columns,
-          row_upsert: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const allUpsertQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            row_upsert: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpsertQueries.push(...queries);
+        }
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpsertQueries);
         return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
       }
 
@@ -687,6 +702,14 @@ export default class PostgresqlQueryService implements QueryService {
 
       return affectedRows;
     });
+  }
+
+  private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
+    const batches: RecordType[][] = [];
+    for (let startIndex = 0; startIndex < records.length; startIndex += batchSize) {
+      batches.push(records.slice(startIndex, startIndex + batchSize));
+    }
+    return batches;
   }
 
   private async executeBulkQueriesInTransaction(
