@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SelectItemText } from '@radix-ui/react-select';
 
 import { cn } from '@/lib/utils';
@@ -45,13 +45,30 @@ export function BaseWorkspaceSelector(props) {
   } = props;
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  const [openWorkspaceDropdown, setOpenWorkspaceDropdown] = useState(false);
+
   const { current_organization_id: selectedWorkspaceId, admin: isAdmin } = authenticationService.currentSessionValue;
 
   const currentWorkspaceDetails = workspaceList?.find((workspace) => workspace.id === selectedWorkspaceId) ?? null;
 
+  const handleAddNewWorkspace = () => {
+    onCreateNewWorkspace();
+    setOpenWorkspaceDropdown(false);
+  };
+
+  const handleEditWorkspaceDetails = () => {
+    onEditWorkspace();
+    setOpenWorkspaceDropdown(false);
+  };
+
   return (
     <>
-      <Select value={selectedWorkspaceId} onValueChange={onSwitchWorkspace}>
+      <Select
+        open={openWorkspaceDropdown}
+        onOpenChange={setOpenWorkspaceDropdown}
+        value={selectedWorkspaceId}
+        onValueChange={onSwitchWorkspace}
+      >
         <SelectTrigger
           showIcon
           data-cy="workspace-selector-trigger"
@@ -79,7 +96,7 @@ export function BaseWorkspaceSelector(props) {
                         size="medium"
                         variant="ghost"
                         leadingIcon="square-pen"
-                        onClick={onEditWorkspace}
+                        onClick={handleEditWorkspaceDetails}
                       />
                     )}
 
@@ -122,7 +139,7 @@ export function BaseWorkspaceSelector(props) {
 
           <SelectSeparator className="tw-bg-border-weak tw-hidden has-[+*]:tw-block" />
 
-          <CreateWorkspaceBtn onAddWorkspace={onCreateNewWorkspace} workspacesLimit={workspacesLimit} />
+          <CreateWorkspaceBtn onAddWorkspace={handleAddNewWorkspace} workspacesLimit={workspacesLimit} />
         </SelectContent>
       </Select>
     </>
