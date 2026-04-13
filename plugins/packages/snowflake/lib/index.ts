@@ -12,6 +12,7 @@ import {
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
   getCurrentToken,
+  createQueryBuilder,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
@@ -73,12 +74,14 @@ export default class Snowflake implements QueryService {
     );
 
     try {
-      const result: any = await this.connExecuteAsync(connection, {
-        sqlText,
-      });
+      if (queryOptions.mode === 'gui') {
+        return await this.handleGuiQuery(connection, queryOptions);
+      }
 
+      const result: any = await this.connExecuteAsync(connection, { sqlText });
       return { status: 'ok', data: result.rows };
     } catch (err) {
+      if (err instanceof QueryError) throw err;
       const errorMessage = err.message || 'An unknown error occurred';
       const errorDetails: any = {};
       if (err) {
@@ -87,6 +90,233 @@ export default class Snowflake implements QueryService {
         errorDetails.data = err.data ?? null;
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+    }
+  }
+
+  async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
+    if (methodName === 'listTables') {
+      return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit);
+    }
+    if (methodName === 'listColumns') {
+      const table = args?.values?.table || '';
+      return await this._fetchColumns(sourceOptions, table);
+    }
+    throw new QueryError('Method not found', `Method '${methodName}' is not supported by the Snowflake plugin`, {});
+  }
+
+  private async _fetchTables(
+    sourceOptions: SourceOptions,
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
+  > {
+    try {
+      const connection: any = await this.buildConnection(sourceOptions);
+      const searchPattern = `%${search.toUpperCase()}%`;
+
+      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+      const binds: unknown[] = [searchPattern];
+
+      if (limit) {
+        const offset = ((page || 1) - 1) * limit;
+        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+        const [tableResult, countResult]: any[] = await Promise.all([
+          this.connExecuteAsync(connection, {
+            sqlText: `${baseSqlText} ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
+            binds: [...binds, limit, offset],
+          }),
+          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [searchPattern] }),
+        ]);
+        const totalCount = parseInt(countResult.rows[0]?.TOTAL ?? '0', 10);
+        return {
+          items: tableResult.rows.map((row: any) => ({ value: row.TABLE_NAME, label: row.TABLE_NAME })),
+          totalCount,
+        };
+      }
+
+      const result: any = await this.connExecuteAsync(connection, {
+        sqlText: `${baseSqlText} ORDER BY TABLE_NAME`,
+        binds,
+      });
+      return result.rows.map((row: any) => ({ value: row.TABLE_NAME, label: row.TABLE_NAME }));
+    } catch (err) {
+      throw new QueryError('Could not fetch tables', err.message || 'An unknown error occurred', {});
+    }
+  }
+
+  private async _fetchColumns(
+    sourceOptions: SourceOptions,
+    table: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const connection: any = await this.buildConnection(sourceOptions);
+      const sqlText = `SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? ORDER BY ORDINAL_POSITION`;
+      const result: any = await this.connExecuteAsync(connection, { sqlText, binds: [table.toUpperCase()] });
+      return result.rows.map((row: any) => ({ value: row.COLUMN_NAME, label: row.COLUMN_NAME }));
+    } catch (err) {
+      throw new QueryError('Could not fetch columns', err.message || 'An unknown error occurred', {});
+    }
+  }
+
+  private async handleGuiQuery(connection: snowflake.Connection, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { operation, table } = queryOptions;
+    const queryBuilder = createQueryBuilder('snowflake');
+
+    switch (operation) {
+      case 'list_rows': {
+        const { list_rows, limit, offset } = queryOptions as any;
+        const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+        const { query, params } = queryBuilder.listRows(table, {
+          where_filters,
+          order_filters,
+          aggregates,
+          group_by,
+          limit,
+          offset,
+        }) as { query: string; params: unknown[] };
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        return { status: 'ok', data: result.rows };
+      }
+
+      case 'create_row': {
+        const { columns } = (queryOptions as any).create_row || {};
+        const { query, params } = queryBuilder.createRow(table, null, columns) as {
+          query: string;
+          params: unknown[];
+        };
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+      }
+
+      case 'update_rows': {
+        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { columns, where_filters } = (queryOptions as any).update_rows || {};
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        if (!hasWhereFilters) {
+          throw new QueryError('Filter required', 'Update rows requires at least one filter condition', {});
+        }
+        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        return await this.executeWriteQuery(connection, query, params, {
+          allow_multiple_updates,
+          zero_records_as_success,
+          operationLabel: 'updated',
+        });
+      }
+
+      case 'upsert_rows': {
+        const { primary_key_columns } = queryOptions;
+        const { columns } = (queryOptions as any).upsert_rows || {};
+        const { query, params } = queryBuilder.upsertRows(table, { primary_key_columns, columns }) as {
+          query: string;
+          params: unknown[];
+        };
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+      }
+
+      case 'delete_rows': {
+        const { zero_records_as_success } = queryOptions;
+        const { where_filters } = (queryOptions as any).delete_rows || {};
+        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+        if (!hasWhereFilters) {
+          throw new QueryError(
+            'Filter required',
+            'Delete rows requires at least one filter condition to prevent accidental mass deletions',
+            {}
+          );
+        }
+        const { query, params } = queryBuilder.deleteRows(table, { where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        const rowsAffected = result.stmt.getNumRowsAffected();
+        if (zero_records_as_success === false && rowsAffected === 0) {
+          throw new QueryError('No rows deleted', 'No rows matched the filter conditions', {});
+        }
+        return { status: 'ok', data: { rowsAffected } };
+      }
+
+      case 'bulk_insert': {
+        const { records } = queryOptions;
+        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
+          query: string;
+          params: unknown[];
+        };
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+      }
+
+      case 'bulk_update_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+          primary_key: primary_key_columns,
+          rows_update: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, queries);
+        return { status: 'ok', data: { rowsAffected }, bulk_update_status: 'success' } as unknown as QueryResult;
+      }
+
+      case 'bulk_upsert_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+          primary_key: primary_key_columns,
+          row_upsert: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, queries);
+        return { status: 'ok', data: { rowsAffected }, bulk_upsert_status: 'success' } as unknown as QueryResult;
+      }
+
+      default:
+        throw new QueryError('Unsupported operation', `GUI operation "${operation}" is not supported`, {});
+    }
+  }
+
+  private async executeWriteQuery(
+    connection: snowflake.Connection,
+    sqlText: string,
+    binds: unknown[],
+    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
+  ): Promise<QueryResult> {
+    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+    const result: any = await this.connExecuteAsync(connection, { sqlText, binds });
+    const rowsAffected = result.stmt.getNumRowsAffected();
+
+    if (allow_multiple_updates === false && rowsAffected > 1) {
+      throw new QueryError(
+        'Multiple rows affected',
+        'Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.',
+        {}
+      );
+    }
+    if (zero_records_as_success === false && rowsAffected === 0) {
+      throw new QueryError('No rows affected', `No rows were ${operationLabel}.`, {});
+    }
+
+    return { status: 'ok', data: { rowsAffected } };
+  }
+
+  private async executeBulkQueriesInTransaction(
+    connection: snowflake.Connection,
+    queries: { query: string; params: unknown[] }[]
+  ): Promise<number> {
+    await this.connExecuteAsync(connection, { sqlText: 'BEGIN' });
+    try {
+      let totalRowsAffected = 0;
+      for (const { query, params } of queries) {
+        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
+        totalRowsAffected += result.stmt.getNumRowsAffected();
+      }
+      await this.connExecuteAsync(connection, { sqlText: 'COMMIT' });
+      return totalRowsAffected;
+    } catch (err) {
+      await this.connExecuteAsync(connection, { sqlText: 'ROLLBACK' });
+      throw err;
     }
   }
 

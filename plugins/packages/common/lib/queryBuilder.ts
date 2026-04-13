@@ -82,6 +82,26 @@ class MySQLDialect extends BaseDialect {
   }
 }
 
+class SnowflakeDialect extends BaseDialect {
+  get name() {
+    return 'snowflake';
+  }
+  quote(id: string): string {
+    // Snowflake uses double-quote identifiers (case-sensitive when quoted)
+    return `"${String(id).replace(/"/g, '""')}"`;
+  }
+  supportsIlike(): boolean {
+    // Snowflake natively supports ILIKE
+    return true;
+  }
+  limitOffset(limit: number | string | null | undefined, offset: number | string | null | undefined): string {
+    let s = '';
+    if (limit != null) s += ` LIMIT ${toPositiveInt(limit)}`;
+    if (offset != null) s += ` OFFSET ${toPositiveInt(offset)}`;
+    return s;
+  }
+}
+
 class MSSQLDialect extends BaseDialect {
   get name() {
     return 'mssql';
@@ -121,6 +141,8 @@ function getDialect(name: string): BaseDialect {
     case 'mssql':
     case 'sqlserver':
       return new MSSQLDialect();
+    case 'snowflake':
+      return new SnowflakeDialect();
     default:
       throw new QueryBuilderError(`Unsupported dialect: "${name}"`);
   }
@@ -358,11 +380,12 @@ export class QueryBuilder {
     const entries = Object.values(columns || {}).filter((entry) => {
       const hasColumn = !!(entry.column && String(entry.column).trim());
       const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
-      if (!hasColumn && isValueEmpty) return false; // skip fully empty
-      if (!hasColumn) throw new QueryBuilderError('A column entry has a value but no column name specified');
+      if (!hasColumn && isValueEmpty) return false; // skip if both key and value is empty
+      if (!hasColumn) throw new QueryBuilderError('A column entry has a value but no column name specified'); // Throw error if column name is missing but value is provided
       return true;
     });
 
+    // If no valid columns are provided, generate an INSERT with DEFAULT VALUES
     if (entries.length === 0) {
       const query = `INSERT INTO ${table} DEFAULT VALUES`;
       return { query, params: [] };
@@ -437,6 +460,8 @@ export class QueryBuilder {
       return this._pgUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else if (this._dialect instanceof MySQLDialect) {
       return this._mysqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
+    } else if (this._dialect instanceof SnowflakeDialect) {
+      return this._snowflakeUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else {
       return this._mssqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     }
@@ -456,6 +481,10 @@ export class QueryBuilder {
       query = `DELETE FROM ${table}`;
       query += this._whereClause(where_filters);
       if (limit != null) query += ` LIMIT ${toPositiveInt(limit)}`;
+    } else if (this._dialect instanceof SnowflakeDialect) {
+      // Snowflake does not support DELETE with LIMIT; limit is silently ignored
+      query = `DELETE FROM ${table}`;
+      query += this._whereClause(where_filters);
     } else if (this._dialect instanceof MSSQLDialect) {
       const top = limit != null ? `TOP(${toPositiveInt(limit)}) ` : '';
       query = `DELETE ${top}FROM ${table}`;
@@ -652,6 +681,8 @@ export class QueryBuilder {
         return this._pgUpsert(table, primary_key, allCols, updateCols, row);
       } else if (this._dialect instanceof MySQLDialect) {
         return this._mysqlUpsert(table, primary_key, allCols, updateCols, row);
+      } else if (this._dialect instanceof SnowflakeDialect) {
+        return this._snowflakeUpsert(table, primary_key, allCols, updateCols, row);
       } else {
         return this._mssqlUpsert(table, primary_key, allCols, updateCols, row);
       }
@@ -730,6 +761,37 @@ export class QueryBuilder {
 
     const insertValues = allCols.map((c) => `[_source].${this._dialect.quote(c)}`).join(', ');
     query += ` WHEN NOT MATCHED THEN INSERT (${quotedCols.join(', ')}) VALUES (${insertValues});`;
+
+    return { query, params: [...this._params] };
+  }
+
+  private _snowflakeUpsert(
+    table: string,
+    primaryKey: string[],
+    allCols: string[],
+    updateCols: string[],
+    row: Record<string, unknown>
+  ): QueryResult {
+    // Snowflake MERGE: USING (SELECT ? AS col, ...) AS _source ON key match
+    const sourceColumns = allCols.map((col) => `${this._addParam(row[col])} AS ${this._dialect.quote(col)}`).join(', ');
+    const onClause = primaryKey
+      .map((pk) => `_target.${this._dialect.quote(pk)} = _source.${this._dialect.quote(pk)}`)
+      .join(' AND ');
+
+    let query = `MERGE INTO ${table} AS _target`;
+    query += ` USING (SELECT ${sourceColumns}) AS _source`;
+    query += ` ON ${onClause}`;
+
+    if (updateCols.length > 0) {
+      const setClauses = updateCols.map(
+        (col) => `_target.${this._dialect.quote(col)} = _source.${this._dialect.quote(col)}`
+      );
+      query += ` WHEN MATCHED THEN UPDATE SET ${setClauses.join(', ')}`;
+    }
+
+    const quotedCols = allCols.map((col) => this._dialect.quote(col));
+    const sourceRefs = allCols.map((col) => `_source.${this._dialect.quote(col)}`);
+    query += ` WHEN NOT MATCHED THEN INSERT (${quotedCols.join(', ')}) VALUES (${sourceRefs.join(', ')})`;
 
     return { query, params: [...this._params] };
   }

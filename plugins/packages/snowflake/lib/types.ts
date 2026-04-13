@@ -29,8 +29,24 @@ export type SourceOptions = {
   allow_dynamic_connection_parameters?: boolean;
 };
 export type QueryOptions = {
-  query: string;
+  mode: 'sql' | 'gui';
+  query?: string;
   database?: string;
   warehouse?: string;
   role?: string;
+  // GUI mode fields
+  operation?: string;
+  table?: string;
+  schema?: string;
+  where_filters?: Record<string, unknown>;
+  order_filters?: Record<string, unknown>;
+  aggregates?: Record<string, unknown>;
+  group_by?: Record<string, unknown>;
+  limit?: string | number;
+  offset?: string | number;
+  columns?: Record<string, unknown>;
+  primary_key_columns?: string | string[];
+  records?: Record<string, unknown>[];
+  allow_multiple_updates?: boolean;
+  zero_records_as_success?: boolean;
 };
