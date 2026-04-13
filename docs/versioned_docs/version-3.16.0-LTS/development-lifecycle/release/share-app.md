@@ -22,6 +22,24 @@ Users can launch the released version of the application from the dashboard. The
 
 <img className="screenshot-full" src="/img/development-lifecycle/release/share/dashboard.png" alt="Access Application via Dashboard"/>
 
+## Authentication for Standalone Application URLs
+
+When users access an application using a standalone URL, the entire experience stays within the context of that app, including login, logout, and session expiry.
+
+### Signing In
+
+If a user is not logged in, they'll see a login page specific to that application. For example, **"Sign in to [App Name]"** instead of the generic workspace login page. After signing in, they are taken directly to the app.
+
+All backend configurations such as SSO settings are inherited from the workspace, so no additional setup is required.
+
+### Signing Out and Session Expiry
+
+When a user signs out or their session expires, they are redirected back to the same app's login page instead of workspace login page or the workspace dashboard. This ensures that users remain within the app's context at all times.
+
+:::info
+To trigger logout from within your app, use the [Logout action](/docs/actions/logout).
+:::
+
 ## Embed Application
 
 ToolJet applications can be embedded into other web applications using iframes. To embed an application, make the app public, after which ToolJet will automatically generate an iframe code snippet for integration.
