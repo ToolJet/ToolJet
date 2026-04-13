@@ -115,6 +115,7 @@ export class AppsController implements IAppsController {
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
       branchId: query.branch_id || headerBranchId,
+      pageSize: query.page_size ? parseInt(query.page_size) : 9,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }

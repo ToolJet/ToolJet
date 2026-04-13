@@ -23,12 +23,12 @@ const selectApps = (raw) => ({
 });
 
 export function useFetchApps(queryParams, options) {
-  const { pageNo = 1, folderId = '', appSearchQuery = '', appType = 'front-end' } = queryParams;
+  const { pageNo = 1, folderId = '', appSearchQuery = '', appType = 'front-end', pageSize } = queryParams;
   const { enabled = true } = options;
 
   return useQuery({
-    queryKey: ['apps', { pageNo, folderId, appSearchQuery, appType }],
-    queryFn: () => appsService.getAll(pageNo, folderId, appSearchQuery, appType),
+    queryKey: ['apps', { pageNo, folderId, appSearchQuery, appType, pageSize }],
+    queryFn: () => appsService.getAll(pageNo, folderId, appSearchQuery, appType, pageSize),
     select: selectApps,
     enabled,
   });

@@ -150,6 +150,9 @@ module.exports = {
       fontFamily: {
         inter: 'var(--font-family-inter)',
       },
+      screens: {
+        '3xl': '1920px',
+      },
     },
   },
   plugins: [

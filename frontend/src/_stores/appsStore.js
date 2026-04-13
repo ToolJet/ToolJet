@@ -13,7 +13,7 @@ const appDialogInitialState = {
 };
 
 const initialState = {
-  pageSize: 9,
+  pageSize: 12,
   currentPage: 1,
   appDialogState: { ...appDialogInitialState },
   folderDialogState: { ...folderDialogInitialState },

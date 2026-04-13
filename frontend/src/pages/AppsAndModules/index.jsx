@@ -36,6 +36,7 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
   const searchQuery = useSearchStore((state) => state.searchQuery);
 
+  const pageSize = useAppsStore((state) => state.pageSize);
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -190,10 +191,11 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
       <AppsFooter
         itemType={appType === 'front-end' ? 'apps' : 'modules'}
         currentPage={currentPage}
-        pageSize={9}
+        pageSize={pageSize}
         totalItems={totalAppCount}
         onPageChange={setCurrentPage}
         showLoadingSkeleton={showLoadingSkeleton}
+        totalAppsOnCurrentPage={apps?.apps?.length ?? 0}
       />
 
       <Dialogs

@@ -15,6 +15,7 @@ export default function useFetchFolderAndApps({ appType }) {
 
   const searchQuery = useSearchStore((state) => state.searchQuery);
 
+  const pageSize = useAppsStore((state) => state.pageSize);
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const setCurrentFolderDetails = useAppsStore((state) => state.setCurrentFolderDetails);
@@ -31,7 +32,7 @@ export default function useFetchFolderAndApps({ appType }) {
   const selectedFolderId = currentFolderDetails?.value ?? '';
 
   const { data: apps, isLoading: isLoadingApps } = useFetchApps(
-    { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage },
+    { appType, folderId: selectedFolderId, appSearchQuery: searchQuery, pageNo: currentPage, pageSize },
     { enabled: !isFetchingFolders }
   );
 

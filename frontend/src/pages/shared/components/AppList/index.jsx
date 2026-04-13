@@ -70,7 +70,7 @@ function GridLayoutContainer({
   };
 
   return (
-    <section className="tw-grid tw-grid-cols-[repeat(auto-fill,minmax(292px,1fr))] tw-gap-6">
+    <section className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 2xl:tw-grid-cols-4 3xl:tw-grid-cols-6 tw-gap-6">
       {showLoadingSkeleton
         ? Array.from({ length: 4 }).map((_, index) => <AppCardSkeleton key={index} />)
         : apps.map((app) => {
