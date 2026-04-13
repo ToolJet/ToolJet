@@ -264,7 +264,7 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
     }
 
-    return !!this._app['pages']?.features?.canvasPageHeader;
+    return !!this._app?.['pages']?.features?.canvasPageHeader;
   }
 
   public get canvasPageFooterEnabled(): boolean {
@@ -272,7 +272,7 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
     }
 
-    return !!this._app['pages']?.features?.canvasPageFooter;
+    return !!this._app?.['pages']?.features?.canvasPageFooter;
   }
 
   public get moduleEnabled(): boolean {
