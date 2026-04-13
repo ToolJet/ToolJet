@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from './constants';
+import { getImportPath, TOOLJET_EDITIONS } from './constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
@@ -22,6 +23,8 @@ export class AppModuleLoader {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     const isTest = process.env.NODE_ENV === 'test';
+    const edition = getTooljetEdition();
+    const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
     const mainDbTestOverrides = isTest ? { retryAttempts: 0 } : {};
 
     const getMainDBConnectionModule = (): DynamicModule => {
@@ -50,25 +53,31 @@ export class AppModuleLoader {
       // ScheduleModule registers cron timers that accumulate across test files.
       // Excluding it in test mode makes @Cron decorators inert (no timers fire).
       ...(isTest ? [] : [ScheduleModule.forRoot()]),
-      BullModule.forRoot({
-        connection: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT) || 6379,
-          ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
-          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
-          ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
-          ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
-          // In test mode: disable ioredis reconnection to prevent zombie connections
-          // accumulating across test files in a long-lived Node.js process.
-          // lazyConnect defers the TCP connection until a command is actually sent,
-          // preventing open handles when unit tests don't use BullMQ queues.
-          ...(isTest && {
-            maxRetriesPerRequest: null,
-            retryStrategy: () => null,
-            lazyConnect: true,
-          }),
-        },
-      }),
+      // BullMQ requires Redis. Only register for EE/Cloud editions where background
+      // job queues (app-history, workflows) are actually used. CE has no Bull queues.
+      ...(isEEOrCloud
+        ? [
+            BullModule.forRoot({
+              connection: {
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT) || 6379,
+                ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
+                ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+                ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
+                ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
+                // In test mode: disable ioredis reconnection to prevent zombie connections
+                // accumulating across test files in a long-lived Node.js process.
+                // lazyConnect defers the TCP connection until a command is actually sent,
+                // preventing open handles when unit tests don't use BullMQ queues.
+                ...(isTest && {
+                  maxRetriesPerRequest: null,
+                  retryStrategy: () => null,
+                  lazyConnect: true,
+                }),
+              },
+            }),
+          ]
+        : []),
       await ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
