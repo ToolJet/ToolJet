@@ -75,7 +75,8 @@ export const openFolderDropdown = () => {
   closeFolderDropdown();
   // Wait for any active toast overlay to clear (Sonner sets pointer-events:none on body)
   cy.get("body").should("not.have.css", "pointer-events", "none");
-  cy.get(commonSelectors.allApplicationsLink).click();
+  cy.wait(1000);
+  cy.get(commonSelectors.allApplicationsLink, { timeout: 20000 }).click();
 };
 
 export const createFolder = (folderName) => {

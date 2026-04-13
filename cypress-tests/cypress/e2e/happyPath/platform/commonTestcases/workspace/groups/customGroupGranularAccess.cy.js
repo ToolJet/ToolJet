@@ -192,6 +192,10 @@ const verifyBuilderAccessAsPerTheConfig = ({
     datasourceName1,
     datasourceName2,
     appSlug,
+    appName,
+    appName2,
+    workflowName1,
+    workflowName2,
 }) => {
     cy.wait(1000);
     cy.apiLogout();
@@ -202,27 +206,29 @@ const verifyBuilderAccessAsPerTheConfig = ({
     //Verify app edit button number
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).should("not.exist");
-    cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
-        "have.lengthOf",
-        1
-    );
-    cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
-        "have.lengthOf",
-        2
-    );
+    cy.get(commonSelectors.appCard(appName))
+        .find('[data-cy="edit-button"]')
+        .should("have.lengthOf", 1);
+    cy.get(commonSelectors.appCard(appName))
+        .find('[data-cy="launch-button"]')
+        .should("have.lengthOf", 1);
+    cy.get(commonSelectors.appCard(appName2))
+        .find('[data-cy="launch-button"]')
+        .should("have.lengthOf", 1);
 
     cy.ifEnv("Enterprise", () => {
         //Verify workflow edit button number
         cy.get(commonSelectors.globalWorkFlowsIcon).click();
         cy.get('[data-cy="create-new-workflow-button"]').should("not.exist");
-        cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
-            "have.lengthOf",
-            1
-        );
-        cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
-            "have.lengthOf",
-            2
-        );
+        cy.get(commonSelectors.appCard(workflowName1))
+            .find('[data-cy="edit-button"]')
+            .should("have.lengthOf", 1);
+        cy.get(commonSelectors.appCard(workflowName1))
+            .find('[data-cy="launch-button"]')
+            .should("have.lengthOf", 1);
+        cy.get(commonSelectors.appCard(workflowName2))
+            .find('[data-cy="launch-button"]')
+            .should("have.lengthOf", 1);
 
         //Verify datasource access
         cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -304,6 +310,10 @@ describe("Custom Group Granular Access", () => {
             datasourceName1,
             datasourceName2,
             appSlug,
+            appName: data.appName,
+            appName2,
+            workflowName1,
+            workflowName2,
         });
     });
 

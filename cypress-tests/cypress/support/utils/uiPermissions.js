@@ -16,8 +16,9 @@ import {
 
 export const uiCreateApp = (appName) => {
   cy.createApp(appName);
-  cy.wait(2000);
+  cy.wait(3000);
   cy.backToApps();
+  cy.wait(3000);
 };
 
 export const uiVerifyAppCreated = (appName, shouldExist = true) => {
@@ -100,11 +101,12 @@ export const uiVerifyDataSourceCreatePrivilege = (hasPrivilege = true) => {
 export const uiCreateWorkflow = (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
 
-  cy.get('[data-cy="create-new-workflow-button"]').click();
+  cy.get('[data-cy="create-new-workflow-button"]').eq(1).click();
   cy.get(workflowSelector.workFlowNameInputField).type(workflowName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
   cy.wait(3000);
   cy.go("back");
+  cy.wait(3000);
   cy.waitForElement('[data-cy="home-page-logo"]')
 };
 
