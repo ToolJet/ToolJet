@@ -19,7 +19,7 @@ import {
 const selectTriggerVariants = cva(
   [
     // Layout (from shadcn base)
-    'tw-flex tw-w-full tw-items-center tw-justify-between tw-whitespace-nowrap',
+    'tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-whitespace-nowrap',
     // Resets (preflight is off — browser adds outset border on buttons)
     'tw-appearance-none tw-outline-none tw-border tw-border-solid tw-rounded-md',
     // Base tokens (mirrors Input)
@@ -51,16 +51,16 @@ const selectTriggerVariants = cva(
 );
 
 const SelectTrigger = forwardRef(function SelectTrigger(
-  { className, size, showIcon = false, children, ...props },
+  { className, size, showArrow = true, children, ...props },
   ref
 ) {
   return (
     <SelectPrimitive.Trigger ref={ref} className={cn(selectTriggerVariants({ size }), className)} {...props}>
       {children}
 
-      {showIcon && (
+      {showArrow && (
         <SelectPrimitive.Icon asChild>
-          <ChevronDown className="tw-h-4 tw-w-4 tw-opacity-50" />
+          <ChevronDown className="tw-h-4 tw-w-4 tw-opacity-50 tw-shrink-0" />
         </SelectPrimitive.Icon>
       )}
     </SelectPrimitive.Trigger>

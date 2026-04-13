@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { SelectItemText } from '@radix-ui/react-select';
 
 import { cn } from '@/lib/utils';
 import {
@@ -10,6 +9,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectSeparator,
+  SelectItemText,
 } from '@/components/ui/Rocket/Select/Select';
 import { Button } from '@/components/ui/Button/Button';
 import { getAvatar, decodeEntities } from '@/_helpers/utils';
@@ -70,11 +70,14 @@ export function BaseWorkspaceSelector(props) {
         onValueChange={onSwitchWorkspace}
       >
         <SelectTrigger
-          showIcon
           data-cy="workspace-selector-trigger"
           className="tw-rounded-md tw-max-w-40 tw-shadow-none tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-border-0 hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
         >
-          <SelectValue data-cy="workspace-name" className="tw-font-title-default" />
+          <SelectValue asChild>
+            <span data-cy="workspace-name" className="tw-truncate tw-font-title-default tw-mb-0 tw-flex-1 tw-min-w-0">
+              {decodeEntities(currentWorkspaceDetails?.name ?? '')}
+            </span>
+          </SelectValue>
         </SelectTrigger>
 
         <SelectContent
@@ -119,22 +122,31 @@ export function BaseWorkspaceSelector(props) {
           <SelectSeparator className="tw-bg-border-weak" />
 
           <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
-            {workspaceList?.map((workspace) => (
-              <SelectItem className="tw-gap-1.5 tw-pl-2" key={workspace.id} value={workspace.id} showCheckIcon={false}>
-                <Avatar workspaceName={workspace.name} />
+            {Array.isArray(workspaceList) ? (
+              workspaceList.map((workspace) => (
+                <SelectItem
+                  className="tw-gap-1.5 tw-pl-2"
+                  key={workspace.id}
+                  value={workspace.id}
+                  showCheckIcon={false}
+                >
+                  <Avatar workspaceName={workspace.name} />
 
-                <SelectItemText asChild>
-                  <TruncatedText
-                    content={decodeEntities(workspace.name ?? '')}
-                    className="tw-font-body-default tw-truncate tw-flex-1 tw-min-w-0 tw-mb-0"
-                  >
-                    {decodeEntities(workspace.name ?? '')}
-                  </TruncatedText>
-                </SelectItemText>
+                  <SelectItemText asChild>
+                    <TruncatedText
+                      content={decodeEntities(workspace.name ?? '')}
+                      className="tw-font-body-default tw-truncate tw-flex-1 tw-min-w-0 tw-mb-0"
+                    >
+                      {decodeEntities(workspace.name ?? '')}
+                    </TruncatedText>
+                  </SelectItemText>
 
-                {renderLicenseBadge?.(workspace)}
-              </SelectItem>
-            ))}
+                  {renderLicenseBadge?.(workspace)}
+                </SelectItem>
+              ))
+            ) : (
+              <></>
+            )}
           </SelectGroup>
 
           <SelectSeparator className="tw-bg-border-weak tw-hidden has-[+*]:tw-block" />
