@@ -12,11 +12,6 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly repository: CustomDomainRepository) {}
 
   onModuleInit() {
-    if (process.env.ENABLE_CUSTOM_DOMAINS !== 'true') {
-      this.logger.log('Custom domains disabled — skipping Redis connection');
-      return;
-    }
-
     this.redis = new Redis({
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
