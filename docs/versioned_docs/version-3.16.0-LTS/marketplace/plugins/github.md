@@ -29,7 +29,7 @@ This operation fetches details for a specified user.
 
 - **Username**: Specify the GitHub username or organization to retrieve their details.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-user-info-v4.png" alt="GitHub get user info query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-user-info-v4.png" alt=" GitHub get user info query " />
 
 ### Get Repository
 
