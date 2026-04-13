@@ -10,6 +10,7 @@ export default function TooltipComp({
   content,
   arrow = true,
   isTooltipForInteractiveDisabledElement = false,
+  open,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -25,7 +26,7 @@ export default function TooltipComp({
 
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip {...(open !== undefined && { open })}>
         <TooltipTrigger asChild>{triggerElement}</TooltipTrigger>
 
         <TooltipContent

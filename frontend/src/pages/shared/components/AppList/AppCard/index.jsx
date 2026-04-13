@@ -71,12 +71,11 @@ export default function AppCard({
   };
 
   const textBlock = (
-    <div className="tw-flex tw-flex-col tw-gap-0.5 tw-overflow-hidden tw-w-full">
-      {/* TODO: Font size to be changed later on based on design */}
+    <div className="tw-grid tw-gap-0.5 tw-overflow-hidden tw-w-full">
       <TruncatedText
         content={name}
         data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-title`}
-        className="tw-flex-1 tw-text-text-default tw-font-title-large tw-m-0"
+        className="tw-w-full tw-min-w-0 tw-text-text-default tw-font-title-large tw-m-0"
       >
         {decodeEntities(name)}
       </TruncatedText>

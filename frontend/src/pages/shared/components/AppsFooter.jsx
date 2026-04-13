@@ -13,7 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Rocket/Select/Select';
 import ShimmerEffectSkeleton from './ShimmerEffectSkeleton';
 
-const PAGE_SIZE_OPTIONS = ['9'];
+const PAGE_SIZE_OPTIONS = ['12', '24'];
 
 /**
  * Returns the list of page numbers (or null for ellipsis) to render.
@@ -38,6 +38,7 @@ export default function AppsFooter({
   pageSize = 50,
   onPageChange,
   onPageSizeChange,
+  totalAppsOnCurrentPage,
   itemType,
   showLoadingSkeleton,
 }) {
@@ -58,12 +59,8 @@ export default function AppsFooter({
   return (
     <FooterContainer>
       {/* Left: page-size selector + item count */}
-      <div className="tw-flex tw-items-center tw-gap-1.5">
-        <span data-cy="pagination-showing-label" className="tw-text-xs tw-text-text-placeholder">
-          Showing
-        </span>
-
-        <Select value={String(pageSize)} onValueChange={(val) => onPageSizeChange?.(Number(val))}>
+      <div className="tw-items-center tw-gap-1.5 tw-hidden md:tw-flex">
+        {/* <Select value={String(pageSize)} onValueChange={(val) => onPageSizeChange?.(Number(val))}>
           <SelectTrigger
             data-cy="pagination-page-size-selector"
             className="tw-h-7 tw-w-14 tw-text-xs tw-px-1.5 tw-py-1 tw-rounded-md tw-border-border-default"
@@ -77,10 +74,14 @@ export default function AppsFooter({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
+        </Select> */}
+
+        <span data-cy="pagination-showing-label" className="tw-text-xs tw-text-text-placeholder">
+          Showing
+        </span>
 
         <span data-cy="pagination-apps-count" className="tw-text-xs tw-text-text-default">
-          of {totalItems} {itemType}
+          {Math.min(totalAppsOnCurrentPage || 0, pageSize)} of {totalItems} {itemType}
         </span>
       </div>
 

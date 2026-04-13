@@ -2,6 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 import queryString from 'query-string';
+import { constructSearchParams } from '@/_helpers/utils';
 
 export const appsService = {
   validatePrivateApp,
@@ -58,16 +59,21 @@ function validatePrivateApp(slug, queryParams) {
 }
 
 //use default value for type of apps i.e.'front-end'
-function getAll(page, folder, searchKey, type = 'front-end') {
+function getAll(page, folder, searchKey, type = 'front-end', pageSize) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+
   const branchId = getActiveBranchId();
   const branchParam = branchId ? `&branch_id=${branchId}` : '';
+  const searchParams = constructSearchParams({
+    page,
+    folder,
+    searchKey,
+    type,
+    branch_id: branchId,
+    page_size: pageSize,
+  }).toString();
   if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}${branchParam}`, requestOptions).then(handleResponse);
-  else
-    return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,
-      requestOptions
-    ).then(handleResponse);
+  else return fetch(`${config.apiUrl}/apps?${searchParams}`, requestOptions).then(handleResponse);
 }
 
 // get all addable apps

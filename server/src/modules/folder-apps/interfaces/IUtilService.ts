@@ -20,6 +20,7 @@ export interface IFolderAppsUtilService {
     page: number,
     searchKey: string,
     type?: APP_TYPES,
-    branchId?: string
+    branchId?: string,
+    pageSize?: number
   ): Promise<{ viewableApps: AppBase[]; totalCount: number }>;
 }
