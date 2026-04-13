@@ -746,7 +746,7 @@ export const createQueryPanelSlice = (set, get) => ({
           })
           .catch((e) => {
             const { error } = e;
-            const errorMessage = typeof error === 'string' ? error : error?.message || e?.message || 'Unknown error';
+            const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
             const result = handleFailure({
               status: 'failed',
