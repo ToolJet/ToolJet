@@ -119,6 +119,8 @@ export function useDeleteFolder() {
 
 export function useAddAppToFolder() {
   const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
 
@@ -144,7 +146,7 @@ export function useAddAppToFolder() {
       // Case 2: if you are in a specific folder and you move an app to another folder, then we need to refetch the apps for that specific folder to remove that app from the list
       if (currentFolderId) {
         setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
-        queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType }] });
+        queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
       }
     },
   });
@@ -152,6 +154,8 @@ export function useAddAppToFolder() {
 
 export function useRemoveAppFromFolder() {
   const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   return useMutation({
@@ -165,7 +169,7 @@ export function useRemoveAppFromFolder() {
       queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
 
       setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
-      queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType }] });
+      queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
     },
   });
 }

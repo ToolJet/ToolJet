@@ -73,8 +73,9 @@ export function useCloneApp() {
 export function useRenameApp() {
   const queryClient = useQueryClient();
 
+  const pageSize = useAppsStore((state) => state.pageSize);
   const currentPage = useAppsStore((state) => state.currentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, name, appType }) => appsService.saveApp(appId, { name }, appType),
@@ -85,7 +86,7 @@ export function useRenameApp() {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} name has been updated!`);
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType, pageSize }],
       });
     },
   });
@@ -127,8 +128,9 @@ export function useCreateApp() {
 export function useDeleteApp() {
   const queryClient = useQueryClient();
 
+  const pageSize = useAppsStore((state) => state.pageSize);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -141,7 +143,7 @@ export function useDeleteApp() {
       // queryClient.invalidateQueries({ queryKey: ['folders'] });
       setCurrentPage(1);
       queryClient.invalidateQueries({
-        queryKey: ['apps', { folderId: currentFolderId, appType: variables.appType }],
+        queryKey: ['apps', { folderId: currentFolderId, appType: variables.appType, pageSize }],
       });
 
       // TODO: re-fetch apps list
@@ -167,8 +169,9 @@ export function useDeleteApp() {
 export function useChangeAppIcon() {
   const queryClient = useQueryClient();
 
+  const pageSize = useAppsStore((state) => state.pageSize);
   const currentPage = useAppsStore((state) => state.currentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
@@ -179,7 +182,7 @@ export function useChangeAppIcon() {
       toast.success('Icon updated.');
 
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType, pageSize }],
       });
     },
   });
