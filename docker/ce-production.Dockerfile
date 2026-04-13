@@ -54,7 +54,7 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get install -y postgresql-client freetds-dev libaio1 wget redis-server supervisor && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
@@ -95,6 +95,13 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
 COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
+
+# Configure Redis — bind to localhost, no persistence needed for CE single-instance
+RUN mkdir -p /var/lib/redis /var/log/redis && \
+    chown -R appuser:0 /var/lib/redis /var/log/redis && \
+    chmod -R g=u /var/lib/redis /var/log/redis
+RUN echo "bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis" \
+    > /etc/redis/redis.conf
 
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \
