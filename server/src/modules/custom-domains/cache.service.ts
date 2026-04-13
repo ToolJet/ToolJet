@@ -38,7 +38,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleDestroy() {
-    if (this.redis) this.redis.disconnect();
+    this.redis?.disconnect();
   }
 
   /**
