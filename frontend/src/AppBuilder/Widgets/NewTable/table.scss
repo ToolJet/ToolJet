@@ -16,8 +16,8 @@
 }
 
 .table-expansion-toggle {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,7 +27,6 @@
     cursor: pointer;
     padding: 0px;
     border-radius: 4px;
-    color: var(--cc-default-icon);
 }
 
 .table-expanded-row-container {

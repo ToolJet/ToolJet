@@ -2,7 +2,7 @@ import React from 'react';
 import { generateActionColumns } from './generateActionColumns';
 import generateColumnsData from './generateColumnsData';
 import IndeterminateCheckbox from '../_components/IndeterminateCheckbox';
-import { ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 export const buildTableColumn = (
   showBulkSelector,
@@ -43,9 +43,11 @@ export const buildTableColumn = (
               aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
               title={isExpanded ? 'Collapse row' : 'Expand row'}
             >
-              <ChevronUp
-                width={18}
-                style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)' }}
+              <ChevronDown
+                width={16}
+                height={16}
+                color="var(--cc-default-icon)"
+                style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
               />
             </button>
           );
