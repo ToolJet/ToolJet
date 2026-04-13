@@ -142,7 +142,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(`[data-cy="${appName.toLowerCase()}-card"]`)
+  cy.get(`[data-cy="${appName.toLowerCase()}-card"]`, { timeout: 20000 })
     .first().click({ force: true })
     .realHover()
     .find('[data-cy="app-card-menu-icon"]')

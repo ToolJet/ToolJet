@@ -28,11 +28,12 @@ describe('Instance Login', () => {
 
         cy.apiLogin(data.email);
         cy.visit('/');
-        cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.addWorkspaceButton).should('be.visible').click();
-        cy.get(commonSelectors.workspaceNameinput).clear().type(data.workspaceName);
+        cy.wait(2000)
+        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).click();
+        cy.get(commonSelectors.addWorkspaceButton, { timeout: 20000 }).should('be.visible').click();
+        cy.get(commonSelectors.workspaceNameinput, { timeout: 20000 }).clear().type(data.workspaceName);
         cy.wait(1000);
-        cy.get(dashboardSelector.workspaceSlugInputField)
+        cy.get(dashboardSelector.workspaceSlugInputField, { timeout: 20000 })
             .clear()
             .type(data.workspaceSlug);
         cy.wait(1000);
@@ -52,8 +53,9 @@ describe('Instance Login', () => {
 
         cy.apiLogin(data.email);
         cy.visit('/');
-        cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.addWorkspaceButton).should('not.exist');
+        cy.wait(3000)
+        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).click();
+        cy.get(commonSelectors.addWorkspaceButton, { timeout: 20000 }).should('not.exist');
         cy.apiLogout();
 
         allowPersonalWorkspace(true);

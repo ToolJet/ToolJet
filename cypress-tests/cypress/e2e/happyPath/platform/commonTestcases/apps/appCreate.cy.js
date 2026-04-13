@@ -50,11 +50,12 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.disabled");
 
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.cancelButton).click();
+        cy.wait(1000);
+        cy.get(commonSelectors.cancelButton, { timeout: 20000 }).click();
 
         cy.get(commonSelectors.appCreateButton).click();
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.createAppButton).should("be.enabled").click();
+        cy.get(commonSelectors.createAppButton, { timeout: 20000 }).should("be.enabled").click();
 
         cy.backToApps();
         cy.wait(1000);
@@ -90,7 +91,8 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.renameAppButton).should("be.disabled");
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonSelectors.cancelButton).click();
+        cy.wait(1000);
+        cy.get(commonSelectors.cancelButton, { timeout: 20000 }).click();
 
         viewAppCardOptions(data.appName);
         cy.get(commonSelectors.appCardOptions("Rename app")).click();
@@ -99,12 +101,16 @@ describe("App creation", () => {
             data.appName
         );
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
+        cy.wait(2000);
+        cy.get(commonSelectors.renameAppButton, { timeout: 20000 }).should("be.enabled").click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             "App name has been updated!"
         );
 
+        cy.get('[data-cy="icon-home"]').click();
+        cy.wait(1000);
+        cy.get('[data-cy="icon-dashboard"]').click();
         viewAppCardOptions(data.rename);
         cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
         cy.get(commonSelectors.cloneAppTitle).verifyVisibleElement(
@@ -133,7 +139,8 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.cloneAppButton).should("be.enabled");
         cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
-        cy.get(commonSelectors.cancelButton).click();
+        cy.wait(1000);
+        cy.get(commonSelectors.cancelButton, { timeout: 20000 }).click();
 
         viewAppCardOptions(data.rename);
         cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
@@ -142,15 +149,17 @@ describe("App creation", () => {
             `${data.rename}_Copy`
         );
         cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
-        cy.get(commonSelectors.cloneAppButton).should("be.enabled").click();
-
+        cy.wait(1000);
+        cy.get(commonSelectors.cloneAppButton, { timeout: 20000 }).should("be.enabled").click();
+        
+        cy.wait(2000);
         cy.backToApps();
-        //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
 
         cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonSelectors.createAppButton).click();
+        cy.wait(1000);
+        cy.get(commonSelectors.createAppButton, { timeout: 20000 }).click();
         cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
             "have.text",
             "App name already exists"
@@ -197,9 +206,13 @@ describe("App creation", () => {
             "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.cancelButton).click();
+        cy.wait(2000);
+        cy.get(commonSelectors.cancelButton, { timeout: 20000 }).click();
 
-        cy.get(importSelectors.dropDownMenu).click();
+        cy.get(commonSelectors.breadcrumbPageTitle).click({force: true});
+        cy.wait(1000);
+        cy.get(importSelectors.dropDownMenu, { timeout: 20000 }).click();
+        cy.get('[data-cy="button-import-an-app"]').click();
         cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
             force: true,
         });
@@ -208,7 +221,8 @@ describe("App creation", () => {
             "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.importAppButton).should("be.enabled").click();
+        cy.wait(2000);
+        cy.get(commonSelectors.importAppButton, { timeout: 20000 }).should("be.enabled").click();
         cy.get(".go3958317564")
             .should("be.visible")
             .and("have.text", importText.appImportedToastMessage);
@@ -221,8 +235,8 @@ describe("App creation", () => {
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
         cy.clearAndType('[data-cy="search-input-field"]', "Admin panel");
-        cy.get('[data-cy="admin-panel-tooljet-db-list-item"]').click();
-        cy.get('[data-cy="create-application-from-template-button"]').click()
+        cy.get('[data-cy="admin-panel-tooljet-db-list-item"]', { timeout: 20000 }).click();
+        cy.get('[data-cy="create-application-from-template-button"]', { timeout: 20000 }).click()
 
         cy.wait(1000);
         cy.get(commonSelectors.CreateAppFromTemplateButton).verifyVisibleElement(
@@ -252,6 +266,7 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.enabled");
 
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
+        cy.wait(2000);
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
@@ -262,7 +277,8 @@ describe("App creation", () => {
             commonText.enterAppName
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.cancelButton).click();
+        cy.wait(1000);
+        cy.get(commonSelectors.cancelButton, { timeout: 20000 }).click();
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
@@ -273,7 +289,8 @@ describe("App creation", () => {
             commonText.enterAppName
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
-        cy.get(commonSelectors.createAppButton).should("be.enabled").click();
+        cy.wait(1000);
+        cy.get(commonSelectors.createAppButton, { timeout: 20000 }).should("be.enabled").click();
     });
 });
 

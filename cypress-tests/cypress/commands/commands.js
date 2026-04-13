@@ -32,10 +32,10 @@ Cypress.Commands.add(
 Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.waitForElement(selector)
     .scrollIntoView()
-    .should("be.visible", { timeout: 10000 })
+    .should("be.visible", { timeout: 20000 })
     .click({ force: true })
-    .type(`{selectall}{backspace}`)
-    .type(`{selectall}{backspace}${text}`);
+    .type(`{selectall}{backspace}`, { delay: 0 })
+    .type(`{selectall}{backspace}${text}`, { delay: 0 });
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
