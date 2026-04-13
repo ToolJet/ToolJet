@@ -19,7 +19,7 @@ import { ValidAppGuard } from './guards/valid-app.guard';
 import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
-import { isHttpsEnabled } from '@helpers/utils.helper';
+import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -37,19 +37,19 @@ export class AppsController implements IAppsController {
   ) {
     // clear ai cookies
     // FIXME: can move this to service or middlewares
+    const cookieDomain = getCookieDomain();
+    const clearOptions = {
+      secure: isHttpsEnabled(),
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      // Must match the domain used when setting, otherwise clearCookie has no effect
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
     if (cookies.tj_ai_prompt) {
-      response.clearCookie('tj_ai_prompt', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_ai_prompt', clearOptions);
     }
     if (cookies.tj_template_id) {
-      response.clearCookie('tj_template_id', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_template_id', clearOptions);
     }
 
     return this.appsService.create(user, appCreateDto);

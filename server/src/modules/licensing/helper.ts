@@ -116,6 +116,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.AI_FEATURE:
       return licenseInstance.aiFeature;
 
+    case LICENSE_FIELD.AI_PLAN:
+      return licenseInstance.aiPlan;
+
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
 
@@ -141,6 +144,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
       return licenseInstance.appPagesAddNavGroupEnabled;
 
+    case LICENSE_FIELD.CUSTOM_DOMAINS:
+      return licenseInstance.customDomains;
+
     case LICENSE_FIELD.GOOGLE:
       return licenseInstance.google;
 
@@ -152,6 +158,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.OBSERVABILITY_ENABLED:
       return licenseInstance.observabilityEnabled;
+
+    case LICENSE_FIELD.APP_HISTORY:
+      return licenseInstance.appHistory;
 
     default:
       return licenseInstance.terms;

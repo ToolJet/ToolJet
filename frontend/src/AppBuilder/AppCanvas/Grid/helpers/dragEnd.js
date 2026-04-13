@@ -166,7 +166,8 @@ export class DragContext {
   }
 
   get isDroppable() {
-    const { dragged, target, isModuleEditor } = this;
+    const { dragged, target, isModuleEditor, widgets } = this;
+
     // If the target is the canvas and we are in module editor,
     // then we don't want to drop the widget outside the module
     if (isModuleEditor && target.id === 'canvas') {
@@ -175,7 +176,17 @@ export class DragContext {
 
     const isRestrictedWidget = isDroppingRestrictedWidget(target, dragged);
 
-    return !isRestrictedWidget;
+    if (isRestrictedWidget) {
+      return false;
+    }
+
+    // Check ListView nesting restriction:
+    // If dragging a ListView into a slot that's inside a nested ListView, block it
+    if (dragged.widgetType === 'Listview' && isInsideNestedListview(target.slotId, widgets)) {
+      return false;
+    }
+
+    return true;
   }
 }
 
@@ -267,6 +278,35 @@ export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []
  */
 export function getWidgetById(boxList, targetId) {
   return boxList.find((box) => box.id === targetId) ?? null;
+}
+
+/**
+ * Checks if a target slot is inside a NESTED ListView (has 2+ ListView ancestors).
+ * This allows: Canvas → ListView → ListView (2 levels)
+ * But blocks: Canvas → ListView → ListView → ListView (3+ levels)
+ *
+ * Performance: O(depth) - typically 2-3 iterations max.
+ *
+ * @param {string} slotId - The slot ID to check
+ * @param {Array} widgets - Array of all widgets
+ * @returns {boolean} - True if inside a nested ListView (2+ levels deep)
+ */
+export function isInsideNestedListview(slotId, widgets) {
+  let currentParentId = slotId;
+  let listviewCount = 0;
+
+  while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
+    const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    const parentWidget = widgets.find((w) => w.id === baseId);
+
+    if (parentWidget?.component?.component === 'Listview') {
+      listviewCount++;
+      if (listviewCount >= 2) return true; // Already 2 levels, can't add more
+    }
+
+    currentParentId = parentWidget?.component?.parent; // Fixed: was parentWidget?.parent
+  }
+  return false;
 }
 
 /**

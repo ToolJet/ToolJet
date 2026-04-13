@@ -7,9 +7,19 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
   getCachedConnection,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
+import { Client } from 'ssh2';
+import net from 'net';
+
+interface SSHTunnel {
+  client: Client;
+  server: net.Server;
+  localPort: number;
+}
 
 const recognizedBooleans = {
   true: true,
@@ -18,6 +28,60 @@ const recognizedBooleans = {
 
 function interpretValue(value: string): string | boolean | number {
   return recognizedBooleans[value.toLowerCase()] ?? (!isNaN(Number.parseInt(value)) ? Number.parseInt(value) : value);
+}
+
+function createSSHTunnel(sourceOptions: SourceOptions): Promise<SSHTunnel> {
+  return new Promise((resolve, reject) => {
+    const sshClient = new Client();
+
+    sshClient.on('ready', () => {
+      const server = net.createServer(socket => {
+        sshClient.forwardOut(
+          socket.remoteAddress || '127.0.0.1',
+          socket.remotePort || 0,
+          sourceOptions.host,           
+          Number(sourceOptions.port),   
+          (err, stream) => {
+            if (err) {
+              socket.destroy();
+              return;
+            }
+            socket.pipe(stream);
+            stream.pipe(socket);
+          }
+        );
+      });
+
+      server.on('error', err => {
+        sshClient.end();
+        reject(err);
+      });
+
+      server.listen(0, '127.0.0.1', () => {
+        const { port } = server.address() as net.AddressInfo;
+        resolve({ client: sshClient, server, localPort: port });
+      });
+    });
+
+    sshClient.on('error', reject);
+
+    sshClient.connect({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      readyTimeout: 20000,
+      keepaliveInterval: 10000,
+      ...(sourceOptions.ssh_auth_type === 'password'
+        ? { password: sourceOptions.ssh_password }
+        : {
+            privateKey: sourceOptions.ssh_private_key,
+            ...(sourceOptions.ssh_passphrase
+              ? { passphrase: sourceOptions.ssh_passphrase }
+              : {}),
+          }),
+    });
+
+  });
 }
 
 export default class MssqlQueryService implements QueryService {
@@ -32,6 +96,10 @@ export default class MssqlQueryService implements QueryService {
 
     if (!MssqlQueryService._instance) {
       MssqlQueryService._instance = this;
+      process.on('uncaughtException', (err: any) => {
+        if (err?.code === 'ESOCKET') return;
+        throw err;
+      });
     }
     return MssqlQueryService._instance;
   }
@@ -50,9 +118,22 @@ export default class MssqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    try {
-      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    let knexInstance: Knex | undefined;
+    let checkCache: boolean;
 
+    // Dynamic connection parameters
+    if (sourceOptions.allow_dynamic_connection_parameters) {
+      if (sourceOptions.connection_type === 'manual') {
+        sourceOptions.host = queryOptions['host'] ? queryOptions['host'] : sourceOptions.host;
+        sourceOptions.database = queryOptions['database'] ? queryOptions['database'] : sourceOptions.database;
+      } else if (sourceOptions.connection_type === 'string') {
+        if (queryOptions['host']) sourceOptions.host = queryOptions['host'];
+        if (queryOptions['database']) sourceOptions.database = queryOptions['database'];
+      }
+    }
+    checkCache = sourceOptions.allow_dynamic_connection_parameters ? false : true;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       switch (queryOptions.mode) {
         case 'sql':
           return await this.handleRawQuery(knexInstance, queryOptions);
@@ -62,7 +143,7 @@ export default class MssqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       const errorDetails: any = {};
 
       if (err && err instanceof Error) {
@@ -106,34 +187,204 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-    knexInstance.destroy();
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, false);
+      await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
+      try { await knexInstance.destroy(); } catch (_) {};
+      return {
+        status: 'ok',
+      };
+    } catch (err: any) {
+      let message = 'Connection test failed';
+      let details: any = {};
 
-    return {
-      status: 'ok',
-    };
+      if (err?.code || err?.number || err?.serverName) {
+        message = err.message;
+        details = {
+          code: err.code ?? null,
+          severity: err.severity ?? null,
+          state: err.state ?? null,
+          number: err.number ?? null,
+          lineNumber: err.lineNumber ?? null,
+          serverName: err.serverName ?? null,
+          class: err.class ?? null,
+        };
+      }
+      else if (err?.code === 'ESOCKET' || err?.code === 'ECONNREFUSED' || err?.code === 'ETIMEDOUT') {
+        message = `Network error: ${err.message}`;
+      }
+      else if (err?.code === 'ELOGIN') {
+        message = `Authentication failed: ${err.message}`;
+      }
+      else if (err?.message?.includes('SSH')) {
+        message = `SSH connection failed: ${err.message}`;
+      }
+      else if (err?.name === 'KnexTimeoutError') {
+        message = 'Database connection timeout. Please check host/port/firewall';
+      }
+      else if (err?.message) {
+        message = err.message;
+      }
+
+      throw new QueryError('Connection test failed', message, details);
+    } finally {
+      if (knexInstance) {
+        try { await knexInstance.destroy(); } catch (_) {}
+      }
+    }
   }
 
+private parseConnectionString(connectionString: string): Partial<SourceOptions> {
+  const parsed: Partial<SourceOptions> = {};
+
+  if (!connectionString) return parsed;
+
+  const trimmed = connectionString.trim();
+
+  const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
+    ? trimmed.replace(/^sqlserver:\/\//i, '')
+    : trimmed;
+
+  const looksLikeHybrid = withoutScheme.includes(';') &&
+    !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+
+  if (looksLikeHybrid) {
+    const firstSemi = withoutScheme.indexOf(';');
+    const hostSegment = withoutScheme.slice(0, firstSemi);
+    const rest = withoutScheme.slice(firstSemi + 1);
+
+    const hostMatch = hostSegment.match(/^([^:\\,]+)(?::(\d+))?(?:\\([^,]*))?(?:,(\d+))?/);
+    if (hostMatch) {
+      if (hostMatch[1]) parsed.host = hostMatch[1].trim();
+      if (hostMatch[2]) parsed.port = (parseInt(hostMatch[2], 10));
+      if (hostMatch[3]) parsed.instanceName = hostMatch[3].trim();
+      if (hostMatch[4]) parsed.port = (parseInt(hostMatch[4], 10));
+    }
+
+    rest.split(';').forEach(pair => {
+      if (!pair.includes('=')) return;
+      const [key, ...valueParts] = pair.split('=');
+      const value = valueParts.join('=').trim();
+      const lowerKey = key.trim().toLowerCase();
+
+      if (lowerKey === 'database' || lowerKey === 'initial catalog') {
+        parsed.database = value;
+      } else if (lowerKey === 'user id' || lowerKey === 'uid' || lowerKey === 'user') {
+        parsed.username = value;
+      } else if (lowerKey === 'password' || lowerKey === 'pwd') {
+        parsed.password = value;
+      } else if (lowerKey === 'encrypt') {
+        parsed.azure = ['true', '1', 'yes'].includes(value.toLowerCase()) as any;
+      } else if (lowerKey === 'port') {
+        parsed.port = (parseInt(value, 10));
+      } else if (lowerKey === 'instance' || lowerKey === 'instance name') {
+        parsed.instanceName = value;
+      }
+    });
+  }
+
+  return parsed;
+}
+
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
+    const finalOptions: SourceOptions = sourceOptions;
+   // SSL config 
+    const shouldUseSSL = finalOptions.ssl_enabled === true;
+    let sslObject: any = null;
+
+    if (shouldUseSSL) {
+      if (finalOptions.ssl_certificate === 'ca_certificate') {
+        sslObject = {
+          rejectUnauthorized: true,
+          ca: finalOptions.ca_cert,
+          key: finalOptions.client_key,
+          cert: finalOptions.client_cert,
+        };
+      } else if (finalOptions.ssl_certificate === 'self_signed') {
+        sslObject = {
+          rejectUnauthorized: false,
+          ca: finalOptions.root_cert,
+          key: finalOptions.client_key,
+          cert: finalOptions.client_cert,
+        };
+      } else {
+        sslObject = { rejectUnauthorized: false };
+      }
+    } 
+
+    let tunnel: SSHTunnel | null = null;
+
+    let host: string;
+    let port: number;
+
+    if (sourceOptions.ssh_enabled=='enabled') {
+      tunnel = await createSSHTunnel(sourceOptions);
+      host = '127.0.0.1';
+      port = tunnel.localPort;
+    } else {
+      host = finalOptions.host;
+      port = +finalOptions.port;
+    }
+
+    // Service Principal (Azure AD) authentication
+    const isServicePrincipal = finalOptions.auth_type === 'service_principal';
+
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
-        host: sourceOptions.host,
-        user: sourceOptions.username,
-        password: sourceOptions.password,
-        database: sourceOptions.database,
-        port: +sourceOptions.port,
+        ...(isServicePrincipal
+          ? {
+              // Knex mssql dialect builds the tedious auth block from these FLAT fields.
+              // It ignores any nested 'authentication' object entirely.
+              server: host,
+              type: 'azure-active-directory-service-principal-secret',
+              tenantId: finalOptions.sp_tenant_id,
+              clientId: finalOptions.sp_client_id,
+              clientSecret: finalOptions.sp_client_secret,
+            }
+          : {
+              host: host,
+              user: finalOptions.username,
+              password: finalOptions.password,
+            }),
+        database: finalOptions.database,
+        port: port,
         options: {
-          encrypt: sourceOptions.azure ?? false,
-          instanceName: sourceOptions.instanceName,
-          ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
+          encrypt: isServicePrincipal ? true : ((finalOptions.azure ?? false) || shouldUseSSL),
+          instanceName: finalOptions.instanceName,
+          trustServerCertificate: !isServicePrincipal && shouldUseSSL && finalOptions.ssl_certificate === 'none',
+          requestTimeout: this.STATEMENT_TIMEOUT,
+          ...(shouldUseSSL && !isServicePrincipal ? { cryptoCredentialsDetails: sslObject } : {}),
+          ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
-        pool: { min: 0 },
+      },
+      pool: {
+        min: 0,
+        afterCreate: (conn: any, done: (err: Error | null, conn: any) => void) => {
+          conn.on('error', (_err: Error) => {});
+          done(null, conn);
+        },
       },
     };
 
-    return knex(config);
+    const knexInstance = knex(config);
+
+ 
+    if (tunnel) {
+      const originalDestroy = knexInstance.destroy.bind(knexInstance);
+      Object.defineProperty(knexInstance, 'destroy', {
+        value: async function () {
+          try {
+            await originalDestroy();
+          } finally {
+            tunnel.server.close();
+            tunnel.client.end();
+          }
+        },
+      });
+    }
+    return knexInstance;
   }
 
   async getConnection(
@@ -182,5 +433,121 @@ export default class MssqlQueryService implements QueryService {
     }
 
     return queryText.trim();
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search}%`;
+      const db = sourceOptions.database;
+
+      if (queryOptions?.limit) {
+        const limit = queryOptions.limit;
+        const page = queryOptions.page || 1;
+        const offset = (page - 1) * limit;
+
+        const [dataResult, countResult] = await Promise.all([
+          knexInstance
+            .raw(
+              `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME OFFSET ? ROWS FETCH NEXT ? ROWS ONLY`,
+              [db, searchPattern, offset, limit]
+            )
+            .timeout(this.STATEMENT_TIMEOUT),
+          knexInstance
+            .raw(
+              `SELECT COUNT(*) AS total FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ?`,
+              [db, searchPattern]
+            )
+            .timeout(this.STATEMENT_TIMEOUT),
+        ]);
+
+        const rows = dataResult.map((row: any) => ({ label: row.TABLE_NAME, value: row.TABLE_NAME }));
+        const totalCount = parseInt(countResult?.[0]?.total ?? '0', 10);
+
+        return { status: 'ok', data: { rows, totalCount } };
+      }
+
+      const result = await knexInstance
+        .raw(
+          `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = ? AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
+          [db, searchPattern]
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+
+      const tables = result.map((row: any) => ({
+        label: row.TABLE_NAME,
+        value: row.TABLE_NAME,
+      }));
+
+      return { status: 'ok', data: tables };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    } finally {
+      if (knexInstance) {
+        await knexInstance.destroy();
+      }
+    }
+  }
+
+  async invokeMethod(
+    methodName: string,
+    context: { user?: User; app?: App },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    try {
+      if (methodName === 'getTables') {
+        const isPaginated = !!args?.limit;
+        const result = await this.listTables(sourceOptions, {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        });
+
+        const payload = (result as any)?.data ?? [];
+
+        if (isPaginated) {
+          const rows = (payload as any)?.rows ?? [];
+          const totalCount = (payload as any)?.totalCount ?? 0;
+          return { items: rows, totalCount };
+        }
+
+        return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
+      }
+      throw new QueryError(
+        'Method not found', 
+        `Method ${methodName} is not supported for MSSQL plugin`, 
+        {
+          availableMethods: ['getTables'],
+        }
+      );
+    } catch (err) {
+      if (err instanceof QueryError) {
+        throw err;
+      }
+
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err && err instanceof Error) {
+        const msSqlError = err as any;
+        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
+        errorDetails.code = code || null;
+        errorDetails.severity = severity || null;
+        errorDetails.state = state || null;
+        errorDetails.number = number || null;
+        errorDetails.lineNumber = lineNumber || null;
+        errorDetails.serverName = serverName || null;
+        errorDetails.class = errorClass || null;
+      }
+      throw new QueryError('Method invocation failed', errorMessage, errorDetails);
+    }
   }
 }

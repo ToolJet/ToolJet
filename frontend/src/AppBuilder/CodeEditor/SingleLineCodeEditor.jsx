@@ -34,9 +34,11 @@ import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 
-const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
-  const { moduleId } = useModuleContext();
+const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, moduleId: moduleIdProp, ...restProps }) => {
+  const { moduleId: contextModuleId } = useModuleContext();
+  const moduleId = moduleIdProp || contextModuleId;
   const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
@@ -77,6 +79,33 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef?.current]
+  );
+
+  const [wrapperWidth, setWrapperWidth] = useState(0);
+  const [_wrapperHeight, setWrapperHeight] = useState(0);
+  const [overlayKey, setOverlayKey] = useState(0);
+
+  useEffect(() => {
+    if (!wrapperRef.current || !isInsideQueryManager) return;
+    setWrapperWidth(wrapperRef.current.clientWidth);
+    setWrapperHeight(wrapperRef.current.clientHeight);
+    const observer = new window.ResizeObserver(() => {
+      setWrapperWidth(wrapperRef.current?.clientWidth || 0);
+      const newHeight = wrapperRef.current?.clientHeight || 0;
+      setWrapperHeight((prev) => {
+        if (prev !== newHeight) {
+          setOverlayKey((k) => k + 1);
+        }
+        return newHeight;
+      });
+    });
+    observer.observe(wrapperRef.current);
+    return () => observer.disconnect();
+  }, [isInsideQueryManager]);
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
@@ -137,6 +166,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
     >
       <PreviewBox.Container
         previewRef={previewRef}
+        {...(isInsideQueryManager && { wrapperWidth: wrapperWidth })}
+        overlayKey={overlayKey}
+        isInsideQueryManager={isInsideQueryManager}
         showPreview={showPreview}
         customVariables={customVariables}
         enablePreview={enablePreview}
@@ -181,6 +213,8 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
               cursorInsidePreview={cursorInsidePreview}
+              moduleId={moduleId}
+              componentId={componentId}
               {...restProps}
             />
           </div>
@@ -218,12 +252,18 @@ const EditorInput = ({
   showSuggestions,
   setCodeEditorView = null, // Function to set the CodeMirror view
   cursorInsidePreview = false,
+  moduleId = 'canvas',
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
+  // TableColumnContext provides the table component ID for rowData/cellValue hints.
+  // Set once at ColumnPopover level, consumed automatically by all nested CodeHinters.
+  const tableColumnComponentId = useContext(TableColumnContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const getContextHints = useStore((state) => state.getContextHints, shallow);
+  const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
   const getServerSideGlobalResolveSuggestions = useStore(
@@ -245,9 +285,22 @@ const EditorInput = ({
     const hintsWithoutParamHints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
+    // Context-aware hints: listItem/cardData (from ancestor ListView/Kanban),
+    // row-scoped siblings, and table column rowData/cellValue.
+    // These are prepended so they appear first in the autocomplete dropdown.
+    const contextHints = componentId ? getContextHints(componentId, moduleId) : [];
+    const tableContextHints = tableColumnComponentId
+      ? getTableColumnContextHints(tableColumnComponentId, moduleId)
+      : [];
     const hints = {
       ...hintsWithoutParamHints,
-      appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
+      appHints: [
+        ...tableContextHints,
+        ...contextHints,
+        ...hintsWithoutParamHints.appHints,
+        ...serverHints,
+        ...paramHints,
+      ],
     };
 
     if (!hasWorkflowSuggestions) {
@@ -450,6 +503,8 @@ const EditorInput = ({
         selectors={{ className: 'preview-block-portal' }}
         dragResizePortal={true}
         callgpt={null}
+        onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+        canRefresh={portalProps?.canRefresh}
       >
         <ErrorBoundary>
           <div

@@ -337,33 +337,38 @@
 }
 
 #add-new-page-popup {
-    max-width: 300px;
-    width: 271px;
+    width: 304px;
+    max-width: none;
+    border-radius: 8px;
+    background-color: var(--background-surface-layer-01);
 
     .popover-header {
-        background-color: unset !important;
+        height: 45px;
+        background-color: transparent;
         border-bottom: 1px solid var(--border-weak);
-    }
 
-    .actions-container {
-        display: flex;
-        svg {
-            width: 18px;
-            path {
-                fill: var(--icons-strong)
-            }
+        .actions-container {
+            display: flex;
         }
     }
 
     .form-label {
+        font-family: 'IBM Plex Sans';
+        font-size: 12px;
+        line-height: 18px;
         color: var(--text-default);
+        font-weight: 400;
+        margin-bottom: 0px !important;
     }
 
     .form-control {
+        background-color: var(--background-surface-layer-01);
+        border-color: var(--border-default);
         border-radius: 6px;
-        color: var(--text-black);
+        color: var(--text-accent);
         font-weight: 400;
         font-size: 12px;
+        line-height: 16px;
 
         &:active {
             border-color: var(--border-accent-weak);
@@ -371,17 +376,65 @@
 
         &:focus {
             box-shadow: none !important;
+            border: 1px solid var(--border-accent-strong);
+            outline: 1px solid var(--border-accent-strong) !important;
         }
     }
 
     .form-control.is-invalid {
         background-image: none;
     }
+    
+    .app-select {
+        .react-select__control--is-focused {
+            border-color: var(--border-accent-strong) !important;
+            outline: 1px solid var(--border-accent-strong) !important;
+        }
 
-    input[type='text'], textarea {
-        border-radius: 6px;
-        &:focus {
-            border: 2px solid var(--border-accent-strong);
+        .react-select__menu {
+            top: 106% !important;
+            border: none !important;
+            box-shadow: 0px 8px 16px 0px var(--dropshadow100-400Layer2, #3032331A), 0px 0px 1px 0px var(--dropshadow100-700Layer1, #3032330D) !important;
+            border-radius: 10px !important;
+
+            .react-select__menu-list {
+                border-radius: 10px;
+            }
+        }
+    }
+
+    .app-mode-switch {
+        margin-left: 0px !important;
+        padding-left: 0px;
+
+        .ToggleGroup {
+            width: 168px;
+        }
+    }
+
+    .color-picker-input.icon-style-container {
+        border: none;
+        width: 168px;
+
+        &>div {
+            width: 100%;
+            
+            &>div {
+                width: 100%;
+
+                &>div {
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    .form-switch {
+        width: 2rem;
+        padding-left: 0px !important;
+
+        .form-check-input {
+            margin-left: 0px !important;
         }
     }
 
@@ -428,4 +481,24 @@
     &:hover {
         background-color: var(--slate3) !important;
     }
+}
+
+.add-new-page-popover-header {
+    height: 40px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0 16px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--border-weak);
+    font-family: 'IBM Plex Sans';
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+}
+
+.add-new-page-options {
+    padding: 8px;
+    border-radius: 0 0 8px 8px;
 }

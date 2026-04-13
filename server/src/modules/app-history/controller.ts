@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe, Res } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe } from '@nestjs/common';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 
@@ -38,8 +38,7 @@ export class AppHistoryController {
   @InitFeature(FEATURE_KEY.STREAM_HISTORY)
   @Get('apps/versions/:versionId/stream')
   async streamHistoryUpdates(
-    @Param('versionId', ParseUUIDPipe) versionId: string,
-    @Res() res: Response
+    @Param('versionId', ParseUUIDPipe) _versionId: string
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }

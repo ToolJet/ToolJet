@@ -4,10 +4,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
 function Debugger({ onClose, darkMode }) {
-  const [logs, clearLogs] = useStore(
-    (state) => [state.debugger.logs, state.debugger.clear],
-    shallow
-  );
+  const [logs, clearLogs] = useStore((state) => [state.debugger.logs, state.debugger.clear], shallow);
 
   const currentPageId = useStore((state) => state.modules.canvas.currentPageId);
 

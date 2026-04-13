@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
+import {
+  generateInviteURL,
+  generateOrgInviteURL,
+  getHostForOrganization,
+  getTooljetEdition,
+} from 'src/helpers/utils.helper';
+import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
@@ -40,7 +46,8 @@ export class EmailService implements IEmailService {
 
   constructor(
     protected readonly emailUtilService: EmailUtilService,
-    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService
+    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService,
+    @Optional() protected readonly customDomainCacheService?: CustomDomainCacheService
   ) {
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
@@ -87,8 +94,9 @@ export class EmailService implements IEmailService {
       redirectTo,
     } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo, host);
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
@@ -125,8 +133,9 @@ export class EmailService implements IEmailService {
   async sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload) {
     const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
-    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo);
+    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo, host);
     const templateData = {
       name: name || '',
       inviteUrl,
@@ -152,8 +161,10 @@ export class EmailService implements IEmailService {
   async sendPasswordResetEmail(payload: SendPasswordResetEmailPayload) {
     const { to, token, firstName, organizationId } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const effectiveHost = this.stripTrailingSlash(host);
     const subject = 'Reset your password';
-    const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
+    const url = `${effectiveHost}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,

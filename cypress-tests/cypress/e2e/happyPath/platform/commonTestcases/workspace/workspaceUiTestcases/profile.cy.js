@@ -71,7 +71,8 @@ describe("Profile Settings", () => {
     );
     common.navigateToManageUsers();
     cy.clearAndType(commonSelectors.inputUserSearch, "dev@tooljet.io");
-    cy.get(commonSelectors.avatarImage).should("have.css", "background-image");
+    cy.get(commonSelectors.avatarImage).should("have.css", "background-image")
+    profile.removeAvatar();
     common.logout();
   });
 

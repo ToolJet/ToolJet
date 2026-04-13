@@ -32,6 +32,7 @@ const Table = memo(
     currentLayout,
     currentMode,
     subContainerIndex,
+    componentType,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -87,7 +88,33 @@ const Table = memo(
 
     const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
-    const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
+    const firstRowOfTable = useMemo(() => {
+      if (!Array.isArray(data) || data.length === 0 || isEmpty(data[0])) return undefined;
+
+      const firstRow = data[0];
+      const hasNullValues = Object.values(firstRow).some(
+        (columnValue) => columnValue === null || columnValue === undefined
+      );
+      if (!hasNullValues) return firstRow;
+
+      const representative = { ...firstRow };
+      const nullColumns = Object.keys(firstRow).filter(
+        (columnKey) => firstRow[columnKey] === null || firstRow[columnKey] === undefined
+      );
+
+      for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+        if (nullColumns.length === 0) break;
+        const row = data[rowIndex];
+        for (let i = nullColumns.length - 1; i >= 0; i--) {
+          const key = nullColumns[i];
+          if (row[key] !== null && row[key] !== undefined) {
+            representative[key] = row[key];
+            nullColumns.splice(i, 1);
+          }
+        }
+      }
+      return representative;
+    }, [data]);
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
@@ -230,17 +257,22 @@ const Table = memo(
     }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
+    // Allow empty-table height recalculation only on visibility changes to avoid flicker during brief null/empty data states.
+    const prevVisibility = usePrevious(exposedVariablesTemporaryState?.isVisible);
+    const hasVisibilityChanged = prevVisibility !== exposedVariablesTemporaryState.isVisible;
+
     useDynamicHeight({
       isDynamicHeightEnabled,
       id: id,
       height,
       value: JSON.stringify({ heightChangeValue, tableData }),
-      skipAdjustment: exposedVariablesTemporaryState.isLoading || tableData.length === 0,
+      skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       adjustComponentPositions,
       currentLayout,
       width,
       visibility: exposedVariablesTemporaryState.isVisible,
       subContainerIndex,
+      componentType,
     });
 
     return (

@@ -2,11 +2,9 @@ import React from 'react';
 import _ from 'lodash';
 import Select, { components } from 'react-select';
 import defaultStyles from './styles';
-
 const CustomInput = (props) => {
   return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
 };
-
 export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
   const selectRef = React.useRef(null);
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
@@ -31,9 +29,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     customClassPrefix = '',
     dataCy = '',
   } = restProps;
-
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
-
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -43,9 +39,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
           }
           return option;
         });
-
   const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
-
   const handleOnChange = (data) => {
     if (isMulti) {
       onChange(data);
@@ -53,14 +47,12 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       onChange(data.value);
     }
   };
-
   const renderCustomOption = (option) => {
     if (customOption) {
       return customOption(option);
     }
     return option.label;
   };
-
   return (
     <Select
       {...restProps}
@@ -70,7 +62,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
       value={currentValue}
-      isSearchable={hasSearch}
+      isSearchable={restProps.isSearchable ?? hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}

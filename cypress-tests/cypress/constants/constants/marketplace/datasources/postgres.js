@@ -28,6 +28,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Port",
@@ -38,16 +39,18 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             validations: {
                 isRequired: false,
-                placeholder: "Name of the database",
+                placeholder: "Enter name of the database",
                 defaultValue: "",
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Username",
@@ -61,7 +64,7 @@ export const postgresUIConfig = {
 
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             validations: {
                 defaultValue: true,
                 disabled: false
@@ -115,7 +118,7 @@ export const postgresFormConfig = {
         },
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: false
         },
         {
@@ -167,8 +170,138 @@ export const postgresFormConfig = {
     invalidSsl: [
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: true
         }
+    ],
+};
+
+export const postgresQueryConfig = {
+    defaultFields: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            validations: {
+                defaultValue: "SQL mode",
+                disabled: false,
+            },
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Query",
+            assertion: "contain.text",
+            data: "SELECT * FROM users",
+        },
+        {
+            type: "label",
+            fieldName: "SQL Parameters",
+        },
+        {
+            type: "keyValue",
+            fieldName: null,
+            validations: {
+                rows: [
+                    {
+                        key: "Key",
+                        keyAssertion: "contain.text",
+                        value: "Value",
+                        valueAssertion: "contain.text",
+                        hasDeleteButton: true,
+                    },
+                ],
+            },
+        },
+        {
+            type: "button",
+            fieldName: "Add SQL parameter",
+            validations: {
+                disabled: false,
+            },
+        },
+    ],
+    guiModeDefault: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            validations: {
+                defaultValue: "Select..",
+                disabled: false,
+            },
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "codeMirror",
+            fieldName: "Primary key column-s",
+            assertion: "contain.text",
+            data: "e.g.",
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Records to update",
+            assertion: "contain.text",
+            data: "id: 1",
+        },
+    ],
+};
+
+export const postgresQueryFillConfig = {
+    switchToGuiMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "GUI mode",
+        },
+    ],
+    switchToSqlMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "SQL mode",
+        },
+    ],
+    selectBulkUpdateOperation: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            text: "Bulk update using primary key",
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "dynamicSelectorFx",
+            fieldName: "Schema",
+            text: "public",
+        },
+        {
+            type: "dynamicSelectorFx",
+            fieldName: "Table",
+            text: "student_data",
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Primary key column-s",
+            text: ["id"],
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Records to update",
+            text: '{{ [{"id": 2, "name": "Bob Smith Updated"}] }}',
+        },
+    ],
+    selectWithParams: [
+        {
+            type: "codeMirrorInput",
+            fieldName: "query",
+            text: ["select name from student_data where id=:id"],
+        },
+        {
+            type: "codeMirrorKeyValue",
+            fieldName: null,
+            addButtonFieldName: "add-sql-parameter",
+            keyValueData: [
+                { key: "id", value: "2" },
+            ],
+        },
     ],
 };

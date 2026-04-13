@@ -2,6 +2,8 @@ import {
   NO_OF_GRIDS,
   HIDDEN_COMPONENT_HEIGHT,
   CONTAINER_FORM_CANVAS_PADDING,
+  BOX_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
@@ -9,8 +11,6 @@ import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
-  hoveredComponentForGrid: '',
-  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
@@ -27,17 +27,12 @@ const initialState = {
 
 export const createGridSlice = (set, get) => ({
   ...initialState,
-  setHoveredComponentForGrid: (id) =>
-    set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
-  getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
   checkHoveredComponentDynamicHeight: (id) => {
     const { getResolvedComponent } = get();
     const resolvedProperties = getResolvedComponent(id)?.properties;
     const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
-  setHoveredComponentBoundaryId: (id) =>
-    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   incrementCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
       type: 'incrementCanvasUpdater',
@@ -131,7 +126,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
-      getExposedValueOfComponent,
+      getExposedPropertyForAdditionalActions,
     } = get();
 
     try {
@@ -164,8 +159,11 @@ export const createGridSlice = (set, get) => ({
       }
 
       // Priority: exposed visibility > component properties > component styles
-      const exposedValues = getExposedValueOfComponent(componentId);
-      const componentExposedVisibility = exposedValues?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        componentId,
+        subContainerIndex,
+        'isVisible'
+      );
       let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
 
       // Override visibility if component is set to not display on current layout
@@ -177,13 +175,15 @@ export const createGridSlice = (set, get) => ({
       if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
         let contentHeight = 0;
 
+        const isAccordionExpanded =
+          getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
+
         // Special handling for Accordion: check if it's collapsed first
         if (componentType === 'Accordion') {
-          const isExpanded = exposedValues?.isExpanded ?? true;
           const { properties = {} } = component || {};
           const { showHeader, headerHeight } = properties;
 
-          if (!isExpanded) {
+          if (!isAccordionExpanded) {
             // Accordion is collapsed - height should be just header height (or minimal if no header)
             if (visibility) {
               if (showHeader && isProperNumber(headerHeight)) {
@@ -202,8 +202,12 @@ export const createGridSlice = (set, get) => ({
         }
 
         // Only proceed with normal calculation if component is not an accordion or accordion is expanded
-        if (componentType !== 'Accordion' || (componentType === 'Accordion' && (exposedValues?.isExpanded ?? true))) {
-          const element = document.querySelector(`.dynamic-${componentId}`);
+        if (componentType !== 'Accordion' || isAccordionExpanded) {
+          const dynamicSelector =
+            doesSubContainerIndexExist && componentType !== 'Listview'
+              ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"] .dynamic-${componentId}`
+              : `.dynamic-${componentId}`;
+          const element = document.querySelector(dynamicSelector);
           // If the component is not a dynamic component, we use the height of the component from the layouts
           if (!element) {
             contentHeight = visibility
@@ -240,7 +244,7 @@ export const createGridSlice = (set, get) => ({
                 const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
                 return {
                   ...acc,
-                  ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
+                  ...(temporaryLayouts[transformedId] && { [id]: temporaryLayouts[transformedId] }),
                 };
               }, {});
 
@@ -254,7 +258,6 @@ export const createGridSlice = (set, get) => ({
                 const sum = layout.top + layout.height;
                 return Math.max(max, sum);
               }, 0);
-
               let extraHeight = 0;
 
               // If the component is a container, we need to get the header height
@@ -262,9 +265,15 @@ export const createGridSlice = (set, get) => ({
                 const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
                 const { showHeader, headerHeight, dynamicHeight } = properties;
 
-                // For regular Container and Accordion (expanded only) component, calculate height normally
+                // Account for layers between the wrapper element and the inner canvas:
+                // BOX_PADDING*2 (RenderWidget), SUBCONTAINER_CANVAS_BORDER_WIDTH*2 (container border),
+                // CONTAINER_FORM_CANVAS_PADDING*2 (content div padding)
+                extraHeight +=
+                  BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + CONTAINER_FORM_CANVAS_PADDING * 2;
+
                 if (showHeader && isProperNumber(headerHeight)) {
-                  extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
+                  // Header area: headerHeight + top/bottom padding + border-bottom divider
+                  extraHeight += headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 1;
                 }
 
                 // Special handling for Accordion when expanded
@@ -309,7 +318,11 @@ export const createGridSlice = (set, get) => ({
 
               // Calculate contentHeight only if it hasn't been set already (e.g., for accordion with dynamic height disabled its already calculated)
               if (!skipContentHeightCalculation) {
-                contentHeight = currentMax + 50 + extraHeight;
+                if (['Container', 'Accordion'].includes(componentType)) {
+                  contentHeight = currentMax + extraHeight;
+                } else {
+                  contentHeight = currentMax + 50 + extraHeight;
+                }
               }
             }
           }
@@ -372,6 +385,13 @@ export const createGridSlice = (set, get) => ({
           height: newHeight,
         },
       };
+
+      // ModalV2 is rendered as an overlay; its body size must not push
+      // sibling components of the trigger button on the canvas.
+      if (componentType === 'ModalV2' && isContainer) {
+        setTemporaryLayouts(updatedLayouts);
+        return;
+      }
 
       // Calculate the new top, bottom, left, right of the changed component
       // Left and Width are always the same as normal component layouts
@@ -441,7 +461,10 @@ export const createGridSlice = (set, get) => ({
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
-        const element = document.querySelector(`.ele-${component.id}`);
+        const targetSelector = doesSubContainerIndexExist
+          ? `.ele-${component.id}[subcontainer-id="${subContainerIndex}"]`
+          : `.ele-${component.id}`;
+        const element = document.querySelector(targetSelector);
         if (!element) continue;
         const transformedTargetComponentId = doesSubContainerIndexExist
           ? `${component.id}-${subContainerIndex}`
@@ -467,24 +490,38 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const element = document.querySelector(`.ele-${componentId}`);
-          element.style.height = `${newHeight}px`;
+          const containerSelector = doesSubContainerIndexExist
+            ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`
+            : `.ele-${componentId}`;
+          const element = document.querySelector(containerSelector);
+          if (element) element.style.height = `${newHeight}px`;
         }
       }
 
       setTemporaryLayouts(updatedLayouts);
 
       incrementCanvasUpdater();
+
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        adjustComponentPositions(
-          isContainer && isTruthyOrZero(subContainerIndex)
+        // Bubble the height change up to the parent container.
+        // For a Listview row instance, the next container to adjust is the Listview widget itself.
+        const parentComponentId =
+          componentType === 'Listview' && doesSubContainerIndexExist
             ? componentId
-            : changedComponent.component?.parent?.slice(0, 36),
-          currentLayout,
-          true,
-          componentType === 'Listview' ? null : subContainerIndex
-        );
+            : changedComponent.component?.parent?.slice(0, 36);
+
+        // Once the Listview widget is reached, continue upward outside the row scope.
+        const parentSubContainerIndex = componentType === 'Listview' ? null : subContainerIndex;
+
+        // Prevent no-progress recursion on the same target.
+        if (
+          parentComponentId &&
+          !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
+        ) {
+          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+        }
       }
+
       return updatedLayouts;
     } catch (error) {
       console.error('Error adjusting component positions:', error);

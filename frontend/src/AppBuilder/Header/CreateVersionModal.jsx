@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
 }) => {
@@ -229,8 +229,7 @@ const CreateVersionModal = ({
         toast.error('Version name already exists.');
       } else if (error?.error) {
         toast.error(error?.error);
-      }
-      else {
+      } else {
         toast.error('Error while creating version. Please try again.');
       }
     } finally {

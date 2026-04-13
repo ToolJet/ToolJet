@@ -43,16 +43,21 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
   const appHints = hints['appHints'].filter((cm) => {
     const { hint } = cm;
 
+    // Filter out actions, function hints, and Function-typed entries for all hints
+    // including row-scoped (e.g. components.button1.setLoading, .setVisibility)
     if (hint.includes('actions') || hint.endsWith('run()')) {
       return false;
     }
 
-    if (deprecatedWorkspaceVarsHints.includes(hint)) {
+    if (cm.type === 'Function' && !hint.endsWith('.run()') && !hint.endsWith('.reset()')) {
       return false;
     }
 
-    const lastChar = hint[cm.length - 1];
-    if (lastChar === ')') {
+    // Context hints (listItem, cardData, rowData) and row-scoped sibling hints
+    // bypass deprecation and other filters — they're always relevant within their context
+    if (cm.isContext || cm.isRowScoped) return true;
+
+    if (deprecatedWorkspaceVarsHints.includes(hint)) {
       return false;
     }
 
@@ -100,8 +105,11 @@ function orderSuggestions(suggestions, validationType) {
 export const generateHints = (hints, totalReferences = 1, input, searchText) => {
   if (!hints) return [];
 
-  const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || (type === 'Function' && !(hint.endsWith('.run()') || hint.endsWith('.reset()'))) ? `${hint}()` : hint;
+  const suggestions = hints.map(({ hint, type, isContext, isRowScoped }) => {
+    let displayedHint =
+      type === 'js_method' || (type === 'Function' && !(hint.endsWith('.run()') || hint.endsWith('.reset()')))
+        ? `${hint}()`
+        : hint;
 
     const currentWord = input.split('{{').pop().split('}}')[0];
     const hasDepth = currentWord.includes('.');
@@ -117,15 +125,25 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
         .join('.');
     }
 
+    // Section ordering: context hints (rank 0) → row-scoped components (rank 0.5)
+    // → regular suggestions (rank 1) → JS methods (rank 2)
+    let section;
+    if (isContext) {
+      section = { name: 'Current context', rank: 0 };
+    } else if (isRowScoped) {
+      section = { name: 'Row scoped components', rank: 0.5 };
+    } else if (type === 'js_method') {
+      section = { name: 'JS methods', rank: 2 };
+    } else {
+      section = { name: !hasDepth ? 'Suggestions' : lastDepth, rank: 1 };
+    }
+
     return {
       displayLabel,
       label: displayedHint,
       info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
-      section:
-        type === 'js_method'
-          ? { name: 'JS methods', rank: 2 }
-          : { name: !hasDepth ? 'Suggestions' : lastDepth, rank: 1 },
+      section,
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
       apply: (view, completion, from, to) => {
         const doc = view.state.doc;
@@ -189,6 +207,9 @@ function filterHintsByDepth(input, hints) {
   });
 
   const filteredHints = hintsWithDepth.filter((hint) => {
+    // Context and row-scoped hints bypass depth filtering — they're always fully
+    // expanded regardless of what the user has typed so far
+    if (hint.isContext || hint.isRowScoped) return true;
     return hint.depth <= inputDepth;
   });
 

@@ -16,6 +16,7 @@ import {
   TAB_CANVAS_PADDING,
   MODAL_CANVAS_PADDING,
   LISTVIEW_CANVAS_PADDING,
+  HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
@@ -239,6 +240,28 @@ export function computeComponentName(componentType, currentComponents) {
     currentNumber = currentNumber + 1;
   }
   return _componentName;
+}
+
+export function resolvePastedComponentName({ isCut, isCloning, originalName, componentType, mergedComponents }) {
+  if (isCut && !isCloning && typeof originalName === 'string' && originalName.length > 0) {
+    const taken = Object.values(mergedComponents).some((c) => c.component.name === originalName);
+    if (!taken) {
+      return originalName;
+    }
+  }
+  return computeComponentName(componentType, mergedComponents);
+}
+
+/** After a successful cut-paste, same payload as cut but `isCut: false` so the next paste allocates new IDs (copy path). */
+function markClipboardAsCopyAfterCutPaste(copiedComponentObj) {
+  if (!navigator.clipboard?.writeText) return;
+  const clip = {
+    ...copiedComponentObj,
+    isCut: false,
+    isCloning: false,
+    pageId: useStore.getState().getCurrentPageId(),
+  };
+  navigator.clipboard.writeText(JSON.stringify(clip)).catch(() => {});
 }
 
 export const getAllChildComponents = (allComponents, parentId) => {
@@ -539,7 +562,7 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
 export const debouncedPasteComponents = debounce(pasteComponents, 300);
 
-export function pasteComponents(targetParentId, copiedComponentObj) {
+export async function pasteComponents(targetParentId, copiedComponentObj) {
   const finalComponents = [];
   const componentMap = {};
   let parentComponent = undefined;
@@ -576,9 +599,16 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     const newComponentId = isCut ? component.id : uuidv4();
     if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
     if (component.component.component === 'Form') formComponentIds.add(newComponentId);
-    const componentName = computeComponentName(component.component.component, {
+    const mergedComponents = {
       ...components,
-      ...Object.fromEntries(finalComponents.map((component) => [component.id, component])),
+      ...Object.fromEntries(finalComponents.map((c) => [c.id, c])),
+    };
+    const componentName = resolvePastedComponentName({
+      isCut,
+      isCloning,
+      originalName: component.component.name,
+      componentType: component.component.component,
+      mergedComponents,
     });
     const parentRef = component.isParentTabORCalendar
       ? component.component.parent.split('-').slice(0, -1).join('-')
@@ -614,13 +644,22 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     componentData.definition.others.showOnDesktop.value = currentLayout === 'desktop' ? `{{true}}` : `{{false}}`;
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
-    // Adjust width if parent changed
+    // Adjust width only when the widget's immediate layout parent actually changes to a different subcontainer.
+    // Skip when the parent is part of the same paste: children stay in that parent's grid (same as copy source).
+    // Also compare resolved parents, not targetParentId — children would wrongly use canvas width vs container.
     let width = component.layouts[currentLayout].width;
 
-    if (!isCloning && targetParentId !== component.component?.parent) {
-      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
-      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
-      width = Math.round((width * oldContainerWidth) / containerWidth);
+    const layoutParentBefore = component.component?.parent ?? null;
+    const layoutParentAfter = componentData.parent ?? null;
+
+    if (!isCloning && !isParentAlsoCopied && layoutParentBefore !== layoutParentAfter) {
+      const newParentKey = layoutParentAfter ?? 'canvas';
+      const oldParentKey = layoutParentBefore ?? 'canvas';
+      const containerWidth = useGridStore.getState().subContainerWidths[newParentKey];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[oldParentKey];
+      if (containerWidth && oldContainerWidth) {
+        width = Math.round((width * oldContainerWidth) / containerWidth);
+      }
     }
 
     component.layouts[currentLayout] = {
@@ -657,6 +696,10 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
 
   const filteredComponentsCount = filteredFinalComponents.length;
 
+  let pasteSucceeded = false;
+  if (filteredComponentsCount < 0) return;
+
+  // if (filteredComponentsCount > 0) {
   if (currentPageId === pageId) {
     const components = useStore.getState().getCurrentPageComponents();
     const finalComponentWithUpdatedLayout = filteredFinalComponents.map((component) => {
@@ -711,12 +754,18 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
       }
     });
 
-    useStore.getState().pasteComponents(finalComponentWithUpdatedLayout);
+    pasteSucceeded = await useStore.getState().pasteComponents(finalComponentWithUpdatedLayout);
   } else {
-    useStore.getState().pasteComponents(filteredFinalComponents);
+    pasteSucceeded = await useStore.getState().pasteComponents(filteredFinalComponents);
   }
 
-  filteredComponentsCount > 0 &&
+  if (pasteSucceeded && isCut && !isCloning) {
+    markClipboardAsCopyAfterCutPaste(copiedComponentObj);
+  }
+  // }
+
+  pasteSucceeded &&
+    filteredComponentsCount > 0 &&
     !isCloning &&
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
@@ -794,29 +843,42 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Accordion' || componentType === 'Form') {
-    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  if (componentType === 'Container' || componentType === 'Form' || componentType === 'Accordion') {
+    padding =
+      2 * CONTAINER_FORM_CANVAS_PADDING +
+      2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +
+      2 * BOX_PADDING +
+      2 * HOVER_CLICK_OUTLINE_BORDER;
   }
-  // if (componentType === 'Tabs') {
-  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
-  // }
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
-      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
-        ?.hideCloseButton;
-      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+      const isModalHeaderCloseBtnHidden = useStore.getState().getResolvedComponent(componentId.slice(0, 36))
+        ?.properties?.hideCloseButton;
+      padding = 2 * (MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER) + (isModalHeaderCloseBtnHidden ? 0 : 56);
     } else {
-      padding = 2 * MODAL_CANVAS_PADDING;
+      padding = 2 * MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
     }
   }
   if (componentType === 'Listview') {
-    padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+    padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }
   if (componentType === 'Tabs') {
-    padding = 2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING;
+    padding =
+      2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
   }
+
   return canvasWidth - padding;
+};
+
+export const getSubContainerHeightAfterPadding = (componentType) => {
+  let height = '100%';
+  if (componentType === 'Tabs') {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px + 2.5px)`;
+  } else {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px)`;
+  }
+  return height;
 };
 
 export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {

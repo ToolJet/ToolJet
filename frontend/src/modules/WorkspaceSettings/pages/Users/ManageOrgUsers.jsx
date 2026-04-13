@@ -10,7 +10,7 @@ import UsersTable from '@/modules/common/components/UsersTable';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
-import { getQueryParams } from '@/_helpers/routes';
+import { getQueryParams, getHostURL } from '@/_helpers/routes';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -350,14 +350,12 @@ class ManageOrgUsersComponent extends React.Component {
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
       return urlJoin(
-        window.public_config?.TOOLJET_HOST,
-        window.public_config?.SUB_PATH ?? '',
+        getHostURL(),
         `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
       );
     }
     return urlJoin(
-      window.public_config?.TOOLJET_HOST,
-      window.public_config?.SUB_PATH ?? '',
+      getHostURL(),
       `/organization-invitations/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
     );
   };

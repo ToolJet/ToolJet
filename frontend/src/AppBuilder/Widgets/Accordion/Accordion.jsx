@@ -27,6 +27,7 @@ export const Accordion = ({
   currentMode,
   subContainerIndex,
   fireEvent,
+  componentType,
 }) => {
   const { headerHeight = 80, showHeader, dynamicHeight, loadingState, visibility, disabledState } = properties;
   const { borderRadius, borderColor, boxShadow, headerDividerColor, chevronIconColor } = styles;
@@ -62,6 +63,7 @@ export const Accordion = ({
     value: JSON.stringify({ headerHeight, showHeader, isExpanded: exposedVariablesTemporaryState.isExpanded }),
     visibility: exposedVariablesTemporaryState.isVisible,
     subContainerIndex,
+    componentType,
   });
 
   // Effects

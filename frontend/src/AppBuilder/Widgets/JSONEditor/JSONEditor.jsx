@@ -43,6 +43,7 @@ export const JSONEditor = function JSONEditor(props) {
     width,
     currentMode,
     subContainerIndex,
+    componentType,
   } = props;
 
   const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState, theme } = properties;
@@ -74,6 +75,7 @@ export const JSONEditor = function JSONEditor(props) {
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   // ===== HELPER FUNCTIONS =====

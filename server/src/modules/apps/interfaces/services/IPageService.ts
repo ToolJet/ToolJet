@@ -13,6 +13,33 @@ export interface DeletePageOptions {
   deleteAssociatedPages?: boolean;
 }
 
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface PageCreateContext {
+  pageData: CreatePageDto;
+}
+
+export interface PageUpdateContext {
+  pageId: string;
+  diff: any;
+  oldPageDto: any;
+  pageName: string;
+}
+
+export interface PageDeleteContext {
+  pageId: string;
+  pageName: string;
+  childPageIds?: string[];
+  /** Pre-captured entity changes for components/layouts/events that will be deleted with the page(s) */
+  deletedEntityChanges?: any[];
+  deletedEntityIds?: string[];
+}
+
+export interface PageReorderContext {
+  diff: any;
+}
+
 export interface IPageService {
   findPagesForVersion(
     appVersionId: string,

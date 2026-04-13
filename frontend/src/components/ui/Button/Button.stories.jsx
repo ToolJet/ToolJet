@@ -313,8 +313,8 @@ export const LucideIconShowcase = () => {
       <div>
         <h3 className="tw-text-lg tw-font-semibold">Lucide Icon Showcase</h3>
         <p className="tw-text-sm tw-text-gray-600">
-          Mixed variants, sizes, and icon-only cases using Lucide's official DynamicIcon component. Notice how outline
-          and ghost variants use different icon colors for icon-only vs text buttons.
+          Mixed variants, sizes, and icon-only cases using Lucide&apos;s official DynamicIcon component. Notice how
+          outline and ghost variants use different icon colors for icon-only vs text buttons.
         </p>
       </div>
 

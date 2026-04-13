@@ -3,6 +3,7 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { useTranslation } from 'react-i18next';
+import { getHostURL } from '@/_helpers/routes';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
@@ -16,7 +17,7 @@ import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-function InviteUsersForm ({
+function InviteUsersForm({
   onClose,
   manageUser,
   changeNewUserOption,
@@ -245,10 +246,10 @@ function InviteUsersForm ({
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
-      groupsToRemove.length ||
-      newRole ||
-      newGroupsToAdd.length ||
-      JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
+          groupsToRemove.length ||
+          newRole ||
+          newGroupsToAdd.length ||
+          JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
       : !inValidUserDetail || activeTab == 2;
   };
 
@@ -452,8 +453,9 @@ function InviteUsersForm ({
                       Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
-                      href={`${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                        }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
+                      href={`${getHostURL()}/assets/csv/${
+                        edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'
+                      }`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"

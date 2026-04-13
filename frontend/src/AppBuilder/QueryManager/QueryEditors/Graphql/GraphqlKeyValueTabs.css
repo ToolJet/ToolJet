@@ -1,0 +1,77 @@
+/* Tab pane visibility — GraphQL specific */
+.graphql-tabpanes {
+  display: none;
+}
+
+.graphql-tabpanes.active {
+  display: block;
+}
+
+
+.graphql-tabpanes .empty-paramlist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  min-height: 80px;
+}
+
+.graphql-tabpanes .empty-paramlist-btn {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.row-container {
+  display: flex;
+}
+
+.graphql-tab-content .fields-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.graphql-tab-content .delete-field-option {
+  height: 32.2px;
+  flex: 0 0 28px;
+  background: #ffffff;
+  width: 34px;
+}
+
+.graphql-tab-content .delete-field-option-dark {
+  background-color: #272822 !important;
+  border-color: #272822 !important;
+}
+
+.graphql-tab-content .fields-container .graphql-codehinter-key-field .cm-editor {
+  border-radius: 4px 0px 0px 4px !important;
+  box-shadow: none !important;
+}
+
+.graphql-tab-content .fields-container .graphql-options-codehinter .cm-editor {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+
+.graphql-codehinter-key-field .cm-scroller,
+.graphql-codehinter-key-field .code-hinter-wrapper,
+.graphql-codehinter-key-field .code-editor-basic-wrapper,
+.graphql-codehinter-key-field .codehinter-container {
+  overflow: visible !important;
+  border-radius: inherit;
+}
+
+
+.graphql-options-codehinter .cm-scroller,
+.graphql-options-codehinter .code-hinter-wrapper,
+.graphql-options-codehinter .code-editor-basic-wrapper,
+.graphql-options-codehinter .codehinter-container {
+  overflow: visible !important;
+}
+
+
+

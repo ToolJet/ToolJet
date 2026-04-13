@@ -57,7 +57,13 @@ export const ControlButtons = memo(
           placement={'top-end'}
           tooltipId={tooltipId}
         >
-          <RenderButton icon={icon} onClick={onClick} tooltipId={tooltipId} tooltipContent={tooltipContent} data-cy={dataCy} />
+          <RenderButton
+            icon={icon}
+            onClick={onClick}
+            tooltipId={tooltipId}
+            tooltipContent={tooltipContent}
+            data-cy={dataCy}
+          />
         </OverlayTriggerComponent>
       );
     };
@@ -79,8 +85,9 @@ export const ControlButtons = memo(
             fill="var(--cc-primary-brand)"
             isTablerIcon={false}
             variant="ghostBlack"
-            className={`tw-w-full justify-content-start tw-pr-[6px] ${table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
-              }`}
+            className={`tw-w-full justify-content-start tw-pr-[6px] ${
+              table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+            }`}
           />
           {table.getAllLeafColumns().map((column) => {
             const header = column?.columnDef?.header;
@@ -95,8 +102,9 @@ export const ControlButtons = memo(
                   fill="var(--cc-primary-brand)"
                   isTablerIcon={false}
                   variant="ghostBlack"
-                  className={`tw-w-full justify-content-start tw-pr-[6px] ${column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
-                    }`}
+                  className={`tw-w-full justify-content-start tw-pr-[6px] ${
+                    column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+                  }`}
                 />
               )
             );
@@ -176,11 +184,23 @@ export const ControlButtons = memo(
         );
       }
 
-      return renderOverlay('IconFileDownload', downlaodPopover, 'tooltip-for-download', 'Download', `${generateCypressDataCy(componentName)}-file-download-button`);
+      return renderOverlay(
+        'IconFileDownload',
+        downlaodPopover,
+        'tooltip-for-download',
+        'Download',
+        `${generateCypressDataCy(componentName)}-file-download-button`
+      );
     };
 
     const renderColumnSelectorButton = () => {
-      return renderOverlay('IconFreezeColumn', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns', `${generateCypressDataCy(componentName)}-manage-columns-button`);
+      return renderOverlay(
+        'IconFreezeColumn',
+        hideColumnsPopover,
+        'tooltip-for-manage-columns',
+        'Manage columns',
+        `${generateCypressDataCy(componentName)}-manage-columns-button`
+      );
     };
 
     const btns = [];

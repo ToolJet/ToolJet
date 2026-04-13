@@ -17,6 +17,7 @@ export default function RichTextEditor({
   currentLayout,
   currentMode,
   subContainerIndex,
+  componentType,
 }) {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, boxShadow } = styles;
@@ -39,6 +40,7 @@ export default function RichTextEditor({
     width,
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {

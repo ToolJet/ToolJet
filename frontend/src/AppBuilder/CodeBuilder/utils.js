@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { copilotService } from '@/_services/copilot.service';
 import { toast } from 'react-hot-toast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 
 export async function getRecommendation(currentContext, query, lang = 'javascript') {
   const words = query.split(' ');
@@ -69,28 +70,7 @@ function getResult(suggestionList, query) {
 export function getSuggestionKeys(refState) {
   const state = deepClone(refState);
   const queries = state['queries'];
-  const actions = [
-    'runQuery',
-    'setVariable',
-    'getVariable',
-    'unSetVariable',
-    'unsetAllVariables',
-    'showAlert',
-    'logout',
-    'showModal',
-    'closeModal',
-    'setLocalStorage',
-    'copyToClipboard',
-    'goToApp',
-    'generateFile',
-    'setPageVariable',
-    'getPageVariable',
-    'unsetPageVariable',
-    'unsetAllPageVariables',
-    'switchPage',
-    'toggleAppMode',
-    'scrollComponentInToView',
-  ];
+  const actions = ACTIONS;
 
   // eslint-disable-next-line no-unused-vars
   _.forIn(queries, (query, key) => {

@@ -1,6 +1,13 @@
 @import '@/_styles/colors.scss';
 
-
+.datasource-version-info-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  svg circle {
+    fill: var(--icon-default);
+  }
+}
 
 
 .sample-db-modal-body{

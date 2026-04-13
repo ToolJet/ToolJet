@@ -50,3 +50,12 @@ export const extApiUpdateUser = (userEmail = '', userIdCached = Cypress.env('use
     }
   });
 }
+
+export const removeAvatar = (userEmail = "dev@tooljet.io") => {
+  cy.getUserIdByEmail(userEmail, "user").then((userId) => {
+    return cy.task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `UPDATE users SET avatar_id = NULL WHERE id = '${userId}';`,
+    });
+  });
+};

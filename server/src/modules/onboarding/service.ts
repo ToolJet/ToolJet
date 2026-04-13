@@ -269,7 +269,10 @@ export class OnboardingService implements IOnboardingService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user: User | undefined = await manager.findOne(User, { where: { invitationToken: token } });
+      const user: User | undefined = await manager.findOne(User, {
+        where: { invitationToken: token },
+        relations: ['organizationUsers'],
+      });
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 
@@ -568,7 +571,13 @@ export class OnboardingService implements IOnboardingService {
       );
       let defaultOrganization: Organization;
       /* CASE: if the user somehow get the invitation from workspace via super-admin */
-      if (defaultOrganizationUser && invitedUser.source !== SOURCE.SIGNUP) {
+      /* Only activate the default workspace when it is a DIFFERENT org from the invited one.
+         If they are the same org, the token must be preserved so the accept-invite page can use it. */
+      if (
+        defaultOrganizationUser &&
+        invitedUser.source !== SOURCE.SIGNUP &&
+        defaultOrganizationUser.organizationId !== invitedUser['invitedOrganizationId']
+      ) {
         await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
         defaultOrganization = await this.organizationRepository.fetchOrganization(
           defaultOrganizationUser.organizationId
@@ -726,6 +735,7 @@ export class OnboardingService implements IOnboardingService {
           to: existingUser.email,
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
+          organizationId: existingUser.defaultOrganizationId,
         },
       });
       return;

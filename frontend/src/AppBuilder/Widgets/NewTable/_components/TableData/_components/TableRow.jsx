@@ -57,15 +57,18 @@ export const TableRow = ({
       data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
     >
       {row.getVisibleCells().map((cell) => {
+        const isButtonColumn = cell.column.columnDef?.meta?.columnType === 'button';
         const cellStyles = {
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
             cellValue: cell.getValue(),
           }),
-          justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
+          justifyContent: isButtonColumn
+            ? undefined
+            : determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
           display: 'flex',
           alignItems: 'center',
-          textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          textAlign: isButtonColumn ? undefined : cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
         };
 
@@ -79,10 +82,15 @@ export const TableRow = ({
         return (
           <td
             key={cell.id}
-            data-cy={`${generateCypressDataCy(componentName)}-${generateCypressDataCy(typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id)}-row-${virtualRow.index}`}
+            data-cy={`${generateCypressDataCy(componentName)}-${generateCypressDataCy(
+              typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id
+            )}-row-${virtualRow.index}`}
             style={cellStyles}
             className={cx('table-cell td', {
-              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+              'has-actions':
+                cell.column.id === 'rightActions' ||
+                cell.column.id === 'leftActions' ||
+                cell.column.columnDef?.meta?.columnType === 'button',
               'has-left-actions': cell.column.id === 'leftActions',
               'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
@@ -110,8 +118,13 @@ export const TableRow = ({
               isEdited: isEdited,
             })}
             onClick={(e) => {
+              const columnType = cell.column.columnDef?.meta?.columnType;
               // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
               if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
+                e.stopPropagation();
+                fireEvent('onRowClicked');
+              } else if (columnType === 'button' && allowSelection && row.getIsSelected()) {
+                // if the cell is a button column and the row is selected, don't unselect the row and fire the onRowClicked event
                 e.stopPropagation();
                 fireEvent('onRowClicked');
               } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
@@ -130,8 +143,9 @@ export const TableRow = ({
             }}
           >
             <div
-              className={`td-container ${cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
-                } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
+              className={`td-container ${
+                cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
+              } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
             >
               {flexRender(cell.column?.columnDef?.cell, cell.getContext())}
             </div>

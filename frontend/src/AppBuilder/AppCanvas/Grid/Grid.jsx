@@ -31,6 +31,7 @@ import {
   dragContextBuilder,
   getAdjustedDropPosition,
   getDroppableSlotIdOnScreen,
+  isInsideNestedListview,
   isTargetModuleContainer,
   computeWidgetDropPosition,
   getRevertPosition,
@@ -38,6 +39,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
@@ -89,7 +91,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const canvasWidth = NO_OF_GRIDS * gridWidth;
-  const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
+  const getHoveredComponentForGrid = useTransientStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
   // const [dragParentId, setDragParentId] = useState(null);
@@ -477,12 +479,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       if (componentType === 'ModuleContainer') {
         return;
       }
-      useStore.getState().setHoveredComponentBoundaryId(targetId);
+      useTransientStore.getState().setHoveredComponentBoundaryId(targetId);
 
       updateDashedBordersOnHover(targetId);
     };
     const hideConfigHandle = () => {
-      useStore.getState().setHoveredComponentBoundaryId('');
+      useTransientStore.getState().setHoveredComponentBoundaryId('');
     };
     if (moveableBox) {
       moveableBox.addEventListener('mouseover', showConfigHandle);
@@ -545,7 +547,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           widgetsTypeToBeDropped.includes(widgetType)
         ) || [];
 
-      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0;
+      // Check ListView nesting restriction:
+      // If dragging a ListView into a slot inside a nested ListView, block it
+      let listviewDepthExceeded = false;
+      if (widgetsTypeToBeDropped.includes('Listview') && isInsideNestedListview(targetSlotId, boxList)) {
+        listviewDepthExceeded = true;
+        restrictedWidgetsTobeDropped = ['Listview'];
+      }
+
+      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !listviewDepthExceeded;
 
       const isParentModuleContainer = isTargetModuleContainer(targetSlotId, isModuleEditor);
 
@@ -1092,7 +1102,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Apply bounds clamping to prevent widget from going out of canvas
             useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
-            const draggingWidgetWidth = getDraggingWidgetWidth(currentDragCanvasId, e.target.clientWidth);
+            const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
             e.target.style.width = `${draggingWidgetWidth}px`;
 
             e.target.style.transform = `translate(${left}px, ${top}px)`;
@@ -1122,7 +1132,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Snap to grid + add scroll delta to keep widget under cursor
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
-          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas

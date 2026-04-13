@@ -64,6 +64,7 @@ export const Tabs = function Tabs({
   properties,
   currentMode,
   subContainerIndex,
+  componentType,
 }) {
   const { tabWidth, boxShadow } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -157,6 +158,7 @@ export const Tabs = function Tabs({
     componentCount,
     visibility: widgetVisibility,
     subContainerIndex,
+    componentType,
   });
 
   useEffect(() => {
@@ -695,4 +697,4 @@ const TabContent = memo(function TabContent({
     </div>
   );
 },
-  areEqual);
+areEqual);
