@@ -101,7 +101,7 @@ export function BaseWorkspaceSelector(props) {
 
           <SelectSeparator className="tw-bg-border-weak" />
 
-          <SelectGroup>
+          <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
             {workspaceList?.map((workspace) => (
               <SelectItem className="tw-gap-1.5 tw-pl-2" key={workspace.id} value={workspace.id} showCheckIcon={false}>
                 <Avatar workspaceName={workspace.name} />
