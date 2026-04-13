@@ -82,7 +82,14 @@ export default function WorkspaceSelector() {
 
           <SelectSeparator className="tw-bg-border-weak" />
 
-          <Button isLucid variant="ghost" leadingIcon="plus" className="tw-w-full" onClick={handleAddNewWorkspace}>
+          <Button
+            isLucid
+            variant="ghost"
+            leadingIcon="plus"
+            className="tw-w-full"
+            onClick={handleAddNewWorkspace}
+            data-cy="add-new-workspace-link"
+          >
             Add new workspace
           </Button>
         </SelectContent>
