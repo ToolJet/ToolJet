@@ -236,12 +236,9 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
 
   const isDeleteActionType = actionType === 'delete';
   const isImportAnywayActionType = actionType === 'import-anyway';
-  const isNonFormDialog = isDeleteActionType || isImportAnywayActionType;
+  const isAlertDialog = isDeleteActionType || isImportAnywayActionType;
 
-  const submitBtnLabel = isImportAnywayActionType
-    ? 'Import anyway'
-    : `${capitalize(actionType)} ${appTypeDisplayName.toLowerCase()}`;
-  const title = isNonFormDialog ? '' : submitBtnLabel;
+  const { title, submitBtnLabel } = getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog });
   const isNameInvalid = name.trim().length === 0 || name?.length > 50 || Boolean(errorText);
   const isNameChangeRequired = ['rename'].includes(actionType);
   const isNameChanged = name?.trim() !== appDetails?.name;
@@ -272,7 +269,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
           form: `${actionType}-${appType}-form`,
           'data-cy': generateCypressDataCy(`${actionType}-${appType}-button`),
           ...(isDeleteActionType && { variant: 'dangerPrimary' }),
-          ...(isNonFormDialog && { onClick: handleSubmitForm }),
+          ...(isAlertDialog && { onClick: handleSubmitForm }),
         },
       ]}
     >
@@ -429,4 +426,24 @@ function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
       </ul>
     </Collapsible>
   );
+}
+
+function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog }) {
+  switch (actionType) {
+    case 'create-from-template':
+      return {
+        title: 'Create from template',
+        submitBtnLabel: `Create ${appTypeDisplayName.toLowerCase()}`,
+      };
+    case 'import-anyway':
+      return {
+        title: '',
+        submitBtnLabel: 'Import anyway',
+      };
+    default: {
+      const submitBtnLabel = `${capitalize(actionType)} ${appTypeDisplayName.toLowerCase()}`;
+
+      return { title: isAlertDialog ? '' : submitBtnLabel, submitBtnLabel };
+    }
+  }
 }
