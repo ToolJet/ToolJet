@@ -7,10 +7,11 @@ import { ISetupOrganizationsService } from './interfaces/IService';
 import { OrganizationInputs } from './types/organization-inputs';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-
 @Injectable()
 export class SetupOrganizationsService implements ISetupOrganizationsService {
-  constructor(protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService) {}
+  constructor(
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+  ) { }
 
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     const organization = await this.setupOrganizationsUtilService.create(organizationInputs, user, manager);
