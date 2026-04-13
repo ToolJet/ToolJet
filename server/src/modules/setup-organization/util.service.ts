@@ -35,7 +35,7 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
     protected readonly organizationUserRepository: OrganizationUsersRepository,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourcesRepository: DataSourcesRepository
-  ) {}
+  ) { }
 
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
