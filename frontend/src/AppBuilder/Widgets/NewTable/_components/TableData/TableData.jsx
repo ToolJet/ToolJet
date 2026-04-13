@@ -9,8 +9,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-
-const DEFAULT_EXPANSION_HEIGHT = 250;
+import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
 
 export const TableData = ({
   id,

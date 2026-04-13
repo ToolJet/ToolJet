@@ -302,7 +302,7 @@ export const tableConfig = {
       displayName: 'Expanded row height',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 250,
+        defaultValue: 229,
       },
       conditionallyRender: {
         key: 'enableExpandableRows',
@@ -775,7 +775,7 @@ export const tableConfig = {
       dynamicHeight: { value: `{{false}}` },
       selectRowOnCellEdit: { value: '{{false}}' },
       enableExpandableRows: { value: '{{false}}' },
-      expansionHeight: { value: '{{250}}' },
+      expansionHeight: { value: '{{229}}' },
     },
     events: [],
     styles: {

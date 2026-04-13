@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
-
-const DEFAULT_EXPANSION_HEIGHT = 250;
+import { DEFAULT_EXPANSION_HEIGHT } from '../../../_utils/helper';
 
 export const ExpandedRowContainer = ({
   tableId,

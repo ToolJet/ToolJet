@@ -1,6 +1,7 @@
 import { has } from 'lodash';
 import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) => {
@@ -68,7 +69,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? false;
         state.components[id].properties.enableExpandableRows = properties?.enableExpandableRows ?? false;
-        state.components[id].properties.expansionHeight = properties?.expansionHeight ?? 250;
+        state.components[id].properties.expansionHeight = properties?.expansionHeight ?? DEFAULT_EXPANSION_HEIGHT;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;

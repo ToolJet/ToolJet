@@ -47,7 +47,7 @@ export const TableContainer = ({
   const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
   const toggleRowExpansion = useTableStore((state) => state.toggleRowExpansion, shallow);
   const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
-  const expansionHeight = useTableStore((state) => state.getTableProperties(id)?.expansionHeight ?? 250, shallow);
+  const expansionHeight = useTableStore((state) => state.getTableProperties(id)?.expansionHeight, shallow);
 
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
