@@ -3,7 +3,7 @@ set -e
 
 # Start Redis if not already running (bundled sidecar for single-instance CE)
 if ! pgrep -x redis-server > /dev/null 2>&1; then
-  redis-server /etc/redis/redis.conf
+  redis-server /app/redis.conf
   echo "Redis started"
 fi
 

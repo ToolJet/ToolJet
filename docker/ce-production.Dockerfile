@@ -106,8 +106,9 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /var/lib/redis /var/log/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis
 # Configure Redis — bind to localhost only, daemonized, no persistence needed for CE single-instance
+# Written to /app (appuser-owned) to avoid /etc/redis permission issues
 RUN printf 'bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis\n' \
-    > /etc/redis/redis.conf
+    > /app/redis.conf
 
 # Set npm cache directory
 ENV npm_config_cache /home/appuser/.npm
