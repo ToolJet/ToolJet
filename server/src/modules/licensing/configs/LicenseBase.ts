@@ -263,9 +263,7 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
     }
-    if (!this._app) {
-      return true; //Not passed set to true for older licenses and trial
-    }
+
     return !!this._app['pages']?.features?.canvasPageHeader;
   }
 
@@ -273,9 +271,7 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
     }
-    if (!this._app) {
-      return true; //Not passed set to true for older licenses and trial
-    }
+
     return !!this._app['pages']?.features?.canvasPageFooter;
   }
 
