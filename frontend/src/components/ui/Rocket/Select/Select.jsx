@@ -1,12 +1,12 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
+import * as SelectPrimitive from '@radix-ui/react-select';
+import { Check, ChevronDown } from 'lucide-react';
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import {
   Select as ShadcnSelect,
-  SelectTrigger as ShadcnSelectTrigger,
   SelectContent as ShadcnSelectContent,
-  SelectItem as ShadcnSelectItem,
   // Re-exported unchanged
   SelectValue,
   SelectGroup,
@@ -18,11 +18,15 @@ import {
 
 const selectTriggerVariants = cva(
   [
+    // Layout (from shadcn base)
+    'tw-flex tw-w-full tw-items-center tw-justify-between tw-whitespace-nowrap',
     // Resets (preflight is off — browser adds outset border on buttons)
-    'tw-appearance-none tw-outline-none tw-border-solid',
+    'tw-appearance-none tw-outline-none tw-border tw-border-solid tw-rounded-md',
     // Base tokens (mirrors Input)
     'tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-elevation-000',
     'data-[placeholder]:tw-text-text-placeholder',
+    // SelectValue text truncation
+    '[&>span]:tw-line-clamp-1',
     // Chevron icon colour
     '[&>svg]:tw-text-icon-default [&>svg]:tw-opacity-100',
     // Focus ring (override shadcn)
@@ -32,7 +36,7 @@ const selectTriggerVariants = cva(
     // Error (via aria-invalid)
     'aria-[invalid=true]:tw-border-border-danger-strong aria-[invalid=true]:tw-bg-background-error-weak',
     // Disabled
-    'disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled disabled:tw-border-transparent disabled:tw-shadow-none',
+    'disabled:tw-cursor-not-allowed disabled:tw-opacity-50 disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled disabled:tw-border-transparent disabled:tw-shadow-none',
   ],
   {
     variants: {
@@ -46,12 +50,27 @@ const selectTriggerVariants = cva(
   }
 );
 
-const SelectTrigger = forwardRef(function SelectTrigger({ className, size, ...props }, ref) {
-  return <ShadcnSelectTrigger ref={ref} className={cn(selectTriggerVariants({ size }), className)} {...props} />;
+const SelectTrigger = forwardRef(function SelectTrigger(
+  { className, size, showIcon = false, children, ...props },
+  ref
+) {
+  return (
+    <SelectPrimitive.Trigger ref={ref} className={cn(selectTriggerVariants({ size }), className)} {...props}>
+      {children}
+
+      {showIcon && (
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className="tw-h-4 tw-w-4 tw-opacity-50" />
+        </SelectPrimitive.Icon>
+      )}
+    </SelectPrimitive.Trigger>
+  );
 });
+
 SelectTrigger.displayName = 'SelectTrigger';
 SelectTrigger.propTypes = {
   size: PropTypes.oneOf(['large', 'default', 'small']),
+  showIcon: PropTypes.bool,
   className: PropTypes.string,
 };
 
@@ -73,23 +92,37 @@ SelectContent.displayName = 'SelectContent';
 
 // ── SelectItem ────────────────────────────────────────────────────────────
 
-const SelectItem = forwardRef(function SelectItem({ className, ...props }, ref) {
+const SelectItem = forwardRef(function SelectItem({ className, children, showCheckIcon = true, ...props }, ref) {
   return (
-    <ShadcnSelectItem
+    <SelectPrimitive.Item
       ref={ref}
       className={cn(
-        'tw-h-8 tw-text-base tw-text-text-default tw-rounded-md tw-pl-[30px] tw-pr-2 tw-py-1.5',
+        'tw-relative tw-flex tw-w-full tw-cursor-default tw-select-none tw-items-center tw-rounded-md tw-outline-none',
+        'tw-h-8 tw-text-base tw-text-text-default tw-py-1.5 tw-pr-2',
+        showCheckIcon ? 'tw-pl-[30px]' : 'tw-pl-2',
         'focus:tw-bg-interactive-hover focus:tw-text-text-default',
-        // Move check indicator from right → left
-        '[&>span:first-child]:tw-left-2 [&>span:first-child]:tw-right-auto',
-        '[&>span:first-child_svg]:tw-text-text-brand',
+        'data-[disabled]:tw-pointer-events-none data-[disabled]:tw-opacity-50',
         className
       )}
       {...props}
-    />
+    >
+      {showCheckIcon && (
+        <span className="tw-absolute tw-left-2 tw-flex tw-h-3.5 tw-w-3.5 tw-items-center tw-justify-center">
+          <SelectPrimitive.ItemIndicator>
+            <Check className="tw-h-4 tw-w-4 tw-text-text-brand" />
+          </SelectPrimitive.ItemIndicator>
+        </span>
+      )}
+
+      {typeof children === 'string' ? <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText> : children}
+    </SelectPrimitive.Item>
   );
 });
 SelectItem.displayName = 'SelectItem';
+
+// ── SelectItemText (for explicit composition in custom item layouts) ───────
+
+const SelectItemText = SelectPrimitive.ItemText;
 
 // ── Select (root pass-through) ────────────────────────────────────────────
 
@@ -106,6 +139,7 @@ export {
   selectTriggerVariants,
   SelectContent,
   SelectItem,
+  SelectItemText,
   // Re-exports from shadcn
   SelectValue,
   SelectGroup,
