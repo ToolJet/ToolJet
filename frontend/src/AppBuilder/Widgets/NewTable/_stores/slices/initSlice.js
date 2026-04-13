@@ -116,6 +116,7 @@ export const createInitSlice = (set, get) => ({
           containerBackgroundColor = '#fff',
           columnTitleColor = '#6A727C',
           columnBackgroundColor = '#F6F8FA',
+          padding = 'default',
         } = styles;
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
@@ -133,6 +134,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.containerBackgroundColor = containerBackgroundColor;
         state.components[id].styles.columnTitleColor = columnTitleColor;
         state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
+        state.components[id].styles.containerPadding = padding;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }
