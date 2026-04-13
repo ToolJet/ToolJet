@@ -96,19 +96,18 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
 
-# Configure Redis — bind to localhost, no persistence needed for CE single-instance
-RUN mkdir -p /var/lib/redis /var/log/redis && \
-    chown -R appuser:0 /var/lib/redis /var/log/redis && \
-    chmod -R g=u /var/lib/redis /var/log/redis
-RUN echo "bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis" \
-    > /etc/redis/redis.conf
-
-# Define non-sudo user
+# Define non-sudo user and set up Redis dirs in one layer (appuser must exist before chown)
 RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /app \
     && chown -R appuser:0 /home/appuser \
     && chmod u+x /app \
-    && chmod -R g=u /app
+    && chmod -R g=u /app \
+    && mkdir -p /var/lib/redis /var/log/redis \
+    && chown -R appuser:0 /var/lib/redis /var/log/redis \
+    && chmod -R g=u /var/lib/redis /var/log/redis
+# Configure Redis — bind to localhost only, daemonized, no persistence needed for CE single-instance
+RUN printf 'bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis\n' \
+    > /etc/redis/redis.conf
 
 # Set npm cache directory
 ENV npm_config_cache /home/appuser/.npm
