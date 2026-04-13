@@ -96,7 +96,7 @@ async function createLocalSSHTunnel(
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
-  private static readonly BATCH_SIZE = 1000;
+  private static readonly PARAM_THRESHOLD = 60_000;
   private STATEMENT_TIMEOUT;
   private tooljet_edition: string;
 
@@ -617,7 +617,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
         const batchInsertQueries: { query: string; params: unknown[] }[] = recordBatches.map((batchRecords) => {
           const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: batchRecords }) as {
             query: string;
@@ -631,7 +631,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
         const allUpdateQueries: { query: string; params: unknown[] }[] = [];
         for (const batchRecords of recordBatches) {
           const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
@@ -647,7 +647,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const recordBatches = this.splitIntoBatches(records, PostgresqlQueryService.BATCH_SIZE);
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
         const allUpsertQueries: { query: string; params: unknown[] }[] = [];
         for (const batchRecords of recordBatches) {
           const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
@@ -702,6 +702,16 @@ export default class PostgresqlQueryService implements QueryService {
 
       return affectedRows;
     });
+  }
+
+  private computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const SAMPLE_SIZE = 500;
+    const sample =
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+    const numColumns = Math.max(...sample.map((r) => Object.keys(r).length));
+    if (numColumns === 0) return 1000;
+    return Math.max(1, Math.floor(PostgresqlQueryService.PARAM_THRESHOLD / numColumns));
   }
 
   private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
