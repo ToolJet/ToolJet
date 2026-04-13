@@ -387,11 +387,16 @@ export const createResolvedSlice = (set, get) => ({
   setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
     set(
       (state) => {
-        if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+        const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        // Array.isArray check handles the case where a component was previously inside a subcontainer (ListView/Kanban/Table) — exposed values stored as a per-row array
+        // Stale array must be replaced with a plain object before setting named properties, otherwise Immer throws error.
+        if (existing === undefined || Array.isArray(existing)) {
           state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
             [property]: value,
           };
-        state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+        } else {
+          existing[property] = value;
+        }
       },
       false,
       {

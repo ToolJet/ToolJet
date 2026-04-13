@@ -1648,8 +1648,10 @@ export const createComponentsSlice = (set, get) => ({
       if (
         newParentComponentType === 'Listview' ||
         newParentComponentType === 'Kanban' ||
+        newParentComponentType === 'Table' ||
         oldParentComponentType === 'Listview' ||
-        oldParentComponentType === 'Kanban'
+        oldParentComponentType === 'Kanban' ||
+        oldParentComponentType === 'Table'
       ) {
         // Add the component to the resolved store
         let resolvedComponentValues = { [componentId]: {} };
@@ -1982,8 +1984,10 @@ export const createComponentsSlice = (set, get) => ({
     if (
       newParentComponentType === 'Listview' ||
       newParentComponentType === 'Kanban' ||
+      newParentComponentType === 'Table' ||
       oldParentComponentType === 'Listview' ||
-      oldParentComponentType === 'Kanban'
+      oldParentComponentType === 'Kanban' ||
+      oldParentComponentType === 'Table'
     ) {
       // Add the component to the resolved store
       const { component } = getComponentDefinition(componentId, moduleId);
