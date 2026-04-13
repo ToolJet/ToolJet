@@ -724,7 +724,11 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
-    const isEmpty = Array.isArray(widgetValue) ? widgetValue.length === 0 : !widgetValue && widgetValue !== 0;
+    // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
+    const optionValueWidgets = ['DropdownV2', 'MultiselectV2'];
+    const isEmpty = Array.isArray(widgetValue)
+      ? widgetValue.length === 0
+      : !widgetValue && widgetValue !== 0 && !(widgetValue === false && optionValueWidgets.includes(componentType));
 
     if (resolvedMandatory == true && isEmpty) {
       return {
