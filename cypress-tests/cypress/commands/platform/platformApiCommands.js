@@ -1238,3 +1238,30 @@ Cypress.Commands.add("apiGetDefaultWorkspace", () => {
     return defaultWorkspace;
   });
 });
+
+Cypress.Commands.add(
+  "apiUpdateLLMKey",
+  (apikey = "", licenseType = "selfhostai", useEnvironmentConfig = false) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "PATCH",
+          url: `${Cypress.env("server_host")}/api/ai/update-key`,
+          headers: headers,
+          body: {
+            apikey: apikey,
+            licenseType: licenseType,
+            useEnvironmentConfig: useEnvironmentConfig,
+          },
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          Cypress.log({
+            name: "apiUpdateKey",
+            displayName: `AI KEY UPDATED : ${licenseType}`,
+          });
+          return response.body;
+        });
+    });
+  }
+);
