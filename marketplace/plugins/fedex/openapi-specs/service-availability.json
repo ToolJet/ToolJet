@@ -1,0 +1,5379 @@
+{
+	"openapi": "3.0.0",
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"schemes": [
+		"https"
+	],
+	"info": {
+		"version": "1.0.0",
+		"title": "Service Availability API"
+	},
+	"paths": {
+		"/availability/v1/transittimes": {
+			"post": {
+				"summary": "Retrieve Services and Transit Times",
+				"description": "This endpoint gives the estimated transit times for a particular shipment.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Retrieve Services and Transit Times",
+				"parameters": [
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. It also helps you to track the transaction with APIF.",
+						"schema": {
+							"type": "string"
+						},
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransitTimeOutputVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "ORIGIN.POSTAL.REQUIRED",
+											"message": "Postal code/ZIP is required"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "LOGIN.REAUTHENTICATE.ERROR",
+											"message": "Re-Login authentication error"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "UNAUTHORIZED.USAGE",
+											"message": "UNAUTHORIZED.USAGE"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"example": {
+									"error": "NOT.FOUND.ERROR",
+									"error_detail": "The resource you requested is no longer available. Please modify your request and try again."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/availability/v1/transittimes\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/availability/v1/transittimes\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/availability/v1/transittimes\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/availability/v1/transittimes');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/availability/v1/transittimes\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/availability/v1/transittimes\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/availability/v1/transittimes\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/availability/v1/packageandserviceoptions": {
+			"post": {
+				"summary": "Retrieve Services and Packaging Options",
+				"description": "Use this endpoint to return a list of all FedEx Express or FedEx Ground services and packaging type combinations that are available between the input origin and destination and subpackaging information.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Get Package and Service Options",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body_1"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CmdcResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "CURRENCYTYPE.PACKAGES.MUST",
+											"message": "Customs Value currency type must be the same for all packages."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/availability/v1/packageandserviceoptions\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/availability/v1/specialserviceoptions": {
+			"post": {
+				"summary": "Retrieve Special Service Options",
+				"description": "Use this endpoint to request list of all available FedEx services, shipment special, service options along with delivery signature options and return shipment types that are available between an origin and destination. You can filter the results using FedEx carrier code(s) and/or service type(s) for specific services.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Get Special Service Options",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body_specialserviceoptions"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AvailabilitycxsResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "PACKAGE.NULLOREMPTY.REQUIRED",
+											"message": "The packaging is required and cannot be null or empty."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/availability/v1/specialserviceoptions\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"TransitTimeOutputVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"description": "This is the output response details for the services and transit time request.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TransitTimeOutput"
+							}
+						]
+					}
+				},
+				"description": "Gives the transit time details of the shipment based on the request provided."
+			},
+			"TransitTimeOutput": {
+				"type": "object",
+				"properties": {
+					"alerts": {
+						"type": "array",
+						"description": "These are alert details received with the response.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"transitTimes": {
+						"type": "array",
+						"description": "These are services and transit times details received in the response.",
+						"items": {
+							"$ref": "#/components/schemas/TransitTime"
+						}
+					},
+					"encoded": {
+						"type": "boolean",
+						"description": "This field specifies the encoded flag.",
+						"example": false
+					}
+				},
+				"description": "This is the output response details for the services and transit time request."
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the api alert code."
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the api alert type.",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the api alert message."
+					}
+				},
+				"description": "Specifies the api alerts."
+			},
+			"TransitTime": {
+				"type": "object",
+				"properties": {
+					"transitTimeDetails": {
+						"type": "array",
+						"description": "Specifies the details regarding transit times.",
+						"xml": {
+							"name": "transitTimeDetailList",
+							"wrapped": true
+						},
+						"items": {
+							"$ref": "#/components/schemas/TransitTimeDetail"
+						}
+					}
+				},
+				"description": "Specifies the commit time for a FedEx Ground shipment."
+			},
+			"TransitTimeDetail": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Type of the service is returned.",
+						"example": "GROUND_HOME_DELIVERY"
+					},
+					"customerMessages": {
+						"type": "array",
+						"description": "These are messages returned in the response.",
+						"items": {
+							"$ref": "#/components/schemas/CustomerMessage"
+						}
+					},
+					"distance": {
+						"$ref": "#/components/schemas/Distance"
+					},
+					"commit": {
+						"$ref": "#/components/schemas/CommitDetail"
+					},
+					"destinationLocation": {
+						"$ref": "#/components/schemas/LocationDetail"
+					},
+					"serviceName": {
+						"type": "string",
+						"description": "Name of service returned.",
+						"example": "FedEx Home Delivery"
+					}
+				},
+				"description": "These are the transit time associated with the available shipment services."
+			},
+			"CustomerMessage": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the message Code received.<br> Example:SERVICE.TYPE.INTERNATIONAL.MESSAGE",
+						"example": "SERVICE.TYPE.INTERNATIONAL.MESSAGE"
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the message received by the customer.<br>                                  Example: Rate does not include duties & taxes, clearance entry fees or other import fees. The payor of duties/taxes/fees will be responsible for any applicable Clearance Entry Fees.",
+						"example": "Rate does not include dities & taxes, clearance entry fees or other import fees.  The payor of duties/taxes/fees will be responsible for any applicable Clearance Entry Fees"
+					}
+				},
+				"description": "Messages concerning the ability to provide an accurate delivery commitment on an International commit quote.  These could be messages providing information about why a commitment could not be returned or a successful message such as REQUEST_COMPLETED"
+			},
+			"Distance": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Indicates the unit of measure for the distance value.",
+						"example": "KM",
+						"enum": [
+							"KM",
+							"MI"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Indicates the distance quantity.",
+						"format": "double",
+						"example": 1.2315135367772556
+					}
+				},
+				"description": "This is a total distance between origin and destination city centers for freight shipments.",
+				"example": {
+					"units": "KM",
+					"value": 1.2315135367772556
+				}
+			},
+			"CommitDetail": {
+				"type": "object",
+				"properties": {
+					"brokerCommitTimestamp": {
+						"type": "string",
+						"description": "The delivery commitment date/time the shipment will arrive at the border. <br>format [YYYY-MM-DDTHH:MM:SS:00Z]",
+						"example": "2020-03-05T00:00:00-06:00"
+					},
+					"cutOffTime": {
+						"type": "string",
+						"description": "Identifies the latest allowed ready time for the pickup option. The time is local to the pickup postal code. It includes a TZD (time zone designator) for FedEx Freight requests.<br> Format:  HH:MM:SS <br> Example: 18:30:00",
+						"format": "HH:MM:SS",
+						"example": "18:30:00"
+					},
+					"commodityName": {
+						"type": "string",
+						"description": "The Commodity applicable to this commitment.",
+						"example": "copper"
+					},
+					"transitDays": {
+						"$ref": "#/components/schemas/CommitDetail_transitDays"
+					},
+					"commitMessageDetails": {
+						"type": "string",
+						"description": "This is a message concerning the ability to provide an accurate delivery commitment on an International commit quote. These could be messages providing information about why a commitment could not be returned or a successful message such as 'REQUEST COMPLETED' "
+					},
+					"derivedDestinationDetail": {
+						"description": "FedEx internal destination address/location details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/CleansedAddressandLocationDetail"
+							}
+						]
+					},
+					"dateDetail": {
+						"$ref": "#/components/schemas/CommitDetail_dateDetail"
+					}
+				},
+				"description": "The delivery commitment details."
+			},
+			"CleansedAddressandLocationDetail": {
+				"type": "object",
+				"properties": {
+					"serviceArea": {
+						"type": "string",
+						"description": "This is the FedEx recognized service area code.",
+						"example": "100015"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "This represents the FedEx-system recognized country code.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"locationId": {
+						"type": "string",
+						"description": "This is the unique FedEx location identifier.",
+						"example": "631278456"
+					},
+					"airportId": {
+						"type": "string",
+						"description": "This is a FedEx unique identifier for the Airport.",
+						"example": "CA4562"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "This represents the FedEx-system recognized postal code.",
+						"example": "685423"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This represents the FedEx-system recognized state or province code.",
+						"example": "TN"
+					},
+					"locationNumber": {
+						"type": "integer",
+						"description": "The op-co specific numeric identifier for a FedEx location.",
+						"format": "int32,",
+						"example": 7856
+					}
+				},
+				"description": "This is the internal FedEx-system recognized address and location details."
+			},
+			"LocationDetail": {
+				"type": "object",
+				"properties": {
+					"geoPositionalCoordinates": {
+						"$ref": "#/components/schemas/LocationDetail_geoPositionalCoordinates"
+					}
+				}
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: PACKAGE.NULLOREMPTY.REQUIRED"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: The packaging is required and cannot be null or empty"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError_2"
+						}
+					}
+				}
+			},
+			"CXSError_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: PACKAGE.NULLOREMPTY.REQUIRED,LOGIN.REAUTHENTICATE.ERROR,UNAUTHORIZED.USAGE,NOT.FOUND.ERROR,INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_TransitTime": {
+				"type": "object",
+				"properties": {
+					"requestedShipment": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment"
+					},
+					"carrierCodes": {
+						"type": "array",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><li>FXSP - FedEx SmartPost</li><li>FXCC - FedEx Custom Critical.</li></ul>",
+						"example": [
+							"FDXG"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG",
+								"FXSP"
+							]
+						}
+					}
+				},
+				"description": "TransitTimeInputVO describes the details needed in order to get the transit times for a particular shipment.    "
+			},
+			"TransitTimeRequestedShipment": {
+				"required": [
+					"packagingType",
+					"recipients",
+					"requestedPackageLineItems",
+					"shipper"
+				],
+				"type": "object",
+				"properties": {
+					"shipper": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipper"
+					},
+					"recipients": {
+						"type": "array",
+						"description": "Provide recipients physical location/address details to where the shipment delivered.",
+						"items": {
+							"$ref": "#/components/schemas/TransitTimeRecipient"
+						}
+					},
+					"serviceType": {
+						"type": "string",
+						"description": "Provide FedEx service type for the shipment. The results will be filtered by the serviceType value indicated.  If no serviceType is indicated then all the applicable services and corresponding transit times will be returned.<br>Example: STANDARD_OVERNIGHT<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>",
+						"example": "FEDEX_GROUND"
+					},
+					"packagingType": {
+						"type": "string",
+						"description": "Specify the packaging used.",
+						"example": "YOUR_PACKAGING"
+					},
+					"shipDatestamp": {
+						"type": "string",
+						"description": "This is the Shipment date. Required for future ship date rates.Default is current date if not indicated or date is in the past.<br>Required Format is YYYY-MM-DD <br> example : 2019-09-01 ",
+						"example": "2019-09-01"
+					},
+					"pickupType": {
+						"type": "string",
+						"description": "Indicate the pickup type method by which the shipment to be tendered to FedEx.<br><i>Note: The value of this element does not specify dispatching the courier for package pickup.</i><br><a onclick='loadDocReference(\"pickuptypes\")'>Click here for more information on Pickup Types.</a><br>Note:For services like FedEx International Connect Plus(FICP) & Regional Economy(RE)/Regional Economy Freight(REF) pickupType is mandatory.",
+						"example": "DROPOFF_AT_FEDEX_LOCATION",
+						"enum": [
+							"CONTACT_FEDEX_TO_SCHEDULE",
+							"DROPOFF_AT_FEDEX_LOCATION",
+							"USE_SCHEDULED_PICKUP"
+						]
+					},
+					"shippingChargesPayment": {
+						"$ref": "#/components/schemas/TransitTimeShippingChargesPayment"
+					},
+					"requestedPackageLineItems": {
+						"type": "array",
+						"description": "One or more package-attribute descriptions, each of which describes an individual package, a group of identical packages, or (for the total-piece-total-weight case) common characteristics of all packages in the shipment.<br>At least one array instance containing the weight for at least one package is required for EXPRESS and GROUND shipments.  Not used for FREIGHT.<br>Single piece requests will have one RequestedPackageLineItem.<br>Multiple piece requests will have multiple RequestedPackageLineItems.<br> Maximum occurrences is 99.",
+						"items": {
+							"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem"
+						}
+					},
+					"shipmentSpecialServices": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices"
+					},
+					"customsClearanceDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_customsClearanceDetail"
+					}
+				},
+				"description": "Provide shipment data details for which a transit time is desired."
+			},
+			"TransitTimeShipper": {
+				"required": [
+					"countryCode",
+					"postalCode"
+				],
+				"type": "object",
+				"properties": {
+					"city": {
+						"type": "string",
+						"description": "The name of city, town, etc. <br>Example: Beverly Hills",
+						"example": "Collierville"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "Identifying abbreviation for US state, canada Province. Format and presence of this field will vary, depending on the country. State code is required for US, CA, PR and not required for other countries. Conditional. Not used for Ground/SmartPost. Max length is 2.<br> Example: TN",
+						"example": "TN"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Identification of a region for mail/package delivery. Format and presence of this field will vary, depending on the country. Optional for non postal-aware countries. Maximum length is 10. <br>Example: 38127",
+						"example": "38127"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country. Max length is two.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicates whether this address is residential (as opposed to commercial).<br>Example: false",
+						"example": false
+					}
+				},
+				"description": "Descriptive data on physical location. May be used as an actual physical address (place where one could go), or as a container of address parts, which should be handled as a unit (such as a city-state-ZIP combination within the US). Country code is required. Postal code is required for postal aware countries."
+			},
+			"TransitTimeRecipient": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/TransitTimeRecipient_address"
+					}
+				},
+				"description": "Indicate the descriptive data for the recipient location to which the shipment is to be received."
+			},
+			"TransitTimeShippingChargesPayment": {
+				"type": "object",
+				"properties": {
+					"payor": {
+						"$ref": "#/components/schemas/TransitTimeShippingChargesPayment_payor"
+					},
+					"paymentType": {
+						"type": "string",
+						"description": "Applicable for Express and Ground rates.<br>\nIndicates who and how the shipment will be paid for.",
+						"example": "COLLECT",
+						"enum": [
+							"SENDER",
+							"RECIPIENT",
+							"THIRD_PARTY",
+							"COLLECT"
+						]
+					}
+				},
+				"description": "Details about who and how the shipment will be paid for. 'payor' is optional when 'paymentType' provided is SENDER.<br>Note: For services like FedEx International Connect Plus(FICP) & Regional Economy(RE)/Regional Economy Freight(REF) account number is mandatory to be provided under shippingChargesPayment."
+			},
+			"TransitTimeRequestedPackageLineItem": {
+				"required": [
+					"weight"
+				],
+				"type": "object",
+				"properties": {
+					"declaredValue": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_declaredValue"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_weight"
+					},
+					"dimensions": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_dimensions"
+					},
+					"packageSpecialServices": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices"
+					}
+				}
+			},
+			"TransitTimeCommodity": {
+				"required": [
+					"customsValue",
+					"description",
+					"numberOfPieces"
+				],
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Indicate the description of the dutiable packages.<br> Maximum Length is 450. <br> Example: DOCUMENTS <br><a onclick='loadDocReference(\"vaguecommoditydescriptions\")'>Click here to see Vague commodity descriptions</a>",
+						"example": "DOCUMENTS"
+					},
+					"quantity": {
+						"type": "integer",
+						"description": "Specify the total number of units (using quantityUnits as the unit of measure) of this commodity present in the shipment. This element is used to estimate duties and taxes. <br>Example: 1",
+						"format": "int32",
+						"example": 1
+					},
+					"unitPrice": {
+						"$ref": "#/components/schemas/TransitTimeCommodity_unitPrice"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_shipmentDryIceDetail_totalWeight"
+					},
+					"customsValue": {
+						"$ref": "#/components/schemas/TransitTimeCommodity_unitPrice"
+					},
+					"numberOfPieces": {
+						"type": "integer",
+						"description": "Specifies the number of pieces for this commodity.<br>Example: 10",
+						"format": "int32",
+						"example": 1
+					},
+					"countryOfManufacture": {
+						"type": "string",
+						"description": "This is a manufacturing country. Maximum field Length is 4.<br>Example: IN",
+						"example": "US"
+					},
+					"quantityUnits": {
+						"type": "string",
+						"description": "Indicate unit quantity used to estimate duties and taxes.<br>Example: PCS",
+						"example": "PCS"
+					},
+					"name": {
+						"type": "string",
+						"description": "Indicate the Commodity name.<br>Example: DOCUMENTS",
+						"example": "DOCUMENTS"
+					},
+					"harmonizedCode": {
+						"type": "string",
+						"description": "This is to specify the Harmonized Tariff System (HTS) code to meet U.S. and foreign governments' customs requirements. These are mainly used to estimate the duties and taxes.<br>Example: A six digit code for Almonds fresh or dried is 080211. The HTS code for pistachios in shell is 080251. The HTS code for fish is HS203.<br>To research the classification for your commodity, use the FedEx Global Trade Manager online at <a href='http://www.fedex.com/gtm' target='_blank'>fedex.com/gtm</a>. You can find the commodities and its respective codes by logging into FedEx and selecting harmonized code option. You will find country-specific information to determine whether your commodity is considered to be a document or non-document for your destination. <br>For additional information about harmonized code, refer to <a href='https://www.usitc.gov/documents/hts_external_guide.pdf' target='_blank'>harmonized code</a>.",
+						"example": "080211"
+					},
+					"partNumber": {
+						"type": "string",
+						"description": "Specify the part number if any. Example: P1",
+						"example": "P1"
+					}
+				}
+			},
+			"TransitTimes_Domestic": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "38017",
+								"countryCode": "US"
+							}
+						},
+						"recipients": [
+							{
+								"address": {
+									"postalCode": "38127",
+									"countryCode": "US"
+								}
+							}
+						],
+						"packagingType": "YOUR_PACKAGING",
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "10"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXG"
+					]
+				}
+			},
+			"TransitTimes_International": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "38017",
+								"countryCode": "US"
+							}
+						},
+						"recipients": [
+							{
+								"address": {
+									"postalCode": "75001",
+									"countryCode": "FR"
+								}
+							}
+						],
+						"packagingType": "YOUR_PACKAGING",
+						"customsClearanceDetail": {
+							"commodities": [
+								{
+									"description": "COMMODITIES",
+									"customsValue": {
+										"amount": "100",
+										"currency": "USD"
+									},
+									"numberOfPieces": 1
+								}
+							]
+						},
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "10"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE"
+					]
+				}
+			},
+			"CmdcResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_Package"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_Package": {
+				"$ref": "#/components/schemas/PackageAndServiceOptionsOutputVO"
+			},
+			"PackageAndServiceOptionsOutputVO": {
+				"type": "object",
+				"properties": {
+					"packageOptions": {
+						"type": "array",
+						"description": "The available packaging options for the shipment. This also includes the applicable rate types, the weight limit, or any other information related to the shipment. </br>Valid values for the weight limit are:<br>-maxMetricWeightAllowed<br>-maxWeightAllowed<br>-oneRateMaxWeightAllowed<br>-oneRateMaxMetricWeightAllowed",
+						"items": {
+							"$ref": "#/components/schemas/PackageTypeDetail"
+						}
+					},
+					"oneRate": {
+						"type": "boolean",
+						"description": "Indicates if OneRate is applicable to the packaging. Returns the response as True if OneRate is applicable. Otherwise the response is False.",
+						"example": true
+					},
+					"advancedRegulatoryPackages": {
+						"type": "array",
+						"description": "The information for advanced regulatory packages.",
+						"items": {
+							"description": "Response model which holds information about advancedRegulatoryPackages such as Key, DisplayText",
+							"allOf": [
+								{
+									"$ref": "#/components/schemas/KeyDisplayTextVO1"
+								}
+							]
+						}
+					},
+					"serviceOptions": {
+						"type": "array",
+						"description": "A list of key and value pairs representing the available service and packaging options.",
+						"example": {
+							"key": "FEDEX_GROUND",
+							"displayText": "FedEx Ground"
+						},
+						"items": {
+							"allOf": [
+								{
+									"$ref": "#/components/schemas/KeyDisplayTextVO_2"
+								}
+							]
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "The cxs alert type, alert code, and alert message that is received when package and service options are requested.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "This is the output response details of Service and Packaging Option request.",
+				"example": {
+					"packageOptions": [
+						{
+							"serviceType": {
+								"displayText": "FedEx Ground",
+								"key": "FEDEX_GROUND"
+							},
+							"oneRateMaxWeightAllowed": {
+								"units": "KG",
+								"value": 68
+							},
+							"maxWeightAllowed": {
+								"units": "KG",
+								"value": 68
+							},
+							"rateTypes": [
+								"WEIGHT_BASED",
+								"FLAT_BASED"
+							],
+							"packagingInfoList": [
+								{
+									"dimensionText": "9-1/2” x 12-1/2",
+									"description": "Letter"
+								}
+							],
+							"packageType": {
+								"displayText": "FedEx Box",
+								"key": "FEDEX_BOX"
+							},
+							"maxMetricWeightAllowed": {
+								"units": "KG",
+								"value": 68
+							},
+							"oneRateMaxMetricWeightAllowed": {
+								"units": "KG",
+								"value": 68
+							}
+						}
+					],
+					"oneRate": true,
+					"advancedRegulatoryPackages": [
+						{
+							"displayText": "FedEx Ground",
+							"key": "FEDEX_GROUND"
+						}
+					],
+					"serviceOptions": [
+						{
+							"key": "FEDEX_GROUND",
+							"displayText": "FedEx Ground"
+						}
+					],
+					"alerts": [
+						{
+							"code": "code",
+							"alertType": "NOTE",
+							"message": "alert message"
+						}
+					]
+				}
+			},
+			"PackageTypeDetail": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"description": "Service Type represents some services like FEDEX_GROUND,INTERNATIONAL_PRIORITY, etc..,<br>Example: INTERNATIONAL_PRIORITY<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/KeyDisplayTextVO"
+							}
+						]
+					},
+					"oneRateMaxWeightAllowed": {
+						"description": "Maximum Weight allowed for the Packaging type to send with One Fixed Rate",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"maxWeightAllowed": {
+						"description": "Maximum Weight allowed for the Packaging type",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"rateTypes": {
+						"type": "array",
+						"description": "A set of possible rate types allowed for each Package type",
+						"example": "WEIGHT_BASED, FLAT_BASED, MULTI-WEIGHT rates",
+						"items": {
+							"type": "string"
+						}
+					},
+					"packagingInfoList": {
+						"type": "array",
+						"description": "An array of possible packaging types, a packaging description and applicable dimensions for each Package type.",
+						"items": {
+							"$ref": "#/components/schemas/SubPackageInfo"
+						}
+					},
+					"packageType": {
+						"$ref": "#/components/schemas/KeyDisplayTextVO"
+					},
+					"maxMetricWeightAllowed": {
+						"description": "Maximum Metric Weight allowed for the Packaging type",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"oneRateMaxMetricWeightAllowed": {
+						"description": "Maximum Metric Weight allowed for the Packaging type with One Fixed Rate",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"maxDeclaredValue": {
+						"description": "This is the maximum declared value.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Money"
+							}
+						]
+					}
+				},
+				"description": "Holds the details of allowed Packaging Types for the origin and destination provided.",
+				"example": {
+					"maxMetricWeightAllowed": {
+						"units": "KG",
+						"value": 1
+					},
+					"maxWeightAllowed": {
+						"units": "LB",
+						"value": 1.5
+					}
+				}
+			},
+			"KeyDisplayTextVO": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/KeyDisplayTextVO1"
+					},
+					{
+						"required": [
+							"displayText",
+							"key"
+						],
+						"properties": {
+							"displayText": {
+								"description": "Display Text",
+								"example": "FedEx Ground"
+							},
+							"key": {
+								"description": "Unique Key",
+								"example": "FEDEX_GROUND"
+							}
+						}
+					}
+				]
+			},
+			"KeyDisplayTextVO1": {
+				"type": "object",
+				"properties": {
+					"displayText": {
+						"type": "string",
+						"description": "Display Text",
+						"example": "FedEx Ground"
+					},
+					"key": {
+						"type": "string",
+						"description": "Unique Key",
+						"example": "FEDEX_GROUND"
+					}
+				},
+				"description": "this object holds applicable key and display text value pairs.",
+				"example": {
+					"displayText": "FedEx Ground",
+					"key": "FEDEX_GROUND"
+				}
+			},
+			"Weight": {
+				"description": "These are the weight details.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Weight1"
+					},
+					{
+						"required": [
+							"units",
+							"value"
+						],
+						"properties": {
+							"units": {
+								"type": "string",
+								"description": "This is package weight type.<br> Example: KG",
+								"example": "LB"
+							},
+							"value": {
+								"type": "number",
+								"description": "Weight Value.<br> Example: 68.25<br><a href='https://developer.fedex.com/api/en-us/guides/api-reference.html#packagetypes' target='_blank'>Click here to see Weight Values</a>",
+								"example": 10
+							}
+						}
+					}
+				]
+			},
+			"Weight_With_Link": {
+				"description": "These are the package weight details.",
+				"type": "object",
+				"required": [
+					"units",
+					"value"
+				],
+				"properties": {
+					"units": {
+						"description": "Specifies the package weight unit type.<br>Example:KG",
+						"type": "string",
+						"enum": [
+							"KG",
+							"LB"
+						],
+						"example": "KG"
+					},
+					"value": {
+						"format": "double",
+						"description": "Weight Value.<br> Example: 68.25<br><a href=\"/developer-portal/en-us/reference-guide.html#packagetypes\" target=\"_blank\">Click here to see Weight Values</a>",
+						"type": "number",
+						"example": 68.25
+					}
+				}
+			},
+			"Weight_Without_Link": {
+				"description": "These are the package weight details.",
+				"type": "object",
+				"required": [
+					"units",
+					"value"
+				],
+				"properties": {
+					"units": {
+						"description": "Specifies the package weight unit type.<br>Example:KG",
+						"type": "string",
+						"enum": [
+							"KG",
+							"LB"
+						],
+						"example": "KG"
+					},
+					"value": {
+						"format": "double",
+						"description": "Weight Value.<br> Example: 68.25",
+						"type": "number",
+						"example": 68.25
+					}
+				}
+			},
+			"StandaloneBatteryDetails": {
+				"type": "object",
+				"properties": {
+					"batteryMaterialType": {
+						"type": "string",
+						"description": "Describes the material composition of the battery or cell.",
+						"example": "LITHIUM_METAL",
+						"enum": [
+							"LITHIUM_METAL",
+							"LITHIUM_ION"
+						]
+					}
+				}
+			},
+			"Weight1": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Specify the unit of measurement used to weigh the shipment. The package and commodity weight unit should be the same else the request will result in an error.",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Specify the value of weight of shipment.<br>Example: 68.25",
+						"format": "double",
+						"example": 10
+					}
+				},
+				"description": "Specify the total weight of the shipment. <br>This is only applies to International shipments and should be used on the first package of a multiple piece shipment. This value contains 1 explicit decimal position.",
+				"example": {
+					"units": "LB",
+					"value": 10
+				}
+			},
+			"SubPackageInfo": {
+				"type": "object",
+				"properties": {
+					"dimension": {
+						"type": "string",
+						"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+						"example": "9-1/2\" x 15-1/2\" IN"
+					},
+					"description": {
+						"type": "string",
+						"description": "The description of the SubPackage Type",
+						"example": "Legal"
+					}
+				},
+				"description": "Holds the Sub Packaging details for the PackageType",
+				"example": {
+					"dimension": "9-1/2\" x 15-1/2\" IN",
+					"description": "Letter, Legal"
+				}
+			},
+			"Money": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "This is the amount. Max length 18 including decimal.<br>Example: 12.45",
+						"format": "double",
+						"example": 12.45
+					},
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.<br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					}
+				},
+				"description": "Optional, but if indicated 'amount' and 'currency' must be provided."
+			},
+			"KeyDisplayTextVO_2": {
+				"$ref": "#/components/schemas/KeyDisplayTextVO1"
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_Package_And_Service_Options": {
+				"required": [
+					"requestedShipment"
+				],
+				"type": "object",
+				"properties": {
+					"requestedShipment": {
+						"description": "The descriptive data for the requested shipment.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/PackageAndOptionsRequestedShipment"
+							}
+						]
+					},
+					"carrierCodes": {
+						"type": "array",
+						"description": "\"Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><li>FXSP - FedEx SmartPost</li><li>FXCC - FedEx Custom Critical.</li></ul>\"",
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG",
+								"FXFR",
+								"FXSP"
+							]
+						}
+					},
+					"accountNumber": {
+						"description": "This is a Payor account number associated with the shipment. Account number is required, for SmartPost shipments (i.e. Carrier code: FXSP)",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AccountNumber1"
+							}
+						]
+					},
+					"systemOfMeasureType": {
+						"type": "string",
+						"description": "This is system measurement type, such as Imperial or Metric.",
+						"example": "METRIC",
+						"enum": [
+							"IMPERIAL",
+							"METRIC"
+						]
+					}
+				},
+				"description": "These are the input elements for requesting package and service options."
+			},
+			"PackageAndOptionsRequestedShipment": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/PackageAndOptionsRequestedShipment_2"
+					},
+					{
+						"properties": {
+							"recipients": {
+								"description": "These are recipient details, such as postal Code, state or  province code, and country code of the recipient. Note: At least one recipient is required."
+							}
+						}
+					},
+					{
+						"example": {
+							"recipients": [
+								{
+									"address": {
+										"streetLines": [
+											"Bldg. 10",
+											"10 FedEx Parkway"
+										],
+										"postalCode": "m1m1m1",
+										"countryCode": "CA",
+										"city": "Beverly Hills",
+										"stateOrProvinceCode": "CA",
+										"residential": false
+									}
+								}
+							]
+						}
+					}
+				]
+			},
+			"PackageAndOptionsRequestedShipment_2": {
+				"required": [
+					"recipients",
+					"shipper"
+				],
+				"type": "object",
+				"properties": {
+					"shipper": {
+						"$ref": "#/components/schemas/Party_Shipper"
+					},
+					"recipients": {
+						"type": "array",
+						"description": "Specifies the recipient details, such as postal code, state or province code, and country code of the recipient. Note: At least one recipient is required.",
+						"items": {
+							"$ref": "#/components/schemas/Party"
+						}
+					},
+					"shipDateStamp": {
+						"type": "string",
+						"description": "Required.<br>Specify the Shipment date. Required for future ship date. Default is current date if not indicated or date is in the past. <br>Format is YYYY-MM-DD.<br>Example: 2019-09-06",
+						"example": "2020-02-28"
+					},
+					"requestedPackageLineItems": {
+						"type": "array",
+						"description": "These are one or more package-attribute descriptions, each of which describes an individual package, a group of identical packages, or (for the total-piece-total-weight case) common characteristics of all packages in the shipment.<ul><li>At least one instance containing the weight for at least one package is required for EXPRESS and GROUND shipments.</li><li>Not used for FREIGHT.</li><li>Single piece requests will have one RequestedPackageLineItem.</li><li>Multiple piece requests will have multiple RequestedPackageLineItems.</li><li>Maximum occurrences is 99.</li></ul>",
+						"items": {
+							"$ref": "#/components/schemas/RequestedPackageLineItem"
+						}
+					},
+					"freightShipmentDetail": {
+						"$ref": "#/components/schemas/RequestedShipmentFreightShipmentDetail"
+					},
+					"specialServicesRequested": {
+						"$ref": "#/components/schemas/RequestShipmentSpecialServicesRequested"
+					},
+					"pickupType": {
+						"type": "string",
+						"description": "Conditional Required for Express and Ground, but optional for FREIGHT or SMARTPOST.<br>Indicate the pickup type method by which the shipment yo be tendered to FedEx.<br><i>Note: The value of this element does not specify dispatching the courier for package pickup.</i><br><a onclick='loadDocReference(\"pickuptypes\")'>Click here for more information on Pickup Types.</a><br>Note:For services like FedEx International Connect Plus(FICP) & Regional Economy(RE)/Regional Economy Freight(REF) pickupType is mandatory.",
+						"example": "DROPOFF_AT_FEDEX_LOCATION",
+						"enum": [
+							"CONTACT_FEDEX_TO_SCHEDULE",
+							"DROPOFF_AT_FEDEX_LOCATION",
+							"USE_SCHEDULED_PICKUP"
+						]
+					}
+				}
+			},
+			"Party_Shipper": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"contact": {
+						"$ref": "#/components/schemas/Contact"
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					},
+					"referenceInfo": {
+						"title": "@Ignore4TPP",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ReferenceInfo"
+							}
+						]
+					},
+					"deliveryInstructions": {
+						"title": "@Ignore4TPP",
+						"type": "string",
+						"description": "Optional. Provides delivery instructions.  MaxLength is 90.",
+						"example": "Drop package at apartment Office"
+					},
+					"productInfo": {
+						"title": "@Ignore4TPP",
+						"description": "optional information aboutsender/recipient including Address, Contact, Account, TIN, DeliveryInstructions, Piece, ReferenceInfo, ProductInfo.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ProductInfo"
+							}
+						]
+					}
+				},
+				"description": "The shipper details, such as postal code, state or province code, and country code of the shipper.",
+				"example": {
+					"address": {
+						"streetLines": [
+							"Bldg. 10",
+							"10 FedEx Parkway"
+						],
+						"city": "Collierville",
+						"stateOrProvinceCode": "TN",
+						"postalCode": "38127",
+						"countryCode": "US",
+						"residential": false
+					},
+					"contact": {
+						"personName": "John Taylor",
+						"emailAddress": "sample@company.com",
+						"phoneNumber": "1234567890",
+						"phoneExtension": "phoneExtension",
+						"companyName": "Fedex",
+						"faxNumber": "faxNumber"
+					},
+					"accountNumber": {
+						"value": "Your account number"
+					}
+				}
+			},
+			"Address": {
+				"required": [
+					"countryCode"
+				],
+				"type": "object",
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "This is a combination of number, street name, etc. <br>Note: At least one line is required and streetlines more than 3 will be ignored. Empty lines should not be included.<br>Example: [\\\"10 FedEx Parkway\"\\, \\\"Suite 302\"\\]",
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "This is a placeholder for City Name. <br> Example: Beverly Hills",
+						"example": "Beverly Hills"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code. <br> Example: CA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "CA"
+					},
+					"postalCode": {
+						"description": "This is the Postal code. This is Optional for non postal-aware countries. Max length is 10.<br> Example: 65247<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "38127"
+					},
+					"countryCode": {
+						"description": "This is a Two-letter country code.Max length is two.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicate whether this address is Residential as opposed to Commercial.",
+						"enum": [
+							true,
+							false
+						]
+					}
+				},
+				"description": "This is detailed information on physical location. May be used as an actual physical address (place to which one could go), or as a container of address parts which should be handled as a unit (such as a city-state-ZIP combination within the US). Country code is required. Postal code is required for postal aware countries."
+			},
+			"Contact": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Specify contact name.Max Length is 70.",
+						"example": "John Taylor"
+					},
+					"emailAddress": {
+						"type": "string",
+						"description": "Specify contact email address. Max length is 80.",
+						"example": "sample@company.com"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Specify contact person's phone number. Max length is 15.",
+						"example": "1234567890"
+					},
+					"phoneExtension": {
+						"type": "string",
+						"description": "Specify contact person's phone extension. Max length is 6."
+					},
+					"faxNumber": {
+						"type": "string",
+						"description": "Specify contact person's fax number. Max length is 15."
+					}
+				},
+				"description": "Indicate the contact details for this shipment."
+			},
+			"AccountNumber": {
+				"description": "Specify the Account number.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/AccountNumber1"
+					}
+				]
+			},
+			"AccountNumber1": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "This is the account number. Max Length is 9. Example: Your account number"
+					}
+				},
+				"description": "This is FedEx account number details.",
+				"example": {
+					"value": "123456789"
+				}
+			},
+			"ReferenceInfo": {
+				"type": "object",
+				"properties": {
+					"regulatoryReferenceNumber": {
+						"type": "string",
+						"description": "Regulatory Reference Number for the shipment"
+					},
+					"yourReference": {
+						"type": "string",
+						"description": "a customizable reference field for the shipment"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "CountryCode of the ReferenceInfo",
+						"example": "US"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "PostalCode of the ReferenceInfo",
+						"example": "38654"
+					},
+					"purchaseOrderNumber": {
+						"type": "string",
+						"description": "Purchase Order Number reference for the shipment"
+					},
+					"departmentNumber": {
+						"type": "string",
+						"description": "Department Number reference for the shipment"
+					},
+					"invoiceNumber": {
+						"type": "string",
+						"description": "Invoice Number reference for the shipment"
+					},
+					"accountNbr": {
+						"type": "string",
+						"description": "AccountNbr reference for the shipment"
+					},
+					"shipDate": {
+						"type": "string",
+						"description": "Ship Date for the shipment",
+						"example": "2019-12-29"
+					},
+					"referenceValue": {
+						"type": "string",
+						"description": "Reference Value attached to the shipment"
+					}
+				},
+				"description": "Customers configurable reference Information for the shipment",
+				"example": {
+					"regulatoryReferenceNumber": "regulatoryReferenceNumber",
+					"yourReference": "yourReference",
+					"countryCode": "US",
+					"postalCode": "38654",
+					"purchaseOrderNumber": 789,
+					"departmentNumber": 456,
+					"invoiceNumber": 123,
+					"accountNbr": "Your account number",
+					"shipDate": "2019-12-18",
+					"referenceValue": "myref123"
+				}
+			},
+			"ProductInfo": {
+				"type": "object",
+				"properties": {
+					"customsValueAndWeightSpecifiedAsUnit": {
+						"type": "boolean",
+						"description": " The total value declared to the Bureau of Customs and Border Protection for all packages in the shipment along with the weight details.",
+						"example": true
+					},
+					"quantity": {
+						"type": "integer",
+						"description": "Quantity of the product in the package/shipment.",
+						"format": "int32",
+						"example": 2
+					},
+					"customsValue": {
+						"type": "number",
+						"description": "Customs value of the product in the package/shipment.",
+						"example": 20
+					},
+					"weightUnitOfMeasureCode": {
+						"type": "string",
+						"description": "Weight measurement unit code of the product in the package/shipment.",
+						"example": "KG"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the product in the package/shipment.",
+						"example": "Books"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/PackageWeight"
+					},
+					"sedRequired": {
+						"type": "boolean",
+						"description": "Indicates if shippers export declaration is required or not.",
+						"example": false
+					},
+					"productType": {
+						"type": "string",
+						"description": "Indicates the package/shipment contains documents or non-document commodities.",
+						"example": "COMMODITIES",
+						"enum": [
+							"DOCUMENTS",
+							"COMMODITIES"
+						]
+					},
+					"unitOfMeasureCode": {
+						"type": "string",
+						"description": "Specifies if shippers export declaration is required.<br>Valid values: True, False.",
+						"example": "pieces"
+					},
+					"countryOfManufactureCode": {
+						"type": "string",
+						"description": "Specify the country code of the product manufacturer.",
+						"example": "CA"
+					}
+				},
+				"description": "Information about the contents of the shipment.",
+				"example": {
+					"customsValueAndWeightSpecifiedAsUnit": true,
+					"quantity": 2,
+					"customsValue": 200,
+					"weightUnitOfMeasureCode": "KG",
+					"description": "Books",
+					"weight": {
+						"units": "KG",
+						"value": 68
+					},
+					"sedRequired": false,
+					"productType": "COMMODITIES",
+					"unitOfMeasureCode": "pieces",
+					"countryOfManufactureCode": "CA"
+				}
+			},
+			"PackageWeight": {
+				"description": "Describes the weight of the package/packageType.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Weight"
+					}
+				]
+			},
+			"Party": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"contact": {
+						"$ref": "#/components/schemas/Contact1"
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					}
+				},
+				"description": "optional information about sender/recipient including Address, Contact, Account number.",
+				"example": {
+					"address": {
+						"streetLines": [
+							"Bldg. 10",
+							"10 FedEx Parkway"
+						],
+						"city": "Collierville",
+						"stateOrProvinceCode": "TN",
+						"postalCode": "38127",
+						"countryCode": "US",
+						"residential": false
+					},
+					"contact": {
+						"personName": "John Ryan Taylor",
+						"emailAddress": "sample@fedex.com",
+						"phoneNumber": "1234567890",
+						"phoneExtension": "91",
+						"companyName": "Fedex",
+						"faxNumber": "123456789"
+					},
+					"accountNumber": {
+						"value": "123456789"
+					}
+				}
+			},
+			"Contact1": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Specify the recipient contact person's name. Max Length is 70.<br>Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"emailAddress": {
+						"type": "string",
+						"description": "Contact person's email address. Max length is 80.<br>Example: sample@company.com",
+						"example": "sample@company.com"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Contact person's phone number. Max length is 15.<br>Example: 1234567890",
+						"example": "1234567890"
+					},
+					"phoneExtension": {
+						"type": "string",
+						"description": "contact person's phone extension. Max length is 6.<br>Example: 91",
+						"example": "91"
+					},
+					"faxNumber": {
+						"type": "string",
+						"description": "Contact person's fax number. Max length is 15.<br>Example: 956123",
+						"example": "956123"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Specify contact person's company name. Max length is 35.<br>Example: FedEx",
+						"example": "Fedex"
+					}
+				},
+				"description": "Contact details for the Party such as Name, Email, PhoneNumber",
+				"example": {
+					"personName": "John Taylor",
+					"emailAddress": "sample@company.com",
+					"phoneNumber": "1234567890",
+					"phoneExtension": 1234,
+					"faxNumber": "1234567890",
+					"companyName": "Fedex"
+				}
+			},
+			"RequestedPackageLineItem": {
+				"required": [
+					"weight"
+				],
+				"type": "object",
+				"properties": {
+					"physicalPackaging": {
+						"type": "string",
+						"description": "Specify the packaging used.<br>Example: FEDEX_PAK<br><a onclick='loadDocReference(\"packagetypes\")'>Click here to see Package Types</a>",
+						"example": "FEDEX_ENVELOPE"
+					},
+					"groupPackageCount": {
+						"type": "integer",
+						"description": "Indicate the grouped package count. These are number of identical package(s) each with one or more commodities. <br> Example: 2",
+						"format": "int32",
+						"example": 0
+					},
+					"itemDescriptionForClearance": {
+						"type": "string",
+						"description": "Describe the content of the package for customs clearance purposes. This applies to intra-UAE, intra-Columbia and intra-Brazil shipments.",
+						"example": "Item Description for Clearence"
+					},
+					"customerReferences": {
+						"type": "array",
+						"description": "These are additional customer reference data for commercial invoice.",
+						"items": {
+							"$ref": "#/components/schemas/CustomerReference"
+						}
+					},
+					"contentRecord": {
+						"$ref": "#/components/schemas/RequestedPackageLineItemContentRecord"
+					},
+					"declaredValue": {
+						"$ref": "#/components/schemas/InsuredValue"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/Weight_With_Link"
+					},
+					"dimensions": {
+						"$ref": "#/components/schemas/Dimensions"
+					},
+					"packageSpecialServices": {
+						"$ref": "#/components/schemas/PackageSpecialServicesRequested"
+					}
+				}
+			},
+			"CustomerReference": {
+				"type": "object",
+				"properties": {
+					"customerReferenceType": {
+						"type": "string",
+						"description": "This is a customer reference type. Note: Use type as RMA_ASSOCIATION and value as the RMA Number to associate Ground Call Tag shipments to the outbound shipment.<br><a onclick='loadDocReference(\"customerreferencetypes\")'>For more information, click here for Cutsomer References</a>",
+						"example": "DEPARTMENT_NUMBER",
+						"enum": [
+							"BILL_OF_LADING",
+							"CUSTOMER_REFERENCE",
+							"DEPARTMENT_NUMBER",
+							"INVOICE_NUMBER",
+							"P_O_NUMBER",
+							"SHIPMENT_INTEGRITY",
+							"INTRACOUNTRY_REGULATORY_REFERENCE",
+							"STORE_NUMBER",
+							"RMA_ASSOCIATION",
+							"SHIPPER_ID1",
+							"SHIPPER_ID2"
+						]
+					},
+					"value": {
+						"type": "string",
+						"description": "This is a customer reference type value.<br>Example: 3686",
+						"example": "3686"
+					}
+				}
+			},
+			"RequestedPackageLineItemContentRecord": {
+				"description": "Specify in details the contents of the package.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/ContentRecord"
+					}
+				]
+			},
+			"ContentRecord": {
+				"type": "object",
+				"properties": {
+					"itemNumber": {
+						"type": "string",
+						"description": "This is a package item number.<br> Example: 45673289",
+						"example": "45673289"
+					},
+					"receivedQuantity": {
+						"type": "integer",
+						"description": "This is the package item quantity.<br> Example: 2",
+						"format": "int32",
+						"example": 2
+					},
+					"description": {
+						"type": "string",
+						"description": "This is the description of the package item.",
+						"example": "This is the part number."
+					},
+					"partNumber": {
+						"type": "string",
+						"description": "This is the part Number <br> Example: 123",
+						"example": "123"
+					}
+				},
+				"description": "package/shipment content details"
+			},
+			"InsuredValue": {
+				"description": "This is the Declared Value represents FedEx maximum liability in connection with a shipment of that Package, including but not limited to, any loss, damage, delay, misdelivery, any failure to provide information, or misdelivery of information relating to the Shipment.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Money"
+					}
+				]
+			},
+			"Dimensions": {
+				"description": "Indicate the dimensions of the package. <br>Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer FedEx Service Guide for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Dimensions1"
+					},
+					{
+						"properties": {
+							"height": {
+								"description": "Indicate the height of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+								"example": 30
+							},
+							"length": {
+								"description": "Indicate the length of the package. No implied decimal places. Maximum value: 999 <br> Example: 20",
+								"example": 100
+							},
+							"units": {
+								"description": "Indicate the Unit of measure for the provided dimensions.<br>Valid Values are:              <ul><li>IN - inches</li><li>CM - centimeters</li></ul><i>Note: Any value other than CM including blank/null will default to IN.</i><br>Example: CM"
+							},
+							"width": {
+								"description": "Indicate the width of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+								"example": 50
+							}
+						},
+						"example": {
+							"height": 30,
+							"length": 100,
+							"width": 50,
+							"units": "CM"
+						}
+					}
+				]
+			},
+			"Dimensions1": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Indicate the length of the package. No implied decimal places. Maximum value: 999 <br> Example: 20",
+						"format": "int32",
+						"example": 100
+					},
+					"width": {
+						"type": "integer",
+						"description": "Indicate the width of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+						"format": "int32",
+						"example": 50
+					},
+					"height": {
+						"type": "integer",
+						"description": "Indicate the height of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+						"format": "int32",
+						"example": 30
+					},
+					"units": {
+						"type": "string",
+						"description": "Indicate the Unit of measure for the provided dimensions.<br>Valid Values are:<ul><li>IN - inches</li><li>CM - centimeters</li><br>Note: Any value other than CM including blank/null will default to IN.<br>Example: CM",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"example": {
+					"length": 100,
+					"width": 50,
+					"height": 30,
+					"units": "CM"
+				}
+			},
+			"PackageSpecialServicesRequested": {
+				"required": [
+					"codDetail"
+				],
+				"type": "object",
+				"properties": {
+					"signatureOptionType": {
+						"type": "string",
+						"description": "Indicate the Signature Type.<br>Valid Values:<ul><li>ADULT - Adult signature required, at recipient address.</li><li>DIRECT - Signature required, at recipient address.</li><li>INDIRECT - Signature required, alternate address is accepted.(This option is available for residential deliveries only)</li><li>NO_SIGNATURE_REQUIRED - Signature is not required.</li><li>SERVICE_DEFAULT - Signature handled as per current Service Guide.</li></ul>",
+						"example": "NO_SIGNATURE_REQUIRED",
+						"enum": [
+							"SERVICE_DEFAULT",
+							"NO_SIGNATURE_REQUIRED",
+							"INDIRECT",
+							"DIRECT",
+							"ADULT"
+						]
+					},
+					"signatureOptionDetail": {
+						"$ref": "#/components/schemas/SignatureOptionDetail"
+					},
+					"alcoholDetail": {
+						"$ref": "#/components/schemas/AlcoholDetail"
+					},
+					"dangerousGoodsDetail": {
+						"$ref": "#/components/schemas/DangerousGoodsDetail"
+					},
+					"pieceCountVerificationBoxCount": {
+						"type": "integer",
+						"description": "Provide the pieceCount or VerificationBoxCount for batteries or cells that are contained within this specific package.",
+						"format": "int32",
+						"example": 0
+					},
+					"batteryDetails": {
+						"type": "array",
+						"description": "Indicates the battery details.",
+						"items": {
+							"$ref": "#/components/schemas/BatteryDetail"
+						}
+					},
+					"specialServiceTypes": {
+						"type": "array",
+						"description": "Special services requested for the shipment.<br>Example: <ul><li>RETURN_SHIPMENT</li><li>BROKER_SELECT_OPTION</li><li>CALL_BEFORE_DELIVERY</li><li>COD</li><li>CUSTOM_DELIVERY_WINDOW</li></ul><a onclick='loadDocReference(\"shipmentlevelspecialservicetypes\")'>Click here to see Shipment level Special Service Types</a>",
+						"example": [
+							"BATTERY",
+							"DANGEROUS_GOODS"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"codDetail": {
+						"$ref": "#/components/schemas/PackageSpecialServicesRequestedCodDetail"
+					},
+					"dryIceWeight": {
+						"description": "These are the weight details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight_Without_Link"
+							}
+						]
+					},
+					"standaloneBatteryDetails": {
+						"type": "array",
+						"description": "Provide details about the batteries or cells that are contained within this specific package.",
+						"items": {
+							"$ref": "#/components/schemas/StandaloneBatteryDetails"
+						}
+					}
+				},
+				"description": "These are special services that are available at the package level for some or all service types."
+			},
+			"SignatureOptionDetail": {
+				"type": "object",
+				"properties": {
+					"signatureReleaseNumber": {
+						"type": "string",
+						"description": "This is the release number. Required if signature option is NO_SIGNATURE_REQUIRED.<br> Example: 23456",
+						"example": "TX64739DL7564"
+					}
+				},
+				"description": "These Signature option details.Required  if SignatureOptions is indicated."
+			},
+			"AlcoholDetail": {
+				"required": [
+					"alcoholRecipientType"
+				],
+				"type": "object",
+				"properties": {
+					"alcoholRecipientType": {
+						"type": "string",
+						"description": "Specify the Alcohol Recipient Type of the shipment. <br> Example: <br> <ul><li>LICENSEE- FedEx approved alchol shipper having appropriate licenses. </li><li> CONSUMER- Individual consumer to whom the alchol is shipped.</li></ul>",
+						"enum": [
+							"LICENSEE",
+							"CONSUMER"
+						],
+						"example": "LICENSEE"
+					},
+					"shipperAgreementType": {
+						"type": "string",
+						"description": "Specify the type of entity, the shipper for alcohol shipment is registered such as fulfillment house, retailer or a winery.",
+						"example": "Retailer"
+					}
+				},
+				"description": "These are details for the package containing alcohol. This is required for alcohol special service. The alcoholRecipientType is required."
+			},
+			"DangerousGoodsDetail": {
+				"type": "object",
+				"properties": {
+					"accessibility": {
+						"type": "string",
+						"description": "Specify the Dangerous Goods Accessibility Type. Valid Values: <ul><li>INACCESSIBLE - It does not have to be accessible on the aircraft.</li><li>ACCESSIBLE - It must be fully accessible on the aircraft, and is more strictly controlled.</li></ul>",
+						"example": "ACCESSIBLE",
+						"enum": [
+							"ACCESSIBLE",
+							"INACCESSIBLE"
+						]
+					},
+					"options": {
+						"type": "array",
+						"description": "Indicate the kind of content being reported.",
+						"example": [
+							"HAZARDOUS_MATERIALS",
+							"LIMITED_QUANTITIES_COMMODITIES"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"HAZARDOUS_MATERIALS",
+								"BATTERY",
+								"ORM_D",
+								"REPORTABLE_QUANTITIES",
+								"SMALL_QUANTITY_EXCEPTION",
+								"LIMITED_QUANTITIES_COMMODITIES"
+							]
+						}
+					}
+				},
+				"description": "Use this object to provide Dangerous Goods Detail in the shipment."
+			},
+			"BatteryDetail": {
+				"type": "object",
+				"properties": {
+					"batteryPackingType": {
+						"type": "string",
+						"description": "Describe the packing arrangement of the battery or cell with respect to other items within the same package.",
+						"example": "CONTAINED_IN_EQUIPMENT",
+						"enum": [
+							"CONTAINED_IN_EQUIPMENT",
+							"PACKED_WITH_EQUIPMENT"
+						]
+					},
+					"batteryRegulatoryType": {
+						"type": "string",
+						"description": "This is a regulation specific classification for the battery or the cell.",
+						"example": "IATA_SECTION_II",
+						"enum": [
+							"IATA_SECTION_II"
+						]
+					},
+					"batteryMaterialType": {
+						"type": "string",
+						"description": "Indicate the material composition of the battery or cell.",
+						"example": "LITHIUM_METAL",
+						"enum": [
+							"LITHIUM_METAL",
+							"LITHIUM_ION"
+						]
+					}
+				},
+				"description": "Provide details about the batteries or cells that are contained within this specific package."
+			},
+			"PackageSpecialServicesRequestedCodDetail": {
+				"description": "For Ground-only COD, populate this object for COD detail information at the package level.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/CodDetail"
+					}
+				]
+			},
+			"CodDetail": {
+				"description": "Conditional <br>\nFor Express-only COD, populate this object for COD detail information at the shipment level.  When data is provided in this object, the related COD enum will be populated automatically by RATC",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/CODDetail"
+					},
+					{
+						"required": [
+							"codCollectionAmount"
+						],
+						"properties": {
+							"codCollectionAmount": {
+								"description": "Use this object to specify amount and currency details.",
+								"example": {
+									"currency": "USD",
+									"amount": 100.5
+								}
+							}
+						}
+					}
+				]
+			},
+			"CODDetail": {
+				"required": [
+					"codCollectionAmount"
+				],
+				"type": "object",
+				"properties": {
+					"codCollectionType": {
+						"type": "string",
+						"description": "Identifies the type of funds FedEx should collect upon shipment delivery.",
+						"example": "CASH",
+						"enum": [
+							"COMPANY_CHECK",
+							"ANY",
+							"CASH",
+							"GUARANTEED_FUNDS",
+							"PERSONAL_CHECK"
+						]
+					},
+					"codCollectionAmount": {
+						"$ref": "#/components/schemas/Money"
+					}
+				}
+			},
+			"RequestedShipmentFreightShipmentDetail": {
+				"description": "Conditional<br> Required when using FEDEX_FREIGHT and FEDEX_NATIONAL_FREIGHT services or FXFR carrier code",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/FreightShipmentDetail"
+					}
+				]
+			},
+			"FreightShipmentDetail": {
+				"type": "object",
+				"properties": {
+					"shipmentDimensions": {
+						"$ref": "#/components/schemas/ShipmentDimensions"
+					},
+					"alternateBilling": {
+						"type": "boolean",
+						"description": "Optional : Designates a bill-to address <br> Example: true",
+						"example": true,
+						"enum": [
+							true,
+							false
+						]
+					},
+					"lineItem": {
+						"type": "array",
+						"description": "Required\n\nClass/weight pairs and associated details for a Freight shipment",
+						"items": {
+							"$ref": "#/components/schemas/FreightShipmentLineItem"
+						}
+					},
+					"role": {
+						"type": "string",
+						"description": "Required <br> Indicates the role of the party submitting the transaction <br> Example: SHIPPER",
+						"example": "SHIPPER",
+						"enum": [
+							"CONSIGNEE",
+							"SHIPPER"
+						]
+					},
+					"clientDiscountPercent": {
+						"type": "number",
+						"description": "Conditional <br> This is only used for anonymous rate requests <br> Example: 10.5",
+						"format": "double",
+						"example": 10.5
+					},
+					"fedExFreightBillingContactAndAddress": {
+						"$ref": "#/components/schemas/FedExFreightBillingContactAndAddress"
+					},
+					"aliasID": {
+						"type": "string",
+						"description": " Conditional. <br> This is bill to alias identifier.",
+						"example": "36839"
+					},
+					"liabilityCoverageDetail": {
+						"$ref": "#/components/schemas/FreightShipmentLiabilityCoverageDetail"
+					},
+					"fedExFreightAccountNumber": {
+						"$ref": "#/components/schemas/FedExFreightAccountNumber"
+					},
+					"totalHandlingUnits": {
+						"type": "integer",
+						"description": "Optional\n\nTotal number of individual handling units in the entire shipment (for unit pricing). May not be negative",
+						"format": "int32"
+					}
+				},
+				"description": "Conditional\n\nDetails specific to a FedEx Freight LTL shipment (i.e. FedEx Priority and Economy Freight). If freight shipment detail is applicable, then the following fields are required. 'aliasID', 'clientDiscountPercent', 'fedExFreightAccountNumber', 'fedExFreightBillingContactAndAddress', 'lineItem', and 'role'."
+			},
+			"ShipmentDimensions": {
+				"description": "Optional\n\nOverall Shipment Dimensions Value",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Dimensions1"
+					},
+					{
+						"required": [
+							"height",
+							"length",
+							"units",
+							"width"
+						],
+						"properties": {
+							"length": {
+								"type": "integer",
+								"example": 100
+							},
+							"width": {
+								"type": "integer",
+								"example": 30
+							},
+							"height": {
+								"type": "integer",
+								"example": 50
+							},
+							"units": {
+								"type": "string",
+								"example": "CM"
+							}
+						}
+					}
+				]
+			},
+			"FreightShipmentLineItem": {
+				"required": [
+					"freightClass",
+					"weight"
+				],
+				"type": "object",
+				"properties": {
+					"pieces": {
+						"type": "integer",
+						"description": "Optional <br> Total number of pieces <br> Example: 1",
+						"format": "int32",
+						"example": 1
+					},
+					"volume": {
+						"$ref": "#/components/schemas/Volume"
+					},
+					"handlingUnits": {
+						"type": "integer",
+						"description": "Optional<br>Number of individual handling units to which this line applies. (NOTE - Total of line-item-level handling units may not balance to shipment-level total handling units) <br> Example: 1",
+						"format": "int32",
+						"example": 1
+					},
+					"freightClass": {
+						"type": "string",
+						"description": "Specify the freight class based on the item to be shipped and its weight measured per unit volume(Example: Kilograms per Cubic Meter) the shipment is categorized accordingly.<a href='http://www.fedex.com/en-us/shipping/freight/class-calculator.html' target='_blank'>Click here</a> to use Freight class calculator",
+						"example": "CLASS_050",
+						"enum": [
+							"CLASS_050",
+							"CLASS_055",
+							"CLASS_060",
+							"CLASS_065",
+							"CLASS_070",
+							"CLASS_077_5",
+							"CLASS_085",
+							"CLASS_092_5",
+							"CLASS_100",
+							"CLASS_110",
+							"CLASS_125",
+							"CLASS_150",
+							"CLASS_175",
+							"CLASS_200",
+							"CLASS_250",
+							"CLASS_300",
+							"CLASS_400",
+							"CLASS_500"
+						]
+					},
+					"description": {
+						"type": "string",
+						"description": "Customer-provided description of this line item <br> Example: Description",
+						"example": "Description"
+					},
+					"weight": {
+						"description": "Total weight of items for this line item",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight_Without_Link"
+							}
+						]
+					},
+					"packaging": {
+						"type": "string",
+						"description": "Packaging type for this line item <br> Example: SELFPACKAGE",
+						"example": "SELFPACKAGE"
+					},
+					"classProvidedByCustomer": {
+						"type": "boolean",
+						"description": "defaults to false. FEDEX INTERNAL USE ONLY for FedEx system that estimate freight class from customer-provided dimensions and weight <br> Example: true",
+						"example": true
+					},
+					"hazardousMaterials": {
+						"type": "string",
+						"description": "Indicates the kind of hazardous material content in this line item <br> Example: HAZARDOUS_MATERIALS",
+						"example": "HAZARDOUS_MATERIALS",
+						"enum": [
+							"HAZARDOUS_MATERIALS",
+							"BATTERY",
+							"ORM_D",
+							"REPORTABLE_QUANTITIES",
+							"SMALL_QUANTITY_EXCEPTION",
+							"LIMITED_QUANTITIES_COMMODITIES"
+						]
+					},
+					"dimensions": {
+						"description": "Individual line item dimensions. Conditionally required. Need volume for intra mexico rates.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Dimensions"
+							}
+						]
+					}
+				},
+				"description": "Description of an individual commodity or class of content in a shipment."
+			},
+			"Volume": {
+				"description": "Individual line item volume. <br>                Conditionally required. <br> Need volume for intra mexico rates",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Volume1"
+					}
+				]
+			},
+			"Volume1": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "The unit is in Cubic Feet or Cubic Meters. <br> Example: CUBIC_FT",
+						"example": "CUBIC_FT",
+						"enum": [
+							"CUBIC_FT",
+							"CUBIC_M"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "The amount of volume. <br> Example: 9.965781217890562",
+						"format": "double",
+						"example": 9.965781217890562
+					}
+				},
+				"description": "Optional\n\nIndividual line item volume.\n\nConditional\n\nNeed Volume or Rate for intra mexico rates",
+				"example": {
+					"units": "CUBIC_FT",
+					"value": 9.965781217890562
+				}
+			},
+			"FedExFreightBillingContactAndAddress": {
+				"description": "Conditional\n\nRequired if a FedEx Freight account number is specified",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/FedExFreightBillingContactAndAddress1"
+					},
+					{
+						"required": [
+							"address",
+							"contact"
+						],
+						"properties": {
+							"address": {
+								"description": "Billing address information for FedEx Freight Shipment."
+							},
+							"contact": {
+								"description": "Billing contact information for FedEx Freight Shipment."
+							}
+						},
+						"example": {
+							"contactAncillaryDetail": {
+								"emailAddresses": null,
+								"prefix": "prefix",
+								"phoneNumberDetails": [
+									{
+										"number": {
+											"areaCode": "areaCode",
+											"extension": "extension",
+											"countryCode": "countryCode",
+											"personalIdentificationNumber": "personalIdentificationNumber",
+											"localNumber": "localNumber"
+										},
+										"permissions": {
+											"CALL": "GRANT"
+										},
+										"usage": "PRIMARY",
+										"type": "FAX"
+									},
+									{
+										"number": {
+											"areaCode": "areaCode",
+											"extension": "extension",
+											"countryCode": "countryCode",
+											"personalIdentificationNumber": "personalIdentificationNumber",
+											"localNumber": "localNumber"
+										},
+										"permissions": {
+											"CALL": "GRANT"
+										},
+										"usage": "PRIMARY",
+										"type": "FAX"
+									}
+								],
+								"companyName": {
+									"division": "division",
+									"companyCd": "companyCd",
+									"name": "name",
+									"department": "department",
+									"storeId": "storeId"
+								},
+								"title": "title"
+							},
+							"address": {
+								"streetLines": [
+									"10 FedEx Parkway",
+									"Suite 302"
+								],
+								"city": "Beverly Hills",
+								"stateOrProvinceCode": "CA",
+								"postalCode": "38127",
+								"countryCode": "US",
+								"residential": false
+							},
+							"contact": {
+								"personName": "person name",
+								"emailAddress": "email address",
+								"phoneNumber": "phone number",
+								"phoneExtension": "phone extension",
+								"companyName": "company name",
+								"faxNumber": "fax number"
+							},
+							"addressAncillaryDetail": {
+								"locationInCity": "location in the city",
+								"suite": "suite",
+								"locationInProperty": "location in the property",
+								"addtionalDescriptions": "addtional descriptions",
+								"department": "department",
+								"roomFloor": "room or floor",
+								"crossStreet": "cross street",
+								"building": "building",
+								"apartment": "apartment",
+								"room": "room",
+								"addressVerificationOverrideReason": "CUSTOMER_PROVIDED_PROOF"
+							}
+						}
+					}
+				]
+			},
+			"FedExFreightBillingContactAndAddress1": {
+				"$ref": "#/components/schemas/ContactAndAddress"
+			},
+			"ContactAndAddress": {
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/Contact"
+					},
+					"contactAncillaryDetail": {
+						"$ref": "#/components/schemas/ContactAncillaryDetail"
+					},
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"addressAncillaryDetail": {
+						"$ref": "#/components/schemas/AddressAncillaryDetail"
+					}
+				},
+				"description": "Specifies the contact and address details of a location.",
+				"example": {
+					"contactAncillaryDetail": {
+						"emailAddresses": [
+							{
+								"emailNotificationFormatType": "EMAIL",
+								"address": "address",
+								"permissions": {
+									"EMAIL": "GRANT"
+								}
+							},
+							{
+								"emailNotificationFormatType": "TEXT",
+								"address": "address",
+								"permissions": {
+									"EMAIL": "GRANT"
+								}
+							}
+						],
+						"prefix": "prefix",
+						"phoneNumberDetails": [
+							{
+								"number": {
+									"areaCode": "areaCode",
+									"extension": "extension",
+									"countryCode": "countryCode",
+									"personalIdentificationNumber": "personalIdentificationNumber",
+									"localNumber": "localNumber"
+								},
+								"permissions": {
+									"CALL": "GRANT"
+								},
+								"usage": "PRIMARY",
+								"type": "FAX"
+							},
+							{
+								"number": {
+									"areaCode": "areaCode",
+									"extension": "extension",
+									"countryCode": "countryCode",
+									"personalIdentificationNumber": "personalIdentificationNumber",
+									"localNumber": "localNumber"
+								},
+								"permissions": {
+									"CALL": "GRANT"
+								},
+								"usage": "PRIMARY",
+								"type": "FAX"
+							}
+						],
+						"companyName": {
+							"division": "division",
+							"companyCd": "companyCd",
+							"name": "name",
+							"department": "department",
+							"storeId": "storeId"
+						},
+						"title": "title"
+					},
+					"address": {
+						"streetLines": [
+							"10 FedEx Parkway",
+							"Suite 302"
+						],
+						"city": "Beverly Hills",
+						"stateOrProvinceCode": "CA",
+						"postalCode": "38127",
+						"countryCode": "US",
+						"residential": false
+					},
+					"contact": {
+						"personName": "person name",
+						"emailAddress": "email address",
+						"phoneNumber": "phone number",
+						"phoneExtension": "phone extension",
+						"companyName": "company name",
+						"faxNumber": "fax number"
+					},
+					"addressAncillaryDetail": {
+						"locationInCity": "location in the city",
+						"suite": "suite",
+						"locationInProperty": "location in the property",
+						"addtionalDescriptions": "addtional descriptions",
+						"department": "department",
+						"roomFloor": "room or floor",
+						"crossStreet": "cross street",
+						"building": "building",
+						"apartment": "apartment",
+						"room": "room",
+						"addressVerificationOverrideReason": "CUSTOMER_PROVIDED_PROOF"
+					}
+				}
+			},
+			"ContactAncillaryDetail": {
+				"type": "object",
+				"properties": {
+					"emailAddresses": {
+						"type": "array",
+						"description": "These are contact email addresses.",
+						"items": {
+							"$ref": "#/components/schemas/EMailDetail"
+						}
+					},
+					"prefix": {
+						"type": "string",
+						"description": "Specify the Prefix."
+					},
+					"phoneNumberDetails": {
+						"type": "array",
+						"description": "Phone Number Details",
+						"items": {
+							"$ref": "#/components/schemas/PhoneNumberDetail"
+						}
+					},
+					"companyName": {
+						"$ref": "#/components/schemas/CompanyName"
+					},
+					"title": {
+						"type": "string",
+						"description": "Indicate the contact title."
+					}
+				},
+				"description": "Indicate additional contact details such as email and phone information.",
+				"example": {
+					"emailAddresses": [
+						{
+							"emailNotificationFormatType": "EMAIL",
+							"address": "address",
+							"permissions": {
+								"EMAIL": "GRANT"
+							}
+						},
+						{
+							"emailNotificationFormatType": "EMAIL",
+							"address": "address",
+							"permissions": {
+								"EMAIL": "GRANT"
+							}
+						}
+					],
+					"prefix": "prefix",
+					"phoneNumberDetails": [
+						{
+							"number": {
+								"areaCode": "areaCode",
+								"extension": "extension",
+								"countryCode": "countryCode",
+								"personalIdentificationNumber": "personalIdentificationNumber",
+								"localNumber": "localNumber"
+							},
+							"permissions": {
+								"CALL": "GRANT"
+							},
+							"usage": "PRIMARY",
+							"type": "FAX"
+						},
+						{
+							"number": {
+								"areaCode": "areaCode",
+								"extension": "extension",
+								"countryCode": "countryCode",
+								"personalIdentificationNumber": "personalIdentificationNumber",
+								"localNumber": "localNumber"
+							},
+							"permissions": {
+								"CALL": "GRANT"
+							},
+							"usage": "PRIMARY",
+							"type": "FAX"
+						}
+					],
+					"companyName": {
+						"division": "division",
+						"companyCd": "companyCd",
+						"name": "name",
+						"department": "department",
+						"storeId": "storeId"
+					},
+					"title": "title"
+				}
+			},
+			"EMailDetail": {
+				"type": "object",
+				"properties": {
+					"emailNotificationFormatType": {
+						"type": "string",
+						"description": "These are email notification format type.",
+						"enum": [
+							"TEXT",
+							"HTML"
+						]
+					},
+					"address": {
+						"type": "string",
+						"description": "This is the email address."
+					},
+					"permissions": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string",
+							"enum": [
+								"GRANT",
+								"DENY"
+							]
+						},
+						"description": "Indicate the Email Permission Type."
+					}
+				},
+				"example": {
+					"emailNotificationFormatType": "EMAIL",
+					"address": "address",
+					"permissions": {
+						"EMAIL": "GRANT"
+					}
+				}
+			},
+			"PhoneNumberDetail": {
+				"type": "object",
+				"properties": {
+					"number": {
+						"$ref": "#/components/schemas/PhoneNumber"
+					},
+					"permissions": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string",
+							"enum": [
+								"GRANT",
+								"DENY"
+							]
+						},
+						"description": "This is to specify the phone permission."
+					},
+					"usage": {
+						"type": "string",
+						"description": "Specify if the phone usage is Primary or Secondary.",
+						"enum": [
+							"PRIMARY",
+							"SECONDARY"
+						]
+					},
+					"type": {
+						"type": "string",
+						"description": "Indicate the Phone Number Type.",
+						"enum": [
+							"FAX",
+							"HOME",
+							"MOBILE",
+							"PAGER",
+							"WORK"
+						]
+					}
+				},
+				"example": {
+					"number": {
+						"areaCode": "areaCode",
+						"extension": "extension",
+						"countryCode": "countryCode",
+						"personalIdentificationNumber": "personalIdentificationNumber",
+						"localNumber": "localNumber"
+					},
+					"permissions": {
+						"CALL": "GRANT"
+					},
+					"usage": "PRIMARY",
+					"type": "FAX"
+				}
+			},
+			"PhoneNumber": {
+				"type": "object",
+				"properties": {
+					"areaCode": {
+						"type": "string",
+						"description": "Indicate the Area Code for the phone number."
+					},
+					"extension": {
+						"type": "string",
+						"description": "Indicate the extension for the phone number."
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"personalIdentificationNumber": {
+						"type": "string",
+						"description": "Indicate the Personal Identification Number associated with the phone number."
+					},
+					"localNumber": {
+						"type": "string",
+						"description": "Indicate the local phone number for contacting in the event of an emergency."
+					}
+				},
+				"description": "A phone number for a party. Numeric only",
+				"example": {
+					"areaCode": "areaCode",
+					"extension": "extension",
+					"countryCode": "countryCode",
+					"personalIdentificationNumber": "personalIdentificationNumber",
+					"localNumber": "localNumber"
+				}
+			},
+			"CompanyName": {
+				"type": "object",
+				"properties": {
+					"division": {
+						"type": "string",
+						"description": "This is division within a company."
+					},
+					"companyCd": {
+						"type": "string",
+						"description": "This is Company code."
+					},
+					"name": {
+						"type": "string",
+						"description": "This is company Name."
+					},
+					"department": {
+						"type": "string",
+						"description": "This is department within a company"
+					},
+					"storeId": {
+						"type": "string",
+						"description": "This is Store identifier within a company."
+					}
+				},
+				"description": "Use this to provide Company details.",
+				"example": {
+					"division": "Research and Design",
+					"companyCd": "ARMZD",
+					"name": "Armor Co Incorporated",
+					"department": "department",
+					"storeId": "A1234"
+				}
+			},
+			"AddressAncillaryDetail": {
+				"type": "object",
+				"properties": {
+					"locationInCity": {
+						"type": "string",
+						"description": "This is the Subdivision or community within a city for the given address.<br> Forester subdivision"
+					},
+					"suite": {
+						"type": "string",
+						"description": "This is the suite information for the given address."
+					},
+					"addressVerificationOverrideReason": {
+						"type": "string",
+						"description": "Specifies the reason to override address verification.<br> Valid values:  CUSTOMER_PREFERENCE, CUSTOMER_PROVIDED_PROOF, MANUAL_VALIDATION"
+					},
+					"locationInProperty": {
+						"type": "string",
+						"description": "This is location in a campus, such as exterior building annex A.<br> Example: south west of main office entrance."
+					},
+					"addtionalDescriptions": {
+						"type": "string",
+						"description": "Specifies any additional information about the given address.<br>Example: north door"
+					},
+					"department": {
+						"type": "string",
+						"description": "This is the department for the given address.<br>Example: Claims department"
+					},
+					"roomFloor": {
+						"type": "string",
+						"description": "This is to specify the room or floor information for the given address.<br>Example: 5th floor"
+					},
+					"crossStreet": {
+						"type": "string",
+						"description": "This is the cross street information for the given address.<br>Example: Union and Main"
+					},
+					"building": {
+						"type": "string",
+						"description": "This is the building information for the given address.<br>Example: Building 300"
+					},
+					"apartment": {
+						"type": "string",
+						"description": "This is the apartment information for the given address.<br>Example: Apartment 1503"
+					},
+					"room": {
+						"type": "string",
+						"description": "This is room specific information for the given address.<br>Example: Room B-23"
+					}
+				},
+				"description": "specifies additional address details for the physical location",
+				"example": {
+					"locationInCity": "Forester subdivision",
+					"suite": "suite 201",
+					"addressVerificationOverrideReason": "CUSTOMER_PROVIDED_PROOF",
+					"locationInProperty": "south west of main office entrance",
+					"addtionalDescriptions": "north door",
+					"department": "Claims department",
+					"roomFloor": "5th floor",
+					"crossStreet": "Union and Main",
+					"building": "Building 300",
+					"apartment": "Apartment 1503",
+					"room": "Room B-23"
+				}
+			},
+			"FreightShipmentLiabilityCoverageDetail": {
+				"description": "Specifies the Liability Coverage detail for Freight Shipment.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/LiabilityCoverageDetail"
+					}
+				]
+			},
+			"LiabilityCoverageDetail": {
+				"type": "object",
+				"properties": {
+					"coverageType": {
+						"type": "string",
+						"description": "Optional\n This is the liability coverage type.",
+						"enum": [
+							"NEW",
+							"USED_OR_RECONDITIONED"
+						]
+					},
+					"coverageAmount": {
+						"$ref": "#/components/schemas/CoverageAmount"
+					}
+				},
+				"description": "This is used specify the line item level liability coverage."
+			},
+			"CoverageAmount": {
+				"description": "Specifies the Liability Coverage Amount & Currency used for Freight Shipment.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Money"
+					}
+				]
+			},
+			"FedExFreightAccountNumber": {
+				"description": "Conditional\n\nFedEx Freight account number used with FEDEX_FREIGHT or FEDEX_FREIGHT_PRIORITY service; required for account-specific Freight rates",
+				"example": {
+					"value": "Your account number"
+				},
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/AccountNumber1"
+					}
+				]
+			},
+			"RequestShipmentSpecialServicesRequested": {
+				"description": "Descriptive data regarding special services requested by the shipper for this shipment. These special services are available at the shipment level for some or all service types. Indicated if availability for the special service is requested.<br>ENUM :<ul><li>FEDEX_ONE_RATE</li><li>FOOD</li><li>FREIGHT_GUARANTEE</li><li>FREIGHT_TO_COLLECT</li><li>FUTURE_DAY_SHIPMENT</li><li>HOLD_AT_LOCATION</li></ul><br><a onclick='loadDocReference(\"shipmentlevelspecialservicetypes\")'>Click here to see Shipment level Special Service Types</a>",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/ShipmentSpecialServicesRequested"
+					}
+				]
+			},
+			"ShipmentSpecialServicesRequested": {
+				"type": "object",
+				"properties": {
+					"internationalControlledExportDetail": {
+						"$ref": "#/components/schemas/InternationalControlledExportDetail"
+					},
+					"returnShipmentDetail": {
+						"$ref": "#/components/schemas/ReturnShipmentDetail"
+					},
+					"homeDeliveryPremiumDetail": {
+						"$ref": "#/components/schemas/HomeDeliveryPremiumDetail"
+					},
+					"returnEmailDetail": {
+						"$ref": "#/components/schemas/ReturnEmailDetail"
+					},
+					"specialServiceTypes": {
+						"type": "array",
+						"description": "Optional <br> The types of all special services requested for the enclosing shipment.<br> Example: FEDEX_EXPRESS<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Special Service Types</a>",
+						"example": [
+							"FEDEX_EXPRESS"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"saturdayDeliveryDetail": {
+						"$ref": "#/components/schemas/SaturdayDeliveryDetail"
+					},
+					"holdAtLocationDetail": {
+						"$ref": "#/components/schemas/HoldAtLocationDetail"
+					},
+					"codDetail": {
+						"$ref": "#/components/schemas/CodDetail"
+					},
+					"shipmentDryIceDetail": {
+						"$ref": "#/components/schemas/ShipmentDryIceDetail"
+					},
+					"freightDirectDetail": {
+						"$ref": "#/components/schemas/FreightDirectDetail"
+					}
+				},
+				"description": "The types of all optional special services requested for the shipment"
+			},
+			"InternationalControlledExportDetail": {
+				"required": [
+					"type"
+				],
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "Indicate International Controlled Export Type.",
+						"example": "DEA_036",
+						"enum": [
+							"DEA_036",
+							"DEA_236",
+							"DEA_486",
+							"DSP_05",
+							"DSP_61",
+							"DSP_73",
+							"DSP_85",
+							"DSP_94",
+							"DSP_LICENSE_AGREEMENT",
+							"FROM_FOREIGN_TRADE_ZONE",
+							"WAREHOUSE_WITHDRAWAL"
+						]
+					}
+				},
+				"description": "Use this object to specify International Controlled Export shipment Details.<br>Example: WAREHOUSE_WITHDRAWAL."
+			},
+			"ReturnShipmentDetail": {
+				"required": [
+					"returnType"
+				],
+				"type": "object",
+				"properties": {
+					"returnType": {
+						"type": "string",
+						"description": "This is the return Type. Required to be set to PRINT_RETURN_LABEL for printed return label shipments. For email return label shipments returnType must be set to PENDING and pendingShipmentDetail must be set to EMAIL.",
+						"example": "PENDING",
+						"enum": [
+							"FEDEX_TAG",
+							"NET_RETURN",
+							"PENDING",
+							"PRINT_RETURN_LABEL",
+							"EMAIL_LABEL",
+							"VOICE_CALL_TAG"
+						]
+					}
+				},
+				"description": "Indicates the return shipment."
+			},
+			"HomeDeliveryPremiumDetail": {
+				"type": "object",
+				"properties": {
+					"homedeliveryPremiumType": {
+						"type": "string",
+						"description": " This is Home Delivery Premium Type. It allows to specify additional premium service options for the home delivery shipment. Can specify Evening delivery or a Date certain, or can specify appointment for the delivery.",
+						"example": "APPOINTMENT",
+						"enum": [
+							"APPOINTMENT",
+							"DATE_CERTAIN",
+							"EVENING"
+						]
+					}
+				},
+				"description": "These are Special service elements for FedEx Ground Home Delivery shipments. If selected, element homedeliveryPremiumType is mandatory."
+			},
+			"ReturnEmailDetail": {
+				"type": "object",
+				"properties": {
+					"merchantPhoneNumber": {
+						"type": "string",
+						"description": "This is the merchant phone number. Is Required for Email Return Labels.<br>Example: 19012635656",
+						"example": "1234567890"
+					},
+					"allowedSpecialService": {
+						"type": "array",
+						"description": "Indicate the allowed (merchant-authorized) special services which may be selected when the subsequent shipment is created.<br>Only services represented in EmailLabelAllowedSpecialServiceType will be controlled by this list.<br>Example :[SATURDAY_DELIVERY]",
+						"example": [
+							"SATURDAY_DELIVERY"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"SATURDAY_DELIVERY",
+								"SATURDAY_PICKUP"
+							]
+						}
+					}
+				},
+				"description": "These are Email details for the return shipment."
+			},
+			"SaturdayDeliveryDetail": {
+				"type": "object",
+				"properties": {
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ParsedContactAndAddress"
+					}
+				},
+				"description": "These are service elements for Saturday Delivery special service."
+			},
+			"ParsedContactAndAddress": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"contact": {
+						"$ref": "#/components/schemas/Contact"
+					}
+				},
+				"description": "These are contact and address details for this special service.",
+				"example": {
+					"address": {
+						"streetLines": [
+							"10 FedEx Parkway",
+							"Suite 302"
+						],
+						"city": "Beverly Hills",
+						"stateOrProvinceCode": "CA",
+						"postalCode": "38127",
+						"countryCode": "US",
+						"residential": false
+					},
+					"contact": {
+						"personName": {
+							"firstName": "first name",
+							"lastName": "last name",
+							"middleName": "middle name",
+							"suffix": "suffix"
+						},
+						"emailAddress": "email address",
+						"phoneNumber": "phone number",
+						"companyName": "company name",
+						"faxNumber": "fax number",
+						"title": "title"
+					}
+				}
+			},
+			"HoldAtLocationDetail": {
+				"required": [
+					"codDelocationContactAndAddress\"",
+					"locationType"
+				],
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "This is an alphanumeric identifier used for Location/Facility Identification.<br><br>Example: YBZA<br><br>Note: <i><ul><li>For HAL Shipment, Location ID is <b>REQUIRED</b> to ensure packages are delivered to the right location.</li><li>Use endpoint [<b>Find Location</b>] in [<b>Location Search API</b>], to find the correct location ID for your shipment.</li></ul></i>",
+						"example": "YBZA"
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "Type of facility at which package/shipment is to be held.<br> Example: FEDEX_ONSITE",
+						"example": "FEDEX_ONSITE",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_STAFFED",
+							"RETAIL_ALLICANCE_LOCATION",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_ONSITE",
+							"FEDEX_SHIP_AND_GET"
+						]
+					}
+				},
+				"description": "Use this object to specify required information of a shipment to be held at FedEx destination location. <br><br><i>Note: This object HoldAtLocationDetail is <b>REQUIRED</b>, when HOLD_AT_LOCATION is chosen in the specialServiceTypes.</i>"
+			},
+			"ShipmentDryIceDetail": {
+				"description": "This is the descriptive data required for the FedEx shipment containing dangerous materials. This element is required when SpecialServicetype DRY_ICE is selected in SpecialServicetype collection.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/ShipmentDryIceDetail1"
+					},
+					{
+						"required": [
+							"packageCount",
+							"totalWeight"
+						],
+						"properties": {
+							"totalWeight": {
+								"$ref": "#/components/schemas/ShipmentDryIceDetail_totalWeight"
+							},
+							"packageCount": {
+								"type": "integer",
+								"example": 12
+							}
+						}
+					}
+				]
+			},
+			"ShipmentDryIceDetail1": {
+				"type": "object",
+				"properties": {
+					"totalWeight": {
+						"$ref": "#/components/schemas/Weight1"
+					},
+					"packageCount": {
+						"type": "integer",
+						"description": "Indicates the total number of packages in the shipment that contain dry ice.<br>Example: 12",
+						"format": "int32",
+						"example": 12
+					}
+				},
+				"description": "Number of packages in this shipment which contain dry ice.  The total weight of the dry ice for this shipment\n\n Both are required to indicate dry ice"
+			},
+			"Package_and_Service_Options_Domestic": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75063",
+								"countryCode": "US"
+							}
+						},
+						"recipients": [
+							{
+								"address": {
+									"postalCode": "38017",
+									"countryCode": "US"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE",
+						"FDXG"
+					]
+				}
+			},
+			"Package_and_Service_Options_International": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75063",
+								"countryCode": "US"
+							}
+						},
+						"recipients": [
+							{
+								"address": {
+									"postalCode": "m1m1m1",
+									"countryCode": "CA"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE",
+						"FDXG"
+					]
+				}
+			},
+			"body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_TransitTime"
+					},
+					{
+						"$ref": "#/components/schemas/TransitTimes_Domestic"
+					},
+					{
+						"$ref": "#/components/schemas/TransitTimes_International"
+					}
+				]
+			},
+			"body_1": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Package_And_Service_Options"
+					},
+					{
+						"$ref": "#/components/schemas/Package_and_Service_Options_Domestic"
+					},
+					{
+						"$ref": "#/components/schemas/Package_and_Service_Options_International"
+					}
+				]
+			},
+			"CommitDetail_transitDays": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Specifies the number of days the package/shipment is to be in transit.",
+						"example": "2-7 Business Days"
+					},
+					"minimumTransitTime": {
+						"type": "string",
+						"description": "This is a code indicating the number of transit days available.",
+						"enum": [
+							"EIGHT_DAYS",
+							"EIGHTEEN_DAYS",
+							"ELEVEN_DAYS",
+							"FIFTEEN_DAYS",
+							"FIVE_DAYS",
+							"FOUR_DAYS",
+							"FOURTEEN_DAYS",
+							"NINE_DAYS",
+							"NINETEEN_DAYS",
+							"ONE_DAY",
+							"SEVEN_DAYS",
+							"SEVENTEEN_DAYS",
+							"SIX_DAYS",
+							"SIXTEEN_DAYS",
+							"TEN_DAYS",
+							"THIRTEEN_DAYS",
+							"THREE_DAYS",
+							"TWELVE_DAYS",
+							"TWENTY_DAYS",
+							"TWO_DAYS",
+							"SMARTPOST_TRANSIT_DAYS",
+							"UNKNOWN"
+						],
+						"example": "TWO_DAYS"
+					},
+					"maximumTransitTime": {
+						"type": "string",
+						"example": "SEVEN_DAYS"
+					}
+				},
+				"description": "The number of days the package/shipment is to be in transit. Applies to Ground and LTL Freight; indicates minimum transit time for SmartPost."
+			},
+			"CommitDetail_dateDetail": {
+				"type": "object",
+				"properties": {
+					"dayOfWeek": {
+						"type": "string",
+						"description": "This is a day of week in a shorter day format<br>Example: MON, TUE",
+						"example": "THU"
+					},
+					"time": {
+						"type": "string",
+						"description": "This is time in a day. <br> Format: [HH:MM:SS]<br>example: 09:30:00",
+						"example": "09:30:00"
+					},
+					"day": {
+						"type": "string",
+						"description": "This is the day in format [MM-DD-YYYY]<br>example: Apr-13-2021",
+						"example": "Apr-13-2021"
+					}
+				},
+				"description": "Specific date and time."
+			},
+			"LocationDetail_geoPositionalCoordinates": {
+				"type": "object",
+				"properties": {
+					"latitude": {
+						"type": "number",
+						"description": "Field holds the latitude value",
+						"format": "double",
+						"example": 5.637376656633329
+					},
+					"longitude": {
+						"type": "number",
+						"description": "Field holds the longitude value",
+						"format": "double",
+						"example": 3.616076749251911
+					}
+				},
+				"description": "the ISO6709GeographicCoordinates for a specific geographic location",
+				"example": "{\"latitude\":5.637376656633329,\"longitude\":3.616076749251911}"
+			},
+			"TransitTimeRequestedShipment_shipper": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TransitTimeShipper"
+							}
+						]
+					}
+				},
+				"description": "The descriptive data on the physical location of shipment origin."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_codDetail_codCollectionAmount": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "Indicates the details of the charges are to be added to the COD collect amount.",
+						"format": "double",
+						"example": 12.45
+					},
+					"currency": {
+						"type": "string",
+						"description": "Three-character ISO currency code. <br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					}
+				},
+				"description": "Amount to be charged for COD collection"
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_codDetail": {
+				"type": "object",
+				"properties": {
+					"codCollectionAmount": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_codDetail_codCollectionAmount"
+					},
+					"codCollectionType": {
+						"type": "string",
+						"description": "Indicate the type of funds FedEx should collect upon shipment delivery.",
+						"example": "PERSONAL_CHECK",
+						"enum": [
+							"ANY",
+							"CASH",
+							"COMPANY_CHECK",
+							"GUARANTEED_FUNDS",
+							"PERSONAL_CHECK"
+						]
+					}
+				},
+				"description": "Use this object to specify Collect On Delivery (COD) shipment details."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_internationalControlledExportDetail": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "Indicate International Controlled Export Type.<br>Example: WAREHOUSE_WITHDRAWAL",
+						"example": "DSP_LICENSE_AGREEMENT",
+						"enum": [
+							"DEA_036",
+							"DEA_236",
+							"DEA_486",
+							"DSP_05",
+							"DSP_61",
+							"DSP_73",
+							"DSP_85",
+							"DSP_94",
+							"DSP_LICENSE_AGREEMENT",
+							"FROM_FOREIGN_TRADE_ZONE",
+							"WAREHOUSE_WITHDRAWAL"
+						]
+					}
+				},
+				"description": "Use this object to specify International Controlled Export shipment Details."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_homeDeliveryPremiumDetail": {
+				"type": "object",
+				"properties": {
+					"homedeliveryPremiumType": {
+						"type": "string",
+						"description": "This is Home Delivery Premium Type. It allows to specify additional premium service options for the home delivery shipment. Can specify Evening delivery or a Date certain, or can specify appointment for the delivery.",
+						"example": "EVENING",
+						"enum": [
+							"APPOINTMENT",
+							"DATE_CERTAIN",
+							"EVENING"
+						]
+					}
+				},
+				"description": "These are Special service elements for FedEx Ground Home Delivery shipments. If selected, element homedeliveryPremiumType is mandatory."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail_locationContactAndAddress_contact_parsedPersonName": {
+				"type": "object",
+				"properties": {
+					"firstName": {
+						"type": "string",
+						"description": "Specify the First Name. Maximum Length is 35. <br> Example: John",
+						"example": "firstName"
+					},
+					"lastName": {
+						"type": "string",
+						"description": "Specify the Last Name. Maximum Length is 35. <br> Example: Mayor",
+						"example": "lastName"
+					},
+					"middleName": {
+						"type": "string",
+						"description": "Specify the Middle Name.<br> Example: Redmond",
+						"example": "middleName"
+					},
+					"suffix": {
+						"type": "string",
+						"description": "Specify the Suffix.<br> Example: Jr",
+						"example": "suffix"
+					}
+				},
+				"description": "This object is used to separate the person name into first and last name."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail_locationContactAndAddress_contact": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Specify contact name.<br>Note: Recommended Length is 70. There's no specific validation for the length.<br> Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"emailAddress": {
+						"type": "string",
+						"description": "Specify contact email address. Maximum length is 80. <br> Example: sample@company.com",
+						"example": "sample@company.com"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Specify contact phone number. Maximum length is 15. <br> Example: 1234567890",
+						"example": "1234567890"
+					},
+					"phoneExtension": {
+						"type": "string",
+						"description": "Specify contact phone extension. Maximum length is 6. <br> Example: 1234",
+						"example": "1234"
+					},
+					"faxNumber": {
+						"type": "string",
+						"description": "Specify contact fax number. Maximum length is 15. <br> Example: 1234567890",
+						"example": "1234567890"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Specify contact company name. Maximum length is 35.",
+						"example": "Fedex"
+					}
+				},
+				"description": "Specify the Hold at location contact details."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail_locationContactAndAddress": {
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail_locationContactAndAddress_contact"
+					},
+					"address": {
+						"$ref": "#/components/schemas/TransitTimeShipper"
+					}
+				},
+				"description": "Specify the contact and address details of a location."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail": {
+				"required": [
+					"locationId"
+				],
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "This is an alphanumeric identifier used for Location/Facility Identification.<br><br>Example: YBZA<br><br>Note: <i><ul><li>For HAL Shipment, Location ID is <b>REQUIRED</b> to ensure packages are delivered to the right location.</li><li>Use endpoint [<b>Find Location</b>] in [<b>Location Search API</b>], to find the correct location ID for your shipment.</li></ul></i>",
+						"example": "YBZA"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "Specify the Hold at location type.<br> Example: FEDEX_ONSITE",
+						"example": "FEDEX_ONSITE",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_STAFFED",
+							"RETAIL_ALLICANCE_LOCATION",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_ONSITE"
+						]
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail_locationContactAndAddress"
+					}
+				},
+				"description": "Use this object to specify required information of a shipment to be held at FedEx destination location. <br><br><i>Note: This object HoldAtLocationDetail is <b>REQUIRED</b>, when HOLD_AT_LOCATION is chosen in the specialServiceTypes.</i>"
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_shipmentDryIceDetail_totalWeight": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Specify the unit of measurement used to  weigh the package. For Dry Ice the unit of measure is KG.",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Specify the value of the weight of the package.<br> Example: 68.25",
+						"format": "double",
+						"example": 10
+					}
+				},
+				"description": "These are the weight details."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices_shipmentDryIceDetail": {
+				"type": "object",
+				"properties": {
+					"totalWeight": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_shipmentDryIceDetail_totalWeight"
+					},
+					"packageCount": {
+						"type": "integer",
+						"description": "Specify dry ice shipment package count.<br>Example: 12",
+						"format": "int32",
+						"example": 12
+					}
+				},
+				"description": "Use this object to indicate package count with weight for this shipment containing dry ice. Dry ice is supported in both shipment level and package level services."
+			},
+			"TransitTimeRequestedShipment_shipmentSpecialServices": {
+				"type": "object",
+				"properties": {
+					"specialServiceTypes": {
+						"type": "array",
+						"description": "Indicate special services for which the rate data is being requested. Special Services are available at the shipment level for some or all service types.<br>Example: BROKER_SELECT_OPTION <br><a onclick='loadDocReference(\"shipmentlevelspecialservicetypes\")'>Click here to see Shipment level Special Service Types</a>",
+						"example": [
+							"BROKER_SELECT_OPTION"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"codDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_codDetail"
+					},
+					"internationalControlledExportDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_internationalControlledExportDetail"
+					},
+					"homeDeliveryPremiumDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_homeDeliveryPremiumDetail"
+					},
+					"holdAtLocationDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_holdAtLocationDetail"
+					},
+					"shipmentDryIceDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedShipment_shipmentSpecialServices_shipmentDryIceDetail"
+					}
+				},
+				"description": "Indicate special services for which the rate data is being requested. Special Services are available at the shipment level for some or all service types.<br>Example: [BROKER_SELECT_OPTION]"
+			},
+			"TransitTimeRequestedShipment_customsClearanceDetail": {
+				"required": [
+					"commodities"
+				],
+				"type": "object",
+				"properties": {
+					"commodities": {
+						"type": "array",
+						"description": "Specify the commodity details.",
+						"items": {
+							"$ref": "#/components/schemas/TransitTimeCommodity"
+						}
+					}
+				},
+				"description": "This is Customs clearance data associated with the shipment. This is used for both international and intra-country shipping and rating. Customs commodity data is required for international and intra-country rating."
+			},
+			"TransitTimeRecipient_address": {
+				"required": [
+					"countryCode",
+					"postalCode"
+				],
+				"type": "object",
+				"properties": {
+					"city": {
+						"type": "string",
+						"description": "The name of city, town, etc. <br>Example: Collierville",
+						"example": "Collierville"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "Identifying abbreviation for US state, canada Province. Format and presence of this field will vary, depending on the country. State code is required for US, CA, PR and not required for other countries. Conditional. Not used for Ground/SmartPost. Max length is 2.<br> Example: TN",
+						"example": "TN"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Identification of a region for mail/package delivery. Format and presence of this field will vary, depending on the country.Optional for non postal-aware countries. Max length is 10.<br> Example: 38127",
+						"example": "38127"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country. Max length is two.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicates whether the address is residential (as opposed to commercial).<br> Example: false",
+						"example": false
+					}
+				},
+				"description": "Descriptive data on physical location. May be used as an actual physical address (place where one could go), or as a container of address parts, which should be handled as a unit (such as a city-state-ZIP combination within the US). Country code is required. Postal code is required for postal aware countries."
+			},
+			"TransitTimeShippingChargesPayment_payor_responsibleParty_accountNumber": {
+				"required": [
+					"value"
+				],
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Conditionally required.<br>Account number is required for ACCOUNT based rates. Account number value max length is 9. <br> Example: 60xxxxxx2",
+						"example": "60xxxxxx2"
+					}
+				},
+				"description": "Specifies the FedEx customer account information of the responsible paty."
+			},
+			"TransitTimeShippingChargesPayment_payor_responsibleParty": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/TransitTimeShipper"
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/TransitTimeShippingChargesPayment_payor_responsibleParty_accountNumber"
+					}
+				},
+				"description": "Conditional. The descriptive data for the payor of the shipment and their physical address, contact and account number information."
+			},
+			"TransitTimeShippingChargesPayment_payor": {
+				"type": "object",
+				"properties": {
+					"responsibleParty": {
+						"$ref": "#/components/schemas/TransitTimeShippingChargesPayment_payor_responsibleParty"
+					}
+				},
+				"description": "Information about the person who is paying for the shipment.  Not applicable for credit card payment. "
+			},
+			"TransitTimeRequestedPackageLineItem_declaredValue": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "Indicates the details of the charges are to be added.",
+						"format": "double",
+						"example": 12
+					},
+					"currency": {
+						"type": "string",
+						"description": "Three-character ISO currency code. <br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					}
+				},
+				"description": "This is the Declared Value - represents FedEx Maximum liability in connection with a shipment of that Package, including but not limited to, any loss, damage, delay, misdelivery, any failure to provide information, or misdelivery of information relating to the Shipment."
+			},
+			"TransitTimeRequestedPackageLineItem_weight": {
+				"required": [
+					"units",
+					"value"
+				],
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Specify the unit of measurement used to weigh. <br> Example: LB",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Weight Value.<br> Example: 68.25<br><a href='https://developer.fedex.com/api/en-us/guides/api-reference.html#packagetypes' target='_blank'>Click here to see Weight Values</a>",
+						"format": "double",
+						"example": 68.25
+					}
+				},
+				"description": "Weight of the packages or shipment"
+			},
+			"TransitTimeRequestedPackageLineItem_dimensions": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Length of a package or shipment. Maximum Length is 999. <br> Example: 100",
+						"format": "int32",
+						"example": 100
+					},
+					"width": {
+						"type": "integer",
+						"description": "Width dimensions of a package or shipment. Maximum Length is 999. <br> Example: 50",
+						"format": "int32",
+						"example": 50
+					},
+					"height": {
+						"type": "integer",
+						"description": "Height of a package or shipment. Maximum Length is 999. <br> Example: 30",
+						"format": "int32",
+						"example": 30
+					},
+					"units": {
+						"type": "string",
+						"description": "Unit of measure for the provided dimensions.<br> Valid Values: IN - inches, CM - centimeters <br>Example: CM",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Specify the dimensions of this package and the unit type used for the measurements. Valid measurements are whole numbers greater than zero."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_codDetail_codCollectionAmount": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "Indicates the details of the charges are to be added to the COD collect amount.",
+						"format": "double",
+						"example": 12.45
+					},
+					"currency": {
+						"type": "string",
+						"description": "Three-character ISO currency code. <br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					}
+				},
+				"description": "Optional, but if indicated 'amount' and 'currency' must be provided."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_codDetail": {
+				"type": "object",
+				"properties": {
+					"codCollectionAmount": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_codDetail_codCollectionAmount"
+					}
+				},
+				"description": "Package COD Detail.  COD main information is set in shipment level."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_dryIceWeight": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Specify the unit of measurement used to weigh the dry ice used in packaging.",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Specify the value of weight of dry ice used in packaging. <br> Example: 10.0",
+						"format": "double",
+						"example": 10
+					}
+				},
+				"description": "Specify weight of dry ice used in packaging."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_dangerousGoodsDetail": {
+				"type": "object",
+				"properties": {
+					"accessibility": {
+						"type": "string",
+						"description": "Dangerous Goods Accessibility Type. Inaccessible means it does not have to be accessable on the aircraft.  Accessible means it must be fully accessible on the aircraft, and is more strictly controlled.",
+						"example": "ACCESSIBLE",
+						"enum": [
+							"ACCESSIBLE",
+							"INACCESSIBLE"
+						]
+					},
+					"options": {
+						"type": "array",
+						"description": "Optional\n\nSpecify the dangerous goods' detail from the list of available options.",
+						"items": {
+							"type": "string",
+							"example": "BATTERY",
+							"enum": [
+								"HAZARDOUS_MATERIALS",
+								"BATTERY",
+								"ORM_D",
+								"REPORTABLE_QUANTITIES",
+								"SMALL_QUANTITY_EXCEPTION",
+								"LIMITED_QUANTITIES_COMMODITIES"
+							]
+						}
+					}
+				},
+				"description": "Use this object to specify Dangerous Goods shipment Detail."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_alcoholDetail": {
+				"required": [
+					"alcoholRecipientType"
+				],
+				"type": "object",
+				"properties": {
+					"alcoholRecipientType": {
+						"type": "string",
+						"description": "Specify the Alcohol Recipient Type of the shipment. <br> Example:<br> <ul><li> LICENSEE- FedEx approved alchol shipper having appropriate licenses.</li> <li> CONSUMER- Individual consumer to whom the alchol is shipped.</li> </ul>",
+						"enum": [
+							"LICENSEE",
+							"CONSUMER"
+						],
+						"example": "LICENSEE"
+					},
+					"shipperAgreementType": {
+						"type": "string",
+						"description": "Specify the shipper entity type. <br>Example: Fulfillment house, Retailer or a Winery.",
+						"example": "retailer"
+					}
+				},
+				"description": "Provides information about the RecipientType and ShipperAgreementType. This object is manadatory if alcohol special service is selected."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices_batteryDetails": {
+				"type": "object",
+				"properties": {
+					"batteryMaterialType": {
+						"type": "string",
+						"description": "Describes the material composition of the battery or cell.",
+						"example": "LITHIUM_METAL",
+						"enum": [
+							"LITHIUM_METAL",
+							"LITHIUM_ION"
+						]
+					},
+					"batteryPackingType": {
+						"type": "string",
+						"description": "Describes the packing arrangement of the battery or cell with respect to other items within the same package.",
+						"example": "CONTAINED_IN_EQUIPMENT",
+						"enum": [
+							"CONTAINED_IN_EQUIPMENT",
+							"PACKED_WITH_EQUIPMENT"
+						]
+					},
+					"batteryRegulatoryType": {
+						"type": "string",
+						"description": "A regulation specific classification for the battery or cell.",
+						"example": "IATA_SECTION_II",
+						"enum": [
+							"IATA_SECTION_II"
+						]
+					}
+				},
+				"description": "Describes attributes of a battery or cell that are used for classification purposes. Typically this structure would be used to allow customers to declare batteries or cells for which full dangerous goods documentation and procedures are not required."
+			},
+			"TransitTimeRequestedPackageLineItem_packageSpecialServices": {
+				"type": "object",
+				"properties": {
+					"specialServiceTypes": {
+						"type": "array",
+						"description": "Optional.<br>Specify special services requested for the package.<br>Example: [\"DANGEROUS_GOODS\"]<br>a onclick='loadDocReference(\"packagelevelspecialservicetypes\")'>Click here to see Package Special Service Types</a>",
+						"example": [
+							"DANGEROUS_GOODS",
+							"COD"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"codDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_codDetail"
+					},
+					"dryIceWeight": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_dryIceWeight"
+					},
+					"dangerousGoodsDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_dangerousGoodsDetail"
+					},
+					"alcoholDetail": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_alcoholDetail"
+					},
+					"pieceCountVerificationBoxCount": {
+						"type": "integer",
+						"description": "Indicates the box count used for piece count verification.",
+						"format": "int32",
+						"example": 2
+					},
+					"batteryDetails": {
+						"$ref": "#/components/schemas/TransitTimeRequestedPackageLineItem_packageSpecialServices_batteryDetails"
+					}
+				},
+				"description": "Optional.<br>These special services are available at the package level for some or all service types.  Indicated if rate data is being requested for the special services."
+			},
+			"TransitTimeCommodity_unitPrice": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "Indicate the amount.",
+						"format": "double",
+						"example": 12.45
+					},
+					"currency": {
+						"type": "string",
+						"description": "Indicate the three-character ISO currency code. <br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					}
+				},
+				"description": "Indicate the amount details. This is optional, but if indicated, amount and currency must be provided."
+			},
+			"ShipmentDryIceDetail_totalWeight": {
+				"required": [
+					"units",
+					"value"
+				],
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Identifies the unit of measure associated with a weight value. <br> Example: LB",
+						"example": "LB"
+					},
+					"value": {
+						"type": "number",
+						"description": "Identifies the weight <br> Example: 10.0",
+						"example": 10
+					}
+				}
+			},
+			"AvailabilitycxsResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO": {
+				"$ref": "#/components/schemas/SpecialServicesOptionsOutputVO"
+			},
+			"SpecialServicesOptionsOutputVO": {
+				"type": "object",
+				"properties": {
+					"alerts": {
+						"type": "array",
+						"description": "The cxs alert type, alert code, and alert message.",
+						"example": [
+							{
+								"code": "code",
+								"alertType": "NOTE",
+								"message": "alert message"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"serviceOptionsList": {
+						"type": "array",
+						"description": "The list of options applicable when special service option is selected. The options include:<br>-Service types<br>-Signature options</br>-Package Special services list<br>-Return shipment list<br>-Carrier code<br>-Battery option list<br>-Alert list<br>-Shipment special services ist<br>-Cxs alerts",
+						"items": {
+							"$ref": "#/components/schemas/OptionalServices"
+						}
+					}
+				},
+				"description": "The response elements for the special service availability request."
+			},
+			"OptionalServices": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Indicates the type of service that is used to ship the package.<br>Example: INTERNATIONAL_FIRST<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>",
+						"example": "INTERNATIONAL_FIRST"
+					},
+					"issEnabled": {
+						"type": "boolean",
+						"description": "Specifies if international signature options are available.",
+						"example": true
+					},
+					"signatureOptionsList": {
+						"type": "array",
+						"description": "All possible signature options if signature options are available.  Indicated by the issEnabled boolean.",
+						"example": [
+							{
+								"displayText": "Indirect Signature",
+								"code:": "INDIRECT"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/CodeDisplayTextVO"
+						}
+					},
+					"packageSpecialServicesList": {
+						"type": "array",
+						"description": "Indicates the list of special services that are available at package level for some or all service types.",
+						"example": [
+							{
+								"displayText": "DANGEROUS_GOODS",
+								"subType": "ACCESSIBLE",
+								"specialServiceType": "DANGEROUS_GOODS",
+								"customerIntegrationMode": "CUSTOM",
+								"value": 10
+							},
+							{
+								"displayText": "BATTERY",
+								"specialServiceType": "BATTERY",
+								"subType": "ACCESSIBLE",
+								"customerIntegrationMode": "CUSTOM",
+								"value": 10
+							},
+							{
+								"displayText": "NON_STANDARD_CONTAINER",
+								"specialServiceType": "NON_STANDARD_CONTAINER",
+								"subType": "ACCESSIBLE",
+								"customerIntegrationMode": "STANDARD",
+								"value": 10
+							},
+							{
+								"displayText": "DRY_ICE",
+								"specialServiceType": "DRY_ICE",
+								"subType": "ACCESSIBLE",
+								"customerIntegrationMode": "CUSTOM",
+								"value": 10
+							},
+							{
+								"displayText": "DANGEROUS_GOODS",
+								"subType": "INACCESSIBLE",
+								"specialServiceType": "DANGEROUS_GOODS",
+								"customerIntegrationMode\"": "CUSTOM",
+								"value": 10
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/PackageSpecialServiceOption"
+						}
+					},
+					"returnShipmentList": {
+						"type": "array",
+						"example": [
+							"EMAIL_LABEL",
+							"PRINT_RETURN_LABEL"
+						],
+						"items": {
+							"type": "string",
+							"description": "possible return shipment types",
+							"enum": [
+								"FEDEX_TAG",
+								"PENDING",
+								"PRINT_RETURN_LABEL",
+								"EMAIL_LABEL"
+							]
+						}
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><li>FXSP - FedEx SmartPost</li><li>FXCC - FedEx Custom Critical.</li></ul>",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FXFR"
+						]
+					},
+					"batteryOptionList": {
+						"type": "array",
+						"description": "Indicates the battery option list.",
+						"example": [
+							{
+								"batteryMaterialType": "LITHIUM_METAL",
+								"batteryPackingType": "CONTAINED_IN_EQUIPMENT",
+								"batteryRegulatoryType": "IATA_SECTION_II"
+							},
+							{
+								"batteryMaterialType": "LITHIUM_METAL",
+								"batteryPackingType": "PACKED_WITH_EQUIPMENT",
+								"batteryRegulatoryType": "IATA_SECTION_II"
+							},
+							{
+								"batteryMaterialType": "LITHIUM_ION",
+								"batteryPackingType": "CONTAINED_IN_EQUIPMENT",
+								"batteryRegulatoryType": "IATA_SECTION_II"
+							},
+							{
+								"batteryMaterialType": "LITHIUM_ION",
+								"batteryPackingType": "PACKED_WITH_EQUIPMENT",
+								"batteryRegulatoryType": "IATA_SECTION_II"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/BatteryDetail"
+						}
+					},
+					"alertList": {
+						"type": "array",
+						"description": "Indicates the alert details.",
+						"example": [
+							{
+								"displayText": "FedEx Ground",
+								"key": "FEDEX_GROUND"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/KeyDisplayTextVO"
+						}
+					},
+					"shipmentSpecialServicesList": {
+						"type": "array",
+						"description": "Indicates the list of special services that are available at the shipment level for some or all service types.",
+						"example": [
+							{
+								"value": "Returns Clearance",
+								"specialServiceType": "RETURNS_CLEARANCE",
+								"customerIntegrationMode": "CUSTOM",
+								"astraDescription": "RC",
+								"subType": "ACCESSIBLE",
+								"ltlPaymentTerms": [
+									"PREPAID",
+									"COLLECT"
+								]
+							},
+							{
+								"value": "Broker Select Option",
+								"specialServiceType": "BROKER_SELECT_OPTION",
+								"customerIntegrationMode": "CUSTOM",
+								"astraDescription": "BSO",
+								"subType": "ACCESSIBLE",
+								"ltlPaymentTerms": [
+									"COLLECT_SECTION_7_SIGNED",
+									"COLLECT"
+								]
+							},
+							{
+								"value": "International Mail Service",
+								"specialServiceType": "INTERNATIONAL_MAIL_SERVICE",
+								"customerIntegrationMode": "CUSTOM",
+								"astraDescription": "IMS",
+								"subType": "ACCESSIBLE",
+								"ltlPaymentTerms": [
+									"COLLECT_SECTION_9_SIGNED",
+									"COLLECT"
+								]
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/ShipmentSpecialServiceOption"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"example": [
+							{
+								"code": "code",
+								"alertType": "NOTE",
+								"message": "alert message"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "Holds the details of OptionalServices for the SpecialServiceOptions and PackageAndServiceOptions Endpoints"
+			},
+			"CodeDisplayTextVO": {
+				"type": "object",
+				"properties": {
+					"displayText": {
+						"type": "string",
+						"description": "Display Text",
+						"example": "Indirect Signature"
+					},
+					"code": {
+						"type": "string",
+						"description": "Unique code",
+						"example": "INDIRECT"
+					}
+				},
+				"description": "applicable key and display text value pairs."
+			},
+			"PackageSpecialServiceOption": {
+				"type": "object",
+				"properties": {
+					"customerIntegrationMode": {
+						"type": "string",
+						"description": "Specifies customer integration mode."
+					},
+					"subType": {
+						"type": "string",
+						"description": "Specifies sub-type of the special service option."
+					},
+					"specialServiceType": {
+						"type": "string",
+						"description": "Indicate the types of special services requested for the shipment.<br><a onclick='loadDocReference(\"packagelevelspecialservicetypes\")'>Click here to see Package level Special Service Types</a>"
+					}
+				},
+				"description": "FedEx Package Special Services options."
+			},
+			"ShipmentSpecialServiceOption": {
+				"type": "object",
+				"properties": {
+					"customerIntegrationMode": {
+						"type": "string",
+						"description": "Specifies customer Integration Mode"
+					},
+					"astraDescription": {
+						"type": "string",
+						"description": "Specifies the astra label description"
+					},
+					"ltlPaymentTerms": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"enum": [
+								"PREPAID",
+								"COLLECT",
+								"COLLECT_SECTION_7_SIGNED",
+								"COLLECT_SECTION_9_SIGNED"
+							]
+						}
+					},
+					"subType": {
+						"type": "string",
+						"description": "Specifies sub-type of the special service option"
+					},
+					"value": {
+						"type": "string",
+						"description": "Specifies the value of the special service option."
+					},
+					"specialServiceType": {
+						"type": "string",
+						"description": "Specify special services requested for the package.<br>Example: BROKER_SELECT_OPTION<br><a onclick='loadDocReference(\"shipmentlevelspecialservicetypes\")'>Click here to see Shipment Level Special Service Types.</a>"
+					}
+				},
+				"description": "FedEx Shipment Special Services options.<br><a onclick='loadDocReference(\"shipmentlevelspecialservicetypes\")'>Click here to see Shipment Level Special Service Types</a>"
+			},
+			"Full_Schema_Special_Service_Options": {
+				"required": [
+					"requestedShipment"
+				],
+				"type": "object",
+				"properties": {
+					"requestedShipment": {
+						"$ref": "#/components/schemas/SpecialServicesRequestedShipment"
+					},
+					"accountNumber": {
+						"description": "Account number associated with a Payor object. Example: Your account number",
+						"example": {
+							"value": "123456789"
+						},
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AccountNumber1"
+							}
+						]
+					},
+					"carrierCodes": {
+						"type": "array",
+						"description": "Optionally supplied to restrict the results to services for a specific carrier. Valid values are: FDXE, FDXG, FXSP. <br> Example: [\"FDXG\", \"FDXE\"]",
+						"example": [
+							"FDXG",
+							"FDXE"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG",
+								"FXSP",
+								"FXFR"
+							]
+						}
+					}
+				},
+				"description": "The request elements for special service options availability."
+			},
+			"SpecialServicesRequestedShipment": {
+				"description": "The shipment details for which special service availability is requested.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/RequestedShipment"
+					}
+				]
+			},
+			"RequestedShipment": {
+				"required": [
+					"packagingType",
+					"recipient",
+					"requestedPackageLineItems",
+					"shipper"
+				],
+				"type": "object",
+				"properties": {
+					"shipper": {
+						"description": "Required. <br>Indicate the Shipper contact details for this shipment.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Party"
+							}
+						]
+					},
+					"recipient": {
+						"description": "Specifies the recipient details, such as postal code, state or province code, and country code of the recipient. Note: At least one recipient is required. ",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Party"
+							}
+						]
+					},
+					"serviceType": {
+						"type": "string",
+						"description": "Indicate the FedEx service type used for the shipment. The result will be filtered by the serviceType value indicated.If a serviceType is not indicated, then all the applicable services and corresponding rates will be returned.<br> Example: STANDARD_OVERNIGHT<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a><br>",
+						"example": "STANDARD_OVERNIGHT"
+					},
+					"packagingType": {
+						"type": "string",
+						"description": "Specifies packaging Type.<br><a onclick='loadDocReference(\"packagetypes\")'>Click here to see Package Types</a>",
+						"example": "FEDEX_BOX"
+					},
+					"shipDateStamp": {
+						"type": "string",
+						"description": "Conditional. Used to filter results to a specific ship date if populated on the request. Value will be defaulted to the current date/time.<br>Format: [YYYY-MM-DDThh:mm:ssTZD]<br>Example: 2020-10-13T11:00:00TZD<br>Note:<br>1.The date format must be YYYY-MM-DDThh:mm:ssTZD.<br>2.The time must be in the format: HH:MM:SS using a 24-hour clock.<br>3.The date and time are separated by the letter T, such as 2015-03-25T09:30:00.<br>4.The time is local to the pickup postal code.<br>5.Do not include a TZD (time zone designator) as it will be ignored.<br>Example: 2019-11-15T11:00:00",
+						"example": "2019-09-01"
+					},
+					"requestedPackageLineItems": {
+						"type": "array",
+						"description": "Conditional.<br>Specifies the packaging type, weight, and dimensions of the package.  Applicable for  EXPRESS and GROUND but not for FREIGHT shipments.",
+						"items": {
+							"$ref": "#/components/schemas/RequestedPackageLineItem"
+						}
+					},
+					"dropoffType": {
+						"type": "string",
+						"description": "Conditional <br> Required for Express and Ground, but optional for FREIGHT or SMARTPOST <br> Example: DROP_BOX",
+						"example": "DROP_BOX",
+						"enum": [
+							"REGULAR_PICKUP",
+							"REQUEST_COURIER",
+							"DROP_BOX",
+							"BUSINESS_SERVICE_CENTER",
+							"STATION"
+						]
+					},
+					"variableHandlingChargeDetail": {
+						"$ref": "#/components/schemas/RequestedShipmentVariableHandlingChargeDetail"
+					},
+					"freightShipmentDetail": {
+						"$ref": "#/components/schemas/RequestedShipmentFreightShipmentDetail"
+					},
+					"specialServicesRequested": {
+						"$ref": "#/components/schemas/RequestShipmentSpecialServicesRequested"
+					},
+					"pickupType": {
+						"type": "string",
+						"description": "Indicate the pickup type method by which the shipment to be tendered to FedEx.<br><i>Note: The value of this element does not specify dispatching the courier for package pickup.</i><br><a onclick='loadDocReference(\"pickuptypes\")'>Click here for more information on Pickup Types.</a>",
+						"example": "DROPOFF_AT_FEDEX_LOCATION",
+						"enum": [
+							"CONTACT_FEDEX_TO_SCHEDULE",
+							"DROPOFF_AT_FEDEX_LOCATION",
+							"USE_SCHEDULED_PICKUP"
+						]
+					},
+					"shippingDocumentSpecification": {
+						"title": "@Ignore4TPP",
+						"type": "string",
+						"description": "Shipping Document Specification Details",
+						"example": "shippingDocumentSpecification"
+					}
+				},
+				"description": "shipment information for the shipment being requested"
+			},
+			"RequestedShipmentVariableHandlingChargeDetail": {
+				"description": "Optional\n\nProvide any Variable Handling Charge details",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/VariableHandlingChargeDetail"
+					}
+				]
+			},
+			"VariableHandlingChargeDetail": {
+				"type": "object",
+				"properties": {
+					"percentValue": {
+						"type": "number",
+						"description": "variable handling percentage <br> Example: 25.67",
+						"format": "double",
+						"example": 25.67
+					},
+					"fixedValue": {
+						"$ref": "#/components/schemas/FixedValue"
+					},
+					"rateElementBasis": {
+						"type": "string",
+						"description": "Description of the percentage <br> Example: NET_CHARGE",
+						"example": "NET_CHARGE",
+						"enum": [
+							"NET_CHARGE",
+							"NET_FREIGHT",
+							"BASE_CHARGE",
+							"NET_CHARGE_EXCLUDING_TAXES"
+						]
+					},
+					"rateTypeBasis": {
+						"type": "string",
+						"description": "Optional <br> RateType Basis <br> Example: ACCOUNT",
+						"example": "ACCOUNT",
+						"enum": [
+							"ACCOUNT",
+							"ACTUAL",
+							"CURRENT",
+							"CUSTOM",
+							"LIST"
+						]
+					}
+				},
+				"description": "Specifies Variable Handling Charge details"
+			},
+			"FixedValue": {
+				"description": "Rate charge fixed value",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Money"
+					}
+				]
+			},
+			"FreightDirectDetail": {
+				"type": "object",
+				"properties": {
+					"freightDirectDataDetails": {
+						"type": "array",
+						"description": "This field provides the list of data for Fedex Direct Detail service.There can be maximum of two allowed values for this field.",
+						"items": {
+							"$ref": "#/components/schemas/FreightDirectDataDetails"
+						}
+					}
+				},
+				"description": "Specifies the freight Direct Detail.It is used for Fedex Freight Direct."
+			},
+			"FreightDirectDataDetails": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "This field provides the type for FedexFreight Detail service.<br> Example: <ul><li>BASIC</li><li>BASIC_BY_APPOINTMENT</li><li>PREMIUM</li><li>STANDARD</li></ul>",
+						"example": "STANDARD",
+						"enum": [
+							"BASIC",
+							"BASIC_BY_APPOINTMENT",
+							"PREMIUM",
+							"STANDARD"
+						]
+					},
+					"transportationType": {
+						"type": "string",
+						"description": "This field provides the transportation type for Fedex Freight Detail service.<br> Example: <ul><li>DELIVERY</li><li>PICKUP</li></ul>",
+						"example": "DELIVERY",
+						"enum": [
+							"DELIVERY",
+							"PICKUP"
+						]
+					},
+					"eMailAddress": {
+						"type": "string",
+						"description": "This field provides the email address associated with the freight user",
+						"example": "raj.osv@fedex.com"
+					},
+					"phoneNumberDetails": {
+						"type": "array",
+						"description": "This field prvides the phone number details associated with freight services",
+						"items": {
+							"$ref": "#/components/schemas/FreightPhoneNumberDetail"
+						}
+					}
+				},
+				"description": "This field provides the data details for Fedex Freight Detail service."
+			},
+			"FreightPhoneNumberDetail": {
+				"type": "object",
+				"properties": {
+					"phoneNumberType": {
+						"type": "string",
+						"description": "This provides the type of phoneNumber being used in request.<br> Example: <ul><li>FAX</li><li>HOME</li><li>MOBILE</li><li>PAGER</li><li>TOLL_FREE</li><li>WORK</li></ul>",
+						"example": "MOBILE",
+						"enum": [
+							"FAX",
+							"HOME",
+							"MOBILE",
+							"PAGER",
+							"TOLL_FREE",
+							"WORK"
+						]
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "This provides the phone number",
+						"example": "XXXXXXXXX12"
+					}
+				},
+				"description": "This field provides the phone Number details for the service.There can be maximum of five types of phoneNumber which can be provided in request."
+			},
+			"Special_Service_Options_Domestic_Ground": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75063",
+								"countryCode": "US"
+							}
+						},
+						"recipient": {
+							"address": {
+								"postalCode": "12345",
+								"countryCode": "US"
+							}
+						},
+						"packagingType": "YOUR_PACKAGING",
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "100"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXG"
+					]
+				}
+			},
+			"Special_Service_Options_Domestic_Express": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75063",
+								"countryCode": "US"
+							}
+						},
+						"recipient": {
+							"address": {
+								"postalCode": "12345",
+								"countryCode": "US"
+							}
+						},
+						"packagingType": "YOUR_PACKAGING",
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "100"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE"
+					]
+				}
+			},
+			"Special_Service_Options_International_Express": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75008",
+								"countryCode": "FR"
+							}
+						},
+						"recipient": {
+							"address": {
+								"postalCode": "12345",
+								"countryCode": "US"
+							}
+						},
+						"packagingType": "YOUR_PACKAGING",
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "100"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE"
+					]
+				}
+			},
+			"Special_Service_Options_International_Express_Freight": {
+				"example": {
+					"requestedShipment": {
+						"shipper": {
+							"address": {
+								"postalCode": "75008",
+								"countryCode": "FR"
+							}
+						},
+						"recipient": {
+							"address": {
+								"postalCode": "12345",
+								"countryCode": "US"
+							}
+						},
+						"packagingType": "YOUR_PACKAGING",
+						"requestedPackageLineItems": [
+							{
+								"weight": {
+									"units": "LB",
+									"value": "151"
+								}
+							}
+						]
+					},
+					"carrierCodes": [
+						"FDXE"
+					]
+				}
+			},
+			"body_specialserviceoptions": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Special_Service_Options"
+					},
+					{
+						"$ref": "#/components/schemas/Special_Service_Options_Domestic_Ground"
+					},
+					{
+						"$ref": "#/components/schemas/Special_Service_Options_Domestic_Express"
+					},
+					{
+						"$ref": "#/components/schemas/Special_Service_Options_International_Express"
+					},
+					{
+						"$ref": "#/components/schemas/Special_Service_Options_International_Express_Freight"
+					}
+				]
+			}
+		}
+	}
+}

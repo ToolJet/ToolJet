@@ -1,0 +1,684 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "CRM Imports",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Core"
+  }, {
+    "name" : "Public_Imports"
+  } ],
+  "paths" : {
+    "/crm/v3/imports/" : {
+      "get" : {
+        "tags" : [ "Core" ],
+        "summary" : "Get active imports",
+        "description" : "Returns a paged list of active imports for this account.",
+        "operationId" : "get-/crm/v3/imports/_getPage",
+        "parameters" : [ {
+          "name" : "after",
+          "in" : "query",
+          "description" : "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "The maximum number of results to display per page.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePublicImportResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "crm.import" ]
+        }, {
+          "private_apps_legacy" : [ "crm.import" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Core" ],
+        "summary" : "Start a new import",
+        "description" : "Begins importing data from the specified file resources. This uploads the corresponding file and uses the import request object to convert rows in the files to objects.",
+        "operationId" : "post-/crm/v3/imports/_create",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "files" : {
+                    "type" : "string",
+                    "description" : "A list of files containing the data to import",
+                    "format" : "binary"
+                  },
+                  "importRequest" : {
+                    "type" : "string",
+                    "description" : "JSON formatted metadata about the import. This includes a name for the import and the column mappings for each file. See the overview tab for more on the required format."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicImportResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "crm.import" ]
+        }, {
+          "private_apps_legacy" : [ "crm.import" ]
+        } ]
+      }
+    },
+    "/crm/v3/imports/{importId}" : {
+      "get" : {
+        "tags" : [ "Core" ],
+        "summary" : "Get the information on any import",
+        "description" : "A complete summary of an import record, including any updates.",
+        "operationId" : "get-/crm/v3/imports/{importId}_getById",
+        "parameters" : [ {
+          "name" : "importId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicImportResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "crm.import" ]
+        }, {
+          "private_apps_legacy" : [ "crm.import" ]
+        } ]
+      }
+    },
+    "/crm/v3/imports/{importId}/cancel" : {
+      "post" : {
+        "tags" : [ "Core" ],
+        "summary" : "Cancel an active import",
+        "description" : "This allows a developer to cancel an active import.",
+        "operationId" : "post-/crm/v3/imports/{importId}/cancel_cancel",
+        "parameters" : [ {
+          "name" : "importId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActionResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "crm.import" ]
+        }, {
+          "private_apps_legacy" : [ "crm.import" ]
+        } ]
+      }
+    },
+    "/crm/v3/imports/{importId}/errors" : {
+      "get" : {
+        "tags" : [ "Public_Imports" ],
+        "operationId" : "get-/crm/v3/imports/{importId}/errors_getErrors",
+        "parameters" : [ {
+          "name" : "after",
+          "in" : "query",
+          "description" : "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "The maximum number of results to display per page.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "importId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePublicImportErrorForwardPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "crm.import" ]
+        }, {
+          "private_apps_legacy" : [ "crm.import" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CollectionResponsePublicImportResponse" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicImportResponse"
+            }
+          },
+          "paging" : {
+            "$ref" : "#/components/schemas/Paging"
+          }
+        }
+      },
+      "Paging" : {
+        "type" : "object",
+        "properties" : {
+          "next" : {
+            "$ref" : "#/components/schemas/NextPage"
+          },
+          "prev" : {
+            "$ref" : "#/components/schemas/PreviousPage"
+          }
+        }
+      },
+      "PublicObjectListRecord" : {
+        "required" : [ "listId", "objectType" ],
+        "type" : "object",
+        "properties" : {
+          "listId" : {
+            "type" : "string",
+            "description" : "The ID of the list containing the imported objects."
+          },
+          "objectType" : {
+            "type" : "string",
+            "description" : "The type of object contained in the list."
+          }
+        },
+        "description" : "A summary detailing which list contains the imported objects.",
+        "example" : {
+          "objectType" : "contacts",
+          "listId" : "3"
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "ImportRowCore" : {
+        "required" : [ "fileId", "lineNumber", "rowData" ],
+        "type" : "object",
+        "properties" : {
+          "lineNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowData" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "fileId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ActionResponse" : {
+        "required" : [ "completedAt", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "ForwardPaging" : {
+        "type" : "object",
+        "properties" : {
+          "next" : {
+            "$ref" : "#/components/schemas/NextPage"
+          }
+        }
+      },
+      "PublicImportError" : {
+        "required" : [ "createdAt", "errorType", "id", "knownColumnNumber", "sourceData" ],
+        "type" : "object",
+        "properties" : {
+          "errorType" : {
+            "type" : "string",
+            "enum" : [ "INCORRECT_NUMBER_OF_COLUMNS", "INVALID_OBJECT_ID", "INVALID_ASSOCIATION_IDENTIFIER", "NO_OBJECT_ID_FROM_ASSOCIATION_IDENTIFIER", "MULTIPLE_COMPANIES_WITH_THIS_DOMAIN", "PROPERTY_DEFINITION_NOT_FOUND", "PROPERTY_VALUE_NOT_FOUND", "COULD_NOT_FIND_OWNER", "MULTIPLE_OWNERS_FOUND", "COULD_NOT_FIND_BUSINESS_UNIT", "COULD_NOT_PARSE_NUMBER", "COULD_NOT_PARSE_DATE", "COULD_NOT_PARSE_TERM", "OUTSIDE_VALID_TIME_RANGE", "OUTSIDE_VALID_TERM_RANGE", "COULD_NOT_PARSE_ROW", "INVALID_ENUMERATION_OPTION", "AMBIGUOUS_ENUMERATION_OPTION", "FAILED_VALIDATION", "FAILED_TO_CREATE_ASSOCIATION", "FILE_NOT_FOUND", "INVALID_COLUMN_CONFIGURATION", "INVALID_FILE_TYPE", "INVALID_SPREADSHEET", "INVALID_SHEET_COUNT", "FAILED_TO_PROCESS_OBJECT_WITH_EMPTY_PROPERTY_VALUES", "UNKNOWN_BAD_REQUEST", "GDPR_BLACKLISTED_EMAIL", "DUPLICATE_ASSOCIATION_ID", "LIMIT_EXCEEDED", "INVALID_ALTERNATE_ID", "INVALID_EMAIL", "INVALID_DOMAIN", "DUPLICATE_ROW_CONTENT", "INVALID_NUMBER_SIZE", "UNKNOWN_ERROR", "FAILED_TO_OPT_OUT_CONTACT", "INVALID_REQUIRED_PROPERTY", "MISSING_REQUIRED_PROPERTY", "DUPLICATE_ALTERNATE_ID", "DUPLICATE_OBJECT_ID", "DUPLICATE_UNIQUE_PROPERTY_VALUE", "BLANK_VALUE_PROVIDED", "UNKNOWN_ASSOCIATION_RECORD_ID", "INVALID_RECORD_ID", "DUPLICATE_RECORD_ID", "INVALID_CUSTOM_PROPERTY_VALIDATION", "CREATE_ONLY_IMPORT", "UPDATE_ONLY_IMPORT", "COLUMN_TOO_LARGE" ]
+          },
+          "sourceData" : {
+            "$ref" : "#/components/schemas/ImportRowCore"
+          },
+          "objectType" : {
+            "type" : "string",
+            "enum" : [ "CONTACT", "COMPANY", "DEAL", "ENGAGEMENT", "TICKET", "OWNER", "PRODUCT", "LINE_ITEM", "BET_DELIVERABLE_SERVICE", "CONTENT", "CONVERSATION", "BET_ALERT", "PORTAL", "QUOTE", "FORM_SUBMISSION_INBOUNDDB", "QUOTA", "UNSUBSCRIBE", "COMMUNICATION", "FEEDBACK_SUBMISSION", "ATTRIBUTION", "SALESFORCE_SYNC_ERROR", "RESTORABLE_CRM_OBJECT", "HUB", "LANDING_PAGE", "PRODUCT_OR_FOLDER", "TASK", "FORM", "MARKETING_EMAIL", "AD_ACCOUNT", "AD_CAMPAIGN", "AD_GROUP", "AD", "KEYWORD", "CAMPAIGN", "SOCIAL_CHANNEL", "SOCIAL_POST", "SITE_PAGE", "BLOG_POST", "IMPORT", "EXPORT", "CTA", "TASK_TEMPLATE", "AUTOMATION_PLATFORM_FLOW", "OBJECT_LIST", "NOTE", "MEETING_EVENT", "CALL", "EMAIL", "PUBLISHING_TASK", "CONVERSATION_SESSION", "CONTACT_CREATE_ATTRIBUTION", "INVOICE", "MARKETING_EVENT", "CONVERSATION_INBOX", "CHATFLOW", "MEDIA_BRIDGE", "SEQUENCE", "SEQUENCE_STEP", "FORECAST", "SNIPPET", "TEMPLATE", "DEAL_CREATE_ATTRIBUTION", "QUOTE_TEMPLATE", "QUOTE_MODULE", "QUOTE_MODULE_FIELD", "QUOTE_FIELD", "SEQUENCE_ENROLLMENT", "SUBSCRIPTION", "ACCEPTANCE_TEST", "SOCIAL_BROADCAST", "DEAL_SPLIT", "DEAL_REGISTRATION", "GOAL_TARGET", "GOAL_TARGET_GROUP", "PORTAL_OBJECT_SYNC_MESSAGE", "FILE_MANAGER_FILE", "FILE_MANAGER_FOLDER", "SEQUENCE_STEP_ENROLLMENT", "APPROVAL", "APPROVAL_STEP", "CTA_VARIANT", "SALES_DOCUMENT", "DISCOUNT", "FEE", "TAX", "MARKETING_CALENDAR", "PERMISSIONS_TESTING", "PRIVACY_SCANNER_COOKIE", "DATA_SYNC_STATE", "WEB_INTERACTIVE", "PLAYBOOK", "FOLDER", "PLAYBOOK_QUESTION", "PLAYBOOK_SUBMISSION", "PLAYBOOK_SUBMISSION_ANSWER", "COMMERCE_PAYMENT", "GSC_PROPERTY", "SOX_PROTECTED_DUMMY_TYPE", "BLOG_LISTING_PAGE", "QUARANTINED_SUBMISSION", "PAYMENT_SCHEDULE", "PAYMENT_SCHEDULE_INSTALLMENT", "MARKETING_CAMPAIGN_UTM", "DISCOUNT_TEMPLATE", "DISCOUNT_CODE", "FEEDBACK_SURVEY", "CMS_URL", "SALES_TASK", "SALES_WORKLOAD", "USER", "POSTAL_MAIL", "SCHEMAS_BACKEND_TEST", "PAYMENT_LINK", "SUBMISSION_TAG", "CAMPAIGN_STEP", "SCHEDULING_PAGE", "SOX_PROTECTED_TEST_TYPE", "ORDER", "MARKETING_SMS", "PARTNER_ACCOUNT", "CAMPAIGN_TEMPLATE", "CAMPAIGN_TEMPLATE_STEP", "UNKNOWN" ]
+          },
+          "invalidValue" : {
+            "type" : "string"
+          },
+          "extraContext" : {
+            "type" : "string"
+          },
+          "objectTypeId" : {
+            "type" : "string"
+          },
+          "knownColumnNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "createdAt" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "id" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PreviousPage" : {
+        "required" : [ "before" ],
+        "type" : "object",
+        "properties" : {
+          "before" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PublicImportMetadata" : {
+        "required" : [ "counters", "fileIds", "objectLists" ],
+        "type" : "object",
+        "properties" : {
+          "objectLists" : {
+            "type" : "array",
+            "description" : "The lists containing the imported objects.",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicObjectListRecord"
+            }
+          },
+          "counters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int32"
+            },
+            "description" : "Summarized outcomes of each row a developer attempted to import into HubSpot."
+          },
+          "fileIds" : {
+            "type" : "array",
+            "description" : "The IDs of files uploaded in the File Manager API.",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "An object detailing a summary of the import record outputs",
+        "example" : {
+          "objectLists" : [ {
+            "objectType" : "contacts",
+            "listId" : "3"
+          } ],
+          "counters" : {
+            "TOTAL_ROWS" : 2,
+            "PROPERTY_VALUES_EMITTED" : 2,
+            "CREATED_OBJECTS" : 1,
+            "UPDATED_OBJECTS" : 1,
+            "UNIQUE_OBJECTS_WRITTEN" : 2
+          },
+          "fileIds" : [ "3579849" ]
+        }
+      },
+      "CollectionResponsePublicImportErrorForwardPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicImportError"
+            }
+          },
+          "paging" : {
+            "$ref" : "#/components/schemas/ForwardPaging"
+          }
+        }
+      },
+      "PublicImportResponse" : {
+        "required" : [ "createdAt", "id", "metadata", "optOutImport", "state", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "state" : {
+            "type" : "string",
+            "description" : "The status of the import.",
+            "enum" : [ "STARTED", "PROCESSING", "DONE", "FAILED", "CANCELED", "DEFERRED", "REVERTED" ]
+          },
+          "importRequestJson" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "metadata" : {
+            "$ref" : "#/components/schemas/PublicImportMetadata"
+          },
+          "importName" : {
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "optOutImport" : {
+            "type" : "boolean",
+            "description" : "Whether or not the import is a list of people disqualified from receiving emails."
+          },
+          "id" : {
+            "type" : "string"
+          }
+        },
+        "description" : "A current summary of the import, whether complete or not.",
+        "example" : {
+          "id" : "1471",
+          "createdAt" : "2020-01-14T22:45:00.153Z",
+          "updatedAt" : "2020-01-14T22:45:00.153Z",
+          "state" : "DONE",
+          "optOutImport" : false,
+          "metadata" : {
+            "objectLists" : [ {
+              "objectType" : "contacts",
+              "listId" : "3"
+            } ],
+            "counters" : {
+              "TOTAL_ROWS" : 1000,
+              "PROPERTY_VALUES_EMITTED" : 1000,
+              "CREATED_OBJECTS" : 1000,
+              "UNIQUE_OBJECTS_WRITTEN" : 1000
+            },
+            "fileIds" : [ "32938649" ]
+          }
+        }
+      },
+      "NextPage" : {
+        "required" : [ "after" ],
+        "type" : "object",
+        "properties" : {
+          "after" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.import" : "Create or modify all your CRM data through bulk imports"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

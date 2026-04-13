@@ -1,0 +1,2403 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Pickup Request API",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/pickup/v1/pickups": {
+			"post": {
+				"summary": "Create Pickup",
+				"description": "Use this endpoint to create a pickup request for a package.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Create Pickup",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PudcResponseVO_CreatePickup"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "PICKUP.REQUESTED.PREVIOUS.DAY",
+											"message": "Cannot schedule a pickup requested for a previous day."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/pickup/v1/pickups\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/pickup/v1/pickups\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/pickup/v1/pickups\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/pickup/v1/pickups');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/pickup/v1/pickups\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/pickup/v1/pickups\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/pickup/v1/pickups\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/pickup/v1/pickups/availabilities": {
+			"post": {
+				"summary": "Check Pickup Availability",
+				"description": "Use this endpoint to check the availability of a pickup service.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Check Pickup Availability",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body_1"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PudcResponseVO_PickupAvailability"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "PICKUP.POSTALCODE.MISSING",
+											"message": "PostalCode is missing."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/pickup/v1/pickups/availabilities\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/pickup/v1/pickups/cancel": {
+			"put": {
+				"summary": "Cancel Pickup",
+				"description": "Use this endpoint to cancel the already scheduled pickup request. <br>Note: A failure notification will be sent if you attempt to cancel a pickup after the FedEx courier has been dispatched to the pickup location.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Cancel Pickup",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body_2"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PudcResponseVO_CancelPickup"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "PICKUP.NUMBER.EXPIRED",
+											"message": "PREVIOUS DAY PICKUP, CANNOT CANCEL OR UPDATE"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\");\nvar request = new RestRequest(Method.PUT);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n  .url(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\")\n  .put(body)\n  .addHeader(\"Content-Type\", \"application/json\")\n  .addHeader(\"X-locale\", \"en_US\")\n  .addHeader(\"Authorization\", \"Bearer \")\n  .build();\n\nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"PUT\", \"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel');\n$request->setMethod(HTTP_METH_PUT);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.put(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.put(\"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/pickup/v1/pickups/cancel\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"PUT\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"PudcResponseVO_CreatePickup": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_CreatePickup"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_CreatePickup": {
+				"$ref": "#/components/schemas/CreatePickupOutputVO"
+			},
+			"CreatePickupOutputVO": {
+				"type": "object",
+				"properties": {
+					"pickupConfirmationCode": {
+						"type": "string",
+						"description": "The confirmation number provided to the customer when a pickup is requested <br> Example : 3001",
+						"example": "3001"
+					},
+					"message": {
+						"type": "string",
+						"description": "Human-readable text that explains pickup notification <br> Example: Courier on the way",
+						"example": "Courier on the way"
+					},
+					"location": {
+						"type": "string",
+						"description": "The location from where the package will be picked up. <br><br><i>Note: The location will only be returned for Express Pickup.<i><br><br>Example: COSA",
+						"example": "COSA"
+					},
+					"alerts": {
+						"type": "array",
+						"description": "These are optional alerts received when a Create pickup is requested. This includes an alert code, type, and message.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The response elements received when you create a pickup."
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the API alert code.",
+						"example": "SHIP.RECIPIENT.POSTALCITY.MISMATCH"
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the API alert type.",
+						"example": "NOTE",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the API alert message.",
+						"example": "Recipient Postal-City Mismatch."
+					}
+				},
+				"description": "Specifies the API alerts."
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: a9053a7d-6865-42ab-b323-4632db263ab4",
+						"example": "a9053a7d-6865-42ab-b323-4632db263ab4"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: PICKUP.REQUESTED.PREVIOUS.DAY"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Cannot schedule a pickup requested for a previous day."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_Create_Pickup": {
+				"required": [
+					"associatedAccountNumber",
+					"carrierCode",
+					"originDetail"
+				],
+				"type": "object",
+				"properties": {
+					"associatedAccountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					},
+					"originDetail": {
+						"description": "The origin address if different than the one associated with the shipper account. This element value is required when the package is to be picked up from an address other than the shipper account address.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/OriginDetail"
+							}
+						]
+					},
+					"associatedAccountNumberType": {
+						"type": "string",
+						"description": "This enumeration represents a kind of legacy account number from a FedEx operating entity for the account number associated to the pickup.<br> Valid values are: FEDEX_EXPRESS<br>FEDEX_GROUND<br>",
+						"example": "FEDEX_GROUND"
+					},
+					"totalWeight": {
+						"description": "Specify The total weight of the packages for the pickup. Unit of measure is\n LB.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"packageCount": {
+						"type": "integer",
+						"description": "Specify the total number of packages for the pickup.<br> Example: 5",
+						"format": "int32",
+						"example": 5
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements.<br> Examples of FedEx Operating Comapnies are :  <ul><li>FDXE- FedEx Express</li><li>FDXG- FedEx Ground</li>",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						],
+						"example": "FDXE"
+					},
+					"accountAddressOfRecord": {
+						"description": "The city name, state or province code and the address classification associated with the customer account which requested the pickup.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Address_1"
+							}
+						]
+					},
+					"remarks": {
+						"type": "string",
+						"description": "Placeholder for any message to be passed to the FedEx pickup courier.<br>Note:Maximum length is 60 characters.<br> Example: Please ring bell at loading dock.",
+						"example": "Please ring bell at loading dock."
+					},
+					"countryRelationships": {
+						"type": "string",
+						"description": "Describes the country relationship among the shipments being picked up. This element is not mandatory for this request, but when added, the mandatory values are DOMESTIC or INTERNATIONAL. Empty or incorrect values will result in to errors.",
+						"enum": [
+							"DOMESTIC",
+							"INTERNATIONAL"
+						]
+					},
+					"pickupType": {
+						"type": "string",
+						"description": "Indicate the pickup type method by which the shipment to be tendered to FedEx.<br><i>Note: The value of this element does not specify dispatching the courier for package pickup.</i> <br>Example: ON_CALL, PACKAGE_RETURN_PROGRAM, REGULAR_STOP <br><a onclick='loadDocReference(\"pickuptypes\")'>Click here for more information on Pickup Types.</a>",
+						"example": "ON_CALL, PACKAGE_RETURN_PROGRAM, REGULAR_STOP."
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "This is a Tracking number for FedEx packages used for tracking a single package or group of packages.<br> Example: 795803657326<br><a onclick='loadDocReference(\"mocktrackingnumbersforfedexexpressandfedexground\")'>Click here to see mock tracking numbers for FedEx Express and FedEx Ground.</a>",
+						"example": "795803657326"
+					},
+					"commodityDescription": {
+						"type": "string",
+						"description": "Description of the commodity being shipped. <br>Example:This field contains Commodity Description.<br><a onclick='loadDocReference(\"vaguecommoditydescriptions\")'>Click here to see Vague commodity descriptions</a>",
+						"example": "This field contains CommodityDescription"
+					},
+					"expressFreightDetail": {
+						"description": "Placeholder for Express Freight pickup details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ExpressFreightPickupDetail"
+							}
+						]
+					},
+					"oversizePackageCount": {
+						"type": "integer",
+						"description": "Specify the number of oversize packages that are tendered to FedEx Ground.",
+						"format": "int32",
+						"example": 2
+					},
+					"pickupNotificationDetail": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/PickupNotificationdetail"
+							}
+						]
+					}
+				},
+				"description": "Use this endpoint to create a pickup request."
+			},
+			"MinimumSamplePayload-ExpressFreightPickup": {
+				"example": {
+					"associatedAccountNumber": {
+						"value": "XXX561073"
+					},
+					"originDetail": {
+						"pickupLocation": {
+							"contact": {
+								"companyName": "Atos Syntel",
+								"personName": "Suresh",
+								"phoneNumber": "1231231231"
+							},
+							"address": {
+								"streetLines": [
+									"10 Fedex Pkwy"
+								],
+								"city": "Collierville",
+								"stateOrProvinceCode": "TN",
+								"postalCode": "38017",
+								"countryCode": "US",
+								"residential": true
+							}
+						},
+						"readyDateTimestamp": "2022-11-22T11:00:00Z",
+						"customerCloseTime": "16:00:00"
+					},
+					"carrierCode": "FDXE",
+					"expressFreightDetail": {
+						"truckType": "DROP_TRAILER_AGREEMENT",
+						"service": "INTERNATIONAL_ECONOMY_FREIGHT",
+						"trailerLength": "TRAILER_28_FT",
+						"bookingNumber": "1234AGTT",
+						"dimensions": {
+							"length": 20,
+							"width": 15,
+							"height": 12,
+							"units": "CM"
+						}
+					}
+				}
+			},
+			"AccountNumber": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "This is the account number. Maximum Length is 9. <br>Example: Your account number"
+					}
+				},
+				"description": "This is the FedEx account number. <br>Example: Your account number",
+				"example": {
+					"value": "Your account number"
+				}
+			},
+			"OriginDetail": {
+				"description": "This is the origin address, if different than the one associated with the shipper account. It is required if the package is to be picked up from an address other than the shipper account address.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/PickupOriginDetail"
+					}
+				]
+			},
+			"PickupOriginDetail": {
+				"required": [
+					"customerCloseTime",
+					"pickupLocation",
+					"readyDateTimestamp"
+				],
+				"type": "object",
+				"properties": {
+					"pickupAddressType": {
+						"type": "string",
+						"description": "Indicates the type of pickup address being used whether it is account address, shipper address or alternate address.<br>Note:<br>The default value is OTHER.",
+						"example": "ACCOUNT",
+						"enum": [
+							"ACCOUNT",
+							"SHIPPER",
+							"OTHER"
+						]
+					},
+					"pickupLocation": {
+						"$ref": "#/components/schemas/PickupLocationParty"
+					},
+					"readyDateTimestamp": {
+						"type": "string",
+						"format": "[YYYY-MM-DDTHH:MM:SSZ]",
+						"description": "Indicates the date and time when the freight shipment/package is ready for pick up.<br>Note:<br>1.The date format must be YYYY-MM-DDTHH:MM:SS.<br>2.The time must be in the format: HH:MM:SS using a 24-hour clock.<br>3.The date and time are separated by the letter T, such as 2015-03-25T09:30:00.<br>4.The time is local to the pickup postal code.5.Do not include a TZD (time zone designator) as it will be ignored.<br>Example: 2019-11-15T11:00:00",
+						"example": "2020-04-02T11:00:00Z"
+					},
+					"customerCloseTime": {
+						"type": "string",
+						"description": "Indicates the latest local time at which the driver can gain access to pickup the package(s).Format HH:MM:SS.<br>Note:<br>1.The time must be in the format: HH:MM:SS using a 24-hour clock.<br>2.The time is local to the pickup postal code.<br>3.Do not include a TZD (time zone designator) as it will be ignored.<br>Example: 2019-11-15T11:00:00",
+						"example": "18:00:00"
+					},
+					"pickupDateType": {
+						"type": "string",
+						"description": "Indicates whether the pickup request is for the same day or on a future date.",
+						"enum": [
+							"SAME_DAY",
+							"FUTURE_DAY"
+						]
+					},
+					"packageLocation": {
+						"type": "string",
+						"description": " This provides a location description from where the courier/driver must pick up the package. It is mandatory for Ground Pickup.<br> Example: FRONT",
+						"example": "FRONT",
+						"enum": [
+							"FRONT",
+							"NONE",
+							"REAR",
+							"SIDE"
+						]
+					},
+					"buildingPart": {
+						"type": "string",
+						"description": "This is the building type.",
+						"example": "APARTMENT",
+						"enum": [
+							"APARTMENT",
+							"BUILDING",
+							"DEPARTMENT",
+							"FLOOR",
+							"ROOM",
+							"SUITE"
+						]
+					},
+					"buildingPartDescription": {
+						"type": "string",
+						"description": "Indicates the building part such as floor suite or apartment number or an identifier of the building.<br>Example: 111",
+						"example": "111"
+					},
+					"earlyPickup": {
+						"type": "boolean",
+						"description": "Indicates if it is an early pickup. This applies only to Europe.",
+						"example": false
+					},
+					"suppliesRequested": {
+						"type": "string",
+						"description": "Indicates if any shipping supplies are requested at the pickup origin required to pack the shipment such as FedEx Box, Large Box, FedEx Tube.<br> Example: Supplies requested by customer",
+						"example": "Supplies requested by customer"
+					},
+					"geographicalPostalCode": {
+						"type": "string",
+						"description": "This is the alternate postal code associated with pickup location. (Applicable only for European pickups)",
+						"example": "geographicalPostalCode"
+					}
+				},
+				"description": "Pickup Origin Detail"
+			},
+			"PickupLocationParty": {
+				"description": "The descriptive data for the party responsible for the pickup and the physical location from which the shipment is picked up.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Party_createPickup"
+					},
+					{
+						"required": [
+							"address",
+							"contact"
+						],
+						"properties": {
+							"address": {
+								"$ref": "#/components/schemas/PickupLocationParty_address"
+							},
+							"contact": {
+								"$ref": "#/components/schemas/PickupLocationParty_contact"
+							}
+						}
+					}
+				]
+			},
+			"Party_createPickup": {
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/Contact_CreatePickup"
+					},
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					},
+					"deliveryInstructions": {
+						"type": "string",
+						"description": "Indicates the detailed instructions for delivery.This is used with Ground Home Delivery."
+					}
+				},
+				"description": "Indicates attributes for a Party to perform a transaction including the physical address, contact information and account number information. ",
+				"example": {
+					"contact": {
+						"companyName": "Fedex",
+						"personName": "John Taylor",
+						"phoneNumber": "7194446666",
+						"phoneExtension": "phone extension"
+					},
+					"address": {
+						"streetLines": [
+							"10 FedEx Parkway",
+							"Suite 302"
+						],
+						"urbanizationCode": "URB FAIR OAKS",
+						"city": "Beverly Hills",
+						"stateOrProvinceCode": "CA",
+						"postalCode": "38127",
+						"countryCode": "US",
+						"residential": false,
+						"addressClassification": "MIXED"
+					},
+					"accountNumber": {
+						"value": "XXX289837"
+					},
+					"deliveryInstructions": "deliveryInstructions"
+				}
+			},
+			"Contact_CreatePickup": {
+				"type": "object",
+				"properties": {
+					"companyName": {
+						"type": "string",
+						"description": "Specify the contact person's company name. Maximum length is 35.",
+						"example": "Fedex"
+					},
+					"personName": {
+						"type": "string",
+						"description": "Specify the contact person's name. Maximum Length is 70.",
+						"example": "John Taylor"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Specify the contact person's phone number. Minimum Length is 8 and Maximum legth is 13.",
+						"example": "7194446666"
+					},
+					"phoneExtension": {
+						"type": "string",
+						"description": "Specify the contact person's phone extension. Maximum length is 6."
+					}
+				},
+				"description": "Indicates the contact details for the party such as name, phonenumber.",
+				"example": {
+					"companyName": "Fedex",
+					"personName": "John Taylor",
+					"phoneNumber": "7194446666",
+					"phoneExtension": 1234
+				}
+			},
+			"Address": {
+				"type": "object",
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "This is a combination of number, street name, etc. <br>Note: At least one line is required and streetlines more than 3 will be ignored. Empty lines should not be included.<br>Example: [\\\"10 FedEx Parkway\\\", \\\"Suite 302\\\"]",
+						"items": {
+							"type": "string",
+							"example": "[[\"123 Ship Street\"]]"
+						}
+					},
+					"urbanizationCode": {
+						"type": "string",
+						"description": "Optional<br> In Puerto Rico, identical street names and address number ranges can be found within the same ZIP Code. In these cases, the urbanization name is the only element that correctly identifies the location of a particular address.<br> Example: URB FAIR OAKS",
+						"example": "URB FAIR OAKS"
+					},
+					"city": {
+						"type": "string",
+						"description": "This is a placeholder for City Name. <br>Note: This is conditional and not required in all the shipping requests. <br> Example: Beverly Hills",
+						"example": "Memphis"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code.Maximum length is 2. Maximum length is 2<br> Example: CA <br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "TN"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "This is a placeholder for postal code.<br>Note: The postal code is required for postal-aware countries. <br> Example: 38127<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "38017"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "This is the two-letter country code.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicate whether this address is Residential as opposed to Commercial.",
+						"example": false
+					},
+					"addressClassification": {
+						"type": "string",
+						"description": "Classifies a given address as either of unknown, residential, mixed or business.",
+						"example": "MIXED",
+						"enum": [
+							"MIXED",
+							"UNKNOWN",
+							"BUSINESS",
+							"RESIDENTIAL"
+						]
+					}
+				},
+				"description": "Descriptive data for a physical location. May be used as an actual physical address (place to which one could go), or as a container of \"address parts\" which should be handled as a unit (such as a city-state-ZIP combination within the US).",
+				"example": {
+					"streetLines": [
+						"123 Ship Street"
+					],
+					"urbanizationCode": "URB FAIR OAKS",
+					"city": "Memphis",
+					"stateOrProvinceCode": "TN",
+					"postalCode": "38017",
+					"countryCode": "US",
+					"residential": false,
+					"addressClassification": "MIXED"
+				}
+			},
+			"Weight": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Indicates the type of package weight.",
+						"example": "KG",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Indicates the package weight. Maximum length is 99999.<br> Example: 20",
+						"format": "double",
+						"example": 20
+					}
+				},
+				"description": "These are the package weight details.",
+				"example": {
+					"units": "KG",
+					"value": 20
+				}
+			},
+			"Address_1": {
+				"type": "object",
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "Specify Street line details for the given address <br> Example :[\\\"10 FedEx Parkway\\\", \\\"Suite 302\\\"]",
+						"items": {
+							"type": "string",
+							"example": "[[\"123 Ship Street\"]]"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "Conditional<br>The name of city, town, etc.<br> Example: Memphis",
+						"example": "Memphis"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is state or province code. Maximum length is 2.<br> Example: ON <br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "TN"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Specify the postal code. This is optional for non postal-aware countries. Maximum length is 10.<br> Example: 38017<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "38017"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country. Maximum length is 2.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicates whether this address is residential (as opposed to commercial).",
+						"example": false
+					},
+					"addressClassification": {
+						"type": "string",
+						"description": "Classifies a given address as either of unknown, residential, mixed or business.",
+						"example": "MIXED",
+						"enum": [
+							"MIXED",
+							"UNKNOWN",
+							"BUSINESS",
+							"RESIDENTIAL"
+						]
+					}
+				},
+				"description": "Conditionally required. For the Address, street, city and country are required if PickupAddressType is set to SHIPPER or OTHER.",
+				"example": {
+					"streetLines": [
+						"123 Ship Street"
+					],
+					"city": "Memphis",
+					"stateOrProvinceCode": "TN",
+					"postalCode": "38017",
+					"countryCode": "US",
+					"residential": false,
+					"addressClassification": "MIXED"
+				}
+			},
+			"ExpressFreightPickupDetail": {
+				"type": "object",
+				"properties": {
+					"truckType": {
+						"type": "string",
+						"description": "Specify type of pickup truck. ",
+						"example": "DROP_TRAILER_AGREEMENT",
+						"enum": [
+							"DROP_TRAILER_AGREEMENT",
+							"LIFTGATE",
+							"TRACTOR_TRAILER_ACCESS"
+						]
+					},
+					"service": {
+						"type": "string",
+						"description": "Specify FedEx Service for the shipment.<br>Example: FEDEX_1_DAY_FREIGHT",
+						"example": "FEDEX_1_DAY_FREIGHT"
+					},
+					"trailerLength": {
+						"type": "string",
+						"description": "Specify the trailer size, required for dispatch. ",
+						"example": "TRAILER_28_FT",
+						"enum": [
+							"TRAILER_28_FT",
+							"TRAILER_48_FT",
+							"TRAILER_53_FT"
+						]
+					},
+					"bookingNumber": {
+						"type": "string",
+						"description": "Express Freight shipments (refer below) may require booking number. This booking number may also be required for freight dispatch requests.<br>FedEx 1Day Freight - booking number is optional.<br>FedEx International Priority Freight - booking number is required<br>NOTE: <br>a. For Intra EU (EU-to-EU) and EU outbound (EU-to-NON_EU) Express Freight shipments, bookingNumber is optional.<br> b. For Express Freight shipments not originating in EU, Customers need to call FedEx to book freight shipment and receive a booking number. This booking number is included in the Ship request and prints on the shipping label.<br>example:1234AGTT",
+						"example": "1234AGTT"
+					},
+					"dimensions": {
+						"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html#\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Dimensions"
+							}
+						]
+					}
+				},
+				"description": "Provides the Express Freight pickup detailed information."
+			},
+			"Dimensions": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Indicate the length of the package. No implied decimal places. Maximum value is 999.<br>\n Example: 20",
+						"format": "int32",
+						"example": 20
+					},
+					"width": {
+						"type": "integer",
+						"description": "Indicate the width of the package. No implied decimal places. Maximum value is 999.<br>\n Example: 15",
+						"format": "int32",
+						"example": 15
+					},
+					"units": {
+						"type": "string",
+						"description": "Specify the unit of measurement used for the package dimensions.",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					},
+					"height": {
+						"type": "integer",
+						"description": "Indicate the height of the package. No implied decimal places. Maximum value: 999 <br> Example: 12",
+						"format": "int32",
+						"example": 12
+					}
+				},
+				"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html#\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"example": {
+					"length": 20,
+					"width": 15,
+					"height": 12,
+					"units": "CM"
+				}
+			},
+			"PickupNotificationdetail": {
+				"description": "This object allows user to request for pickup confirmation email. User can specify upto 5 email addresses.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/PickupNotificationDetail"
+					}
+				]
+			},
+			"PickupNotificationDetail": {
+				"type": "object",
+				"properties": {
+					"emailDetails": {
+						"type": "array",
+						"description": "Specify the list of email addresses along with locale to which the pickup confirmation email should be sent.",
+						"items": {
+							"$ref": "#/components/schemas/EmailDetail"
+						}
+					},
+					"format": {
+						"type": "string",
+						"description": "Specifies the format of email.",
+						"example": "HTML",
+						"enum": [
+							"HTML",
+							"TEXT"
+						]
+					},
+					"userMessage": {
+						"type": "string",
+						"description": "Specifies the user message that can be sent as part of the pickup confirmation email.<br>Example: This is the user message",
+						"example": "This is the user message"
+					}
+				}
+			},
+			"EmailDetail": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string",
+						"description": "Specify the email address.<br>Example: sample@gmail.com",
+						"example": "sample@gmail.com"
+					},
+					"locale": {
+						"type": "string",
+						"description": "Specify the language in which the email needs to be sent.Default value is en_US.<br>Example: en_US. .<br><a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"example": "en_US"
+					}
+				},
+				"description": "Email addresses along with locale to which the pickup confirmation email must be sent."
+			},
+			"Create_Pickup_Ground": {
+				"example": {
+					"associatedAccountNumber": {
+						"value": "XXX561073"
+					},
+					"originDetail": {
+						"pickupLocation": {
+							"contact": {
+								"personName": "Contact Name for Pickup",
+								"phoneNumber": "1234567890"
+							},
+							"address": {
+								"streetLines": [
+									"10 Fedex Pkwy"
+								],
+								"city": "Collierville",
+								"stateOrProvinceCode": "TN",
+								"postalCode": "38017",
+								"countryCode": "US"
+							}
+						},
+						"packageLocation": "FRONT",
+						"readyDateTimestamp": "2020-07-03T11:00:00Z",
+						"customerCloseTime": "17:00:00"
+					},
+					"carrierCode": "FDXG"
+				}
+			},
+			"Create_Pickup_Express": {
+				"example": {
+					"associatedAccountNumber": {
+						"value": "XXX561073"
+					},
+					"originDetail": {
+						"pickupLocation": {
+							"contact": {
+								"personName": "Contact Name for Pickup",
+								"phoneNumber": "1234567890"
+							},
+							"address": {
+								"streetLines": [
+									"10 Fedex Pkwy"
+								],
+								"city": "Collierville",
+								"stateOrProvinceCode": "TN",
+								"postalCode": "38017",
+								"countryCode": "US"
+							}
+						},
+						"readyDateTimestamp": "2020-07-03T11:00:00Z",
+						"customerCloseTime": "17:00:00"
+					},
+					"carrierCode": "FDXE"
+				}
+			},
+			"PudcResponseVO_PickupAvailability": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_PickupAvailability"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_PickupAvailability": {
+				"$ref": "#/components/schemas/PickupAvailabilityOutputVO"
+			},
+			"PickupAvailabilityOutputVO": {
+				"type": "object",
+				"properties": {
+					"requestTimestamp": {
+						"type": "string",
+						"description": "The time when the PickupAvailability request was processed.<br>Note:<br>1.The date format must be YYYY-MM-DDTHH:MM:SS.<br> 2.The time must be in the format: HH:MM:SS using a 24-hour clock.<br>3.The date and time are separated by the letter T, such as 2015-03-25T09:30:00.<br>4.The time is local to the pickup postal code<br> 5.Do not include a TZD (time zone designator) as it will be ignored.<br>Example: 2019-11-15T11:00:00",
+						"example": "2020-04-02T04:19:00"
+					},
+					"options": {
+						"type": "array",
+						"description": "The pickup schedule details, such as the carrier, latest available time of pickup, default latest available time, availability for pickup, time when the package is ready to be picked up, indication if the address is residential, cutoff time of the pickup, and driver's access to pick up the package.",
+						"items": {
+							"$ref": "#/components/schemas/PickupScheduleOption"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "Any optional alert messages received when a pickup availability is requested. This includes an alert code, type, and message.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The pickup availability response elements."
+			},
+			"PickupScheduleOption": {
+				"type": "object",
+				"properties": {
+					"carrier": {
+						"type": "string",
+						"description": "Specifies the FedEx transportation carrier for the pickup option.",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FXFR"
+						]
+					},
+					"available": {
+						"type": "boolean",
+						"description": "Indicates the availability of pickup option.If the value is true, it indicates the pickup option is available. If the value is false, it indicates pickup option is not available.",
+						"example": true
+					},
+					"pickupDate": {
+						"type": "string",
+						"description": "Indicates the date (in the pickup postal code's time zone)which refers to the pickup schedule option.<br> Format: YYYY-MM-DD <br> Example: 2019-01-20",
+						"example": "2019-01-20"
+					},
+					"cutOffTime": {
+						"type": "string",
+						"description": "Specifies the latest allowed ready time for the pickup option. The time is local to the pickup postal code. <br> Format:  HH:MM:SS <br> Example: 18:30:00",
+						"example": "18:30:00"
+					},
+					"accessTime": {
+						"$ref": "#/components/schemas/Duration"
+					},
+					"residentialAvailable": {
+						"type": "boolean",
+						"description": "Indicates whether residential pickup is available for the requested postal code.",
+						"example": true
+					},
+					"countryRelationship": {
+						"type": "string",
+						"description": "Describes the country relationship among the shipments.DOMESTIC indicates intra-country shipping and cut off times.<br> INTERNATIONAL indicates inter-country shipping and cut off times.<br>Cut off times may vary for DOMESTIC and INTERNATIONAL.",
+						"example": "INTERNATIONAL"
+					},
+					"scheduleDay": {
+						"type": "string",
+						"description": "Indicates scheduled pickup day of the week.",
+						"example": "SAME_DAY",
+						"enum": [
+							"SAME_DAY",
+							"FUTURE_DAY"
+						]
+					},
+					"defaultReadyTime": {
+						"type": "string",
+						"description": "The default ready time for the shipment to be picked up. FedEx will assume the shipment is ready for pickup at this time unless otherwise indicated on the 'CreatePickup' Request. Format:HH:MM:SS <br> Example: 14:00:00",
+						"example": "14:00:00"
+					},
+					"defaultLatestTimeOptions": {
+						"description": "The default latest time for the shipment to be picked up.<br>Format:HH:MM:SS <br> Example: 19:00:00",
+						"example": "19:00:00"
+					},
+					"earlyCutOffTime": {
+						"type": "string",
+						"description": "Identifies the early cut-off time for the pickup option. The time is local to the pickup postal code. It includes a TZD (time zone designator) for FedEx Freight requests.<br> Format:  HH:MM:SS <br> Example: 18:30:00",
+						"format": "HH:MM:SS",
+						"example": "14:30:00"
+					},
+					"earlyAccessTime": {
+						"$ref": "#/components/schemas/Duration"
+					},
+					"earlyPickupLocationId": {
+						"type": "string",
+						"description": "The location from where the package will be picked up <br> Example: PITA",
+						"example": "PITA"
+					},
+					"readyTimeOptions": {
+						"type": "array",
+						"description": "The ReadyTimeOptions indicates the possible ready time windows for the shipment to be picked up.FedEx will assume the shipment is ready for pickup at this time <br>Example: 11:00:00, 11:30:00 <br>Note:Based on the cutOffTimes provided readyTimeOptions are returned.",
+						"items": {
+							"type": "string",
+							"example": "11:00:00"
+						}
+					},
+					"latestTimeOptions": {
+						"type": "array",
+						"description": "The LatestTimeOptions indicates the possible latest time windows for the shipment to be picked up.FedEx will assume the shipment is ready for pickup at this time <br>Example: 12:00:00,12:30:00,13:00:00,13:30:00....23:59:00<br> Note:LatestTimeOptions are return till endoftheday timings.",
+						"items": {
+							"type": "string",
+							"example": "12:00:00"
+						}
+					}
+				}
+			},
+			"Duration": {
+				"type": "object",
+				"properties": {
+					"hours": {
+						"type": "integer",
+						"description": "This is the minimum time window in hours that is allocated for the FedEx courier to make the pickup.<br> Example: 'PT1H0M' means Pickup Time is 1 Hour and 0 Minutes",
+						"format": "int32",
+						"example": 1
+					},
+					"minutes": {
+						"type": "integer",
+						"description": "This is the minimum time window in minutes that is allocated for the FedEx courier to make the pickup.<br> Example: 'PT1H0M' means Pickup Time is 1 Hour and 0 Minutes",
+						"format": "int32",
+						"example": 30
+					}
+				},
+				"description": "This is the minimum required time window  between the  shipment ReadyTime and the customer close time (or the local 'cutoff time' if it is earlier than the customer close time). <br> Example: hours: 1 minutes: 30",
+				"example": {
+					"hours": 1,
+					"minutes": 30
+				}
+			},
+			"ErrorResponseVO_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 6f821609-aeb6-4ffe-b783-6e60b20f2801",
+						"example": "6f821609-aeb6-4ffe-b783-6e60b20f2801"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "\"This element allows you to assign a unique identifier to your transaction.  This element is also returned in the reply and help you match the request to the reply <br> Example : AnyCo_order123456789\"",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError_2"
+						}
+					}
+				}
+			},
+			"CXSError_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: PICKUP.POSTALCODE.MISSING"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: PostalCode is missing."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_Pickup_Availability": {
+				"required": [
+					"carriers",
+					"countryRelationship",
+					"pickupAddress",
+					"pickupRequestType"
+				],
+				"type": "object",
+				"properties": {
+					"pickupAddress": {
+						"$ref": "#/components/schemas/PickupAddress"
+					},
+					"dispatchDate": {
+						"type": "string",
+						"description": "Specify the date the package is to be picked up. The format is YYYY-MM-DD. If left blank, the system considers current date as dispatch date.<br> Example: 2020-01-01",
+						"example": "2020-10-14"
+					},
+					"packageReadyTime": {
+						"type": "string",
+						"description": "Specify the time that the package will be ready for pickup. The time format is HH:MM:SS and it refers to the local timezone. The driver should pick up the package/shipment by the given pickup time.<br> Example: 15:00:00",
+						"example": "15:30:00"
+					},
+					"customerCloseTime": {
+						"type": "string",
+						"description": "Specify the latest time the driver gets access to pick up the package. The time format is in HH:MM:SS and it refers to the local timezone. The driver should pick up the package by the given pickup time.<br>Example: 18:00:00",
+						"example": "18:00:00"
+					},
+					"pickupType": {
+						"type": "string",
+						"description": "Indicate the pickup type method by which the shipment to be tendered to FedEx.<br><i>Note: The value of this element does not specify dispatching the courier for package pickup.</i><br><a onclick='loadDocReference(\"pickuptypes\")'>Click here for more information on Pickup Types.</a>",
+						"example": "ON_CALL",
+						"enum": [
+							"ON_CALL",
+							"TAG"
+						]
+					},
+					"pickupRequestType": {
+						"type": "array",
+						"description": "Specify pickup request type.",
+						"example": [
+							"SAME_DAY"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"SAME_DAY",
+								"FUTURE_DAY"
+							]
+						}
+					},
+					"shipmentAttributes": {
+						"$ref": "#/components/schemas/ShipmentAttributes"
+					},
+					"numberOfBusinessDays": {
+						"type": "integer",
+						"description": "Specify number of business days to consider when checking availability.<br>For example if you are indicating pickupDate for a Saturday and you indicate 3, Saturday, Sunday and Monday will be considered. <br> Example: 3",
+						"format": "int32",
+						"example": 1
+					},
+					"packageDetails": {
+						"type": "array",
+						"description": "This object is used to specify the package details.",
+						"items": {
+							"$ref": "#/components/schemas/RequestedPickupPackageDetail"
+						}
+					},
+					"associatedAccountNumber": {
+						"type": "string",
+						"description": "The associated account number, which will be invoiced for the pickup.<br>Example:613787364.",
+						"example": "613787364"
+					},
+					"associatedAccountNumberType": {
+						"type": "string",
+						"description": "This represents a kind of legacy account number from a FedEx operating entity for the account number associated to the pickup.<br>Valid values are: FEDEX_EXPRESS<br>FEDEX_GROUND<br>",
+						"example": "FEDEX_EXPRESS",
+						"enum": [
+							"FEDEX_EXPRESS",
+							"FEDEX_GROUND"
+						]
+					},
+					"carriers": {
+						"type": "array",
+						"description": "Specify the four letter code of a FedEx operating company thet meets your requirements.<br>Examples of FedEx Operating Companies are: <ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li></ul>",
+						"example": [
+							"FDXE"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG"
+							]
+						}
+					},
+					"countryRelationship": {
+						"type": "string",
+						"description": "Specify the country relationship among the shipments being picked up. Empty or incorrect values will result in to errors. <br><br><i>Note: <b>shipmentAttributes/serviceType</b> is required for domestic or international pickup availabilities.</i>",
+						"example": "INTERNATIONAL",
+						"enum": [
+							"DOMESTIC",
+							"INTERNATIONAL"
+						]
+					}
+				},
+				"description": "These are pickup availability request elements."
+			},
+			"PickupAddress": {
+				"description": "Specify the address for which pickup availability inquiry has been made.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Address"
+					},
+					{
+						"required": [
+							"countryCode",
+							"postalCode"
+						],
+						"properties": {
+							"postalCode": {
+								"type": "string",
+								"description": "This is the Postal code for the Pickup address.<br> Example: 38017<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+								"example": "38017"
+							},
+							"countryCode": {
+								"type": "string",
+								"description": "This is the country code for the Pickup address.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+								"example": "US"
+							}
+						}
+					}
+				]
+			},
+			"ShipmentAttributes": {
+				"type": "object",
+				"description": "Specify the shipment details, such as service type, packaging type, weight and dimensions. <br><br><i>Note: serviceType is required for domestic or international pickup availabilities.</i>",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/PickupShipmentAttributes"
+					}
+				]
+			},
+			"PickupShipmentAttributes": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Specify the FedEx service type for the shipment.<br>Example: FEDEX_FREIGHT_PRIORITY",
+						"example": "FEDEX_FREIGHT_PRIORITY"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/Weight"
+					},
+					"packagingType": {
+						"type": "string",
+						"description": "Specify the FedEx Packaging Type for the shipment.",
+						"example": "YOUR_PACKAGING"
+					},
+					"dimensions": {
+						"$ref": "#/components/schemas/Dimensions_2"
+					}
+				},
+				"description": "Indicates the optional attributes for the shipment related to the pickup inquiry.",
+				"example": {
+					"serviceType": "FEDEX_FREIGHT_PRIORITY",
+					"weight": {
+						"units": "KG",
+						"value": 20
+					},
+					"packagingType": "YOUR_PACKAGING",
+					"dimensions": {
+						"length": 7,
+						"width": 8,
+						"units": "CM",
+						"height": 9
+					}
+				}
+			},
+			"Dimensions_2": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Indicate the length of the package. No implied decimal places. Maximum value is 999. <br> Example: 20",
+						"format": "int32",
+						"example": 7
+					},
+					"width": {
+						"type": "integer",
+						"description": "Indicate the width of the package. No implied decimal places. Maximum value is 999. <br> Example: 10",
+						"format": "int32",
+						"example": 8
+					},
+					"height": {
+						"type": "integer",
+						"description": "Indicate the height of the package. No implied decimal places. Maximum value is 999. <br> Example: 10",
+						"format": "int32",
+						"example": 10
+					},
+					"units": {
+						"type": "string",
+						"description": "Unit of measure for the provided dimensions.<br><i>Note: Any value other than CM including blank/null will default to IN.</i>",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\" https://www.fedex.com/en-us/service-guide.html# \" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"example": {
+					"length": 7,
+					"width": 8,
+					"height": 9,
+					"units": "CM"
+				}
+			},
+			"RequestedPickupPackageDetail": {
+				"type": "object",
+				"properties": {
+					"packageSpecialServices": {
+						"$ref": "#/components/schemas/PackageSpecialServices"
+					}
+				},
+				"description": "provides requested pickup package detail."
+			},
+			"PackageSpecialServices": {
+				"type": "object",
+				"properties": {
+					"specialServiceTypes": {
+						"type": "array",
+						"description": "Specifies special service types.<br>Example: DANGEROUS_GOODS<br><a onclick='loadDocReference(\"packagelevelspecialservicetypes\")'>Click here to see Package level Special Service Types</a>",
+						"items": {
+							"type": "string",
+							"example": "SIGNATURE_OPTION"
+						}
+					}
+				},
+				"description": "Indicates the special services associated with this package."
+			},
+			"Check_Pickup_Availability_Domestic_Express": {
+				"example": {
+					"pickupAddress": {
+						"postalCode": "75008",
+						"countryCode": "FR"
+					},
+					"pickupRequestType": [
+						"SAME_DAY"
+					],
+					"carriers": [
+						"FDXE"
+					],
+					"countryRelationship": "DOMESTIC",
+					"shipmentAttributes": [
+						{
+							"serviceType": "FEDEX_FIRST"
+						}
+					]
+				}
+			},
+			"Check_Pickup_Availability_Domestic_Ground": {
+				"example": {
+					"pickupAddress": {
+						"postalCode": "38116",
+						"countryCode": "US"
+					},
+					"pickupRequestType": [
+						"FUTURE_DAY"
+					],
+					"carriers": [
+						"FDXG"
+					],
+					"countryRelationship": "DOMESTIC"
+				}
+			},
+			"Check_Pickup_Availability_International_Express": {
+				"example": {
+					"pickupAddress": {
+						"postalCode": "75008",
+						"countryCode": "FR"
+					},
+					"pickupRequestType": [
+						"SAME_DAY"
+					],
+					"carriers": [
+						"FDXE"
+					],
+					"countryRelationship": "INTERNATIONAL",
+					"shipmentAttributes": [
+						{
+							"serviceType": "INTERNATIONAL_PRIORITY_FREIGHT"
+						}
+					]
+				}
+			},
+			"PudcResponseVO_CancelPickup": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_CancelPickup"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_CancelPickup": {
+				"$ref": "#/components/schemas/CancelPickupOutputVO"
+			},
+			"CancelPickupOutputVO": {
+				"type": "object",
+				"properties": {
+					"pickupConfirmationCode": {
+						"type": "string",
+						"description": "Specify the pickup confirmation code. <br> Example: NQAA97",
+						"example": "NQAA97"
+					},
+					"cancelConfirmationMessage": {
+						"type": "string",
+						"description": "Indicates a cancelled pickup confirmation message.<br> Example: Requested pickup has been cancelled successfully.",
+						"example": "Requested pickup has been cancelled Successfully."
+					},
+					"alerts": {
+						"type": "array",
+						"description": "Optional alerts received when a cancel pickup is requested. This includes an alert code, type, and message.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The cancel pickup response elements."
+			},
+			"Full_Schema_Cancel_Pickup": {
+				"required": [
+					"pickupConfirmationCode",
+					"scheduledDate",
+					"associatedAccountNumber"
+				],
+				"type": "object",
+				"properties": {
+					"associatedAccountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					},
+					"pickupConfirmationCode": {
+						"type": "string",
+						"description": "The confirmation number provided by FedEx to the customer when the pickup was scheduled or requested.<br> Example: 7",
+						"example": "7"
+					},
+					"remarks": {
+						"type": "string",
+						"description": "Placeholder for any message to be passed to the FedEx pickup courier.<br>Note:Maximum length is 60 characters.<br> Example: Please ring bell at loading dock.",
+						"example": "Please ring bell at loading dock."
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "This is a placeholder to provide the FedEx operating company (transportation) code used for package delivery. Required for FedEx Ground.<br> Optional for FedEx Express.<br> The Default is FedEx Express i.e. FDXE.",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"accountAddressOfRecord": {
+						"$ref": "#/components/schemas/AccountAddressOfRecord"
+					},
+					"scheduledDate": {
+						"type": "string",
+						"description": "Indicates the date the pickup dispatch occurs.<br>Format YYYY-MM-DD <br> Example: 2019-10-15",
+						"example": "2019-10-15"
+					},
+					"location": {
+						"type": "string",
+						"description": "The FedEx Express location identifier responsible for processing the pickup request. This is returned in the CreatePickup response and is required to cancel a FedEx Express dispatch.Required only for FedEx Express Pickups. Optional for FedEx Ground. Example: LOSA",
+						"example": "LOSA"
+					}
+				},
+				"description": "This is a placeholder for cancelled pickup request elements."
+			},
+			"AccountAddressOfRecord": {
+				"description": "Address details for the associated pickup account. Indicates if the address is residential. Specifies the city name, country code, streetline number, postal code, address verification Identifier, and state or province code.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Address"
+					},
+					{
+						"properties": {
+							"city": {
+								"description": "Placeholder for the pickup city. Max length is 35. <br> Example: Memphis",
+								"example": "Memphis"
+							},
+							"stateOrProvinceCode": {
+								"description": "The two character state/proviceCode for the pickup. Max length is 2. <br> Example: ON<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+								"example": "ON"
+							}
+						}
+					}
+				]
+			},
+			"Cancel_Pickup_Ground": {
+				"example": {
+					"associatedAccountNumber": {
+						"value": "XXX561073"
+					},
+					"pickupConfirmationCode": "CPU16200910",
+					"carrierCode": "FDXG",
+					"scheduledDate": "2020-07-03"
+				}
+			},
+			"Cancel_Pickup_Express": {
+				"example": {
+					"associatedAccountNumber": {
+						"value": "XXX561073"
+					},
+					"pickupConfirmationCode": "1",
+					"carrierCode": "FDXE",
+					"scheduledDate": "2020-07-03",
+					"location": "NQAA"
+				}
+			},
+			"body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Create_Pickup"
+					},
+					{
+						"$ref": "#/components/schemas/Create_Pickup_Ground"
+					},
+					{
+						"$ref": "#/components/schemas/Create_Pickup_Express"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-ExpressFreightPickup"
+					}
+				]
+			},
+			"body_1": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Pickup_Availability"
+					},
+					{
+						"$ref": "#/components/schemas/Check_Pickup_Availability_Domestic_Express"
+					},
+					{
+						"$ref": "#/components/schemas/Check_Pickup_Availability_Domestic_Ground"
+					},
+					{
+						"$ref": "#/components/schemas/Check_Pickup_Availability_International_Express"
+					}
+				]
+			},
+			"body_2": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Cancel_Pickup"
+					},
+					{
+						"$ref": "#/components/schemas/Cancel_Pickup_Ground"
+					},
+					{
+						"$ref": "#/components/schemas/Cancel_Pickup_Express"
+					}
+				]
+			},
+			"PickupLocationParty_address": {
+				"required": [
+					"city",
+					"countryCode",
+					"postalCode",
+					"stateOrProvinceCode",
+					"streetLines"
+				],
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"example": [
+							"123 Ship Street"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"example": "Memphis"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"example": "TN"
+					},
+					"postalCode": {
+						"type": "string",
+						"example": "38017"
+					},
+					"countryCode": {
+						"type": "string",
+						"example": "US"
+					}
+				}
+			},
+			"PickupLocationParty_contact": {
+				"properties": {
+					"companyName": {
+						"type": "string",
+						"example": "Fedex"
+					},
+					"personName": {
+						"type": "string",
+						"example": "John Taylor"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"example": "7194446666"
+					}
+				}
+			}
+		}
+	}
+}

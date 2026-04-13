@@ -1,0 +1,2825 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microsoft Graph API - Outlook Services",
+    "version": "1.0",
+    "description": "Microsoft Graph API specification for Outlook mail services including messages, mail folders, sendMail, and other mail operations"
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0",
+      "description": "Microsoft Graph API v1.0"
+    },
+    {
+      "url": "https://graph.microsoft.com/beta",
+      "description": "Microsoft Graph API beta"
+    }
+  ],
+  "paths": {
+    "/me/messages": {
+      "get": {
+        "summary": "List messages",
+        "description": "Get the messages in the signed-in user's mailbox",
+        "operationId": "listMessages",
+        "parameters": [
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results using OData query options",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "importance eq 'high'"
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sender,subject,bodyPreview"
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "attachments"
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "receivedDateTime desc"
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "description": "Number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "$skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "$count",
+            "in": "query",
+            "description": "Include count of items",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "$search",
+            "in": "query",
+            "description": "Search for items",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Prefer",
+            "in": "header",
+            "description": "Preference header for page size",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "odata.maxpagesize=2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create message",
+        "description": "Create a draft of a new message",
+        "operationId": "createMessage",
+        "requestBody": {
+          "description": "Message to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreateRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}": {
+      "get": {
+        "summary": "Get message",
+        "description": "Retrieve the properties and relationships of a message",
+        "operationId": "getMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update message",
+        "description": "Update the properties of a message",
+        "operationId": "updateMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Message properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete message",
+        "description": "Delete a message",
+        "operationId": "deleteMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Message deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/forward": {
+      "post": {
+        "summary": "Forward message",
+        "description": "Forward a message",
+        "operationId": "forwardMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Forward parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForwardMessageRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Message forwarded successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Send"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/createForward": {
+      "post": {
+        "summary": "Create forward draft",
+        "description": "Create a draft to forward an existing message",
+        "operationId": "createForwardDraft",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Forward draft parameters",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateForwardRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Forward draft created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/reply": {
+      "post": {
+        "summary": "Reply to message",
+        "description": "Reply to the sender of a message",
+        "operationId": "replyToMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Reply parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyMessageRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Reply sent successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Send"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/createReply": {
+      "post": {
+        "summary": "Create reply draft",
+        "description": "Create a draft to reply to an existing message",
+        "operationId": "createReplyDraft",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Reply draft parameters",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplyRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reply draft created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/replyAll": {
+      "post": {
+        "summary": "Reply all to message",
+        "description": "Reply to all recipients of a message",
+        "operationId": "replyAllToMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Reply all parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyAllMessageRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Reply all sent successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Send"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/createReplyAll": {
+      "post": {
+        "summary": "Create reply all draft",
+        "description": "Create a draft to reply all to an existing message",
+        "operationId": "createReplyAllDraft",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Reply all draft parameters",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplyAllRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reply all draft created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/send": {
+      "post": {
+        "summary": "Send draft message",
+        "description": "Send an existing draft message",
+        "operationId": "sendDraftMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the draft message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Draft message sent successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Send"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/move": {
+      "post": {
+        "summary": "Move message",
+        "description": "Move a message to a different folder",
+        "operationId": "moveMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Destination folder ID",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["destinationId"],
+                "properties": {
+                  "destinationId": {
+                    "type": "string",
+                    "description": "The ID of the destination folder"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message moved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/messages/{message-id}/copy": {
+      "post": {
+        "summary": "Copy message",
+        "description": "Copy a message to a different folder",
+        "operationId": "copyMessage",
+        "parameters": [
+          {
+            "name": "message-id",
+            "in": "path",
+            "description": "The unique identifier of the message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Destination folder ID",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["destinationId"],
+                "properties": {
+                  "destinationId": {
+                    "type": "string",
+                    "description": "The ID of the destination folder"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message copied successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/sendMail": {
+      "post": {
+        "summary": "Send mail",
+        "description": "Send a new message immediately",
+        "operationId": "sendMail",
+        "requestBody": {
+          "description": "Message to send",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMailRequest"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "MIME format message encoded in base64"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Mail sent successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Send"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders": {
+      "get": {
+        "summary": "List mail folders",
+        "description": "Get the mail folder collection under the root folder of the signed-in user",
+        "operationId": "listMailFolders",
+        "parameters": [
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "description": "Number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "$skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of mail folders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolderCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create mail folder",
+        "description": "Create a new mail folder",
+        "operationId": "createMailFolder",
+        "requestBody": {
+          "description": "Mail folder to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailFolderCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mail folder created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders/{mailFolder-id}": {
+      "get": {
+        "summary": "Get mail folder",
+        "description": "Get a specific mail folder",
+        "operationId": "getMailFolder",
+        "parameters": [
+          {
+            "name": "mailFolder-id",
+            "in": "path",
+            "description": "The unique identifier of the mail folder. Can use well-known names like 'Inbox', 'Drafts', 'SentItems', 'DeletedItems'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mail folder retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolder"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update mail folder",
+        "description": "Update the properties of a mail folder",
+        "operationId": "updateMailFolder",
+        "parameters": [
+          {
+            "name": "mailFolder-id",
+            "in": "path",
+            "description": "The unique identifier of the mail folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Mail folder properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailFolderUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mail folder updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete mail folder",
+        "description": "Delete a mail folder",
+        "operationId": "deleteMailFolder",
+        "parameters": [
+          {
+            "name": "mailFolder-id",
+            "in": "path",
+            "description": "The unique identifier of the mail folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Mail folder deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders/{mailFolder-id}/messages": {
+      "get": {
+        "summary": "List messages in folder",
+        "description": "Get messages in a specific mail folder",
+        "operationId": "listMessagesInFolder",
+        "parameters": [
+          {
+            "name": "mailFolder-id",
+            "in": "path",
+            "description": "The unique identifier of the mail folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "description": "Number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "$skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders/Inbox/messages/delta": {
+      "get": {
+        "summary": "Get message changes in Inbox",
+        "description": "Get incremental changes to messages in the Inbox folder",
+        "operationId": "getInboxMessagesDelta",
+        "parameters": [
+          {
+            "name": "$deltatoken",
+            "in": "query",
+            "description": "A token from a previous delta query for tracking changes",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$skiptoken",
+            "in": "query",
+            "description": "A token from a previous query for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "changeType",
+            "in": "query",
+            "description": "Filter by type of change (created, updated, deleted)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["created", "updated", "deleted"]
+            }
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results (only receivedDateTime desc supported)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "receivedDateTime desc"
+            }
+          },
+          {
+            "name": "Prefer",
+            "in": "header",
+            "description": "Preference header for page size",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "odata.maxpagesize=2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta changes retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDeltaCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders/{mailFolder-id}/messages/delta": {
+      "get": {
+        "summary": "Get message changes in folder",
+        "description": "Get incremental changes to messages in a specific mail folder",
+        "operationId": "getMessagesDelta",
+        "parameters": [
+          {
+            "name": "mailFolder-id",
+            "in": "path",
+            "description": "The unique identifier of the mail folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$deltatoken",
+            "in": "query",
+            "description": "A token from a previous delta query for tracking changes",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$skiptoken",
+            "in": "query",
+            "description": "A token from a previous query for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "changeType",
+            "in": "query",
+            "description": "Filter by type of change",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["created", "updated", "deleted"]
+            }
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta changes retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDeltaCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/mailFolders/delta": {
+      "get": {
+        "summary": "Get mail folder changes",
+        "description": "Get incremental changes to mail folders",
+        "operationId": "getMailFoldersDelta",
+        "parameters": [
+          {
+            "name": "$deltatoken",
+            "in": "query",
+            "description": "A token from a previous delta query for tracking changes",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$skiptoken",
+            "in": "query",
+            "description": "A token from a previous query for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta changes retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolderDeltaCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/outlook/masterCategories": {
+      "get": {
+        "summary": "List master categories",
+        "description": "Get all the categories that have been defined for a user",
+        "operationId": "listMasterCategories",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/v1.0",
+            "description": "Available in v1.0"
+          },
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Available in beta"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "description": "Number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "$skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of categories retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutlookCategoryCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite", "MailboxSettings.Read", "MailboxSettings.ReadWrite"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create master category",
+        "description": "Create a new category in the user's master list",
+        "operationId": "createMasterCategory",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/v1.0",
+            "description": "Available in v1.0"
+          },
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Available in beta"
+          }
+        ],
+        "requestBody": {
+          "description": "Category to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutlookCategoryCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutlookCategory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["MailboxSettings.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/outlook/masterCategories/{outlookCategory-id}": {
+      "get": {
+        "summary": "Get master category",
+        "description": "Get a specific category from the user's master list",
+        "operationId": "getMasterCategory",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/v1.0",
+            "description": "Available in v1.0"
+          },
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Available in beta"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "outlookCategory-id",
+            "in": "path",
+            "description": "The unique identifier of the category",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutlookCategory"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Mail.Read", "Mail.ReadWrite", "MailboxSettings.Read", "MailboxSettings.ReadWrite"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update master category",
+        "description": "Update a category in the user's master list",
+        "operationId": "updateMasterCategory",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/v1.0",
+            "description": "Available in v1.0"
+          },
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Available in beta"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "outlookCategory-id",
+            "in": "path",
+            "description": "The unique identifier of the category",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Category properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutlookCategoryUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutlookCategory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["MailboxSettings.ReadWrite"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete master category",
+        "description": "Delete a category from the user's master list",
+        "operationId": "deleteMasterCategory",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/v1.0",
+            "description": "Available in v1.0"
+          },
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Available in beta"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "outlookCategory-id",
+            "in": "path",
+            "description": "The unique identifier of the category",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["MailboxSettings.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/findRooms": {
+      "get": {
+        "summary": "Find rooms",
+        "description": "Get all meeting rooms in the user's tenant",
+        "operationId": "findRooms",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Only available in beta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailAddressCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Place.Read.All", "User.Read.All"]
+          }
+        ]
+      }
+    },
+    "/me/findRooms(RoomList='{roomList-emailAddress}')": {
+      "get": {
+        "summary": "Find rooms in room list",
+        "description": "Get all meeting rooms in a specific room list",
+        "operationId": "findRoomsInList",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Only available in beta"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roomList-emailAddress",
+            "in": "path",
+            "description": "The email address of the room list",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms in the room list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailAddressCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Place.Read.All", "User.Read.All"]
+          }
+        ]
+      }
+    },
+    "/me/findRoomLists": {
+      "get": {
+        "summary": "Find room lists",
+        "description": "Get all room lists defined in the tenant",
+        "operationId": "findRoomLists",
+        "servers": [
+          {
+            "url": "https://graph.microsoft.com/beta",
+            "description": "Only available in beta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of room lists retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailAddressCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Place.Read.All", "User.Read.All"]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the message",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the message was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the message was last changed",
+            "readOnly": true
+          },
+          "changeKey": {
+            "type": "string",
+            "description": "Identifies the version of the message",
+            "readOnly": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The categories associated with the message"
+          },
+          "receivedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the message was received",
+            "readOnly": true
+          },
+          "sentDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the message was sent",
+            "readOnly": true
+          },
+          "hasAttachments": {
+            "type": "boolean",
+            "description": "Indicates whether the message has attachments",
+            "readOnly": true
+          },
+          "internetMessageId": {
+            "type": "string",
+            "description": "The message ID in the format specified by RFC5322"
+          },
+          "internetMessageHeaders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InternetMessageHeader"
+            },
+            "description": "A collection of message headers defined by RFC5322",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "description": "The subject of the message"
+          },
+          "bodyPreview": {
+            "type": "string",
+            "description": "The first 255 characters of the message body",
+            "readOnly": true
+          },
+          "importance": {
+            "type": "string",
+            "enum": ["low", "normal", "high"],
+            "description": "The importance of the message"
+          },
+          "parentFolderId": {
+            "type": "string",
+            "description": "The unique identifier for the message's parent folder"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "The ID of the conversation the email belongs to",
+            "readOnly": true
+          },
+          "conversationIndex": {
+            "type": "string",
+            "format": "byte",
+            "description": "The index of the message within the conversation",
+            "readOnly": true
+          },
+          "isDeliveryReceiptRequested": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether a delivery receipt is requested"
+          },
+          "isReadReceiptRequested": {
+            "type": "boolean",
+            "description": "Indicates whether a read receipt is requested"
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "Indicates whether the message has been read"
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "Indicates whether the message is a draft",
+            "readOnly": true
+          },
+          "webLink": {
+            "type": "string",
+            "description": "The URL to open the message in Outlook on the web",
+            "readOnly": true
+          },
+          "inferenceClassification": {
+            "type": "string",
+            "enum": ["focused", "other"],
+            "description": "The classification of the message for inbox focus"
+          },
+          "flag": {
+            "$ref": "#/components/schemas/FollowupFlag"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ItemBody"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "from": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "toRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            },
+            "description": "The To recipients for the message"
+          },
+          "ccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            },
+            "description": "The Cc recipients for the message"
+          },
+          "bccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            },
+            "description": "The Bcc recipients for the message"
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            },
+            "description": "The email addresses to use when replying"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "description": "The attachments of the message",
+            "readOnly": true
+          },
+          "extensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Extension"
+            },
+            "description": "The collection of open extensions defined for the message"
+          },
+          "singleValueExtendedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SingleValueLegacyExtendedProperty"
+            },
+            "description": "The collection of single-value extended properties"
+          },
+          "multiValueExtendedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultiValueLegacyExtendedProperty"
+            },
+            "description": "The collection of multi-value extended properties"
+          }
+        }
+      },
+      "MessageCreateRequest": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "The subject of the message"
+          },
+          "importance": {
+            "type": "string",
+            "enum": ["low", "normal", "high"],
+            "description": "The importance of the message"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ItemBody"
+          },
+          "toRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "ccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "bccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "flag": {
+            "$ref": "#/components/schemas/FollowupFlag"
+          },
+          "internetMessageHeaders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InternetMessageHeader"
+            }
+          },
+          "isDeliveryReceiptRequested": {
+            "type": "boolean"
+          },
+          "isReadReceiptRequested": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MessageUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ItemBody"
+          },
+          "importance": {
+            "type": "string",
+            "enum": ["low", "normal", "high"]
+          },
+          "inferenceClassification": {
+            "type": "string",
+            "enum": ["focused", "other"]
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "flag": {
+            "$ref": "#/components/schemas/FollowupFlag"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SendMailRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/MessageCreateRequest"
+          },
+          "saveToSentItems": {
+            "type": "boolean",
+            "description": "Indicates whether to save the message in Sent Items",
+            "default": true
+          }
+        }
+      },
+      "ForwardMessageRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "A comment to include with the forwarded message"
+          },
+          "toRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            },
+            "description": "The recipients of the forwarded message"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "toRecipients": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Recipient"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateForwardRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "toRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "message": {
+            "$ref": "#/components/schemas/MessageUpdateRequest"
+          }
+        }
+      },
+      "ReplyMessageRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "A comment to include with the reply"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "toRecipients": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Recipient"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateReplyRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "message": {
+            "$ref": "#/components/schemas/MessageUpdateRequest"
+          }
+        }
+      },
+      "ReplyAllMessageRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "A comment to include with the reply"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "toRecipients": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Recipient"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateReplyAllRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "message": {
+            "$ref": "#/components/schemas/MessageUpdateRequest"
+          }
+        }
+      },
+      "MessageCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to get the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true is used)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "description": "Collection of messages"
+          }
+        }
+      },
+      "MessageDeltaCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL with skipToken for next page"
+          },
+          "@odata.deltaLink": {
+            "type": "string",
+            "description": "URL with deltaToken for tracking changes"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        }
+      },
+      "MailFolder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the folder",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The display name of the folder"
+          },
+          "parentFolderId": {
+            "type": "string",
+            "description": "The unique identifier for the parent folder"
+          },
+          "childFolderCount": {
+            "type": "integer",
+            "description": "The number of immediate child folders",
+            "readOnly": true
+          },
+          "unreadItemCount": {
+            "type": "integer",
+            "description": "The number of unread items",
+            "readOnly": true
+          },
+          "totalItemCount": {
+            "type": "integer",
+            "description": "The total number of items",
+            "readOnly": true
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Indicates whether the folder is hidden"
+          },
+          "childFolders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MailFolder"
+            },
+            "description": "The collection of child folders",
+            "readOnly": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "description": "The collection of messages",
+            "readOnly": true
+          },
+          "singleValueExtendedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SingleValueLegacyExtendedProperty"
+            }
+          },
+          "multiValueExtendedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultiValueLegacyExtendedProperty"
+            }
+          }
+        }
+      },
+      "MailFolderCreateRequest": {
+        "type": "object",
+        "required": ["displayName"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The display name of the folder"
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Indicates whether the folder is hidden"
+          }
+        }
+      },
+      "MailFolderUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MailFolderCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string"
+          },
+          "@odata.nextLink": {
+            "type": "string"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MailFolder"
+            }
+          }
+        }
+      },
+      "MailFolderDeltaCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string"
+          },
+          "@odata.nextLink": {
+            "type": "string"
+          },
+          "@odata.deltaLink": {
+            "type": "string"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MailFolder"
+            }
+          }
+        }
+      },
+      "ItemBody": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": ["text", "html"],
+            "description": "The type of the content"
+          },
+          "content": {
+            "type": "string",
+            "description": "The content of the item"
+          }
+        }
+      },
+      "Recipient": {
+        "type": "object",
+        "properties": {
+          "emailAddress": {
+            "$ref": "#/components/schemas/EmailAddress"
+          }
+        }
+      },
+      "EmailAddress": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the person or entity"
+          },
+          "address": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address"
+          }
+        }
+      },
+      "FollowupFlag": {
+        "type": "object",
+        "properties": {
+          "completedDateTime": {
+            "$ref": "#/components/schemas/DateTimeTimeZone"
+          },
+          "dueDateTime": {
+            "$ref": "#/components/schemas/DateTimeTimeZone"
+          },
+          "startDateTime": {
+            "$ref": "#/components/schemas/DateTimeTimeZone"
+          },
+          "flagStatus": {
+            "type": "string",
+            "enum": ["notFlagged", "complete", "flagged"],
+            "description": "The status of the flag"
+          }
+        }
+      },
+      "DateTimeTimeZone": {
+        "type": "object",
+        "properties": {
+          "dateTime": {
+            "type": "string",
+            "description": "A single point of time in a combined date and time representation"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "One of the time zone names from the IANA Time Zone Database"
+          }
+        }
+      },
+      "InternetMessageHeader": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the header"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the header"
+          }
+        }
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the attachment",
+            "readOnly": true
+          },
+          "@odata.type": {
+            "type": "string",
+            "description": "The type of attachment"
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the attachment"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "The MIME type"
+          },
+          "size": {
+            "type": "integer",
+            "description": "The size of the attachment in bytes"
+          },
+          "isInline": {
+            "type": "boolean",
+            "description": "Whether the attachment is inline"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "The ID of the attachment in the Exchange store"
+          },
+          "contentLocation": {
+            "type": "string",
+            "description": "The location of the attachment content"
+          },
+          "contentBytes": {
+            "type": "string",
+            "format": "byte",
+            "description": "The base64-encoded contents of the file"
+          }
+        }
+      },
+      "Extension": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension"
+          }
+        }
+      },
+      "SingleValueLegacyExtendedProperty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The property ID"
+          },
+          "value": {
+            "type": "string",
+            "description": "The property value"
+          }
+        }
+      },
+      "MultiValueLegacyExtendedProperty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The property ID"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The property values"
+          }
+        }
+      },
+      "OutlookCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the category",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "A unique name that identifies a category"
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "preset0", "preset1", "preset2", "preset3", "preset4",
+              "preset5", "preset6", "preset7", "preset8", "preset9",
+              "preset10", "preset11", "preset12", "preset13", "preset14",
+              "preset15", "preset16", "preset17", "preset18", "preset19",
+              "preset20", "preset21", "preset22", "preset23", "preset24"
+            ],
+            "description": "Pre-set color constant for the category"
+          }
+        }
+      },
+      "OutlookCategoryCreateRequest": {
+        "type": "object",
+        "required": ["displayName", "color"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "A unique name that identifies a category"
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "preset0", "preset1", "preset2", "preset3", "preset4",
+              "preset5", "preset6", "preset7", "preset8", "preset9",
+              "preset10", "preset11", "preset12", "preset13", "preset14",
+              "preset15", "preset16", "preset17", "preset18", "preset19",
+              "preset20", "preset21", "preset22", "preset23", "preset24"
+            ]
+          }
+        }
+      },
+      "OutlookCategoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "enum": [
+              "preset0", "preset1", "preset2", "preset3", "preset4",
+              "preset5", "preset6", "preset7", "preset8", "preset9",
+              "preset10", "preset11", "preset12", "preset13", "preset14",
+              "preset15", "preset16", "preset17", "preset18", "preset19",
+              "preset20", "preset21", "preset22", "preset23", "preset24"
+            ]
+          }
+        }
+      },
+      "OutlookCategoryCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutlookCategory"
+            }
+          }
+        }
+      },
+      "EmailAddressCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "innerError": {
+                "type": "object",
+                "properties": {
+                  "request-id": {
+                    "type": "string",
+                    "description": "Request identifier"
+                  },
+                  "client-request-id": {
+                    "type": "string",
+                    "description": "Client request identifier"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date of the error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "Mail.Read": "Read user mail",
+              "Mail.ReadWrite": "Read and write user mail",
+              "Mail.Send": "Send mail as the user",
+              "Mail.Read.Shared": "Read mail user can access",
+              "Mail.ReadWrite.Shared": "Read and write mail user can access",
+              "MailboxSettings.Read": "Read user mailbox settings",
+              "MailboxSettings.ReadWrite": "Read and write user mailbox settings",
+              "Place.Read.All": "Read all company places",
+              "User.Read": "Sign in and read user profile",
+              "User.Read.All": "Read all users' profiles"
+            }
+          },
+          "clientCredentials": {
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "Mail.Read": "Read mail in all mailboxes",
+              "Mail.ReadWrite": "Read and write mail in all mailboxes",
+              "Mail.Send": "Send mail as any user",
+              "MailboxSettings.Read": "Read all users' mailbox settings",
+              "MailboxSettings.ReadWrite": "Read and write all users' mailbox settings",
+              "Place.Read.All": "Read all company places",
+              "User.Read.All": "Read all users' profiles"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2": []
+    }
+  ]
+}

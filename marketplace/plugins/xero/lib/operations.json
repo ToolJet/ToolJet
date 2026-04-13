@@ -23,17 +23,17 @@
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
       "specUrl": {
-        "Accounts": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_accounting.yaml",
-        "Finance": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-finance.yaml",
-        "identity": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-identity.yaml",
-        "BankFeeds": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_bankfeeds.yaml",
-        "AppStore": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-app-store.yaml",
-        "Assets": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_assets.yaml",
-        "PayrollAu": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-payroll-au.yaml",
-        "PayrollUk": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-payroll-uk.yaml",
-        "PayrollNz": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-payroll-nz.yaml",
-        "Projects": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-projects.yaml",
-        "Files": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_files.yaml"
+        "Accounts": "@spec/xero/accounts",
+        "Finance": "@spec/xero/finance",
+        "identity": "@spec/xero/identity",
+        "BankFeeds": "@spec/xero/bankfeeds",
+        "AppStore": "@spec/xero/appstore",
+        "Assets": "@spec/xero/assets",
+        "PayrollAu": "@spec/xero/payrollau",
+        "PayrollUk": "@spec/xero/payrolluk",
+        "PayrollNz": "@spec/xero/payrollnz",
+        "Projects": "@spec/xero/projects",
+        "Files": "@spec/xero/files"
       }
     }
   }
