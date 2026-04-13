@@ -16,6 +16,7 @@ import {
   useRemoveAppFromFolder,
   useUpdateFolder,
 } from '@/_services/hooks/foldersServiceHooks';
+import { useSearchStore } from '@/_stores/searchStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useSearch } from '@/_hooks/useSearch';
@@ -35,10 +36,10 @@ export default function FolderActionsDialog({
   const { t } = useTranslation();
 
   const { mutate: createNewFolder, isPending: isCreatingNewFolder } = useCreateFolder();
-  const { mutate: editFolder, isPending: isEditingFolder } = useUpdateFolder({ appType });
-  const { mutate: deleteFolder, isPending: isDeletingFolder } = useDeleteFolder({ appType });
-  const { mutate: addToFolder, isPending: isAddingToFolder } = useAddAppToFolder({ appType });
-  const { mutate: removeAppFromFolder, isPending: isRemovingAppFromFolder } = useRemoveAppFromFolder({ appType });
+  const { mutate: editFolder, isPending: isEditingFolder } = useUpdateFolder();
+  const { mutate: deleteFolder, isPending: isDeletingFolder } = useDeleteFolder();
+  const { mutate: addToFolder, isPending: isAddingToFolder } = useAddAppToFolder();
+  const { mutate: removeAppFromFolder, isPending: isRemovingAppFromFolder } = useRemoveAppFromFolder();
 
   const [errorText, setErrorText] = useState('');
   const [name, setName] = useState(initialFolderName ?? '');
@@ -72,13 +73,13 @@ export default function FolderActionsDialog({
 
         if (errorText || !folderId) return;
 
-        editFolder({ name: formattedFolderName, folderId }, { onSuccess: handleResetState });
+        editFolder({ name: formattedFolderName, folderId, appType }, { onSuccess: handleResetState });
         break;
       }
       case 'delete-folder': {
         if (!folderId) return;
 
-        deleteFolder(folderId, { onSuccess: handleResetState });
+        deleteFolder({ folderId, appType }, { onSuccess: handleResetState });
         break;
       }
       case 'add-to-folder': {
@@ -87,7 +88,7 @@ export default function FolderActionsDialog({
           return;
         }
 
-        addToFolder({ appId, folderId: selectedFolder }, { onSuccess: handleResetState });
+        addToFolder({ appId, folderId: selectedFolder, appType }, { onSuccess: handleResetState });
         break;
       }
       case 'remove-app-from-folder': {
@@ -96,7 +97,7 @@ export default function FolderActionsDialog({
           return;
         }
 
-        removeAppFromFolder({ appId, folderId }, { onSuccess: handleResetState });
+        removeAppFromFolder({ appId, folderId, appType }, { onSuccess: handleResetState });
         break;
       }
       default:
@@ -166,7 +167,12 @@ export default function FolderActionsDialog({
       ) : isRemoveAppFromFolderOrDeleteFolder ? (
         <DeleteOrRemoveAppFromFolder actionType={actionType} folderName={initialFolderName} />
       ) : isAddToFolder ? (
-        <AddToFolder appType={appType} selectedFolder={selectedFolder} setSelectedFolder={setSelectedFolder} />
+        <AddToFolder
+          appType={appType}
+          currentFolderId={folderId}
+          selectedFolder={selectedFolder}
+          setSelectedFolder={setSelectedFolder}
+        />
       ) : (
         <></>
       )}
@@ -213,7 +219,7 @@ function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
-      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default">
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
         {actionType === 'remove-app-from-folder'
           ? t('homePage.removeAppFromFolder', 'The app will be removed from this folder, do you want to continue?')
           : t(
@@ -226,9 +232,11 @@ function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
   );
 }
 
-function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
-  const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType }, {});
+function AddToFolder({ appType, currentFolderId, selectedFolder, setSelectedFolder }) {
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+
   const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
+  const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 
   if (!isFoldersSuccess) return <></>; // TODO: Can add Skeleton loader
 
@@ -237,7 +245,7 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
   };
 
   const baseFolderFilterLogic = (folder) => {
-    if (folder.value === 'all') return false;
+    if (folder.value === 'all' || folder.value === currentFolderId) return false;
 
     const currentSession = authenticationService.currentSessionValue;
     if (currentSession?.super_admin || currentSession?.admin) return true;
@@ -291,7 +299,9 @@ function AddToFolder({ appType, selectedFolder, setSelectedFolder }) {
           ))
         ) : (
           <li>
-            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder">No matching results found</p>
+            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder tw-mb-0">
+              No matching results found
+            </p>
           </li>
         )}
       </ul>

@@ -18,6 +18,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 import AppMenu from './AppMenu';
 import TruncatedText from '../../TruncatedText';
+import ShimmerEffectSkeleton from '../../ShimmerEffectSkeleton';
 
 import { isValidSlug } from './helper';
 
@@ -101,22 +102,16 @@ export default function AppCard({
 
   return (
     <TooltipComp content={isAppTypeModuleAndModuleNotEnabled ? 'Modules are not available on your current plan.' : ''}>
-      <div
+      <AppCardContainer
         data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-card`}
         className={cn(
-          'tw-relative tw-h-[6.625rem] tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-rounded-lg tw-cursor-pointer tw-transition-shadow tw-duration-200 hover:tw-shadow-[0px_0px_1px_0px_rgba(48,50,51,0.05),_0px_2px_4px_0px_rgba(48,50,51,0.1)]',
           { 'tw-opacity-50 tw-pointer-events-none': isAppTypeModuleAndModuleNotEnabled },
           { 'tw-group ': !isAppTypeModuleAndModuleNotEnabled }
         )}
       >
         {/* Rest state: icon at top, text below */}
         <div className="tw-absolute tw-inset-0 tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-opacity-100 group-hover:tw-opacity-0 tw-transition-opacity tw-duration-200 tw-pointer-events-auto group-hover:tw-pointer-events-none">
-          <IconComponent
-            size={20}
-            className="tw-shrink-0"
-            color="var(--icon-default)"
-            data-cy={`app-card-${icon}-icon`}
-          />
+          <IconComponent size={20} className="tw-shrink-0 tw-text-icon-default" data-cy={`app-card-${icon}-icon`} />
 
           {textBlock}
         </div>
@@ -185,8 +180,35 @@ export default function AppCard({
             </div>
           </div>
         </div>
-      </div>
+      </AppCardContainer>
     </TooltipComp>
+  );
+}
+
+function AppCardContainer({ children, className, ...restProps }) {
+  return (
+    <div
+      className={cn(
+        'tw-relative tw-h-[6.625rem] tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-rounded-lg tw-cursor-pointer tw-transition-shadow tw-duration-200 hover:tw-shadow-[0px_0px_1px_0px_rgba(48,50,51,0.05),_0px_2px_4px_0px_rgba(48,50,51,0.1)]',
+        className
+      )}
+      {...restProps}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function AppCardSkeleton() {
+  return (
+    <AppCardContainer className="tw-px-4 tw-py-3 tw-grid tw-gap-3">
+      <ShimmerEffectSkeleton className="tw-w-5" />
+
+      <div className="tw-space-y-1">
+        <ShimmerEffectSkeleton className="tw-w-32" />
+        <ShimmerEffectSkeleton className="tw-w-20" />
+      </div>
+    </AppCardContainer>
   );
 }
 

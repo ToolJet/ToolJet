@@ -273,3 +273,9 @@ export const appIconNameMappingForTablerIcons = {
 };
 
 export const defaultAppIconList = Object.values(appIconNameMappingForTablerIcons);
+
+export const appTypeToDisplayNameMapping = {
+  module: 'Module',
+  'front-end': 'App',
+  workflow: 'Workflow',
+};

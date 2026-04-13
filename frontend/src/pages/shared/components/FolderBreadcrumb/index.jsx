@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FolderOpen } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -36,6 +36,8 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
   const selectedFolderDetails = folderList?.find((folder) => folder.value === selectedFolder) ?? null;
 
+  const [showFolderList, setShowFolderList] = useState(false);
+
   const handleCreateNewFolder = () => {
     setFolderDialogState({ type: 'create-folder' });
   };
@@ -46,6 +48,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
       currentFolderId: selectedFolder,
       initialFolderName: selectedFolderDetails?.label ?? '',
     });
+    setShowFolderList(false);
   };
 
   const handleDeleteFolder = () => {
@@ -53,6 +56,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
       type: 'delete-folder',
       currentFolderId: selectedFolder,
     });
+    setShowFolderList(false);
   };
 
   // Check if user can edit a specific folder (granular permission)
@@ -96,7 +100,12 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
         <BreadcrumbSeparator />
 
         <BreadcrumbItem>
-          <Select value={selectedFolder} onValueChange={onChangeSelectedFolder}>
+          <Select
+            open={showFolderList}
+            onOpenChange={setShowFolderList}
+            value={selectedFolder}
+            onValueChange={onChangeSelectedFolder}
+          >
             <SelectTrigger
               data-cy="all-applications-link"
               className="tw-rounded-lg tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-border-0 hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
