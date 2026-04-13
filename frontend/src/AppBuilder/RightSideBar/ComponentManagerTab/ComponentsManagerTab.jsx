@@ -9,7 +9,6 @@ import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -17,12 +16,10 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import { LicenseTooltip } from '@/LicenseTooltip';
 import './styles.scss';
 
-// Map of widget component name → featureAccess key. Widgets listed here are gated
-// behind a license check and rendered as a locked card in the picker when the
-// corresponding featureAccess flag is false.
+// Map of widget component name → featureAccess key. Widgets listed here are hidden
+// from the picker entirely when the corresponding featureAccess flag is false.
 const PAID_WIDGETS = {
   Navigation: 'navigation',
 };
@@ -56,24 +53,6 @@ class ModuleErrorBoundary extends React.Component {
 // TODO: searching
 
 export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
-  const componentList = useMemo(() => {
-    return componentTypes
-      .map((component) => component.component)
-      .filter((component) => !IGNORED_ITEMS.includes(component));
-  }, [componentTypes]);
-
-  const searchList = useMemo(() => {
-    return componentTypes
-      .filter((component) => !IGNORED_ITEMS.includes(component.component))
-      .map((component) => {
-        return { component: component.component, displayName: component.displayName };
-      });
-  }, [componentTypes]);
-
-  const [filteredComponents, setFilteredComponents] = useState(componentList);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [moduleError, setModuleError] = useState(false);
-  const [activeTab, setActiveTab] = useState('components');
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
@@ -87,6 +66,33 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     shallow
   );
 
+  const isPaidWidgetAllowed = useCallback(
+    (componentName) => {
+      const flag = PAID_WIDGETS[componentName];
+      return !flag || !!featureAccess?.[flag];
+    },
+    [featureAccess]
+  );
+
+  const componentList = useMemo(() => {
+    return componentTypes
+      .map((component) => component.component)
+      .filter((component) => !IGNORED_ITEMS.includes(component) && isPaidWidgetAllowed(component));
+  }, [componentTypes, isPaidWidgetAllowed]);
+
+  const searchList = useMemo(() => {
+    return componentTypes
+      .filter((component) => !IGNORED_ITEMS.includes(component.component) && isPaidWidgetAllowed(component.component))
+      .map((component) => {
+        return { component: component.component, displayName: component.displayName };
+      });
+  }, [componentTypes, isPaidWidgetAllowed]);
+
+  const [filteredComponents, setFilteredComponents] = useState(componentList);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [moduleError, setModuleError] = useState(false);
+  const [activeTab, setActiveTab] = useState('components');
+
   // Force re-render when hasModuleAccess changes
   useEffect(() => {
     // If modules access is denied, nothing to do here now
@@ -96,6 +102,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     setSearchQuery('');
     filterComponents('');
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!searchQuery) setFilteredComponents(componentList);
+  }, [componentList, searchQuery]);
 
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
@@ -148,34 +158,11 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const { t } = useTranslation();
 
   function renderComponentCard(component, index) {
-    const paidFeatureKey = PAID_WIDGETS[component];
-    const isLocked = paidFeatureKey && !featureAccess?.[paidFeatureKey];
-
-    const card = (
-      <div className={`text-center align-items-center clearfix draggable-box-wrapper${isLocked ? ' locked' : ''}`}>
-        {isLocked && (
-          <div className="paid-widget-crown">
-            <SolidIcon name="enterprisecrown" width="14" />
-          </div>
-        )}
-        <DragLayer
-          index={index}
-          component={componentTypeDefinitionMap[component]}
-          key={component}
-          disabled={isLocked}
-        />
+    return (
+      <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
+        <DragLayer index={index} component={componentTypeDefinitionMap[component]} />
       </div>
     );
-
-    if (isLocked) {
-      return (
-        <LicenseTooltip key={component} limits={featureAccess} feature={component} isAvailable={false}>
-          {card}
-        </LicenseTooltip>
-      );
-    }
-
-    return card;
   }
 
   function renderList(items) {

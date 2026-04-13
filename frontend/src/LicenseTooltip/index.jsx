@@ -29,7 +29,6 @@ const LicenseTooltip = ({
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
     'Custom groups': 'customGroups',
-    Navigation: 'navigation',
   };
 
   const generateMessage = () => {

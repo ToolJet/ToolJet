@@ -45,33 +45,6 @@
   }
 }
 
-.draggable-box-wrapper {
-  position: relative;
-
-  &.locked {
-    .draggable-box {
-      opacity: 0.5;
-      cursor: not-allowed;
-
-      .component-image-wrapper,
-      .component-title {
-        pointer-events: none;
-      }
-    }
-  }
-
-  .paid-widget-crown {
-    position: absolute;
-    top: 2px;
-    right: 10px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-}
-
 .custom-component-inspector-multiline {
   .codehinter-container {
     .cm-editor {
