@@ -20,7 +20,7 @@ on:
 
 jobs:
   full-deploy:
-    name: Build Image, Deploy to AKS & Netlify
+    name: Build Image, Deploy to AKS & cloudflare
     runs-on: ubuntu-latest
 
     steps:
@@ -131,7 +131,7 @@ jobs:
           exit 1
 
   deploy-frontend:
-    name: Deploy Frontend to Netlify
+    name: Deploy Frontend to cloudflare
     runs-on: ubuntu-latest
     needs: full-deploy
 
