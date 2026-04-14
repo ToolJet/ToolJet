@@ -7,7 +7,7 @@ export const dashboardUiSelector = {
   modulesTabLabel: '[data-cy="modules-tab-label"]',
   createNewModuleButton: '[data-cy="create-new-module-button"]',
   moduleNameInput: '[data-cy="module-name-input"]',
-  createModuleButton: '[data-cy="create-module-button"]',
+  createModuleButton: '[data-cy="create-a-module-button"]',
 
   // Module empty-state
   moduleEmptyState: '[data-cy="module-empty-state"]',
@@ -28,7 +28,7 @@ export const dashboardUiSelector = {
   // ── Workflows 
   createNewWorkflowButton: '[data-cy="create-new-workflow-button"]',
   workflowNameInput: '[data-cy="workflow-name-input"]',
-  createWorkflowButton: '[data-cy="create-workflow-button"]',
+  createWorkflowButton: '[data-cy="create-a-workflow-button"]',
 
   // Workflow empty-state
   workflowEmptyState: '[data-cy="workflow-empty-state"]',

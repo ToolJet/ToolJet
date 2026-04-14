@@ -5,7 +5,7 @@ export const cyParamName = (paramName = "") => {
 export const workflowSelector = {
   deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
-  createWorkFlowsButton: '[data-cy="create-workflow-button"]',
+  createWorkFlowsButton: '[data-cy="create-a-workflow-button"]',
   workflowsCreateButton: "[data-cy='create-new-workflow-button']",
   workflowRunButton: '[data-cy="workflow-run-button"]',
   workflowLogs: '[data-cy="Logs"] .text span',
