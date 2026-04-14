@@ -148,6 +148,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'TreeSelect',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
 ];
@@ -463,7 +464,7 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles) {
+    if (!componentMeta?.definition?.generalStyles || componentMeta?.styles?.boxShadow) {
       return null;
     }
     const items = [];
