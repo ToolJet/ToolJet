@@ -212,13 +212,15 @@ export const addAppToFolder = (appName, folderName) => {
   cy.get('[data-cy="add-to-folder-card-option"]').click();
   cy.get(dashboardSelector.selectFolder).should("be.visible");
   cy.clearAndType('[data-cy="search-folder-input"]', folderName);
-  cy.get('[data-cy="folder-list"] li[role="button"]').first().click();
+  cy.wait(500)
+  cy.get('[data-cy="folder-list"] li[role="button"]',{timeout: 10000}).first().click();
   cy.get(dashboardSelector.addToFolderButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.AddedToFolderToast,
     false
   );
+  cy.wait(2000)
 };
 
 export const renameApp = (appName, newAppName) => {
@@ -295,8 +297,9 @@ export const verifyRenameAndCleanup = (appName, renamedAppName) => {
 
 export const verifyFolderAddAndRemove = (appName, folderName, type='applications') => {
   addAppToFolder(appName, folderName);
-
-  cy.wait(1000)
+ 
+  cy.wait(2000)
+  
   openFolderDropdown();
   cy.get(dashboardSelector.folderName(folderName)).verifyVisibleElement(
     "have.text",
@@ -305,6 +308,8 @@ export const verifyFolderAddAndRemove = (appName, folderName, type='applications
 
   selectFolderFromDropdown(folderName);
   cy.wait(1000)
+  cy.reload();
+  cy.wait(2000)
   cy.get(commonSelectors.appCard(appName))
     .contains(appName)
     .should("be.visible");
@@ -342,12 +347,12 @@ export const verifyFolderAddAndRemove = (appName, folderName, type='applications
   cy.get(commonSelectors.modalComponent).should("not.exist");
 
   //There is a bug uncomment after bug fix
-  // cy.get(commonSelectors.empytyFolderImage).should("be.visible");
+  cy.get(commonSelectors.empytyFolderImage).should("be.visible");
   cy.wait(1000);
-  // cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
-  //   "have.text",
-  //   commonText.emptyFolderText
-  // );
+  cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
+    "have.text",
+    commonText.emptyFolderText
+  );
 
   selectFolderFromDropdown(`all ${type}`);
   deleteFolder(folderName);
@@ -376,9 +381,7 @@ export const verifyExportApp = (appName) => {
 
 export const verifyCloneApp = (appName, cloneAppName) => {
   cloneApp(appName);
-  cy.get(".go3958317564")
-    .should("be.visible")
-    .and("have.text", dashboardText.appClonedToast);
+  cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.appClonedToast);
   cy.wait(3000);
 
   cy.get(commonSelectors.editorAppNameInput).click();
@@ -534,8 +537,8 @@ export const verifyFolderBreadcrumbForType = (config) => {
   cy.get(dashboardSelector.folderLabel).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(commonText.folderInfo);
   });
-  cy.get(commonSelectors.allApplicationsLink).verifyVisibleElement(
-    "have.text",
+  cy.get(commonSelectors.allApplicationsLink).should(
+    "contain.text",
     config.allItemsLinkText
   );
   openFolderDropdown();

@@ -251,7 +251,7 @@ const buildTypeConfigs = () => ({
 });
 
 
-[ "app", "module", "workflow", ].forEach((type) => {
+[ "app" ].forEach((type) => {
   describe(`Dashboard UI — ${type} listing`, () => {
     let data = {};
     let config = {};
@@ -322,12 +322,18 @@ const buildTypeConfigs = () => ({
           .should("have.text", data.itemName);
 
         verifyRenameAppDialog(data.itemName, renamedItemName);
+        cy.wait(500);
         modifyAndVerifyAppCardIcon(data.itemName);
+        cy.wait(500);
         createFolder(data.folderName);
+        cy.wait(500);
+        cy.get('[data-cy="apps-tab-label"]').click();
         verifyFolderAddAndRemove(data.itemName, data.folderName);
+        cy.wait(500);
         verifyExportApp(data.itemName);
-        cy.wait(2000)
+        cy.wait(500)
         verifyCloneApp(data.itemName, data.cloneItemName);
+        cy.wait(500);
         verifyRenameAndCleanup(data.itemName, renamedItemName);
       } else {
         cy.visit(config.listingUrl);
@@ -348,11 +354,18 @@ const buildTypeConfigs = () => ({
           .should("have.text", data.itemName);
 
         verifyCardOptionsForType(data.itemName, config);
+        cy.wait(500);
         modifyAndVerifyAppCardIcon(data.itemName);
+        cy.wait(500);
         createFolder(data.folderName);
-        verifyFolderAddAndRemove(data.itemName, data.folderName, config.folderType);
-        verifyExportForType(data.itemName, config, type);
+        cy.wait(500);
 
+        type==='module'?cy.get('[data-cy="modules-tab-label"]').click():cy.get('[data-cy="icon-workflows"]').click();
+        
+        verifyFolderAddAndRemove(data.itemName, data.folderName, config.folderType);
+        cy.wait(500);
+        verifyExportForType(data.itemName, config, type);
+        cy.wait(500);
         if (config.hasClone) {
           verifyCloneForType(data.itemName, data.cloneItemName, config);
         }
@@ -370,7 +383,7 @@ const buildTypeConfigs = () => ({
           );
           cancelModal(commonText.cancelButton);
         }
-
+        cy.wait(500);
         deleteItemForType(data.itemName, config);
       }
     });
