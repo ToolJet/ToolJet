@@ -239,9 +239,11 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(
             dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())
         ).click();
+        cy.get('[data-cy="yes-button"]').click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
+        cy.get('[data-cy="yes-button"]').click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
     //Verify the released app
@@ -429,6 +431,7 @@ describe("Custom Group Granular Access", () => {
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -541,6 +544,7 @@ describe("Custom Group Granular Access", () => {
 
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,

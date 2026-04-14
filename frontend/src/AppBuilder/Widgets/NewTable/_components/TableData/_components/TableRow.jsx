@@ -118,8 +118,13 @@ export const TableRow = ({
               isEdited: isEdited,
             })}
             onClick={(e) => {
+              const columnType = cell.column.columnDef?.meta?.columnType;
               // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
               if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
+                e.stopPropagation();
+                fireEvent('onRowClicked');
+              } else if (columnType === 'button' && allowSelection && row.getIsSelected()) {
+                // if the cell is a button column and the row is selected, don't unselect the row and fire the onRowClicked event
                 e.stopPropagation();
                 fireEvent('onRowClicked');
               } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
