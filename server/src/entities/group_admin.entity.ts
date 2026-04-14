@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { User } from 'src/entities/user.entity';
+import { Organization } from 'src/entities/organization.entity';
 
 @Entity({ name: 'group_admins' })
 @Unique(['userId', 'groupId'])
@@ -26,6 +27,10 @@ export class GroupAdmin extends BaseEntity {
 
   @Column({ name: 'organization_id', nullable: false })
   organizationId: string;
+
+  @ManyToOne(() => Organization)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
