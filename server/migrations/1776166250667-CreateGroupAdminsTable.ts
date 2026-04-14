@@ -27,6 +27,7 @@ export class CreateGroupAdminsTable1776166250667 implements MigrationInterface {
     await queryRunner.createForeignKey(
       'group_admins',
       new TableForeignKey({
+        name: 'fk_group_admins_user_id',
         columnNames: ['user_id'],
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
@@ -37,6 +38,7 @@ export class CreateGroupAdminsTable1776166250667 implements MigrationInterface {
     await queryRunner.createForeignKey(
       'group_admins',
       new TableForeignKey({
+        name: 'fk_group_admins_group_id',
         columnNames: ['group_id'],
         referencedTableName: 'permission_groups',
         referencedColumnNames: ['id'],
@@ -47,6 +49,7 @@ export class CreateGroupAdminsTable1776166250667 implements MigrationInterface {
     await queryRunner.createForeignKey(
       'group_admins',
       new TableForeignKey({
+        name: 'fk_group_admins_organization_id',
         columnNames: ['organization_id'],
         referencedTableName: 'organizations',
         referencedColumnNames: ['id'],
