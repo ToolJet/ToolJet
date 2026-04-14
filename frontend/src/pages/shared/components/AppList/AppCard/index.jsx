@@ -230,7 +230,7 @@ function ViewBtn({ appId, appSlug, homePageHandle, basicPlan, isBuilder, environ
   };
 
   return (
-    <Button isLucid size="medium" variant="primary" data-cy="preview-button" onClick={handlePreview}>
+    <Button isLucid size="medium" variant="secondary" data-cy="preview-button" onClick={handlePreview}>
       {t('globals.preview', 'Preview')}
     </Button>
   );
