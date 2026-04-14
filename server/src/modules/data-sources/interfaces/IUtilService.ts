@@ -9,6 +9,7 @@ export interface IDataSourcesUtilService {
   getServiceAndRpcNames(protoDefinition: any): { [key: string]: string[] };
 
   parseOptionsForCreate(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
+  parseOptionsForCreateLegacy(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
 
   parseOptionsForUpdate(
     dataSource: DataSource,
@@ -38,12 +39,12 @@ export interface IDataSourcesUtilService {
 
   parseOptionsForOauthDataSource(
     options: Array<object>,
+    manager: EntityManager,
     resetSecureData?: boolean,
     userId?: string,
     organizationId?: string,
     environmentId?: string,
-    dataSourceOptionId?: string,
-    manager?: EntityManager
+    dataSourceOptionId?: string
   ): Promise<Array<object>>;
 
   resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;

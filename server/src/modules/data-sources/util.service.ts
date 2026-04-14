@@ -157,10 +157,49 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   // IMPORTANT: Should not do any changes on this function. Its used in migrations
+  async parseOptionsForCreateLegacy(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
+    if (!options) return {};
+    return await dbTransactionWrap(async (entityManager: EntityManager) => {
+      const optionsWithOauth = await this.parseOptionsForOauthDataSourceLegacy(options, resetSecureData);
+      const parsedOptions = {};
+
+      for (const option of optionsWithOauth) {
+        if (option['encrypted']) {
+          if (option['workspace_constant']) {
+            const credential = await this.credentialService.create(option['workspace_constant'], entityManager);
+
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              workspace_constant: option['workspace_constant'],
+              encrypted: option['encrypted'],
+            };
+          } else {
+            const credential = await this.credentialService.create(
+              resetSecureData ? '' : option['value'] || '',
+              entityManager
+            );
+
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              encrypted: option['encrypted'],
+            };
+          }
+        } else {
+          parsedOptions[option['key']] = {
+            value: option['value'],
+            encrypted: false,
+          };
+        }
+      }
+
+      return parsedOptions;
+    }, manager);
+  }
+
   async parseOptionsForCreate(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
     if (!options) return {};
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
-      const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, resetSecureData);
+      const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, entityManager, resetSecureData);
       const parsedOptions = {};
 
       for (const option of optionsWithOauth) {
@@ -198,12 +237,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   async parseOptionsForOauthDataSource(
     options: Array<object>,
+    manager: EntityManager,
     resetSecureData = false,
     userId?: string,
     organizationId?: string,
     environmentId?: string,
-    dataSourceOptionId?: string,
-    manager?: EntityManager
+    dataSourceOptionId?: string
   ) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
@@ -260,7 +299,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
 
         //Propagate token to all branches since tokens are branch-invariant
-        this.propagateTokenToAllBranches(dataSourceOptionId, environmentId, userId, access_token, refresh_token);
+        this.propagateTokenToAllBranches(
+          dataSourceOptionId,
+          environmentId,
+          userId,
+          access_token,
+          refresh_token,
+          manager
+        );
 
         // Strip OAuth flow keys and token keys from options
         options = options.filter(
@@ -273,6 +319,111 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return options;
+  }
+
+  //DO NOT USE! Used for Older migrations which has oauth data in options
+  async parseOptionsForOauthDataSourceLegacy(
+    options: Array<object>,
+    resetSecureData = false,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string
+  ) {
+    const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
+
+    if (findOption(options, 'oauth2') && findOption(options, 'code')) {
+      const provider = findOption(options, 'provider')['value'];
+      const authCode = findOption(options, 'code')['value'];
+      const pluginIdOption = findOption(options, 'plugin_id');
+      const plugin_id = pluginIdOption ? pluginIdOption['value'] : null;
+      const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
+
+      // const queryService = new allPlugins[provider]();
+
+      // Resolve workspace constants in options before calling accessDetailsFrom
+      let resolvedOptions = options;
+      if (organizationId && environmentId) {
+        resolvedOptions = await resolveOptionsArrayForOAuth(options, (value) =>
+          this.resolveConstants(value, organizationId, environmentId)
+        );
+      }
+
+      let accessDetailsPromise: Promise<any>;
+
+      const cacheKey = `${provider}_${authCode}`;
+
+      if (this.inMemoryCacheService.has(cacheKey)) {
+        accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
+      } else {
+        accessDetailsPromise = queryService.accessDetailsFrom(authCode, resolvedOptions, resetSecureData);
+        this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
+      }
+      const accessDetails = await accessDetailsPromise;
+
+      const isMultiAuthEnabled = findOption(options, 'multiple_auth_enabled')?.['value'];
+      if (isMultiAuthEnabled) {
+        const newTokenDataObj = { user_id: userId };
+        for (const [key, value] of accessDetails) {
+          newTokenDataObj[key] = value;
+        }
+        const existingTokenArray = findOption(options, 'token_data')?.['value'];
+
+        const updatedTokenData = this.getCurrentTokenLegacy(
+          isMultiAuthEnabled,
+          existingTokenArray,
+          newTokenDataObj,
+          userId
+        );
+        options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
+
+        options.push({
+          key: 'tokenData',
+          value: updatedTokenData,
+          encrypted: false,
+        });
+        return options;
+      } else {
+        for (const row of accessDetails) {
+          const option = {};
+          option['key'] = row[0];
+          option['value'] = row[1];
+          option['encrypted'] = true;
+
+          options.push(option);
+        }
+      }
+
+      options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
+    }
+
+    return options;
+  }
+
+  //DO NOT USE ! Used for Older migrations which has oauth data in options
+  protected getCurrentTokenLegacy(isMultiAuthEnabled: boolean, tokenData: any, newToken: any, userId: string) {
+    if (isMultiAuthEnabled) {
+      let tokensArray = [];
+      if (tokenData && Array.isArray(tokenData)) {
+        let isExisted = false;
+        const newTokenData = tokenData.map((token) => {
+          if (token.user_id === userId) {
+            isExisted = true;
+            return { ...token, ...newToken };
+          }
+          return token;
+        });
+        if (isExisted) {
+          tokensArray = newTokenData;
+        } else {
+          tokensArray = [...tokenData, newToken];
+        }
+      } else {
+        tokensArray.push(newToken);
+      }
+      return tokensArray;
+    } else {
+      return newToken;
+    }
   }
 
   async update(
@@ -566,12 +717,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(
       resolvedOptions,
+      manager,
       false,
       userId,
       organizationId,
       environmentId,
-      dataSourceOptionId,
-      manager
+      dataSourceOptionId
     );
     const parsedOptions = {};
 
@@ -1210,7 +1361,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
 
       // Propagate OAuth token to ALL branches (tokens are branch-invariant)
-      await this.propagateTokenToAllBranches(dataSourceId, environmentId, tokenUserId, accessToken, refreshToken);
+      await this.propagateTokenToAllBranches(
+        dataSourceId,
+        environmentId,
+        tokenUserId,
+        accessToken,
+        refreshToken,
+        manager
+      );
     });
   }
 
@@ -1223,7 +1381,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     environmentId: string,
     userId: string | null,
     accessToken: string | null,
-    refreshToken: string | null
+    refreshToken: string | null,
+    manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Find all branch versions for this DS
@@ -1239,7 +1398,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.upsertUserTokenData(dsvo.id, userId, accessToken, refreshToken, manager);
         }
       }
-    });
+    }, manager);
   }
 
   protected async getUserTokenData(
@@ -1291,10 +1450,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', refreshToken)
       : null;
 
-    //Single Query instead of fetch and update uses On Conflict
+    // Build the SET clause dynamically, skipping null tokens For Refresh Token flow
+    const setClauses = ['updated_at = now()'];
+    if (accessToken !== null) {
+      setClauses.push('auth_token = EXCLUDED.auth_token');
+    }
+    if (refreshToken !== null) {
+      setClauses.push('refresh_token = EXCLUDED.refresh_token');
+    }
+    const setClause = setClauses.join(', ');
 
     if (userId !== null) {
-      // Multi-auth: conflict target is the partial unique index on (option_id, user_id) WHERE user_id IS NOT NULL
       await manager.query(
         `
         INSERT INTO datasource_user_token_data
@@ -1303,14 +1469,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
         ON CONFLICT (data_source_version_option_id, user_id) WHERE user_id IS NOT NULL
         DO UPDATE SET
-          auth_token    = EXCLUDED.auth_token,
-          refresh_token = EXCLUDED.refresh_token,
-          updated_at    = now()
+          ${setClause}
         `,
         [userId, dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
       );
     } else {
-      // Single-auth: conflict target is the partial unique index on (option_id) WHERE user_id IS NULL
       await manager.query(
         `
         INSERT INTO datasource_user_token_data
@@ -1319,9 +1482,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
         ON CONFLICT (data_source_version_option_id) WHERE user_id IS NULL
         DO UPDATE SET
-          auth_token    = EXCLUDED.auth_token,
-          refresh_token = EXCLUDED.refresh_token,
-          updated_at    = now()
+          ${setClause}
         `,
         [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
       );
