@@ -121,6 +121,19 @@ export default class Snowflake implements QueryService {
       } else {
         throw new QueryError('OAuth access token not found', 'Access token is required for OAuth authentication', {});
       }
+    } else if (sourceOptions.auth_type === 'key_pair') {
+      if (!sourceOptions.username) {
+        throw new QueryError('Username not found', 'Username is required for key pair authentication', {});
+      }
+      if (!sourceOptions.private_key) {
+        throw new QueryError('Private key not found', 'Private key is required for key pair authentication', {});
+      }
+      connectionConfig.username = sourceOptions.username;
+      connectionConfig.authenticator = 'SNOWFLAKE_JWT';
+      connectionConfig.privateKey = sourceOptions.private_key;
+      if (sourceOptions.private_key_passphrase) {
+        connectionConfig.privateKeyPass = sourceOptions.private_key_passphrase;
+      }
     } else if (sourceOptions.auth_type === 'basic') {
       connectionConfig.password = sourceOptions.password;
       connectionConfig.username = sourceOptions.username;
