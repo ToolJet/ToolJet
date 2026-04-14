@@ -13,6 +13,7 @@ import { useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { withRouter } from '@/_hoc/withRouter';
 import Layout from '@/_ui/Layout';
 
 import { canUserPerformAppAction } from './appsAndModulesPermissions';
@@ -31,7 +32,7 @@ import useHandleAppCreationFromLandingPage from './hooks/useHandleAppCreationFro
 
 const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
 
-export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
+function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
   const queryClient = useQueryClient();
 
   const searchQuery = useSearchStore((state) => state.searchQuery);
@@ -213,3 +214,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
     </Layout>
   );
 }
+
+// Have wrapped it with withRouter HOC which has logic to ensure the title and favicon get updated when we navigate to different pages
+export default withRouter(AppsAndModules);
