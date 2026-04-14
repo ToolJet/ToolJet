@@ -71,30 +71,30 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
+  const [page, setPage] = useState(editingPage || props?.page);
+
   const showPageHeaderOnDesktop = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.showOnDesktop,
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnDesktop,
     shallow
   );
 
   const showPageHeaderOnMobile = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.showOnMobile,
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnMobile,
     shallow
   );
 
   const showPageFooterOnDesktop = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.showOnDesktop,
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnDesktop,
     shallow
   );
 
   const showPageFooterOnMobile = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.showOnMobile,
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnMobile,
     shallow
   );
   const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
 
   const hasCanvasPageFooterEnabled = useStore((state) => state.license?.featureAccess?.canvasPageFooterEnabled);
-
-  const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
