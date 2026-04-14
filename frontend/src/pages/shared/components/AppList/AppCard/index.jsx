@@ -93,6 +93,12 @@ export default function AppCard({
     </div>
   );
 
+  const showLaunchButton = !isStub && appType !== 'module';
+  const showEditButton = hasUpdatePermission || appType === 'module';
+  const showAppMenu = hasDeletePermission || hasUpdatePermission || appType === 'module';
+  const showPreviewButton =
+    !hasUpdatePermission && hasViewPermission && appType !== 'module' && hasNonReleasedPreviewAccess;
+
   const oldCustomIconNameMappingToTablerIconName =
     appIconNameMappingForTablerIcons[icon] ?? appIconNameMappingForTablerIcons.apps;
 
@@ -119,19 +125,12 @@ export default function AppCard({
         <div className="tw-absolute tw-inset-0 tw-p-4 tw-flex tw-flex-col tw-justify-between tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-200 tw-pointer-events-none group-hover:tw-pointer-events-auto">
           {textBlock}
 
-          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-w-full">
-            {!hasUpdatePermission && hasViewPermission && appType !== 'module' && hasNonReleasedPreviewAccess && (
-              <ViewBtn
-                appId={id}
-                appSlug={slug}
-                homePageHandle={home_page_handle}
-                basicPlan={basicPlan}
-                isBuilder={isBuilder}
-                environmentAccess={environmentAccess}
-              />
-            )}
-
-            {!isStub && appType !== 'module' && (
+          <div
+            className={cn('tw-flex tw-items-center tw-justify-between tw-gap-2 tw-w-full', {
+              'tw-justify-end': !showLaunchButton && !showPreviewButton,
+            })}
+          >
+            {showLaunchButton && (
               <LaunchBtn
                 appSlug={slug}
                 appType={appType}
@@ -142,41 +141,54 @@ export default function AppCard({
               />
             )}
 
-            <div className="tw-flex tw-items-center tw-gap-2">
-              {(hasUpdatePermission || appType === 'module') && (
-                <TooltipComp content={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
-                  <Button
-                    isLucid
-                    size="medium"
-                    variant="secondary"
-                    leadingIcon="square-pen"
-                    onClick={handleEditClick}
-                    component={Link}
-                    reloadDocument
-                    to={getPrivateRoute('editor', {
-                      slug: isValidSlug(slug) ? slug : id,
-                    })}
-                    data-cy="edit-button"
-                    className="hover:tw-no-underline hover:tw-text-text-default"
-                  >
-                    {t('globals.edit', 'Edit')}
-                  </Button>
-                </TooltipComp>
-              )}
+            {showPreviewButton && (
+              <ViewBtn
+                appId={id}
+                appSlug={slug}
+                homePageHandle={home_page_handle}
+                basicPlan={basicPlan}
+                isBuilder={isBuilder}
+                environmentAccess={environmentAccess}
+              />
+            )}
 
-              {(hasDeletePermission || hasUpdatePermission || appType === 'module') && (
-                <AppMenu
-                  appType={appType}
-                  appDetails={appDetails}
-                  hasCreatePermission={hasCreatePermission}
-                  hasUpdatePermission={hasUpdatePermission}
-                  hasDeletePermission={hasDeletePermission}
-                  onMenuItemClick={onMenuItemClick}
-                  currentSelectedFolder={currentSelectedFolder}
-                  ownedFolders={ownedFolders}
-                />
-              )}
-            </div>
+            {(showEditButton || showAppMenu) && (
+              <div className="tw-flex tw-items-center tw-gap-2 ">
+                {showEditButton && (
+                  <TooltipComp content={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                    <Button
+                      isLucid
+                      size="medium"
+                      variant="secondary"
+                      leadingIcon="square-pen"
+                      onClick={handleEditClick}
+                      component={Link}
+                      reloadDocument
+                      to={getPrivateRoute('editor', {
+                        slug: isValidSlug(slug) ? slug : id,
+                      })}
+                      data-cy="edit-button"
+                      className="hover:tw-no-underline hover:tw-text-text-default"
+                    >
+                      {t('globals.edit', 'Edit')}
+                    </Button>
+                  </TooltipComp>
+                )}
+
+                {showAppMenu && (
+                  <AppMenu
+                    appType={appType}
+                    appDetails={appDetails}
+                    hasCreatePermission={hasCreatePermission}
+                    hasUpdatePermission={hasUpdatePermission}
+                    hasDeletePermission={hasDeletePermission}
+                    onMenuItemClick={onMenuItemClick}
+                    currentSelectedFolder={currentSelectedFolder}
+                    ownedFolders={ownedFolders}
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
       </AppCardContainer>
@@ -230,7 +242,7 @@ function ViewBtn({ appId, appSlug, homePageHandle, basicPlan, isBuilder, environ
   };
 
   return (
-    <Button isLucid size="medium" variant="secondary" data-cy="preview-button" onClick={handlePreview}>
+    <Button isLucid size="medium" variant="outline" data-cy="preview-button" onClick={handlePreview}>
       {t('globals.preview', 'Preview')}
     </Button>
   );
@@ -245,7 +257,9 @@ function LaunchBtn({ appSlug, appType, currentVersionId, isMaintenanceOn, isBuil
 
   const isDisabled = appType === 'workflow' ? true : currentVersionId === null || isMaintenanceOn || !canAccessReleased;
 
-  const btnVarient = isDisabled ? 'ghost' : 'secondary';
+  const isEndUser = authenticationService.currentSessionValue?.role?.name === 'end-user';
+
+  const btnVariant = isEndUser ? 'primary' : 'ghost';
   const btnLabel =
     appType !== 'workflow' && isMaintenanceOn
       ? t('homePage.appCard.maintenance', 'Maintenance')
@@ -278,7 +292,7 @@ function LaunchBtn({ appSlug, appType, currentVersionId, isMaintenanceOn, isBuil
         size="medium"
         leadingIcon="play"
         data-cy="launch-button"
-        variant={btnVarient}
+        variant={btnVariant}
         onClick={handleLaunch}
         disabled={isDisabled}
       >
