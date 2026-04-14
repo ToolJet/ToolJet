@@ -86,7 +86,7 @@ export default class LicenseBase {
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
-      this._isComponentNavigation = false;
+      this._isComponentNavigation = true;
       this._plan = plan;
       return;
     }
@@ -147,7 +147,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isComponentNavigation = this.getFeatureValue('componentNavigation');
+    this._isComponentNavigation = this._features?.['componentNavigation'] === true;
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
