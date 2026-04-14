@@ -86,7 +86,7 @@ describe("Workspace", () => {
 
         cy.get(commonSelectors.cancelButton).click();
 
-        // cy.get(commonSelectors.workspaceName).click();
+        cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.clearAndType(commonSelectors.workspaceNameinput, "My workspace");
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
