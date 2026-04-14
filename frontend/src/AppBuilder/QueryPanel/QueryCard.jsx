@@ -48,6 +48,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
+  const hasQueryFolders = useStore((state) => state?.license?.featureAccess?.queryFolders ?? false);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
@@ -126,7 +127,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   return (
     <>
       <div
-        className={`query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
+        className={
+          `query-row pe-2 ${hasQueryFolders ? 'mb-0' : 'mb-1'} ${darkMode && 'dark-theme'}` +
+          (isQuerySelected ? ' query-row-selected' : '')
+        }
         key={dataQuery.id}
         onClick={(e) => {
           if (isQuerySelected) return;
