@@ -148,7 +148,8 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
             appsLimit={appsLimit}
             featureAccess={featureAccess}
             moduleEnabled={moduleEnabled}
-            showLoadingSkeleton={showLoadingSkeleton}
+            showLoadingSkeleton={showLoadingSkeleton && !searchQuery?.length}
+            // showLoadingSkeleton only when there is no search query, this ensures that when user is searching, the create button and other actions are not replaced by skeleton loaders, providing a better user experience
           />
         </PageHeader>
 

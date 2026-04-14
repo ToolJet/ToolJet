@@ -114,7 +114,7 @@ export function useCreateApp() {
     },
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, appType: variables.body?.appType, pageSize }],
+        queryKey: ['apps', { pageNo: currentPage, appType: variables?.body?.type, pageSize }],
       });
 
       posthogHelper.captureEvent('click_new_app', {
