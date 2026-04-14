@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { positionGhostElement, getCanvasBottomBound } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
@@ -157,6 +157,12 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
     newY = Math.max(0, newY);
 
+    // Bottom bound: widget should not go past footer
+    const canvasBottomBound = getCanvasBottomBound();
+    if (canvasBottomBound !== Infinity) {
+      newY = Math.min(newY, canvasBottomBound - element.clientHeight);
+    }
+
     // Update element transform immediately
     element.style.transform = `translate(${newX}px, ${newY}px)`;
     positionGhostElement(element, 'moveable-ghost-widget');
@@ -181,13 +187,29 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     let scrollY = 0;
 
     // Check vertical boundaries using MOUSE POSITION (on .canvas-content)
-    if (verticalContainer && clientY <= verticalRect.top + threshold) {
+    let verticalTopBoundary = verticalRect?.top ?? 0;
+    let verticalBottomBoundary = verticalRect?.bottom ?? 0;
+    if (verticalContainer) {
+      const headerElement = document.querySelector('[component-id="canvas-header"]');
+      if (headerElement) {
+        const headerRect = headerElement.getBoundingClientRect();
+        verticalTopBoundary = Math.max(verticalTopBoundary, headerRect.bottom);
+      }
+
+      const footerElement = document.querySelector('[component-id="canvas-footer"]');
+      if (footerElement) {
+        const footerRect = footerElement.getBoundingClientRect();
+        verticalBottomBoundary = Math.min(verticalBottomBoundary, footerRect.top);
+      }
+    }
+
+    if (verticalContainer && clientY > verticalTopBoundary && clientY <= verticalTopBoundary + threshold) {
       // Mouse within threshold of top edge - scroll up
       const remainingTopScroll = Math.floor(verticalContainer.scrollTop);
       if (remainingTopScroll > 1) {
         scrollY = -Math.min(scrollSpeed, remainingTopScroll);
       }
-    } else if (verticalContainer && clientY >= verticalRect.bottom - threshold) {
+    } else if (verticalContainer && clientY < verticalBottomBoundary && clientY >= verticalBottomBoundary - threshold) {
       // Mouse within threshold of bottom edge - scroll down
       scrollY = scrollSpeed;
     }
