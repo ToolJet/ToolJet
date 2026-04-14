@@ -12,7 +12,7 @@ import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { VersionCreateDto } from './dto';
-import { MODULE_VERSION_AUDIT_KEYS } from './constants';
+import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
