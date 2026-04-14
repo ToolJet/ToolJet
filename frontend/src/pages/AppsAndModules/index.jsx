@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { useAppsStore } from '@/_stores/appsStore';
 import { useSearchStore } from '@/_stores/searchStore';
-import { useFetchFeatureAccess } from '@/_services/hooks/licenseServiceHooks';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
 import { useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -41,6 +41,10 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
 
+  // As the fetchFeatureAccess() is being called in the Layout component,
+  // the featureAccess state will be updated there and we can directly use it here without needing to fetch it again, this avoids redundant API calls
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
@@ -53,7 +57,6 @@ export default function AppsAndModules({ darkMode, switchDarkMode, appType = 'fr
 
   const hasFromTemplateSearchParam = searchParams.get('fromtemplate') || '';
 
-  const { data: featureAccess } = useFetchFeatureAccess();
   const { data: appsLimit, isSuccess: isAppsLimitFetchedSuccessfully } = useFetchAppsLimit();
 
   useEffect(() => {
