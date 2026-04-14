@@ -228,7 +228,7 @@ export const ControlButtons = memo(
           <span>
             <Tooltip id="tooltip-for-refresh" className="tooltip" />
             <RenderButton
-              icon="IconRefresh"
+              icon="IconReload"
               data-cy={`${generateCypressDataCy(componentName)}-refresh-button`}
               onClick={handleRefresh}
               tooltipId="tooltip-for-refresh"
