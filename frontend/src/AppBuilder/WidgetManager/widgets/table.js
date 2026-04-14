@@ -239,6 +239,14 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    disableRowDeselection: {
+      type: 'toggle',
+      displayName: 'Disable row deselection',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     defaultSelectedRow: {
       type: 'code',
       displayName: 'Default selected row',
@@ -350,6 +358,15 @@ export const tableConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-primary-text)',
+      },
+      accordian: 'Data',
+    },
+    selectedRowColor: {
+      type: 'colorSwatches',
+      displayName: 'Selected row',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface2-surface)',
       },
       accordian: 'Data',
     },
@@ -751,6 +768,7 @@ export const tableConfig = {
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: `{{false}}` },
       selectRowOnCellEdit: { value: '{{false}}' },
+      disableRowDeselection: { value: '{{false}}' },
     },
     events: [],
     styles: {
@@ -758,6 +776,7 @@ export const tableConfig = {
       columnBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      selectedRowColor: { value: 'var(--cc-surface2-surface)' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'none' },
       actionButtonRadius: { value: '0' },

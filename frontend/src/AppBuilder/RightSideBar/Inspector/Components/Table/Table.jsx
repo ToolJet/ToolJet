@@ -391,7 +391,13 @@ export const Table = (props) => {
     () => [
       'allowSelection',
       ...(allowSelection
-        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        ? [
+            'highlightSelectedRow',
+            'disableRowDeselection',
+            'showBulkSelector',
+            'defaultSelectedRow',
+            'selectRowOnCellEdit',
+          ]
         : []),
     ],
     [allowSelection]

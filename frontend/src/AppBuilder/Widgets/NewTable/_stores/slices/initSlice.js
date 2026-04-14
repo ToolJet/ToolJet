@@ -65,6 +65,7 @@ export const createInitSlice = (set, get) => ({
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? false;
+        state.components[id].properties.disableRowDeselection = properties?.disableRowDeselection ?? false;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;
@@ -111,6 +112,7 @@ export const createInitSlice = (set, get) => ({
           containerBackgroundColor = '#fff',
           columnTitleColor = '#6A727C',
           columnBackgroundColor = '#F6F8FA',
+          selectedRowColor = 'var(--cc-surface2-surface)',
         } = styles;
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
@@ -128,6 +130,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.containerBackgroundColor = containerBackgroundColor;
         state.components[id].styles.columnTitleColor = columnTitleColor;
         state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
+        state.components[id].styles.selectedRowColor = selectedRowColor;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }
