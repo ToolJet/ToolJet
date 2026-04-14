@@ -63,6 +63,7 @@ const Table = memo(
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
@@ -309,7 +310,7 @@ const Table = memo(
           darkMode={darkMode}
           componentName={componentName}
           setExposedVariables={setExposedVariables}
-          loadingState={exposedVariablesTemporaryState.isLoading}
+          loadingState={exposedVariablesTemporaryState.isLoading || isRefreshing}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}

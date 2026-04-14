@@ -5,19 +5,37 @@ import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import Popover from 'react-bootstrap/Popover';
+import { toast } from 'react-hot-toast';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/utils';
 
 export const ControlButtons = memo(
   ({ id, table, darkMode, height, componentName, showAddNewRowPopup, setShowAddNewRowPopup, fireEvent }) => {
     const showAddNewRowButton = useTableStore((state) => state.getTableProperties(id)?.showAddNewRowButton, shallow);
     const showDownloadButton = useTableStore((state) => state.getTableProperties(id)?.showDownloadButton, shallow);
+    const showRefreshButton = useTableStore((state) => state.getTableProperties(id)?.showRefreshButton, shallow);
     const hideColumnSelectorButton = useTableStore(
       (state) => state.getTableProperties(id)?.hideColumnSelectorButton,
       shallow
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
+    const setIsRefreshing = useTableStore((state) => state.setIsRefreshing, shallow);
+
+    const { moduleId } = useModuleContext();
+    const dataRawValue = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.data?.value,
+      shallow
+    );
+    const componentNameIdMapping = useStore((state) => state.getComponentNameIdMapping(moduleId), shallow);
+    const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(moduleId), shallow);
+    const runQuery = useStore((state) => state.queryPanel.runQuery);
+    const dataQueries = useStore((state) => state.dataQuery.queries.modules?.[moduleId] ?? [], shallow);
+    const currentMode = useStore((state) => state.modeStore?.modules?.[moduleId]?.currentMode ?? 'edit');
 
     const RenderButton = ({ icon, tooltipId, tooltipContent, className, label, fill, ...restProps }) => {
       return (
@@ -165,6 +183,63 @@ export const ControlButtons = memo(
       );
     };
 
+    const handleRefresh = () => {
+      if (isRefreshing) return;
+
+      const queriesToRun = [];
+      const seen = new Set();
+
+      if (typeof dataRawValue === 'string' && dataRawValue) {
+        const { allRefs = [] } = extractAndReplaceReferencesFromString(
+          dataRawValue,
+          componentNameIdMapping || {},
+          queryNameIdMapping || {}
+        );
+
+        for (const ref of allRefs) {
+          if (ref?.entityType !== 'queries') continue;
+          const entityNameOrId = ref.entityNameOrId;
+          if (!entityNameOrId) continue;
+          const query = dataQueries.find((dq) => dq.id === entityNameOrId || dq.name === entityNameOrId);
+          if (!query || seen.has(query.id)) continue;
+          seen.add(query.id);
+          queriesToRun.push(query);
+        }
+      }
+
+      if (queriesToRun.length === 0) {
+        toast('No queries to refresh');
+        return;
+      }
+
+      setIsRefreshing(id, true);
+      const runPromises = queriesToRun.map((query) =>
+        runQuery(query.id, query.name, undefined, currentMode, {}, undefined, undefined, false, false, moduleId)
+      );
+
+      Promise.allSettled(runPromises).finally(() => {
+        setIsRefreshing(id, false);
+      });
+    };
+
+    const renderRefreshButton = () => {
+      return (
+        <>
+          <span>
+            <Tooltip id="tooltip-for-refresh" className="tooltip" />
+            <RenderButton
+              icon="IconRefresh"
+              data-cy={`${generateCypressDataCy(componentName)}-refresh-button`}
+              onClick={handleRefresh}
+              tooltipId="tooltip-for-refresh"
+              tooltipContent="Refresh data"
+              disabled={isRefreshing}
+            />
+          </span>
+        </>
+      );
+    };
+
     const renderDownloadButton = () => {
       // if server side pagination is enabled and download event is associated with the table, then directly fire download event without displaying popover
       if (hasDownloadEvent && !clientSidePagination) {
@@ -206,6 +281,7 @@ export const ControlButtons = memo(
     const btns = [];
 
     if (showAddNewRowButton) btns.push(renderAddRowButton());
+    if (showRefreshButton) btns.push(renderRefreshButton());
     if (showDownloadButton) btns.push(renderDownloadButton());
     if (!hideColumnSelectorButton) btns.push(renderColumnSelectorButton());
 

@@ -422,6 +422,7 @@ export const Table = (props) => {
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
+    'showRefreshButton',
     'hideColumnSelectorButton',
     'loadingState',
     'showBulkUpdateActions',
