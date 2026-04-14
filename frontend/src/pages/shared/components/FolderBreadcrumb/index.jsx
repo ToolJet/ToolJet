@@ -57,6 +57,7 @@ export default function FolderBreadcrumb({ selectedFolder, folderList, onChangeS
     setFolderDialogState({
       type: 'delete-folder',
       currentFolderId: selectedFolder,
+      initialFolderName: selectedFolderDetails?.label ?? '',
     });
     setShowFolderList(false);
   };

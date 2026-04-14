@@ -101,7 +101,7 @@ export default function AppMenu({
               icon={FolderInput}
               label={t('homePage.appCard.addToFolder', 'Add to folder')}
               onItemClick={() => {
-                onMenuItemClick('add-to-folder', appDetails, currentSelectedFolder?.value);
+                onMenuItemClick('add-to-folder', appDetails);
 
                 posthogHelper.captureEvent('click_add_to_folder_option', {
                   workspace_id:
@@ -117,7 +117,7 @@ export default function AppMenu({
             <AppMenuItem
               icon={FolderOutput}
               label={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-              onItemClick={() => onMenuItemClick('remove-app-from-folder', appDetails, currentSelectedFolder?.value)}
+              onItemClick={() => onMenuItemClick('remove-app-from-folder', appDetails)}
             />
           )}
 

@@ -40,16 +40,17 @@ function GridLayoutContainer({
 }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
+  const currentFolderDetails = useAppsStore((state) => state.currentFolderDetails ?? null);
 
-  const handleMenuItemClick = (actionType, appDetails, currentFolderId) => {
+  const handleMenuItemClick = (actionType, appDetails) => {
     switch (actionType) {
       case 'add-to-folder':
       case 'remove-app-from-folder':
         setFolderDialogState({
           appDetails,
           type: actionType,
-          currentFolderId,
+          currentFolderId: currentFolderDetails?.value ?? null,
+          initialFolderName: currentFolderDetails?.label ?? '',
         });
         break;
       case 'rename':
@@ -81,7 +82,7 @@ function GridLayoutContainer({
                 appType={appType}
                 currentSelectedFolder={currentSelectedFolder}
                 onMenuItemClick={handleMenuItemClick}
-                isUserNotInAllFolder={Boolean(currentFolderId)}
+                isUserNotInAllFolder={Boolean(currentFolderDetails?.value)}
                 checkUserPermissions={checkUserPermissions}
                 basicPlan={basicPlan}
                 moduleEnabled={moduleEnabled}

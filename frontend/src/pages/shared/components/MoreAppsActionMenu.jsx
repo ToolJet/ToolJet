@@ -134,7 +134,7 @@ export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems 
               onClick={handleChooseFromTemplate}
             >
               <AppWindow size={16} color="var(--icon-strong)" />
-              {t('homePage.header.chooseFromTemplate', 'Choose from template')}
+              Create app from template
             </DropdownMenuItem>
           )}
 

@@ -6,6 +6,7 @@ import { camelCase, capitalize, startCase } from 'lodash';
 
 import { cn } from '@/lib/utils';
 import { validateName } from '@/_helpers/utils';
+import { appTypeToDisplayNameMapping } from '@/_helpers/appUtils';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { Field, FieldError } from '@/components/ui/Rocket/Field/Field';
 import {
@@ -130,8 +131,13 @@ export default function FolderActionsDialog({
   const isSubmitBtnDisabled =
     hasError || isNameEmpty || isEditTypeAndNameIsSame || isFolderToMoveSelected || isFormBeingSubmitted;
 
-  const submitBtnLabel = t(`homePage.foldersSection.${camelCase(actionType)}Folder`, capitalize(startCase(actionType)));
-  const dialogTitle = isCreateOrEditFolder || isAddToFolder ? submitBtnLabel : '';
+  const isAlertDialog = isRemoveAppFromFolderOrDeleteFolder;
+
+  const submitBtnLabel =
+    actionType === 'remove-app-from-folder'
+      ? 'Remove from folder'
+      : t(`homePage.foldersSection.${camelCase(actionType)}Folder`, capitalize(startCase(actionType)));
+  const dialogTitle = isAlertDialog ? '' : submitBtnLabel;
 
   return (
     <ActionDialog
@@ -165,7 +171,7 @@ export default function FolderActionsDialog({
           isNameInputDisabled={isFormBeingSubmitted}
         />
       ) : isRemoveAppFromFolderOrDeleteFolder ? (
-        <DeleteOrRemoveAppFromFolder actionType={actionType} folderName={initialFolderName} />
+        <DeleteOrRemoveAppFromFolder appType={appType} actionType={actionType} folderName={initialFolderName} />
       ) : isAddToFolder ? (
         <AddToFolder
           appType={appType}
@@ -212,21 +218,26 @@ function CreateOrRenameFolderBody({
   );
 }
 
-function DeleteOrRemoveAppFromFolder({ folderName, actionType }) {
-  const { t } = useTranslation();
+function DeleteOrRemoveAppFromFolder({ folderName, actionType, appType }) {
+  const appTypeDisplayName = appTypeToDisplayNameMapping[appType]?.toLowerCase() || 'app';
+
+  const heading =
+    actionType === 'remove-app-from-folder'
+      ? `Remove ${appTypeDisplayName} from "${folderName}"`
+      : `Delete folder "${folderName}"`;
+  const description =
+    actionType === 'remove-app-from-folder'
+      ? `This ${appTypeDisplayName} will be moved to All ${appTypeDisplayName}s and will no longer appear in this folder.`
+      : `The folder will be deleted, but the ${appTypeDisplayName} inside will remain in All ${appTypeDisplayName}s.`;
 
   return (
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
 
+      <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
+
       <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
-        {actionType === 'remove-app-from-folder'
-          ? t('homePage.removeAppFromFolder', 'The app will be removed from this folder, do you want to continue?')
-          : t(
-              'homePage.foldersSection.wishToDeleteFolder',
-              `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
-              { folderName }
-            )}
+        {description}
       </p>
     </div>
   );

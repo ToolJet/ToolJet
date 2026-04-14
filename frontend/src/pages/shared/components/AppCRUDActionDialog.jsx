@@ -385,20 +385,17 @@ function MissingGroupsDialogBody({ missingGroups }) {
 }
 
 function DeleteAppBody({ appType, appName }) {
-  const { t } = useTranslation();
+  const appTypeDisplayName = appTypeToDisplayNameMapping[appType]?.toLowerCase() || 'app';
 
-  const message = t(
-    appType === 'workflow'
-      ? 'homePage.deleteWorkflowAndData'
-      : appType === 'front-end'
-      ? 'homePage.deleteAppAndData'
-      : 'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?',
-    { appName }
-  );
+  const heading = `Delete "${appName}"`;
+
+  const message = `This will permanently delete the ${appTypeDisplayName} and all its associated data. This action cannot be undone.`;
 
   return (
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
+
+      <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
 
       <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
         {message}
