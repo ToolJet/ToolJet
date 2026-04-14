@@ -48,6 +48,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
+        state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
         state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
         state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
