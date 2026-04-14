@@ -545,6 +545,20 @@ export class AppImportExportService {
             }
           }
 
+          // Fallback: map any unmatched imported versions to the latest existing version
+          // so that ModuleViewer components don't retain stale UUIDs from the source workspace
+          if (existingVersions.length > 0) {
+            for (const importedVersion of importedModuleVersions) {
+              if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
+                moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
+                if (!moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId]) {
+                  moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId] =
+                    existingVersions[0].currentEnvironmentId;
+                }
+              }
+            }
+          }
+
           // Also map the editingVersion if not already mapped
           const editingVersionId = importedModule?.appV2?.editingVersion?.id;
           if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {

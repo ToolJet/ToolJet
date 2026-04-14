@@ -52,17 +52,22 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
       .catch((error) => {
         const errorMessage = error?.error || error?.message || `${name} could not be released. Please try again!`;
         toast.error(errorMessage);
-        useStore.getState().debugger.log({
-          logLevel: 'error',
-          type: 'component',
-          key: 'Release Failed',
-          message: errorMessage,
-          description: errorMessage,
-          error: { message: errorMessage, description: errorMessage },
-          errorTarget: 'Version',
-          timestamp: new Date().toISOString(),
-        });
         setIsReleasing(false);
+        setShowConfirmation(false);
+        try {
+          useStore.getState().debugger.log({
+            logLevel: 'error',
+            type: 'component',
+            key: 'Release Failed',
+            message: errorMessage,
+            description: errorMessage,
+            error: { message: errorMessage, description: errorMessage },
+            errorTarget: 'Version',
+            timestamp: new Date().toISOString(),
+          });
+        } catch (_) {
+          // debugger may not be available
+        }
       });
   };
 

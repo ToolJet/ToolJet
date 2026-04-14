@@ -1,7 +1,7 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, IsNull, Not } from 'typeorm';
@@ -12,6 +12,7 @@ import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { VersionCreateDto } from './dto';
+import { MODULE_VERSION_AUDIT_KEYS } from './constants';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
@@ -19,6 +20,8 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
+  private readonly logger = new Logger(VersionUtilService.name);
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly createVersionService: VersionsCreateService,
@@ -202,6 +205,7 @@ export class VersionUtilService implements IVersionUtilService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.CREATE }),
         metadata: {
           data: {
             updatedAppVersionName: versionCreateDto.versionName,
@@ -236,6 +240,7 @@ export class VersionUtilService implements IVersionUtilService {
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check if module version is in use', error?.stack || error);
       throw new BadRequestException('Failed to check if module version is in use');
     }
   }
