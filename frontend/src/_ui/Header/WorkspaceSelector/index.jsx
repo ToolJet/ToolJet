@@ -99,6 +99,7 @@ export function BaseWorkspaceSelector(props) {
                         size="medium"
                         variant="ghost"
                         leadingIcon="square-pen"
+                        data-cy="edit-workspace-button"
                         onClick={handleEditWorkspaceDetails}
                       />
                     )}

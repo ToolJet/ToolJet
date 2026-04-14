@@ -24,7 +24,7 @@ export const dashboardUiText = {
   moduleExportFileContains: "",
 
   // Module folder empty-state (when a folder has no modules)
-  moduleFolderEmptyStateHeader: "No apps found in this folder",
+  moduleFolderEmptyStateHeader: "No modules found in this folder",
 
   // Workflows 
   workflowBreadcrumbTitle: "Workflows",

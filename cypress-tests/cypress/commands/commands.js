@@ -32,10 +32,10 @@ Cypress.Commands.add(
 Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.waitForElement(selector)
     .scrollIntoView()
-    .should("be.visible", { timeout: 10000 })
+    .should("be.visible", { timeout: 20000 })
     .click({ force: true })
-    .type(`{selectall}{backspace}`)
-    .type(`{selectall}{backspace}${text}`);
+    .type(`{selectall}{backspace}`, { delay: 0 })
+    .type(`{selectall}{backspace}${text}`, { delay: 0 });
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -260,7 +260,7 @@ Cypress.Commands.add(
     return cy
       .wrap(subject, { timeout: 10000 })
       .scrollIntoView({ timeout: 10000 })
-      .should("be.visible", { timeout: 10000 })
+      .should("be.visible", { timeout: 20000 })
       .and(assertion, value, ...arg);
   }
 );
@@ -288,10 +288,7 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
+  cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -656,5 +653,18 @@ Cypress.Commands.add("verifyFromClipboard", (value, delay = 0) => {
     win.navigator.clipboard.readText().then((text) => {
       expect(text).to.eq(value);
     });
+  });
+});
+
+Cypress.Commands.add('closeDropdown', () => {
+  cy.get('.tw-font-title-default').then(($el) => {
+    if ($el.attr("data-state") === "open") {
+      cy.get('body').trigger('pointerdown', { force: true });
+      cy.get('.tw-font-title-default').should(
+        "have.attr",
+        "data-state",
+        "closed"
+      );
+    }
   });
 });

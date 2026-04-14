@@ -167,41 +167,43 @@ export default function ExportAppModal({ open, onClose, appDetails }) {
             <p className="tw-font-title-large tw-text-text-default" data-cy="current-version-label">
               Current version
             </p>
+            <div data-cy="current-version">
+              <VersionItem
+                name={currentVersion?.name}
+                isChecked={selectedVersionId === currentVersion?.id}
+                createdAt={currentVersion?.created_at || currentVersion?.createdAt}
+                onCheckedChange={handleChangeSelectedVersion(currentVersion?.id)}
+              />
+            </div>
+            <div data-cy="other-version-section">
+              {versions?.versions?.length > 1 ? (
+                <>
+                  <p className="tw-font-title-large tw-text-text-default" data-cy="other-version-label">
+                    Older versions
+                  </p>
 
-            <VersionItem
-              name={currentVersion?.name}
-              isChecked={selectedVersionId === currentVersion?.id}
-              createdAt={currentVersion?.created_at || currentVersion?.createdAt}
-              onCheckedChange={handleChangeSelectedVersion(currentVersion?.id)}
-            />
-
-            {versions?.versions?.length > 1 ? (
-              <>
-                <p className="tw-font-title-large tw-text-text-default" data-cy="other-version-label">
-                  Older versions
+                  <div className="tw-space-y-3" data-cy="older-version-list">
+                    {versions.versions.map((version) => {
+                      if (version.id !== currentVersion?.id) {
+                        return (
+                          <VersionItem
+                            key={version.id}
+                            name={version.name}
+                            isChecked={selectedVersionId === version.id}
+                            createdAt={version.createdAt || version.created_at}
+                            onCheckedChange={handleChangeSelectedVersion(version.id)}
+                          />
+                        );
+                      }
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="tw-font-body-large tw-text-text-placeholder" data-cy="no-other-versions-found-text">
+                  No other versions found
                 </p>
-
-                <div className="tw-space-y-3">
-                  {versions.versions.map((version) => {
-                    if (version.id !== currentVersion?.id) {
-                      return (
-                        <VersionItem
-                          key={version.id}
-                          name={version.name}
-                          isChecked={selectedVersionId === version.id}
-                          createdAt={version.createdAt || version.created_at}
-                          onCheckedChange={handleChangeSelectedVersion(version.id)}
-                        />
-                      );
-                    }
-                  })}
-                </div>
-              </>
-            ) : (
-              <p className="tw-font-body-large tw-text-text-placeholder" data-cy="no-other-versions-found-text">
-                No other versions found
-              </p>
-            )}
+              )}
+            </div>
           </div>
 
           <div className="tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-6 tw-py-4">
@@ -210,6 +212,7 @@ export default function ExportAppModal({ open, onClose, appDetails }) {
               checked={exportTJDBSchema}
               onCheckedChange={handleToggleExportTJDBSchema}
               classes={{ checkboxLabel: 'tw-text-text-default tw-font-title-default' }}
+              data-cy="export-tooljet-table-schema-checkbox"
             />
           </div>
         </div>

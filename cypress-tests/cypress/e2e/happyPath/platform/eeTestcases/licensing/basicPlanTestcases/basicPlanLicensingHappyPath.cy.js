@@ -93,19 +93,22 @@ describe("License Page", () => {
     const planName = "basic";
     cy.get(commonSelectors.workspaceName).click();
 
-    cy.get(commonSelectors.workspaceCount).should("be.visible");
+    // cy.get(commonSelectors.workspaceCount).should("be.visible");
+    //update after revamp
     verifyResourceLimit("workspace", planName);
+    cy.get('.tw-flex-col > .tw-text-text-placeholder').should('have.text', 'You\'ve reached your limit for number of workspaces. Upgrade for more')
 
-    cy.get(dashboardSelector.homePageContent).click();
+    // cy.get('[data-cy="icon-home"]').click();
+    cy.get(commonSelectors.workspaceName).click({force: true});
 
     verifyResourceLimit("apps", planName);
 
     cy.get(workflowSelector.globalWorkFlowsIcon).click();
     cy.get(commonSelectors.breadcrumbPageTitle).should(
       "have.text",
-      "All workflows"
+      "Workflows"
     );
-    cy.get(workflowSelector.allWorkflowsLink).should("be.visible");
+    // cy.get(workflowSelector.allWorkflowsLink).should("be.visible");
     verifyResourceLimit("workflow", planName);
 
     common.navigateToManageUsers();

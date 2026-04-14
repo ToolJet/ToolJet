@@ -21,18 +21,16 @@ describe("License - Workspace Limits", () => {
     infoText,
     shouldUpgradeButtonExist = true
   ) => {
-    cy.get('[data-cy="workspaces-limit-heading"]')
+    cy.get('.tw-gap-2 > .tw-flex-col > .tw-font-medium')
       .should("be.visible")
       .and("have.text", heading);
 
-    cy.get('[data-cy="workspaces-limit-info"]')
+    cy.get('.tw-flex-col > .tw-text-text-placeholder')
       .should("be.visible")
       .and("have.text", infoText);
 
     if (shouldUpgradeButtonExist) {
-      cy.get('[data-cy="workspaces-limit-banner"]').within(() => {
-        cy.get('[data-cy="upgrade-button"]').should("be.visible");
-      });
+      cy.get('.tw-text-sm > .tw-gap-2>[data-cy="upgrade-button"]').should("be.visible");
     }
   };
 
@@ -61,14 +59,15 @@ describe("License - Workspace Limits", () => {
     openWorkspaceModal();
 
     verifyWorkspaceLimitModal(
-      "Workspace  limit nearing - 2/3",
+      "Workspace limit nearing - 2/3",
       "You're nearing your limit for number of workspaces. Upgrade for more"
     );
 
-    cy.get(commonSelectors.addWorkspaceButton).click();
+    // cy.get(commonSelectors.addWorkspaceButton).click();
+    cy.get('[data-cy="add-new-workspace-button"]').click();
     cy.get('[data-cy="create-workspace-title"]').should("be.visible");
 
-    cy.get("body").click();
+    cy.get('[data-cy="cancel-button"]').click();
 
     cy.apiCreateWorkspace(workspace2Name, workspace2Slug).then((res) => {
       workspace2Id = res.body.organization_id;
@@ -81,7 +80,7 @@ describe("License - Workspace Limits", () => {
       "You've reached your limit for number of workspaces. Upgrade for more"
     );
 
-    cy.get(commonSelectors.addWorkspaceButton).click();
-    cy.get('[data-cy="create-workspace-title"]').should("not.exist");
+    // cy.get(commonSelectors.workspaceName).click();
+     cy.get('[data-cy="add-new-workspace-button"]').should("not.exist");
   });
 });

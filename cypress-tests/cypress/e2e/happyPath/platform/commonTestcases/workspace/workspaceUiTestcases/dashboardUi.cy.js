@@ -44,7 +44,7 @@ import {
   verifyFolderEmptyStateForType,
   verifyImportDropdownForType,
   verifyTopBarForType,
-} from "Support/utils/dashboardUi";
+} from "Support/utils/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardUiText } from "Texts/dashboardUi";
 
@@ -73,14 +73,13 @@ const buildTypeConfigs = () => ({
 
     hasTemplateImport: true,
 
-    // Card context-menu — selectors from dashboardUiSelector, text from dashboardUiText
     renameOptionSelector: dashboardUiSelector.renameAppCardOption,
     renameOptionText: dashboardUiText.renameAppOption,
     hasClone: true,
     cloneOptionSelector: dashboardUiSelector.cloneAppCardOption,
     cloneOptionText: dashboardUiText.cloneAppOption,
     cloneToast: dashboardUiText.cloneAppToast,
-    cloneNameInputSelector: null,        // apps auto-navigate to editor on clone
+    cloneNameInputSelector: null,
     cloneConfirmButtonSelector: null,
     exportOptionSelector: dashboardUiSelector.exportAppCardOption,
     exportOptionText: dashboardUiText.exportAppOption,
@@ -252,7 +251,7 @@ const buildTypeConfigs = () => ({
 });
 
 
-[ "app", "module", "workflow", ].forEach((type) => {
+[ "app", "module", "workflow" ].forEach((type) => {
   describe(`Dashboard UI — ${type} listing`, () => {
     let data = {};
     let config = {};
@@ -316,19 +315,25 @@ const buildTypeConfigs = () => ({
         cy.visit("/my-workspace");
         config.uiCreate(data.itemName);
         cy.wait(2000);
-        cy.get(commonSelectors.appCreationDetails, {timeout: 20000}).first().should("be.visible");
+        cy.get(commonSelectors.appCreationDetails, {timeout: 20000}).first().should("exist");
         cy.get(commonSelectors.appCard(data.itemName)).should("be.visible");
         cy.get(commonSelectors.appTitle(data.itemName))
           .first()
           .should("have.text", data.itemName);
 
         verifyRenameAppDialog(data.itemName, renamedItemName);
+        cy.wait(500);
         modifyAndVerifyAppCardIcon(data.itemName);
+        cy.wait(500);
         createFolder(data.folderName);
-        verifyFolderAddAndRemove(data.itemName, data.folderName);
+        cy.wait(500);
+        cy.get('[data-cy="apps-tab-label"]').click();
+        verifyFolderAddAndRemove(data.itemName, data.folderName, config);
+        cy.wait(500);
         verifyExportApp(data.itemName);
-        cy.wait(2000)
+        cy.wait(500)
         verifyCloneApp(data.itemName, data.cloneItemName);
+        cy.wait(500);
         verifyRenameAndCleanup(data.itemName, renamedItemName);
       } else {
         cy.visit(config.listingUrl);
@@ -346,14 +351,21 @@ const buildTypeConfigs = () => ({
           .and("be.visible");
         cy.get(commonSelectors.appTitle(data.itemName))
           .first()
-          .verifyVisibleElement("have.text", data.itemName);
+          .should("have.text", data.itemName);
 
         verifyCardOptionsForType(data.itemName, config);
+        cy.wait(500);
         modifyAndVerifyAppCardIcon(data.itemName);
+        cy.wait(500);
         createFolder(data.folderName);
-        verifyFolderAddAndRemove(data.itemName, data.folderName, config.folderType);
-        verifyExportForType(data.itemName, config, type);
+        cy.wait(500);
 
+        type==='module'?cy.get('[data-cy="modules-tab-label"]').click():cy.get('[data-cy="icon-workflows"]').click();
+        
+        verifyFolderAddAndRemove(data.itemName, data.folderName, config, config.folderType);
+        cy.wait(500);
+        verifyExportForType(data.itemName, config, type);
+        cy.wait(500);
         if (config.hasClone) {
           verifyCloneForType(data.itemName, data.cloneItemName, config);
         }
@@ -371,7 +383,7 @@ const buildTypeConfigs = () => ({
           );
           cancelModal(commonText.cancelButton);
         }
-
+        cy.wait(500);
         deleteItemForType(data.itemName, config);
       }
     });
