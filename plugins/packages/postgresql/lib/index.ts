@@ -524,6 +524,12 @@ export default class PostgresqlQueryService implements QueryService {
     }
   }
 
+  private _normalizeBool(val: unknown): boolean | undefined {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return undefined;
+  }
+
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
     const { operation, table, schema } = queryOptions;
     const queryBuilder = createQueryBuilder('postgresql');
@@ -556,7 +562,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       case 'update_rows': {
-        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { columns, where_filters } = queryOptions.update_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         if (!hasWhereFilters) {
@@ -569,30 +575,30 @@ export default class PostgresqlQueryService implements QueryService {
           params: unknown[];
         };
         const rows = await this.executeWriteQuery(knexInstance, query, params, {
-          allow_multiple_updates,
-          zero_records_as_success,
+          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+          zero_records_as_success: this._normalizeBool(zero_records_as_success),
           operationLabel: 'updated',
         });
         return { status: 'ok', data: rows };
       }
 
       case 'upsert_rows': {
-        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false, primary_key_columns } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
         const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
           query: string;
           params: unknown[];
         };
         const rows = await this.executeWriteQuery(knexInstance, query, params, {
-          allow_multiple_updates,
-          zero_records_as_success,
+          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+          zero_records_as_success: this._normalizeBool(zero_records_as_success),
           operationLabel: 'upserted',
         });
         return { status: 'ok', data: rows };
       }
 
       case 'delete_rows': {
-        const { limit, zero_records_as_success } = queryOptions;
+        const { limit, zero_records_as_success = false } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         const hasLimit = limit != null && limit !== '';
@@ -608,7 +614,7 @@ export default class PostgresqlQueryService implements QueryService {
         const deletedRows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
         const deletedRecords = deletedRows.length;
 
-        if (zero_records_as_success === false && deletedRecords === 0) {
+        if (this._normalizeBool(zero_records_as_success) === false && deletedRecords === 0) {
           throw new Error('No rows were deleted.');
         }
 
