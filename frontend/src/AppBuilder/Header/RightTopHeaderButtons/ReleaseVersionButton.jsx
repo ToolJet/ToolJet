@@ -48,7 +48,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
       })
       .catch((error) => {
         const rawError = error?.error || error?.message;
-        const errorMessage = typeof rawError === 'object' ? rawError.message : rawError || 'Oops, something went wrong';
+        const errorMessage = typeof rawError === 'object' ? rawError.error : rawError || 'Oops, something went wrong';
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
         toast.error(errorMessage);
         useStore.getState().debugger.log({

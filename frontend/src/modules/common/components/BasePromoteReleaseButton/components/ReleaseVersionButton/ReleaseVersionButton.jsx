@@ -53,7 +53,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         const rawError = error?.error || error?.message;
         const errorMessage =
           typeof rawError === 'object'
-            ? rawError.message
+            ? rawError.error
             : rawError || `${name} could not be released. Please try again!`;
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
         toast.error(errorMessage);

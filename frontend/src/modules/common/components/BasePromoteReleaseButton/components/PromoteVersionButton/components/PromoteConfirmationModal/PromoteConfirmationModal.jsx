@@ -105,7 +105,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
         const rawError = error?.error || error?.message;
         const errorMessage =
           typeof rawError === 'object'
-            ? rawError.message
+            ? rawError.error
             : rawError || `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
         toast.error(errorMessage);
