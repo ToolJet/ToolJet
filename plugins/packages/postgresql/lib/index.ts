@@ -589,10 +589,13 @@ export default class PostgresqlQueryService implements QueryService {
           query: string;
           params: unknown[];
         };
+        // Upsert query embeds RETURNING * inside its CTE — pass appendReturning: false.
+        // Both updated and inserted rows are returned via the final UNION ALL SELECT.
         const rows = await this.executeWriteQuery(knexInstance, query, params, {
           allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
           zero_records_as_success: this._normalizeBool(zero_records_as_success),
           operationLabel: 'upserted',
+          appendReturning: false,
         });
         return { status: 'ok', data: rows };
       }
@@ -663,7 +666,9 @@ export default class PostgresqlQueryService implements QueryService {
           }) as { queries: { query: string; params: unknown[] }[] };
           allUpsertQueries.push(...queries);
         }
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpsertQueries);
+        // Upsert queries embed RETURNING * inside their CTE — pass appendReturning: false.
+        // Both updated and inserted rows are collected via the CTE's final UNION ALL SELECT.
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpsertQueries, false);
         return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
       }
 
@@ -681,20 +686,25 @@ export default class PostgresqlQueryService implements QueryService {
     knexInstance: Knex,
     query: string,
     params: unknown[],
-    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
+    options: {
+      allow_multiple_updates?: boolean;
+      zero_records_as_success?: boolean;
+      operationLabel: string;
+      appendReturning?: boolean;
+    }
   ): Promise<unknown[]> {
-    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+    const { allow_multiple_updates, zero_records_as_success, operationLabel, appendReturning = true } = options;
+    const finalQuery = appendReturning ? `${query} RETURNING *` : query;
     const hasConstraints = allow_multiple_updates === false || zero_records_as_success === false;
 
     if (!hasConstraints) {
-      // No constraint checks — run directly, RETURNING * surfaces the affected rows
-      const { rows: affectedRows } = await knexInstance.raw(`${query} RETURNING *`, params as any[]);
+      const { rows: affectedRows } = await knexInstance.raw(finalQuery, params as any[]);
       return affectedRows;
     }
 
     // Wrap in a transaction so any thrown error automatically rolls back the write
     return knexInstance.transaction(async (trx) => {
-      const { rows: affectedRows } = await trx.raw(`${query} RETURNING *`, params as any[]);
+      const { rows: affectedRows } = await trx.raw(finalQuery, params as any[]);
 
       if (allow_multiple_updates === false && affectedRows.length > 1) {
         throw new Error(
@@ -728,14 +738,17 @@ export default class PostgresqlQueryService implements QueryService {
     return batches;
   }
 
+  // appendReturning: pass false for upsert queries that already embed RETURNING * inside their CTE.
   private async executeBulkQueriesInTransaction(
     knexInstance: Knex,
-    queries: { query: string; params: unknown[] }[]
+    queries: { query: string; params: unknown[] }[],
+    appendReturning = true
   ): Promise<unknown[]> {
     const allRows: unknown[] = [];
     await knexInstance.transaction(async (transaction) => {
       for (const { query, params } of queries) {
-        const { rows } = await transaction.raw(`${query} RETURNING *`, params as any[]);
+        const finalQuery = appendReturning ? `${query} RETURNING *` : query;
+        const { rows } = await transaction.raw(finalQuery, params as any[]);
         allRows.push(...rows);
       }
     });
