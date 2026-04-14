@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   appEnvironmentService,
   appService,
@@ -117,6 +117,25 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+
+  const fetchAllModules = useCallback(async () => {
+    const allModules = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    while (currentPage <= totalPages) {
+      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const pageModules = data?.apps || [];
+
+      allModules.push(...pageModules);
+
+      const pageCount = Number(data?.meta?.total_pages);
+      totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+      currentPage += 1;
+    }
+
+    return allModules;
+  }, []);
 
   const themeAccess = useThemeAccess();
   const detectThemeChange = useStore((state) => state.detectThemeChange);
@@ -729,15 +748,21 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(0, '', '', 'module').then((data) => {
-            setModulesIsLoading(false);
-            setModulesList(data.apps);
-          });
+          fetchAllModules()
+            .then((modules) => {
+              setModulesList(modules);
+            })
+            .catch((error) => {
+              console.error('Failed to preload modules', error);
+            })
+            .finally(() => {
+              setModulesIsLoading(false);
+            });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
 
   return appTypeRef.current;
 };
