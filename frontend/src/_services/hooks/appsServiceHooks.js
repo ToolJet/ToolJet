@@ -53,6 +53,10 @@ export function useFetchWorkflowLimit(type) {
 
 export function useCloneApp() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
 
   return useMutation({
     mutationFn: ({ body, appType }) => appsService.cloneResource(body, appType),
@@ -61,6 +65,10 @@ export function useCloneApp() {
     },
     onSuccess: (response, variables) => {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} cloned successfully!`);
+
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, appType: variables.appType, pageSize }],
+      });
 
       navigate(`/${getWorkspaceId()}/apps/${response?.imports?.app[0]?.id}`, {
         // TODO: Pass actual commit Enabled value later on, for timebeing have passed as false
@@ -94,6 +102,10 @@ export function useRenameApp() {
 
 export function useCreateApp() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
 
   return useMutation({
     mutationFn: ({ body }) => appsService.createApp(body),
@@ -101,6 +113,10 @@ export function useCreateApp() {
       handleError(error);
     },
     onSuccess: (response, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, appType: variables.body?.appType, pageSize }],
+      });
+
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
@@ -130,7 +146,6 @@ export function useDeleteApp() {
 
   const pageSize = useAppsStore((state) => state.pageSize);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -140,21 +155,10 @@ export function useDeleteApp() {
     onSuccess: (response, variables) => {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} deleted successfully.`);
 
-      // queryClient.invalidateQueries({ queryKey: ['folders'] });
-      setCurrentPage(1);
+      setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
       queryClient.invalidateQueries({
-        queryKey: ['apps', { folderId: currentFolderId, appType: variables.appType, pageSize }],
+        queryKey: ['apps', { appType: variables.appType, pageSize }],
       });
-
-      // TODO: re-fetch apps list
-      // this.fetchApps(
-      //   this.state.currentPage
-      //     ? this.state.apps?.length === 1
-      //       ? this.state.currentPage - 1
-      //       : this.state.currentPage
-      //     : 1,
-      //   this.state.currentFolder.id
-      // );
 
       if (variables.appType === 'workflow') {
         queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'instance'] });
@@ -202,11 +206,14 @@ export function useFetchAppVersions(appId) {
   });
 }
 
+const selectAppTables = (raw) => raw?.tables;
+
 export function useFetchAppTables(appId) {
   return useQuery({
     queryKey: ['appTables', appId],
     queryFn: () => appsService.getTables(appId),
     enabled: !!appId,
+    select: selectAppTables,
   });
 }
 
