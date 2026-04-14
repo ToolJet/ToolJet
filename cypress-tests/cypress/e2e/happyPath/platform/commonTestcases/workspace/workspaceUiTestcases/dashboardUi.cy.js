@@ -251,7 +251,7 @@ const buildTypeConfigs = () => ({
 });
 
 
-[ "app" ].forEach((type) => {
+[ "app", "module", "workflow" ].forEach((type) => {
   describe(`Dashboard UI — ${type} listing`, () => {
     let data = {};
     let config = {};

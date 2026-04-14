@@ -2,23 +2,22 @@ import { fake } from "Fixtures/fake";
 
 import { commonSelectors } from "Selectors/common";
 import {
-  importSelectors,
-  exportAppModalSelectors,
+  importSelectors
 } from "Selectors/exportImport";
 import { commonText } from "Texts/common";
 import { exportAppModalText } from "Texts/exportImport";
 
 import {
-  clickOnExportButtonAndVerify,
-  exportAllVersionsAndVerify,
-  verifyElementsOfExportModal,
-  validateExportedAppStructure,
-} from "Support/utils/exportImport";
-import {
-  selectAppCardOption,
   closeModal,
   deleteDownloadsFolder,
+  selectAppCardOption,
 } from "Support/utils/common";
+import {
+  clickOnExportButtonAndVerify,
+  exportAllVersionsAndVerify,
+  validateExportedAppStructure,
+  verifyElementsOfExportModal,
+} from "Support/utils/exportImport";
 
 describe("App Export", () => {
   const TEST_DATA = {
@@ -141,7 +140,7 @@ describe("App Export", () => {
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonSelectors.buttonSelector("Export app")).click();
 
-    verifyElementsOfExportModal("v1");
+    verifyElementsOfExportModal("v1", [], false);
 
     exportAllVersionsAndVerify(data.appName2, "v1");
   });
