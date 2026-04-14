@@ -76,7 +76,7 @@ export default function EmptyStates({
           isTooltipForInteractiveDisabledElement={isCreationDisabled}
         >
           <CreateAppButton
-            label="Create new module"
+            label="Create a module"
             appType={appType}
             disabled={isCreationDisabled}
             isWorkspaceBranchLocked={isWorkspaceBranchLocked}
@@ -84,7 +84,7 @@ export default function EmptyStates({
         </TooltipComp>
       ) : appType === 'front-end' && canCreateApp ? (
         <CreateAppButton
-          label={t('homePage.header.createNewApplication', 'Create new app')}
+          label={t('homePage.header.createNewApplication', 'Create an app')}
           appType={appType}
           disabled={isCreationDisabled}
           isWorkspaceBranchLocked={isWorkspaceBranchLocked}

@@ -45,7 +45,7 @@ export default function CreateAppActions({
       canCreateApp && (
         <div className="tw-flex tw-items-center tw-gap-2">
           <CreateAppButton
-            label={t('homePage.header.createNewApplication', 'Create new app')}
+            label={t('homePage.header.createNewApplication', 'Create an app')}
             appType={appType}
             disabled={isCreationDisabled}
             isWorkspaceBranchLocked={isWorkspaceBranchLocked}
@@ -66,7 +66,7 @@ export default function CreateAppActions({
         isTooltipForInteractiveDisabledElement={isCreationDisabled}
       >
         <CreateAppButton
-          label="Create new module"
+          label="Create a module"
           appType={appType}
           disabled={isCreationDisabled}
           isWorkspaceBranchLocked={isWorkspaceBranchLocked}
