@@ -108,7 +108,7 @@ describe("App Export", () => {
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
     );
-    cy.get(exportAppModalSelectors.versionRadioButton("v3")).check();
+    cy.get('[data-cy="v3-version-wrapper"]').click();
     cy.get(
       commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
     ).click();

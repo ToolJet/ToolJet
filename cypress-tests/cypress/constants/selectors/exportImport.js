@@ -21,6 +21,7 @@ export const exportAppModalSelectors = {
   selectVersionTitle: '[data-cy= "select-a-version-to-export-title"]',
   currentVersionSection: '[data-cy="current-version-section"]',
   currentVersionLabel: '[data-cy="current-version-label"]',
+  otherVersionLabel: '[data-cy="other-version-label"]',
   noOtherVersionText: '[data-cy="no-other-versions-found-text"]',
   exportAllButton: '[data-cy="export-all-button"]',
   exportSelectedVersionButton: '[data-cy="export-selected-version-button"]',
@@ -35,6 +36,7 @@ export const exportAppModalSelectors = {
   versionCreatedTime: (versionText) => {
     return `[data-cy="${versionText}-version-wrapper"] > .d-flex > [data-cy="created-date-label"]`;
   }
+   
 };
 
 export const importSelectors = {

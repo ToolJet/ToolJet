@@ -296,6 +296,7 @@ export const verifyRenameAndCleanup = (appName, renamedAppName) => {
 export const verifyFolderAddAndRemove = (appName, folderName, type='applications') => {
   addAppToFolder(appName, folderName);
 
+  cy.wait(1000)
   openFolderDropdown();
   cy.get(dashboardSelector.folderName(folderName)).verifyVisibleElement(
     "have.text",
@@ -303,6 +304,7 @@ export const verifyFolderAddAndRemove = (appName, folderName, type='applications
   );
 
   selectFolderFromDropdown(folderName);
+  cy.wait(1000)
   cy.get(commonSelectors.appCard(appName))
     .contains(appName)
     .should("be.visible");
@@ -634,8 +636,8 @@ export const verifyExportForType = (itemName, config, type) => {
   });
 };
 
-export const verifyCloneForType = (itemName, cloneItemName, config) => {
-  viewAppCardOptions(itemName);
+export const verifyCloneForType = (itemName, cloneItemName, config, type = "app") => {
+  viewAppCardOptions(itemName, type);
   cy.get(config.cloneOptionSelector).click();
 
   if (config.cloneNameInputSelector) {

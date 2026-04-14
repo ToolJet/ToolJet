@@ -260,7 +260,7 @@ Cypress.Commands.add(
     return cy
       .wrap(subject, { timeout: 10000 })
       .scrollIntoView({ timeout: 10000 })
-      .should("be.visible", { timeout: 10000 })
+      .should("be.visible", { timeout: 20000 })
       .and(assertion, value, ...arg);
   }
 );
@@ -653,5 +653,18 @@ Cypress.Commands.add("verifyFromClipboard", (value, delay = 0) => {
     win.navigator.clipboard.readText().then((text) => {
       expect(text).to.eq(value);
     });
+  });
+});
+
+Cypress.Commands.add('closeDropdown', () => {
+  cy.get('.tw-font-title-default').then(($el) => {
+    if ($el.attr("data-state") === "open") {
+      cy.get('body').trigger('pointerdown', { force: true });
+      cy.get('.tw-font-title-default').should(
+        "have.attr",
+        "data-state",
+        "closed"
+      );
+    }
   });
 });

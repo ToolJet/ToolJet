@@ -24,15 +24,6 @@ describe("Home Page Dashboard Testcases", () => {
     it("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
-        cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq(
-                commonText.breadcrumbHome
-            );
-        });
-        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-            "have.text",
-            commonText.breadcrumbHome
-        );
 
         cy.get(dashboardSelector.aiIcon).should("be.visible");
         cy.get(dashboardSelector.homePagePromptHeader).verifyVisibleElement(

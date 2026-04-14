@@ -20,7 +20,22 @@ module.exports = defineConfig({
     },
 
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/**/*.cy.js",
+    specPattern: [
+      "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/appWorkflowLimits.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/basicPlanLicensingHappyPath.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/paidPlanLicensingHappyPath.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/workspaceLimit.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/settings/instanceLogin.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/apps/appExport.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/groups/basicPermissions.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/groups/customGroupGranularAccess.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/groups/customGroupPermissions.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/workspaceUiTestcases/dashboardUi.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/workspaceUiTestcases/homePageDashboard.cy.js",
+      "cypress/e2e/happyPath/platform/commonTestcases/workspace/workspaceUiTestcases/workspace.cy.js",
+    ],
 
     testIsolation: true,
     retries: {

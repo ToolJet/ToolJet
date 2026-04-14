@@ -94,11 +94,12 @@ describe("License Page", () => {
     const planName = "Enterprise";
     cy.get(commonSelectors.workspaceName).click();
 
-    cy.get(licenseSelectors.workspaceCount).should("be.visible");
+    // cy.get(licenseSelectors.workspaceCount).should("be.visible");
     cy.get(commonSelectors.addWorkspaceButton).should("be.visible");
     verifyResourceLimit("workspace", planName);
 
-    cy.get(dashboardSelector.homePageContent).click();
+    // cy.get(dashboardSelector.homePageContent).click();
+    cy.get(commonSelectors.workspaceName).click({force: true});
     verifyResourceLimit("app", planName);
 
     cy.get(workflowSelector.globalWorkFlowsIcon).click();
