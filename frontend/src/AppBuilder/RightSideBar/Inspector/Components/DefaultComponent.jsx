@@ -54,6 +54,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'IFrame',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
   'FileButton',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -84,6 +85,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
+  ColorPicker: 'Data',
   FileButton: 'Data',
 };
 
@@ -200,7 +202,9 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'ColorPicker',
       'FileButton',
+      'Listview',
     ],
     Layout: [],
   };
