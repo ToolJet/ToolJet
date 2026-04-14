@@ -33,7 +33,7 @@ export function useFetchFolders(queryParams) {
     queryKey: ['folders', { appSearchQuery, appType }],
     queryFn: () => folderService.getAll(appSearchQuery, appType),
     select: selectFolders(appType),
-    staleTime: Infinity, // TODO: Check if actually need this
+    staleTime: Infinity,
   });
 }
 

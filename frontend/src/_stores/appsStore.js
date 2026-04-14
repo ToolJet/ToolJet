@@ -89,7 +89,6 @@ export const useAppsStore = createZustandStoreWithImmer(
         false,
         'setCurrentFolderDetails'
       ),
-    //  TODO: Might need to reset store on page change as its used across multiple pages
   }),
   { storeName: 'Apps store' }
 );

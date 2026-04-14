@@ -11,8 +11,8 @@ export default function AppList({
   currentSelectedFolder,
   checkUserPermissions,
   basicPlan,
-  moduleEnabled,
   ownedFolders,
+  moduleEnabled = false,
 }) {
   return (
     <GridLayoutContainer
