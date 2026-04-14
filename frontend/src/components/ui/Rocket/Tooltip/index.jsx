@@ -8,7 +8,7 @@ export default function TooltipComp({
   children,
   classes,
   content,
-  arrow = true,
+  arrow = false,
   isTooltipForInteractiveDisabledElement = false,
   open,
 }) {

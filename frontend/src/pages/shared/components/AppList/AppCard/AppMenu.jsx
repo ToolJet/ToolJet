@@ -165,7 +165,7 @@ function AppMenuItem({ icon: IconComponent, label, onItemClick }) {
       className="tw-text-text-default tw-font-body-default"
       data-cy={`${label.toLowerCase().replace(/\s+/g, '-')}-card-option`}
     >
-      <IconComponent size={16} color="var(--icon-weak)" />
+      <IconComponent size={16} color="var(--icon-strong)" />
 
       {label}
     </DropdownMenuItem>

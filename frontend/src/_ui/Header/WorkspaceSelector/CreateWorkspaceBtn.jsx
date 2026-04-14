@@ -14,8 +14,8 @@ export function BaseCreateWorkspaceBtn({ onAddWorkspace, hideAddNewWorkspaceBtn 
     !hideAddNewWorkspaceBtn && (
       <Button
         isLucid
-        variant="ghost"
         leadingIcon="plus"
+        variant="ghostBrand"
         className="tw-w-full"
         data-cy="add-new-workspace-button"
         onClick={onAddWorkspace}

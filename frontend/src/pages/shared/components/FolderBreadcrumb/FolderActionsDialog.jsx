@@ -238,7 +238,7 @@ function AddToFolder({ appType, currentFolderId, selectedFolder, setSelectedFold
   const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 
-  if (!isFoldersSuccess) return <></>; // TODO: Can add Skeleton loader
+  if (!isFoldersSuccess) return <></>;
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -299,9 +299,7 @@ function AddToFolder({ appType, currentFolderId, selectedFolder, setSelectedFold
           ))
         ) : (
           <li>
-            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder tw-mb-0">
-              No matching results found
-            </p>
+            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder tw-mb-0">No results found</p>
           </li>
         )}
       </ul>

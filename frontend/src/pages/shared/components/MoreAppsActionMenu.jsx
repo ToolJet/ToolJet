@@ -133,7 +133,7 @@ export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems 
               className="tw-text-text-default tw-font-body-default"
               onClick={handleChooseFromTemplate}
             >
-              <AppWindow size={16} color="var(--icon-weak)" />
+              <AppWindow size={16} color="var(--icon-strong)" />
               {t('homePage.header.chooseFromTemplate', 'Choose from template')}
             </DropdownMenuItem>
           )}
@@ -143,7 +143,7 @@ export function BaseMoreAppsActionMenu({ disabled, appType, eeSpecificMenuItems 
             className="tw-text-text-default tw-font-body-default"
             onClick={handleOpenFilePicker}
           >
-            <FileDown size={16} color="var(--icon-weak)" />
+            <FileDown size={16} color="var(--icon-strong)" />
             {t('homePage.header.import', 'Import from device')}
           </DropdownMenuItem>
 
