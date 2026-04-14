@@ -14,6 +14,7 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
+import * as crypto from 'crypto';
 import got from 'got';
 
 export default class Snowflake implements QueryService {
@@ -130,9 +131,15 @@ export default class Snowflake implements QueryService {
       }
       connectionConfig.username = sourceOptions.username;
       connectionConfig.authenticator = 'SNOWFLAKE_JWT';
-      connectionConfig.privateKey = sourceOptions.private_key;
-      if (sourceOptions.private_key_passphrase) {
-        connectionConfig.privateKeyPass = sourceOptions.private_key_passphrase;
+      try {
+        const privateKeyObject = crypto.createPrivateKey({
+          key: sourceOptions.private_key,
+          format: 'pem',
+          ...(sourceOptions.private_key_passphrase && { passphrase: sourceOptions.private_key_passphrase }),
+        });
+        connectionConfig.privateKey = privateKeyObject.export({ type: 'pkcs8', format: 'pem' }) as string;
+      } catch (err) {
+        throw new QueryError('Invalid private key', err.message, {});
       }
     } else if (sourceOptions.auth_type === 'basic') {
       connectionConfig.password = sourceOptions.password;
