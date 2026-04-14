@@ -328,7 +328,7 @@ const buildTypeConfigs = () => ({
         createFolder(data.folderName);
         cy.wait(500);
         cy.get('[data-cy="apps-tab-label"]').click();
-        verifyFolderAddAndRemove(data.itemName, data.folderName);
+        verifyFolderAddAndRemove(data.itemName, data.folderName, config);
         cy.wait(500);
         verifyExportApp(data.itemName);
         cy.wait(500)
@@ -362,7 +362,7 @@ const buildTypeConfigs = () => ({
 
         type==='module'?cy.get('[data-cy="modules-tab-label"]').click():cy.get('[data-cy="icon-workflows"]').click();
         
-        verifyFolderAddAndRemove(data.itemName, data.folderName, config.folderType);
+        verifyFolderAddAndRemove(data.itemName, data.folderName, config, config.folderType);
         cy.wait(500);
         verifyExportForType(data.itemName, config, type);
         cy.wait(500);

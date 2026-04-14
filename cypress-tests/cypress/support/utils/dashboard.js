@@ -295,7 +295,7 @@ export const verifyRenameAndCleanup = (appName, renamedAppName) => {
   cy.get(commonSelectors.appCard(renamedAppName)).should("not.exist");
 };
 
-export const verifyFolderAddAndRemove = (appName, folderName, type='applications') => {
+export const verifyFolderAddAndRemove = (appName, folderName, config, type='applications') => {
   addAppToFolder(appName, folderName);
  
   cy.wait(2000)
@@ -345,14 +345,9 @@ export const verifyFolderAddAndRemove = (appName, folderName, type='applications
   );
 
   cy.get(commonSelectors.modalComponent).should("not.exist");
-
-  //There is a bug uncomment after bug fix
-  cy.get(commonSelectors.empytyFolderImage).should("be.visible");
   cy.wait(1000);
-  cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
-    "have.text",
-    commonText.emptyFolderText
-  );
+
+  cy.get(config.folderEmptyStateImageSelector).should("be.visible");
 
   selectFolderFromDropdown(`all ${type}`);
   deleteFolder(folderName);
