@@ -102,18 +102,20 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
         onClose();
       },
       (error) => {
+        const rawError = error?.error || error?.message;
         const errorMessage =
-          error?.error ||
-          error?.message ||
-          `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
+          typeof rawError === 'object'
+            ? rawError.message
+            : rawError || `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
         toast.error(errorMessage);
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',
           key: 'Promote Failed',
           message: errorMessage,
-          description: errorMessage,
-          error: { message: errorMessage, description: errorMessage },
+          description: errorDetails || errorMessage,
+          error: { message: errorMessage, description: errorDetails || errorMessage },
           errorTarget: 'Version',
           timestamp: new Date().toISOString(),
         });
