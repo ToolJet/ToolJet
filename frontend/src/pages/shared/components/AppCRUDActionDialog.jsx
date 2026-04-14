@@ -65,7 +65,6 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
 
     if (inputValue.length < 50) {
       const error = validateName(trimmedName, 'App', false);
-      // TODO: I think their is loop hole for this case in case where app name is pre poluated like rename, clone etc
       setErrorText(error?.errorMsg || '');
     }
   };
@@ -79,7 +78,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
         createNewApp(
           {
             body: { name: formattedAppName, type: appType, icon: sample(defaultAppIconList), prompt: undefined },
-            isCommitEnabled: false, // TODO: This should not be hardcoded
+            // This will remain false in every case post git sync branching implementation change refer: https://github.com/ToolJet/ToolJet/pull/15361/changes#diff-9cdf23554d644a3e168cc72f2f6eab4912bd0ca96c499fa3e894888959c6ff04
+            isCommitEnabled: false,
           },
           { onError: handle409Error, onSuccess: handleResetState }
         );
@@ -106,6 +106,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
               organization_id: authenticationService?.currentSessionValue?.current_organization_id,
             },
             appType,
+            // This will remain false in every case post git sync branching implementation change refer: https://github.com/ToolJet/ToolJet/pull/15361/changes#diff-9cdf23554d644a3e168cc72f2f6eab4912bd0ca96c499fa3e894888959c6ff04
+            isCommitEnabled: false,
           },
           { onError: handle409Error, onSuccess: handleResetState }
         );
@@ -146,7 +148,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
               { style: { maxWidth: '425px' } }
             );
 
-            onClose(); // TODO: Confirm this action
+            onClose();
             return;
           }
 
@@ -162,7 +164,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
 
           if (!isEmpty(importResourceResponse.imports.app)) {
             navigate(`/${getWorkspaceId()}/apps/${importResourceResponse.imports.app[0].id}`, {
-              state: { commitEnabled: false }, // TODO: false should not be hardcoded
+              // This will remain false in every case post git sync branching implementation change refer: https://github.com/ToolJet/ToolJet/pull/15361/changes#diff-9cdf23554d644a3e168cc72f2f6eab4912bd0ca96c499fa3e894888959c6ff04
+              state: { commitEnabled: false },
             });
           } else if (!isEmpty(importResourceResponse.imports.tooljet_database)) {
             navigate(`/${getWorkspaceId()}/database`);
@@ -213,7 +216,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
             dependentPlugins,
             shouldAutoImportPlugin: Boolean(dependentPlugins?.length),
             appTypeDisplayName,
-            isCommitEnabled: false, // TODO: This should not be hardcoded
+            // This will remain false in every case post git sync branching implementation change refer: https://github.com/ToolJet/ToolJet/pull/15361/changes#diff-9cdf23554d644a3e168cc72f2f6eab4912bd0ca96c499fa3e894888959c6ff04
+            isCommitEnabled: false,
           },
           {
             onError: (error) => {

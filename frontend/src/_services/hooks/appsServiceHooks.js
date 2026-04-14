@@ -71,8 +71,7 @@ export function useCloneApp() {
       });
 
       navigate(`/${getWorkspaceId()}/apps/${response?.imports?.app[0]?.id}`, {
-        // TODO: Pass actual commit Enabled value later on, for timebeing have passed as false
-        state: { commitEnabled: false },
+        state: { commitEnabled: variables?.isCommitEnabled ?? false },
       });
     },
   });
