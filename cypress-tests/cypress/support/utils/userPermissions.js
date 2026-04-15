@@ -5,6 +5,8 @@ import { groupsSelector } from "Constants/selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 import { versionSwitcherSelectors } from "Constants/selectors/version";
 import { multiEnvSelector } from "Constants/selectors/eeCommon";
+import { onboardingSelectors } from "Selectors/onboarding";
+import { commonText } from "Texts/common";
 
 export const constantsOperations = {
   createConstant: (name, value) => {
@@ -139,7 +141,7 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
   cy.get(groupsSelector.granularLink).click();
 
   cy.get(groupsSelector.granularAccessPermission).within(() => {
-    cy.get(groupsSelector.environmentTags).should('be.visible');
+    cy.get(groupsSelector.environmentTagsContainer).should('be.visible');
     cy.get('.environment-tag').should('have.length', environmentTags.length);
     cy.get('.environment-tag').each(($el, index) => {
       cy.wrap($el).should('have.text', environmentTags[index]);
@@ -282,4 +284,23 @@ export const verifyPreviewURLAccess = (envNames, { appId, componentName, version
         .and('contain.text', 'Restricted access');
     }
   });
+
+};
+
+export const signup = (name, email) => {
+  cy.get(commonSelectors.createAnAccountLink, { timout: 10000 }).click();
+  cy.wait(2000);
+  cy.get(onboardingSelectors.nameInput, { timeout: 1000 }).should(
+    "not.be.disabled",
+  );
+  cy.get(onboardingSelectors.nameInput).clear();
+  cy.get(onboardingSelectors.nameInput).type(name);
+
+  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+  cy.clearAndType(
+    onboardingSelectors.loginPasswordInput,
+    commonText.password,
+    { timeout: 10000 },
+  );
+  cy.get(commonSelectors.signUpButton).click();
 };
