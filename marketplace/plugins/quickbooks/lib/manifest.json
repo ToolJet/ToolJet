@@ -7,8 +7,11 @@
     "name": "QuickBooks",
     "kind": "quickbooks",
     "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
-    "options": { "client_secret": { "type": "string", "encrypted": true } },
-    "customTesting": true
+    "options": {
+      "client_id": { "type": "string" },
+      "client_secret": { "type": "string", "encrypted": true }
+    },
+    "customTesting": false
   },
   "defaults": {
     "access_token_custom_headers": { "value": [["Content-Type", "application/x-www-form-urlencoded"]] },
@@ -32,14 +35,7 @@
         "allowed_grant_types": ["authorization_code"],
         "allowed_scope_field": true
       }
-    },
-    "company_id": {
-      "key": "company_id",
-      "label": "Company ID (Realm ID)",
-      "type": "text",
-      "description": "Your QuickBooks company's Realm ID. Found in your QuickBooks developer account.",
-      "placeholder": "Enter your Company ID"
     }
   },
-  "required": ["client_id", "client_secret", "scopes", "company_id"]
+  "required": ["client_id", "client_secret", "scopes"]
 }

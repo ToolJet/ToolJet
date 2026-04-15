@@ -1,8 +1,9 @@
-import { QueryError, QueryService, OAuthUnauthorizedClientError, ConnectionTestResult } from '@tooljet-marketplace/common';
+import { QueryError, QueryService, OAuthUnauthorizedClientError } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, QueryResult } from './types';
 import got from 'got';
+import crypto from 'crypto';
 
-const BASE_URL = 'https://quickbooks.api.intuit.com';
+const SANDBOX_URL = 'https://sandbox-quickbooks.api.intuit.com';
 const TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 
 export default class QuickBooks implements QueryService {
@@ -14,22 +15,20 @@ export default class QuickBooks implements QueryService {
     const clientId = source_options?.client_id?.value;
 
     if (!clientId) {
-      const errorMessage = 'Missing OAuth credentials: "client_id" not provided.';
-      const errorDetails = {
-        message: errorMessage,
-        name: 'InvalidConfigurationError',
-        code: 'MISSING_OAUTH_CREDENTIALS',
-        missing: { clientId: true },
-      };
-      throw new QueryError('Invalid configuration', errorMessage, errorDetails);
+      throw new QueryError(
+        'Invalid configuration',
+        'Missing OAuth credentials: "client_id" not provided.',
+        { code: 'MISSING_OAUTH_CREDENTIALS' }
+      );
     }
 
     const scope = encodeURIComponent(source_options?.scopes?.value || '');
     const redirectUri = `${fullUrl}oauth2/authorize`;
+    const state = crypto.randomUUID();
 
     return (
       `https://appcenter.intuit.com/connect/oauth2?response_type=code&client_id=${clientId}` +
-      `&redirect_uri=${redirectUri}&scope=${scope}&access_type=offline`
+      `&redirect_uri=${redirectUri}&scope=${scope}&state=${state}&access_type=offline`
     );
   }
 
@@ -52,6 +51,8 @@ export default class QuickBooks implements QueryService {
     const clientSecret = getOption('client_secret');
     const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
+    console.log('[QuickBooks] Token exchange — redirectUri:', redirectUri);
+
     const data = new URLSearchParams({
       code: authCode,
       grant_type: 'authorization_code',
@@ -70,25 +71,17 @@ export default class QuickBooks implements QueryService {
       });
 
       const tokenResponse = response.body as { access_token: string; refresh_token: string };
+      console.log('[QuickBooks] Token exchange successful, access_token present:', !!tokenResponse.access_token);
 
       return [
         ['access_token', tokenResponse.access_token],
         ['refresh_token', tokenResponse.refresh_token],
       ];
     } catch (error: any) {
-      let parsed;
-      try {
-        parsed = error?.response?.body ? JSON.parse(error.response.body) : error;
-      } catch {
-        parsed = error?.response?.body || error;
-      }
-      const errorMessage = parsed?.error || error?.message || 'Failed to exchange token with QuickBooks';
-      const errorDetails = {
-        message: errorMessage,
-        name: 'QuickBooksTokenExchangeError',
-        code: parsed?.code || 'QUICKBOOKS_TOKEN_EXCHANGE_FAILED',
-      };
-      throw new QueryError('Failed to retrieve access tokens', errorMessage, errorDetails);
+      const parsed = error?.response?.body || error;
+      const errorMessage = typeof parsed === 'object' ? (parsed?.error || JSON.stringify(parsed)) : (error?.message || 'Token exchange failed');
+      console.error('[QuickBooks] Token exchange failed:', errorMessage, 'status:', error?.response?.statusCode);
+      throw new QueryError('Failed to retrieve access tokens', errorMessage, { status: error?.response?.statusCode, response: parsed });
     }
   }
 
@@ -96,14 +89,7 @@ export default class QuickBooks implements QueryService {
     const refreshTokenValue = sourceOptions['refresh_token'];
 
     if (!refreshTokenValue) {
-      const errorMessage = 'Missing OAuth refresh_token in source options';
-      const errorDetails = {
-        message: errorMessage,
-        name: 'UnauthorizedError',
-        code: 'MISSING_REFRESH_TOKEN',
-        missing: { refresh_token: true },
-      };
-      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+      throw new QueryError('Query could not be completed', 'Missing refresh_token', { code: 'MISSING_REFRESH_TOKEN' });
     }
 
     const clientId = sourceOptions.client_id;
@@ -130,39 +116,30 @@ export default class QuickBooks implements QueryService {
       if (result.access_token) {
         return {
           access_token: result.access_token,
-          refresh_token: result.refresh_token,
+          refresh_token: result.refresh_token || refreshTokenValue, // preserve existing if not reissued
         };
-      } else {
-        const errorMessage = 'Access token not found in QuickBooks response';
-        const errorDetails = {
-          response: result,
-          status: response.statusCode,
-        };
-        throw new QueryError('QuickBooksTokenError', errorMessage, errorDetails);
       }
+
+      throw new QueryError('QuickBooksTokenError', 'Access token not found in response', { response: result });
     } catch (error: any) {
-      let parsed: any;
-
-      try {
-        parsed = error?.response?.body ? JSON.parse(error.response.body) : error;
-      } catch {
-        parsed = error?.response?.body || error;
-      }
-
-      const errorMessage =
-        parsed?.error_description || parsed?.error || error?.message || 'QuickBooks token refresh failed';
-
-      const errorDetails = {
-        status: error?.response?.statusCode || null,
-        response: parsed,
-      };
-      throw new QueryError('QuickBooksTokenRefreshError', errorMessage, errorDetails);
+      if (error instanceof QueryError) throw error;
+      const parsed = error?.response?.body || error;
+      const errorMessage = typeof parsed === 'object' ? (parsed?.error_description || parsed?.error || JSON.stringify(parsed)) : error?.message;
+      console.error('[QuickBooks] Token refresh failed:', errorMessage);
+      throw new QueryError('QuickBooksTokenRefreshError', errorMessage, { status: error?.response?.statusCode, response: parsed });
     }
   }
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const accessToken = sourceOptions['access_token'];
-    const companyId = sourceOptions['company_id']?.value || sourceOptions['company_id'];
+
+    if (!accessToken) {
+      throw new QueryError(
+        'Authentication required',
+        'No access token found. Please connect to QuickBooks first.',
+        { code: 'MISSING_ACCESS_TOKEN' }
+      );
+    }
 
     const operation = queryOptions?.operation?.toLowerCase?.();
     const path = queryOptions['path'];
@@ -170,16 +147,13 @@ export default class QuickBooks implements QueryService {
     const queryParams = queryOptions['params']?.['query'] || {};
     const bodyParams = queryOptions['params']?.['request'] || {};
 
-    // Build URL, replacing path params
-    let url = `${BASE_URL}${path}`;
+    // Build URL — always use sandbox for development apps
+    let url = `${SANDBOX_URL}${path}`;
     for (const param in pathParams) {
       url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
     }
 
-    // Replace {companyid} with the company_id from sourceOptions
-    if (companyId) {
-      url = url.replace('{companyid}', encodeURIComponent(companyId));
-    }
+    console.log('[QuickBooks] Request:', operation?.toUpperCase(), url);
 
     const requestOptions: any = {
       method: operation,
@@ -193,40 +167,28 @@ export default class QuickBooks implements QueryService {
     if (queryParams && Object.keys(queryParams).length > 0) {
       const searchParams = new URLSearchParams();
       Object.entries(queryParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            (value as any[]).forEach((v) => searchParams.append(key, String(v)));
-          } else {
-            searchParams.append(key, String(value));
-          }
+        if (value !== undefined && value !== null && value !== '') {
+          searchParams.append(key, String(value));
         }
       });
-      requestOptions.searchParams = searchParams;
+      if (searchParams.toString()) {
+        requestOptions.searchParams = searchParams;
+      }
     }
 
     // Add body for non-GET/DELETE operations
-    if (operation && !['get', 'delete'].includes(operation)) {
-      if (bodyParams && Object.keys(bodyParams).length > 0) {
-        requestOptions.json = bodyParams;
-      }
+    if (operation && !['get', 'delete'].includes(operation) && bodyParams && Object.keys(bodyParams).length > 0) {
+      requestOptions.json = bodyParams;
     }
 
     try {
       const response = await got(url, requestOptions);
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
-      return {
-        status: 'ok',
-        data: result,
-      };
+      return { status: 'ok', data: result };
     } catch (error: any) {
-      const statusCode =
-        error.response?.statusCode ||
-        error.description?.statusCode ||
-        error.data?.statusCode ||
-        error.statusCode ||
-        error.data?.response?.statusCode ||
-        error.data?.error?.statusCode ||
-        error.data?.error?.response?.statusCode;
+      const statusCode = error?.response?.statusCode;
+
+      console.error('[QuickBooks] API error:', statusCode, error?.response?.body?.substring?.(0, 500) || error?.message);
 
       if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('OAuth token expired or invalid', error.message, error);
@@ -243,52 +205,14 @@ export default class QuickBooks implements QueryService {
         parsed?.Fault?.Error?.[0]?.Detail ||
         parsed?.Fault?.Error?.[0]?.Message ||
         parsed?.message ||
+        error?.message ||
         'QuickBooks API request failed';
 
-      const errorDetails = {
-        statusCode: error?.response?.statusCode,
+      throw new QueryError('Query execution failed', errorMessage, {
+        statusCode,
         fault: parsed?.Fault,
-        message: parsed?.message || parsed,
         code: error?.code,
-      };
-
-      throw new QueryError('Query execution failed', errorMessage, errorDetails);
-    }
-  }
-
-  async testConnection(sourceOptions: any): Promise<ConnectionTestResult> {
-    const accessToken = sourceOptions['access_token'];
-    const companyId = sourceOptions['company_id']?.value || sourceOptions['company_id'];
-
-    if (!accessToken) {
-      return { status: 'failed', message: 'Access token is missing. Please authenticate with QuickBooks.' };
-    }
-
-    if (!companyId) {
-      return { status: 'failed', message: 'Company ID is missing. Please provide a valid Company ID.' };
-    }
-
-    try {
-      await got(`${BASE_URL}/v3/company/${encodeURIComponent(companyId)}/companyinfo/${encodeURIComponent(companyId)}`, {
-        method: 'get',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
       });
-
-      return { status: 'ok' };
-    } catch (error: any) {
-      const statusCode = error?.response?.statusCode;
-      let errorMessage = 'Failed to connect to QuickBooks';
-
-      if (statusCode === 401 || statusCode === 403) {
-        errorMessage = 'OAuth token expired or invalid. Please re-authenticate.';
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-
-      return { status: 'failed', message: errorMessage };
     }
   }
 }
