@@ -52,6 +52,8 @@ export interface Terms {
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
+        canvasPageHeader?: boolean;
+        canvasPageFooter?: boolean;
       };
     };
     permissions: {
@@ -96,5 +98,6 @@ export interface Terms {
   };
   ai?: {
     apiKey?: string;
+    plan?: 'byok' | 'selfhostai' | 'credits';
   };
 }
