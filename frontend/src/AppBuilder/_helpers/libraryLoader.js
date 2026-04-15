@@ -36,7 +36,7 @@ function executeUMD(source) {
   // Priority: AMD result > reassigned module.exports > properties added to exports
   if (amdResult != null) return amdResult;
   if (module.exports !== exports) return module.exports; // was reassigned (e.g. module.exports = factory())
-  if (Object.keys(exports).length > 0) return exports;  // properties were added to original object
+  if (Object.keys(exports).length > 0) return exports; // properties were added to original object
   return null;
 }
 
@@ -54,7 +54,7 @@ export async function loadLibraryFromURL(url) {
 }
 
 /**
- * Initializes all JS libraries from the globalSettings.jsLibraries array.
+ * Initializes all JS libraries from the globalSettings.libraries.javascript array.
  * Returns a registry object mapping library names to their exports.
  */
 export async function initializeLibraries(jsLibraries = []) {

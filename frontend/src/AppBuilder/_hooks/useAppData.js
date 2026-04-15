@@ -564,11 +564,12 @@ const useAppData = (
   useEffect(() => {
     if (isComponentLayoutReady) {
       mode === 'edit' && initSuggestions(moduleId);
+
       const loadLibrariesAndRun = async () => {
         // Load JS libraries and preloaded JS from globalSettings before running queries
         const globalSettings = useStore.getState().globalSettings;
-        const jsLibraries = globalSettings?.jsLibraries || [];
-        const preloadedJS = globalSettings?.preloadedJS || '';
+        const jsLibraries = globalSettings?.libraries?.javascript || [];
+        const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
         if (jsLibraries.length > 0 || preloadedJS) {
           setJsLibraryLoading(true);
@@ -591,6 +592,7 @@ const useAppData = (
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       };
+
       loadLibrariesAndRun();
     }
   }, [isComponentLayoutReady, moduleId, mode]);
