@@ -24,12 +24,15 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     const current = authenticationService.currentSessionValue || {};
     const isAdmin = !!current.admin;
     const isBuilder = !!current.user_permissions?.is_builder;
+    const isGroupAdmin = !!current.is_group_admin;
     return {
       admin: isAdmin,
       isBuilder,
+      isGroupAdmin,
       wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
       // admins and builders only on EE or Cloud
       canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+      canManageGroups: isAdmin || isGroupAdmin,
     };
   });
 
@@ -47,13 +50,16 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       const isAdmin = !!newOrd?.admin;
       const isBuilder = !!newOrd?.user_permissions?.is_builder;
+      const isGroupAdmin = !!newOrd?.is_group_admin;
       const editionNow = fetchEdition();
       const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
       setConditionObj({
         admin: isAdmin,
         isBuilder,
+        isGroupAdmin,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
         canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
+        canManageGroups: isAdmin || isGroupAdmin,
       });
     });
 
@@ -159,7 +165,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
 function constructWorkspaceSettingsLinks(extraLinks) {
   const commonLinks = [
     { id: 'users', name: 'Users', route: 'users', conditions: ['admin'] },
-    { id: 'groups', name: 'Groups', route: 'groups', conditions: ['admin'] },
+    { id: 'groups', name: 'Groups', route: 'groups', conditions: ['canManageGroups'] },
     {
       id: 'workspace-login',
       name: 'Workspace login',
