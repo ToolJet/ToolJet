@@ -18,7 +18,7 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
-import { SuspenseCountProvider } from './SuspenseTracker';
+import { SuspenseCountProvider, TrackedSuspense } from './SuspenseTracker';
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
 const EditorSelecto = React.lazy(() => import('./Selecto'));
@@ -264,7 +264,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
-                      <Suspense fallback={null}>
+                      <TrackedSuspense fallback={null}>
                         {isMobileLayout ? (
                           <MobileLayout
                             pageKey={pageKey}
@@ -307,7 +307,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                             canvasHeaderHeight={canvasHeaderHeight}
                           />
                         )}
-                      </Suspense>
+                      </TrackedSuspense>
                     </SuspenseCountProvider>
                   )}
 
