@@ -19,4 +19,5 @@ export interface IAppsService {
   findTooljetDbTables(appId: string): Promise<{ table_id: string }[]>;
   getOne(app: App, user: User): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;
+  getAppAuthenticationConfig(slug: string): Promise<any>;
 }

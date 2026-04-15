@@ -115,7 +115,7 @@ export const RootRouter = () => {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Viewer routes - ISOLATED BUNDLE */}
-            {/* These routes ONLY load ViewerApp.jsx which imports viewer code */}
+            {/* App-scoped auth routes (login/signup) are lazy-loaded inside ViewerApp */}
             <Route path="/applications/*" element={<ViewerApp />} />
             <Route path="/embed-apps/*" element={<ViewerApp />} />
 
