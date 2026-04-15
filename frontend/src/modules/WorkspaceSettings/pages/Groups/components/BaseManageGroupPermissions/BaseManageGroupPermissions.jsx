@@ -200,19 +200,32 @@ class BaseManageGroupPermissions extends React.Component {
       .then((data) => {
         const groupPermissions = data.groupPermissions;
         const defaultGroups = this.sortDefaultGroup(groupPermissions.filter((group) => group.type === 'default'));
-        const currentGroupId =
-          type == 'admin'
-            ? defaultGroups[0].id
-            : type == 'current'
-            ? this.findCurrentGroupDetails(groupPermissions)
-            : groupPermissions.at(-1).id;
+        const customGroups = groupPermissions.filter((group) => group.type === 'custom');
+        let currentGroupId;
+        let selectedGroupName;
+        if (type == 'admin') {
+          if (defaultGroups.length > 0) {
+            currentGroupId = defaultGroups[0].id;
+            selectedGroupName = this.humanizeifDefaultGroupName(defaultGroups[0].name);
+          } else {
+            currentGroupId = customGroups[0]?.id;
+            selectedGroupName = customGroups[0] ? this.humanizeifDefaultGroupName(customGroups[0].name) : '';
+          }
+        } else if (type == 'current') {
+          currentGroupId = this.findCurrentGroupDetails(groupPermissions);
+          selectedGroupName = this.state.selectedGroup;
+        } else {
+          currentGroupId = groupPermissions.at(-1)?.id;
+          selectedGroupName = this.state.selectedGroup;
+        }
         this.setState(
           {
-            groups: groupPermissions.filter((group) => group.type === 'custom'),
+            groups: customGroups,
             defaultGroups: defaultGroups,
-            filteredGroup: groupPermissions.filter((group) => group.type === 'custom'),
+            filteredGroup: customGroups,
             isLoading: false,
             selectedGroupPermissionId: currentGroupId,
+            selectedGroup: selectedGroupName,
             selectedGroupObject: groupPermissions.find((group) => group.id === currentGroupId),
           },
           callback
@@ -405,6 +418,7 @@ class BaseManageGroupPermissions extends React.Component {
     } = this.state;
 
     const { featureAccess, isFeatureEnabled, isTrial } = this.props;
+    const isAdmin = authenticationService.currentSessionValue?.admin;
     const isValidLicense = featureAccess?.licenseStatus.isLicenseValid;
     const planType = featureAccess?.licenseStatus?.licenseType;
 
@@ -598,7 +612,7 @@ class BaseManageGroupPermissions extends React.Component {
               <p className="tj-text" data-cy="page-title">
                 {groups?.length} Groups
               </p>
-              {!showNewGroupForm && !showGroupNameUpdateForm && (
+              {isAdmin && !showNewGroupForm && !showGroupNameUpdateForm && (
                 <LicenseTooltip
                   limits={featureAccess}
                   feature={'Custom groups'}
@@ -779,28 +793,34 @@ class BaseManageGroupPermissions extends React.Component {
                           ) : (
                             <div style={{ width: '20px' }}></div>
                           )}
-                          <LicenseTooltip
-                            limits={featureAccess}
-                            feature={'Custom groups'}
-                            noTooltipIfValid={true}
-                            isAvailable={isFeatureEnabled}
-                            placement={'right'}
-                            customMessage={'Custom groups are not available in your plan'}
-                          >
-                            <ButtonSolid
-                              onClick={(e) => {
-                                e.preventDefault();
-                                this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
-                              }}
-                              size="sm"
-                              fill="#889096"
-                              rightIcon="plus"
-                              iconWidth="20"
-                              className="create-group-custom"
-                              disabled={!isFeatureEnabled}
-                              data-cy="create-new-group-button-icon"
-                            />
-                          </LicenseTooltip>
+                          {isAdmin && (
+                            <LicenseTooltip
+                              limits={featureAccess}
+                              feature={'Custom groups'}
+                              noTooltipIfValid={true}
+                              isAvailable={isFeatureEnabled}
+                              placement={'right'}
+                              customMessage={'Custom groups are not available in your plan'}
+                            >
+                              <ButtonSolid
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  this.setState({
+                                    newGroupName: null,
+                                    showNewGroupForm: true,
+                                    isSaveBtnDisabled: true,
+                                  });
+                                }}
+                                size="sm"
+                                fill="#889096"
+                                rightIcon="plus"
+                                iconWidth="20"
+                                className="create-group-custom"
+                                disabled={!isFeatureEnabled}
+                                data-cy="create-new-group-button-icon"
+                              />
+                            </LicenseTooltip>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -856,7 +876,7 @@ class BaseManageGroupPermissions extends React.Component {
                                 ? this.humanizeifDefaultGroupName(permissionGroup.name)
                                 : 'Custom groups are available only in paid plans'
                             }
-                            overLayComponent={permissionGroup.disabled ? null : this.renderPopoverContent}
+                            overLayComponent={!isAdmin || permissionGroup.disabled ? null : this.renderPopoverContent}
                             className="groups-folder-list"
                             dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
                               .toLowerCase()
