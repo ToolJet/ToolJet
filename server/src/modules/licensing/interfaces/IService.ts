@@ -25,6 +25,10 @@ export interface ILicenseOrganizationService {
 }
 
 export abstract class LicenseInitService {
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   * Used in: 1720434737529, 1742369617678, 1720352990850
+   */
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;
