@@ -66,6 +66,10 @@ class BaseManageGroupPermissionResources extends React.Component {
       updateParam: {},
       hasEndUserMembers: false, // Whether this custom group contains any end-users
       endUserIds: null, // Cache of end-user IDs to avoid repeated API calls
+      groupAdmins: [],
+      addableAdmins: [],
+      isLoadingAdmins: false,
+      selectedAdminUserId: null,
     };
     this.userListRef = React.createRef();
     this.searchDebounceTimer = null;
@@ -499,6 +503,59 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ updateParam });
   };
 
+  fetchGroupAdmins = () => {
+    this.setState({ isLoadingAdmins: true });
+    groupPermissionV2Service
+      .getGroupAdmins(this.props.groupPermissionId)
+      .then((data) => {
+        this.setState({ groupAdmins: Array.isArray(data) ? data : [], isLoadingAdmins: false });
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+        this.setState({ isLoadingAdmins: false });
+      });
+  };
+
+  fetchAddableAdmins = () => {
+    groupPermissionV2Service
+      .getAddableAdmins(this.props.groupPermissionId)
+      .then((data) => {
+        this.setState({ addableAdmins: Array.isArray(data) ? data : [] });
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  assignAdmin = () => {
+    const { selectedAdminUserId } = this.state;
+    if (!selectedAdminUserId) return;
+    groupPermissionV2Service
+      .assignGroupAdmin(this.props.groupPermissionId, selectedAdminUserId)
+      .then(() => {
+        toast.success('Group admin assigned');
+        this.setState({ selectedAdminUserId: null });
+        this.fetchGroupAdmins();
+        this.fetchAddableAdmins();
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  revokeAdmin = (adminId) => {
+    groupPermissionV2Service
+      .revokeGroupAdmin(this.props.groupPermissionId, adminId)
+      .then(() => {
+        toast.success('Group admin removed');
+        this.fetchGroupAdmins();
+        this.fetchAddableAdmins();
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
   renderFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
     const showConsolidated = isCE;
     const folderCRUD = groupPermission.folderCreate || groupPermission.folderDelete;
@@ -828,6 +885,28 @@ class BaseManageGroupPermissionResources extends React.Component {
                     Granular access
                   </span>
                 </a>
+                {groupPermission?.type === 'custom' && !isCE && (
+                  <a
+                    onClick={() => {
+                      const isAdmin = authenticationService.currentSessionValue?.admin;
+                      this.setState({ currentTab: 'groupAdmins', showUserSearchBox: false }, () => {
+                        this.fetchGroupAdmins();
+                        if (isAdmin) this.fetchAddableAdmins();
+                      });
+                      this.setSelectedUsers([]);
+                    }}
+                    className={cx('nav-item nav-link', { active: currentTab === 'groupAdmins' })}
+                    data-cy="group-admins-link"
+                  >
+                    <SolidIcon
+                      name="usergroup"
+                      fill={currentTab === 'groupAdmins' ? '#3E63DD' : '#C1C8CD'}
+                      className="manage-group-tab-icons"
+                      width="16"
+                    />
+                    Group Admins
+                  </a>
+                )}
               </nav>
 
               <div className="manage-groups-body">
@@ -1197,6 +1276,67 @@ class BaseManageGroupPermissionResources extends React.Component {
                       hasEndUsers={hasEndUsers}
                     />
                   </aside>
+
+                  {/* Group Admins Tab */}
+                  {currentTab === 'groupAdmins' &&
+                    (() => {
+                      const { groupAdmins, addableAdmins, isLoadingAdmins, selectedAdminUserId } = this.state;
+                      const isAdmin = authenticationService.currentSessionValue?.admin;
+                      return (
+                        <div className="tab-pane active show group-admins-tab">
+                          {isAdmin && (
+                            <div
+                              className="group-admins-assign-row"
+                              style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}
+                            >
+                              <Select
+                                options={addableAdmins.map((u) => ({
+                                  label: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
+                                  value: u.id,
+                                }))}
+                                value={selectedAdminUserId}
+                                onChange={(val) => this.setState({ selectedAdminUserId: val })}
+                                placeholder="Select a user"
+                                width="300px"
+                              />
+                              <ButtonSolid onClick={this.assignAdmin} disabled={!selectedAdminUserId} className="ml-2">
+                                Add admin
+                              </ButtonSolid>
+                            </div>
+                          )}
+                          {isLoadingAdmins ? (
+                            <Loader />
+                          ) : groupAdmins.length === 0 ? (
+                            <div className="tj-text-xsm">No group admins assigned</div>
+                          ) : (
+                            <table className="table">
+                              <thead>
+                                <tr>
+                                  <th>Name</th>
+                                  <th>Email</th>
+                                  {isAdmin && <th>Action</th>}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {groupAdmins.map((ga) => (
+                                  <tr key={ga.id}>
+                                    <td>{`${ga.user?.firstName || ''} ${ga.user?.lastName || ''}`.trim()}</td>
+                                    <td>{ga.user?.email}</td>
+                                    {isAdmin && (
+                                      <td>
+                                        <ButtonSolid variant="dangerSecondary" onClick={() => this.revokeAdmin(ga.id)}>
+                                          Remove
+                                        </ButtonSolid>
+                                      </td>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
             </div>
