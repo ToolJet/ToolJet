@@ -29,7 +29,7 @@ export class EnforceUniqueDataSourceNamesPerBranch1773229181000 implements Migra
     await queryRunner.query(`
       CREATE UNIQUE INDEX idx_unique_default_name
       ON data_source_versions (
-        LOWER(name)
+        data_source_id
       )
       WHERE is_active = true AND is_default = true
     `);

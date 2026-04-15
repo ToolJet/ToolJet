@@ -501,6 +501,37 @@
           "editorType": "extendedSingleLine",
           "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
         }
+      },
+      "bulk_upsert_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "primary_key_column": {
+          "label": "Primary key column",
+          "key": "primary_key_column",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
       }
     }
   }

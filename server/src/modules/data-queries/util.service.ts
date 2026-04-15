@@ -428,6 +428,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       dataSourceOptions.updatedAt,
       {
         schema: listTablesOptions?.schema,
+        datasetId: listTablesOptions?.datasetId,
         search: listTablesOptions?.search,
         page: listTablesOptions?.page,
         limit: listTablesOptions?.limit,

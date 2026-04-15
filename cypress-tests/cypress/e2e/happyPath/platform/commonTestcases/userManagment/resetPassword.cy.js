@@ -60,6 +60,7 @@ describe("Password reset functionality", () => {
     });
 
     // Submit email for password reset
+    cy.mhDeleteAll();
     cy.clearAndType('[data-cy="email-input-field-input"]', data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();
     cy.verifyToastMessage(
