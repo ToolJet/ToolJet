@@ -67,6 +67,9 @@ export interface Terms {
       release: boolean;
       history: boolean;
     };
+    components?: {
+      navigation?: boolean;
+    };
   };
   modules?: {
     enabled: boolean;
