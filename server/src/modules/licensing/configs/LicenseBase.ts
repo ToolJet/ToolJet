@@ -54,7 +54,7 @@ export default class LicenseBase {
   private _isGithub: boolean;
   private _isObservability: object;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
-  private _isComponentNavigation: boolean;
+  private _appComponents: Record<string, boolean> = {};
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -86,7 +86,6 @@ export default class LicenseBase {
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
-      this._isComponentNavigation = true;
       this._plan = plan;
       return;
     }
@@ -123,6 +122,9 @@ export default class LicenseBase {
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
+    this._appComponents = this._app?.components
+      ? Object.fromEntries(Object.entries(this._app.components).map(([k, v]) => [k, v ?? false]))
+      : {};
     this._isCustomGroups = this.getPermissionValue('customGroups');
     this._isObservability = licenseData?.observability;
 
@@ -147,7 +149,6 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isComponentNavigation = this._features?.['componentNavigation'] === true;
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -476,13 +477,6 @@ export default class LicenseBase {
     return this._isCustomThemes;
   }
 
-  public get componentNavigation(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.componentNavigation;
-    }
-    return this._isComponentNavigation;
-  }
-
   public get serverSideGlobalResolve(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobalResolve;
@@ -562,7 +556,6 @@ export default class LicenseBase {
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       customThemes: this.customThemes,
-      componentNavigation: this.componentNavigation,
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
@@ -592,6 +585,9 @@ export default class LicenseBase {
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
       aiPlan: this.aiPlan,
+      ...Object.fromEntries(
+        Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
+      ),
     };
   }
 
@@ -685,5 +681,12 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get appComponents(): Record<string, boolean> {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.components ?? {};
+    }
+    return this._appComponents;
   }
 }

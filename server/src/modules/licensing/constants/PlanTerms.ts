@@ -28,7 +28,6 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     serverSideGlobalResolve: false,
     scim: false,
     observability: false,
-    componentNavigation: false,
   },
   domains: [],
   workflows: {
@@ -67,6 +66,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       promote: false,
       release: false,
       history: false,
+    },
+    components: {
+      navigation: false,
     },
   },
   modules: {
