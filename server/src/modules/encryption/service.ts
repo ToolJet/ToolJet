@@ -16,6 +16,8 @@ export class EncryptionService implements IEncryptionService {
    * - 1716551121164-addSMTPConfigsToTable.ts
    * - 1681463532466-addMultipleEnvForCEcreatedApps.ts (via filterEncryptedFromOptions helper)
    * - 1683022868045-environmentDataSourceMappingFix.ts (via filterEncryptedFromOptions helper)
+   * - 1709618105785-EncryptValuesForExistingOrganizationConstants.ts
+   * - 1721236971725-MoveToolJetDatabaseTablesFromPublicToTenantSchema.ts
    */
   async encryptColumnValue(table: string, column: string, text: string): Promise<string> {
     const derivedKey = this.#computeAttributeKey(table, column);
