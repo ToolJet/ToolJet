@@ -571,7 +571,13 @@ export class OnboardingService implements IOnboardingService {
       );
       let defaultOrganization: Organization;
       /* CASE: if the user somehow get the invitation from workspace via super-admin */
-      if (defaultOrganizationUser && invitedUser.source !== SOURCE.SIGNUP) {
+      /* Only activate the default workspace when it is a DIFFERENT org from the invited one.
+         If they are the same org, the token must be preserved so the accept-invite page can use it. */
+      if (
+        defaultOrganizationUser &&
+        invitedUser.source !== SOURCE.SIGNUP &&
+        defaultOrganizationUser.organizationId !== invitedUser['invitedOrganizationId']
+      ) {
         await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
         defaultOrganization = await this.organizationRepository.fetchOrganization(
           defaultOrganizationUser.organizationId

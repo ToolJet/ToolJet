@@ -19,6 +19,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
+  const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
+  const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
+
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
     if (item === activeRightSideBarTab && !isRightSidebarPinned) {
@@ -64,8 +67,12 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         icon="propertiesstyles"
         iconOnly
         iconWidth="14"
-        tip={isAnyComponentSelected ? 'Component properties' : 'No component selected'}
-        disabled={!isAnyComponentSelected}
+        tip={
+          isAnyComponentSelected || isCanvasHeaderSelected || isCanvasFooterSelected
+            ? 'Component properties'
+            : 'No component selected'
+        }
+        disabled={!isAnyComponentSelected && !isCanvasHeaderSelected}
       >
         <PencilRuler
           width="16"
@@ -73,7 +80,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           className={`${
             activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
           }`}
-          style={{ opacity: !isAnyComponentSelected ? '0.5' : undefined }}
+          style={{
+            opacity: !isAnyComponentSelected && !isCanvasHeaderSelected && !isCanvasFooterSelected ? '0.5' : undefined,
+          }}
         />
       </SidebarItem>
       {appType !== 'module' && (
