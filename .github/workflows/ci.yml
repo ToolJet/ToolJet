@@ -162,7 +162,6 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
-      ENABLE_TOOLJET_DB: true
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
@@ -213,7 +212,6 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
-      ENABLE_TOOLJET_DB: true
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
