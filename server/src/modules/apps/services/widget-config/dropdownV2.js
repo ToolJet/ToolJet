@@ -318,7 +318,6 @@ export const dropdownV2Config = {
   exposedVariables: {
     searchText: '',
     label: 'Select',
-    selectedCaption: null,
   },
   actions: [
     {

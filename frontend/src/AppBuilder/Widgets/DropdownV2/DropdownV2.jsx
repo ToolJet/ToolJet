@@ -172,13 +172,11 @@ export const DropdownV2 = ({
   const setInputValue = (value) => {
     setCurrentValue(value);
     const _selectedOption = selectOptions.find((option) => option.value === value);
-    const selectedCaption = _selectedOption?.caption ?? null;
     setExposedVariables({
       value,
       selectedOption: _selectedOption
-        ? { ...pick(_selectedOption, ['label', 'value']), caption: selectedCaption }
+        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
         : null,
-      selectedCaption,
     });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
@@ -324,7 +322,6 @@ export const DropdownV2 = ({
       isLoading: dropdownLoadingState,
       isDisabled: disabledState,
       isMandatory: isMandatory,
-      selectedCaption: null,
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
