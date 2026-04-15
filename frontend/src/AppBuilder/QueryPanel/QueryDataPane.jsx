@@ -52,7 +52,7 @@ export const QueryDataPane = ({ darkMode }) => {
   const sortBy = useStore((state) => state.dataQuery.sortBy);
   const isFreezed = useStore((state) => state.getShouldFreeze());
   const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
-  const folders = featureAccess?.queryFolders ? allFolders : [];
+  const folders = allFolders;
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -196,7 +196,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 filteredQueryIds={dataSourcesForFilters.length > 0 ? new Set(filteredQueries.map((q) => q.id)) : null}
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
-                allowFolders={!!featureAccess?.queryFolders}
+                allowFolders
                 shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
@@ -305,7 +305,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             selectRef={selectRef}
             closePopup={() => setShowMenu(false)}
             allowNewFolder
-            queryFoldersLicensed={!!featureAccess?.queryFolders}
+            queryFoldersLicensed
           />
         </Popover>
       }

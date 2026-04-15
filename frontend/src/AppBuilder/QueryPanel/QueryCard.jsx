@@ -48,7 +48,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
-  const hasQueryFolders = useStore((state) => state?.license?.featureAccess?.queryFolders ?? false);
+  const hasQueryFolders = useStore((state) => Boolean(state.queryFolders));
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
