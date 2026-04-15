@@ -124,6 +124,7 @@ export enum LICENSE_FIELD {
   AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
   APP_HISTORY = 'appHistoryEnabled',
+  APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
   SCIM = 'scimEnabled',
   PLAN = 'plan',
   MODULES = 'modulesEnabled',
