@@ -34,16 +34,19 @@ function makeLicense(licenseData?: Partial<Terms>, expiryDate?: Date): LicenseBa
 
 describe('LicenseBase — appComponents', () => {
   it('returns BASIC_PLAN_TERMS components when license is expired', () => {
-    const license = makeLicense({
-      expiry: '2020-01-01',
-      type: LICENSE_TYPE.ENTERPRISE,
-      features: {},
-      app: {
-        pages: { enabled: true, count: 10, features: { appHeaderAndLogo: true, addNavGroup: true } },
-        permissions: { component: true, query: true, pages: true },
-        components: { navigation: true },
+    const license = makeLicense(
+      {
+        expiry: '2020-01-01',
+        type: LICENSE_TYPE.ENTERPRISE,
+        features: {},
+        app: {
+          pages: { enabled: true, count: 10, features: { appHeaderAndLogo: true, addNavGroup: true } },
+          permissions: { component: true, query: true, pages: true },
+          components: { navigation: true },
+        },
       },
-    }, EXPIRED_EXPIRY);
+      EXPIRED_EXPIRY
+    );
     // expired → IsBasicPlan = true → returns BASIC_TERMS components (navigation: false)
     expect(license.appComponents).toEqual({ navigation: false });
   });
@@ -127,16 +130,19 @@ describe('LicenseBase — features getter includes componentX keys', () => {
   });
 
   it('includes componentNavigation from BASIC_PLAN_TERMS when license is expired', () => {
-    const license = makeLicense({
-      expiry: '2020-01-01',
-      type: LICENSE_TYPE.ENTERPRISE,
-      features: {},
-      app: {
-        pages: { enabled: true, count: 10, features: { appHeaderAndLogo: true, addNavGroup: true } },
-        permissions: { component: true, query: true, pages: true },
-        components: { navigation: true },
+    const license = makeLicense(
+      {
+        expiry: '2020-01-01',
+        type: LICENSE_TYPE.ENTERPRISE,
+        features: {},
+        app: {
+          pages: { enabled: true, count: 10, features: { appHeaderAndLogo: true, addNavGroup: true } },
+          permissions: { component: true, query: true, pages: true },
+          components: { navigation: true },
+        },
       },
-    }, EXPIRED_EXPIRY);
+      EXPIRED_EXPIRY
+    );
     // expired → IsBasicPlan = true → features uses BASIC_TERMS (navigation: false)
     expect((license.features as any).componentNavigation).toBe(false);
   });
@@ -149,4 +155,3 @@ describe('LicenseBase — source basic plan terms', () => {
     expect((license.features as any).componentNavigation).toBe(false);
   });
 });
-
