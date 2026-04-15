@@ -21,13 +21,13 @@ export const processCSV = (str, delimiter = ',') => {
     const result = Papa.parse(str, {
       header: true,
       delimiter: delimiter,
+      skipEmptyLines: true,
       transformHeader: (h) => h.trim(),
     });
 
     if (result.errors.length > 0) {
       console.error('CSV parse errors:', result.errors);
     }
-
     return result.data;
   } catch (error) {
     console.error('Error processing CSV:', error);
