@@ -571,7 +571,9 @@ const useAppData = (
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        if (jsLibraries.length > 0 || preloadedJS) {
+        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
+
+        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};

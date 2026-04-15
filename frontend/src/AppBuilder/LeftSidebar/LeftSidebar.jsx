@@ -193,12 +193,14 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
-        <AppLibrariesIcon
-          darkMode={darkMode}
-          selectedSidebarItem={selectedSidebarItem}
-          handleSelectedSidebarItem={handleSelectedSidebarItem}
-          setSideBarBtnRefs={setSideBarBtnRefs}
-        />
+        {featureAccess?.appJsLibraries && (
+          <AppLibrariesIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
         <SidebarItem
           icon="settings"
           selectedSidebarItem={selectedSidebarItem}
