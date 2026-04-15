@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as hkdf from 'futoin-hkdf';
 import { IEncryptionService } from './interfaces/IService';
 
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 @Injectable()
 export class EncryptionService implements IEncryptionService {

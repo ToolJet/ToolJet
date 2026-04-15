@@ -33,7 +33,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     return App;
   }
 
-  async #findAppFromVersion(appVersionId: string): Promise<App> {
+  async _findAppFromVersion(appVersionId: string): Promise<App> {
     if (!appVersionId) throw new ForbiddenException('appVersionId is not available');
     return (
       await this.appVersionsRepository.findOneOrFail({

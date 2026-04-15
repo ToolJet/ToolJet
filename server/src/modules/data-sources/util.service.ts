@@ -979,7 +979,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    const { provider, source_options = {}, plugin_id = null, environment_id, organization_id } = getDataSourceOauthUrlDto;
+    const {
+      provider,
+      source_options = {},
+      plugin_id = null,
+      environment_id,
+      organization_id,
+    } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
 
     if (organization_id && environment_id) {

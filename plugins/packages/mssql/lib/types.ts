@@ -25,8 +25,8 @@ export interface SourceOptions {
   ssh_port?: number;
   ssh_username?: string;
   ssh_auth_type?: 'password' | 'private_key';
-  ssh_password?: string;   
-  ssh_private_key?: string; 
+  ssh_password?: string;
+  ssh_private_key?: string;
   ssh_passphrase?: string;
 }
 export type QueryOptions = {

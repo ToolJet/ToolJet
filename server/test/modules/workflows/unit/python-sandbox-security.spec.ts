@@ -83,10 +83,11 @@ function detectSeccompAvailable(): { available: boolean; reason: string } {
   try {
     const configPath = '/etc/nsjail/python-execution.cfg';
     if (fs.existsSync(configPath)) {
-      const result = execSync(
-        `nsjail --config ${configPath} -- /usr/bin/python3 -c "print('seccomp_test')" 2>&1`,
-        { timeout: 10000, encoding: 'utf-8', stdio: 'pipe' }
-      );
+      const result = execSync(`nsjail --config ${configPath} -- /usr/bin/python3 -c "print('seccomp_test')" 2>&1`, {
+        timeout: 10000,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
       // Check if seccomp policy was loaded (look for seccomp-related output or success)
       if (result.includes('seccomp_test') || result.includes('Executing')) {
         return { available: true, reason: 'nsjail seccomp test passed' };
@@ -125,7 +126,7 @@ function detectSeccompAvailable(): { available: boolean; reason: string } {
 }
 
 /**
- * Tests if cgroupv2 is available AND writable 
+ * Tests if cgroupv2 is available AND writable
  */
 function detectCgroupv2Available(): { available: boolean; writable: boolean; reason: string } {
   try {
@@ -338,7 +339,7 @@ cgroupv2: ${securityCapabilities.cgroupv2.available ? 'AVAILABLE' : 'UNAVAILABLE
 Namespaces: ${securityCapabilities.namespaces.available.join(', ') || 'none detected'}
 ========================================
 `);
-  })
+  });
 
   const skipIfNoNsjail = () => {
     if (sandboxMode !== SandboxMode.ENABLED) {
@@ -1254,8 +1255,8 @@ except MemoryError:
 
       expect(
         result.status === 'error' ||
-        result.data === undefined ||
-        result.data?.toString().includes('Memory limit enforced')
+          result.data === undefined ||
+          result.data?.toString().includes('Memory limit enforced')
       ).toBe(true);
     }, 20000);
   });
@@ -1359,7 +1360,7 @@ else:
     }, 15000);
 
     it('should handle state with special characters', async () => {
-      const result = await service.execute('result = special', { special: "quotes'and\"stuff" }, null, 10000);
+      const result = await service.execute('result = special', { special: 'quotes\'and"stuff' }, null, 10000);
 
       expect(result.status).toBe('ok');
       expect(result.data).toContain('quotes');

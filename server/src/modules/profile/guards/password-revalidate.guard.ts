@@ -1,7 +1,7 @@
 import { UserRepository } from '@modules/users/repositories/repository';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-const bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PasswordRevalidateGuard implements CanActivate {

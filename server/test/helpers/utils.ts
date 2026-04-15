@@ -67,9 +67,7 @@ export async function deleteEntities<T extends ObjectLiteral>(
  * Returns a TypeORM Repository for the given entity class.
  * Prefer findEntity/saveEntity/updateEntity for simple operations.
  */
-export function getEntityRepository<T extends ObjectLiteral>(
-  EntityClass: EntityTarget<T>
-): Repository<T> {
+export function getEntityRepository<T extends ObjectLiteral>(EntityClass: EntityTarget<T>): Repository<T> {
   const ds = getDefaultDataSource();
   return ds.getRepository(EntityClass);
 }

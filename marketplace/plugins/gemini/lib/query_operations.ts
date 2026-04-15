@@ -27,23 +27,23 @@ export async function generateText(
   });
 
   //try {
-    const response = await generativeModel.generateContent({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        maxOutputTokens: getMaxTokens(max_tokens),
-        temperature: getTemperature(temperature),
+  const response = await generativeModel.generateContent({
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: prompt }],
       },
-    });
+    ],
+    generationConfig: {
+      maxOutputTokens: getMaxTokens(max_tokens),
+      temperature: getTemperature(temperature),
+    },
+  });
 
-    return response.response.text() || 'No output received';
-  } //catch (error) {
-    //throw new Error(error?.message || 'An unexpected error occurred');
-  //}
+  return response.response.text() || 'No output received';
+} //catch (error) {
+//throw new Error(error?.message || 'An unexpected error occurred');
+//}
 //}
 
 export async function chat(
@@ -62,21 +62,21 @@ export async function chat(
   });
 
   //try {
-    let histories = [];
-    if (history) {
-      histories = JSON.parse(history);
-    }
-    const chat = await generativeModel.startChat({ 
-      history: histories,
-      generationConfig: {
-        maxOutputTokens: getMaxTokens(max_tokens),
-        temperature: getTemperature(temperature),
-      },
-     });
-    const response = await chat.sendMessage(user_prompt);
+  let histories = [];
+  if (history) {
+    histories = JSON.parse(history);
+  }
+  const chat = await generativeModel.startChat({
+    history: histories,
+    generationConfig: {
+      maxOutputTokens: getMaxTokens(max_tokens),
+      temperature: getTemperature(temperature),
+    },
+  });
+  const response = await chat.sendMessage(user_prompt);
 
-    return response.response.text() || 'No output received';
-  } //catch (error) {
-    //throw new Error(error?.message || 'An unexpected error occurred');
-  //}
+  return response.response.text() || 'No output received';
+} //catch (error) {
+//throw new Error(error?.message || 'An unexpected error occurred');
+//}
 //}

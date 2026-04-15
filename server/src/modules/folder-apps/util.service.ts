@@ -182,18 +182,18 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     const viewableAppsTotal = isAllEditable
       ? [null, ...folderAppIds]
       : hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : isAllViewable
-      ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        ? [null, ...userAppPermissions.editableAppsId]
+        : isAllViewable
+          ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+          : [
+              null,
+              ...Array.from(
+                new Set([
+                  ...userAppPermissions.editableAppsId,
+                  ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+                ])
+              ),
+            ];
 
     const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 

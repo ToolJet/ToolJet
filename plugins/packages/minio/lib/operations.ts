@@ -41,15 +41,15 @@ export async function getObject(minioClient: MinioClient, queryOptions: object):
     });
   const bufferData = await streamToBuffer(stream);
 
-  return { 
+  return {
     Body: bufferData.toString('utf-8'),
-    rawData: bufferData 
+    rawData: bufferData,
   };
 }
 
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
   let data = queryOptions['data'];
-  if(isBase64(data)){
+  if (isBase64(data)) {
     data = Buffer.from(data, 'base64');
   }
 
@@ -64,7 +64,7 @@ export async function uploadObject(minioClient: MinioClient, queryOptions: objec
 const isBase64 = (str: string) => {
   const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
   return str.length % 4 === 0 && base64Regex.test(str);
-}
+};
 
 export async function signedUrlForPut(minioClient: MinioClient, queryOptions: object): Promise<object> {
   const defaultExpiry = +queryOptions['expiresIn'] || 86400;

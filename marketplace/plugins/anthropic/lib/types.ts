@@ -1,15 +1,14 @@
-
 export type SourceOptions = {
   apiKey: string;
 };
 
 export type QueryOptions = {
-  model?: string; 
-  operation: Operation; 
-  system_prompt?: string; 
-  message?: string; 
-  temperature?: number | string; 
-  max_size?: number | string; 
+  model?: string;
+  operation: Operation;
+  system_prompt?: string;
+  message?: string;
+  temperature?: number | string;
+  max_size?: number | string;
 };
 
 //for vision operation
@@ -31,6 +30,6 @@ export type ImageSource = {
 };*/
 
 export enum Operation {
-  Chat = "chat",
-  Vision = "vision"
+  Chat = 'chat',
+  Vision = 'vision',
 }

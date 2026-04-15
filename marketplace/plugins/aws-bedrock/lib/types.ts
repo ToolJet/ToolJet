@@ -1,8 +1,4 @@
-import {
-  ModelCustomization,
-  InferenceType,
-  ModelModality,
-} from "@aws-sdk/client-bedrock";
+import { ModelCustomization, InferenceType, ModelModality } from '@aws-sdk/client-bedrock';
 
 export interface SourceOptions {
   access_key: string;
@@ -12,7 +8,7 @@ export interface SourceOptions {
 }
 
 export interface QueryOptions {
-  operation?: "generate_content" | "list_foundation_models";
+  operation?: 'generate_content' | 'list_foundation_models';
   model_id?: string;
   request_body?: any;
   content_type?: string;

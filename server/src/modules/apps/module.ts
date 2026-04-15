@@ -54,7 +54,6 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
-
     return {
       module: AppsModule,
       imports: [

@@ -14,7 +14,7 @@ import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor(protected readonly licenseTermsService: LicenseTermsService) { }
+  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(

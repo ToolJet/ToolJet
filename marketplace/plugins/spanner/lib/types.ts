@@ -14,12 +14,12 @@ export type QueryOptions = {
 };
 
 export enum Dialect {
-  Standard = "standard",
-  Postgres = "postgresql",
+  Standard = 'standard',
+  Postgres = 'postgresql',
 }
 
 export enum QueryMode {
-  Read = "read",
-  Write = "write", 
-  Schema = "schema",
+  Read = 'read',
+  Write = 'write',
+  Schema = 'schema',
 }

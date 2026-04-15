@@ -29,7 +29,6 @@ import {
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
-  isValidDomain,
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,
@@ -82,9 +81,7 @@ export class OnboardingService implements IOnboardingService {
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
-  private async getDefaultOrOldestWorkspaceOfInstance(
-    manager: EntityManager
-  ): Promise<Organization | null> {
+  private async getDefaultOrOldestWorkspaceOfInstance(manager: EntityManager): Promise<Organization | null> {
     const defaultWorkspace = await manager.findOne(Organization, {
       where: { isDefault: true },
     });
@@ -124,16 +121,23 @@ export class OnboardingService implements IOnboardingService {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
         if (
-          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+          !(await validatePasswordDomain(
+            email,
+            passwordAllowedDomains,
+            passwordRestrictedDomains,
+            this.instanceSettingsUtilService
+          ))
         ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       } else {
         // No organization provided - validate against instance-level settings
-        if (
-          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
-        ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        if (!(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))) {
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       }
 
@@ -152,7 +156,6 @@ export class OnboardingService implements IOnboardingService {
       // Find the default workspace
       const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
 
-
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
         return await this.onboardingUtilService.whatIfTheSignUpIsAtTheWorkspaceLevel(
@@ -167,7 +170,7 @@ export class OnboardingService implements IOnboardingService {
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
           const edition = getTooljetEdition();
-          const isCE = edition === 'ce'; 
+          const isCE = edition === 'ce';
           if (isCE && !defaultWorkspace.enableSignUp) {
             throw new ForbiddenException(
               'Signup is disabled for the default workspace. Please contact the workspace admin.'
@@ -196,7 +199,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-    validatePasswordServer(password); 
+    validatePasswordServer(password);
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {

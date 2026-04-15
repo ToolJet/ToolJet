@@ -17,17 +17,17 @@ export async function getChatCompletion(
 ): Promise<string | { error: string; statusCode: number }> {
   const { model, system_prompt, message, temperature, max_size } = options;
   //try {
-    const messages = JSON.parse(message)
-    const response: any = await anthropicClient.messages.create({
-      model: model || 'claude-3-5-sonnet-20241022',
-      system: system_prompt || '',
-      messages: messages,
-      max_tokens: getMaxSize(max_size),
-      temperature: getTemperature(temperature),
-    });
+  const messages = JSON.parse(message);
+  const response: any = await anthropicClient.messages.create({
+    model: model || 'claude-3-5-sonnet-20241022',
+    system: system_prompt || '',
+    messages: messages,
+    max_tokens: getMaxSize(max_size),
+    temperature: getTemperature(temperature),
+  });
 
-    return response.content; //|| (response.choices && response.choices[0]?.text) || 'No output received';
-  } /*catch (error) {
+  return response.content; //|| (response.choices && response.choices[0]?.text) || 'No output received';
+} /*catch (error) {
     throw new Error(error?.message || 'An unexpected error occurred');
   }
 }*/

@@ -7,7 +7,13 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import {
+  CreateDataQueryDto,
+  ListTablesDto,
+  UpdateDataQueryDto,
+  UpdateSourceDto,
+  UpdatingReferencesOptionsDto,
+} from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';

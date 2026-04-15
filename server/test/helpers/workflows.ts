@@ -166,11 +166,7 @@ export const createUserWorkflowPermissions = async (
 // ---------------------------------------------------------------------------
 
 /** Creates a workflow-type App for a given user. */
-export const createWorkflowForUser = async (
-  nestApp: INestApplication,
-  user: User,
-  appName: string
-): Promise<App> => {
+export const createWorkflowForUser = async (nestApp: INestApplication, user: User, appName: string): Promise<App> => {
   const ds = getDefaultDataSource();
   const appRepository = ds.getRepository(App);
 

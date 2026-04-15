@@ -79,7 +79,9 @@ describe('PythonExecutorService', () => {
       it('should preserve builtin references', () => {
         const wrappedCode = (service as any).wrapUserCode('result = open', stateFile, outputFile);
 
-        expect(wrappedCode).toContain('_open, _compile, _eval, _exec, _json_dump = open, compile, eval, exec, json.dump');
+        expect(wrappedCode).toContain(
+          '_open, _compile, _eval, _exec, _json_dump = open, compile, eval, exec, json.dump'
+        );
       });
 
       it('should use provided file paths', () => {
@@ -173,7 +175,12 @@ describe('PythonExecutorService', () => {
       it('should handle state that overwrites Python builtins', async () => {
         // State contains "open" and "json" which would overwrite builtins
         // This tests that we correctly save _open and _json_dump before state injection
-        const result = await service.execute('result = x + 1', { x: 10, open: 'overwritten', json: 'also overwritten' }, null, 10000);
+        const result = await service.execute(
+          'result = x + 1',
+          { x: 10, open: 'overwritten', json: 'also overwritten' },
+          null,
+          10000
+        );
 
         // Should still work because we saved _open/_json_dump before globals().update(state)
         expect(result.status).toBe('ok');
@@ -327,12 +334,7 @@ except FileNotFoundError:
         if (skipIfNoNsjail()) return;
 
         // The sandbox should not allow access to /app directory
-        const result = await service.execute(
-          'import os; result = os.path.exists("/app")',
-          {},
-          null,
-          10000
-        );
+        const result = await service.execute('import os; result = os.path.exists("/app")', {}, null, 10000);
 
         expect(result.status).toBe('ok');
         expect(result.data).toBe(false);

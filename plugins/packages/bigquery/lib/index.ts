@@ -184,19 +184,19 @@ export default class Bigquery implements QueryService {
       const result = await this.listTables(sourceOptions, '', '', {
         datasetId,
         search: args?.search,
-        page:   args?.page,
-        limit:  args?.limit,
+        page: args?.page,
+        limit: args?.limit,
       });
 
       const payload = (result as any)?.data ?? [];
 
       if (isPaginated) {
-        const rows       = (payload as any)?.rows ?? [];
+        const rows = (payload as any)?.rows ?? [];
         const totalCount = (payload as any)?.totalCount ?? 0;
         const formattedTables = rows.map((row: any) => ({
           label: String(row.table_name),
           value: String(row.table_name),
-          dataset_id: String(row.dataset_id),   
+          dataset_id: String(row.dataset_id),
         }));
         return { items: formattedTables, totalCount };
       }
@@ -205,17 +205,13 @@ export default class Bigquery implements QueryService {
       const formattedTables = rows.map((row: any) => ({
         label: String(row.table_name),
         value: String(row.table_name),
-        dataset_id: String(row.dataset_id),    
+        dataset_id: String(row.dataset_id),
       }));
 
       return { status: 'ok', data: formattedTables };
     }
 
-    throw new QueryError(
-      'Method not found',
-      `Method ${methodName} is not supported`,
-      {}
-    );
+    throw new QueryError('Method not found', `Method ${methodName} is not supported`, {});
   }
 
   async listTables(
@@ -226,9 +222,9 @@ export default class Bigquery implements QueryService {
   ): Promise<QueryResult> {
     try {
       const client = await this.getConnection(sourceOptions);
-      const search   = queryOptions?.search || '';
-      const page     = queryOptions?.page   || 1;
-      const limit    = queryOptions?.limit;
+      const search = queryOptions?.search || '';
+      const page = queryOptions?.page || 1;
+      const limit = queryOptions?.limit;
       const datasetId = queryOptions?.datasetId || '';
       // Decide which datasets to query
       let datasetIds: string[] = [];
@@ -246,7 +242,7 @@ export default class Bigquery implements QueryService {
           const [tables] = await client.dataset(dsId).getTables();
           return tables.map((t: any) => ({
             table_name: t.id,
-            dataset_id: dsId,         
+            dataset_id: dsId,
           }));
         })
       );
@@ -256,9 +252,7 @@ export default class Bigquery implements QueryService {
       // Apply search across all tables
       if (search) {
         const searchLower = search.toLowerCase();
-        allTables = allTables.filter((t) =>
-          t.table_name.toLowerCase().includes(searchLower)
-        );
+        allTables = allTables.filter((t) => t.table_name.toLowerCase().includes(searchLower));
       }
 
       const totalCount = allTables.length;
@@ -266,7 +260,7 @@ export default class Bigquery implements QueryService {
       // Apply pagination
       if (limit) {
         const offset = (page - 1) * limit;
-        const paged  = allTables.slice(offset, offset + limit);
+        const paged = allTables.slice(offset, offset + limit);
         return {
           status: 'ok',
           data: { rows: paged, totalCount },
@@ -283,17 +277,21 @@ export default class Bigquery implements QueryService {
     }
   }
 
-  private async _fetchDatasets(sourceOptions: SourceOptions, search = '', page?: number, limit?: number): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
+  private async _fetchDatasets(
+    sourceOptions: SourceOptions,
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
+  > {
     try {
-
       const client = await this.getConnection(sourceOptions);
 
       const [datasets] = await client.getDatasets();
 
       const searchLower = search.toLowerCase();
-      const filtered = search
-        ? datasets.filter((d: any) => d.id.toLowerCase().includes(searchLower))
-        : datasets;
+      const filtered = search ? datasets.filter((d: any) => d.id.toLowerCase().includes(searchLower)) : datasets;
 
       const totalCount = filtered.length;
 
@@ -313,43 +311,40 @@ export default class Bigquery implements QueryService {
 
       return result;
     } catch (error) {
-
       const errorMessage = error.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch datasets', errorMessage, {});
     }
   }
 
- private async _fetchTables(
+  private async _fetchTables(
     sourceOptions: SourceOptions,
     datasetId: string,
     search = '',
     page?: number,
     limit?: number
-  ): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
+  ): Promise<
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
+  > {
     try {
       const client = await this.getConnection(sourceOptions);
 
       const [tables] = await client.dataset(datasetId).getTables();
       const searchLower = search.toLowerCase();
-      const filtered = search
-        ? tables.filter((t: any) => t.id.toLowerCase().includes(searchLower))
-        : tables;
+      const filtered = search ? tables.filter((t: any) => t.id.toLowerCase().includes(searchLower)) : tables;
       const totalCount = filtered.length;
       if (limit) {
         const offset = ((page || 1) - 1) * limit;
         const paged = filtered.slice(offset, offset + limit);
 
         const result = {
-          items: paged.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id,      
-      dataset_id: datasetId })),
+          items: paged.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id, dataset_id: datasetId })),
           totalCount,
         };
 
         return result;
       }
 
-      const result = filtered.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id,      
-      dataset_id: datasetId }));
+      const result = filtered.map((t: any) => ({ value: t.id, label: t.id, table_name: t.id, dataset_id: datasetId }));
 
       return result;
     } catch (error) {

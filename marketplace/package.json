@@ -27,7 +27,7 @@
     "build": "npm run build --workspaces",
     "start:dev": "npm run build && npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
-    "lint": "eslint .  '**/*.ts'",
-    "format": "eslint . --fix '**/*.ts'"
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint .  '**/*.ts'",
+    "format": "ESLINT_USE_FLAT_CONFIG=false eslint . --fix '**/*.ts'"
   }
 }

@@ -2,16 +2,15 @@ import { URL } from 'url';
 import { QueryError } from './query.error';
 import * as dns from 'dns/promises';
 import { lookup as dnsLookup } from 'dns';
-import * as net from 'net';
 
 const CLOUD_METADATA_ENDPOINTS = [
   // AWS EC2, IBM Cloud, and OpenStack metadata endpoint (most common SSRF target)
   /^169\.254\.169\.254$/,
-  /^169\.254\.169\.253$/,        // Alternate AWS endpoint
+  /^169\.254\.169\.253$/, // Alternate AWS endpoint
 
   // Google Cloud metadata
   /^metadata\.google\.internal$/i,
-  /^169\.254\.169\.254$/,        // GCP also uses this IP
+  /^169\.254\.169\.254$/, // GCP also uses this IP
 
   // Azure metadata (uses specific headers, but block the endpoint too)
   /^169\.254\.169\.254$/,
@@ -48,7 +47,10 @@ export function getSSRFConfig(): SSRFProtectionOptions {
   // If set, parse comma-separated list of schemes to block
   const blockedSchemesEnv = process.env.SSRF_BLOCKED_SCHEMES;
   const blockedSchemes = blockedSchemesEnv
-    ? blockedSchemesEnv.split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0)
+    ? blockedSchemesEnv
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
     : [];
 
   return {
@@ -81,7 +83,7 @@ export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
   // Normalize
   const normalized = ipOrHostname.toLowerCase().trim();
 
-  return CLOUD_METADATA_ENDPOINTS.some(pattern => pattern.test(normalized));
+  return CLOUD_METADATA_ENDPOINTS.some((pattern) => pattern.test(normalized));
 }
 
 /**
@@ -102,18 +104,13 @@ function normalizeIPFormat(ip: string): string {
       // Handle single hex value (0xA9FEA9FE)
       if (!ip.includes('.')) {
         const num = parseInt(ip, 16);
-        if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
-          return [
-            (num >>> 24) & 0xFF,
-            (num >>> 16) & 0xFF,
-            (num >>> 8) & 0xFF,
-            num & 0xFF
-          ].join('.');
+        if (!isNaN(num) && num >= 0 && num <= 0xffffffff) {
+          return [(num >>> 24) & 0xff, (num >>> 16) & 0xff, (num >>> 8) & 0xff, num & 0xff].join('.');
         }
       }
       // Handle dotted hex (0xA9.0xFE.0xA9.0xFE)
-      const parts = ip.split('.').map(p => parseInt(p, 16));
-      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+      const parts = ip.split('.').map((p) => parseInt(p, 16));
+      if (parts.length === 4 && parts.every((p) => !isNaN(p) && p >= 0 && p <= 255)) {
         return parts.join('.');
       }
     } catch (e) {
@@ -124,21 +121,16 @@ function normalizeIPFormat(ip: string): string {
   // Decimal: 2852039166
   if (/^\d+$/.test(ip) && !ip.includes('.')) {
     const num = parseInt(ip, 10);
-    if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
-      return [
-        (num >>> 24) & 0xFF,
-        (num >>> 16) & 0xFF,
-        (num >>> 8) & 0xFF,
-        num & 0xFF
-      ].join('.');
+    if (!isNaN(num) && num >= 0 && num <= 0xffffffff) {
+      return [(num >>> 24) & 0xff, (num >>> 16) & 0xff, (num >>> 8) & 0xff, num & 0xff].join('.');
     }
   }
 
   // Octal: 0251.0376.0251.0376
-  if (ip.split('.').some(part => part.startsWith('0') && part.length > 1 && /^[0-7]+$/.test(part))) {
+  if (ip.split('.').some((part) => part.startsWith('0') && part.length > 1 && /^[0-7]+$/.test(part))) {
     try {
-      const parts = ip.split('.').map(p => parseInt(p, 8));
-      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+      const parts = ip.split('.').map((p) => parseInt(p, 8));
+      if (parts.length === 4 && parts.every((p) => !isNaN(p) && p >= 0 && p <= 255)) {
         return parts.join('.');
       }
     } catch (e) {
@@ -179,7 +171,7 @@ export function isPrivateIP(ip: string): boolean {
   const octets = match.slice(1, 5).map(Number);
 
   // Validate octets are in valid range
-  if (octets.some(octet => octet < 0 || octet > 255)) {
+  if (octets.some((octet) => octet < 0 || octet > 255)) {
     return false;
   }
 
@@ -305,14 +297,12 @@ export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
     }
 
     // Check if any resolved address is a private IP
-    return addresses.some(addr => isPrivateIP(addr));
+    return addresses.some((addr) => isPrivateIP(addr));
   } catch (error) {
     console.warn(`DNS resolution error for ${hostname}:`, error.message);
     return false;
   }
 }
-
-
 
 /**
  * Main SSRF validation function
@@ -332,10 +322,7 @@ export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
  * @param options - Optional SSRF protection configuration
  * @throws QueryError if URL fails validation
  */
-export async function validateUrlForSSRF(
-  urlString: string,
-  options?: SSRFProtectionOptions
-): Promise<void> {
+export async function validateUrlForSSRF(urlString: string, options?: SSRFProtectionOptions): Promise<void> {
   const config = options || getSSRFConfig();
 
   // If SSRF protection is disabled, skip validation
@@ -349,11 +336,7 @@ export async function validateUrlForSSRF(
   try {
     url = new URL(urlString);
   } catch (error) {
-    throw new QueryError(
-      'Invalid URL format',
-      'The provided URL is malformed and cannot be processed',
-      {}
-    );
+    throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
   const hostname = url.hostname.toLowerCase();
@@ -433,12 +416,12 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
   const CACHE_TTL = 60000; // 60 seconds
 
   // Return custom lookup function
-  return (hostname: string, options: any, callback: Function) => {
+  return (hostname: string, options: any, callback: (...args: any[]) => any) => {
     // Check cache first to prevent DNS rebinding between validation and connection
     const cached = dnsCache.get(hostname);
     const now = Date.now();
 
-    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+    if (cached && now - cached.timestamp < CACHE_TTL) {
       // Use cached resolution to prevent TOCTOU
       return callback(null, cached.address, cached.family);
     }
@@ -466,7 +449,7 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
       // Clean up old cache entries to prevent memory leak
       if (dnsCache.size > 1000) {
         dnsCache.forEach((value, key) => {
-          if ((now - value.timestamp) > CACHE_TTL) {
+          if (now - value.timestamp > CACHE_TTL) {
             dnsCache.delete(key);
           }
         });
@@ -557,14 +540,11 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
   if (existingOptions?.hooks) {
     ssrfOptions.hooks = {
       ...existingOptions.hooks,
-      beforeRedirect: [
-        ...(existingOptions.hooks.beforeRedirect || []),
-        beforeRedirectHook
-      ]
+      beforeRedirect: [...(existingOptions.hooks.beforeRedirect || []), beforeRedirectHook],
     };
   } else {
     ssrfOptions.hooks = {
-      beforeRedirect: [beforeRedirectHook]
+      beforeRedirect: [beforeRedirectHook],
     };
   }
 
@@ -602,11 +582,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   try {
     url = new URL(urlString);
   } catch (error) {
-    throw new QueryError(
-      'Invalid URL format',
-      'The provided URL is malformed and cannot be processed',
-      {}
-    );
+    throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
   const hostname = url.hostname.toLowerCase();

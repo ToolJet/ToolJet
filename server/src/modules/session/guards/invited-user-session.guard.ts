@@ -10,7 +10,6 @@ import { Organization } from '@entities/organization.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
 import {
   getUserErrorMessages,
-  SOURCE,
   USER_STATUS,
   WORKSPACE_STATUS,
   WORKSPACE_USER_SOURCE,

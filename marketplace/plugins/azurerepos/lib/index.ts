@@ -1,13 +1,18 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import * as azdev from "azure-devops-node-api";
-import { getAzureRepositories, getProjectPullRequests, getRepositoryBranches, getRepositoryCommits, getRepositoryPushes } from './query_operations';
-import { IGitApi } from "azure-devops-node-api/GitApi";
+import * as azdev from 'azure-devops-node-api';
+import {
+  getAzureRepositories,
+  getProjectPullRequests,
+  getRepositoryBranches,
+  getRepositoryCommits,
+  getRepositoryPushes,
+} from './query_operations';
+import { IGitApi } from 'azure-devops-node-api/GitApi';
 
 export default class Azurerepos implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
-
-    const connection = await this.getConnection(sourceOptions)
+    const connection = await this.getConnection(sourceOptions);
     const gitApi: IGitApi = await connection.getGitApi();
     const operation: Operation = queryOptions.operation;
 
@@ -43,9 +48,8 @@ export default class Azurerepos implements QueryService {
     };
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-
-    const organization: string = sourceOptions.organization_name
-    const token: string = sourceOptions.personal_access_token
+    const organization: string = sourceOptions.organization_name;
+    const token: string = sourceOptions.personal_access_token;
 
     const url = `https://dev.azure.com/${organization}`;
 
@@ -53,14 +57,11 @@ export default class Azurerepos implements QueryService {
 
     const connection = new azdev.WebApi(url, authHandler);
 
-    return connection
-
+    return connection;
   }
   async testConnection(sourceOptions: SourceOptions): Promise<any> {
-
-    const connection = await this.getConnection(sourceOptions)
+    const connection = await this.getConnection(sourceOptions);
     try {
-
       const status = await connection.connect();
 
       if (status) {
@@ -75,6 +76,4 @@ export default class Azurerepos implements QueryService {
       };
     }
   }
-
 }
-

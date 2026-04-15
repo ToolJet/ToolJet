@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  IPyPiRegistryService,
-  PythonPackageSearchResult,
-  PythonPackageInfo,
-} from '../interfaces/IPyPiRegistryService';
+import { IPyPiRegistryService, PythonPackageSearchResult, PythonPackageInfo } from '../interfaces/IPyPiRegistryService';
 
 @Injectable()
 export class PyPiRegistryService implements IPyPiRegistryService {

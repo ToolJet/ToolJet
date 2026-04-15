@@ -11,7 +11,7 @@ export class WhitelistPluginGuard implements CanActivate {
     'mysql',
     'postgresql',
     'mongodb',
-    'bigquery'
+    'bigquery',
   ]); // Start with grpcv2, easily expandable
 
   canActivate(context: ExecutionContext): boolean {

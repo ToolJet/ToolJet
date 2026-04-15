@@ -27,7 +27,7 @@ export class AppsRepository extends Repository<App> {
     let app: App;
     try {
       app = await this.findOneOrFail({ where: { slug } });
-    } catch (error) {
+    } catch {
       app = await this.findOne({
         where: { slug },
       });

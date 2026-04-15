@@ -70,6 +70,7 @@ module.exports = defineConfig([{
     }],
 
     "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-require-imports": "off",
     "@typescript-eslint/no-empty-function": 0,
     "no-unsafe-optional-chaining": "off",
 

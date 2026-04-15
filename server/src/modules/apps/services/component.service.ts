@@ -17,7 +17,7 @@ import {
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
 import { RequestContext } from '@modules/request-context/service';
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {

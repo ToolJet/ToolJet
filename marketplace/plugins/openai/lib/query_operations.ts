@@ -44,20 +44,17 @@ const getSizeEnum = (
   return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
 };*/
 
-export async function getChatCompletion(
-  openai: OpenAI,
-  options: QueryOptions
-): Promise<string | any> {
+export async function getChatCompletion(openai: OpenAI, options: QueryOptions): Promise<string | any> {
   const { model, prompt, max_tokens, temperature, stop_sequence } = options;
 
   const tokenLimit = typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens;
   const modelName = model?.toLowerCase() || '';
 
   // Identify "Existing" models that MUST use max_tokens
-  const isExistingModel = 
-    modelName.includes('gpt-4o') || 
-    modelName.includes('gpt-4.0') || 
-    modelName.includes('gpt-4-turbo') || 
+  const isExistingModel =
+    modelName.includes('gpt-4o') ||
+    modelName.includes('gpt-4.0') ||
+    modelName.includes('gpt-4-turbo') ||
     modelName.includes('gpt-3.5-turbo');
 
   const requestPayload: any = {

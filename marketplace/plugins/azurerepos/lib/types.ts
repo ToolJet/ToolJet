@@ -14,5 +14,5 @@ export enum Operation {
   GetRepoCommits = 'get_repo_commits',
   GetProjectPullRequests = 'get_project_pull_requests',
   GetRepositoryBranches = 'get_repo_branches',
-  getRepositoryPushes = 'get_repo_pushes'
+  getRepositoryPushes = 'get_repo_pushes',
 }

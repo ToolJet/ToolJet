@@ -571,9 +571,10 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 function loadEnvVars() {
-  const envFilePath = process.env.NODE_ENV === 'test'
-    ? path.resolve(process.cwd(), '../.env.test')
-    : path.resolve(process.cwd(), '../.env');
+  const envFilePath =
+    process.env.NODE_ENV === 'test'
+      ? path.resolve(process.cwd(), '../.env.test')
+      : path.resolve(process.cwd(), '../.env');
 
   if (fs.existsSync(envFilePath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envFilePath));

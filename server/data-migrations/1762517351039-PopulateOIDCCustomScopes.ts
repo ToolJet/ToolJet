@@ -4,9 +4,7 @@ import * as fs from 'fs';
 import { filePathForEnvVars } from '../scripts/database-config-utils';
 
 export class PopulateOIDCCustomScopes1762517351039 implements MigrationInterface {
-
   public async up(queryRunner: QueryRunner): Promise<void> {
-
     let data: any = process.env;
     const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
 
@@ -22,7 +20,6 @@ export class PopulateOIDCCustomScopes1762517351039 implements MigrationInterface
       return;
     }
 
- 
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = jsonb_set(

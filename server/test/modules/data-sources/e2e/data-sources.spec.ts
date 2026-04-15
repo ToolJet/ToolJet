@@ -1,14 +1,9 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createUser,
   initTestApp,
   closeTestApp,
-  createDataSource,
-  createDataSourceOption,
-  createApplicationVersion,
-  createApplication,
   ensureAppEnvironments,
   getAllEnvironments,
   createAppWithDependencies,
@@ -93,9 +88,7 @@ describe('DataSourcesController', () => {
         expect(response.body.data_sources).toBeDefined();
         expect(Array.isArray(response.body.data_sources)).toBe(true);
 
-        const found = response.body.data_sources.find(
-          (ds: any) => ds.name === 'list_test_data_source'
-        );
+        const found = response.body.data_sources.find((ds: any) => ds.name === 'list_test_data_source');
         expect(found).toBeDefined();
       });
 

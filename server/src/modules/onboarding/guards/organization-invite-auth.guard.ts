@@ -17,7 +17,7 @@ export class OrganizationInviteAuthGuard extends AuthGuard('jwt') {
     if (request?.cookies['tj_auth_token']) {
       try {
         user = await super.canActivate(context);
-      } catch (err) {
+      } catch {
         return false;
       }
       return user;
