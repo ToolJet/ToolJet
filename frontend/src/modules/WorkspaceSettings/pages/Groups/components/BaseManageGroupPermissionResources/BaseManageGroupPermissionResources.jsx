@@ -680,11 +680,15 @@ class BaseManageGroupPermissionResources extends React.Component {
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
     const { customGroups: isFeatureEnabled } = featureAccess || {};
 
+    // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
+    // and cannot change user roles (but can still add/remove users).
+    const isAdmin = !!authenticationService.currentSessionValue?.admin;
+
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
-      isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
+      !isAdmin || isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
 
     const disableNonPromoteReleasePermissions =
       disablePermissionUpdate ||
@@ -888,7 +892,6 @@ class BaseManageGroupPermissionResources extends React.Component {
                 {groupPermission?.type === 'custom' && !isCE && (
                   <a
                     onClick={() => {
-                      const isAdmin = authenticationService.currentSessionValue?.admin;
                       this.setState({ currentTab: 'groupAdmins', showUserSearchBox: false }, () => {
                         this.fetchGroupAdmins();
                         if (isAdmin) this.fetchAddableAdmins();
@@ -1028,6 +1031,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                           isRoleGroup={isRoleGroup}
                           removeUserFromGroup={this.removeUserFromGroup}
                           openChangeRoleModal={this.openChangeRoleModal}
+                          canChangeRole={isAdmin}
                           t={this.props.t}
                         />
                       ) : !showUserSearchBox ? (
@@ -1274,6 +1278,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
                       hasEndUsers={hasEndUsers}
+                      isAdmin={isAdmin}
                     />
                   </aside>
 
@@ -1281,7 +1286,6 @@ class BaseManageGroupPermissionResources extends React.Component {
                   {currentTab === 'groupAdmins' &&
                     (() => {
                       const { groupAdmins, addableAdmins, isLoadingAdmins, selectedAdminUserId } = this.state;
-                      const isAdmin = authenticationService.currentSessionValue?.admin;
                       return (
                         <div className="tab-pane active show group-admins-tab">
                           {isAdmin && (
