@@ -11,10 +11,10 @@ import {
   saveEntity,
   createGroupPermission,
 } from 'test-helper';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { GroupAdmin } from 'src/entities/group_admin.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { GROUP_PERMISSIONS_TYPE } from 'src/modules/group-permissions/constants';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupAdmin } from '@entities/group_admin.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 
 /**
  * Group Admin API | e2e tests (EE, enterprise plan).

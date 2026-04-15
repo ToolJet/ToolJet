@@ -3,7 +3,8 @@
     "moduleResolution": "node",
     "types": [
       "node",
-      "rxjs"
+      "rxjs",
+      "jest"
     ],
     "resolveJsonModule": true,
     "module": "commonjs",
@@ -38,6 +39,9 @@
       ],
       "@otel/*": [
         "src/otel/*"
+      ],
+      "test-helper": [
+        "test/test.helper.ts"
       ],
     },
   },
