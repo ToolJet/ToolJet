@@ -260,10 +260,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   isModuleMode={isModuleMode}
                 >
                   {environmentLoadingState !== 'loading' && (
-                    <SuspenseCountProvider
-                      onAllResolved={handleAllSuspenseResolved}
-                      deferCheck={isModuleMode || appType === 'module'}
-                    >
+                    // deferCheck is always enabled because we have nested TrackedSuspense
+                    // boundaries: the outer one wraps the lazy-loaded layout, and inner ones
+                    // wrap each widget inside RenderWidget. Without deferring, when the layout
+                    // chunk loads, React runs cleanup effects (layout tracker decrements to 0)
+                    // before mount effects (widget trackers increment). A synchronous check
+                    // would see pendingCount=0 in that gap and fire onAllResolved prematurely.
+                    <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved} deferCheck>
                       <TrackedSuspense fallback={null}>
                         {isMobileLayout ? (
                           <MobileLayout
