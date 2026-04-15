@@ -48,7 +48,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @Get()
   async getAll(@User() user: UserEntity): Promise<GetUsersResponse> {
     const { organizationId } = user;
-    return await this.groupPermissionsService.getAllGroup(organizationId);
+    return await this.groupPermissionsService.getAllGroup(organizationId, user);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)

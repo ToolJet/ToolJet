@@ -57,7 +57,7 @@ export interface IGroupPermissionsDuplicateService {
 export interface IGroupPermissionsService {
   create(user: User, name: string): Promise<GroupPermissions>;
   getGroup(organizationId: string, id: string): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }>;
-  getAllGroup(organizationId: string): Promise<GetUsersResponse>;
+  getAllGroup(organizationId: string, user?: User): Promise<GetUsersResponse>;
   updateGroup(id: string, user: User, updateGroupPermissionDto: UpdateGroupPermissionDto): Promise<void>;
   deleteGroup(id: string, user: User): Promise<void>;
   duplicateGroup(groupId: string, user: User, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;
