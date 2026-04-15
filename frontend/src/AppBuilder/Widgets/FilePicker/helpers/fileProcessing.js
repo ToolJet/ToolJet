@@ -21,7 +21,7 @@ export const processCSV = (str, delimiter = ',') => {
     const result = Papa.parse(str, {
       header: true,
       delimiter: delimiter,
-      skipEmptyLines: true,
+      skipEmptyLines: 'greedy',
       transformHeader: (h) => h.trim(),
     });
 
