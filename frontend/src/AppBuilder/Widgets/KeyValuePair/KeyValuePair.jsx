@@ -98,6 +98,14 @@ export const KeyValuePair = ({
 
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
+  const handleFieldClick = useCallback(
+    (fieldKey, fieldValue) => {
+      setExposedVariables({ lastClickedField: { key: fieldKey, value: fieldValue } });
+      fireEvent('onFieldClick');
+    },
+    [fireEvent, setExposedVariables]
+  );
+
   // Handle field value changes
   const handleValueChange = useCallback(
     (fieldKey, newValue) => {
@@ -125,6 +133,7 @@ export const KeyValuePair = ({
       data,
       changeSet: editedData,
       resetChanges: discardChanges,
+      lastClickedField: {},
     });
   }, [data, editedData, setExposedVariables, discardChanges]);
 
@@ -199,6 +208,7 @@ export const KeyValuePair = ({
             field={field}
             value={currentData[field.key]}
             onChange={(newValue) => handleValueChange(field.key, newValue)}
+            onFieldClick={() => handleFieldClick(field.key, currentData[field.key])}
             labelColor={labelColor}
             textColor={textColor}
             accentColor={accentColor}

@@ -435,6 +435,17 @@ export default class LicenseBase {
     return this._isGitSync;
   }
 
+  public get queryFolders(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
+    }
+
+    if (this._features?.['queryFolders'] === undefined) {
+      return false;
+    }
+    return !!this._features?.['queryFolders'];
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -584,6 +595,7 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      queryFolders: this.queryFolders,
       aiPlan: this.aiPlan,
       ...Object.fromEntries(
         Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
