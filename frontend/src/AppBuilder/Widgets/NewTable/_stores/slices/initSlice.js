@@ -51,6 +51,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
+        state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
         state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
         state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
@@ -70,6 +71,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? false;
         state.components[id].properties.enableExpandableRows = properties?.enableExpandableRows ?? false;
         state.components[id].properties.expansionHeight = properties?.expansionHeight ?? DEFAULT_EXPANSION_HEIGHT;
+        state.components[id].properties.disableRowDeselection = properties?.disableRowDeselection ?? false;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;
@@ -117,6 +119,7 @@ export const createInitSlice = (set, get) => ({
           columnTitleColor = '#6A727C',
           columnBackgroundColor = '#F6F8FA',
           padding = 'default',
+          selectedRowColor = 'var(--cc-surface2-surface)',
         } = styles;
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
@@ -135,6 +138,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.columnTitleColor = columnTitleColor;
         state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
         state.components[id].styles.containerPadding = padding;
+        state.components[id].styles.selectedRowColor = selectedRowColor;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }

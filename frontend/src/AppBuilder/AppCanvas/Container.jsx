@@ -10,7 +10,12 @@ import {
   getSubContainerWidthAfterPadding,
   getSubContainerHeightAfterPadding,
 } from './appCanvasUtils';
-import { NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  GRID_HEIGHT,
+  HOVER_CLICK_OUTLINE_BORDER,
+  PAGE_CANVAS_HEADER_FOOTER_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -123,19 +128,23 @@ const Container = React.memo(
         if (id === 'canvas') return canvasWidth;
         return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
       return realCanvasRef?.current?.offsetWidth;
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns, id]);
+    }, [gridWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
-        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        const canvasId = realCanvas?.getAttribute('data-parentId');
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
@@ -192,7 +201,7 @@ const Container = React.memo(
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
-            if (id === 'canvas') {
+            if (id === 'canvas' || componentType === 'canvas-header' || componentType === 'canvas-footer') {
               return '100%';
             }
             // For Subcontainers

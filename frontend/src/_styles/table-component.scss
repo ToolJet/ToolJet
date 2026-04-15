@@ -206,8 +206,8 @@
       }
 
       .table-row.selected {
-        --tblr-table-accent-bg: var(--indigo3, #F0F4FF) !important;
-        background: var(--indigo3, #F0F4FF) !important;
+        --tblr-table-accent-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
+        background: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
       }
 
       td {

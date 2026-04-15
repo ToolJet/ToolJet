@@ -43,6 +43,7 @@ export const TableData = ({
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
+  const disableRowDeselection = useTableStore((state) => state.getTableProperties(id)?.disableRowDeselection, shallow);
 
   useEffect(() => {
     if (allowSelection) {
@@ -125,7 +126,7 @@ export const TableData = ({
   });
 
   // Handles row click for row selection
-  const handleRowClick = (row) => {
+  const handleRowClick = (row, isCheckbox) => {
     lastClickedRowRef.current = { row: row?.original, index: row.index };
     if (!allowSelection) {
       setExposedVariables({
@@ -135,7 +136,9 @@ export const TableData = ({
       fireEvent('onRowClicked');
       return;
     }
-    // Update row selection
+    if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
+      return;
+    }
     row.toggleSelected();
   };
 
