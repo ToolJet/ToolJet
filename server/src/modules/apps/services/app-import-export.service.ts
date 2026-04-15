@@ -1334,6 +1334,38 @@ export class AppImportExportService {
         (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === importingAppVersion.id
       );
 
+      // Normalize old-format DSO dataSourceIds before the DS loop.
+      // Old git exports wrote the original workspace UUID in dso.dataSourceId instead of
+      // the DS's co_relation_id. At import time importingDataSource.id = co_relation_id,
+      // so the filter (dso.dataSourceId === importingDataSource.id) never matches →
+      // createDatasourceOption never called → all fields (encrypted + non-encrypted) empty.
+      //
+      // Strategy: find DSO groups whose dataSourceId doesn't match any importing DS id
+      // (orphans), find importing DSes that have no matched DSOs (unmatched), and remap
+      // by position when counts are equal. Reliable for single-DS apps; best-effort for
+      // multi-DS apps where export preserved the DS / DSO group order.
+      const dsIdSet = new Set(importingDataSourcesForAppVersion.map((ds: DataSource) => ds.id));
+      const orphanedDsoDataSourceIds = [
+        ...new Set(
+          importingDataSourceOptions
+            .filter((dso: any) => !dsIdSet.has(dso.dataSourceId))
+            .map((dso: any) => dso.dataSourceId as string)
+        ),
+      ];
+      const unmatchedImportingDs = importingDataSourcesForAppVersion.filter(
+        (ds: DataSource) => !importingDataSourceOptions.some((dso: any) => dso.dataSourceId === ds.id)
+      );
+      if (orphanedDsoDataSourceIds.length > 0 && orphanedDsoDataSourceIds.length === unmatchedImportingDs.length) {
+        orphanedDsoDataSourceIds.forEach((oldDsId, idx) => {
+          const targetId = unmatchedImportingDs[idx].id;
+          for (const dso of importingDataSourceOptions) {
+            if (dso.dataSourceId === oldDsId) {
+              dso.dataSourceId = targetId;
+            }
+          }
+        });
+      }
+
       // associate data sources and queries for each of the app versions
       for (const importingDataSource of importingDataSourcesForAppVersion) {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
@@ -2122,15 +2154,31 @@ export class AppImportExportService {
    });
     // if (!defaultDsv) return;
     if (!defaultDsv) {
-       defaultDsv = await manager.save(
-       manager.create(DataSourceVersion, {
-         dataSourceId: dataSource.id,
-         name: dataSource.name || 'v1',
-         isDefault: true,
-         isActive: true,
-         branchId: null,
-       })
-     );
+      defaultDsv = await manager.save(
+        manager.create(DataSourceVersion, {
+          dataSourceId: dataSource.id,
+          name: dataSource.name || 'v1',
+          isDefault: true,
+          isActive: true,
+          branchId: null,
+        })
+      );
+      // Create an empty DSVO for every org environment so the datasource page
+      // environment tabs don't crash. Without these rows the page queries
+      // DataSourceVersionOptions per env, gets nothing, and breaks.
+      // Fields will be empty — user reconfigures after import.
+      const orgEnvironments = await manager.find(AppEnvironment, {
+        where: { organizationId },
+      });
+      for (const env of orgEnvironments) {
+        await manager.save(
+          manager.create(DataSourceVersionOptions, {
+            dataSourceVersionId: defaultDsv.id,
+            environmentId: env.id,
+            options: {},
+          })
+        );
+      }
     }
 
     // Create branch-specific DSV
