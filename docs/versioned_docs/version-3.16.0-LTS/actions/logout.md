@@ -3,7 +3,7 @@ id: logout
 title: Logout
 ---
 
-This action logs the user out of the application.
+This action allows you to log out of the application (ToolJet).
 
 :::info Standalone App URLs
 If your app is accessed via a standalone URL, logging out will redirect the user back to the app-specific login page instead of the workspace login page. See [Authentication for Standalone Application URLs](/docs/development-lifecycle/release/share-app#authentication-for-standalone-application-urls) for more details.
