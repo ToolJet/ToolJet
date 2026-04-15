@@ -262,6 +262,22 @@ export default class LicenseBase {
     return !!this._app['pages']?.features?.addNavGroup;
   }
 
+  public get canvasPageHeaderEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageHeader;
+  }
+
+  public get canvasPageFooterEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageFooter;
+  }
+
   public get moduleEnabled(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.modules?.enabled;
@@ -558,6 +574,8 @@ export default class LicenseBase {
       customGroups: this.customGroups,
       appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
       appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      canvasPageHeaderEnabled: this.canvasPageHeaderEnabled,
+      canvasPageFooterEnabled: this.canvasPageFooterEnabled,
       appPagesEnabled: this.appPagesEnabled,
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,

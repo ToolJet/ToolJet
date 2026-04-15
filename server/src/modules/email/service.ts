@@ -159,12 +159,16 @@ export class EmailService implements IEmailService {
   }
 
   async sendPasswordResetEmail(payload: SendPasswordResetEmailPayload) {
-    const { to, token, firstName, organizationId } = payload;
+    const { to, token, firstName, organizationId, redirectTo } = payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const effectiveHost = this.stripTrailingSlash(host);
     const subject = 'Reset your password';
-    const url = `${effectiveHost}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const appSlug = redirectTo?.match(/^\/applications\/([^/?]+)/)?.[1];
+    const url = appSlug
+      ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
+      : `${effectiveHost}${basePath}reset-password/${token}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,

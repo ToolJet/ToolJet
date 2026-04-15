@@ -53,6 +53,8 @@ export interface Terms {
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
+        canvasPageHeader?: boolean;
+        canvasPageFooter?: boolean;
       };
     };
     permissions: {
