@@ -55,10 +55,6 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { DataQueryFolder } from '@entities/data_query_folder.entity';
-import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
-import { DataQuery } from '@entities/data_query.entity';
-import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
