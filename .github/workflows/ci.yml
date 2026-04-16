@@ -56,8 +56,10 @@ jobs:
     if: needs.detect-changes.outputs.server == 'true'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - name: Checkout EE submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -122,8 +124,10 @@ jobs:
       || needs.detect-changes.outputs.plugins == 'true'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - name: Checkout EE submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -182,8 +186,10 @@ jobs:
       TOOLJET_DB: tooljet_db
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - name: Checkout EE submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
       - uses: actions/download-artifact@v4
         with:
           name: plugins-dist
@@ -237,8 +243,10 @@ jobs:
       TOOLJET_DB: tooljet_db
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - name: Checkout EE submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
       - uses: actions/download-artifact@v4
         with:
           name: plugins-dist
