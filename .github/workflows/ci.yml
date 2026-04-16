@@ -186,9 +186,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client
       - run: npm ci --prefix plugins
       - run: npm ci --prefix server
-      - run: npm run --prefix server db:create
-      # Run migrations without NODE_ENV=test — ormconfig disables schema migrations in test mode
-      - run: NODE_ENV=development npm run --prefix server db:migrate
+      # db:create and db:migrate need NODE_ENV unset — ormconfig disables
+      # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
       - run: npm run --prefix server test
 
   test-server-e2e:
@@ -238,9 +239,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client
       - run: npm ci --prefix plugins
       - run: npm ci --prefix server
-      - run: npm run --prefix server db:create
-      # Run migrations without NODE_ENV=test — ormconfig disables schema migrations in test mode
-      - run: NODE_ENV=development npm run --prefix server db:migrate
+      # db:create and db:migrate need NODE_ENV unset — ormconfig disables
+      # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
       - run: npm run --prefix server test:e2e -- --ci --testTimeout=20000
 
   test-frontend:
