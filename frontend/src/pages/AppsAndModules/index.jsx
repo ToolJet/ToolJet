@@ -90,6 +90,8 @@ function AppsAndModules({ darkMode, switchDarkMode, appType = 'front-end' }) {
   }, [hasFromTemplateSearchParam]);
 
   const setSelectedFolder = (folderId) => {
+    setCurrentPage(1);
+
     if (folderId === 'all') {
       setSearchParams(undefined);
       return;

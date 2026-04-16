@@ -7,6 +7,7 @@ import { handleHttpErrorMessages } from '@/_helpers/utils';
 import { folderService } from '@/_services/folder.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { useAppsStore } from '@/_stores/appsStore';
+import { useSearchStore } from '@/_stores/searchStore';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const defaultFolder = (appType) => ({
@@ -120,9 +121,12 @@ export function useDeleteFolder() {
 export function useAddAppToFolder() {
   const queryClient = useQueryClient();
 
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+
   const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? null);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.addToFolder(appId, folderId),
@@ -145,7 +149,27 @@ export function useAddAppToFolder() {
       // Case 1: if you are in All apps/modules/workflows folder, then no need to refetch apps as anyways the app will be still shown in All apps/modules/workflows folder
       // Case 2: if you are in a specific folder and you move an app to another folder, then we need to refetch the apps for that specific folder to remove that app from the list
       if (currentFolderId) {
-        setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
+        const currentAppsQueryData = queryClient.getQueryData([
+          'apps',
+          {
+            pageNo: currentPage,
+            folderId: currentFolderId,
+            appSearchQuery: searchQuery,
+            appType: variables.appType,
+            pageSize,
+          },
+        ]);
+
+        const numberOfAppsOnCurrentPageBeforeAction = currentAppsQueryData?.apps?.length ?? 0;
+
+        // If there are no apps left on the current page after moving app to another folder, move back to the previous page (if not on the first page)
+        setCurrentPage(
+          numberOfAppsOnCurrentPageBeforeAction
+            ? numberOfAppsOnCurrentPageBeforeAction === 1 && currentPage > 1
+              ? currentPage - 1
+              : currentPage
+            : 1
+        );
         queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
       }
     },
@@ -155,8 +179,12 @@ export function useAddAppToFolder() {
 export function useRemoveAppFromFolder() {
   const queryClient = useQueryClient();
 
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+
   const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.removeAppFromFolder(appId, folderId),
@@ -168,7 +196,27 @@ export function useRemoveAppFromFolder() {
 
       queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
 
-      setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
+      const currentAppsQueryData = queryClient.getQueryData([
+        'apps',
+        {
+          pageNo: currentPage,
+          folderId: currentFolderId,
+          appSearchQuery: searchQuery,
+          appType: variables.appType,
+          pageSize,
+        },
+      ]);
+
+      const numberOfAppsOnCurrentPageBeforeAction = currentAppsQueryData?.apps?.length ?? 0;
+
+      // If there are no apps left on the current page after removing app from folder, move back to the previous page (if not on the first page)
+      setCurrentPage(
+        numberOfAppsOnCurrentPageBeforeAction
+          ? numberOfAppsOnCurrentPageBeforeAction === 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage
+          : 1
+      );
       queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
     },
   });

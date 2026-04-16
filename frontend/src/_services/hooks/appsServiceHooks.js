@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { useAppsStore } from '@/_stores/appsStore';
+import { useSearchStore } from '@/_stores/searchStore';
 import { appsService } from '@/_services/apps.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { appTypeToDisplayNameMapping } from '@/_helpers/appUtils';
@@ -143,8 +144,12 @@ export function useCreateApp() {
 export function useDeleteApp() {
   const queryClient = useQueryClient();
 
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+
   const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -154,7 +159,27 @@ export function useDeleteApp() {
     onSuccess: (response, variables) => {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} deleted successfully.`);
 
-      setCurrentPage(1); // TODO: Better logic would be calculate which page to fetch instead of just going to page 1
+      const currentAppsQueryData = queryClient.getQueryData([
+        'apps',
+        {
+          pageNo: currentPage,
+          folderId: currentFolderId,
+          appSearchQuery: searchQuery,
+          appType: variables.appType,
+          pageSize,
+        },
+      ]);
+
+      const numberOfAppsOnCurrentPageBeforeDeletion = currentAppsQueryData?.apps?.length ?? 0;
+
+      // If there are no apps left on the current page after deletion, move back to the previous page (if not on the first page)
+      setCurrentPage(
+        numberOfAppsOnCurrentPageBeforeDeletion
+          ? numberOfAppsOnCurrentPageBeforeDeletion === 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage
+          : 1
+      );
       queryClient.invalidateQueries({
         queryKey: ['apps', { appType: variables.appType, pageSize }],
       });
