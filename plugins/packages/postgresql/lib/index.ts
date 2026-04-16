@@ -727,18 +727,6 @@ export default class PostgresqlQueryService implements QueryService {
     let resolvedDb: string = sourceOptions.database;
 
     if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
-      const parsedUrl = new URL(sourceOptions.connection_string);
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const connUser = decodeURIComponent(parsedUrl.username || '');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const connPass = decodeURIComponent(parsedUrl.password || '');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const connHost = parsedUrl.hostname || '';
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const connDb = decodeURIComponent(parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '');
       // Explicit UI values override connection string values
       resolvedUser = sourceOptions.username;
       resolvedPass = sourceOptions.password;

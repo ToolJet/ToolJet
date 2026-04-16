@@ -30,6 +30,8 @@ jobs:
       marketplace: ${{ steps.filter.outputs.marketplace }}
     steps:
       - uses: actions/checkout@v4
+      # On push events, paths-filter compares HEAD~1 (not PR base).
+      # On pull_request events, it compares against the PR base branch.
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -106,12 +108,14 @@ jobs:
       - run: npm run --prefix marketplace lint
 
   # ---------------------------------------------------------------------------
-  # 3. Build plugins — only when server/ changed (needed for migrations)
+  # 3. Build plugins — when server/ or plugins/ changed (needed for migrations)
   # ---------------------------------------------------------------------------
   build-plugins:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.server == 'true'
+    if: >-
+      needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.plugins == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -120,8 +124,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'plugins/package-lock.json'
       - run: npm ci --prefix plugins
-      - run: npm run --prefix plugins create:client && npm run --prefix plugins create:server
-      - run: npm run --prefix plugins build:packages && npm run --prefix plugins build:server
+      - run: npm run --prefix plugins build
       - uses: actions/upload-artifact@v4
         with:
           name: plugins-dist
@@ -129,6 +132,7 @@ jobs:
             plugins/dist/
             plugins/client.js
             plugins/packages/common/
+            plugins/packages/*/dist/
             plugins/package.json
           retention-days: 1
 
@@ -140,6 +144,7 @@ jobs:
     timeout-minutes: 30
     needs: [detect-changes, build-plugins]
     if: needs.detect-changes.outputs.server == 'true'
+    # Keep container image version in sync with .nvmrc
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -190,6 +195,7 @@ jobs:
     timeout-minutes: 30
     needs: [detect-changes, build-plugins]
     if: needs.detect-changes.outputs.server == 'true'
+    # Keep container image version in sync with .nvmrc
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -203,7 +209,7 @@ jobs:
           --health-retries 5
     env:
       FORCE_COLOR: true
-      NODE_OPTIONS: '--max-old-space-size=8096'
+      NODE_OPTIONS: '--max-old-space-size=8192'
       NODE_ENV: test
       LOCKBOX_MASTER_KEY: lockbox-master-key
       SECRET_KEY_BASE: secret-key-base
@@ -233,7 +239,7 @@ jobs:
       - run: npm ci --prefix server
       - run: npm run --prefix server db:create
       - run: npm run --prefix server db:migrate
-      - run: npm run --prefix server test:e2e -- --ci --silent --testTimeout=20000
+      - run: npm run --prefix server test:e2e -- --ci --testTimeout=20000
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -279,6 +285,13 @@ jobs:
             exit 0
           fi
 
+          # If detect-changes itself failed, gate must fail
+          if [[ "${{ needs.detect-changes.result }}" == "failure" ]]; then
+            echo "::error::detect-changes failed — CI infrastructure broken"
+            echo "verdict=fail" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           failed=false
           results=(
             "lint-server:${{ needs.lint-server.result }}"
@@ -307,7 +320,8 @@ jobs:
           fi
 
       - name: Post PR comment
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.eval.outputs.verdict != 'skip'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -375,6 +389,7 @@ jobs:
 
       - name: Remove run-ci label
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
