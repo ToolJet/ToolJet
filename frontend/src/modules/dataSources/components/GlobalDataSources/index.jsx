@@ -21,6 +21,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -36,6 +39,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingAddDataSource, setPendingAddDataSource] = useState(null);
+  const [pendingCreateDS, setPendingCreateDS] = useState(null);
+  const loadingSeenRef = useRef(false);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
@@ -101,6 +108,21 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
+
+  // After branch switch + refetch, trigger the deferred add
+  useEffect(() => {
+    if (!pendingCreateDS) return;
+    if (isLoading) {
+      loadingSeenRef.current = true;
+    }
+    if (!isLoading && loadingSeenRef.current) {
+      const ds = pendingCreateDS;
+      loadingSeenRef.current = false;
+      setPendingCreateDS(null);
+      createDataSource(ds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading, pendingCreateDS]);
 
   const handleHideModal = (ds) => {
     if (dataSources?.length) {
@@ -322,16 +344,35 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
   };
 
+  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  });
+
   const renderCardGroup = (source, type) => {
-    const canAddDataSource = canCreateDataSource();
+    const hasCreatePermission = canCreateDataSource();
+    const canAddDataSource = hasCreatePermission && !isWorkspaceBranchLocked;
     const addDataSourceBtn = (item) => (
-      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+      <ToolTip
+        message={!hasCreatePermission ? 'You do not have permission to add a data source' : ''}
+        show={!hasCreatePermission}
+        placement="bottom"
+      >
         <div>
           <ButtonSolid
-            disabled={addingDataSource || !canAddDataSource}
+            disabled={addingDataSource || !hasCreatePermission}
             isLoading={addingDataSource}
             variant="secondary"
-            onClick={() => createDataSource(item)}
+            onClick={() => {
+              if (isWorkspaceBranchLocked) {
+                setPendingAddDataSource(item);
+                setShowSwitchBranchModal(true);
+              } else {
+                createDataSource(item);
+              }
+            }}
             data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
           >
             <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
@@ -482,6 +523,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
+        <WorkspaceLockedBanner pageContext="data sources" />
         {containerRef && containerRef?.current && selectedDataSource && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
@@ -500,6 +542,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            isWorkspaceBranchLocked={isWorkspaceBranchLocked}
             environmentLoading={environmentLoading}
             tags={tags}
           />
@@ -507,6 +550,23 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingAddDataSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingAddDataSource) {
+              loadingSeenRef.current = false;
+              setPendingCreateDS(pendingAddDataSource);
+              setPendingAddDataSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

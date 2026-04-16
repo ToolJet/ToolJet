@@ -224,7 +224,7 @@ describe("Private and Public apps", () => {
     cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
 
-    cy.apiDeleteGranularPermission("end-user", ["app", "workflow"]);
+    cy.apiDeleteGranularPermission("end-user", ["app", "workflow", "folder"]);
 
     setSignupStatus(true, data.workspaceName);
 

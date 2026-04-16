@@ -26,17 +26,20 @@ export class OrganizationGitUpdateDto {
   @IsString()
   @IsIn(['ed25519', 'rsa'])
   keyType: 'ed25519' | 'rsa';
+
+  @IsOptional()
+  @IsBoolean()
+  branchingEnabled?: boolean;
 }
 
-export class OrganizationGitHTTPSUpdateDto {
+export class OrganizationGitConfigUpdateDto {
   @IsOptional()
   @IsBoolean()
-  autoCommit: boolean;
-}
-export class OrganizationGitLabUpdateDto {
+  autoCommit?: boolean;
+
   @IsOptional()
   @IsBoolean()
-  autoCommit: boolean;
+  branchingEnabled?: boolean;
 }
 
 export class OrganizationGitStatusUpdateDto {

@@ -56,6 +56,7 @@ const DynamicForm = ({
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -96,7 +97,7 @@ const DynamicForm = ({
   }, []);
 
   React.useEffect(() => {
-    if (isGDS) {
+    if (isGDS && currentAppEnvironmentId) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
         const constants = {
           globals: {},
@@ -342,6 +343,11 @@ const DynamicForm = ({
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
     const helpText = helpTextProp || help_text;
+    const isEncrypted = type === 'password' || encrypted === true;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     switch (type) {
       case 'password':
@@ -356,7 +362,8 @@ const DynamicForm = ({
           style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
-          ...(helpText && { helpText }),
+          // ...(helpText && { finalHelpText }),
+          ...(finalHelpText && { helpText: finalHelpText }),
           onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
           onblur: () => onBlur(),
           isGDS,
@@ -364,6 +371,8 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
           encrypted: useEncrypted,
           isWorkspaceConstant: isWorkspaceConstant,
+          disabled: isWorkspaceBranchLocked && !useEncrypted,
+          isDisabled: isWorkspaceBranchLocked && !useEncrypted,
         };
       }
       case 'toggle':
@@ -373,6 +382,7 @@ const DynamicForm = ({
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
+          disabled: isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -384,7 +394,8 @@ const DynamicForm = ({
           useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
         };
       case 'checkbox-group':
@@ -411,7 +422,8 @@ const DynamicForm = ({
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
@@ -448,7 +460,8 @@ const DynamicForm = ({
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
@@ -480,7 +493,8 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           options,
           optionsChanged,
           selectedDataSource,
@@ -499,7 +513,8 @@ const DynamicForm = ({
           selectedDataSource,
           currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           optionsChanged,
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           scopes: options?.scopes?.value,
@@ -582,7 +597,8 @@ const DynamicForm = ({
           spec: options.spec?.value,
           audience: options?.audience?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           optionsChanged,
         };
       case 'filters':

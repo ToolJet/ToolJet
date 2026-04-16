@@ -481,6 +481,7 @@ describe("Custom Group Granular Access", () => {
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -596,6 +597,7 @@ describe("Custom Group Granular Access", () => {
 
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,

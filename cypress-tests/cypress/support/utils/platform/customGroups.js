@@ -51,13 +51,32 @@ export const verifyGroupRemovedFromSidebar = (groupName) => {
 };
 
 export const addGranularPermissionViaUI = (permissionName, options = {}) => {
-  const {
-    resourceType = "app",
-    permission = "edit",
-    scope = "all",
-    environment = ["Released app"],
-    resources = [],
-  } = options;
+    const {
+        resourceType = "app",
+        permission = "edit",
+        scope = "all",
+        environment = ["Released app"],
+        resources = [],
+    } = options;
+
+    cy.ifEnv("Community", () => {
+        cy.get(groupsSelector.addAppsButton).click();
+    });
+    cy.ifEnv("Enterprise", () => {
+        cy.get(groupsSelector.addPermissionButton).click();
+        if (resourceType === "app") {
+            cy.get(groupsSelector.addAppButton).click();
+        } else if (resourceType === "workflow") {
+            cy.get(groupsSelector.addWorkflowButton).click();
+        } else if (resourceType === "datasource") {
+            cy.get(groupsSelector.addDatasourceButton).click();
+        }
+        else if (resourceType === "folder") {
+            cy.get(groupsSelector.addFolderButton).click();
+        }
+    });
+
+    cy.clearAndType(groupsSelector.permissionNameInput, permissionName);
 
   cy.ifEnv("Community", () => {
     cy.get(groupsSelector.addAppsButton).click();
@@ -70,6 +89,14 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
       cy.get(groupsSelector.addWorkflowButton).click();
     } else if (resourceType === "datasource") {
       cy.get(groupsSelector.addDatasourceButton).click();
+    } else if (resourceType === "folder") {
+        if (permission === "editFolder") {
+            cy.get(groupsSelector.editFolderRadio).check();
+        } else if (permission === "editApp") {
+            cy.get(groupsSelector.editAppRadio).check();
+        } else if (permission === "viewApp") {
+            cy.get(groupsSelector.viewAppRadio).check();
+        }
     }
   });
 
