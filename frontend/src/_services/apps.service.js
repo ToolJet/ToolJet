@@ -34,7 +34,9 @@ export const appsService = {
 
 function getAppAuthenticationConfig(slug) {
   const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
-  return fetch(`${config.apiUrl}/apps/app-authentication-config/${slug}`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/apps/app-authentication-config/${slug}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }
 
 function getWorkflows(id) {
