@@ -30,7 +30,9 @@ jobs:
       marketplace: ${{ steps.filter.outputs.marketplace }}
     steps:
       - uses: actions/checkout@v4
-      # On push events, paths-filter compares HEAD~1 (not PR base).
+        with:
+          fetch-depth: 2
+      # On push events, paths-filter compares HEAD~1 (needs fetch-depth: 2).
       # On pull_request events, it compares against the PR base branch.
       - uses: dorny/paths-filter@v3
         id: filter
@@ -54,6 +56,8 @@ jobs:
     if: needs.detect-changes.outputs.server == 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -118,6 +122,8 @@ jobs:
       || needs.detect-changes.outputs.plugins == 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -134,6 +140,8 @@ jobs:
             plugins/packages/common/
             plugins/packages/*/dist/
             plugins/package.json
+            plugins/node_modules/
+          compression-level: 1
           retention-days: 1
 
   # ---------------------------------------------------------------------------
@@ -153,8 +161,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+          --health-interval 3s
+          --health-timeout 3s
           --health-retries 5
     env:
       FORCE_COLOR: true
@@ -174,18 +182,20 @@ jobs:
       TOOLJET_DB: tooljet_db
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-server-plugins-${{ hashFiles('server/package-lock.json', 'plugins/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-server-plugins-
+          submodules: true
       - uses: actions/download-artifact@v4
         with:
           name: plugins-dist
           path: plugins/
+      - uses: actions/cache@v4
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
       - run: apt-get update && apt-get install -y postgresql-client
-      - run: npm ci --prefix plugins
       - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
       # db:create and db:migrate need NODE_ENV unset — ormconfig disables
       # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
       - run: NODE_ENV= npm run --prefix server db:create
@@ -206,8 +216,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+          --health-interval 3s
+          --health-timeout 3s
           --health-retries 5
     env:
       FORCE_COLOR: true
@@ -227,18 +237,20 @@ jobs:
       TOOLJET_DB: tooljet_db
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-server-plugins-${{ hashFiles('server/package-lock.json', 'plugins/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-server-plugins-
+          submodules: true
       - uses: actions/download-artifact@v4
         with:
           name: plugins-dist
           path: plugins/
+      - uses: actions/cache@v4
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
       - run: apt-get update && apt-get install -y postgresql-client
-      - run: npm ci --prefix plugins
       - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
       # db:create and db:migrate need NODE_ENV unset — ormconfig disables
       # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
       - run: NODE_ENV= npm run --prefix server db:create
