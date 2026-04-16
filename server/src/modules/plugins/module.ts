@@ -15,7 +15,7 @@ export class PluginsModule extends SubModule {
       module: PluginsModule,
       controllers: isMainImport ? [PluginsController] : [],
       providers: [PluginsService, FilesRepository, PluginsUtilService, FeatureAbilityFactory, DataSourcesRepository],
-      exports: [PluginsUtilService, PluginsService],
+      exports: [PluginsUtilService],
     };
   }
 }

@@ -58,13 +58,13 @@ export class DataSourcesRepository extends Repository<DataSource> {
         //   { branchId }
         // );
         query.leftJoin(
-         'data_source_versions',
-         'dsv',
-         `dsv.data_source_id = data_source.id
+          'data_source_versions',
+          'dsv',
+          `dsv.data_source_id = data_source.id
           AND dsv.branch_id = :branchId
           AND dsv.is_active = true`,
-         { branchId }
-       );
+          { branchId }
+        );
         query.leftJoin(
           'data_source_version_options',
           'dsvo',
@@ -162,10 +162,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       }
       if (useBranchPath || branchId) {
         // Filter: DS must have at least a DSV (branch-specific or default fallback)
-        // Static data sources don't have DSV entries, so always allow them through                                                                                                              
-         query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {                                                                                                               
-           staticType: DataSourceTypes.STATIC,                                                                                                                                                    
-         }); 
+        // Static data sources don't have DSV entries, so always allow them through
+        query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
+          staticType: DataSourceTypes.STATIC,
+        });
       }
       let result: DataSource[];
       let rawResults: any[] = [];
@@ -331,7 +331,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     }, manager || this.manager);
   }
 
-  getDatasourceByPluginId(pluginId: string) {
+  getDatasourceByPluginId(pluginId: string): Promise<DataSource[]> {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.find(DataSource, {
         where: {
