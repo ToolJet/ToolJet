@@ -398,7 +398,13 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
+      // Fetch current editing version for the app
+      const versionsResp = await appsService.getVersions(appId);
+      const versions = versionsResp?.versions || [];
+      const currentEditingVersion = versions.find((version) => version?.isCurrentEditingVersion);
+      const editingVersionId = currentEditingVersion?.id;
+      const savePayload = editingVersionId ? { name: newAppName, editingVersionId } : { name: newAppName };
+      await appsService.saveApp(appId, savePayload, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -1045,12 +1051,17 @@ class HomePageComponent extends React.Component {
           showCloneAppModal: true,
         });
         break;
-      case 'rename-app':
+      case 'rename-app': {
+        if (this.isWorkspaceBranchLocked()) {
+          toast.error("Renaming isn't allowed on master. Switch branch to update name.");
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,
         });
         break;
+      }
     }
   };
 

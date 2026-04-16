@@ -8,6 +8,10 @@ export interface IDataSourcesUtilService {
 
   getServiceAndRpcNames(protoDefinition: any): { [key: string]: string[] };
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   * Used in: 1639734070615-BackfillDataSourcesAndQueriesForAppVersions.ts
+   */
   parseOptionsForCreate(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
 
   parseOptionsForUpdate(

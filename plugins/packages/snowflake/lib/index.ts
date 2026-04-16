@@ -14,6 +14,7 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
+import * as crypto from 'crypto';
 import got from 'got';
 
 export default class Snowflake implements QueryService {
@@ -120,6 +121,25 @@ export default class Snowflake implements QueryService {
         connectionConfig.authenticator = 'OAUTH';
       } else {
         throw new QueryError('OAuth access token not found', 'Access token is required for OAuth authentication', {});
+      }
+    } else if (sourceOptions.auth_type === 'key_pair') {
+      if (!sourceOptions.username) {
+        throw new QueryError('Username not found', 'Username is required for key pair authentication', {});
+      }
+      if (!sourceOptions.private_key) {
+        throw new QueryError('Private key not found', 'Private key is required for key pair authentication', {});
+      }
+      connectionConfig.username = sourceOptions.username;
+      connectionConfig.authenticator = 'SNOWFLAKE_JWT';
+      try {
+        const privateKeyObject = crypto.createPrivateKey({
+          key: sourceOptions.private_key,
+          format: 'pem',
+          ...(sourceOptions.private_key_passphrase && { passphrase: sourceOptions.private_key_passphrase }),
+        });
+        connectionConfig.privateKey = privateKeyObject.export({ type: 'pkcs8', format: 'pem' }) as string;
+      } catch (err) {
+        throw new QueryError('Invalid private key', err.message, {});
       }
     } else if (sourceOptions.auth_type === 'basic') {
       connectionConfig.password = sourceOptions.password;
