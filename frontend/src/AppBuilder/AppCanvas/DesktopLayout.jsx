@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import cx from 'classnames';
 
 import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
-import PageCanvasHeader from './PageCanvasHeader';
-import PageCanvasFooter from './PageCanvasFooter';
 import PagesSidebarNavigation from './PageMenu/PagesSidebarNavigation';
 import { CanvasContentTail } from './CanvasContentTail';
+
+const PageCanvasHeader = lazy(() => import('./PageCanvasHeader'));
+const PageCanvasFooter = lazy(() => import('./PageCanvasFooter'));
 
 export const DesktopLayout = ({
   pageKey,
