@@ -367,8 +367,9 @@ jobs:
               ? ':white_check_mark: **All checks passed**'
               : ':x: **Failed** — fix issues and re-add `run-ci` label';
 
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
-              `## CI Results — \`${sha}\``,
+              `## CI Results — [\`${sha}\`](${runUrl})`,
               '',
               '| Job | Status |',
               '|-----|--------|',
