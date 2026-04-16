@@ -259,7 +259,7 @@ export class VersionUtilService implements IVersionUtilService {
         : await this.versionRepository.getCount(app.id);
 
       if (numVersions <= 1) {
-        throw new ForbiddenException('Cannot delete only version of app');
+        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
       }
 
       if (app.currentVersionId === app.appVersions[0].id) {

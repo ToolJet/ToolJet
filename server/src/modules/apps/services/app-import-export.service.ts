@@ -502,7 +502,6 @@ export class AppImportExportService {
     const moduleResourceMappings = {
       moduleApps: {},
       moduleVersions: {},
-      moduleEnvironments: {},
     };
 
     const existingModules =
@@ -537,10 +536,6 @@ export class AppImportExportService {
             const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
             if (matchingVersion) {
               moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
-              if (!moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId]) {
-                moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId] =
-                  matchingVersion.currentEnvironmentId;
-              }
             }
           }
 
@@ -550,10 +545,6 @@ export class AppImportExportService {
             for (const importedVersion of importedModuleVersions) {
               if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
                 moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
-                if (!moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId]) {
-                  moduleResourceMappings.moduleEnvironments[importedVersion.currentEnvironmentId] =
-                    existingVersions[0].currentEnvironmentId;
-                }
               }
             }
           }
@@ -562,8 +553,6 @@ export class AppImportExportService {
           const editingVersionId = importedModule?.appV2?.editingVersion?.id;
           if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
             moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
-            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion?.currentEnvironmentId] =
-              existingVersions[0].currentEnvironmentId;
           }
         } else {
           // Module doesn't exist - need to import it
@@ -583,9 +572,6 @@ export class AppImportExportService {
           // Map ALL version IDs from the import, not just editingVersion
           for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
             moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
-          }
-          for (const [oldEnvId, newEnvId] of Object.entries(resourceMapping.appEnvironmentMapping)) {
-            moduleResourceMappings.moduleEnvironments[oldEnvId] = newEnvId;
           }
         }
       }
@@ -1569,13 +1555,6 @@ export class AppImportExportService {
                 }
               }
 
-              // Replace module environment ID
-              if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-                const oldEnvironmentId = properties.moduleEnvironmentId.value;
-                if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-                  properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-                }
-              }
             }
             newComponent.properties = properties || {};
 
@@ -3083,7 +3062,7 @@ export class AppImportExportService {
       const inputItems = moduleContainer.properties?.inputItems?.value || [];
 
       // Process each property in the ModuleViewer component
-      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'visibility'];
 
       for (const [propertyKey, propertyValue] of Object.entries(properties)) {
         // Skip excluded properties
@@ -3676,13 +3655,6 @@ function transformComponentData(
           }
         }
 
-        // Replace module environment ID
-        if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-          const oldEnvironmentId = properties.moduleEnvironmentId.value;
-          if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-            properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-          }
-        }
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);

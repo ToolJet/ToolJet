@@ -251,6 +251,7 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    let cancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -282,6 +283,7 @@ const useAppData = (
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
+        if (cancelled) return;
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
@@ -315,9 +317,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                  slug,
-                  viewerEnvironment?.environment?.id
-                )
+                    slug,
+                    viewerEnvironment?.environment?.id
+                  )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -369,8 +371,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -564,17 +566,18 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-
-        return () => {
-          document.title = retrieveWhiteLabelText();
-        };
       })
       .catch((_error) => {
+        if (cancelled) return;
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
         }
       });
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setApp, setEditorLoading, currentSession, mode, versionId]);
 
@@ -660,8 +663,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
