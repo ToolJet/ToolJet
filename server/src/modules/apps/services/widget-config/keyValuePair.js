@@ -98,6 +98,7 @@ export const keyValuePairConfig = {
     },
   },
   events: {
+    onFieldClick: { displayName: 'Field clicked' },
     onSaveKeyValuePairChanges: { displayName: 'Save changes' },
     onFieldValueChanged: { displayName: 'Field edited' },
     onCancelKeyValuePairChanges: { displayName: 'Cancel changes' },
@@ -196,6 +197,7 @@ export const keyValuePairConfig = {
   exposedVariables: {
     data: {},
     changeSet: {},
+    lastClickedField: {},
   },
   actions: [
     {

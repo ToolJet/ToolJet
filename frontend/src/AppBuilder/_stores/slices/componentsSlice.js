@@ -263,6 +263,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab =
             state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
@@ -722,7 +724,11 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
-    const isEmpty = Array.isArray(widgetValue) ? widgetValue.length === 0 : !widgetValue && widgetValue !== 0;
+    // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
+    const optionValueWidgets = ['DropdownV2', 'MultiselectV2'];
+    const isEmpty = Array.isArray(widgetValue)
+      ? widgetValue.length === 0
+      : !widgetValue && widgetValue !== 0 && !(widgetValue === false && optionValueWidgets.includes(componentType));
 
     if (resolvedMandatory == true && isEmpty) {
       return {
@@ -2018,6 +2024,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = components;
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (components.length === 1) {
           if (state.isRightSidebarOpen) {
             state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
@@ -2036,6 +2044,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }

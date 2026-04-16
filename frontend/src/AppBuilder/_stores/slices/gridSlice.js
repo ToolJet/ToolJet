@@ -536,10 +536,29 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
+    const {
+      clearSelectedComponents,
+      isGroupResizing,
+      isGroupDragging,
+      setCanvasHeaderSelected,
+      setCanvasFooterSelected,
+      draggingComponentId,
+      resizingComponentId,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
+    const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
+
+    const isMovingComponent = draggingComponentId || resizingComponentId || isGroupDragging || isGroupResizing;
+
+    if (!isMovingComponent && isClickedOnCanvasHeader) {
+      setCanvasHeaderSelected(true);
+    } else if (!isMovingComponent && isClickedOnCanvasFooter) {
+      setCanvasFooterSelected(true);
+    }
 
     // Check if any inspector popover is currently open
     const isInspectorPopoverOpen = () => {

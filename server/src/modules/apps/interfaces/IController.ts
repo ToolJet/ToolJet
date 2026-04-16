@@ -44,4 +44,6 @@ export interface IAppsController {
   appFromSlug(user: UserEntity, app: AppEntity): Promise<any>;
 
   releaseVersion(user: UserEntity, app: AppEntity, versionReleaseDto: VersionReleaseDto): Promise<any>;
+
+  getAppAuthenticationConfig(slug: string): Promise<any>;
 }
