@@ -1,4 +1,4 @@
-import React, { useRef, lazy } from 'react';
+import React, { Suspense, useRef, lazy } from 'react';
 import cx from 'classnames';
 
 import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
@@ -42,7 +42,13 @@ export const MobileLayout = ({
         className={cx('tw-absolute tw-inset-0 tw-overflow-hidden tw-pointer-events-none')}
       />
       {/* Canvas header — sticky at top of scroll */}
-      <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+      <Suspense fallback={null}>
+        <PageCanvasHeader
+          showCanvasHeader={showCanvasHeader}
+          isMobileLayout={isMobileLayout}
+          currentMode={currentMode}
+        />
+      </Suspense>
       {/* Mobile nav — sticky below header */}
       {appType !== 'module' && (
         <div
@@ -66,7 +72,13 @@ export const MobileLayout = ({
       <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
         {mainCanvasContainer}
       </CanvasContentTail>
-      <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+      <Suspense fallback={null}>
+        <PageCanvasFooter
+          showCanvasFooter={showCanvasFooter}
+          isMobileLayout={isMobileLayout}
+          currentMode={currentMode}
+        />
+      </Suspense>
     </div>
   );
 };
