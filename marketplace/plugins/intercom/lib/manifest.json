@@ -10,7 +10,7 @@
     "options": {
       "access_token": { "type": "string", "encrypted": true }
     },
-    "customTesting": true
+    "customTesting": false
   },
   "defaults": {},
   "properties": {
