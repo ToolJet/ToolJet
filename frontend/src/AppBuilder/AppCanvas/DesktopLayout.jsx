@@ -36,7 +36,9 @@ export const DesktopLayout = ({
     className={cx({ 'h-100': isModuleMode })}
     style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
   >
-    <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    {showCanvasHeader && (
+      <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    )}
     <div
       className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
         'tw-flex-col': position === 'top' || isPagesSidebarHidden,
@@ -71,6 +73,8 @@ export const DesktopLayout = ({
         {mainCanvasContainer}
       </CanvasContentTail>
     </div>
-    <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    {showCanvasFooter && (
+      <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    )}
   </div>
 );
