@@ -10,6 +10,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { PluginsModule } from '@modules/plugins/module';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -51,6 +52,7 @@ export class GitSyncModule extends SubModule {
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
         await VersionModule.register(configs),
+        await PluginsModule.register(configs),
       ],
       controllers: isMainImport ? [GitSyncController] : [],
       providers: [

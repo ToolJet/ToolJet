@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { UpdatePluginDto } from './dto';
+import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { PluginsUtilService } from './util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -28,6 +28,10 @@ export class PluginsService implements IPluginsService {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.findOne(Plugin, { where: { id } });
     });
+  }
+
+  install(body: CreatePluginDto): Promise<boolean | any> {
+    return this.pluginsUtilService.install(body);
   }
 
   async update(id: string, body: UpdatePluginDto) {

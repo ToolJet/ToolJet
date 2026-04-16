@@ -248,7 +248,7 @@ export class PluginsUtilService implements IPluginsUtilService {
     }
   }
 
-  private async install(body: CreatePluginDto) {
+  async install(body: CreatePluginDto) {
     const { id, repo, name } = body;
 
     const existingPlugin = await dbTransactionWrap((manager: EntityManager) => {
