@@ -6,6 +6,19 @@ const crypto = require('crypto');
 
 @Injectable()
 export class EncryptionService implements IEncryptionService {
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1669054493160-moveDataSourceOptionsToEnvironment.ts
+   * - 1706024347284-AddInstanceLevelSSOInSSOConfigs.ts
+   * - 1650485473528-PopulateSSOConfigs.ts
+   * - 1716551121164-addSMTPConfigsToTable.ts
+   * - 1681463532466-addMultipleEnvForCEcreatedApps.ts (via filterEncryptedFromOptions helper)
+   * - 1683022868045-environmentDataSourceMappingFix.ts (via filterEncryptedFromOptions helper)
+   * - 1709618105785-EncryptValuesForExistingOrganizationConstants.ts
+   * - 1721236971725-MoveToolJetDatabaseTablesFromPublicToTenantSchema.ts
+   */
   async encryptColumnValue(table: string, column: string, text: string): Promise<string> {
     const derivedKey = this.#computeAttributeKey(table, column);
     return this.#encrypt(text, derivedKey);
