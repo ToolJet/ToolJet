@@ -1,5 +1,5 @@
-import { getEditionSpecificSlice } from '@/modules/common/helpers/getEditionSpecificSlice';
+import { createDataQueryFolderSlice as eeCreateDataQueryFolderSlice } from '@ee/modules/Appbuilder/slices/dataQueryFolderSlice';
 
-const createDataQueryFolderSlice = getEditionSpecificSlice('createDataQueryFolderSlice');
+const createDataQueryFolderSlice = eeCreateDataQueryFolderSlice ?? (() => ({}));
 
 export { createDataQueryFolderSlice };

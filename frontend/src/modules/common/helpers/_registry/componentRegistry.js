@@ -1,14 +1,12 @@
-import * as eeWorkflows from '@ee/modules/Workflows';
-import * as eeInstanceSettings from '@ee/modules/InstanceSettings';
-import * as eeWorkspaceSettings from '@ee/modules/WorkspaceSettings';
-
+// Each value is a () => import() thunk so webpack can split each EE module into
+// its own async chunk instead of pulling all three into the main bundle.
 export const componentRegistry = {
   ee: {
-    InstanceSettings: eeInstanceSettings,
-    Workflows: eeWorkflows,
-    WorkspaceSettings: eeWorkspaceSettings,
+    InstanceSettings: () => import('@ee/modules/InstanceSettings'),
+    Workflows: () => import('@ee/modules/Workflows'),
+    WorkspaceSettings: () => import('@ee/modules/WorkspaceSettings'),
   },
   cloud: {
-    WorkspaceSettings: eeWorkspaceSettings,
+    WorkspaceSettings: () => import('@ee/modules/WorkspaceSettings'),
   },
 };

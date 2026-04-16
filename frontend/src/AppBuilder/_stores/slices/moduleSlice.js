@@ -1,5 +1,5 @@
-import { getEditionSpecificSlice } from '../../../modules/common/helpers/getEditionSpecificSlice';
+import { createModuleSlice as eeCreateModuleSlice } from '@ee/modules/Modules/slices/moduleSlice';
 
-const createModuleSlice = getEditionSpecificSlice('createModuleSlice');
+const createModuleSlice = eeCreateModuleSlice ?? (() => ({}));
 
 export { createModuleSlice };

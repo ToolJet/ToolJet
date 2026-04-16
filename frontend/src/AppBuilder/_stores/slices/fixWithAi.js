@@ -1,5 +1,5 @@
-import { getEditionSpecificSlice } from '../../../modules/common/helpers/getEditionSpecificSlice';
+import { createFixWithAiSlice as eeCreateFixWithAiSlice } from '@ee/modules/AiBuilder/slices/fixWithAi';
 
-const createFixWithAiSlice = getEditionSpecificSlice('createFixWithAiSlice');
+const createFixWithAiSlice = eeCreateFixWithAiSlice ?? (() => ({}));
 
 export { createFixWithAiSlice };
