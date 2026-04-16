@@ -34,6 +34,7 @@ import { createFormComponentSlice } from './slices/componentSlices/formComponent
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 enableMapSet();
 
@@ -71,6 +72,7 @@ export default create(
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
       ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),
