@@ -54,6 +54,8 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
+        canvasPageHeader: false,
+        canvasPageFooter: false,
       },
     },
     permissions: {
@@ -65,6 +67,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       promote: false,
       release: false,
       history: false,
+    },
+    components: {
+      navigation: false,
     },
   },
   modules: {

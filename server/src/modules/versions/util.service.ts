@@ -4,9 +4,12 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, IsNull, Not, In } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { EntityManager, IsNull, Not, In } from 'typeorm';
 import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
@@ -15,9 +18,6 @@ import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { DataQuery } from '@entities/data_query.entity';
-import { DataQueryFolder } from '@entities/data_query_folder.entity';
-import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {

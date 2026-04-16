@@ -67,6 +67,10 @@ export class ListTablesDto {
 
   @IsString()
   @IsOptional()
+  datasetId?: string;
+  
+  @IsString()
+  @IsOptional()
   search?: string;
 
   @Transform(({ value }) => parseInt(value, 10))

@@ -358,7 +358,10 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // appId prop is undefined for public app viewers (AppsRoute skips onValidSession → extraProps never set).
+        // Fall back to appData response so isReleasedApp evaluates correctly and the title omits "Preview -".
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
 
         setApp(
           {
@@ -603,7 +606,7 @@ const useAppData = (
   useEffect(() => {
     if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
-      page: pageTitles.EDITOR,
+      page: mode === 'edit' ? pageTitles.EDITOR : pageTitles.VIEWER,
       appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
@@ -662,7 +665,9 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // See comment at first effectiveAppId usage above
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.branch_app_name || appData.name,
           appId: appData.id,

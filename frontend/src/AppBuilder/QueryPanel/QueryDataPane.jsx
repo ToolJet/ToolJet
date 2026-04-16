@@ -50,11 +50,11 @@ export const QueryDataPane = ({ darkMode }) => {
   const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
-  const { isModuleEditor } = useModuleContext();
-  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const sortBy = useStore((state) => state.dataQuery.sortBy);
   const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
-  const folders = featureAccess?.queryFolders ? allFolders : [];
+  const folders = allFolders;
+  const { isModuleEditor } = useModuleContext();
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -198,7 +198,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 filteredQueryIds={dataSourcesForFilters.length > 0 ? new Set(filteredQueries.map((q) => q.id)) : null}
                 darkMode={darkMode}
                 isDataSourceLocal={isDataSourceLocal}
-                allowFolders={!!featureAccess?.queryFolders}
+                allowFolders
                 shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
@@ -271,8 +271,8 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const { isModuleEditor } = useModuleContext();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   // const { isVersionReleased, isEditorFreezed } = useStore(
   //   (state) => ({
   //     isVersionReleased: state.isVersionReleased,
@@ -308,7 +308,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             selectRef={selectRef}
             closePopup={() => setShowMenu(false)}
             allowNewFolder
-            queryFoldersLicensed={!!featureAccess?.queryFolders}
+            queryFoldersLicensed
           />
         </Popover>
       }

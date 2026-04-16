@@ -110,6 +110,8 @@ type NewRevampedComponent =
   | 'IFrame'
   | 'DropdownV2'
   | 'TreeSelect'
+  | 'Listview'
+  | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu';
@@ -158,6 +160,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'IFrame',
   'DropdownV2',
   'TreeSelect',
+  'Listview',
+  'ColorPicker',
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
@@ -647,7 +651,8 @@ export class AppImportExportService {
         currentTooljetVersion,
         moduleResourceMappings,
         undefined,
-        branchId
+        branchId,
+        cloning
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
@@ -978,7 +983,8 @@ export class AppImportExportService {
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
     createNewVersion?: boolean,
-    branchId?: string
+    branchId?: string,
+    cloning = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1019,10 +1025,35 @@ export class AppImportExportService {
     // When importing multiple versions, skip branch-type versions — only import regular versions.
     // When importing a single branch-type version, allow it through (it will be adapted to
     // the target branch context inside createAppVersionsForImportedApp).
-    const filteredAppVersions =
-      importingAppVersions.length > 1
-        ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
-        : importingAppVersions;
+    // const filteredAppVersions =
+    //   importingAppVersions.length > 1
+    //     ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+    //     : importingAppVersions;
+
+    // When importing multiple versions, select the right versions to import based on context:
+    // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
+    //   versions matching the source branchId. Fall back to VERSION-type if none found.
+    // - All other cases (plain import, or cloning on default branch): skip BRANCH-type versions,
+    //   only import VERSION-type.
+    // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
+    let filteredAppVersions: any[];
+    if (importingAppVersions.length > 1) {
+      if (cloning && branchId) {
+        const nonStubBranchVersions = importingAppVersions.filter(
+          (v: any) => v.versionType === AppVersionType.BRANCH && v.branchId === branchId && !v.isStub
+        );
+        filteredAppVersions =
+          nonStubBranchVersions.length > 0
+            ? nonStubBranchVersions
+            : importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION);
+      } else {
+        filteredAppVersions = importingAppVersions.filter(
+          (v: any) => !v.versionType || v.versionType === AppVersionType.VERSION
+        );
+      }
+    } else {
+      filteredAppVersions = importingAppVersions;
+    }
 
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
@@ -1059,9 +1090,9 @@ export class AppImportExportService {
       importingEvents,
       tooljetVersion,
       moduleResourceMappings,
-      branchId,
       importingDataQueryFolders,
-      importingDataQueryFolderMappings
+      importingDataQueryFolderMappings,
+      branchId
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1109,6 +1140,20 @@ export class AppImportExportService {
               index: pagePostionIntheList,
               disabled: page.disabled || false,
               hidden: page.hidden || false,
+              pageHeader: page.pageHeader || {
+                showOnDesktop: false,
+                showOnMobile: false,
+                backgroundColor: 'var(--cc-surface1-surface)',
+                border: 'var(--cc-weak-border)',
+                height: 60,
+              },
+              pageFooter: page.pageFooter || {
+                showOnDesktop: false,
+                showOnMobile: false,
+                backgroundColor: 'var(--cc-surface1-surface)',
+                border: 'var(--cc-weak-border)',
+                height: 60,
+              },
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
@@ -1296,9 +1341,9 @@ export class AppImportExportService {
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
     moduleResourceMappings?: any,
-    branchId?: string,
     importingDataQueryFolders: DataQueryFolder[] = [],
-    importingDataQueryFolderMappings: DataQueryFolderMapping[] = []
+    importingDataQueryFolderMappings: DataQueryFolderMapping[] = [],
+    branchId?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1483,6 +1528,8 @@ export class AppImportExportService {
           pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          pageHeader: page.pageHeader || null,
+          pageFooter: page.pageFooter || null,
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
@@ -1534,33 +1581,37 @@ export class AppImportExportService {
             if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
           }
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
-          const isParentHeaderOrFooter =
-            component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+            const isParentHeaderOrFooter =
+              component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
-          if (isParentTabOrCalendar) {
-            const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+            if (isParentTabOrCalendar) {
+              const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
 
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
 
-            parentId = `${mappedParentId}-${childTabId}`;
-          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
+              parentId = `${mappedParentId}-${childTabId}`;
+            } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
 
-            parentId = `${mappedParentId}-modal`;
-          } else if (isParentHeaderOrFooter) {
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
-            const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
-            parentId = `${mappedParentId}-${headerOrFooter}`;
-          } else {
-            if (component.parent && !newComponentIdsMap[parentId]) {
-              skipComponent = true;
+              parentId = `${mappedParentId}-modal`;
+            } else if (isParentHeaderOrFooter) {
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
+              const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
+              parentId = `${mappedParentId}-${headerOrFooter}`;
+            } else {
+              if (component.parent && !newComponentIdsMap[parentId]) {
+                skipComponent = true;
+              }
+
+              parentId = newComponentIdsMap[parentId];
             }
-
-            parentId = newComponentIdsMap[parentId];
           }
           if (!skipComponent) {
             const { properties, styles, general, validation, generalStyles } = migrateProperties(
@@ -2148,10 +2199,24 @@ export class AppImportExportService {
     if (existingBranchDsv) return;
 
     // Find the default DSV to copy from
-    const defaultDsv = await manager.findOne(DataSourceVersion, {
+    // const defaultDsv = await manager.findOne(DataSourceVersion, {
+    //   where: { dataSourceId: dataSource.id, isDefault: true },
+    // });
+    let defaultDsv = await manager.findOne(DataSourceVersion, {
       where: { dataSourceId: dataSource.id, isDefault: true },
     });
-    if (!defaultDsv) return;
+    // if (!defaultDsv) return;
+    if (!defaultDsv) {
+      defaultDsv = await manager.save(
+        manager.create(DataSourceVersion, {
+          dataSourceId: dataSource.id,
+          name: dataSource.name || 'v1',
+          isDefault: true,
+          isActive: true,
+          branchId: null,
+        })
+      );
+    }
 
     // Create branch-specific DSV
     const branchDsv = await manager.save(
@@ -3585,6 +3650,16 @@ function migrateProperties(
         styles.menuCustomWidth = { value: '256' };
       }
     }
+
+    // Listview
+    if (componentType === 'Listview') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
+      }
+      if (properties.tooltip === undefined) {
+        properties.tooltip = { value: '' };
+      }
+    }
   }
 
   // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
@@ -3635,29 +3710,33 @@ function transformComponentData(
 
     let parentId = component.parent ? component.parent : null;
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(
-      component,
-      allComponents,
-      parentId,
-      isNormalizedAppDefinitionSchema
-    );
+    // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+    // These are not UUID-based and should not be remapped
+    if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+      const isParentTabOrCalendar = isChildOfTabsOrCalendar(
+        component,
+        allComponents,
+        parentId,
+        isNormalizedAppDefinitionSchema
+      );
 
-    if (isParentTabOrCalendar) {
-      const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
-      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-      const mappedParentId = componentsMapping[_parentId];
+      if (isParentTabOrCalendar) {
+        const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+        const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+        const mappedParentId = componentsMapping[_parentId];
 
-      parentId = `${mappedParentId}-${childTabId}`;
-    } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
-      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-      const mappedParentId = componentsMapping[_parentId];
+        parentId = `${mappedParentId}-${childTabId}`;
+      } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
+        const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+        const mappedParentId = componentsMapping[_parentId];
 
-      parentId = `${mappedParentId}-modal`;
-    } else {
-      if (component.parent && !componentsMapping[parentId]) {
-        skipComponent = true;
+        parentId = `${mappedParentId}-modal`;
+      } else {
+        if (component.parent && !componentsMapping[parentId]) {
+          skipComponent = true;
+        }
+        parentId = componentsMapping[parentId];
       }
-      parentId = componentsMapping[parentId];
     }
 
     if (!skipComponent) {

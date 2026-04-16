@@ -46,8 +46,14 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
+import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
@@ -72,7 +78,8 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository,
+    protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -252,13 +259,46 @@ export class AppsService implements IAppsService {
     return { id: app.id, slug: app.slug };
   }
 
+  async getAppAuthenticationConfig(slug: string) {
+    if (!slug || slug.length > 250) {
+      throw new BadRequestException('Invalid app slug');
+    }
+
+    const app = await this.appRepository.findOne({
+      where: { slug },
+      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      name: app.name,
+      slug: app.slug,
+      isPublic: app.isPublic,
+      organizationId: app.organizationId,
+    };
+  }
+
+  private resolveGitSyncEnabled(orgGit: OrganizationGitSync | null | undefined): boolean {
+    if (!orgGit) return false;
+
+    if (orgGit.useEnvConfig) {
+      const providers = [GITConnectionType.GITHUB_SSH, GITConnectionType.GITHUB_HTTPS, GITConnectionType.GITLAB];
+      return providers.some(
+        (provider) => this.organizationEnvRegistryService.getProviderState(orgGit.organizationId, provider).isEnabled
+      );
+    }
+
+    return Boolean(orgGit.gitSsh?.isEnabled || orgGit.gitHttps?.isEnabled || orgGit.gitLab?.isEnabled);
+  }
+
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
     const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
-    const isGitSyncEnabled = Boolean(
-      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
-    );
+    const isGitSyncEnabled = this.resolveGitSyncEnabled(orgGit);
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
@@ -417,7 +457,6 @@ export class AppsService implements IAppsService {
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
-        console.log(`Fetched apps for folder ${folderId}:`, apps);
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
       }

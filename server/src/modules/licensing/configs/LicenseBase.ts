@@ -41,6 +41,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _isEnvMapping: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
@@ -54,7 +55,7 @@ export default class LicenseBase {
   private _isGithub: boolean;
   private _isObservability: object;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
-  private _isQueryFolders: boolean;
+  private _appComponents: Record<string, boolean> = {};
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -66,7 +67,7 @@ export default class LicenseBase {
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' && !licenseData) {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
       // Setting expiry 30 minutes
@@ -78,7 +79,6 @@ export default class LicenseBase {
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isCustomThemes = true;
-      this._isQueryFolders = true;
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
@@ -123,6 +123,9 @@ export default class LicenseBase {
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
+    this._appComponents = this._app?.components
+      ? Object.fromEntries(Object.entries(this._app.components).map(([k, v]) => [k, v ?? false]))
+      : {};
     this._isCustomGroups = this.getPermissionValue('customGroups');
     this._isObservability = licenseData?.observability;
 
@@ -143,11 +146,11 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
-    this._isQueryFolders = this.getFeatureValue('queryFolders');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -260,6 +263,22 @@ export default class LicenseBase {
       return true; //Not passed set to true for older licenses and trial
     }
     return !!this._app['pages']?.features?.addNavGroup;
+  }
+
+  public get canvasPageHeaderEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageHeader;
+  }
+
+  public get canvasPageFooterEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageFooter;
   }
 
   public get moduleEnabled(): boolean {
@@ -422,7 +441,11 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
     }
-    return this._isQueryFolders;
+
+    if (this._features?.['queryFolders'] === undefined) {
+      return false;
+    }
+    return !!this._features?.['queryFolders'];
   }
 
   public get saml(): boolean {
@@ -557,6 +580,8 @@ export default class LicenseBase {
       customGroups: this.customGroups,
       appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
       appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      canvasPageHeaderEnabled: this.canvasPageHeaderEnabled,
+      canvasPageFooterEnabled: this.canvasPageFooterEnabled,
       appPagesEnabled: this.appPagesEnabled,
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
@@ -572,8 +597,12 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
-      aiPlan: this.aiPlan,
       queryFolders: this.queryFolders,
+      workspaceEnv: this.workspaceEnv,
+      aiPlan: this.aiPlan,
+      ...Object.fromEntries(
+        Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
+      ),
     };
   }
 
@@ -667,5 +696,19 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get appComponents(): Record<string, boolean> {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.components ?? {};
+    }
+    return this._appComponents;
+  }
+
+  public get workspaceEnv(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.workspaceEnv;
+    }
+    return this._isEnvMapping;
   }
 }

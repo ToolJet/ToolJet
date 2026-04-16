@@ -23,9 +23,6 @@ export class DataQueryFolderMapping {
   @Column({ name: 'index', type: 'integer' })
   index: number;
 
-  @Column({ name: 'co_relation_id', type: 'uuid', nullable: true })
-  co_relation_id: string;
-
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

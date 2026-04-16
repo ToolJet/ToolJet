@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { toast } from 'react-hot-toast';
@@ -8,9 +8,6 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-//TODO: Remove this
-import { Confirm } from '@/AppBuilder/Viewer/Confirm';
-// TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { Modal } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -53,6 +50,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
+  const hasQueryFolders = useStore((state) => Boolean(state.queryFolders));
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
@@ -131,7 +129,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   return (
     <>
       <div
-        className={`query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
+        className={
+          `query-row pe-2 ${hasQueryFolders ? 'mb-0' : 'mb-1'} ${darkMode && 'dark-theme'}` +
+          (isQuerySelected ? ' query-row-selected' : '')
+        }
         key={dataQuery.id}
         onClick={(e) => {
           if (isQuerySelected) return;

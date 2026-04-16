@@ -106,13 +106,14 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : workspaceBranch!.name,
+            name: type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? 'v1' : workspaceBranch!.name,
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
             status: AppVersionStatus.DRAFT,
             // versionType: AppVersionType.BRANCH,
-            versionType: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? AppVersionType.VERSION : AppVersionType.BRANCH,
+            versionType:
+              type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
@@ -462,7 +463,7 @@ export class AppsUtilService implements IAppsUtilService {
     return manager
       .createQueryBuilder(AppEnvironment, 'app_environments')
       .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
-      .where('app_versions.id = :currentVersionId', {
+      .where('app_versions.id = :versionId', {
         versionId,
       })
       .getOne();
@@ -510,12 +511,12 @@ export class AppsUtilService implements IAppsUtilService {
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-      // } else if (branchId) {
-      //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-      //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-      //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-      //     branchId,
-      //   });
+        // } else if (branchId) {
+        //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+        //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+        //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+        //     branchId,
+        //   });
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
         // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
@@ -709,6 +710,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Navigation',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
