@@ -75,7 +75,7 @@ export const postgresUIConfig = {
             type: "encrypted",
             fieldName: "Password",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,

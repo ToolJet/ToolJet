@@ -33,6 +33,7 @@ const KeyValueRow = ({
   field,
   value,
   onChange,
+  onFieldClick,
   labelColor,
   textColor,
   accentColor,
@@ -163,7 +164,7 @@ const KeyValueRow = ({
   };
 
   return (
-    <div className="kv-row-container">
+    <div className="kv-row-container" onClick={() => onFieldClick && onFieldClick()}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
