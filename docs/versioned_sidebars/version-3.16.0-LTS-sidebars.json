@@ -382,6 +382,7 @@
                 "widgets/dropdown",
                 "widgets/email-input",
                 "widgets/file-picker",
+                "widgets/file-input",
                 {
                   "type": "category",
                   "label": "Form",
