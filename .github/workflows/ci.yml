@@ -58,6 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
       - uses: actions/setup-node@v4
@@ -126,6 +127,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
       - uses: actions/setup-node@v4
@@ -188,6 +190,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
       - uses: actions/download-artifact@v4
@@ -245,6 +248,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
       - uses: actions/download-artifact@v4
