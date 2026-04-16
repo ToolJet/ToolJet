@@ -32,8 +32,12 @@ export function getProjection(
     const nextItem = newItems[overItemIndex + 1];
     const dragDepth = getDragDepth(dragOffset, indentationWidth);
     const projectedDepth = activeItem.depth + dragDepth;
-    // Max depth: one level deeper than the item above, but capped at limit
-    const maxDepth = Math.min(previousItem ? previousItem.depth + 1 : 0, maxDepthLimit);
+    // Max depth: one level deeper than the item above, but capped at limit.
+    // When there's no previous item (hovered item is at position 0) but the hovered
+    // item itself is a group (folder), still allow depth=1 so items can be dropped into it.
+    const hoveredItem = items[overItemIndex];
+    const fallbackMaxDepth = hoveredItem?.[isGroupKey] ? 1 : 0;
+    const maxDepth = Math.min(previousItem ? previousItem.depth + 1 : fallbackMaxDepth, maxDepthLimit);
     const minDepth = getMinDepth({ nextItem });
 
     // In single-level mode (Navigation), groups always stay at depth 0
