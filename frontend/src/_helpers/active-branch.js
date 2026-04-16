@@ -37,23 +37,22 @@ export function getActiveBranchId(orgId) {
 }
 
 /**
- * Remove all tj_active_branch_* keys except the one for the current org.
- * Call once on app load to prevent stale keys from accumulating
- * across migration dumps or org switches.
+ * Remove stale tj_active_branch_* keys for the current org only.
+ * Clears the key if the stored value is corrupted or has no valid branch ID.
+ * Does NOT remove keys for other orgs — they may be active in other tabs.
  */
 export function cleanupStaleBranchKeys(orgId) {
   const id = orgId || getOrgId();
   if (!id) return;
   try {
     const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(BRANCH_KEY_PREFIX) && key !== currentKey) {
-        keysToRemove.push(key);
+    const stored = localStorage.getItem(currentKey);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (!parsed?.id) {
+        localStorage.removeItem(currentKey);
       }
     }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
   } catch {
     // ignore localStorage errors
   }

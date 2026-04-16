@@ -410,7 +410,6 @@ export class AppsService implements IAppsService {
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
-        console.log(`Fetched apps for folder ${folderId}:`, apps);
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
       }

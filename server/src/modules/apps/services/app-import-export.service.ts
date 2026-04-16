@@ -653,7 +653,8 @@ export class AppImportExportService {
         currentTooljetVersion,
         moduleResourceMappings,
         undefined,
-        branchId
+        branchId,
+        cloning
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
@@ -978,7 +979,8 @@ export class AppImportExportService {
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
     createNewVersion?: boolean,
-    branchId?: string
+    branchId?: string,
+    cloning = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1017,10 +1019,35 @@ export class AppImportExportService {
     // When importing multiple versions, skip branch-type versions — only import regular versions.
     // When importing a single branch-type version, allow it through (it will be adapted to
     // the target branch context inside createAppVersionsForImportedApp).
-    const filteredAppVersions =
-      importingAppVersions.length > 1
-        ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
-        : importingAppVersions;
+    // const filteredAppVersions =
+    //   importingAppVersions.length > 1
+    //     ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+    //     : importingAppVersions;
+
+    // When importing multiple versions, select the right versions to import based on context:
+    // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
+    //   versions matching the source branchId. Fall back to VERSION-type if none found.
+    // - All other cases (plain import, or cloning on default branch): skip BRANCH-type versions,
+    //   only import VERSION-type.
+    // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
+    let filteredAppVersions: any[];
+    if (importingAppVersions.length > 1) {
+      if (cloning && branchId) {
+        const nonStubBranchVersions = importingAppVersions.filter(
+          (v: any) => v.versionType === AppVersionType.BRANCH && v.branchId === branchId && !v.isStub
+        );
+        filteredAppVersions =
+          nonStubBranchVersions.length > 0
+            ? nonStubBranchVersions
+            : importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION);
+      } else {
+        filteredAppVersions = importingAppVersions.filter(
+          (v: any) => !v.versionType || v.versionType === AppVersionType.VERSION
+        );
+      }
+    } else {
+      filteredAppVersions = importingAppVersions;
+    }
 
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
@@ -2099,10 +2126,24 @@ export class AppImportExportService {
     if (existingBranchDsv) return;
 
     // Find the default DSV to copy from
-    const defaultDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, isDefault: true },
-    });
-    if (!defaultDsv) return;
+    // const defaultDsv = await manager.findOne(DataSourceVersion, {
+    //   where: { dataSourceId: dataSource.id, isDefault: true },
+    // });
+    let defaultDsv = await manager.findOne(DataSourceVersion, {
+     where: { dataSourceId: dataSource.id, isDefault: true },
+   });
+    // if (!defaultDsv) return;
+    if (!defaultDsv) {
+       defaultDsv = await manager.save(
+       manager.create(DataSourceVersion, {
+         dataSourceId: dataSource.id,
+         name: dataSource.name || 'v1',
+         isDefault: true,
+         isActive: true,
+         branchId: null,
+       })
+     );
+    }
 
     // Create branch-specific DSV
     const branchDsv = await manager.save(
