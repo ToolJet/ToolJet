@@ -2,6 +2,10 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors, versionModalSelector } from "Selectors/eeCommon";
 import { versionSwitcherSelectors } from "Selectors/version";
+import {createDraftVersion,
+  openVersionSwitcher,
+  openCreateDraftVersionModal
+} from "Support/utils/version";
 
 describe("New Version Creation Flow", () => {
   const generateTestData = () => ({
@@ -148,13 +152,6 @@ describe("New Version Creation Flow", () => {
 });
 
 // Helper Methods
-const openVersionSwitcher = () => {
-  cy.get(versionSwitcherSelectors.versionName)
-    .eq(0)
-    .should("be.visible")
-    .click();
-  cy.wait(300);
-};
 
 const verifySaveVersionModal = (expectedVersionName) => {
   cy.get('[data-cy="save-version-title"]').verifyVisibleElement(
@@ -272,27 +269,6 @@ const verifyCreateDraftVersionModal = (availableVersions = []) => {
   cy.get(versionModalSelector.createDraftVersionModal.createButton).should(
     "be.visible"
   );
-};
-
-const openCreateDraftVersionModal = () => {
-  cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
-  cy.wait(300);
-};
-
-const createDraftVersion = (versionName, fromVersion) => {
-  openCreateDraftVersionModal();
-  cy.wait(500);
-
-  cy.get(
-    versionModalSelector.createDraftVersionModal.createDraftVersionFromInput
-  ).click();
-  cy.waitForElement(`[id*="react-select-"]`);
-  cy.contains(`[id*="react-select-"]`, fromVersion).click();
-
-  cy.waitForElement(versionModalSelector.versionNameInput);
-  cy.get(versionModalSelector.versionNameInput).clear().type(versionName);
-
-  cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
 };
 
 const verifyDraftVersionState = (versionName) => {

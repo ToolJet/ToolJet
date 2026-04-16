@@ -33,7 +33,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) { }
+  ) {}
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -41,9 +41,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -422,6 +422,16 @@ export class VersionsCreateService implements IVersionsCreateService {
           index: page.index,
           disabled: page.disabled,
           hidden: page.hidden,
+          pageHeader: page.pageHeader,
+          pageFooter: page.pageFooter,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
         })
       );
@@ -487,28 +497,32 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
 
         if (parentId) {
-          const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
-          const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
-          const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
+            const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
+            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
 
-          if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+            if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
+              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              } else {
+                parentId = null;
+              }
+            } else if (isKanbanModalChildFlag) {
+              const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-modal`;
+              } else {
+                parentId = null;
+              }
             } else {
-              parentId = null;
+              parentId = oldComponentToNewComponentMapping[parentId];
             }
-          } else if (isKanbanModalChildFlag) {
-            const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-modal`;
-            } else {
-              parentId = null;
-            }
-          } else {
-            parentId = oldComponentToNewComponentMapping[parentId];
           }
         }
 

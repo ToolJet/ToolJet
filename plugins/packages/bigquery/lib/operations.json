@@ -24,6 +24,10 @@
           "name": "List Tables"
         },
         {
+          "value": "get_dataset_info",
+          "name": "Get Dataset Info"
+        },
+        {
           "value": "create_table",
           "name": "Create Table"
         },
@@ -50,27 +54,42 @@
       ]
     },
     "insert_record": {
-      "tableId": {
-        "label": "Table id",
-        "key": "tableId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table id"
-      },
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
+        "placeholder": "Select dataset"
+      },
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "dependsOn": ["datasetId"],
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select table"
       },
       "rows": {
         "label": "Rows",
@@ -84,27 +103,42 @@
       }
     },
     "delete_record": {
-      "tableId": {
-        "label": "Table id",
-        "key": "tableId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table id"
-      },
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
+        "placeholder": "Select dataset"
+      },
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "dependsOn": ["datasetId"],
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select table"
       },
       "condition": {
         "label": "Condition",
@@ -138,6 +172,24 @@
       }
     },
     "create_table": {
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select dataset"
+      },
       "tableId": {
         "label": "Table id",
         "key": "tableId",
@@ -148,17 +200,6 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter table id"
-      },
-      "datasetId": {
-        "label": "Dataset id",
-        "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
       },
       "options": {
         "label": "Options",
@@ -172,51 +213,81 @@
       }
     },
     "delete_table": {
-      "tableId": {
-        "label": "Table id",
-        "key": "tableId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table id"
-      },
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset id"
+        "placeholder": "Select dataset"
+      },
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "dependsOn": ["datasetId"],
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select table"
       }
     },
     "create_view": {
-      "tableId": {
-        "label": "Table id",
-        "key": "tableId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table id"
-      },
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
+        "placeholder": "Select dataset"
+      },
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "dependsOn": ["datasetId"],
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select table"
       },
       "view_name": {
         "label": "View name",
@@ -270,27 +341,42 @@
       }
     },
     "update_record": {
-      "tableId": {
-        "label": "Table id",
-        "key": "tableId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table id"
-      },
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
+        "placeholder": "Select dataset"
+      },
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "dependsOn": ["datasetId"],
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select table"
       },
       "columns": {
         "label": "Columns",
@@ -332,17 +418,44 @@
         "editorType": "extendedSingleLine"
       }
     },
+    "get_dataset_info": {
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select dataset"
+      }
+    },
     "list_tables": {
       "datasetId": {
         "label": "Dataset id",
         "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset id",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listDatasets",
+          "label": "Fetch Datasets"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a dataset",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
+        "placeholder": "Select dataset"
       }
     },
     "query": {
