@@ -233,7 +233,7 @@ describe('AppsController', () => {
           loggedUser = await login(app, 'another@tooljet.io');
           anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-          await createApplication(app, {
+          const anotherApplication = await createApplication(app, {
             name: 'Another organization App',
             user: anotherOrgAdminUserData.user,
           });
@@ -256,7 +256,7 @@ describe('AppsController', () => {
             },
             false
           );
-          await createApplication(
+          const ownedApp = await createApplication(
             app,
             {
               name: 'Owned App',
