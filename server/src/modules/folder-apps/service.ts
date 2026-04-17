@@ -71,7 +71,7 @@ export class FolderAppsService implements IFolderAppsService {
         resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
         organizationId: user.organizationId,
       });
-      const userAppPermissions = userPermissions?.[resourceType];
+      const userAppPermissions = userPermissions?.[resourceType] ?? userPermissions?.[MODULES.APP];
       const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
 
       const allFolderList = await this.foldersUtilService.allFolders(user, manager, type);
