@@ -245,6 +245,39 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  protected async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
+    try {
+      const draftModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin('app_versions', 'mod_ver',
+          "mod_ver.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
+        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .addSelect('mod_ver.name', 'versionName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere('mod_ver.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT })
+        .getRawMany();
+
+      if (draftModules.length > 0) {
+        const moduleList = draftModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        const message =
+          draftModules.length === 1
+            ? `Save blocked - Module "${draftModules[0].moduleName} (${draftModules[0].versionName})" is still in draft. Save the module first.`
+            : `Save blocked - ${draftModules.length} modules are still in draft. Save them first.`;
+        throw new BadRequestException({
+          message: { error: message, details: `Draft modules: ${moduleList}` },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check draft modules in app', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions');
+    }
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
@@ -253,7 +286,7 @@ export class VersionUtilService implements IVersionUtilService {
       // For platform git sync apps, count only versions on the same branch so that
       // versions on other branches don't inflate the count and bypass the guard.
       // For all other apps (branchId=null), fall back to the original count across
-      // all versions — behaviour is unchanged.
+      // all versions - behaviour is unchanged.
       const numVersions = branchId
         ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
         : await this.versionRepository.getCount(app.id);

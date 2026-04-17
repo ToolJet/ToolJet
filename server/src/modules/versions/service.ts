@@ -251,6 +251,10 @@ export class VersionService implements IVersionService {
 
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
+    if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
+      await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, this.versionRepository.manager);
+    }
+
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
