@@ -83,33 +83,37 @@ export const Footer = memo(
             backgroundColor: containerBackgroundColor,
           }}
         >
-          <div className={`table-footer d-flex justify-content-between align-items-center h-100`}>
-            {enablePagination && (
-              <Pagination
-                id={id}
-                tableWidth={width}
-                pageIndex={pageIndex}
-                table={table}
-                pageCount={pageCount}
-                paginationBtnClicked={paginationBtnClicked}
-                darkMode={darkMode}
-                height={height}
-              />
-            )}
-            <div className="d-flex custom-gap-4">
+          <div className={`table-footer d-flex align-items-center h-100`}>
+            <div className="tw-flex-1 d-flex align-items-center h-100">
+              {enablePagination && (
+                <Pagination
+                  id={id}
+                  tableWidth={width}
+                  pageIndex={pageIndex}
+                  table={table}
+                  pageCount={pageCount}
+                  paginationBtnClicked={paginationBtnClicked}
+                  darkMode={darkMode}
+                  height={height}
+                />
+              )}
+            </div>
+            <div className="tw-flex-1 d-flex justify-content-center custom-gap-4">
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
-            <ControlButtons
-              id={id}
-              table={table}
-              darkMode={darkMode}
-              height={height}
-              componentName={componentName}
-              showAddNewRowPopup={showAddNewRowPopup}
-              setShowAddNewRowPopup={setShowAddNewRowPopup}
-              fireEvent={fireEvent}
-              columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
-            />
+            <div className="tw-flex-1 d-flex justify-content-end align-items-center h-100">
+              <ControlButtons
+                id={id}
+                table={table}
+                darkMode={darkMode}
+                height={height}
+                componentName={componentName}
+                showAddNewRowPopup={showAddNewRowPopup}
+                setShowAddNewRowPopup={setShowAddNewRowPopup}
+                fireEvent={fireEvent}
+                columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
+              />
+            </div>
           </div>
         </div>
         {showAddNewRowPopup && (

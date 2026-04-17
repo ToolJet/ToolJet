@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useStore from '@/AppBuilder/_stores/store';
-import { pasteComponents, copyComponents } from './appCanvasUtils';
+import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -30,7 +30,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
-        await pasteComponents(focusedParentId, JSON.parse(cliptext));
+        await pasteComponents(focusedParentId === 'canvas' ? undefined : focusedParentId, JSON.parse(cliptext));
       } catch (err) {
         console.log(err);
       }
