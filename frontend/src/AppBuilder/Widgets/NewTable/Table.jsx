@@ -209,10 +209,10 @@ const Table = memo(
 
     useBatchedUpdateEffectArray([
       {
-        dep: loadingState,
+        dep: loadingState || isRefreshing,
         sideEffect: () => {
-          updateExposedVariablesState('isLoading', loadingState);
-          setExposedVariable('isLoading', loadingState);
+          updateExposedVariablesState('isLoading', loadingState || isRefreshing);
+          setExposedVariable('isLoading', loadingState || isRefreshing);
         },
       },
       {
