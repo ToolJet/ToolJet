@@ -11,6 +11,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
 
+const CONDENSED_ROW_HEIGHT = 40;
+const DEFAULT_ROW_HEIGHT = 46;
+
 export const TableData = ({
   id,
   data,
@@ -69,7 +72,7 @@ export const TableData = ({
       cellMaxHeight = isMaxRowHeightAuto ? 'fit-content' : maxRowHeightValue + 'px';
       styles.maxHeight = cellMaxHeight;
     } else {
-      calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
+      calculatedCellHeight = cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
       styles.maxHeight = `${calculatedCellHeight}px`;
       styles.height = `${calculatedCellHeight}px`;
     }
@@ -99,7 +102,7 @@ export const TableData = ({
       if (item?.type === 'expansion') {
         return expansionHeight;
       }
-      return cellHeight === 'condensed' ? 40 : 46;
+      return cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
     },
     [virtualItemList, cellHeight, expansionHeight]
   );
