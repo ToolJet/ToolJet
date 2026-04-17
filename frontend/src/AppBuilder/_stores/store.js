@@ -33,6 +33,8 @@ import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 enableMapSet();
 
@@ -69,6 +71,8 @@ export default create(
       ...createWhiteLabellingSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),

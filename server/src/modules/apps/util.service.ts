@@ -91,6 +91,20 @@ export class AppsUtilService implements IAppsUtilService {
           appVersionId: appVersion.id,
           index: 1,
           autoComputeLayout: true,
+          pageHeader: {
+            showOnDesktop: false,
+            showOnMobile: false,
+            backgroundColor: 'var(--cc-surface1-surface)',
+            border: 'var(--cc-weak-border)',
+            height: 60,
+          },
+          pageFooter: {
+            showOnDesktop: false,
+            showOnMobile: false,
+            backgroundColor: 'var(--cc-surface1-surface)',
+            border: 'var(--cc-weak-border)',
+            height: 60,
+          },
         })
       );
 
@@ -361,7 +375,7 @@ export class AppsUtilService implements IAppsUtilService {
     return manager
       .createQueryBuilder(AppEnvironment, 'app_environments')
       .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
-      .where('app_versions.id = :currentVersionId', {
+      .where('app_versions.id = :versionId', {
         versionId,
       })
       .getOne();
@@ -575,6 +589,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Navigation',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
