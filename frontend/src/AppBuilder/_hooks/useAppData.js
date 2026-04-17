@@ -620,7 +620,7 @@ const useAppData = (
 
             setJsLibraryRegistry(fullRegistry);
           } catch (error) {
-            console.error('Failed to initialize JS libraries:', error);
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
           } finally {
             setJsLibraryLoading(false);
           }
