@@ -618,7 +618,7 @@ const useAppData = (
 
             setJsLibraryRegistry(fullRegistry);
           } catch (error) {
-            toast.error(`Failed to load JS libraries: ${error.message}`);
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
           } finally {
             setJsLibraryLoading(false);
           }
