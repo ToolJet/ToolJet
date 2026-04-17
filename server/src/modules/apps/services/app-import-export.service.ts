@@ -1347,6 +1347,13 @@ export class AppImportExportService {
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
+    // Dedupe key for folder mappings across ALL version iterations.
+    // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
+    // across versions with a shared co_relation_id (gitId), so the mappings file-set
+    // can contain N mappings that all reference the same query child. Without dedupe
+    // we'd attempt N inserts per child and violate the unique constraint on the 2nd.
+    const insertedMappingChildKeys = new Set<string>();
+
     for (const importingAppVersion of importingAppVersions) {
       let isHomePage = false;
       let updateHomepageId = null;
@@ -1479,24 +1486,44 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      // Import query folders and their mappings for this app version
+      // Import query folders and their mappings for this app version.
+      // Dedupe by name because all versions of an app share the same co_relation_id
+      // (see versions/util.service.ts — versions inherit app.co_relation_id). On git
+      // export every folder's appVersionId is rewritten to that shared gitId, so the
+      // foldersForVersion filter matches one row per (version × folder name) combo.
+      // Collapsing by name yields exactly one folder per logical name on the active
+      // version. folderIdMapping still maps every source folder.id to the surviving
+      // local folder so cross-version mapping rows resolve correctly.
       const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
       const foldersForVersion = importingDataQueryFolders.filter((f) => f.appVersionId === importingAppVersion.id);
       const folderIdMapping: Record<string, string> = {};
+      const nameToSavedFolderId: Record<string, string> = {};
 
       for (const folder of foldersForVersion) {
-        const newFolder = manager.create(DataQueryFolder, {
-          name: folder.name,
-          appVersionId: newAppVersionId,
-        });
-        const savedFolder = await manager.save(DataQueryFolder, newFolder);
-        folderIdMapping[folder.id] = savedFolder.id;
+        let savedId = nameToSavedFolderId[folder.name];
+        if (!savedId) {
+          const newFolder = manager.create(DataQueryFolder, {
+            name: folder.name,
+            appVersionId: newAppVersionId,
+          });
+          const savedFolder = await manager.save(DataQueryFolder, newFolder);
+          savedId = savedFolder.id;
+          nameToSavedFolderId[folder.name] = savedId;
+        }
+        folderIdMapping[folder.id] = savedId;
       }
 
+      // Scope query-child mappings to queries belonging to THIS version only.
+      // `appResourceMappings.dataQueryMapping` accumulates across versions, so filtering
+      // by it would re-insert prior versions' mappings and violate the
+      // UQ_data_query_folder_mapping_child unique constraint on (child_id, child_type).
+      const queryIdsForVersion = new Set(importingDataQueriesForAppVersion.map((q: { id: string }) => q.id));
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
           (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY && appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.QUERY &&
+            queryIdsForVersion.has(m.childId) &&
+            appResourceMappings.dataQueryMapping[m.childId])
       );
 
       for (const mapping of mappingsForVersion) {
@@ -1506,6 +1533,15 @@ export class AppImportExportService {
             : appResourceMappings.dataQueryMapping[mapping.childId];
         const newParentId = mapping.parentId ? (folderIdMapping[mapping.parentId] ?? null) : null;
         if (!newChildId) continue;
+
+        // Skip if we've already inserted a mapping for this (child, type) pair during a
+        // previous version iteration. Required because the DB enforces UNIQUE(child, type)
+        // and queries share co_relation_id across versions, producing duplicate mapping rows
+        // in the git export that all resolve to the same local child id on import.
+        const childKey = `${newChildId}|${mapping.childType}`;
+        if (insertedMappingChildKeys.has(childKey)) continue;
+        insertedMappingChildKeys.add(childKey);
+
         const newMapping = manager.create(DataQueryFolderMapping, {
           parentId: newParentId,
           childId: newChildId,
