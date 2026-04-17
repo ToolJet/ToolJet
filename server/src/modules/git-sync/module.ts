@@ -4,6 +4,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
+import { PluginsModule } from '@modules/plugins/module';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
@@ -51,6 +52,7 @@ export class GitSyncModule extends SubModule {
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
         await VersionModule.register(configs),
+        await PluginsModule.register(configs),
       ],
       controllers: isMainImport ? [GitSyncController] : [],
       providers: [
