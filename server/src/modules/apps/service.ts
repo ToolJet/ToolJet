@@ -50,7 +50,6 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 import { DataQuery } from '@entities/data_query.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
