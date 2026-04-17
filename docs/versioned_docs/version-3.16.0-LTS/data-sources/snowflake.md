@@ -106,7 +106,28 @@ Ensure that you use at least one valid set of Authorization and Token URLs (pref
 
 Uses ToolJet’s preconfigured OAuth application to simplify authentication without requiring you to create and manage your own OAuth app.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/oauth-tj-app2.png" alt="ToolJet - Snowflake connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/oauth-tj-app2.png" alt="ToolJet - Snowflake connection" />
+
+:::info
+The **`scope`** parameter for OAuth token requests can include more than just a role. The format depends on the OAuth flow:
+
+`session:role:<role_name>` — specifies the role (e.g., `session:role:public`, `session:role:analyst`)
+- You can also leave scope empty to use the user's default role.
+- For External OAuth, the scope is configured in the security integration and may map to different Snowflake roles.
+
+For more info, refer **[here](https://docs.snowflake.com/en/user-guide/oauth-ext-overview#scopes)**.
+:::
+
+### Key Pair Auth
+
+This is an authentication method that uses an RSA key pair (public/private) instead of a username/password. It's ideal for service accounts, automation, and CI/CD pipelines.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/key-pair-auth.png" alt="ToolJet - Snowflake connection" />
+
+:::info
+- Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.
+- Also, make sure when you start, open a terminal window and then generate a private key.
+:::
 
 ### How to connect to Snowflake when MFA is enabled
 
