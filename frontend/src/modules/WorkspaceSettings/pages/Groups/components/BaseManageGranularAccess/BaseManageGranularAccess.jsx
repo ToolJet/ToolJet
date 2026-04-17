@@ -273,6 +273,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   openEditPermissionModal = (granularPermission) => {
+    if (this.isGroupAdminReadOnly()) return;
     const fixedState = {
       currentEditingPermissions: granularPermission,
       showAddPermissionModal: true,
@@ -668,6 +669,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   openAddPermissionModal = (resourceType) => {
+    if (this.isGroupAdminReadOnly()) return;
     // Don't pre-select builder-only environments if group has end-users
     const hasEndUsers = this.props.hasEndUsers;
     const defaultEnvironments = hasEndUsers
@@ -799,10 +801,17 @@ class BaseManageGranularAccess extends React.Component {
     this.handleAutoRoleChangeModalClose();
   };
 
+  isGroupAdminReadOnly = () => {
+    const s = authenticationService.currentSessionValue;
+    return !!s?.is_group_admin && !s?.admin;
+  };
+
   getIsEditable = (isBasicPlan, isFeatureEnabled) => {
     if (isBasicPlan && isFeatureEnabled) {
       throw new Error('Invalid State: Basic plan should not have access to granular permissions feature');
     }
+
+    if (this.isGroupAdminReadOnly()) return false;
 
     return !isBasicPlan && isFeatureEnabled;
   };

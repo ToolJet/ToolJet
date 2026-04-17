@@ -856,7 +856,7 @@ class BaseManageGroupPermissions extends React.Component {
                               isFeatureEnabled: !permissionGroup.disabled,
                             }}
                             selectedItem={
-                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)
+                              this.state.selectedGroup === this.humanizeifDefaultGroupName(permissionGroup.name)
                             }
                             onClick={
                               permissionGroup.disabled
@@ -928,6 +928,7 @@ class BaseManageGroupPermissions extends React.Component {
                         value: group.name,
                       };
                     })}
+                    isBuilder={this.props.isBuilder}
                     workflowEnabled={false}
                     featureAccess={featureAccess}
                   />
