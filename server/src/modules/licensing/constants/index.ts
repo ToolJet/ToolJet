@@ -132,6 +132,8 @@ export enum LICENSE_FIELD {
   APP_PAGES_ENABLED = 'appPagesEnabled',
   APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
   APP_PAGES_NAV_GROUP = 'appPagesAddNavGroupEnabled',
+  CANVAS_PAGE_HEADER = 'canvasPageHeaderEnabled',
+  CANVAS_PAGE_FOOTER = 'canvasPageFooterEnabled',
   APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
   APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
   APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
@@ -141,6 +143,7 @@ export enum LICENSE_FIELD {
   GITHUB = 'githubEnabled',
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
+  QUERY_FOLDERS = 'queryFoldersEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

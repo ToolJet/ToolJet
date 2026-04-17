@@ -37,6 +37,7 @@ export interface Terms {
     google?: boolean;
     github?: boolean;
     observability?: boolean;
+    queryFolders?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -53,6 +54,8 @@ export interface Terms {
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
+        canvasPageHeader?: boolean;
+        canvasPageFooter?: boolean;
       };
     };
     permissions: {
@@ -64,6 +67,9 @@ export interface Terms {
       promote: boolean;
       release: boolean;
       history: boolean;
+    };
+    components?: {
+      navigation?: boolean;
     };
   };
   modules?: {

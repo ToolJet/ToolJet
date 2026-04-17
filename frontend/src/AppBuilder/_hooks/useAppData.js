@@ -5,6 +5,7 @@ import {
   appsService,
   appVersionService,
   dataqueryService,
+  dataQueryFolderService,
   orgEnvironmentConstantService,
   authenticationService,
   customStylesService,
@@ -74,6 +75,8 @@ const useAppData = (
   const setPages = useStore((state) => state.setPages);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const setFolders = useStore((state) => state.queryFolders?.setFolders);
+  const setFolderMappings = useStore((state) => state.queryFolders?.setFolderMappings);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const setComponentNameIdMapping = useStore((state) => state.setComponentNameIdMapping);
   const initDependencyGraph = useStore((state) => state.initDependencyGraph);
@@ -355,7 +358,10 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // appId prop is undefined for public app viewers (AppsRoute skips onValidSession → extraProps never set).
+        // Fall back to appData response so isReleasedApp evaluates correctly and the title omits "Preview -".
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
 
         setApp(
           {
@@ -504,6 +510,18 @@ const useAppData = (
             moduleId
           );
         }
+
+        if (mode === 'edit' && !moduleMode && setFolders) {
+          const versionId = appData.editing_version?.id || appData.current_version_id;
+          dataQueryFolderService
+            .getAll(versionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
+        }
+
         const constants = constantsResp?.constants;
 
         if (constants) {
@@ -588,7 +606,7 @@ const useAppData = (
   useEffect(() => {
     if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
-      page: pageTitles.EDITOR,
+      page: mode === 'edit' ? pageTitles.EDITOR : pageTitles.VIEWER,
       appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
@@ -647,7 +665,9 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // See comment at first effectiveAppId usage above
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.branch_app_name || appData.name,
           appId: appData.id,
@@ -715,6 +735,20 @@ const useAppData = (
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        }
+
+        if (setFolders) {
+          setFolders([]);
+          setFolderMappings([]);
+          if (mode === 'edit') {
+            dataQueryFolderService
+              .getAll(currentVersionId)
+              .then((folderData) => {
+                setFolders(folderData.folders ?? []);
+                setFolderMappings(folderData.folderMappings ?? []);
+              })
+              .catch(() => {});
+          }
         }
 
         try {
