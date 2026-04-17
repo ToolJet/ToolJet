@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Headers, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -55,6 +55,12 @@ export class AppsController implements IAppsController {
     return this.appsService.create(user, appCreateDto);
   }
 
+  @InitFeature(FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG)
+  @Get('app-authentication-config/:slug')
+  getAppAuthenticationConfig(@Param('slug') slug: string) {
+    return this.appsService.getAppAuthenticationConfig(slug);
+  }
+
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
   @UseGuards(JwtAuthGuard, ValidSlugGuard, FeatureAbilityGuard)
   @Get('validate-private-app-access/:slug')
@@ -87,28 +93,28 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
-  update(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  update(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
     return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/public')
-  updatePublic(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  updatePublic(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
     return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id')
-  delete(@User() user, @App() app: AppEntity) {
+  delete(@User() user: UserEntity, @App() app: AppEntity) {
     return this.appsService.delete(app, user);
   }
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  index(@User() user, @Query() query, @Headers('x-branch-id') headerBranchId?: string) {
+  index(@User() user: UserEntity, @Query() query: any, @Headers('x-branch-id') headerBranchId?: string) {
     const AppListDto: AppListDto = {
       page: query.page,
       folderId: query.folder,
@@ -139,7 +145,7 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE_ICON)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/icons')
-  async updateIcon(@User() user, @App() app: AppEntity, @Body('icon') icon) {
+  async updateIcon(@User() user: UserEntity, @App() app: AppEntity, @Body('icon') icon: string) {
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
     await this.appsService.update(app, appUpdateDto, user);
@@ -149,7 +155,7 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/tables')
-  async tables(@User() user, @App() app: AppEntity) {
+  async tables(@User() user: UserEntity, @App() app: AppEntity) {
     const result = await this.appsService.findTooljetDbTables(app.id);
     return { tables: result };
   }
@@ -165,14 +171,14 @@ export class AppsController implements IAppsController {
   // This guard will allow access for unauthenticated user if the app is public
   @UseGuards(AppAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get('slugs/:slug')
-  appFromSlug(@User() user, @App() app: AppEntity) {
+  appFromSlug(@User() user: UserEntity, @App() app: AppEntity) {
     return this.appsService.getBySlug(app, user);
   }
 
   @InitFeature(FEATURE_KEY.RELEASE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/release')
-  releaseVersion(@User() user, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
+  releaseVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
     return this.appsService.release(app, user, versionReleaseDto);
   }
 }

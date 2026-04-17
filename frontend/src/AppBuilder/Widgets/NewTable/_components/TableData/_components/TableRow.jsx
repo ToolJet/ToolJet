@@ -44,8 +44,9 @@ export const TableRow = ({
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
         'table-row-condensed': cellHeight === 'condensed',
       })}
-      onClick={() => {
-        handleRowClick(row);
+      onClick={(e) => {
+        const isCheckbox = e?.target?.classList.contains('table-selector-checkbox-icon') ?? false;
+        handleRowClick(row, isCheckbox);
       }}
       onMouseEnter={() => {
         if (hasHoveredEvent) {

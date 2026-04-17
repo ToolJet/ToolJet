@@ -4,10 +4,13 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, IsNull, Not } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { Component } from '@entities/component.entity';
 import { User } from '@entities/user.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { EntityManager, IsNull, Not, In } from 'typeorm';
 import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
@@ -299,11 +302,14 @@ export class VersionUtilService implements IVersionUtilService {
         throw new BadRequestException('You cannot delete a released version');
       }
 
+      const versionId = app.appVersions[0].id;
+
       if (app.type === 'module') {
-        await this.checkModuleVersionInUse(app.appVersions[0].id, manager);
+        await this.checkModuleVersionInUse(versionId, manager);
       }
 
-      await this.versionRepository.deleteById(app.appVersions[0].id, manager);
+      await this.cleanupQueryFolderData(manager, versionId);
+      await this.versionRepository.deleteById(versionId, manager);
     }, manager);
   }
 
@@ -312,11 +318,29 @@ export class VersionUtilService implements IVersionUtilService {
       if (app.currentVersionId && app.currentVersionId === version.id) {
         throw new BadRequestException('You cannot delete a released version');
       }
-
       if (app.type === 'module') {
         await this.checkModuleVersionInUse(version.id, manager);
       }
+
+      await this.cleanupQueryFolderData(manager, version.id);
       await this.versionRepository.deleteById(version.id, manager);
     }, manager);
+  }
+
+  // DataQuery has CASCADE on AppVersion, but DataQueryFolder and
+  // DataQueryFolderMapping do not — delete them explicitly to avoid orphans.
+  private async cleanupQueryFolderData(manager: EntityManager, versionId: string): Promise<void> {
+    const folders = await manager.find(DataQueryFolder, { where: { appVersionId: versionId } });
+    const folderIds = folders.map((f) => f.id);
+    const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: versionId } });
+    const queryIds = queries.map((q) => q.id);
+    const allChildIds = [...folderIds, ...queryIds];
+
+    if (allChildIds.length > 0) {
+      await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+    }
+    if (folderIds.length > 0) {
+      await manager.delete(DataQueryFolder, { appVersionId: versionId });
+    }
   }
 }
