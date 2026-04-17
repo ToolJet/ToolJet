@@ -24,7 +24,7 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT, ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 
 // Debounce timers for query re-runs triggered by dependency changes
@@ -1648,12 +1648,8 @@ export const createComponentsSlice = (set, get) => ({
       const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
-        newParentComponentType === 'Listview' ||
-        newParentComponentType === 'Kanban' ||
-        newParentComponentType === 'Table' ||
-        oldParentComponentType === 'Listview' ||
-        oldParentComponentType === 'Kanban' ||
-        oldParentComponentType === 'Table'
+        ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+        ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
         // Add the component to the resolved store
         let resolvedComponentValues = { [componentId]: {} };
@@ -1984,12 +1980,8 @@ export const createComponentsSlice = (set, get) => ({
     const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
 
     if (
-      newParentComponentType === 'Listview' ||
-      newParentComponentType === 'Kanban' ||
-      newParentComponentType === 'Table' ||
-      oldParentComponentType === 'Listview' ||
-      oldParentComponentType === 'Kanban' ||
-      oldParentComponentType === 'Table'
+      ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+      ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
     ) {
       // Add the component to the resolved store
       const { component } = getComponentDefinition(componentId, moduleId);
@@ -2615,12 +2607,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId(currentId) || currentId;
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (
-        def.component?.component === 'Listview' ||
-        def.component?.component === 'Kanban' ||
-        def.component?.component === 'Table'
-      )
-        return baseId;
+      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
       currentId = def.component?.parent;
     }
     return null;
