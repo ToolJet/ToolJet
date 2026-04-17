@@ -263,7 +263,7 @@ export const tableConfig = {
       displayName: 'Show refresh button',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
+        defaultValue: false,
       },
     },
     selectRowOnCellEdit: {
@@ -754,7 +754,7 @@ export const tableConfig = {
       hideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
-      showRefreshButton: { value: '{{true}}' },
+      showRefreshButton: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

@@ -47,7 +47,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
-        state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? true;
+        state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
