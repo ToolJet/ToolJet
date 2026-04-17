@@ -60,11 +60,15 @@ export const createAppVersionSlice = (set, get) => ({
 
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
-  getShouldFreeze: (skipIsEditorFreezedCheck = false) => {
+  getShouldFreeze: (skipIsEditorFreezedCheck = false, isModuleEditor = false) => {
     const isVersionReleased = get().isVersionReleased;
-    const isEditorFreezed = get().isEditorFreezed;
     const selectedVersionId = get().selectedVersion?.id;
     const releasedVersionId = get().releasedVersionId;
+    if (isModuleEditor) {
+      // Modules don't participate in git branching — only freeze for released versions
+      return isVersionReleased || selectedVersionId === releasedVersionId;
+    }
+    const isEditorFreezed = get().isEditorFreezed;
     const result =
       isVersionReleased || (!skipIsEditorFreezedCheck && isEditorFreezed) || selectedVersionId === releasedVersionId;
     return result;
