@@ -259,16 +259,20 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // Try pre-fetched definition first (required for public apps where
-      // the version API needs authentication). The parent app's response
-      // includes module definitions that match the released state.
-      const moduleDefinition = getModuleDefinition(appId);
+      // For public/unauthenticated viewers, use the pre-fetched definition
+      // from the parent app's response — the version API requires auth.
+      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
       if (moduleDefinition) {
         appDataPromise = Promise.resolve(moduleDefinition);
       } else if (versionId) {
         appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
-        appDataPromise = appService.fetchApp(appId);
+        const cachedDefinition = getModuleDefinition(appId);
+        if (cachedDefinition) {
+          appDataPromise = Promise.resolve(cachedDefinition);
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       }
     } else {
       if (isPublicAccess) {
