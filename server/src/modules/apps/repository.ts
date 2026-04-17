@@ -74,6 +74,17 @@ export class AppsRepository extends Repository<App> {
     });
   }
 
+  async isModuleInPublicApp(moduleAppId: string): Promise<boolean> {
+    const count = await this.createQueryBuilder('app')
+      .innerJoin('app_versions', 'av', 'av.app_id = app.id AND av.id = app.current_version_id')
+      .innerJoin('pages', 'p', 'p.app_version_id = av.id')
+      .innerJoin('components', 'c', "c.page_id = p.id AND c.type = 'ModuleViewer'")
+      .where('app.is_public = true')
+      .andWhere("c.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId", { moduleAppId })
+      .getCount();
+    return count > 0;
+  }
+
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
     return await this.createQueryBuilder('app')
       .select([
