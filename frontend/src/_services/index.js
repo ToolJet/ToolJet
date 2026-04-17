@@ -37,3 +37,4 @@ export * from './ai-onboarding.service';
 export * from './workflow_bundles.service';
 export * from './workspace_branches.service';
 export * from './custom-domain.service';
+export * from './dataQueryFolder.service';

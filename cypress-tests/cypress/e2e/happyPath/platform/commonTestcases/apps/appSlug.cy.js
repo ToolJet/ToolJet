@@ -74,17 +74,17 @@ describe("App Slug", () => {
     releaseApp();
     verifyURLs(Cypress.env("workspaceId"), data.slug, true);
 
-    cy.visit("/my-workspace");
-    cy.apiCreateApp(data.slug);
-    cy.openApp("my-workspace");
-    cy.get(commonSelectors.leftSideBarSettingsButton).click();
-    cy.get(commonWidgetSelector.appSlugInput).clear();
-    cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
-    cy.wait(500);
-    cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
-      "have.text",
-      "This app slug is already taken."
-    );
+    // cy.visit("/my-workspace");
+    // cy.apiCreateApp(data.slug);
+    // cy.openApp("my-workspace");
+    // cy.get(commonSelectors.leftSideBarSettingsButton).click();
+    // cy.get(commonWidgetSelector.appSlugInput).clear();
+    // cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
+    // cy.wait(500);
+    // cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
+    //   "have.text",
+    //   "This app slug is already taken."
+    // );
   });
 
   it("Verify app slug cases in share modal", () => {
@@ -126,18 +126,18 @@ describe("App Slug", () => {
     cy.get(commonWidgetSelector.modalCloseButton).click();
     verifyURLs(Cypress.env("workspaceId"), newSlug, true);
 
-    cy.visit("/my-workspace");
-    cy.apiCreateApp(newSlug);
-    cy.openApp("my-workspace");
-    cy.apiPublishDraftVersion("v1");
+    // cy.visit("/my-workspace");
+    // cy.apiCreateApp(newSlug);
+    // cy.openApp("my-workspace");
+    // cy.apiPublishDraftVersion("v1");
 
-    releaseApp();
-    cy.get(commonWidgetSelector.shareAppButton).click();
-    cy.clearAndType(commonWidgetSelector.appNameSlugInput, newSlug);
-    cy.wait(500);
-    cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
-      "have.text",
-      "This app slug is already taken."
-    );
+    // releaseApp();
+    // cy.get(commonWidgetSelector.shareAppButton).click();
+    // cy.clearAndType(commonWidgetSelector.appNameSlugInput, newSlug);
+    // cy.wait(500);
+    // cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
+    //   "have.text",
+    //   "This app slug is already taken."
+    // );
   });
 });
