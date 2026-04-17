@@ -51,7 +51,6 @@ import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
-import { BranchContextModule } from '@modules/branch-context/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -104,7 +103,6 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
-      await BranchContextModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
