@@ -635,7 +635,8 @@ export class AppImportExportService {
         moduleResourceMappings,
         undefined,
         branchId,
-        cloning
+        cloning,
+        isGitApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
@@ -961,7 +962,8 @@ export class AppImportExportService {
     moduleResourceMappings?: Record<string, unknown>,
     createNewVersion?: boolean,
     branchId?: string,
-    cloning = false
+    cloning = false,
+    isGitApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1038,7 +1040,8 @@ export class AppImportExportService {
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
       createNewVersion,
-      branchId
+      branchId,
+      isGitApp || cloning
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2405,7 +2408,8 @@ export class AppImportExportService {
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
     createNewVersion?: boolean,
-    branchId?: string
+    branchId?: string,
+    useBranchVersionType = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2423,8 +2427,10 @@ export class AppImportExportService {
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
+    // Only applies to git-sync or clone operations — plain imports always use VERSION type
+    // so versions remain visible in the version manager UI.
     let isSubBranch = false;
-    if (branchId) {
+    if (branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
         select: ['id', 'isDefault'],
