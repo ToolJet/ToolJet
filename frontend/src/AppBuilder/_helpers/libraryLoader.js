@@ -22,7 +22,8 @@ function executeUMD(source) {
         amdResult = factory();
         return;
       }
-      // Handle: define(value) — plain object export (strings are intentionally ignored)
+      // Handle: define(value) — capture any direct non-string export
+      // (strings are intentionally ignored to avoid treating AMD IDs as exports)
       const value = args[args.length - 1];
       if (typeof value !== 'string') {
         amdResult = value;
