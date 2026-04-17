@@ -3,16 +3,16 @@ id: logout
 title: Logout
 ---
 
-This action allows you to log out of the application (ToolJet).
+This action logs you out of your current ToolJet workspace session.
 
 :::info Standalone App URLs
 If your app is accessed via a standalone URL, logging out will redirect the user back to the app-specific login page instead of the workspace login page. See [Authentication for Standalone Application URLs](/docs/development-lifecycle/release/share-app#authentication-for-standalone-application-urls) for more details.
 :::
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. For example: `300`
+The **Debounce** field is empty by default. Enter a numerical value (in milliseconds) to delay the action execution. For example, entering `300` will trigger the logout after 300ms.
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/how-to/run-actions-from-runjs).
+You can also trigger this action programmatically using **JavaScript code**. Learn more [here](/docs/how-to/run-actions-from-runjs).
 :::
 
-<img className="screenshot-full img-l" src="/img/actions/logout/logout2.png" alt="ToolJet - Action reference -  Logout" />
+<img className="screenshot-full img-l" src="/img/actions/logout/logout2.png" alt="ToolJet - Action reference - Logout" />
