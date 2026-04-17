@@ -21,6 +21,8 @@ export type SourceOptions = {
   multiple_auth_enabled?: boolean;
   grant_type?: string;
   tokenData?: any;
+  private_key?: string;
+  private_key_passphrase?: string;
 };
 export type QueryOptions = {
   query: string;
