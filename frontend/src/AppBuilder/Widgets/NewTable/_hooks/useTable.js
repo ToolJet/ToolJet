@@ -20,6 +20,7 @@ export function useTable({
   rowsPerPage,
   globalFilter,
   setGlobalFilter,
+  expandedRows,
 }) {
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -42,6 +43,8 @@ export function useTable({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const newData = useMemo(() => [...data], [data, columns]);
 
+  const meta = useMemo(() => ({ expandedRows }), [expandedRows]);
+
   const table = useReactTable({
     data: newData,
     columns,
@@ -54,6 +57,7 @@ export function useTable({
     columnResizeMode: 'onChange',
     enableRowSelection: true,
     enableMultiRowSelection: showBulkSelector,
+    meta,
     state: {
       pagination,
       columnVisibility,
