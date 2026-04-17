@@ -22,7 +22,7 @@ function executeUMD(source) {
         amdResult = factory();
         return;
       }
-      // Handle: define(value) — plain object/string export
+      // Handle: define(value) — plain object export (strings are intentionally ignored)
       const value = args[args.length - 1];
       if (typeof value !== 'string') {
         amdResult = value;
@@ -46,6 +46,11 @@ function executeUMD(source) {
  * Returns the exported module object.
  */
 export async function loadLibraryFromURL(url) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Only HTTPS URLs are allowed for library loading');
+  }
+
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch library from ${url}: ${response.status} ${response.statusText}`);
@@ -90,7 +95,7 @@ export async function initializeLibraries(jsLibraries = []) {
 /**
  * Executes preloaded JavaScript and captures exported functions/variables.
  * The code must return an object — each property becomes a top-level variable
- * available in RunJS queries, transformations, and {{}} expressions.
+ * available in RunJS queries and query transformations.
  *
  * Libraries (both built-in and user-added) are available in scope.
  * No access to components, queries, globals, etc.
