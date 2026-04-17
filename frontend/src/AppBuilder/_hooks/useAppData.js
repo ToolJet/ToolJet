@@ -259,16 +259,16 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      if (versionId) {
-        // Module version pinning: load the specific pinned version
+      // Try pre-fetched definition first (required for public apps where
+      // the version API needs authentication). The parent app's response
+      // includes module definitions that match the released state.
+      const moduleDefinition = getModuleDefinition(appId);
+      if (moduleDefinition) {
+        appDataPromise = Promise.resolve(moduleDefinition);
+      } else if (versionId) {
         appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
-        const moduleDefinition = getModuleDefinition(appId);
-        if (moduleDefinition) {
-          appDataPromise = Promise.resolve(moduleDefinition);
-        } else {
-          appDataPromise = appService.fetchApp(appId);
-        }
+        appDataPromise = appService.fetchApp(appId);
       }
     } else {
       if (isPublicAccess) {
@@ -330,6 +330,9 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
+        if (!constantsResp) {
+          constantsResp = { constants: [] };
+        }
         constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
           constantsResp?.constants,
           editorEnvironment?.name
