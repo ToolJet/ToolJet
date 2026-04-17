@@ -519,7 +519,6 @@ export class AppImportExportService {
     const moduleResourceMappings = {
       moduleApps: {},
       moduleVersions: {},
-      moduleEnvironments: {},
     };
 
     const existingModules =
@@ -542,16 +541,35 @@ export class AppImportExportService {
           // Module exists - map old IDs to existing module's IDs
           moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
 
-          const latestVersion = existingModule.editingVersion?.id;
-          const defaultEnvironment = existingModule?.editingVersion?.currentEnvironmentId;
+          // Fetch existing module's versions to map by name
+          const existingVersions = await this.entityManager.find(AppVersion, {
+            where: { appId: existingModule.id },
+            order: { createdAt: 'DESC' },
+          });
 
-          if (latestVersion) {
-            moduleResourceMappings.moduleVersions[importedModule?.appV2?.editingVersion.id] = latestVersion;
+          // Map all exported module versions to existing versions by name match
+          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          for (const importedVersion of importedModuleVersions) {
+            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
+            if (matchingVersion) {
+              moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
+            }
           }
 
-          if (defaultEnvironment) {
-            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion.currentEnvironmentId] =
-              defaultEnvironment;
+          // Fallback: map any unmatched imported versions to the latest existing version
+          // so that ModuleViewer components don't retain stale UUIDs from the source workspace
+          if (existingVersions.length > 0) {
+            for (const importedVersion of importedModuleVersions) {
+              if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
+                moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
+              }
+            }
+          }
+
+          // Also map the editingVersion if not already mapped
+          const editingVersionId = importedModule?.appV2?.editingVersion?.id;
+          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+            moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
           // Module doesn't exist - need to import it
@@ -567,10 +585,11 @@ export class AppImportExportService {
           );
 
           moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
-          moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
-          moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
+
+          // Map ALL version IDs from the import, not just editingVersion
+          for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
+            moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
+          }
         }
       }
     }
@@ -1684,13 +1703,6 @@ export class AppImportExportService {
                 }
               }
 
-              // Replace module environment ID
-              if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-                const oldEnvironmentId = properties.moduleEnvironmentId.value;
-                if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-                  properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-                }
-              }
             }
             newComponent.properties = properties || {};
 
@@ -2633,7 +2645,7 @@ export class AppImportExportService {
         version.globalSettings = appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
-        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -3212,7 +3224,7 @@ export class AppImportExportService {
       const inputItems = moduleContainer.properties?.inputItems?.value || [];
 
       // Process each property in the ModuleViewer component
-      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'visibility'];
 
       for (const [propertyKey, propertyValue] of Object.entries(properties)) {
         // Skip excluded properties
@@ -3809,13 +3821,6 @@ function transformComponentData(
           }
         }
 
-        // Replace module environment ID
-        if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-          const oldEnvironmentId = properties.moduleEnvironmentId.value;
-          if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-            properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-          }
-        }
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);

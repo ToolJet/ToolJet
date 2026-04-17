@@ -50,12 +50,10 @@ export const useCanvasDropHandler = () => {
     setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
     setRightSidebarOpen(true);
 
-    // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
       ? {
           moduleId: component.moduleId,
           versionId: component.versionId,
-          environmentId: component.environmentId,
           moduleName: component.displayName,
           moduleContainer: component.moduleContainer,
         }

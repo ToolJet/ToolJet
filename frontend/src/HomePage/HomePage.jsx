@@ -845,8 +845,8 @@ class HomePageComponent extends React.Component {
           this.fetchAppsLimit();
         }
       })
-      .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+      .catch((error) => {
+        toast.error(error?.error || error?.message || 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();

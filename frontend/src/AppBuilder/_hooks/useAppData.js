@@ -258,6 +258,7 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    let cancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -265,11 +266,21 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      const moduleDefinition = getModuleDefinition(appId);
+      // For public/unauthenticated viewers, use the pre-fetched definition
+      // from the parent app's response — the version API requires auth.
+      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      } else if (versionId) {
+        appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
-        appDataPromise = appService.fetchApp(appId);
+        const cachedDefinition = getModuleDefinition(appId);
+        if (cachedDefinition) {
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       }
     } else {
       if (isPublicAccess) {
@@ -284,6 +295,7 @@ const useAppData = (
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
+        if (cancelled) return;
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
@@ -308,10 +320,7 @@ const useAppData = (
           try {
             const queryParams = { slug: slug };
 
-            const viewerEnvironment =
-              moduleMode && isPublicAccess
-                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
-                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
@@ -333,6 +342,9 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
+        if (!constantsResp) {
+          constantsResp = { constants: [] };
+        }
         constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
           constantsResp?.constants,
           editorEnvironment?.name
@@ -584,18 +596,20 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-
-        return () => {
-          document.title = retrieveWhiteLabelText();
-        };
       })
       .catch((_error) => {
+        if (cancelled) return;
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode]);
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setApp, setEditorLoading, currentSession, mode, versionId]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {

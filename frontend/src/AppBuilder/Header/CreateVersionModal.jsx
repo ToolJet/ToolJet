@@ -296,10 +296,22 @@ const CreateVersionModal = ({
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
-      } else if (error?.error) {
-        toast.error(error?.error);
       } else {
-        toast.error('Error while creating version. Please try again.');
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Save Failed',
+          message: errorMessage,
+          description: errorDetails,
+          error: { message: errorMessage, description: errorDetails },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
       }
     } finally {
       setIsCreatingVersion(false);
