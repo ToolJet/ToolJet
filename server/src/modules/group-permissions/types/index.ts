@@ -73,6 +73,7 @@ interface Features {
   [FEATURE_KEY.REVOKE_GROUP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.GET_GROUP_ADMINS]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_ADMINS]: FeatureConfig;
+  [FEATURE_KEY.GET_USER_ADMIN_GROUPS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

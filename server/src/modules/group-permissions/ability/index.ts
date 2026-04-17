@@ -48,6 +48,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.REVOKE_GROUP_ADMIN,
           FEATURE_KEY.GET_GROUP_ADMINS,
           FEATURE_KEY.GET_ADDABLE_ADMINS,
+          FEATURE_KEY.GET_USER_ADMIN_GROUPS,
         ],
         GroupPermissions
       );

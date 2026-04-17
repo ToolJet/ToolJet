@@ -178,4 +178,5 @@ export enum FEATURE_KEY {
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',
   GET_GROUP_ADMINS = 'get_group_admins',
   GET_ADDABLE_ADMINS = 'get_addable_admins',
+  GET_USER_ADMIN_GROUPS = 'get_user_admin_groups',
 }

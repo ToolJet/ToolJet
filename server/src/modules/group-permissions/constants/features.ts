@@ -96,6 +96,9 @@ export const FEATURES_EE: FeaturesConfig = {
     [FEATURE_KEY.GET_ADDABLE_ADMINS]: {
       license: LICENSE_FIELD.CUSTOM_GROUPS,
     },
+    [FEATURE_KEY.GET_USER_ADMIN_GROUPS]: {
+      license: LICENSE_FIELD.CUSTOM_GROUPS,
+    },
   },
 };
 
@@ -131,5 +134,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.REVOKE_GROUP_ADMIN]: {},
     [FEATURE_KEY.GET_GROUP_ADMINS]: {},
     [FEATURE_KEY.GET_ADDABLE_ADMINS]: {},
+    [FEATURE_KEY.GET_USER_ADMIN_GROUPS]: {},
   },
 };

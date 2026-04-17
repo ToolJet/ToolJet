@@ -72,7 +72,7 @@ export class AppsService implements IAppsService {
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
     protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
