@@ -404,6 +404,8 @@ export const Table = (props) => {
             'selectRowOnCellEdit',
           ]
         : []),
+      'enableExpandableRows',
+      'expansionHeight',
     ],
     [allowSelection]
   );
@@ -432,6 +434,7 @@ export const Table = (props) => {
     [enablePagination, serverSidePagination]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
