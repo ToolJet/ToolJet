@@ -70,6 +70,7 @@ const Table = memo(
     const cleanupLazyResolvables = useStore((state) => state.cleanupLazyResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
@@ -265,10 +266,10 @@ const Table = memo(
 
     useBatchedUpdateEffectArray([
       {
-        dep: loadingState,
+        dep: loadingState || isRefreshing,
         sideEffect: () => {
-          updateExposedVariablesState('isLoading', loadingState);
-          setExposedVariable('isLoading', loadingState);
+          updateExposedVariablesState('isLoading', loadingState || isRefreshing);
+          setExposedVariable('isLoading', loadingState || isRefreshing);
         },
       },
       {
@@ -367,7 +368,7 @@ const Table = memo(
           darkMode={darkMode}
           componentName={componentName}
           setExposedVariables={setExposedVariables}
-          loadingState={exposedVariablesTemporaryState.isLoading}
+          loadingState={exposedVariablesTemporaryState.isLoading || isRefreshing}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}
