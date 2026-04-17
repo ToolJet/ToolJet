@@ -38,6 +38,9 @@ const Table = memo(
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
+    const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
+    const lastExpandedRowIndex = useTableStore((state) => state.components[id]?.lastExpandedRowIndex ?? null, shallow);
+    const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
     const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
     const setTableActions = useTableStore((state) => state.setTableActions, shallow);
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
@@ -62,6 +65,9 @@ const Table = memo(
     const selectedRowColor = useTableStore((state) => state.getTableStyles(id)?.selectedRowColor, shallow);
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+    const updateCustomResolvablesLazy = useStore((state) => state.updateCustomResolvablesLazy, shallow);
+    const resolveExpandedRows = useStore((state) => state.resolveExpandedRows, shallow);
+    const cleanupLazyResolvables = useStore((state) => state.cleanupLazyResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
@@ -146,6 +152,53 @@ const Table = memo(
       hasDataChanged.current = true;
     }, [data]);
 
+    const enableExpandableRows = restOfProperties?.enableExpandableRows ?? false;
+
+    // Store only index 0 as template for initial component setup (setResolvedComponentByProperty).
+    // Full row data is populated on-demand in resolveExpandedRows when rows expand.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) {
+        cleanupLazyResolvables(id, moduleId);
+        return;
+      }
+      updateCustomResolvablesLazy(id, [{ rowData: data[0] }], moduleId, []);
+    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvablesLazy, cleanupLazyResolvables]);
+
+    // When rows expand/collapse or data changes, resolve only expanded rows.
+    // resolveExpandedRows populates customResolvables for expanded indices,
+    // then reuses updateDependencyValues which scopes to those rows via the guard.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
+      const indices = Object.values(expandedRows).filter((v) => typeof v === 'number' && v < data.length);
+      resolveExpandedRows(id, indices, data, moduleId);
+    }, [expandedRows, data, enableExpandableRows, id, moduleId, resolveExpandedRows]);
+
+    // Collapse all rows and clear exposed variables when expandable rows is toggled
+    const prevEnableExpandableRowsRef = useRef(enableExpandableRows);
+    useEffect(() => {
+      if (prevEnableExpandableRowsRef.current === enableExpandableRows) return;
+      prevEnableExpandableRowsRef.current = enableExpandableRows;
+      collapseAllRows(id);
+      setExposedVariables({ currentExpandedRows: [], lastExpandedRow: null });
+    }, [enableExpandableRows, collapseAllRows, id, setExposedVariables]);
+
+    // Expose currentExpandedRows / lastExpandedRow and fire onExpand on new expansions
+    const prevExpandedRowsRef = useRef({});
+    useEffect(() => {
+      const prev = prevExpandedRowsRef.current;
+      const currentExpandedRows = Object.values(expandedRows)
+        .filter((v) => typeof v === 'number')
+        .sort((a, b) => a - b);
+
+      setExposedVariables({ currentExpandedRows, lastExpandedRow: lastExpandedRowIndex });
+
+      // Fire onExpand only when a row is newly expanded
+      const hasNewExpansion = Object.keys(expandedRows).some((rowId) => !(rowId in prev));
+      if (hasNewExpansion) fireEvent('onExpand');
+
+      prevExpandedRowsRef.current = { ...expandedRows };
+    }, [expandedRows, lastExpandedRowIndex, setExposedVariables, fireEvent]);
+
     // Create ref for height observation
     const tableRef = useRef(null);
     const heightChangeValue = useHeightObserver(tableBodyRef, isDynamicHeightEnabled);
@@ -153,8 +206,11 @@ const Table = memo(
     // Initialize component on the table store
     useEffect(() => {
       initializeComponent(id);
-      return () => removeComponent(id);
-    }, [id, initializeComponent, removeComponent]);
+      return () => {
+        removeComponent(id);
+        cleanupLazyResolvables(id, moduleId);
+      };
+    }, [id, initializeComponent, removeComponent, cleanupLazyResolvables, moduleId]);
 
     // Set properties to the table store
     useEffect(() => {
@@ -266,7 +322,7 @@ const Table = memo(
       isDynamicHeightEnabled,
       id: id,
       height,
-      value: JSON.stringify({ heightChangeValue, tableData }),
+      value: JSON.stringify({ heightChangeValue, tableData, expandedRows }),
       skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       adjustComponentPositions,
       currentLayout,
@@ -283,7 +339,7 @@ const Table = memo(
         data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: isDynamicHeightEnabled ? '100%' : `${height}px`,
+          height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
