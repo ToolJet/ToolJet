@@ -24,7 +24,11 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { TOP_ALIGNMENT_HEIGHT_INCREMENT, ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 
 // Debounce timers for query re-runs triggered by dependency changes
@@ -575,7 +579,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (parentType === 'Listview' || parentType === 'Kanban' || parentType === 'Table') {
+      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -1165,18 +1169,18 @@ export const createComponentsSlice = (set, get) => ({
       return false;
     }
 
-    // Check ListView nesting restriction:
-    // If adding a ListView into a slot inside a nested ListView (2+ levels), block it
-    if (currentWidget === 'Listview') {
+    // Check nesting depth restrictions from NESTING_LEVEL_LIMITS (e.g., Listview: 2, Table: 3)
+    const nestingLimit = NESTING_LEVEL_LIMITS[currentWidget];
+    if (nestingLimit) {
       let currentParentId = parentId;
-      let listviewCount = 0;
+      let count = 0;
       while (currentParentId) {
         const baseId = getBaseParentId?.(currentParentId) || currentParentId;
         const parentDef = getComponentDefinition(baseId, moduleId);
-        if (parentDef?.component?.component === 'Listview') {
-          listviewCount++;
-          if (listviewCount >= 2) {
-            toast.error('ListView nesting is limited to 2 levels');
+        if (parentDef?.component?.component === currentWidget) {
+          count++;
+          if (count >= nestingLimit) {
+            toast.error(`${currentWidget} nesting is limited to ${nestingLimit} levels`);
             return false;
           }
         }

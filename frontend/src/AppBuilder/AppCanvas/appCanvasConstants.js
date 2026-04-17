@@ -45,6 +45,9 @@ export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
 export const ROW_SCOPED_RESOLVABLE_KEY_MAP = { Listview: 'listItem', Kanban: 'cardData', Table: 'rowData' };
 
+// Max allowed nesting levels per widget type. Add a new entry to restrict any future widget.
+export const NESTING_LEVEL_LIMITS = { Listview: 2, Table: 3 };
+
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
 export const WIDGET_BORDER_WIDTH = 1;
