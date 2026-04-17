@@ -27,10 +27,11 @@ export const ControlButtons = memo(
     const setIsRefreshing = useTableStore((state) => state.setIsRefreshing, shallow);
 
     const { moduleId } = useModuleContext();
-    const dataRawValue = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.data?.value,
-      shallow
-    );
+    const dataRawValue = useStore((state) => {
+      const props = state.getComponentDefinition(id, moduleId)?.component?.definition?.properties;
+      const selector = props?.dataSourceSelector?.value;
+      return selector && selector !== 'rawJson' ? selector : props?.data?.value;
+    }, shallow);
     const componentNameIdMapping = useStore((state) => state.getComponentNameIdMapping(moduleId), shallow);
     const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(moduleId), shallow);
     const runQuery = useStore((state) => state.queryPanel.runQuery);
@@ -195,6 +196,8 @@ export const ControlButtons = memo(
           componentNameIdMapping || {},
           queryNameIdMapping || {}
         );
+
+        console.log('Manish :', { allRefs, dataRawValue, type: typeof dataRawValue });
 
         for (const ref of allRefs) {
           if (ref?.entityType !== 'queries') continue;
