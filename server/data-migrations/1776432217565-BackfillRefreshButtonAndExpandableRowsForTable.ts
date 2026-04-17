@@ -1,24 +1,28 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
-const MIGRATION_NAME = 'BackfillShowRefreshButtonTable1776425096777';
+const MIGRATION_NAME = 'BackfillRefreshButtonAndExpandableRowsForTable1776432217565';
 const BATCH_SIZE = 2000;
 const COMPONENT_TYPES = ['Table'];
 
 const PROPERTY_PATCH = JSON.stringify({
   showRefreshButton: { value: '{{false}}' },
+  enableExpandableRows: { value: '{{false}}' },
+  expansionHeight: { value: '{{229}}' },
 });
 
-export class BackfillShowRefreshButtonTable1776425096777 implements MigrationInterface {
+export class BackfillRefreshButtonAndExpandableRowsForTable1776432217565 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(
       `SELECT COUNT(*) FROM components
-       WHERE type = ANY($1)
-         AND (properties IS NULL OR NOT (properties::jsonb ? 'showRefreshButton'))`,
+           WHERE type = ANY($1)
+             AND (properties IS NULL OR NOT (properties::jsonb ? 'showRefreshButton'))`,
       [COMPONENT_TYPES]
     );
     const total = parseInt(count, 10);
-    console.log(`${MIGRATION_NAME}: [START] Backfill showRefreshButton | Total: ${total}`);
+    console.log(
+      `${MIGRATION_NAME}: [START] Backfill showRefreshButton, enableExpandableRows and expansionHeight | Total: ${total}`
+    );
 
     let lastId = '00000000-0000-0000-0000-000000000000';
     let totalUpdated = 0;
@@ -26,11 +30,11 @@ export class BackfillShowRefreshButtonTable1776425096777 implements MigrationInt
     while (true) {
       const rows: { id: string }[] = await queryRunner.query(
         `SELECT id FROM components
-         WHERE type = ANY($1)
-           AND id > $2
-           AND (properties IS NULL OR NOT (properties::jsonb ? 'showRefreshButton'))
-         ORDER BY id ASC
-         LIMIT $3`,
+             WHERE type = ANY($1)
+               AND id > $2
+               AND (properties IS NULL OR NOT (properties::jsonb ? 'showRefreshButton'))
+             ORDER BY id ASC
+             LIMIT $3`,
         [COMPONENT_TYPES, lastId, BATCH_SIZE]
       );
 
@@ -41,8 +45,8 @@ export class BackfillShowRefreshButtonTable1776425096777 implements MigrationInt
 
       await queryRunner.query(
         `UPDATE components
-         SET properties = (COALESCE(properties, '{}')::jsonb || $1::jsonb)::json
-         WHERE id = ANY($2::uuid[])`,
+             SET properties = (COALESCE(properties, '{}')::jsonb || $1::jsonb)::json
+             WHERE id = ANY($2::uuid[])`,
         [PROPERTY_PATCH, ids]
       );
 
@@ -51,14 +55,16 @@ export class BackfillShowRefreshButtonTable1776425096777 implements MigrationInt
       console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
     }
 
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill showRefreshButton finished.`);
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Backfill showRefreshButton, enableExpandableRows and expansionHeight finished.`
+    );
 
     if (totalUpdated > 0) {
       const appVersionRows: { app_version_id: string }[] = await queryRunner.query(
         `SELECT DISTINCT p.app_version_id
-         FROM components c
-         INNER JOIN pages p ON c.page_id = p.id
-         WHERE c.type = ANY($1)`,
+             FROM components c
+             INNER JOIN pages p ON c.page_id = p.id
+             WHERE c.type = ANY($1)`,
         [COMPONENT_TYPES]
       );
 
