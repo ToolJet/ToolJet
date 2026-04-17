@@ -16,6 +16,8 @@ export const RESERVED_PARAMS = new Set([
   'exports',
   'define',
   'self',
+  'window',
+  'output',
 ]);
 
 export const VALID_IDENTIFIER = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
