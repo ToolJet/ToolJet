@@ -20,7 +20,6 @@ export const buildTableColumn = (
   tableBodyRef,
   t,
   enableExpandableRows,
-  expandedRows,
   toggleRowExpansion
 ) => {
   const expansionColumn = enableExpandableRows
@@ -31,8 +30,9 @@ export const buildTableColumn = (
         meta: { columnType: 'expansion', skipExport: true, skipFilter: true, skipAddNewRow: true },
         size: 40,
         header: () => null,
-        cell: ({ row }) => {
-          const isExpanded = row.id in (expandedRows ?? {});
+        cell: ({ row, table }) => {
+          const isExpanded = row.id in (table.options.meta?.expandedRows ?? {});
+
           return (
             <button
               className="table-expansion-toggle"

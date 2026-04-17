@@ -88,7 +88,6 @@ export const TableContainer = ({
       tableBodyRef,
       t,
       enableExpandableRows,
-      expandedRows,
       toggleRowExpansion
     );
   }, [
@@ -105,7 +104,6 @@ export const TableContainer = ({
     showBulkSelector,
     serverSideSearch,
     enableExpandableRows,
-    expandedRows,
     toggleRowExpansion,
   ]);
 
@@ -122,6 +120,7 @@ export const TableContainer = ({
       rowsPerPage: effectiveRowsPerPage,
       globalFilter,
       setGlobalFilter,
+      expandedRows,
     });
 
   // Collapse all expanded rows when sort, filter, search or page changes
