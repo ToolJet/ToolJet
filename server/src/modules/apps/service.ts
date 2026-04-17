@@ -588,6 +588,7 @@ export class AppsService implements IAppsService {
 
       // serialize
       return {
+        id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: versionToLoad?.dataQueries,
         definition: versionToLoad?.definition,

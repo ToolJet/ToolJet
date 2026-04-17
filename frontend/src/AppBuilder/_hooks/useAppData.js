@@ -263,13 +263,14 @@ const useAppData = (
       // from the parent app's response — the version API requires auth.
       const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else if (versionId) {
         appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
-          appDataPromise = Promise.resolve(cachedDefinition);
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
         } else {
           appDataPromise = appService.fetchApp(appId);
         }
