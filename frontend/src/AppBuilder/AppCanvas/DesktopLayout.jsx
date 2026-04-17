@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import cx from 'classnames';
 
 import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
-import PageCanvasHeader from './PageCanvasHeader';
-import PageCanvasFooter from './PageCanvasFooter';
 import PagesSidebarNavigation from './PageMenu/PagesSidebarNavigation';
 import { CanvasContentTail } from './CanvasContentTail';
+
+const PageCanvasHeader = lazy(() => import('./PageCanvasHeader'));
+const PageCanvasFooter = lazy(() => import('./PageCanvasFooter'));
 
 export const DesktopLayout = ({
   pageKey,
@@ -35,7 +36,9 @@ export const DesktopLayout = ({
     className={cx({ 'h-100': isModuleMode })}
     style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
   >
-    <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    <Suspense fallback={null}>
+      <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    </Suspense>
     <div
       className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
         'tw-flex-col': position === 'top' || isPagesSidebarHidden,
@@ -70,6 +73,8 @@ export const DesktopLayout = ({
         {mainCanvasContainer}
       </CanvasContentTail>
     </div>
-    <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    <Suspense fallback={null}>
+      <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
+    </Suspense>
   </div>
 );

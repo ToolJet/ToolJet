@@ -597,6 +597,7 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
       aiPlan: this.aiPlan,
@@ -639,6 +640,7 @@ export default class LicenseBase {
       workflows: this.workflows,
       startDate: this.startDate,
       appHistoryEnabled: this.appHistory,
+      appJsLibrariesEnabled: this.appJsLibraries,
     };
   }
 
@@ -710,5 +712,16 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.workspaceEnv;
     }
     return this._isEnvMapping;
+  }
+
+  public get appJsLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.jsLibraries;
+    }
+
+    if (this._app?.features?.jsLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.jsLibraries;
   }
 }
