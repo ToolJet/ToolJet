@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -394,12 +394,19 @@ export class AppsUtilService implements IAppsUtilService {
           await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
+
+      if (updatableParams.slug) {
+        const conflictingApp = await manager.findOne(App, {
+          where: { slug: updatableParams.slug, organizationId, id: Not(appId) },
+        });
+        if (conflictingApp) {
+          await manager.update(App, conflictingApp.id, { slug: conflictingApp.id });
+        }
+      }
+
       return await catchDbException(async () => {
         return await manager.update(App, appId, updatableParams);
-      }, [
-        { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
-        { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
-      ]);
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     }, manager);
   }
 
