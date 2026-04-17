@@ -1,0 +1,995 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AfterShip Tracking API",
+    "version": "2024-07",
+    "description": "AfterShip Tracking API provides programmatic access to shipment tracking information from multiple carriers worldwide.",
+    "contact": {
+      "name": "AfterShip Support",
+      "url": "https://www.aftership.com/contact-us",
+      "email": "support@aftership.com"
+    },
+    "termsOfService": "https://www.aftership.com/terms"
+  },
+  "servers": [
+    {
+      "url": "https://api.aftership.com/tracking/2024-07",
+      "description": "Production API Endpoint"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "as-api-key",
+        "description": "API key for authentication"
+      }
+    },
+    "schemas": {
+      "Tracking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Tracking ID"
+          },
+          "tracking_number": {
+            "type": "string",
+            "description": "Tracking number"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Courier slug"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether tracking is active"
+          },
+          "tag": {
+            "type": "string",
+            "enum": ["Pending", "InfoReceived", "InTransit", "OutForDelivery", "AttemptFail", "Delivered", "AvailableForPickup", "Exception", "Expired"],
+            "description": "Current status of tracking"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "checkpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Checkpoint"
+            }
+          }
+        }
+      },
+      "Checkpoint": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkpoint_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "tag": {
+            "type": "string"
+          },
+          "subtag": {
+            "type": "string"
+          }
+        }
+      },
+      "Courier": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "web_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "required_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "EstimatedDeliveryDate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "estimated_delivery_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "confidence_code": {
+            "type": "number"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "integer"
+              },
+              "message": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/trackings": {
+      "get": {
+        "summary": "Get trackings",
+        "description": "Get tracking results of multiple trackings",
+        "operationId": "get-trackings",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results per page (default: 100, max: 200)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "Search keyword",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "Courier slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Tracking status",
+            "schema": {
+              "type": "string",
+              "enum": ["Pending", "InfoReceived", "InTransit", "OutForDelivery", "AttemptFail", "Delivered", "AvailableForPickup", "Exception", "Expired"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "count": {
+                          "type": "integer"
+                        },
+                        "trackings": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Tracking"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a tracking",
+        "description": "Create a new tracking",
+        "operationId": "create-tracking",
+        "tags": ["Tracking"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tracking_number"],
+                "properties": {
+                  "tracking_number": {
+                    "type": "string",
+                    "description": "Tracking number"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "Courier slug"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Custom title"
+                  },
+                  "order_id": {
+                    "type": "string",
+                    "description": "Order ID"
+                  },
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "description": "Email addresses for notifications"
+                  },
+                  "smses": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Phone numbers for SMS notifications"
+                  },
+                  "custom_fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Custom fields"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tracking created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trackings/{id}": {
+      "get": {
+        "summary": "Get a tracking by ID",
+        "description": "Get tracking results of a single tracking",
+        "operationId": "get-tracking-by-id",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Tracking ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Fields to include in response",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Language for translation",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a tracking by ID",
+        "description": "Update an existing tracking",
+        "operationId": "update-tracking-by-id",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Tracking ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "smses": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "custom_fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tracking updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a tracking by ID",
+        "description": "Delete a tracking",
+        "operationId": "delete-tracking-by-id",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Tracking ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trackings/{id}/retrack": {
+      "post": {
+        "summary": "Retrack an expired tracking by ID",
+        "description": "Retrack an expired tracking. Max 3 times per tracking",
+        "operationId": "retrack-tracking-by-id",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Tracking ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrack initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trackings/{id}/mark-as-completed": {
+      "post": {
+        "summary": "Mark tracking as completed by ID",
+        "description": "Mark a tracking as completed. The tracking won't auto update until retrack it",
+        "operationId": "mark-tracking-completed-by-id",
+        "tags": ["Tracking"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Tracking ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": ["DELIVERED", "LOST", "RETURNED_TO_SENDER"],
+                    "description": "Reason for marking as completed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tracking marked as completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tracking"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/couriers": {
+      "get": {
+        "summary": "Get user activated couriers",
+        "description": "Return a list of couriers activated at your AfterShip account",
+        "operationId": "get-user-couriers",
+        "tags": ["Courier"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "couriers": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Courier"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/couriers/detect": {
+      "post": {
+        "summary": "Detect courier",
+        "description": "Return a list of matched couriers based on tracking number format",
+        "operationId": "detect-courier",
+        "tags": ["Courier"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tracking_number"],
+                "properties": {
+                  "tracking_number": {
+                    "type": "string",
+                    "description": "Tracking number"
+                  },
+                  "slug": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of courier slugs for detection"
+                  },
+                  "tracking_postal_code": {
+                    "type": "string"
+                  },
+                  "tracking_ship_date": {
+                    "type": "string"
+                  },
+                  "tracking_account_number": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "couriers": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Courier"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/couriers/all": {
+      "get": {
+        "summary": "Get all couriers",
+        "description": "Return a list of all couriers",
+        "operationId": "get-all-couriers",
+        "tags": ["Courier"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "couriers": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Courier"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/estimated-delivery-date/predict-batch": {
+      "post": {
+        "summary": "Batch prediction for the Estimated Delivery Date",
+        "description": "Use AfterShip's AI-powered predictive estimated delivery date API to provide expected delivery dates",
+        "operationId": "predict-batch",
+        "tags": ["Estimated delivery date"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["estimated_delivery_dates"],
+                "properties": {
+                  "estimated_delivery_dates": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["slug", "origin_address", "destination_address"],
+                      "properties": {
+                        "slug": {
+                          "type": "string",
+                          "description": "Courier slug"
+                        },
+                        "service_type_name": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "Service type name"
+                        },
+                        "origin_address": {
+                          "type": "object",
+                          "required": ["country"],
+                          "properties": {
+                            "country": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "city": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "postal_code": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "raw_location": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "destination_address": {
+                          "type": "object",
+                          "required": ["country"],
+                          "properties": {
+                            "country": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "city": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "postal_code": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "raw_location": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "weight": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "unit": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "package_count": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "pickup_time": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "estimated_pickup": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "order_time": {
+                              "type": "string"
+                            },
+                            "order_cutoff_time": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "business_days": {
+                              "type": "array",
+                              "nullable": true,
+                              "items": {
+                                "type": "integer"
+                              }
+                            },
+                            "order_processing_time": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "unit": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "estimated_delivery_dates": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/EstimatedDeliveryDate"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Tracking",
+      "description": "Tracking operations"
+    },
+    {
+      "name": "Courier",
+      "description": "Courier operations"
+    },
+    {
+      "name": "Estimated delivery date",
+      "description": "Estimated delivery date operations"
+    }
+  ]
+}

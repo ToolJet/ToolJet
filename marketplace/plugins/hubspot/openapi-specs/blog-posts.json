@@ -1,0 +1,2177 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Blog Post endpoints",
+    "description": "Use these endpoints for interacting with Blog Posts, Blog Authors, and Blog Tags",
+    "version": "v3"
+  },
+  "servers": [
+    {
+      "url": "https://api.hubapi.com/"
+    }
+  ],
+  "paths": {
+    "/cms/v3/blogs/posts": {
+      "get": {
+        "summary": "Get all Blog Posts",
+        "description": "Get the list of blog posts. Supports paging and filtering. This method would be useful for an integration that examined these models and used an external service to suggest edits.",
+        "operationId": "get-/cms/v3/blogs/posts_getPage",
+        "parameters": [
+          {
+            "name": "createdAt",
+            "in": "query",
+            "description": "Only return Blog Posts created at exactly the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "description": "Only return Blog Posts created after the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "description": "Only return Blog Posts created before the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updatedAt",
+            "in": "query",
+            "description": "Only return Blog Posts last updated at exactly the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updatedAfter",
+            "in": "query",
+            "description": "Only return Blog Posts last updated after the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updatedBefore",
+            "in": "query",
+            "description": "Only return Blog Posts last updated before the specified time.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Specifies which fields to use for sorting results. Valid fields are `name`, `createdAt`, `updatedAt`, `createdBy`, `updatedBy`. `createdAt` will be used by default.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The cursor token value to get the next set of results. You can get this from the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to return. Default is 100.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Specifies whether to return archived Blog Posts. Defaults to `false`.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionResponseWithTotalBlogPostForwardPaging"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a new Blog Post",
+        "description": "Create a new Blog Post.",
+        "operationId": "post-/cms/v3/blogs/posts_create",
+        "requestBody": {
+          "description": "The JSON representation of a new Blog Post.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogPost"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/batch/archive": {
+      "post": {
+        "summary": "Archive a batch of Blog Posts",
+        "description": "Delete the Blog Post objects identified in the request body. Note: This is not the same as the in-app `archive` function. To perform an in-app `archive` send an normal update with the `archived` field set to true.",
+        "operationId": "post-/cms/v3/blogs/posts/batch/archive_archiveBatch",
+        "requestBody": {
+          "description": "The JSON array of Blog Post ids.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInputString"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/batch/create": {
+      "post": {
+        "summary": "Create a batch of Blog Posts",
+        "description": "Create the Blog Post objects detailed in the request body.",
+        "operationId": "post-/cms/v3/blogs/posts/batch/create_createBatch",
+        "requestBody": {
+          "description": "The JSON array of new Blog Posts to create.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInputBlogPost"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPost"
+                }
+              }
+            }
+          },
+          "207": {
+            "description": "multiple statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPostWithErrors"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/batch/read": {
+      "post": {
+        "summary": "Retrieve a batch of Blog Posts",
+        "description": "Retrieve the Blog Post objects identified in the request body.",
+        "operationId": "post-/cms/v3/blogs/posts/batch/read_readBatch",
+        "parameters": [
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Specifies whether to return archived Blog Posts. Defaults to `false`.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The JSON array of Blog Post ids.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInputString"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPost"
+                }
+              }
+            }
+          },
+          "207": {
+            "description": "multiple statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPostWithErrors"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/batch/update": {
+      "post": {
+        "summary": "Update a batch of Blog Posts",
+        "description": "Update the Blog Post objects identified in the request body.",
+        "operationId": "post-/cms/v3/blogs/posts/batch/update_updateBatch",
+        "parameters": [
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInputJsonNode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPost"
+                }
+              }
+            }
+          },
+          "207": {
+            "description": "multiple statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponseBlogPostWithErrors"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/clone": {
+      "post": {
+        "summary": "Clone a Blog Post",
+        "description": "Clone a Blog.",
+        "operationId": "post-/cms/v3/blogs/posts/clone_clone",
+        "requestBody": {
+          "description": "The JSON representation of the ContentCloneRequest object.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentCloneRequestVNext"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/schedule": {
+      "post": {
+        "summary": "Schedule a Blog Post to be Published",
+        "description": "Schedule a Blog Post to be Published.",
+        "operationId": "post-/cms/v3/blogs/posts/schedule_schedule",
+        "requestBody": {
+          "description": "The JSON representation of the ContentCloneRequestVNext object.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentScheduleRequestVNext"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}": {
+      "get": {
+        "summary": "Retrieve a Blog Post",
+        "description": "Retrieve the Blog Post object identified by the id in the path.",
+        "operationId": "get-/cms/v3/blogs/posts/{objectId}_getById",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Specifies whether to return archived Blog Posts. Defaults to `false`.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete a Blog Post",
+        "description": "Delete the Blog Post object identified by the id in the path.",
+        "operationId": "delete-/cms/v3/blogs/posts/{objectId}_archive",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update a Blog Post",
+        "description": "Sparse updates a single Blog Post object identified by the id in the path. All the column values need not be specified. Only the that need to be modified can be specified.",
+        "operationId": "patch-/cms/v3/blogs/posts/{objectId}_update",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Specifies whether to update archived Blog Posts. Defaults to `false`.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The JSON representation of the updated Blog Post.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogPost"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/draft": {
+      "get": {
+        "summary": "Retrieve the full draft version of the Blog Post",
+        "description": "Retrieve the full draft version of the Blog Post.",
+        "operationId": "get-/cms/v3/blogs/posts/{objectId}/draft_getDraftById",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update a Blog Post draft",
+        "description": "Sparse updates the draft version of a single Blog Post object identified by the id in the path. All the column values need not be specified. Only the that need to be modified can be specified.",
+        "operationId": "patch-/cms/v3/blogs/posts/{objectId}/draft_updateDraft",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The JSON representation of the updated Blog Post to be applied to the draft.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogPost"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/draft/push-live": {
+      "post": {
+        "summary": "Push Blog Post draft edits live",
+        "description": "Take any changes from the draft version of the Blog Post and apply them to the live version.",
+        "operationId": "post-/cms/v3/blogs/posts/{objectId}/draft/push-live_pushLive",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The id of the Blog Post for which it's draft will be pushed live.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/draft/reset": {
+      "post": {
+        "summary": "Reset the Blog Post draft to the live version",
+        "description": "Discards any edits and resets the draft to the live version.",
+        "operationId": "post-/cms/v3/blogs/posts/{objectId}/draft/reset_resetDraft",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The id of the Blog Post for which it's draft will be reset.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/revisions": {
+      "get": {
+        "summary": "Retrieves all the previous versions of a blog post",
+        "description": "Retrieves all the previous versions of a blog post.",
+        "operationId": "get-/cms/v3/blogs/posts/{objectId}/revisions_getPreviousVersions",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The cursor token value to get the next set of results. You can get this from the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to return. Default is 100.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionResponseWithTotalVersionBlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}": {
+      "get": {
+        "summary": "Retrieves a previous version of a blog post",
+        "description": "Retrieves a previous version of a blog post.",
+        "operationId": "get-/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}_getPreviousVersion",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "description": "The Blog Post version id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionBlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}/restore": {
+      "post": {
+        "summary": "Restore a previous version of a blog post",
+        "description": "Takes a specified version of a blog post and restores it.",
+        "operationId": "post-/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}/restore_restorePreviousVersion",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "description": "The Blog Post version id to restore.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    },
+    "/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}/restore-to-draft": {
+      "post": {
+        "summary": "Restore a previous version of a blog post, to the draft version of the blog post",
+        "description": "Takes a specified version of a blog post, sets it as the new draft version of the blog post.",
+        "operationId": "post-/cms/v3/blogs/posts/{objectId}/revisions/{revisionId}/restore-to-draft_restorePreviousVersionToDraft",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "description": "The Blog Post id.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "description": "The Blog Post version id to restore.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "content"
+            ]
+          },
+          {
+            "hapikey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Angle": {
+        "required": [
+          "units",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "units": {
+            "type": "string"
+          }
+        }
+      },
+      "BackgroundImage": {
+        "required": [
+          "backgroundPosition",
+          "backgroundSize",
+          "imageUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "backgroundSize": {
+            "type": "string"
+          },
+          "backgroundPosition": {
+            "type": "string"
+          }
+        }
+      },
+      "BatchInputBlogPost": {
+        "required": [
+          "inputs"
+        ],
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            }
+          }
+        }
+      },
+      "BatchInputJsonNode": {
+        "required": [
+          "inputs"
+        ],
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "BatchInputString": {
+        "required": [
+          "inputs"
+        ],
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BatchResponseBlogPost": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            }
+          },
+          "numErrors": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StandardError"
+            }
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BatchResponseBlogPostWithErrors": {
+        "required": [
+          "completedAt",
+          "results",
+          "startedAt",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            }
+          },
+          "numErrors": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StandardError"
+            }
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BlogPost": {
+        "required": [
+          "abStatus",
+          "abTestId",
+          "archived",
+          "attachedStylesheets",
+          "authorName",
+          "blogAuthorId",
+          "campaign",
+          "categoryId",
+          "contentGroupId",
+          "contentTypeCategory",
+          "createdAt",
+          "createdById",
+          "currentState",
+          "deletedAt",
+          "domain",
+          "dynamicPageHubDbTableId",
+          "enableDomainStylesheets",
+          "enableGoogleAmpOutputOverride",
+          "enableLayoutStylesheets",
+          "featuredImage",
+          "featuredImageAltText",
+          "folderId",
+          "footerHtml",
+          "headHtml",
+          "htmlTitle",
+          "id",
+          "includeDefaultCustomCss",
+          "language",
+          "layoutSections",
+          "linkRelCanonicalUrl",
+          "mabExperimentId",
+          "metaDescription",
+          "name",
+          "pageExpiryDate",
+          "pageExpiryEnabled",
+          "pageExpiryRedirectId",
+          "pageExpiryRedirectUrl",
+          "pageRedirected",
+          "password",
+          "postBody",
+          "postSummary",
+          "publicAccessRules",
+          "publicAccessRulesEnabled",
+          "publishDate",
+          "publishImmediately",
+          "published",
+          "rssBody",
+          "rssSummary",
+          "slug",
+          "state",
+          "subcategory",
+          "tagIds",
+          "templatePath",
+          "themeSettingsValues",
+          "translatedFromId",
+          "updatedAt",
+          "updatedById",
+          "url",
+          "useFeaturedImage",
+          "widgetContainers",
+          "widgets"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the Blog Post."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The path of the this blog post. This field is appended to the domain to construct the url of this post."
+          },
+          "contentGroupId": {
+            "type": "string",
+            "description": "The ID of the parent Blog this Blog Post is associated with."
+          },
+          "campaign": {
+            "type": "string",
+            "description": "The GUID of the marketing campaign this Blog Post is a part of."
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "ID of the type of object this is. Should always .",
+            "format": "int32"
+          },
+          "state": {
+            "type": "string",
+            "description": "An ENUM descibing the current state of this Blog Post.",
+            "maxLength": 25
+          },
+          "templatePath": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "The internal name of the blog post."
+          },
+          "mabExperimentId": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "If True, the post will not show up in your dashboard, although the post could still be live."
+          },
+          "authorName": {
+            "type": "string",
+            "description": "The name of the user that updated this blog post."
+          },
+          "abTestId": {
+            "type": "string"
+          },
+          "createdById": {
+            "type": "string",
+            "description": "The ID of the user that created this blog post."
+          },
+          "updatedById": {
+            "type": "string",
+            "description": "The ID of the user that updated this blog post."
+          },
+          "domain": {
+            "type": "string",
+            "description": "The domain this Blog Post will resolve to. If null, the Blog Post will default to the domain of the ParentBlog."
+          },
+          "subcategory": {
+            "type": "string"
+          },
+          "abStatus": {
+            "type": "string"
+          },
+          "folderId": {
+            "type": "string"
+          },
+          "widgetContainers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "A data structure containing the data for all the modules inside the containers for this post. This will only be populated if the page has widget containers."
+          },
+          "widgets": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "A data structure containing the data for all the modules for this page."
+          },
+          "language": {
+            "type": "string",
+            "description": "The explicitly defined language of the Blog Post. If null, the Blog Post will default to the language of the ParentBlog."
+          },
+          "translatedFromId": {
+            "type": "string",
+            "description": "ID of the primary blog post this object was translated from."
+          },
+          "dynamicPageHubDbTableId": {
+            "type": "string"
+          },
+          "blogAuthorId": {
+            "type": "string",
+            "description": "The ID of the Blog Author associated with this Blog Post."
+          },
+          "tagIds": {
+            "type": "array",
+            "description": "List of IDs for the tags associated with this Blog Post.",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "postBody": {
+            "type": "string",
+            "description": "The HTML of the main post body."
+          },
+          "postSummary": {
+            "type": "string",
+            "description": "The summary of the blog post that will appear on the main listing page."
+          },
+          "rssBody": {
+            "type": "string",
+            "description": "The contents of the RSS body for this Blog Post."
+          },
+          "rssSummary": {
+            "type": "string",
+            "description": "The contents of the RSS summary for this Blog Post."
+          },
+          "enableGoogleAmpOutputOverride": {
+            "type": "boolean",
+            "description": "Boolean to allow overriding the AMP settings for the blog."
+          },
+          "htmlTitle": {
+            "type": "string",
+            "description": "The html title of this Blog Post."
+          },
+          "pageRedirected": {
+            "type": "boolean"
+          },
+          "pageExpiryEnabled": {
+            "type": "boolean"
+          },
+          "pageExpiryDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pageExpiryRedirectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pageExpiryRedirectUrl": {
+            "type": "string"
+          },
+          "useFeaturedImage": {
+            "type": "boolean",
+            "description": "Boolean to determine if this post should use a featuredImage."
+          },
+          "password": {
+            "type": "string",
+            "description": "Set this to create a password protected page. Entering the password will be required to view the page."
+          },
+          "attachedStylesheets": {
+            "type": "array",
+            "description": "List of stylesheets to attach to this blog post. These stylesheets are attached to just this page. Order of precedence is bottom to top, just like in the HTML.",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "includeDefaultCustomCss": {
+            "type": "boolean",
+            "description": "Boolean to determine whether or not the Primary CSS Files should be applied."
+          },
+          "enableDomainStylesheets": {
+            "type": "boolean",
+            "description": "Boolean to determine whether or not the styles from the template should be applied."
+          },
+          "enableLayoutStylesheets": {
+            "type": "boolean",
+            "description": "Boolean to determine whether or not the styles from the template should be applied."
+          },
+          "metaDescription": {
+            "type": "string",
+            "description": "A description that goes in <meta> tag on the page."
+          },
+          "publishImmediately": {
+            "type": "boolean",
+            "description": "Set this to true if you want to be published immediately when the schedule publish endpoint is called, and to ignore the publish_date setting."
+          },
+          "headHtml": {
+            "type": "string",
+            "description": "Custom HTML for embed codes, javascript, etc. that goes in the <head> tag of the page."
+          },
+          "footerHtml": {
+            "type": "string",
+            "description": "Custom HTML for embed codes, javascript that should be placed before the </body> tag of the page."
+          },
+          "contentTypeCategory": {
+            "type": "string",
+            "description": "An ENUM descibing the type of this object. Should always be BLOG_POST."
+          },
+          "currentState": {
+            "type": "string",
+            "description": "A generated ENUM descibing the current state of this Blog Post. Should always match state."
+          },
+          "linkRelCanonicalUrl": {
+            "type": "string",
+            "description": "Optional override to set the URL to be used in the rel=canonical link tag on the page."
+          },
+          "featuredImage": {
+            "type": "string",
+            "description": "The featuredImage of this Blog Post."
+          },
+          "featuredImageAltText": {
+            "type": "string",
+            "description": "Alt Text of the featuredImage."
+          },
+          "publicAccessRulesEnabled": {
+            "type": "boolean",
+            "description": "Boolean to determine whether or not to respect publicAccessRules."
+          },
+          "publicAccessRules": {
+            "type": "array",
+            "description": "Rules for require member registration to access private content.",
+            "items": {
+              "$ref": "#/components/schemas/PublicAccessRule"
+            }
+          },
+          "layoutSections": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LayoutSection"
+            }
+          },
+          "themeSettingsValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "url": {
+            "type": "string",
+            "description": "A generated field representing the URL of this blog post."
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "The date (ISO8601 format) the blog post is to be published at.",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The timestamp (ISO8601 format) when this Blog Post was deleted.",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The timestamp (ISO8601 format) when this blog post was created.",
+            "format": "date-time"
+          },
+          "published": {
+            "type": "boolean",
+            "description": "Boolean describing if this Blog Post is published."
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The timestamp (ISO8601 format) when this Blog Post was last updated.",
+            "format": "date-time"
+          }
+        },
+        "description": "Model definition for a Blog Post."
+      },
+      "CollectionResponseWithTotalBlogPostForwardPaging": {
+        "required": [
+          "results",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/ForwardPaging"
+          }
+        }
+      },
+      "CollectionResponseWithTotalVersionBlogPost": {
+        "required": [
+          "results",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VersionBlogPost"
+            }
+          },
+          "paging": {
+            "$ref": "#/components/schemas/Paging"
+          }
+        }
+      },
+      "ColorStop": {
+        "required": [
+          "color"
+        ],
+        "type": "object",
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/RGBAColor"
+          }
+        }
+      },
+      "ContentCloneRequestVNext": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the object to be cloned."
+          },
+          "cloneName": {
+            "type": "string",
+            "description": "The name of the cloned object."
+          }
+        }
+      },
+      "ContentScheduleRequestVNext": {
+        "required": [
+          "id",
+          "publishDate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the object to be scheduled."
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "The date the object should transition from scheduled to published.",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "required": [
+          "category",
+          "correlationId",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A human readable message describing the error along with remediation steps where appropriate",
+            "example": "An error occurred"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format": "uuid",
+            "example": "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category": {
+            "type": "string",
+            "description": "The error category"
+          },
+          "subCategory": {
+            "type": "string",
+            "description": "A specific category that contains more specific detail about the error"
+          },
+          "errors": {
+            "type": "array",
+            "description": "further information about the error",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Context about the error condition",
+            "example": {
+              "invalidPropertyName": [
+                "propertyValue"
+              ],
+              "missingScopes": [
+                "scope1",
+                "scope2"
+              ]
+            }
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example": {
+          "message": "Invalid input (details will vary based on the error)",
+          "correlationId": "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category": "VALIDATION_ERROR",
+          "links": {
+            "knowledge-base": "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "ErrorCategory": {
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in": {
+            "type": "string",
+            "description": "The name of the field or parameter in which the error was found."
+          },
+          "code": {
+            "type": "string",
+            "description": "The status code associated with the error detail"
+          },
+          "subCategory": {
+            "type": "string",
+            "description": "A specific category that contains more specific detail about the error"
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Context about the error condition",
+            "example": {
+              "missingScopes": [
+                "scope1",
+                "scope2"
+              ]
+            }
+          }
+        }
+      },
+      "ForwardPaging": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "$ref": "#/components/schemas/NextPage"
+          }
+        }
+      },
+      "Gradient": {
+        "required": [
+          "angle",
+          "colors",
+          "sideOrCorner"
+        ],
+        "type": "object",
+        "properties": {
+          "sideOrCorner": {
+            "$ref": "#/components/schemas/SideOrCorner"
+          },
+          "angle": {
+            "$ref": "#/components/schemas/Angle"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColorStop"
+            }
+          }
+        }
+      },
+      "LayoutSection": {
+        "required": [
+          "cells",
+          "cssClass",
+          "cssId",
+          "cssStyle",
+          "label",
+          "name",
+          "params",
+          "rowMetaData",
+          "rows",
+          "styles",
+          "type",
+          "w",
+          "x"
+        ],
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "w": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "rowMetaData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RowMetaData"
+            }
+          },
+          "cells": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "cssClass": {
+            "type": "string"
+          },
+          "cssStyle": {
+            "type": "string"
+          },
+          "cssId": {
+            "type": "string"
+          },
+          "styles": {
+            "$ref": "#/components/schemas/Styles"
+          }
+        }
+      },
+      "NextPage": {
+        "required": [
+          "after"
+        ],
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        }
+      },
+      "Paging": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "$ref": "#/components/schemas/NextPage"
+          },
+          "prev": {
+            "$ref": "#/components/schemas/PreviousPage"
+          }
+        }
+      },
+      "PreviousPage": {
+        "required": [
+          "before"
+        ],
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicAccessRule": {
+        "type": "object"
+      },
+      "RGBAColor": {
+        "required": [
+          "a",
+          "b",
+          "g",
+          "r"
+        ],
+        "type": "object",
+        "properties": {
+          "r": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "g": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "b": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "a": {
+            "type": "number"
+          }
+        }
+      },
+      "RowMetaData": {
+        "required": [
+          "cssClass",
+          "styles"
+        ],
+        "type": "object",
+        "properties": {
+          "styles": {
+            "$ref": "#/components/schemas/Styles"
+          },
+          "cssClass": {
+            "type": "string"
+          }
+        }
+      },
+      "SideOrCorner": {
+        "required": [
+          "horizontalSide",
+          "verticalSide"
+        ],
+        "type": "object",
+        "properties": {
+          "verticalSide": {
+            "type": "string"
+          },
+          "horizontalSide": {
+            "type": "string"
+          }
+        }
+      },
+      "StandardError": {
+        "required": [
+          "category",
+          "context",
+          "errors",
+          "links",
+          "message",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ErrorCategory"
+          },
+          "subCategory": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Styles": {
+        "required": [
+          "backgroundColor",
+          "backgroundGradient",
+          "backgroundImage",
+          "flexboxPositioning",
+          "forceFullWidthSection",
+          "maxWidthSectionCentering",
+          "verticalAlignment"
+        ],
+        "type": "object",
+        "properties": {
+          "verticalAlignment": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "$ref": "#/components/schemas/RGBAColor"
+          },
+          "backgroundImage": {
+            "$ref": "#/components/schemas/BackgroundImage"
+          },
+          "backgroundGradient": {
+            "$ref": "#/components/schemas/Gradient"
+          },
+          "maxWidthSectionCentering": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "forceFullWidthSection": {
+            "type": "boolean"
+          },
+          "flexboxPositioning": {
+            "type": "string"
+          }
+        }
+      },
+      "VersionBlogPost": {
+        "required": [
+          "id",
+          "object",
+          "updated",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "object": {
+            "$ref": "#/components/schemas/BlogPost"
+          },
+          "user": {
+            "$ref": "#/components/schemas/VersionUser"
+          },
+          "id": {
+            "type": "string",
+            "description": "The id of the version."
+          },
+          "updated": {
+            "type": "string",
+            "description": "The timestamp (ISO8601 format) when this version was updated.",
+            "format": "date-time"
+          }
+        },
+        "description": "Model definition for a Version Blog Post. Contains metadata describing the version of the Blog Post. It can be used to view edit history of a post."
+      },
+      "VersionUser": {
+        "required": [
+          "email",
+          "fullName",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the User."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user."
+          },
+          "fullName": {
+            "type": "string",
+            "description": "The first and last name of the User."
+          }
+        },
+        "description": "Model definition for a VersionUser. Contains addition information about the user who created a version."
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "An error occurred.",
+        "content": {
+          "*/*": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "hapikey": {
+        "type": "apiKey",
+        "name": "hapikey",
+        "in": "query"
+      },
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl": "https://api.hubapi.com/oauth/v1/token",
+            "scopes": {
+              "content": "Read from and write to my Content"
+            }
+          }
+        }
+      }
+    }
+  }
+}

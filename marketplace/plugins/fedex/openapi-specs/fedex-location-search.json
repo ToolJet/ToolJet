@@ -1,0 +1,1952 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "FedEx Location Search API",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/location/v1/locations": {
+			"post": {
+				"summary": "Find Locations",
+				"description": "Use this endpoint to search for nearest FedEx locations by address, geographicccc coordinates, or phone numberrrr. You can also narrow your search by type of location and services offered. It returns up to 75 locations within a 50-mile radius for the address used in the search criteria. Results are based on current date and time. Supports all FedEx operating companies and countries, dependent upon being able to get a valid geolocation for a given set of criteria.<br><i>Note: You must specify landline numbers only, when searching for the nearest FedEx locations using phone number.</i><br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Find Location",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_Find_Location"
+									}
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/LoccResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "ERROR.LONGLAT.REQUIRED",
+											"message": "Longitude and Latitude are required."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/location/v1/locations\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/location/v1/locations\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/location/v1/locations\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/location/v1/locations');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/location/v1/locations\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/location/v1/locations\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/location/v1/locations\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"Full_Schema_Find_Location": {
+				"required": [
+					"location"
+				],
+				"type": "object",
+				"properties": {
+					"locationsSummaryRequestControlParameters": {
+						"description": "Use this object to specify all the inputs to get the locations details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/LocationsSummaryRequestControlParameters"
+							}
+						]
+					},
+					"constraints": {
+						"description": "Specify the constraints to be applied to the location attributes.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/SearchLocationConstraints"
+							}
+						]
+					},
+					"locationSearchCriterion": {
+						"type": "string",
+						"description": "Specify the criteria to be used to search for FedEx locations. Default value is ADDRESS if no value is passed.<p>Valid values: <ul><li>ADDRESS &ndash; Search by address. Location detail data is required.</li><li>GEOGRAPHIC_COORDINATES &ndash; Search by geocodes. Location geocodes are required.</li><li>PHONE_NUMBER &ndash; Search by phone number. Location Phone number is required.</li></ul></p><p><i>Note: Country code is REQUIRED when searching by any of the LocationsSearchCriterion, even PhoneNumber and GeorgraphicCoordinates.</i></p>",
+						"example": "ADDRESS",
+						"enum": [
+							"ADDRESS",
+							"GEOGRAPHIC_COORDINATES",
+							"PHONE_NUMBER"
+						]
+					},
+					"location": {
+						"description": "Based on the locationSearchCriterion value specified, the location element specifies the minimum requirement for address search like postalCode, countryCode, GeoCodes or city.Location phone number is required. Only landline number is allowed.<br><br><i>Note: Country code is REQUIRED for the search.</i>",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Location"
+							}
+						]
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Specify the phone number(Only LandLine allowed) if the locationSearchCriterion is set to 'PHONE_NUMBER'.Given that is the case, the location search will be made based on the phone number value and the location object(postalCode&countryCode) will be completely ignored. <br> Example: 9015551234",
+						"example": "9015551234"
+					},
+					"multipleMatchesAction": {
+						"type": "string",
+						"description": "Specify the criterion to be used to return location results when there are multiple matches.<br>Valid values: RETURN_ALL,RETURN_ERROR, RETURN_FIRST.<br><br><i>Note: The 'maxResults' value takes precedence over RETURN_ALL value.</i>",
+						"example": "RETURN_ALL",
+						"enum": [
+							"RETURN_ALL",
+							"RETURN_ERROR",
+							"RETURN_FIRST"
+						]
+					},
+					"sort": {
+						"$ref": "#/components/schemas/Sort"
+					},
+					"trackingInfo": {
+						"$ref": "#/components/schemas/TrackingInfo"
+					},
+					"sameState": {
+						"type": "boolean",
+						"description": "Filter to display locations within the same state as the search criteria.<br>Valid values: True, False.",
+						"example": true
+					},
+					"sameCountry": {
+						"type": "boolean",
+						"description": "Filter to display locations within the same country as the search criteria.<br>Valid values: True, False.",
+						"example": true
+					},
+					"redirectToHoldType": {
+						"type": "string",
+						"description": "Specify the type of service supported by a FedEx location for redirect to hold.",
+						"example": "FEDEX_GROUND",
+						"enum": [
+							"FEDEX_EXPRESS",
+							"FEDEX_GROUND",
+							"FEDEX_GROUND_HOME_DELIVERY"
+						]
+					},
+					"locationAttrTypes": {
+						"type": "array",
+						"description": "Specify attributes to filter location types. If more than one value is specified, only those locations that have all the specified attributes will be returned.<br>Note: In order to filter for DROP_BOX location, need to add locationTypes as FEDEX_SELF_SERVICE_LOCATION",
+						"example": [
+							"ACCEPTS_CASH",
+							"PACK_AND_SHIP"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"ACCEPTS_CASH",
+								"FEDEX_RETURNS_TECHNOLOGY",
+								"ALREADY_OPEN",
+								"COPY_AND_PRINT_SERVICES",
+								"DANGEROUS_GOODS_SERVICES",
+								"DIRECT_MAIL_SERVICES",
+								"LOCATION_IS_IN_AIRPORT",
+								"NOTARY_SERVICES",
+								"OPEN_TWENTY_FOUR_HOURS",
+								"PACK_AND_SHIP",
+								"PACKAGING_SUPPLIES",
+								"PASSPORT_PHOTO_SERVICES",
+								"RETURNS_SERVICES",
+								"SIGNS_AND_BANNERS_SERVICE",
+								"SONY_PICTURE_STATION",
+								"DROP_BOX",
+								"DOMESTIC_SHIPPING_SERVICES",
+								"INTERNATIONAL_SHIPPING_SERVICES",
+								"CLEARANCE_SERVICES"
+							]
+						}
+					},
+					"locationCapabilities": {
+						"type": "array",
+						"description": "Specify to filter the locations based on their capabilities.",
+						"items": {
+							"$ref": "#/components/schemas/LocationCapabilities"
+						}
+					},
+					"packageAttributes": {
+						"type": "array",
+						"description": "Specify location supported package constraints to narrow the search.<br><br>For example, a package weighing more than 151 pounds may not be supported at all location types. Drop box location would be excluded.<p><i>Note: The package attributes inputs are only recognized/supported for FedEx OnSite Locations.</i></p>",
+						"items": {
+							"$ref": "#/components/schemas/PackageAttribute"
+						}
+					},
+					"locationTypes": {
+						"type": "array",
+						"description": "Results filter which narrows the search to specific types of FedEx Locations. ",
+						"items": {
+							"type": "string",
+							"example": "FEDEX_AUTHORIZED_SHIP_CENTER",
+							"enum": [
+								"FEDEX_AUTHORIZED_SHIP_CENTER",
+								"FEDEX_OFFICE",
+								"FEDEX_SELF_SERVICE_LOCATION",
+								"FEDEX_ONSITE",
+								"FEDEX_EXPRESS_STATION",
+								"FEDEX_SHIPSITE",
+								"FEDEX_SHIP_AND_GET"
+							]
+						}
+					},
+					"includeHoliday": {
+						"type": "boolean",
+						"description": "Indicates true if the location holiday list is desired in the results; otherwise false <br> Valid values: True, False.",
+						"example": true
+					},
+					"dropoffTime": {
+						"type": "string",
+						"description": "Specifies the latest time by which you can drop-off a package at a location to process the shipment the same day. This limits the results to locations that support a specific drop-off time. The format is an ISO 8601 string in which only the time portion is used.<br>Example: 16:00:00",
+						"example": "09:30:00"
+					},
+					"dropOffServiceType": {
+						"type": "string",
+						"description": "The drop-off service types supported by the specified location. If sort criteria is given as  LATEST_EXPRESS_DROPOFF_TIME and dropoffservicetype is GROUND then backend  will take the SORT_BY_LATEST_GROUND_TIME as sort criteria.<br>Example: FedEx Ground.",
+						"example": "GROUND"
+					},
+					"carrierCodes": {
+						"type": "array",
+						"description": "Unique code to identify the transporter.",
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG"
+							]
+						}
+					},
+					"getCall": {
+						"type": "boolean",
+						"description": "Get a call. <br>Valid values: True, False.",
+						"example": false
+					}
+				}
+			},
+			"LocationsSummaryRequestControlParameters": {
+				"type": "object",
+				"properties": {
+					"distance": {
+						"description": "Specify the unit of measurement and the radius around the address to search FedEx locations.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Distance"
+							}
+						]
+					},
+					"maxResults": {
+						"type": "integer",
+						"description": "Specify the maximum number of locations to be returned in the reply.<br><i>Note: This takes precedence over the element multipleMatchesAction value RETURN_ALL.</i>",
+						"format": "int32",
+						"example": 12
+					}
+				}
+			},
+			"Distance": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Indicates the unit of measure for the distance.",
+						"enum": [
+							"KM",
+							"MI"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Specifies the distance value.<br>Example: 3.5",
+						"format": "double"
+					}
+				},
+				"description": "Specifies value and unit of distance between the FedEx locations and the address specified.<br>Example: 2 KM",
+				"example": {
+					"units": "KM",
+					"value": 3.5
+				}
+			},
+			"SearchLocationConstraints": {
+				"type": "object",
+				"properties": {
+					"locationContentOptions": {
+						"type": "array",
+						"description": "Specify the information to be included in the location results.",
+						"items": {
+							"type": "string",
+							"example": "LOCATION_DROPOFF_TIMES",
+							"enum": [
+								"HOLIDAYS",
+								"LOCATION_DROPOFF_TIMES",
+								"TIMEZONE_OFFSET"
+							]
+						}
+					},
+					"dropOffTimeNeeded": {
+						"type": "string",
+						"description": "Specify the preferred drop-off time for a package. This filters the results with locations supporting the specified drop-off time. <br> Example: 16:30:00",
+						"format": "HH:MM:SS",
+						"example": "16:30:00"
+					},
+					"excludeUnavailableLocations": {
+						"type": "string",
+						"description": "Filter to exclude locations that are currently unavailable.<br>Valid values: True, False.",
+						"example": "true"
+					}
+				}
+			},
+			"Location": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"longLat": {
+						"$ref": "#/components/schemas/GeoCode"
+					}
+				}
+			},
+			"Address": {
+				"required": [
+					"countryCode"
+				],
+				"type": "object",
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "This is a combination of number, street name, etc. <br><i>Note: Streetlines more than 3 will be ignored. Empty lines should not be included.</i><br>Example: [\\\"10 FedEx Parkway\\\", \\\"Suite 302\\\"]",
+						"example": [
+							"10 FedEx Parkway",
+							"Suite 302"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "This is a placeholder for City Name. <br> City or PostalCode is mandatory when search criteria is ADDRESS or PHONE_NUMBER<br> Example: Beverly Hills",
+						"example": "Beverly Hills"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code. <br>Example: CA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "CA"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "This is placeholder for postal code.<br><i>Note: <ul><li>Postal code is required for postal-aware countries.</li>City or PostalCode is mandatory when search criteria is ADDRESS or PHONE_NUMBER</li></ul></i>Example: 38127<br><br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "90210"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The ISO Alpha2, Alpha3, Numeric3 code for the country or name (5 character max) for the country.<br>Example: US",
+						"example": "US"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Indicates whether the address returned is residential as opposed to commercial.<br>Valid values: True, False.",
+						"example": false
+					},
+					"addressVerificationId": {
+						"type": "string",
+						"description": "Address verification Identifier",
+						"example": "MARKET_LAUNCH"
+					},
+					"addressClassification": {
+						"type": "string",
+						"description": "The business residential indicators.",
+						"enum": [
+							"MIXED",
+							"UNKNOWN",
+							"BUSINESS",
+							"RESIDENTIAL"
+						],
+						"example": "MIXED"
+					},
+					"addressClassificationConfidence": {
+						"type": "string",
+						"description": "The confidence of business residential classification business residential indicators.",
+						"enum": [
+							"POTENTIAL",
+							"PERMANENT"
+						],
+						"example": "PERMANENT"
+					}
+				},
+				"description": "Specifies the Address Details for a location.",
+				"example": {
+					"streetLines": [
+						"10 FedEx Parkway",
+						"Suite 302"
+					],
+					"city": "Beverly Hills",
+					"stateOrProvinceCode": "CA",
+					"postalCode": "90210",
+					"countryCode": "US",
+					"residential": false
+				}
+			},
+			"GeoCode": {
+				"type": "object",
+				"properties": {
+					"latitude": {
+						"type": "string",
+						"description": "The geo coordinate value that specifies the north-south position of the address.<br>Example: 36.1699° N",
+						"example": "5.637376"
+					},
+					"longitude": {
+						"type": "string",
+						"description": "The geo coordinate value that specifies the East-West position of the address.<br>Example:115.1398° W",
+						"example": "3.61607"
+					}
+				},
+				"description": "The ISO6709 geographic coordinates for a specific geographic location, specifically latitude and longitude.",
+				"example": {
+					"latitude": 5.637376,
+					"longitude": 3.61607
+				}
+			},
+			"Sort": {
+				"type": "object",
+				"properties": {
+					"criteria": {
+						"type": "string",
+						"description": "Specify the criteria to sort the location details.",
+						"example": "DISTANCE",
+						"enum": [
+							"DISTANCE",
+							"LATEST_EXPRESS_DROPOFF_TIME",
+							"LATEST_GROUND_DROPOFF_TIME",
+							"LOCATION_TYPE"
+						]
+					},
+					"order": {
+						"type": "string",
+						"description": "Specify the sort order of the location search results, either ascending or descending. Defaults to ascending order.",
+						"example": "ASCENDING",
+						"enum": [
+							"ASCENDING",
+							"DESCENDING"
+						]
+					}
+				},
+				"description": "Specifies how the location search results will be sorted in the reply."
+			},
+			"TrackingInfo": {
+				"type": "object",
+				"properties": {
+					"uniqueTrackingId": {
+						"type": "string",
+						"description": "A unique tracking number identifying a shipment. Used to return locations that are relevant to the shipment.<br> Example: 012345678912",
+						"example": "789645"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "A tracking number identifying a shipment. Used to return locations that are relevant to the shipment.<br>Example: 123456789012",
+						"example": "123456789012"
+					},
+					"shipDate": {
+						"type": "string",
+						"description": "The date of shipment.<br> Example: 2019-10-13",
+						"example": "2019-10-13"
+					}
+				},
+				"description": "Information uniquely identifying a shipment such as Tracking number, ShipDate, and Tracking number uniqueId. This tracking information helps to return the correct list of locations when REDIRECT_TO_HOLD_AT_LOCATION is requested"
+			},
+			"LocationCapabilities": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Indicates the service types supported by the location.<br>Example: PRIORITY_OVERNIGHT<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>",
+						"example": "PRIORITY_OVERNIGHT"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Unique code to identify the transporter.",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"transferOfPossessionType": {
+						"type": "string",
+						"description": "The method by which a package is transferred to the possession of a FedEx location.",
+						"example": "DROPOFF",
+						"enum": [
+							"DROPOFF",
+							"HOLD_AT_LOCATION",
+							"REDIRECT_TO_HOLD_AT_LOCATION"
+						]
+					},
+					"serviceCategory": {
+						"type": "string",
+						"description": "The service category applicable for the capability.",
+						"example": "EXPRESS_PARCEL",
+						"enum": [
+							"EXPRESS_FREIGHT",
+							"EXPRESS_PARCEL",
+							"GROUND_HOME_DELIVERY"
+						]
+					},
+					"daysOfWeek": {
+						"type": "array",
+						"description": "The days of the week for which this capability applies.<br>Valid values:<ul><li>MON</li><li>TUE</li><li>WED</li><li>THU</li><li>FRI</li><li>SAT</li><li>SUN</li></ul>",
+						"example": [
+							"MON",
+							"TUE"
+						],
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"description": "Location capabilities such as services, day of week, ability to dropoff, pickup shipments, ability to hold shipments for pickup, etc.",
+				"example": {
+					"carrierCode": "FDXE",
+					"serviceType": "PRIORITY_OVERNIGHT",
+					"transferOfPossessionType": "DROPOFF",
+					"serviceCategory": "EXPRESS_FREIGHT",
+					"daysOfWeek": [
+						"MON",
+						"TUE"
+					]
+				}
+			},
+			"PackageAttribute": {
+				"type": "object",
+				"properties": {
+					"weight": {
+						"description": "Specify the package weight.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"dimensions": {
+						"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul><i>Note: The maximum/minimum dimension values varies based on the services and the packaging types.</i><br>Refer <a href=\"https://www.fedex.com/en-us/service-guide.html\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Dimensions"
+							}
+						]
+					}
+				},
+				"example": {
+					"weight": {
+						"units": "LB",
+						"value": 150
+					},
+					"dimensions": {
+						"length": 20,
+						"width": 40,
+						"units": "IN",
+						"height": 70
+					}
+				}
+			},
+			"Weight": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Specify the weighing unit of the package.",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "This is package weight. Max. Length is 99999.",
+						"format": "double",
+						"example": 10
+					}
+				},
+				"description": "These are the package weight details.",
+				"example": {
+					"units": "LB",
+					"value": 10
+				}
+			},
+			"Dimensions": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Indicate the length of the package. No implied decimal places. Maximum value is 999.<br> Example: 20",
+						"format": "int32",
+						"example": 100
+					},
+					"width": {
+						"type": "integer",
+						"description": "Indicate the width of the package. No implied decimal places. Maximum value is 999.<br> Example: 10",
+						"format": "int32",
+						"example": 50
+					},
+					"height": {
+						"type": "integer",
+						"description": "Indicate the height of the package. No implied decimal places. Maximum value is 999.<br> Example: 10",
+						"format": "int32",
+						"example": 30
+					},
+					"units": {
+						"type": "string",
+						"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul><i>Note: <ul><li>The maximum/minimum dimension values varies based on the services and the packaging types.</i> Refer <a href=\"https://www.fedex.com/en-us/service-guide.html\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.</li><li>Any value other than CM including blank/null will default to IN.</li></ul>",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul><i>Note: The maximum/minimum dimension values varies based on the services and the packaging types.</i><br>Refer <a href=\"https://www.fedex.com/en-us/service-guide.html\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"example": {
+					"length": 100,
+					"width": 50,
+					"height": 30,
+					"units": "CM"
+				}
+			},
+			"LoccResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helpsyou match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"description": "This object specifies the location search result details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/BaseProcessOutputVO"
+							}
+						]
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO": {
+				"$ref": "#/components/schemas/LocationSummaryOutputVO"
+			},
+			"LocationSummaryOutputVO": {
+				"type": "object",
+				"properties": {
+					"totalResults": {
+						"type": "integer",
+						"description": "Indicates the total number of locations that are displayed in the result.<br>Example: 13",
+						"format": "int32",
+						"example": 13
+					},
+					"resultsReturned": {
+						"type": "integer",
+						"description": "Specifies the number of results returned in the reply.<br>Example: 10",
+						"format": "int32",
+						"example": 13
+					},
+					"matchedAddress": {
+						"description": "The address provided in the request.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Address"
+							}
+						]
+					},
+					"matchedAddressGeoCoord": {
+						"description": "Identifies the geographic coordinates corresponding to the address specified. It is specified in ISO 6709 format.<br> Example: +40.75-074.00",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/GeoPositionalCoordinates"
+							}
+						]
+					},
+					"locationDetailList": {
+						"type": "array",
+						"description": "List of FedEx locations meeting the search criteria.",
+						"items": {
+							"allOf": [
+								{
+									"$ref": "#/components/schemas/LocationDetail"
+								}
+							]
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "Specifies the alerts.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"nearestLocation": {
+						"$ref": "#/components/schemas/LocationDetail"
+					},
+					"latestLocation": {
+						"$ref": "#/components/schemas/LocationDetail"
+					},
+					"ambiguousAddress": {
+						"type": "array",
+						"description": "Indicates the values for ambiguous address details.",
+						"items": {
+							"$ref": "#/components/schemas/LocationDetail"
+						}
+					},
+					"ambiguousLocationsReturned": {
+						"type": "boolean",
+						"description": "Indicates whether value for ambigous locations were returned or not. <br>Valid values: True, False.",
+						"example": false
+					},
+					"nearestLocationReturned": {
+						"type": "boolean",
+						"description": "Indicates whether value for nearest locations were returned or not. <br>Valid values: True, False.",
+						"example": false
+					},
+					"latestLocationReturned": {
+						"type": "boolean",
+						"description": "Indicates whether value for latest locations were returned or not. <br>Valid values: True, False.",
+						"example": false
+					},
+					"lockerAvailabilityCode": {
+						"type": "integer",
+						"description": "Code for locker availability",
+						"format": "int32",
+						"example": 25
+					},
+					"lockerAvailabilityMessage": {
+						"type": "string",
+						"description": "Message for locker availability",
+						"example": "Locker availability lookup is not available. Note: this is decouple state."
+					},
+					"location": {
+						"description": "Based on the locationSearchCriterion value specified, the location element specifies the minimum requirement for address search like postalCode, countryCode, GeoCodes or city.<br><br><i>Note: Country code is REQUIRED for the search.</i>",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Location"
+							}
+						]
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Specify the phone number If the locationSearchCriterion is set to 'PHONE_NUMBER'.The mobile numbers will not return results when set as a criterion. <br> Example: 9015551234",
+						"example": "9015551234"
+					},
+					"multipleMatchesAction": {
+						"type": "string",
+						"description": "Specify the criterion to be used to return location results when there are multiple matches.<br><br><i>Note: The 'maxResults' value takes precedence over RETURN_ALL value.</i>",
+						"example": "RETURN_ALL",
+						"enum": [
+							"RETURN_ALL",
+							"RETURN_ERROR",
+							"RETURN_FIRST"
+						]
+					},
+					"sort": {
+						"$ref": "#/components/schemas/Sort"
+					},
+					"trackingInfo": {
+						"$ref": "#/components/schemas/TrackingInfo"
+					},
+					"sameState": {
+						"type": "boolean",
+						"description": "Filter to display locations within the same state as the search criteria.<br>Valid values: True, False.",
+						"example": true
+					},
+					"sameCountry": {
+						"type": "boolean",
+						"description": "Filter to display locations within the same country as the search criteria.<br>Valid values: True, False.",
+						"example": true
+					},
+					"redirectToHoldType": {
+						"type": "string",
+						"description": "Specify the type of service supported by a FedEx location for redirect to hold.<br>Valid values: FEDEX_EXPRESS, FEDEX_GROUND, FEDEX_GROUND_HOME_DELIVERY.",
+						"example": "FEDEX_GROUND",
+						"enum": [
+							"FEDEX_EXPRESS",
+							"FEDEX_GROUND",
+							"FEDEX_GROUND_HOME_DELIVERY"
+						]
+					},
+					"locationAttrTypes": {
+						"type": "array",
+						"description": "Indicates the attributes for the location.",
+						"example": [
+							"ACCEPTS_CASH",
+							"PACK_AND_SHIP"
+						],
+						"items": {
+							"type": "string",
+							"description": "Specify attributes to filter location types. If more than one value is specified, only those locations that have all the specified attributes will be returned. <br> Example: [ACCEPTS_CASH, PACK_AND_SHIP]",
+							"enum": [
+								"ACCEPTS_CASH",
+								"ALREADY_OPEN",
+								"COPY_AND_PRINT_SERVICES",
+								"DANGEROUS_GOODS_SERVICES",
+								"DIRECT_MAIL_SERVICES",
+								"LOCATION_IS_IN_AIRPORT",
+								"NOTARY_SERVICES",
+								"OBSERVES_DAY_LIGHT_SAVING_TIMES",
+								"OPEN_TWENTY_FOUR_HOURS",
+								"PACK_AND_SHIP",
+								"PACKAGING_SUPPLIES",
+								"PASSPORT_PHOTO_SERVICES",
+								"RETURNS_SERVICES",
+								"SIGNS_AND_BANNERS_SERVICE",
+								"SONY_PICTURE_STATION",
+								"DROP_BOX",
+								"DOMESTIC_SHIPPING_SERVICES",
+								"INTERNATIONAL_SHIPPING_SERVICES",
+								"CLEARANCE_SERVICES"
+							]
+						}
+					},
+					"locationCapabilities": {
+						"type": "array",
+						"description": "Specify to filter the locations based on their capabilities.",
+						"items": {
+							"$ref": "#/components/schemas/LocationCapabilities"
+						}
+					},
+					"packageMaximumLimits": {
+						"type": "array",
+						"description": "Any required location supported package constraints to narrow the search.<br>For example, a package weighing more than 151 pounds may not be supported at all location types.  Drop box location would be excluded.",
+						"items": {
+							"$ref": "#/components/schemas/PackageAttribute"
+						}
+					},
+					"locationTypes": {
+						"type": "array",
+						"description": "Results filter which narrows the search to specific types of FedEx Locations.",
+						"items": {
+							"type": "string",
+							"example": "FEDEX_AUTHORIZED_SHIP_CENTER",
+							"enum": [
+								"FEDEX_AUTHORIZED_SHIP_CENTER",
+								"FEDEX_OFFICE",
+								"FEDEX_SELF_SERVICE_LOCATION",
+								"FEDEX_ONSITE",
+								"FEDEX_EXPRESS_STATION",
+								"FEDEX_SHIPSITE",
+								"FEDEX_FREIGHT_SERVICE_CENTER",
+								"FEDEX_HOME_DELIVERY_STATION",
+								"FEDEX_SMART_POST_HUB"
+							]
+						}
+					},
+					"includeHoliday": {
+						"type": "boolean",
+						"description": "Indicates true if the location holiday list is desired in the results; otherwise false <br>Valid values: True, False.",
+						"example": true
+					},
+					"dropoffTime": {
+						"type": "string",
+						"description": "Specifies the latest time by which you can drop-off a package at a location to process the shipment the same day. This limits the results to locations that support a specific drop-off time. The format is an ISO 8601 string in which only the time portion is used.<br>Example: 16:00:00",
+						"example": "09:30:00"
+					},
+					"dropOffServiceType": {
+						"type": "string",
+						"description": "The drop-off service types supported by the specified location.<br>Example: FedEx Ground.",
+						"example": "GROUND"
+					},
+					"searchBy": {
+						"type": "string",
+						"description": "location search based on searchBy ",
+						"example": "searchBy"
+					},
+					"contentOptions": {
+						"type": "string",
+						"description": "location content options",
+						"example": "HOLIDAYS"
+					},
+					"carrierCodes": {
+						"type": "array",
+						"description": "Unique code to identify the transporter.",
+						"items": {
+							"type": "string",
+							"enum": [
+								"FDXE",
+								"FDXG"
+							]
+						}
+					},
+					"getCall": {
+						"type": "boolean",
+						"description": "Get a call. Valid values: True, False.",
+						"example": false
+					}
+				}
+			},
+			"GeoPositionalCoordinates": {
+				"type": "object",
+				"properties": {
+					"latitude": {
+						"type": "number",
+						"description": "The geo coordinate value that specifies the north-south position of the address.<br>Example: 36.1699° N",
+						"format": "double",
+						"example": 5.637376
+					},
+					"longitude": {
+						"type": "number",
+						"description": "The geo coordinate value that specifies the East-West position of the address.<br>Example: 115.1398° W",
+						"format": "double",
+						"example": 3.616076
+					}
+				},
+				"description": "The ISO6709GeographicCoordinates for a specific geographic location"
+			},
+			"LocationDetail": {
+				"type": "object",
+				"properties": {
+					"distance": {
+						"description": "Specifies value and unit of distance between the FedEx locations and the address specified.<br>Example: 2 KM",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Distance"
+							}
+						]
+					},
+					"contactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress"
+					},
+					"locationId": {
+						"type": "string",
+						"description": "This is the FedEx location id for the given location.<br> Example:DXBA",
+						"example": "DXBA"
+					},
+					"storeHours": {
+						"type": "array",
+						"description": "Includes the days and times specific to the location",
+						"items": {
+							"$ref": "#/components/schemas/LocationHours"
+						}
+					},
+					"carrierDetailList": {
+						"type": "array",
+						"description": "List of FedEx Operating companies (FedEx Carriers) along with different service capabilities available with the location.",
+						"items": {
+							"$ref": "#/components/schemas/FASTCarrierDetails"
+						}
+					},
+					"geoPositionalCoordinates": {
+						"$ref": "#/components/schemas/GeoPositionalCoordinates"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "The FedEx Location Type.",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_EXPRESS_STATION",
+							"FEDEX_STAFFED",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_HOME_DELIVERY_STATION",
+							"FEDEX_ONSITE",
+							"FEDEX_SHIPSITE",
+							"FEDEX_FACILITY",
+							"FEDEX_FREIGHT_SERVICE_CENTER",
+							"FEDEX_SMART_POST_HUB"
+						]
+					},
+					"locationAttributeTypes": {
+						"type": "array",
+						"description": "Attributes for the location.",
+						"example": [
+							"ALREADY_OPEN"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"ACCEPTS_CASH",
+								"ALREADY_OPEN",
+								"COPY_AND_PRINT_SERVICES",
+								"DANGEROUS_GOODS_SERVICES",
+								"DIRECT_MAIL_SERVICES",
+								"EXPRESS_FREIGHT_DROPOFFS",
+								"EXPRESS_PARCEL_DROPOFFS",
+								"FEDEX_FREIGHT_DROPOFFS",
+								"GROUND_DROPOFFS",
+								"GROUND_HOME_DELIVERY_DROPOFFS",
+								"LOCATION_IS_IN_AIRPORT",
+								"NOTARY_SERVICES",
+								"OBSERVES_DAY_LIGHT_SAVING_TIMES",
+								"OPEN_TWENTY_FOUR_HOURS",
+								"PACK_AND_SHIP",
+								"PACKAGING_SUPPLIES",
+								"PASSPORT_PHOTO_SERVICES",
+								"RETURNS_SERVICES",
+								"SATURDAY_DROPOFFS",
+								"SIGNS_AND_BANNERS_SERVICE",
+								"WEEKDAY_EXPRESS_HOLD_AT_LOCATION",
+								"WEEKDAY_GROUND_HOLD_AT_LOCATION",
+								"SONY_PICTURE_STATION",
+								"EXPANDED_OFFICE_SUPPLIES_AND_TECHNOLOGY_PRODUCTS",
+								"VIDEO_CONFERENCING",
+								"SATURDAY_EXPRESS_HOLD_AT_LOCATION",
+								"KIOSK_LOCATION",
+								"STAFFED_LOCATION",
+								"SAME_DAY_DROPOFFS",
+								"SAME_DAY_CITY_DROPOFFS",
+								"DROP_BOX",
+								"DOMESTIC_SHIPPING_SERVICES",
+								"INTERNATIONAL_SHIPPING_SERVICES"
+							]
+						}
+					},
+					"lockerAvailability": {
+						"type": "boolean",
+						"description": "Indicates if FedEx locker is available at the location.<br> Valid values: True, False.",
+						"example": true
+					},
+					"packageMaximumLimits": {
+						"description": "This is the maximum package limits that are supported at the location.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/PackageAttribute"
+							}
+						]
+					},
+					"specialInstructions": {
+						"type": "string",
+						"description": "Indicates the special instructions needed to access a location.",
+						"example": "Any Special Instruction"
+					},
+					"rthservice": {
+						"type": "string",
+						"description": "Indicates if the location supports RedirectToHold Service.",
+						"example": "RedirectToHoldService"
+					},
+					"locationCapabilities": {
+						"$ref": "#/components/schemas/LocationCapabilities"
+					}
+				},
+				"description": "Details about a specific FedEx location such as services offered, distance, package attributes supported, hours, pickup and drop off times.",
+				"example": {
+					"distance": {
+						"units": "KM",
+						"value": 3.5
+					},
+					"contactAndAddress": {
+						"address": {
+							"streetLines": [
+								"1640 Union Blvd",
+								"streetLine2"
+							],
+							"city": "Beverly Hills",
+							"postalCode": "90210",
+							"countryCode": "US",
+							"residential": false
+						},
+						"displayName": "John Taylor",
+						"contact": {
+							"personName": "John Taylor",
+							"emailAddress": "xxxxlor@fedex.com",
+							"phoneNumber": "xxxxxxxx12",
+							"phoneExtension": "91",
+							"companyName": "Fedex",
+							"faxNumber": "fax number",
+							"displayName": "jhon",
+							"stateTaxId": "state tax identifier",
+							"fedralTaxId": "federal tax identifier"
+						},
+						"addressAncillaryDetail": {
+							"locationInCity": "Mill Heights",
+							"suite": "suite",
+							"displayName": "jhon",
+							"adderssVerificationOverrideReason": "MANUAL_OVERRIDE",
+							"locationInProperty": "back building north",
+							"addtionalDescriptions": "thru south guard gate",
+							"department": "R&D",
+							"roomFloor": 302,
+							"crossStreet": "First and Main",
+							"building": "G20",
+							"apartment": "2b",
+							"room": "1A"
+						}
+					},
+					"locationId": "COSA",
+					"storeHours": [
+						{
+							"dayofweek": "MONDAY",
+							"operationalHoursType": "OPEN_BY_HOURS",
+							"operationalHours": [
+								{
+									"begins": "08:00:00",
+									"ends": "17:00:00"
+								}
+							],
+							"exceptionalHoursType": "CLOSED_ALL_DAY",
+							"exceptionalHours": [
+								{
+									"begins": "08:00:00",
+									"ends": "17:00:00"
+								}
+							]
+						},
+						{
+							"dayofweek": "TUESDAY",
+							"operationalHoursType": "OPEN_BY_HOURS",
+							"operationalHours": [
+								{
+									"begins": "08:00:00",
+									"ends": "17:00:00"
+								}
+							],
+							"exceptionalHoursType": "CLOSED_ALL_DAY",
+							"exceptionalHours": [
+								{
+									"begins": "08:00:00",
+									"ends": "17:00:00"
+								}
+							]
+						}
+					],
+					"carrierDetailList": [
+						{
+							"serviceType": "PRIORITY_OVERNIGHT",
+							"countryRelationshipType": "DOMESTIC",
+							"carrierCodeType": "FDXE",
+							"latestDropoffDetails": [
+								{
+									"dayOfWeek": "MONDAY",
+									"operationalOverlay": {
+										"time": "time",
+										"type": "WEST_COAST"
+									},
+									"exceptionalTime": "08:30:00",
+									"exceptionalOverlay": {
+										"time": "09:00:00",
+										"type": "WEST_COAST"
+									},
+									"operationTime": "08:30:00"
+								}
+							],
+							"serviceCategory": "EXPRESS_FREIGHT"
+						},
+						{
+							"serviceType": "STANDARD_OVERNIGHT",
+							"countryRelationshipType": "DOMESTIC",
+							"carrierCodeType": "FDXE",
+							"latestDropoffDetails": [
+								{
+									"dayOfWeek": "TUESDAY",
+									"operationalOverlay": {
+										"time": "09:00:00",
+										"type": "WEST_COAST"
+									},
+									"exceptionalTime": "07:00:00",
+									"exceptionalOverlay": {
+										"time": "02:00:00",
+										"type": "WEST_COAST"
+									},
+									"operationTime": "06:00:00"
+								}
+							],
+							"serviceCategory": "EXPRESS_FREIGHT"
+						}
+					],
+					"geoPositionalCoordinates": {
+						"latitude": 5.637376,
+						"longitude": 3.61607
+					},
+					"locationType": "FEDEX_AUTHORIZED_SHIP_CENTER",
+					"locationAttributeTypes": [
+						"ACCEPTS_CASH",
+						"COPY_AND_PRINT_SERVICES"
+					],
+					"lockerAvailability": false,
+					"packageMaximumLimits": {
+						"weight": {
+							"units": "KG",
+							"value": 68
+						},
+						"dimensions": {
+							"length": 2,
+							"width": 4,
+							"units": "IN",
+							"height": 7
+						}
+					},
+					"specialInstructions": "Store email: Packagingdeput@telus.net",
+					"rthservice": "REDIRECT",
+					"locationCapabilities": [
+						{
+							"serviceType": "PRIORITY_OVERNIGHT",
+							"transferOfPossessionType": "DROP_OFF",
+							"carrierCode": "FDXE",
+							"daysOfWeek": [
+								"MONDAY",
+								"TUESDAY",
+								"WEDNESDAY",
+								"THURSDAY",
+								"FRIDAY"
+							],
+							"serviceCategory": "GROUND_HOME_DELIVERY"
+						},
+						{
+							"serviceType": "FEDEX_GROUND",
+							"transferOfPossessionType": "HOLD_AT_LOCATION",
+							"carrierCode": "FDXG",
+							"daysOfWeek": [
+								"MONDAY",
+								"TUESDAY",
+								"WEDNESDAY",
+								"THURSDAY",
+								"FRIDAY",
+								"SATURDAY"
+							],
+							"serviceCategory": "GROUND"
+						}
+					]
+				}
+			},
+			"ContactAndAddress": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"contact": {
+						"$ref": "#/components/schemas/Contact"
+					},
+					"addressAncillaryDetail": {
+						"$ref": "#/components/schemas/AddressAncillaryDetail"
+					}
+				},
+				"description": "The contact and address information for a location.",
+				"example": {
+					"address": {
+						"streetLines": [
+							"streetLines",
+							"streetLines"
+						],
+						"city": "Beverly Hills",
+						"stateOrProvinceCode": "CA",
+						"postalCode": "90210",
+						"countryCode": "US",
+						"residential": false
+					},
+					"displayName": "displayName",
+					"contact": {
+						"personName": "John Taylor",
+						"emailAddress": "sample@company.com",
+						"phoneNumber": "9013575012",
+						"phoneExtension": 5000,
+						"companyName": "Fedex",
+						"faxNumber": "fax number",
+						"stateTaxId": "state tax identifier",
+						"fedralTaxId": "federal tax identifier"
+					}
+				}
+			},
+			"Contact": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Identifies the contact person's name. Max Length is 70.<br>Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"emailAddress": {
+						"type": "string",
+						"description": "Contact person's email address. Max length is 80.<br>Example: sample@company.com",
+						"example": "sample@company.com"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Contact person's phone number. Max length is 15.<br>Example: 1234567890",
+						"example": "1234567890"
+					},
+					"phoneExtension": {
+						"type": "string",
+						"description": "Contact person's phone extension. Max length is 6.<br>Example: 91",
+						"example": "91"
+					},
+					"faxNumber": {
+						"type": "string",
+						"description": "Contact person's fax number. Max length is 15.<br>Example: 956123",
+						"example": "956123"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Contact person's company name. Max length is 35.<br>Example: FedEx",
+						"example": "Fedex"
+					},
+					"stateTaxId": {
+						"type": "string",
+						"description": "State TaxID for the contact person.<br>Example: 12345"
+					},
+					"fedralTaxId": {
+						"type": "string",
+						"description": "Fedral TaxId for the contact person.<br>Example: 11-N-1745"
+					}
+				},
+				"description": "Indicates the contact details such as Name, Email, PhoneNumber",
+				"example": {
+					"personName": "John Taylor",
+					"emailAddress": "sample@company.com",
+					"phoneNumber": "1234567890",
+					"phoneExtension": "1234",
+					"faxNumber": "1234567890",
+					"companyName": "Fedex",
+					"stateTaxId": "11-N-1745",
+					"fedralTaxId": "11-N-1745"
+				}
+			},
+			"AddressAncillaryDetail": {
+				"required": [
+					"displayName",
+					"locationInCity"
+				],
+				"type": "object",
+				"properties": {
+					"locationInCity": {
+						"type": "string",
+						"description": "This is the subdivision or community within a city for the given address.<br>Example: Forester subdivision",
+						"example": "Forester subdivision"
+					},
+					"suite": {
+						"type": "string",
+						"description": "This is the suite information for the given address.<br>Example: suite 201",
+						"example": "suite 201"
+					},
+					"adderssVerificationOverrideReason": {
+						"type": "string",
+						"description": "Indicate the reason to override address verification.<br> Valid values:  <ul><li>CUSTOMER_PREFERENCE</li><li>CUSTOMER_PROVIDED_PROOF</li><li>MANUAL_VALIDATION</li></ul>",
+						"example": "CUSTOMER_PREFERENCE, CUSTOMER_PROVIDED_PROOF, MANUAL_VALIDATION"
+					},
+					"displayName": {
+						"type": "string",
+						"description": "Display name.<br> Example: John",
+						"example": "John"
+					},
+					"locationInProperty": {
+						"type": "string",
+						"description": "This is location in a campus, such as exterior building annex A.<br>Example: south west of main office entrance",
+						"example": "south west of main office entrance"
+					},
+					"addtionalDescriptions": {
+						"type": "string",
+						"description": "Specify additional information about the given address.<br>Example: north door",
+						"example": "north door"
+					},
+					"department": {
+						"type": "string",
+						"description": "This is the department for the given address.<br>Example: Claims department",
+						"example": "Claims department"
+					},
+					"roomFloor": {
+						"type": "string",
+						"description": "This is to specify the room or floor information for the given address.<br>Example: 5th floor",
+						"example": "5th floor"
+					},
+					"crossStreet": {
+						"type": "string",
+						"description": "This is the cross street information for the given address.<br>Example: Union and Main",
+						"example": "Union and Main"
+					},
+					"building": {
+						"type": "string",
+						"description": "This is the building information for the given address.<br>Example: Building 300",
+						"example": "Building 300"
+					},
+					"apartment": {
+						"type": "string",
+						"description": "This is the apartment information for the given address.<br>Example: Apartment 1503",
+						"example": "Apartment 1503"
+					},
+					"room": {
+						"type": "string",
+						"description": "This is room specific information for the given address.<br>Example: Room B-23",
+						"example": "Room B-23"
+					}
+				},
+				"description": "Indicate the additional address details for the physical location ."
+			},
+			"LocationHours": {
+				"type": "object",
+				"properties": {
+					"dayofweek": {
+						"type": "string",
+						"description": "The day of the week for the location hours.",
+						"example": "MONDAY",
+						"enum": [
+							"SUNDAY",
+							"MONDAY",
+							"TUESDAY",
+							"WEDNESDAY",
+							"THURSDAY",
+							"FRIDAY",
+							"SATURDAY"
+						]
+					},
+					"operationalHoursType": {
+						"type": "string",
+						"description": "Indicates the type of operational hours.",
+						"enum": [
+							"CLOSED_ALL_DAY",
+							"OPEN_ALL_DAY",
+							"OPEN_BY_HOURS"
+						]
+					},
+					"operationalHours": {
+						"type": "array",
+						"description": "List of normal operating hours for the location.",
+						"items": {
+							"$ref": "#/components/schemas/TimeRange"
+						}
+					},
+					"exceptionalHoursType": {
+						"type": "string",
+						"description": "Indicates the type of exceptional hours.",
+						"enum": [
+							"CLOSED_ALL_DAY",
+							"OPEN_ALL_DAY",
+							"OPEN_BY_HOURS"
+						]
+					},
+					"exceptionalHours": {
+						"type": "array",
+						"description": "List of operating hours for the location that are an exception from the normal hours of operation.",
+						"items": {
+							"$ref": "#/components/schemas/TimeRange"
+						}
+					}
+				},
+				"description": "Specifies the operational and exceptional hours for a location.",
+				"example": {
+					"dayofweek": "SUNDAY",
+					"operationalHoursType": "CLOSED_ALL_DAY",
+					"operationalHours": [
+						{
+							"begins": "08:00:00",
+							"ends": "17:00:00"
+						}
+					],
+					"exceptionalHours": [
+						{
+							"begins": "08:00:00",
+							"ends": "17:00:00"
+						}
+					],
+					"exceptionalHoursType": "CLOSED_ALL_DAY"
+				}
+			},
+			"TimeRange": {
+				"type": "object",
+				"properties": {
+					"begins": {
+						"type": "string",
+						"description": "Start time. <br> Example: 20:00:00",
+						"example": "20:00:00"
+					},
+					"ends": {
+						"type": "string",
+						"description": "End time. <br> Example: 20:00:00",
+						"example": "20:00:00"
+					}
+				}
+			},
+			"FASTCarrierDetails": {
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Specifies the service type.<br>Example: PRIORITY_OVERNIGHT<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>"
+					},
+					"serviceCategory": {
+						"type": "string",
+						"description": "The service category for which this capability applies.",
+						"enum": [
+							"EXPRESS",
+							"GROUND",
+							"EXPRESS_FREIGHT",
+							"FREIGHT",
+							"SMARTPOST",
+							"EXPRESS_PARCEL",
+							"NULL"
+						],
+						"example": "EXPRESS_PARCEL"
+					}
+				},
+				"description": "This is a subset of the transportation carrier's products or services which may have unique characteristics at the location i.e. latest drop-off times for FDXE vs FDXG.",
+				"example": {
+					"serviceType": "PRIORITY_OVERNIGHT",
+					"countryRelationshipType": "DOMESTIC",
+					"carrierCodeType": "FDXE",
+					"latestDropoffDetails": {
+						"dayOfWeek": "MONDAY",
+						"exceptionalTime": "08:00:00",
+						"exceptionalOverlay": {
+							"time": "09:00:00",
+							"type": "WEST_COAST"
+						},
+						"operationTime": "09:00:00"
+					},
+					"serviceCategory": "EXPRESS_PARCEL"
+				}
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the API alert code."
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the API alert type.",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the API alert message."
+					}
+				},
+				"description": "Specifies the API alerts."
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: ERROR.LONGLAT.REQUIRED",
+						"example": "ERROR.LONGLAT.REQUIRED"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Longitude and Latitude are required."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			}
+		}
+	}
+}

@@ -1,0 +1,753 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Domains",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Domains",
+    "description" : "Operations for fetching domains"
+  } ],
+  "paths" : {
+    "/cms/v3/domains/" : {
+      "get" : {
+        "tags" : [ "Domains" ],
+        "summary" : "Get current domains",
+        "description" : "Returns all existing domains that have been created. Results can be limited and filtered by creation or updated date.",
+        "operationId" : "get-/cms/v3/domains/_getPage",
+        "parameters" : [ {
+          "name" : "createdAt",
+          "in" : "query",
+          "description" : "Only return domains created at this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "createdAfter",
+          "in" : "query",
+          "description" : "Only return domains created after this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "createdBefore",
+          "in" : "query",
+          "description" : "Only return domains created before this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "updatedAt",
+          "in" : "query",
+          "description" : "Only return domains updated at this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "updatedAfter",
+          "in" : "query",
+          "description" : "Only return domains updated after this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "updatedBefore",
+          "in" : "query",
+          "description" : "Only return domains updated before this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "properties",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "after",
+          "in" : "query",
+          "description" : "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Maximum number of results per page.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "archived",
+          "in" : "query",
+          "description" : "Whether to return only results that have been archived.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponseWithTotalDomain"
+                },
+                "example" : {
+                  "total" : 2,
+                  "results" : [ {
+                    "id" : "1234",
+                    "createdAt" : "2017-07-24T17:24:09.141Z",
+                    "updatedAt" : "2017-07-25T18:20:00.000Z",
+                    "domain" : "234.hs-sites.com",
+                    "isPrimaryLandingPage" : false,
+                    "isPrimaryEmail" : false,
+                    "isPrimaryBlogPost" : true,
+                    "isPrimarySitePage" : false,
+                    "isPrimaryKnowledge" : false,
+                    "isResolving" : true,
+                    "isManuallyMarkedAsResolving" : false,
+                    "isHttpsEnabled" : true,
+                    "isHttpsOnly" : false,
+                    "isUsedForBlogPost" : true,
+                    "isUsedForSitePage" : false,
+                    "isUsedForLandingPage" : false,
+                    "isUsedForEmail" : false,
+                    "isUsedForKnowledge" : false,
+                    "expectedCname" : "234.group34.sites.hubspot.net",
+                    "redirectTo" : ""
+                  }, {
+                    "id" : "4321",
+                    "createdAt" : "2017-07-11T13:00:52.928Z",
+                    "updatedAt" : "2019-10-08T16:54:57.165Z",
+                    "domain" : "test.demo.com",
+                    "isPrimaryLandingPage" : false,
+                    "isPrimaryEmail" : false,
+                    "isPrimaryBlogPost" : true,
+                    "isPrimarySitePage" : false,
+                    "isPrimaryKnowledge" : false,
+                    "isResolving" : true,
+                    "isManuallyMarkedAsResolving" : false,
+                    "isHttpsEnabled" : true,
+                    "isHttpsOnly" : false,
+                    "isUsedForBlogPost" : true,
+                    "isUsedForSitePage" : false,
+                    "isUsedForLandingPage" : false,
+                    "isUsedForEmail" : false,
+                    "isUsedForKnowledge" : false,
+                    "expectedCname" : "234.group34.sites.hubspot.net",
+                    "redirectTo" : ""
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      }
+    },
+    "/cms/v3/domains/{domainId}" : {
+      "get" : {
+        "tags" : [ "Domains" ],
+        "summary" : "Get a single domain",
+        "description" : "Returns a single domains with the id specified.",
+        "operationId" : "get-/cms/v3/domains/{domainId}_getById",
+        "parameters" : [ {
+          "name" : "domainId",
+          "in" : "path",
+          "description" : "The unique ID of the domain.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "archived",
+          "in" : "query",
+          "description" : "Whether to return only results that have been archived.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Domain"
+                },
+                "example" : {
+                  "id" : "3210329704",
+                  "createdAt" : "2017-07-11T13:00:52.928Z",
+                  "updatedAt" : "2019-10-08T16:54:57.165Z",
+                  "domain" : "99558489.hubspot.com",
+                  "isPrimaryLandingPage" : false,
+                  "isPrimaryEmail" : false,
+                  "isPrimaryBlogPost" : true,
+                  "isPrimarySitePage" : false,
+                  "isPrimaryKnowledge" : false,
+                  "isResolving" : true,
+                  "isManuallyMarkedAsResolving" : false,
+                  "isHttpsEnabled" : true,
+                  "isHttpsOnly" : false,
+                  "isUsedForBlogPost" : true,
+                  "isUsedForSitePage" : false,
+                  "isUsedForLandingPage" : false,
+                  "isUsedForEmail" : false,
+                  "isUsedForKnowledge" : false,
+                  "expectedCname" : "99558489.group39.sites.hubspotqa.net",
+                  "redirectTo" : ""
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CollectionResponseWithTotalDomain" : {
+        "required" : [ "results", "total" ],
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Domain"
+            }
+          },
+          "paging" : {
+            "$ref" : "#/components/schemas/Paging"
+          }
+        }
+      },
+      "Domain" : {
+        "required" : [ "actualCname", "actualIp", "apexDomain", "apexIpAddresses", "apexResolutionStatus", "authorAt", "brandId", "cdnPurgeEmbargoTime", "certificateId", "consecutiveNonResolvingCount", "correctCname", "cosObjectType", "created", "createdById", "deletable", "derivedBrandName", "domain", "domainCdnConfig", "fullCategoryKey", "id", "isAnyPrimary", "isDnsCorrect", "isInternalDomain", "isLegacy", "isLegacyDomain", "isResolving", "isResolvingIgnoringManuallyMarkedAsResolving", "isResolvingInternalProperty", "isSetupComplete", "isSslEnabled", "isSslOnly", "isStagingDomain", "isUsedForAnyContentType", "isUsedForBlogPost", "isUsedForEmail", "isUsedForKnowledge", "isUsedForLandingPage", "isUsedForSitePage", "label", "manuallyMarkedAsResolving", "portalId", "primaryBlog", "primaryBlogPost", "primaryClickTracking", "primaryEmail", "primaryKnowledge", "primaryLandingPage", "primaryLegacyPage", "primarySitePage", "publicSuffix", "secondaryToDomain", "setUpLanguage", "setupInfo", "setupTaskId", "siteId", "sslCname", "sslRequestId", "teamIds", "updated", "updatedById" ],
+        "type" : "object",
+        "properties" : {
+          "portalId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "updated" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "domain" : {
+            "type" : "string"
+          },
+          "primaryLandingPage" : {
+            "type" : "boolean"
+          },
+          "primaryEmail" : {
+            "type" : "boolean"
+          },
+          "primaryBlog" : {
+            "type" : "boolean"
+          },
+          "primaryBlogPost" : {
+            "type" : "boolean"
+          },
+          "primarySitePage" : {
+            "type" : "boolean"
+          },
+          "primaryKnowledge" : {
+            "type" : "boolean"
+          },
+          "primaryLegacyPage" : {
+            "type" : "boolean"
+          },
+          "primaryClickTracking" : {
+            "type" : "boolean"
+          },
+          "fullCategoryKey" : {
+            "type" : "string"
+          },
+          "secondaryToDomain" : {
+            "type" : "string"
+          },
+          "isResolving" : {
+            "type" : "boolean"
+          },
+          "isDnsCorrect" : {
+            "type" : "boolean"
+          },
+          "manuallyMarkedAsResolving" : {
+            "type" : "boolean"
+          },
+          "consecutiveNonResolvingCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sslCname" : {
+            "type" : "string"
+          },
+          "isSslEnabled" : {
+            "type" : "boolean"
+          },
+          "isSslOnly" : {
+            "type" : "boolean"
+          },
+          "certificateId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sslRequestId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "isUsedForBlogPost" : {
+            "type" : "boolean"
+          },
+          "isUsedForSitePage" : {
+            "type" : "boolean"
+          },
+          "isUsedForLandingPage" : {
+            "type" : "boolean"
+          },
+          "isUsedForEmail" : {
+            "type" : "boolean"
+          },
+          "isUsedForKnowledge" : {
+            "type" : "boolean"
+          },
+          "setupTaskId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "isSetupComplete" : {
+            "type" : "boolean"
+          },
+          "setUpLanguage" : {
+            "type" : "string"
+          },
+          "teamIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "actualCname" : {
+            "type" : "string"
+          },
+          "correctCname" : {
+            "type" : "string"
+          },
+          "actualIp" : {
+            "type" : "string"
+          },
+          "apexResolutionStatus" : {
+            "type" : "string",
+            "enum" : [ "INELIGIBLE", "SUGGEST_RESOLVING", "ALREADY_RESOLVING", "ERROR" ]
+          },
+          "apexDomain" : {
+            "type" : "string"
+          },
+          "publicSuffix" : {
+            "type" : "string"
+          },
+          "apexIpAddresses" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "siteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "brandId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "deletable" : {
+            "type" : "boolean"
+          },
+          "domainCdnConfig" : {
+            "$ref" : "#/components/schemas/DomainCdnConfig"
+          },
+          "setupInfo" : {
+            "$ref" : "#/components/schemas/DomainSetupInfo"
+          },
+          "derivedBrandName" : {
+            "type" : "string"
+          },
+          "createdById" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "updatedById" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "isAnyPrimary" : {
+            "type" : "boolean"
+          },
+          "isLegacyDomain" : {
+            "type" : "boolean"
+          },
+          "isInternalDomain" : {
+            "type" : "boolean"
+          },
+          "isResolvingInternalProperty" : {
+            "type" : "boolean"
+          },
+          "isResolvingIgnoringManuallyMarkedAsResolving" : {
+            "type" : "boolean"
+          },
+          "isUsedForAnyContentType" : {
+            "type" : "boolean"
+          },
+          "isLegacy" : {
+            "type" : "boolean"
+          },
+          "authorAt" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cosObjectType" : {
+            "type" : "string",
+            "enum" : [ "CONTENT", "EXTENSION_RESOURCE", "LAYOUT", "CUSTOM_WIDGET", "WIDGET", "FORM", "PLACEMENT", "IMAGE", "DOMAIN_SETTINGS", "SITE_SETTINGS", "EMAIL_ADDRESS", "WORKFLOW", "HUBDB_TABLE", "REDIRECT_URL", "DESIGN_FOLDER", "SITE_MAP", "DOMAIN", "BLOG", "FILE", "FOLDER", "SITE_MENU", "THEME", "CONTENT_GROUP", "FOLLOW_ME", "KNOWLEDGE_BASE", "LIST_MEMBERSHIP", "CONTACT_MEMBERSHIP", "PASSWORD_PROTECTED", "UNRESTRICTED_ACCESS", "MARKETPLACE_LISTING", "LAYOUT_SECTION", "THEME_SETTINGS", "VIDEO_PLAYER", "URL_MAPPING", "KNOWLEDGE_CATEGORY", "KNOWLEDGE_HOMEPAGE_CATEGORY", "RAW_ASSET", "GLOBAL_CONTENT", "HUBDB_TABLE_ROW", "BLOG_AUTHOR", "SERVERLESS_FUNCTION", "KNOWLEDGE_CATEGORY_TRANSLATION" ]
+          },
+          "cdnPurgeEmbargoTime" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "isStagingDomain" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "DomainCdnConfig" : {
+        "required" : [ "alternateOriginHostname", "cdnGroupId", "cdnId", "certExpirationDate", "certId", "cname", "cnameTarget", "created", "domainId", "httpBody", "httpUrlPath", "id", "minimumTlsVersion", "portalId", "sslStatus", "updated", "validationMethod" ],
+        "type" : "object",
+        "properties" : {
+          "portalId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "updated" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "domainId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "certId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "certExpirationDate" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cdnId" : {
+            "type" : "string"
+          },
+          "cdnGroupId" : {
+            "type" : "string"
+          },
+          "sslStatus" : {
+            "type" : "string",
+            "enum" : [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11" ]
+          },
+          "validationMethod" : {
+            "type" : "string",
+            "enum" : [ "0", "1", "2" ]
+          },
+          "httpBody" : {
+            "type" : "string"
+          },
+          "httpUrlPath" : {
+            "type" : "string"
+          },
+          "cname" : {
+            "type" : "string"
+          },
+          "cnameTarget" : {
+            "type" : "string"
+          },
+          "minimumTlsVersion" : {
+            "type" : "string",
+            "enum" : [ "1.0", "1.1", "1.2", "1.3", "none", "null" ]
+          },
+          "alternateOriginHostname" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "DomainSetupInfo" : {
+        "required" : [ "supportsSslExternally", "whoIsEmailAddresses" ],
+        "type" : "object",
+        "properties" : {
+          "supportsSslExternally" : {
+            "type" : "boolean"
+          },
+          "whoIsEmailAddresses" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "NextPage" : {
+        "required" : [ "after" ],
+        "type" : "object",
+        "properties" : {
+          "after" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Paging" : {
+        "type" : "object",
+        "properties" : {
+          "next" : {
+            "$ref" : "#/components/schemas/NextPage"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "content" : "Read from and write to my Content"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2474 @@
+openapi: 3.0.3
+info:
+  title: EasyPost API
+  description: |
+    EasyPost's flexible, modern Shipping API makes it easy to rate shop between carriers, 
+    buy and print labels, verify addresses, track packages, and insure shipments.
+    
+    Access to USPS, UPS, FedEx, DHL, and dozens of other carriers through a single integration.
+  version: v2
+  contact:
+    name: EasyPost Support
+    url: https://support.easypost.com
+    email: support@easypost.com
+  license:
+    name: EasyPost Terms of Service
+    url: https://www.easypost.com/terms
+
+servers:
+  - url: https://api.easypost.com/v2
+    description: Production server
+  - url: https://api.easypost.com/v2
+    description: Test server (use test API keys)
+
+security:
+  - BasicAuth: []
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Use your EasyPost API key as the username, password field should be empty
+
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "adr_123"
+        object:
+          type: string
+          enum: [Address]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+          description: Name of the person
+        company:
+          type: string
+          description: Name of the organization
+        street1:
+          type: string
+          description: Primary street address
+        street2:
+          type: string
+          description: Secondary street address (apartment, suite, etc.)
+        city:
+          type: string
+        state:
+          type: string
+          description: State or province
+        zip:
+          type: string
+          description: ZIP or postal code
+        country:
+          type: string
+          description: ISO 3166 country code
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        residential:
+          type: boolean
+          nullable: true
+        mode:
+          type: string
+          enum: [test, production]
+        verifications:
+          type: object
+          properties:
+            zip4:
+              $ref: '#/components/schemas/AddressVerification'
+            delivery:
+              $ref: '#/components/schemas/AddressVerification'
+
+    AddressVerification:
+      type: object
+      properties:
+        success:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        details:
+          type: object
+
+    Parcel:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "prcl_123"
+        object:
+          type: string
+          enum: [Parcel]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        length:
+          type: number
+          description: Length in inches
+        width:
+          type: number
+          description: Width in inches
+        height:
+          type: number
+          description: Height in inches
+        weight:
+          type: number
+          description: Weight in ounces
+        predefined_package:
+          type: string
+          nullable: true
+          description: Predefined package type
+        mode:
+          type: string
+          enum: [test, production]
+
+    Rate:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "rate_123"
+        object:
+          type: string
+          enum: [Rate]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        service:
+          type: string
+          description: Service level
+        carrier:
+          type: string
+          description: Carrier name
+        rate:
+          type: string
+          description: Rate in dollars
+        currency:
+          type: string
+          default: USD
+        retail_rate:
+          type: string
+        list_rate:
+          type: string
+        delivery_days:
+          type: integer
+          nullable: true
+        delivery_date:
+          type: string
+          format: date
+          nullable: true
+        delivery_date_guaranteed:
+          type: boolean
+
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "shp_123"
+        object:
+          type: string
+          enum: [Shipment]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        to_address:
+          $ref: '#/components/schemas/Address'
+        from_address:
+          $ref: '#/components/schemas/Address'
+        return_address:
+          $ref: '#/components/schemas/Address'
+        parcel:
+          $ref: '#/components/schemas/Parcel'
+        customs_info:
+          $ref: '#/components/schemas/CustomsInfo'
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rate'
+        selected_rate:
+          $ref: '#/components/schemas/Rate'
+        postage_label:
+          $ref: '#/components/schemas/PostageLabel'
+        tracking_code:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [unknown, pre_transit, in_transit, out_for_delivery, delivered, available_for_pickup, return_to_sender, failure, cancelled, error]
+        is_return:
+          type: boolean
+        options:
+          type: object
+        messages:
+          type: array
+          items:
+            type: object
+        reference:
+          type: string
+          nullable: true
+        refund_status:
+          type: string
+          nullable: true
+        scan_form:
+          type: object
+          nullable: true
+        forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Form'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fee'
+        tracker:
+          $ref: '#/components/schemas/Tracker'
+
+    PostageLabel:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [PostageLabel]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        date_advance:
+          type: integer
+        integrated_form:
+          type: string
+        label_date:
+          type: string
+          format: date-time
+        label_epl2_url:
+          type: string
+        label_file_type:
+          type: string
+        label_pdf_url:
+          type: string
+        label_resolution:
+          type: integer
+        label_size:
+          type: string
+        label_type:
+          type: string
+        label_url:
+          type: string
+        label_zpl_url:
+          type: string
+
+    CustomsInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "cstinfo_123"
+        object:
+          type: string
+          enum: [CustomsInfo]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        contents_type:
+          type: string
+          enum: [merchandise, documents, gift, returned_goods, sample, other]
+        contents_explanation:
+          type: string
+        customs_certify:
+          type: boolean
+        customs_signer:
+          type: string
+        non_delivery_option:
+          type: string
+          enum: [return, abandon]
+        restriction_type:
+          type: string
+          enum: [none, other, quarantine, sanitary_phytosanitary_inspection]
+        restriction_comments:
+          type: string
+        customs_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomsItem'
+        eel_pfc:
+          type: string
+        mode:
+          type: string
+          enum: [test, production]
+
+    CustomsItem:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [CustomsItem]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        description:
+          type: string
+        quantity:
+          type: integer
+        value:
+          type: string
+        weight:
+          type: number
+        origin_country:
+          type: string
+        hs_tariff_number:
+          type: string
+        code:
+          type: string
+        mode:
+          type: string
+          enum: [test, production]
+
+    Tracker:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "trk_123"
+        object:
+          type: string
+          enum: [Tracker]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tracking_code:
+          type: string
+        status:
+          type: string
+          enum: [pre_transit, in_transit, out_for_delivery, delivered, available_for_pickup, return_to_sender, failure, cancelled, error, unknown]
+        status_detail:
+          type: string
+        carrier:
+          type: string
+        est_delivery_date:
+          type: string
+          format: date-time
+          nullable: true
+        is_return:
+          type: boolean
+        public_url:
+          type: string
+        signed_by:
+          type: string
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+        tracking_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackingDetail'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fee'
+        carrier_detail:
+          type: object
+        mode:
+          type: string
+          enum: [test, production]
+
+    TrackingDetail:
+      type: object
+      properties:
+        object:
+          type: string
+          enum: [TrackingDetail]
+        message:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        status_detail:
+          type: string
+        datetime:
+          type: string
+          format: date-time
+        source:
+          type: string
+        carrier_code:
+          type: string
+        tracking_location:
+          $ref: '#/components/schemas/TrackingLocation'
+
+    TrackingLocation:
+      type: object
+      properties:
+        object:
+          type: string
+          enum: [TrackingLocation]
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        zip:
+          type: string
+
+    Form:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [Form]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        form_type:
+          type: string
+        form_url:
+          type: string
+        mode:
+          type: string
+          enum: [test, production]
+
+    Fee:
+      type: object
+      properties:
+        object:
+          type: string
+          enum: [Fee]
+        type:
+          type: string
+        amount:
+          type: string
+        charged:
+          type: boolean
+        refunded:
+          type: boolean
+
+    Insurance:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [Insurance]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        reference:
+          type: string
+        amount:
+          type: string
+        provider:
+          type: string
+        provider_id:
+          type: string
+        shipment_id:
+          type: string
+        tracking_code:
+          type: string
+        status:
+          type: string
+        tracker:
+          $ref: '#/components/schemas/Tracker'
+        to_address:
+          $ref: '#/components/schemas/Address'
+        from_address:
+          $ref: '#/components/schemas/Address'
+        fee:
+          $ref: '#/components/schemas/Fee'
+        messages:
+          type: array
+          items:
+            type: string
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "order_123"
+        object:
+          type: string
+          enum: [Order]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        to_address:
+          $ref: '#/components/schemas/Address'
+        from_address:
+          $ref: '#/components/schemas/Address'
+        return_address:
+          $ref: '#/components/schemas/Address'
+        buyer_address:
+          $ref: '#/components/schemas/Address'
+        shipments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shipment'
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rate'
+        reference:
+          type: string
+        is_return:
+          type: boolean
+        service:
+          type: string
+        carrier_accounts:
+          type: array
+          items:
+            type: string
+
+    Pickup:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "pickup_123"
+        object:
+          type: string
+          enum: [Pickup]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        status:
+          type: string
+          enum: [scheduled, canceled, unknown]
+        reference:
+          type: string
+        min_datetime:
+          type: string
+          format: date-time
+        max_datetime:
+          type: string
+          format: date-time
+        is_account_address:
+          type: boolean
+        instructions:
+          type: string
+        messages:
+          type: array
+          items:
+            type: object
+        confirmation:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        carrier_accounts:
+          type: array
+          items:
+            type: string
+        pickup_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PickupRate'
+
+    PickupRate:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [test, production]
+        service:
+          type: string
+        rate:
+          type: string
+        currency:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        carrier:
+          type: string
+        pickup_id:
+          type: string
+
+    EndShipper:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "es_123"
+        object:
+          type: string
+          enum: [EndShipper]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        name:
+          type: string
+        company:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "shprep_123"
+        object:
+          type: string
+          enum: [Report]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        status:
+          type: string
+          enum: [available, failed, new]
+        type:
+          type: string
+          enum: [shipment, payment_log, refund, tracker, insurance]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        include_children:
+          type: boolean
+        url:
+          type: string
+          format: uri
+          nullable: true
+        url_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Batch:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "batch_123"
+        object:
+          type: string
+          enum: [Batch]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          enum: [test, production]
+        state:
+          type: string
+          enum: [creating, created, purchasing, purchased, creation_failed, purchase_failed]
+        num_shipments:
+          type: integer
+        reference:
+          type: string
+        shipments:
+          type: array
+          items:
+            type: object
+            properties:
+              batch_status:
+                type: string
+              batch_message:
+                type: string
+              id:
+                type: string
+        status:
+          type: object
+          properties:
+            created:
+              type: integer
+            queued_for_purchase:
+              type: integer
+            creation_failed:
+              type: integer
+            postage_purchased:
+              type: integer
+            postage_purchase_failed:
+              type: integer
+        scan_form:
+          type: object
+          nullable: true
+        pickup:
+          $ref: '#/components/schemas/Pickup'
+        label_url:
+          type: string
+          format: uri
+          nullable: true
+
+    CarrierAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ca_123"
+        object:
+          type: string
+          enum: [CarrierAccount]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        type:
+          type: string
+        fields:
+          type: object
+        clone:
+          type: boolean
+        description:
+          type: string
+        reference:
+          type: string
+        readable:
+          type: string
+        logo:
+          type: string
+          format: uri
+        credentials:
+          type: object
+        test_credentials:
+          type: object
+
+    CarrierType:
+      type: object
+      properties:
+        type:
+          type: string
+        readable:
+          type: string
+        logo:
+          type: string
+          format: uri
+        fields:
+          type: object
+          properties:
+            credentials:
+              type: object
+            test_credentials:
+              type: object
+            auto_link:
+              type: boolean
+            custom_workflow:
+              type: boolean
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [Event]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        description:
+          type: string
+        mode:
+          type: string
+          enum: [test, production]
+        previous_attributes:
+          type: object
+        result:
+          type: object
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+                  suggestion:
+                    type: string
+
+    # Request schemas
+    AddressRequest:
+      type: object
+      required: [address]
+      properties:
+        address:
+          type: object
+          properties:
+            name:
+              type: string
+            company:
+              type: string
+            street1:
+              type: string
+            street2:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zip:
+              type: string
+            country:
+              type: string
+            phone:
+              type: string
+            email:
+              type: string
+              format: email
+            residential:
+              type: boolean
+        verify:
+          type: boolean
+          description: Whether to verify the address during creation
+        verify_strict:
+          type: boolean
+          description: Whether to use strict address verification
+
+    ParcelRequest:
+      type: object
+      required: [parcel]
+      properties:
+        parcel:
+          type: object
+          properties:
+            length:
+              type: number
+              description: Length in inches
+            width:
+              type: number
+              description: Width in inches
+            height:
+              type: number
+              description: Height in inches
+            weight:
+              type: number
+              description: Weight in ounces
+            predefined_package:
+              type: string
+
+    ShipmentRequest:
+      type: object
+      required: [shipment]
+      properties:
+        shipment:
+          type: object
+          required: [to_address, from_address, parcel]
+          properties:
+            to_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            from_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            return_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            parcel:
+              oneOf:
+                - type: string
+                  description: Parcel ID
+                - type: object
+            customs_info:
+              oneOf:
+                - type: string
+                  description: CustomsInfo ID
+                - type: object
+            service:
+              type: string
+              description: Service level to purchase
+            carrier_accounts:
+              type: array
+              items:
+                type: string
+              description: Carrier account IDs to use for rating
+            is_return:
+              type: boolean
+            options:
+              type: object
+            reference:
+              type: string
+
+    OrderRequest:
+      type: object
+      required: [order]
+      properties:
+        order:
+          type: object
+          required: [to_address, from_address]
+          properties:
+            to_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            from_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            buyer_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            return_address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            shipments:
+              type: array
+              items:
+                type: object
+            service:
+              type: string
+            carrier_accounts:
+              type: array
+              items:
+                type: string
+            is_return:
+              type: boolean
+
+    PickupRequest:
+      type: object
+      required: [pickup]
+      properties:
+        pickup:
+          type: object
+          required: [address, min_datetime, max_datetime]
+          properties:
+            address:
+              oneOf:
+                - type: string
+                  description: Address ID
+                - type: object
+            min_datetime:
+              type: string
+              format: date-time
+              description: Earliest pickup time
+            max_datetime:
+              type: string
+              format: date-time
+              description: Latest pickup time
+            shipment:
+              type: object
+              properties:
+                id:
+                  type: string
+            is_account_address:
+              type: boolean
+            instructions:
+              type: string
+            reference:
+              type: string
+
+    CustomsInfoRequest:
+      type: object
+      required: [customs_info]
+      properties:
+        customs_info:
+          type: object
+          required: [customs_certify, customs_signer, contents_type]
+          properties:
+            customs_certify:
+              type: boolean
+            customs_signer:
+              type: string
+            contents_type:
+              type: string
+              enum: [merchandise, documents, gift, returned_goods, sample, other]
+            contents_explanation:
+              type: string
+            non_delivery_option:
+              type: string
+              enum: [return, abandon]
+            restriction_type:
+              type: string
+              enum: [none, other, quarantine, sanitary_phytosanitary_inspection]
+            restriction_comments:
+              type: string
+            customs_items:
+              type: array
+              items:
+                oneOf:
+                  - type: string
+                    description: CustomsItem ID
+                  - type: object
+            eel_pfc:
+              type: string
+
+    CustomsItemRequest:
+      type: object
+      required: [customs_item]
+      properties:
+        customs_item:
+          type: object
+          required: [description, quantity, value, weight, origin_country]
+          properties:
+            description:
+              type: string
+            quantity:
+              type: integer
+            value:
+              type: string
+              description: Value in USD
+            weight:
+              type: number
+              description: Weight in ounces
+            origin_country:
+              type: string
+              description: ISO 3166 country code
+            hs_tariff_number:
+              type: string
+            code:
+              type: string
+
+    EndShipperRequest:
+      type: object
+      required: [end_shipper]
+      properties:
+        end_shipper:
+          type: object
+          required: [name, street1, city, state, zip, country]
+          properties:
+            name:
+              type: string
+            company:
+              type: string
+            street1:
+              type: string
+            street2:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zip:
+              type: string
+            country:
+              type: string
+            phone:
+              type: string
+            email:
+              type: string
+
+    ReportRequest:
+      type: object
+      required: [report]
+      properties:
+        report:
+          type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              enum: [shipment, payment_log, refund, tracker, insurance]
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+            include_children:
+              type: boolean
+              default: false
+            additional_columns:
+              type: array
+              items:
+                type: string
+
+    BatchRequest:
+      type: object
+      required: [batch]
+      properties:
+        batch:
+          type: object
+          properties:
+            shipments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+            reference:
+              type: string
+
+    TrackerRequest:
+      type: object
+      required: [tracker]
+      properties:
+        tracker:
+          type: object
+          required: [tracking_code]
+          properties:
+            tracking_code:
+              type: string
+            carrier:
+              type: string
+              description: Optional carrier code
+
+paths:
+  /addresses:
+    post:
+      summary: Create Address
+      description: Create a new Address object. You can optionally verify the address during creation.
+      tags: [Addresses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+      responses:
+        '201':
+          description: Address created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Address verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /addresses/{id}:
+    get:
+      summary: Retrieve Address
+      description: Retrieve an Address by its ID.
+      tags: [Addresses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Address retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '404':
+          description: Address not found
+
+  /addresses/create_and_verify:
+    post:
+      summary: Create and Verify Address
+      description: Create an Address and attempt to verify it in one API call.
+      tags: [Addresses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+      responses:
+        '201':
+          description: Address created and verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '422':
+          description: Address verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /parcels:
+    post:
+      summary: Create Parcel
+      description: Create a new Parcel object.
+      tags: [Parcels]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParcelRequest'
+      responses:
+        '201':
+          description: Parcel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+
+  /parcels/{id}:
+    get:
+      summary: Retrieve Parcel
+      description: Retrieve a Parcel by its ID.
+      tags: [Parcels]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Parcel retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+
+  /rates:
+    get:
+      summary: Retrieve Rates
+      description: |
+        Retrieve rates for multiple shipments or get rate estimates without creating a shipment.
+      tags: [Rates]
+      parameters:
+        - name: shipment_ids
+          in: query
+          description: Comma-separated list of shipment IDs
+          schema:
+            type: string
+        - name: carrier_account
+          in: query
+          description: Carrier account to filter rates
+          schema:
+            type: string
+        - name: service
+          in: query
+          description: Service level to filter rates
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rate'
+
+  /orders:
+    post:
+      summary: Create Order
+      description: |
+        Create an Order object. Orders allow you to purchase multiple Shipments 
+        with a single API call and get bulk rates.
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+    get:
+      summary: List Orders
+      description: Retrieve a paginated list of all Order objects.
+      tags: [Orders]
+      parameters:
+        - name: before_id
+          in: query
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  has_more:
+                    type: boolean
+
+  /orders/{id}:
+    get:
+      summary: Retrieve Order
+      description: Retrieve an Order by its ID.
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/{id}/buy:
+    post:
+      summary: Buy Order
+      description: Purchase all shipments in an Order with selected rates.
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [carrier, service]
+              properties:
+                carrier:
+                  type: string
+                service:
+                  type: string
+      responses:
+        '200':
+          description: Order purchased successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /shipments:
+    post:
+      summary: Create Shipment
+      description: |
+        Create a new Shipment object. A Shipment represents your intent to ship a package 
+        and contains a "to" and "from" Address, the Parcel being shipped, and any Forms 
+        required for international deliveries. Once created, a Shipment object is used 
+        to retrieve shipping Rates and purchase a label.
+      tags: [Shipments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentRequest'
+      responses:
+        '201':
+          description: Shipment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      summary: List Shipments
+      description: Retrieve a paginated list of all Shipment objects.
+      tags: [Shipments]
+      parameters:
+        - name: before_id
+          in: query
+          description: Return only records created before the given ID
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          description: Return only records created after the given ID
+          schema:
+            type: string
+        - name: start_datetime
+          in: query
+          description: Return only records created after this datetime
+          schema:
+            type: string
+            format: date-time
+        - name: end_datetime
+          in: query
+          description: Return only records created before this datetime
+          schema:
+            type: string
+            format: date-time
+        - name: page_size
+          in: query
+          description: Number of records to return per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of shipments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipment'
+                  has_more:
+                    type: boolean
+
+  /shipments/{id}:
+    get:
+      summary: Retrieve Shipment
+      description: Retrieve a Shipment by its ID.
+      tags: [Shipments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+
+  /shipments/{id}/buy:
+    post:
+      summary: Buy Shipment
+      description: |
+        Purchase a shipping label for a Shipment. You must select a Rate from 
+        the Shipment's rates array and provide its ID in the request.
+      tags: [Shipments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rate]
+              properties:
+                rate:
+                  type: object
+                  required: [id]
+                  properties:
+                    id:
+                      type: string
+                      description: Rate ID to purchase
+                insurance:
+                  type: string
+                  description: Insurance amount in USD
+      responses:
+        '200':
+          description: Shipment purchased successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+
+  /shipments/{id}/regenerate_rates:
+    post:
+      summary: Regenerate Rates
+      description: Regenerate the rates for a Shipment.
+      tags: [Shipments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rates regenerated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+
+  /shipments/{id}/label:
+    get:
+      summary: Retrieve Label
+      description: Retrieve the postage label for a Shipment.
+      tags: [Shipments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: file_format
+          in: query
+          description: Format for the label
+          schema:
+            type: string
+            enum: [PNG, PDF, ZPL, EPL2]
+            default: PNG
+      responses:
+        '200':
+          description: Label retrieved successfully
+
+  /shipments/{id}/forms:
+    post:
+      summary: Add Form to Shipment
+      description: Add a Form to an existing Shipment.
+      tags: [Shipments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [form]
+              properties:
+                form:
+                  type: object
+                  required: [type]
+                  properties:
+                    type:
+                      type: string
+                      description: Form type
+      responses:
+        '200':
+          description: Form added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+
+  /pickups:
+    post:
+      summary: Create Pickup
+      description: |
+        Schedule a pickup for one or more shipments. The carrier will come 
+        to the specified address to collect packages.
+      tags: [Pickups]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+      responses:
+        '201':
+          description: Pickup scheduled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+
+    get:
+      summary: List Pickups
+      description: Retrieve a paginated list of all Pickup objects.
+      tags: [Pickups]
+      parameters:
+        - name: before_id
+          in: query
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of pickups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pickups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pickup'
+                  has_more:
+                    type: boolean
+
+  /pickups/{id}:
+    get:
+      summary: Retrieve Pickup
+      description: Retrieve a Pickup by its ID.
+      tags: [Pickups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pickup retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+
+  /pickups/{id}/buy:
+    post:
+      summary: Buy Pickup
+      description: Purchase a pickup by providing the pickup rate.
+      tags: [Pickups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [carrier, service]
+              properties:
+                carrier:
+                  type: string
+                service:
+                  type: string
+      responses:
+        '200':
+          description: Pickup purchased successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+
+  /pickups/{id}/cancel:
+    post:
+      summary: Cancel Pickup
+      description: Cancel a scheduled pickup.
+      tags: [Pickups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pickup cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+
+  /customs_items:
+    post:
+      summary: Create Customs Item
+      description: Create a CustomsItem for international shipments.
+      tags: [Customs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomsItemRequest'
+      responses:
+        '201':
+          description: Customs item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomsItem'
+
+  /customs_items/{id}:
+    get:
+      summary: Retrieve Customs Item
+      description: Retrieve a CustomsItem by its ID.
+      tags: [Customs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customs item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomsItem'
+
+  /customs_infos:
+    post:
+      summary: Create Customs Info
+      description: Create a CustomsInfo object for international shipments.
+      tags: [Customs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomsInfoRequest'
+      responses:
+        '201':
+          description: Customs info created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomsInfo'
+
+  /customs_infos/{id}:
+    get:
+      summary: Retrieve Customs Info
+      description: Retrieve a CustomsInfo object by its ID.
+      tags: [Customs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customs info retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomsInfo'
+
+  /end_shippers:
+    post:
+      summary: Create End Shipper
+      description: Create an EndShipper object for certain carrier requirements.
+      tags: [End Shippers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndShipperRequest'
+      responses:
+        '201':
+          description: End shipper created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndShipper'
+
+  /end_shippers/{id}:
+    get:
+      summary: Retrieve End Shipper
+      description: Retrieve an EndShipper by its ID.
+      tags: [End Shippers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: End shipper retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndShipper'
+
+  /reports:
+    post:
+      summary: Create Report
+      description: |
+        Generate reports for shipments, payments, refunds, tracking, or insurance.
+        Reports are generated asynchronously and available for download when complete.
+      tags: [Reports]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '201':
+          description: Report creation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+    get:
+      summary: List Reports
+      description: Retrieve a list of all reports.
+      tags: [Reports]
+      parameters:
+        - name: type
+          in: query
+          description: Filter by report type
+          schema:
+            type: string
+            enum: [shipment, payment_log, refund, tracker, insurance]
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
+                  has_more:
+                    type: boolean
+
+  /reports/{id}:
+    get:
+      summary: Retrieve Report
+      description: Retrieve a Report by its ID. Check the status and download URL.
+      tags: [Reports]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /batches:
+    post:
+      summary: Create Batch
+      description: |
+        Create a Batch to purchase multiple shipments at once. 
+        Batches allow for bulk operations and can generate consolidated labels.
+      tags: [Batches]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRequest'
+      responses:
+        '201':
+          description: Batch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+
+    get:
+      summary: List Batches
+      description: Retrieve a paginated list of all Batch objects.
+      tags: [Batches]
+      parameters:
+        - name: before_id
+          in: query
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of batches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Batch'
+                  has_more:
+                    type: boolean
+
+  /batches/{id}:
+    get:
+      summary: Retrieve Batch
+      description: Retrieve a Batch by its ID.
+      tags: [Batches]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Batch retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+
+  /batches/{id}/buy:
+    post:
+      summary: Buy Batch
+      description: Purchase all shipments in a batch.
+      tags: [Batches]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Batch purchased successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+
+  /batches/{id}/label:
+    post:
+      summary: Generate Batch Label
+      description: Generate consolidated labels for all shipments in a batch.
+      tags: [Batches]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_format:
+                  type: string
+                  enum: [PDF, ZPL, EPL2]
+                  default: PDF
+      responses:
+        '200':
+          description: Batch label generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+
+  /batches/{id}/scan_form:
+    post:
+      summary: Create Scan Form
+      description: Create a scan form for USPS shipments in a batch.
+      tags: [Batches]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scan form created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+
+  /carrier_accounts:
+    get:
+      summary: List Carrier Accounts
+      description: |
+        Retrieve all carrier accounts associated with your EasyPost account.
+        This includes both your own carrier accounts and EasyPost's wallet accounts.
+      tags: [Carrier Accounts]
+      parameters:
+        - name: types
+          in: query
+          description: Comma-separated list of carrier types to filter
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of carrier accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarrierAccount'
+
+  /carrier_accounts/{id}:
+    get:
+      summary: Retrieve Carrier Account
+      description: Retrieve a specific carrier account by ID.
+      tags: [Carrier Accounts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Carrier account retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierAccount'
+
+  /carrier_types:
+    get:
+      summary: List Carrier Types
+      description: |
+        Retrieve metadata about all available carrier types, including 
+        required fields for account setup and available services.
+      tags: [Carrier Metadata]
+      responses:
+        '200':
+          description: List of carrier types and metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarrierType'
+
+  /trackers:
+    post:
+      summary: Create Tracker
+      description: |
+        Create a Tracker to track a package. You can track packages from any carrier,
+        even if the label wasn't purchased through EasyPost.
+      tags: [Tracking]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackerRequest'
+      responses:
+        '201':
+          description: Tracker created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tracker'
+
+    get:
+      summary: List Trackers
+      description: Retrieve a paginated list of all Tracker objects.
+      tags: [Tracking]
+      parameters:
+        - name: before_id
+          in: query
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          schema:
+            type: string
+        - name: start_datetime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_datetime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: tracking_code
+          in: query
+          description: Filter by tracking code
+          schema:
+            type: string
+        - name: carrier
+          in: query
+          description: Filter by carrier
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of trackers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trackers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tracker'
+                  has_more:
+                    type: boolean
+
+  /trackers/{id}:
+    get:
+      summary: Retrieve Tracker
+      description: Retrieve a Tracker by its ID.
+      tags: [Tracking]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tracker retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tracker'
+
+  /insurance:
+    post:
+      summary: Create Insurance
+      description: Create standalone Insurance for a shipment.
+      tags: [Insurance]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [insurance]
+              properties:
+                insurance:
+                  type: object
+                  required: [to_address, from_address, amount]
+                  properties:
+                    to_address:
+                      oneOf:
+                        - type: string
+                        - type: object
+                    from_address:
+                      oneOf:
+                        - type: string
+                        - type: object
+                    amount:
+                      type: string
+                      description: Insurance amount in USD
+                    reference:
+                      type: string
+                    tracking_code:
+                      type: string
+                    carrier:
+                      type: string
+      responses:
+        '201':
+          description: Insurance created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+
+    get:
+      summary: List Insurance
+      description: Retrieve a paginated list of all Insurance objects.
+      tags: [Insurance]
+      responses:
+        '200':
+          description: List of insurance policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insurances:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Insurance'
+
+  /insurance/{id}:
+    get:
+      summary: Retrieve Insurance
+      description: Retrieve an Insurance object by its ID.
+      tags: [Insurance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Insurance retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+
+  /events:
+    get:
+      summary: List Events
+      description: Retrieve a paginated list of Event objects.
+      tags: [Events]
+      parameters:
+        - name: before_id
+          in: query
+          schema:
+            type: string
+        - name: after_id
+          in: query
+          schema:
+            type: string
+        - name: start_datetime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_datetime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  has_more:
+                    type: boolean
+
+  /events/{id}:
+    get:
+      summary: Retrieve Event
+      description: Retrieve an Event by its ID.
+      tags: [Events]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+tags:
+  - name: Addresses
+    description: Address verification and management
+  - name: Parcels
+    description: Package dimensions and weight
+  - name: Rates
+    description: Rate shopping and estimates
+  - name: Orders
+    description: Bulk shipment operations
+  - name: Shipments
+    description: Core shipping functionality - create shipments, get rates, buy labels
+  - name: Pickups
+    description: Schedule carrier pickups
+  - name: Customs
+    description: International shipping customs items and forms
+  - name: End Shippers
+    description: End shipper information for certain carriers
+  - name: Reports
+    description: Generate reports for shipments, payments, and tracking
+  - name: Batches
+    description: Bulk shipping operations and label generation
+  - name: Carrier Accounts
+    description: Manage carrier account integrations
+  - name: Carrier Metadata
+    description: Carrier capabilities and configuration information
+  - name: Tracking
+    description: Track packages across all carriers
+  - name: Insurance
+    description: Package insurance and claims
+  - name: Events
+    description: Event history and retrieval

@@ -1,0 +1,280 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Video Conference Extension",
+    "description" : "These APIs allow you to specify URLs that can be used to interact with a video conferencing application, to allow HubSpot to add video conference links to meeting requests with contacts.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Settings",
+    "description" : "Operations to change settings."
+  } ],
+  "paths" : {
+    "/crm/v3/extensions/videoconferencing/settings/{appId}" : {
+      "get" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Get settings",
+        "description" : "Return the settings for a video conference application with the specified ID.",
+        "operationId" : "get-/crm/v3/extensions/videoconferencing/settings/{appId}_getById",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the video conference application. This is the identifier of the application created in your HubSpot developer portal.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExternalSettings"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Update settings",
+        "description" : "Updates the settings for a video conference application with the specified ID.",
+        "operationId" : "put-/crm/v3/extensions/videoconferencing/settings/{appId}_replace",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the video conference application. This is the identifier of the application created in your HubSpot developer portal.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ExternalSettings"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExternalSettings"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Delete settings",
+        "description" : "Deletes the settings for a video conference application with the specified ID.",
+        "operationId" : "delete-/crm/v3/extensions/videoconferencing/settings/{appId}_archive",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the video conference application. This is the identifier of the application created in your HubSpot developer portal.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "ExternalSettings" : {
+        "required" : [ "createMeetingUrl" ],
+        "type" : "object",
+        "properties" : {
+          "createMeetingUrl" : {
+            "type" : "string",
+            "description" : "The URL that HubSpot will send requests to create a new video conference."
+          },
+          "updateMeetingUrl" : {
+            "type" : "string",
+            "description" : "The URL that HubSpot will send updates to existing meetings. Typically called when the user changes the topic or times of a meeting."
+          },
+          "deleteMeetingUrl" : {
+            "type" : "string",
+            "description" : "The URL that HubSpot will send notifications of meetings that have been deleted in HubSpot."
+          },
+          "userVerifyUrl" : {
+            "type" : "string",
+            "description" : "The URL that HubSpot will use to verify that a user exists in the video conference application."
+          }
+        },
+        "description" : "The URLs of the various actions provided by the video conferencing application. All URLs must use the `https` protocol.",
+        "example" : {
+          "createMeetingUrl" : "https://example.com/create-meeting",
+          "updateMeetingUrl" : "https://example.com/update-meeting",
+          "deleteMeetingUrl" : "https://example.com/delete-meeting",
+          "userVerifyUrl" : "https://example.com/user-verify"
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

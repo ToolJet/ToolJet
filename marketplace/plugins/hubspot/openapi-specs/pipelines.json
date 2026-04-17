@@ -1,0 +1,1842 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "CRM Pipelines",
+    "description" : "Pipelines represent distinct stages in a workflow, like closing a deal or servicing a support ticket. These endpoints provide access to read and modify pipelines in HubSpot. Pipelines support `deals` and `tickets` object types.\n\n## Pipeline ID validation\n\nWhen calling endpoints that take pipelineId as a parameter, that ID must correspond to an existing, un-archived pipeline. Otherwise the request will fail with a `404 Not Found` response.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Pipeline Stages"
+  }, {
+    "name" : "Pipelines"
+  }, {
+    "name" : "Pipeline Audits"
+  }, {
+    "name" : "Pipeline Stage Audits"
+  } ],
+  "paths" : {
+    "/crm/v3/pipelines/{objectType}" : {
+      "get" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Retrieve all pipelines",
+        "description" : "Return all pipelines for the object type specified by `{objectType}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}_getAll",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePipelineNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Create a pipeline",
+        "description" : "Create a new pipeline with the provided property values. The entire pipeline object, including its unique ID, will be returned in the response.",
+        "operationId" : "post-/crm/v3/pipelines/{objectType}_create",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelineInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Pipeline"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}" : {
+      "get" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Return a pipeline by ID",
+        "description" : "Return a single pipeline object identified by its unique `{pipelineId}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}/{pipelineId}_getById",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Pipeline"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Replace a pipeline",
+        "description" : "Replace all the properties of an existing pipeline with the values provided. This will overwrite any existing pipeline stages. The updated pipeline will be returned in the response.",
+        "operationId" : "put-/crm/v3/pipelines/{objectType}/{pipelineId}_replace",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "validateReferencesBeforeDelete",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelineInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Pipeline"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Delete a pipeline",
+        "description" : "Delete the pipeline identified by `{pipelineId}`.",
+        "operationId" : "delete-/crm/v3/pipelines/{objectType}/{pipelineId}_archive",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "validateReferencesBeforeDelete",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Pipelines" ],
+        "summary" : "Update a pipeline",
+        "description" : "Perform a partial update of the pipeline identified by `{pipelineId}`. The updated pipeline will be returned in the response.",
+        "operationId" : "patch-/crm/v3/pipelines/{objectType}/{pipelineId}_update",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "validateReferencesBeforeDelete",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelinePatchInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Pipeline"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/audit" : {
+      "get" : {
+        "tags" : [ "Pipeline Audits" ],
+        "summary" : "Return an audit of all changes to the pipeline",
+        "description" : "Return a reverse chronological list of all mutations that have occurred on the pipeline identified by `{pipelineId}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}/{pipelineId}/audit_getAudit",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePublicAuditInfoNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/stages" : {
+      "get" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Return all stages of a pipeline",
+        "description" : "Return all the stages associated with the pipeline identified by `{pipelineId}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}/{pipelineId}/stages_getAll",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePipelineStageNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Create a pipeline stage",
+        "description" : "Create a new stage associated with the pipeline identified by `{pipelineId}`. The entire stage object, including its unique ID, will be returned in the response.",
+        "operationId" : "post-/crm/v3/pipelines/{objectType}/{pipelineId}/stages_create",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelineStageInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PipelineStage"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}" : {
+      "get" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Return a pipeline stage by ID",
+        "description" : "Return the stage identified by `{stageId}` associated with the pipeline identified by `{pipelineId}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}_getById",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "stageId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PipelineStage"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Replace a pipeline stage",
+        "description" : "Replace all the properties of an existing pipeline stage with the values provided. The updated stage will be returned in the response.",
+        "operationId" : "put-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}_replace",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "stageId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelineStageInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PipelineStage"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Delete a pipeline stage",
+        "description" : "Delete the pipeline stage identified by `{stageId}` associated with the pipeline identified by `{pipelineId}`.",
+        "operationId" : "delete-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}_archive",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "stageId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Pipeline Stages" ],
+        "summary" : "Update a pipeline stage",
+        "description" : "Perform a partial update of the pipeline stage identified by `{stageId}` associated with the pipeline identified by `{pipelineId}`. Any properties not included in this update will keep their existing values. The updated stage will be returned in the response.",
+        "operationId" : "patch-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}_update",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "pipelineId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "stageId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PipelineStagePatchInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PipelineStage"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}/audit" : {
+      "get" : {
+        "tags" : [ "Pipeline Stage Audits" ],
+        "summary" : "Return an audit of all changes to the pipeline stage",
+        "description" : "Return a reverse chronological list of all mutations that have occurred on the pipeline stage identified by `{stageId}`.",
+        "operationId" : "get-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}/audit_getAudit",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "stageId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePublicAuditInfoNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "PipelineStagePatchInput" : {
+        "required" : [ "metadata" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A label used to organize pipeline stages in HubSpot's UI. Each pipeline stage's label must be unique within that pipeline."
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether the pipeline is archived."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline stage. If two pipeline stages have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A JSON object containing properties that are not present on all object pipelines.\n\nFor `deals` pipelines, the `probability` field is required (`{ \"probability\": 0.5 }`), and represents the likelihood a deal will close. Possible values are between 0.0 and 1.0 in increments of 0.1.\n\nFor `tickets` pipelines, the `ticketState` field is optional (`{ \"ticketState\": \"OPEN\" }`), and represents whether the ticket remains open or has been closed by a member of your Support team. Possible values are `OPEN` or `CLOSED`."
+          }
+        },
+        "description" : "An input used to update some properties on a pipeline definition.",
+        "example" : {
+          "label" : "Done",
+          "displayOrder" : 1,
+          "metadata" : {
+            "ticketState" : "CLOSED"
+          }
+        }
+      },
+      "PipelinePatchInput" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A unique label used to organize pipelines in HubSpot's UI"
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline. If two pipelines have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether the pipeline is archived. This property should only be provided when restoring an archived pipeline. If it's provided in any other call, the request will fail and a `400 Bad Request` will be returned."
+          }
+        },
+        "description" : "An input used to update some properties on a pipeline definition.",
+        "example" : {
+          "label" : "My updated pipeline",
+          "displayOrder" : 0
+        }
+      },
+      "PipelineStage" : {
+        "required" : [ "archived", "createdAt", "displayOrder", "id", "label", "metadata", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A label used to organize pipeline stages in HubSpot's UI. Each pipeline stage's label must be unique within that pipeline."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline stage. If two pipeline stages have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A JSON object containing properties that are not present on all object pipelines.\n\nFor `deals` pipelines, the `probability` field is required (`{ \"probability\": 0.5 }`), and represents the likelihood a deal will close. Possible values are between 0.0 and 1.0 in increments of 0.1.\n\nFor `tickets` pipelines, the `ticketState` field is optional (`{ \"ticketState\": \"OPEN\" }`), and represents whether the ticket remains open or has been closed by a member of your Support team. Possible values are `OPEN` or `CLOSED`."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "A unique identifier generated by HubSpot that can be used to retrieve and update the pipeline stage."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline stage was created. The stages on default pipelines will have createdAt = 0.",
+            "format" : "date-time"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline was archived. `archivedAt` will only be present if the pipeline is archived.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline stage was last updated.",
+            "format" : "date-time"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether the pipeline is archived."
+          }
+        },
+        "description" : "A pipeline stage definition.",
+        "example" : {
+          "label" : "In Progress",
+          "displayOrder" : 0,
+          "metadata" : {
+            "ticketState" : "OPEN"
+          },
+          "createdAt" : "2019-10-30T03:30:17.883Z",
+          "updatedAt" : "2019-12-07T16:50:06.678Z",
+          "archived" : false,
+          "id" : "1234912"
+        }
+      },
+      "CollectionResponsePipelineStageNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PipelineStage"
+            }
+          }
+        }
+      },
+      "PublicAuditInfo" : {
+        "required" : [ "action", "identifier", "portalId" ],
+        "type" : "object",
+        "properties" : {
+          "portalId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "action" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "rawObject" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "fromUserId" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "CollectionResponsePublicAuditInfoNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicAuditInfo"
+            }
+          }
+        }
+      },
+      "Pipeline" : {
+        "required" : [ "archived", "createdAt", "displayOrder", "id", "label", "stages", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A unique label used to organize pipelines in HubSpot's UI"
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline. If two pipelines have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "A unique identifier generated by HubSpot that can be used to retrieve and update the pipeline."
+          },
+          "stages" : {
+            "type" : "array",
+            "description" : "The stages associated with the pipeline. They can be retrieved and updated via the pipeline stages endpoints.",
+            "items" : {
+              "$ref" : "#/components/schemas/PipelineStage"
+            }
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline was created. The default pipelines will have createdAt = 0.",
+            "format" : "date-time"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline was archived. `archivedAt` will only be present if the pipeline is archived.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "The date the pipeline was last updated.",
+            "format" : "date-time"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether the pipeline is archived."
+          }
+        },
+        "description" : "A pipeline definition.",
+        "example" : {
+          "label" : "My ticket pipeline",
+          "displayOrder" : 0,
+          "createdAt" : "2019-10-30T03:30:17.883Z",
+          "updatedAt" : "2019-12-07T16:50:06.678Z",
+          "archived" : false,
+          "id" : "812723471",
+          "stages" : [ {
+            "label" : "In Progress",
+            "displayOrder" : 0,
+            "metadata" : {
+              "ticketState" : "OPEN"
+            },
+            "createdAt" : "2019-10-30T03:30:17.883Z",
+            "updatedAt" : "2019-12-07T16:50:06.678Z",
+            "archived" : false,
+            "id" : "1234912"
+          }, {
+            "label" : "Done",
+            "displayOrder" : 0,
+            "metadata" : {
+              "ticketState" : "CLOSED"
+            },
+            "createdAt" : "2019-10-30T03:30:17.883Z",
+            "updatedAt" : "2019-12-07T16:50:06.678Z",
+            "archived" : false,
+            "id" : "1234914"
+          } ]
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "PipelineStageInput" : {
+        "required" : [ "displayOrder", "label", "metadata" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A label used to organize pipeline stages in HubSpot's UI. Each pipeline stage's label must be unique within that pipeline."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline stage. If two pipeline stages have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A JSON object containing properties that are not present on all object pipelines.\n\nFor `deals` pipelines, the `probability` field is required (`{ \"probability\": 0.5 }`), and represents the likelihood a deal will close. Possible values are between 0.0 and 1.0 in increments of 0.1.\n\nFor `tickets` pipelines, the `ticketState` field is optional (`{ \"ticketState\": \"OPEN\" }`), and represents whether the ticket remains open or has been closed by a member of your Support team. Possible values are `OPEN` or `CLOSED`."
+          }
+        },
+        "description" : "An input used to create or replace a pipeline stage's definition.",
+        "example" : {
+          "label" : "Done",
+          "displayOrder" : 1,
+          "metadata" : {
+            "ticketState" : "CLOSED"
+          }
+        }
+      },
+      "CollectionResponsePipelineNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Pipeline"
+            }
+          }
+        }
+      },
+      "PipelineInput" : {
+        "required" : [ "displayOrder", "label", "stages" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A unique label used to organize pipelines in HubSpot's UI"
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "The order for displaying this pipeline. If two pipelines have a matching `displayOrder`, they will be sorted alphabetically by label.",
+            "format" : "int32"
+          },
+          "stages" : {
+            "type" : "array",
+            "description" : "Pipeline stage inputs used to create the new or replacement pipeline.",
+            "items" : {
+              "$ref" : "#/components/schemas/PipelineStageInput"
+            }
+          }
+        },
+        "description" : "An input used to create or replace a pipeline's definition.",
+        "example" : {
+          "label" : "My replaced pipeline",
+          "displayOrder" : 0,
+          "stages" : [ {
+            "label" : "In Progress",
+            "displayOrder" : 0,
+            "metadata" : {
+              "ticketState" : "OPEN"
+            }
+          }, {
+            "label" : "Done",
+            "displayOrder" : 1,
+            "metadata" : {
+              "ticketState" : "CLOSED"
+            }
+          } ]
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.objects.goals.read" : "Read goals",
+              "tickets" : "Read and write tickets",
+              "crm.schemas.custom.read" : "View custom object definitions",
+              "timeline" : "Create timeline events",
+              "e-commerce" : "e-commerce",
+              "media_bridge.read" : "Read media and media events"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.schemas.deals.read" : " ",
+              "crm.objects.deals.write" : " ",
+              "crm.schemas.line_items.read" : "Line Items schemas",
+              "crm.objects.deals.read" : " ",
+              "crm.schemas.companies.read" : " ",
+              "crm.objects.companies.read" : " ",
+              "crm.objects.companies.write" : " ",
+              "crm.schemas.contacts.read" : " ",
+              "crm.objects.contacts.write" : " ",
+              "crm.schemas.quotes.read" : "Quotes schemas",
+              "crm.objects.contacts.read" : " ",
+              "crm.schemas.companies.write" : " ",
+              "crm.schemas.contacts.write" : " ",
+              "crm.schemas.deals.write" : " "
+            }
+          }
+        }
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      },
+      "private_apps" : {
+        "type" : "apiKey",
+        "name" : "private-app",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

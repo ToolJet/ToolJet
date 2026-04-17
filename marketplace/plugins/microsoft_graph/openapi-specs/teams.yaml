@@ -1,0 +1,2650 @@
+openapi: 3.1.0
+info:
+  title: Microsoft Teams API
+  description: Comprehensive API specification for Microsoft Teams operations via Microsoft Graph
+  version: 1.0.0
+  contact:
+    name: Microsoft Graph Team
+    url: https://developer.microsoft.com/graph
+    email: graphsupport@microsoft.com
+servers:
+  - url: https://graph.microsoft.com/v1.0
+    description: Microsoft Graph v1.0 endpoint
+security:
+  - bearerAuth: []
+paths:
+  /chats:
+    get:
+      tags:
+        - Chats
+      summary: List chats
+      description: Retrieve the list of chats that the user is part of
+      operationId: listChats
+      parameters:
+        - name: $top
+          in: query
+          description: Number of items to return (default is 10, max is 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+        - name: $orderby
+          in: query
+          description: OData orderby query
+          schema:
+            type: string
+            example: lastMessagePreview/createdDateTime desc
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - members
+              - lastMessagePreview
+      responses:
+        '200':
+          description: Successfully retrieved chats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chat'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Chats
+      summary: Create chat
+      description: Create a new one-on-one or group chat
+      operationId: createChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chatType
+                - members
+              properties:
+                chatType:
+                  type: string
+                  enum:
+                    - oneOnOne
+                    - group
+                    - meeting
+                topic:
+                  type: string
+                  description: Subject or topic for the chat (only for group chats)
+                members:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ConversationMemberInput'
+                  minItems: 2
+                installedApps:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      teamsApp@odata.bind:
+                        type: string
+                        format: uri
+                      consentedPermissionSet:
+                        type: object
+                        properties:
+                          resourceSpecificPermissions:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                permissionValue:
+                                  type: string
+                                permissionType:
+                                  type: string
+      responses:
+        '201':
+          description: Chat created successfully
+          headers:
+            Location:
+              description: URL of the created chat
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        '202':
+          description: Accepted - Chat creation in progress
+          headers:
+            Location:
+              description: URL to check operation status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /chats/{chat-id}:
+    get:
+      tags:
+        - Chats
+      summary: Get chat
+      description: Retrieve the properties and relationships of a chat
+      operationId: getChat
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - members
+              - installedApps
+              - lastMessagePreview
+      responses:
+        '200':
+          description: Successfully retrieved chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Chats
+      summary: Update chat
+      description: Update the properties of a chat
+      operationId: updateChat
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  description: Subject or topic for the chat
+      responses:
+        '204':
+          description: Chat updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Chats
+      summary: Delete chat
+      description: Delete a chat
+      operationId: deleteChat
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      responses:
+        '204':
+          description: Chat deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/{chat-id}/members:
+    get:
+      tags:
+        - Chat Members
+      summary: List chat members
+      description: Retrieve a list of members in a chat
+      operationId: listChatMembers
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+            default: 100
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved chat members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Chat Members
+      summary: Add member to chat
+      description: Add a member to a chat
+      operationId: addChatMember
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationMemberInput'
+      responses:
+        '201':
+          description: Member added successfully
+          headers:
+            Location:
+              description: URL of the added member
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMember'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/{chat-id}/members/add:
+    post:
+      tags:
+        - Chat Members
+      summary: Add multiple members to chat
+      description: Add multiple members to a chat in a single request
+      operationId: addMultipleChatMembers
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - values
+              properties:
+                values:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ConversationMemberInput'
+                  minItems: 1
+                  maxItems: 200
+      responses:
+        '200':
+          description: Members addition completed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@odata.type':
+                      type: string
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        message:
+                          type: string
+        '207':
+          description: Multi-status - Some members added successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@odata.type':
+                      type: string
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        message:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/{chat-id}/members/{conversationMember-id}:
+    get:
+      tags:
+        - Chat Members
+      summary: Get chat member
+      description: Retrieve a specific member of a chat
+      operationId: getChatMember
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/conversationMemberId'
+      responses:
+        '200':
+          description: Successfully retrieved chat member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Chat Members
+      summary: Update chat member
+      description: Update a member's role in a chat
+      operationId: updateChatMember
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/conversationMemberId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                '@odata.type':
+                  type: string
+                  example: '#microsoft.graph.aadUserConversationMember'
+                roles:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - owner
+                      - member
+      responses:
+        '204':
+          description: Member updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Chat Members
+      summary: Remove member from chat
+      description: Remove a member from a chat
+      operationId: removeChatMember
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/conversationMemberId'
+      responses:
+        '204':
+          description: Member removed successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/{chat-id}/messages:
+    get:
+      tags:
+        - Chat Messages
+      summary: List chat messages
+      description: Retrieve the list of messages in a chat
+      operationId: listChatMessages
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: $orderby
+          in: query
+          description: OData orderby query
+          schema:
+            type: string
+            example: createdDateTime desc
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+            example: lastModifiedDateTime gt 2022-09-22T00:00:00.000Z
+      responses:
+        '200':
+          description: Successfully retrieved chat messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Chat Messages
+      summary: Send message in chat
+      description: Send a new message in a chat
+      operationId: sendChatMessage
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                body:
+                  type: object
+                  required:
+                    - content
+                  properties:
+                    content:
+                      type: string
+                      description: The content of the message
+                    contentType:
+                      type: string
+                      enum:
+                        - text
+                        - html
+                      default: text
+                importance:
+                  type: string
+                  enum:
+                    - normal
+                    - high
+                    - urgent
+                  default: normal
+                mentions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      mentionText:
+                        type: string
+                      mentioned:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                            properties:
+                              displayName:
+                                type: string
+                              id:
+                                type: string
+                              userIdentityType:
+                                type: string
+                attachments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatMessageAttachment'
+                hostedContents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      '@microsoft.graph.temporaryId':
+                        type: string
+                      contentBytes:
+                        type: string
+                        format: byte
+                      contentType:
+                        type: string
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/{chat-id}/messages/{chatMessage-id}:
+    get:
+      tags:
+        - Chat Messages
+      summary: Get chat message
+      description: Retrieve a specific message in a chat
+      operationId: getChatMessage
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/chatMessageId'
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - replies
+              - hostedContents
+      responses:
+        '200':
+          description: Successfully retrieved chat message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Chat Messages
+      summary: Update chat message
+      description: Update a message in a chat
+      operationId: updateChatMessage
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/chatMessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      description: The updated content of the message
+                    contentType:
+                      type: string
+                      enum:
+                        - text
+                        - html
+      responses:
+        '204':
+          description: Message updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Chat Messages
+      summary: Delete chat message
+      description: Soft delete a message in a chat
+      operationId: deleteChatMessage
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+        - $ref: '#/components/parameters/chatMessageId'
+      responses:
+        '204':
+          description: Message deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chats/getAllMessages:
+    get:
+      tags:
+        - Chat Messages
+      summary: Get all messages for user
+      description: Get all messages from all chats that a user is a participant in
+      operationId: getAllMessagesForUser
+      parameters:
+        - name: model
+          in: query
+          description: Payment model for metered API
+          schema:
+            type: string
+            enum:
+              - A
+              - B
+            default: A
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved all messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /me/joinedTeams:
+    get:
+      tags:
+        - Teams
+      summary: List joined teams
+      description: Get the teams in Microsoft Teams that the user is a direct member of
+      operationId: listJoinedTeams
+      responses:
+        '200':
+          description: Successfully retrieved joined teams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /teams:
+    get:
+      tags:
+        - Teams
+      summary: List all teams
+      description: List all teams in an organization (requires admin permissions)
+      operationId: listAllTeams
+      parameters:
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+            default: 100
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved teams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Teams
+      summary: Create team
+      description: Create a new team
+      operationId: createTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required:
+                    - displayName
+                    - description
+                    - template@odata.bind
+                  properties:
+                    template@odata.bind:
+                      type: string
+                      format: uri
+                      example: https://graph.microsoft.com/v1.0/teamsTemplates('standard')
+                    displayName:
+                      type: string
+                    description:
+                      type: string
+                    visibility:
+                      type: string
+                      enum:
+                        - private
+                        - public
+                    members:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ConversationMemberInput'
+                    channels:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          displayName:
+                            type: string
+                          description:
+                            type: string
+                          isFavoriteByDefault:
+                            type: boolean
+                - type: object
+                  required:
+                    - group@odata.bind
+                  properties:
+                    template@odata.bind:
+                      type: string
+                      format: uri
+                      example: https://graph.microsoft.com/v1.0/teamsTemplates('standard')
+                    group@odata.bind:
+                      type: string
+                      format: uri
+                      example: https://graph.microsoft.com/v1.0/groups('groupId')
+      responses:
+        '202':
+          description: Accepted - Team creation in progress
+          headers:
+            Location:
+              description: URL to check operation status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /teams/{team-id}:
+    get:
+      tags:
+        - Teams
+      summary: Get team
+      description: Retrieve the properties and relationships of the specified team
+      operationId: getTeam
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - name: $select
+          in: query
+          description: OData select query
+          schema:
+            type: string
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - members
+              - channels
+              - installedApps
+              - schedule
+      responses:
+        '200':
+          description: Successfully retrieved team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Teams
+      summary: Update team
+      description: Update the properties of a team
+      operationId: updateTeam
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                description:
+                  type: string
+                visibility:
+                  type: string
+                  enum:
+                    - private
+                    - public
+                memberSettings:
+                  $ref: '#/components/schemas/TeamMemberSettings'
+                guestSettings:
+                  $ref: '#/components/schemas/TeamGuestSettings'
+                messagingSettings:
+                  $ref: '#/components/schemas/TeamMessagingSettings'
+                funSettings:
+                  $ref: '#/components/schemas/TeamFunSettings'
+                discoverySettings:
+                  $ref: '#/components/schemas/TeamDiscoverySettings'
+      responses:
+        '204':
+          description: Team updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Teams
+      summary: Delete team
+      description: Delete a team
+      operationId: deleteTeam
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      responses:
+        '204':
+          description: Team deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/archive:
+    post:
+      tags:
+        - Teams
+      summary: Archive team
+      description: Archive the specified team
+      operationId: archiveTeam
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shouldSetSpoSiteReadOnlyForMembers:
+                  type: boolean
+                  default: false
+      responses:
+        '202':
+          description: Accepted - Archive operation in progress
+          headers:
+            Location:
+              description: URL to check operation status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/unarchive:
+    post:
+      tags:
+        - Teams
+      summary: Unarchive team
+      description: Restore an archived team
+      operationId: unarchiveTeam
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      responses:
+        '202':
+          description: Accepted - Unarchive operation in progress
+          headers:
+            Location:
+              description: URL to check operation status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/members:
+    get:
+      tags:
+        - Team Members
+      summary: List team members
+      description: Get the members of a team
+      operationId: listTeamMembers
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+            default: 100
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved team members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Team Members
+      summary: Add member to team
+      description: Add a new member to a team
+      operationId: addTeamMember
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationMemberInput'
+      responses:
+        '201':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMember'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/members/add:
+    post:
+      tags:
+        - Team Members
+      summary: Add multiple members to team
+      description: Add multiple members to a team in a single request
+      operationId: addMultipleTeamMembers
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - values
+              properties:
+                values:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ConversationMemberInput'
+                  minItems: 1
+                  maxItems: 200
+      responses:
+        '200':
+          description: Members addition completed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@odata.type':
+                      type: string
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        message:
+                          type: string
+        '207':
+          description: Multi-status - Some members added successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/allChannels:
+    get:
+      tags:
+        - Channels
+      summary: List all channels
+      description: Get all channels across a team, including shared channels
+      operationId: listAllChannels
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+            example: membershipType eq 'shared'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved all channels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Channel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/channels:
+    get:
+      tags:
+        - Channels
+      summary: List channels
+      description: Retrieve the list of channels in a team
+      operationId: listChannels
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+            example: membershipType eq 'private'
+        - name: $select
+          in: query
+          description: OData select query
+          schema:
+            type: string
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved channels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Channel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Channels
+      summary: Create channel
+      description: Create a new channel in a team
+      operationId: createChannel
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - displayName
+              properties:
+                '@odata.type':
+                  type: string
+                  default: '#microsoft.graph.channel'
+                displayName:
+                  type: string
+                  maxLength: 50
+                description:
+                  type: string
+                  maxLength: 1024
+                membershipType:
+                  type: string
+                  enum:
+                    - standard
+                    - private
+                    - shared
+                  default: standard
+                members:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ConversationMemberInput'
+                  description: Required when creating a private channel
+      responses:
+        '201':
+          description: Channel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '202':
+          description: Accepted - Channel creation in progress
+          headers:
+            Location:
+              description: URL to check operation status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/channels/{channel-id}:
+    get:
+      tags:
+        - Channels
+      summary: Get channel
+      description: Retrieve the properties and relationships of a channel
+      operationId: getChannel
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - name: $select
+          in: query
+          description: OData select query
+          schema:
+            type: string
+            example: summary
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - members
+              - tabs
+              - filesFolder
+      responses:
+        '200':
+          description: Successfully retrieved channel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Channels
+      summary: Update channel
+      description: Update the properties of a channel
+      operationId: updateChannel
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  maxLength: 50
+                description:
+                  type: string
+                  maxLength: 1024
+      responses:
+        '204':
+          description: Channel updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Channels
+      summary: Delete channel
+      description: Delete a channel
+      operationId: deleteChannel
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+      responses:
+        '204':
+          description: Channel deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/channels/{channel-id}/members:
+    get:
+      tags:
+        - Channel Members
+      summary: List channel members
+      description: Retrieve a list of members in a channel
+      operationId: listChannelMembers
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+            default: 100
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: $filter
+          in: query
+          description: OData filter query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved channel members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Channel Members
+      summary: Add member to channel
+      description: Add a member to a private channel
+      operationId: addChannelMember
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationMemberInput'
+      responses:
+        '201':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMember'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/channels/{channel-id}/messages:
+    get:
+      tags:
+        - Channel Messages
+      summary: List channel messages
+      description: Retrieve the list of messages in a channel
+      operationId: listChannelMessages
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - name: $top
+          in: query
+          description: Number of items to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: $skip
+          in: query
+          description: Number of items to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - replies
+              - hostedContents
+      responses:
+        '200':
+          description: Successfully retrieved channel messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  '@odata.context':
+                    type: string
+                  '@odata.count':
+                    type: integer
+                  '@odata.nextLink':
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Channel Messages
+      summary: Send message in channel
+      description: Send a new message in a channel
+      operationId: sendChannelMessage
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                body:
+                  type: object
+                  required:
+                    - content
+                  properties:
+                    content:
+                      type: string
+                      description: The content of the message
+                    contentType:
+                      type: string
+                      enum:
+                        - text
+                        - html
+                      default: text
+                importance:
+                  type: string
+                  enum:
+                    - normal
+                    - high
+                    - urgent
+                  default: normal
+                subject:
+                  type: string
+                  description: The subject of the channel message
+                mentions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      mentionText:
+                        type: string
+                      mentioned:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                            properties:
+                              displayName:
+                                type: string
+                              id:
+                                type: string
+                              userIdentityType:
+                                type: string
+                attachments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatMessageAttachment'
+                hostedContents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      '@microsoft.graph.temporaryId':
+                        type: string
+                      contentBytes:
+                        type: string
+                        format: byte
+                      contentType:
+                        type: string
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/channels/{channel-id}/messages/{chatMessage-id}:
+    get:
+      tags:
+        - Channel Messages
+      summary: Get channel message
+      description: Retrieve a specific message in a channel
+      operationId: getChannelMessage
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - $ref: '#/components/parameters/chatMessageId'
+        - name: $expand
+          in: query
+          description: OData expand query
+          schema:
+            type: string
+            enum:
+              - replies
+              - hostedContents
+      responses:
+        '200':
+          description: Successfully retrieved channel message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Channel Messages
+      summary: Update channel message
+      description: Update a message in a channel
+      operationId: updateChannelMessage
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - $ref: '#/components/parameters/chatMessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      description: The updated content of the message
+                    contentType:
+                      type: string
+                      enum:
+                        - text
+                        - html
+      responses:
+        '204':
+          description: Message updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Channel Messages
+      summary: Delete channel message
+      description: Soft delete a message in a channel
+      operationId: deleteChannelMessage
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+        - $ref: '#/components/parameters/chatMessageId'
+      responses:
+        '204':
+          description: Message deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teams/{team-id}/allChannels/{channel-id}:
+    get:
+      tags:
+        - Channels
+      summary: Get channel from allChannels
+      description: Get a channel from the list of all channels
+      operationId: getChannelFromAllChannels
+      parameters:
+        - $ref: '#/components/parameters/teamId'
+        - $ref: '#/components/parameters/channelId'
+      responses:
+        '200':
+          description: Successfully retrieved channel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Azure AD Bearer Token
+
+  parameters:
+    chatId:
+      name: chat-id
+      in: path
+      required: true
+      description: The unique identifier of the chat
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}_[^@]+@[^@]+$|^19:[0-9a-fA-F]+@thread\.(v2|skype|tacv2)$'
+    conversationMemberId:
+      name: conversationMember-id
+      in: path
+      required: true
+      description: The unique identifier of the conversation member
+      schema:
+        type: string
+    chatMessageId:
+      name: chatMessage-id
+      in: path
+      required: true
+      description: The unique identifier of the chat message
+      schema:
+        type: string
+    teamId:
+      name: team-id
+      in: path
+      required: true
+      description: The unique identifier of the team
+      schema:
+        type: string
+        format: uuid
+    channelId:
+      name: channel-id
+      in: path
+      required: true
+      description: The unique identifier of the channel
+      schema:
+        type: string
+
+  schemas:
+    Chat:
+      type: object
+      properties:
+        '@odata.context':
+          type: string
+        id:
+          type: string
+          description: Unique identifier for the chat
+        topic:
+          type: string
+          description: Subject or topic for the chat (optional)
+          nullable: true
+        createdDateTime:
+          type: string
+          format: date-time
+          description: Date and time when the chat was created
+        lastUpdatedDateTime:
+          type: string
+          format: date-time
+          description: Date and time when the chat was last updated
+        chatType:
+          type: string
+          enum:
+            - oneOnOne
+            - group
+            - meeting
+            - unknownFutureValue
+          description: Type of chat
+        webUrl:
+          type: string
+          format: uri
+          description: A hyperlink to the chat in Microsoft Teams
+        tenantId:
+          type: string
+          format: uuid
+          description: The identifier of the tenant
+        onlineMeetingInfo:
+          type: object
+          nullable: true
+          properties:
+            calendarEventId:
+              type: string
+            joinWebUrl:
+              type: string
+              format: uri
+            organizer:
+              type: object
+              properties:
+                id:
+                  type: string
+                displayName:
+                  type: string
+                userPrincipalName:
+                  type: string
+        viewpoint:
+          type: object
+          nullable: true
+          properties:
+            isHidden:
+              type: boolean
+            lastMessageReadDateTime:
+              type: string
+              format: date-time
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationMember'
+        installedApps:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              teamsApp:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  displayName:
+                    type: string
+                  distributionMethod:
+                    type: string
+        lastMessagePreview:
+          type: object
+          nullable: true
+          properties:
+            '@odata.type':
+              type: string
+            body:
+              type: object
+              properties:
+                content:
+                  type: string
+                contentType:
+                  type: string
+            createdDateTime:
+              type: string
+              format: date-time
+            from:
+              type: object
+              properties:
+                application:
+                  type: object
+                  nullable: true
+                device:
+                  type: object
+                  nullable: true
+                user:
+                  type: object
+                  properties:
+                    '@odata.type':
+                      type: string
+                    id:
+                      type: string
+                    displayName:
+                      type: string
+                    userIdentityType:
+                      type: string
+            id:
+              type: string
+            isDeleted:
+              type: boolean
+            messageType:
+              type: string
+
+    ConversationMember:
+      type: object
+      discriminator:
+        propertyName: '@odata.type'
+        mapping:
+          '#microsoft.graph.aadUserConversationMember': AadUserConversationMember
+      properties:
+        '@odata.type':
+          type: string
+        id:
+          type: string
+          description: Unique identifier for the member
+        displayName:
+          type: string
+          description: Display name of the member
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - owner
+              - member
+              - guest
+          description: Roles for the member
+        visibleHistoryStartDateTime:
+          type: string
+          format: date-time
+          description: Timestamp from which the member can see messages
+
+    AadUserConversationMember:
+      allOf:
+        - $ref: '#/components/schemas/ConversationMember'
+        - type: object
+          properties:
+            email:
+              type: string
+              format: email
+              nullable: true
+            tenantId:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            user:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                userPrincipalName:
+                  type: string
+
+    ConversationMemberInput:
+      type: object
+      required:
+        - '@odata.type'
+        - 'user@odata.bind'
+      properties:
+        '@odata.type':
+          type: string
+          example: '#microsoft.graph.aadUserConversationMember'
+        'user@odata.bind':
+          type: string
+          format: uri
+          example: 'https://graph.microsoft.com/v1.0/users(''userId'')'
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - owner
+              - member
+          default: ['member']
+        visibleHistoryStartDateTime:
+          type: string
+          format: date-time
+          description: Timestamp from which the member can see messages
+
+    ChatMessage:
+      type: object
+      properties:
+        '@odata.context':
+          type: string
+        id:
+          type: string
+          description: Unique identifier for the message
+        replyToId:
+          type: string
+          nullable: true
+          description: ID of the parent message
+        from:
+          type: object
+          nullable: true
+          properties:
+            application:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                displayName:
+                  type: string
+                applicationIdentityType:
+                  type: string
+            device:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                displayName:
+                  type: string
+            user:
+              type: object
+              nullable: true
+              properties:
+                '@odata.type':
+                  type: string
+                id:
+                  type: string
+                displayName:
+                  type: string
+                userIdentityType:
+                  type: string
+                  enum:
+                    - aadUser
+                    - onPremiseAadUser
+                    - anonymousGuest
+                    - federatedUser
+                    - personalMicrosoftAccountUser
+                    - skypeUser
+                    - phoneUser
+                    - emailUser
+                    - azureCommunicationServicesUser
+        etag:
+          type: string
+          description: Version of the message
+        messageType:
+          type: string
+          enum:
+            - message
+            - chatEvent
+            - typing
+            - unknownFutureValue
+            - systemEventMessage
+        createdDateTime:
+          type: string
+          format: date-time
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+        lastEditedDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        deletedDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        subject:
+          type: string
+          nullable: true
+        body:
+          type: object
+          properties:
+            content:
+              type: string
+            contentType:
+              type: string
+              enum:
+                - text
+                - html
+        summary:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageAttachment'
+        mentions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              mentionText:
+                type: string
+              mentioned:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      displayName:
+                        type: string
+                      id:
+                        type: string
+                      userIdentityType:
+                        type: string
+        importance:
+          type: string
+          enum:
+            - normal
+            - high
+            - urgent
+        reactions:
+          type: array
+          items:
+            type: object
+            properties:
+              reactionType:
+                type: string
+              createdDateTime:
+                type: string
+                format: date-time
+              user:
+                type: object
+                properties:
+                  application:
+                    type: object
+                    nullable: true
+                  device:
+                    type: object
+                    nullable: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      displayName:
+                        type: string
+                      userIdentityType:
+                        type: string
+        locale:
+          type: string
+        webUrl:
+          type: string
+          format: uri
+          nullable: true
+        channelIdentity:
+          type: object
+          nullable: true
+          properties:
+            teamId:
+              type: string
+            channelId:
+              type: string
+        policyViolation:
+          type: object
+          nullable: true
+          properties:
+            dlpAction:
+              type: string
+              enum:
+                - none
+                - notifySender
+                - blockAccess
+                - blockAccessExternal
+            justificationText:
+              type: string
+            policyTip:
+              type: object
+              properties:
+                generalText:
+                  type: string
+                complianceUrl:
+                  type: string
+                  format: uri
+                matchedConditionDescriptions:
+                  type: array
+                  items:
+                    type: string
+            userAction:
+              type: string
+              enum:
+                - none
+                - override
+                - reportFalsePositive
+            verdictDetails:
+              type: string
+              enum:
+                - none
+                - allow
+                - block
+                - override
+                - falsePositive
+        eventDetail:
+          type: object
+          nullable: true
+          description: Details of system event messages
+        chatId:
+          type: string
+          nullable: true
+        hostedContents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              contentBytes:
+                type: string
+                format: byte
+              contentType:
+                type: string
+
+    ChatMessageAttachment:
+      type: object
+      properties:
+        id:
+          type: string
+        contentType:
+          type: string
+          example: 'application/vnd.microsoft.card.thumbnail'
+        contentUrl:
+          type: string
+          format: uri
+          nullable: true
+        content:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        teamsAppId:
+          type: string
+          nullable: true
+
+    Team:
+      type: object
+      properties:
+        '@odata.context':
+          type: string
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the team
+        createdDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        displayName:
+          type: string
+          description: Display name of the team
+        description:
+          type: string
+          nullable: true
+          description: Description of the team
+        internalId:
+          type: string
+          nullable: true
+        classification:
+          type: string
+          nullable: true
+        specialization:
+          type: string
+          enum:
+            - none
+            - educationStandard
+            - educationClass
+            - educationProfessionalLearningCommunity
+            - educationStaff
+            - healthcareStandard
+            - healthcareCareCoordination
+            - unknownFutureValue
+          nullable: true
+        visibility:
+          type: string
+          enum:
+            - private
+            - public
+            - hiddenMembership
+            - unknownFutureValue
+          nullable: true
+        webUrl:
+          type: string
+          format: uri
+          nullable: true
+        isArchived:
+          type: boolean
+          nullable: true
+        isMembershipLimitedToOwners:
+          type: boolean
+          nullable: true
+        discoverySettings:
+          $ref: '#/components/schemas/TeamDiscoverySettings'
+        memberSettings:
+          $ref: '#/components/schemas/TeamMemberSettings'
+        guestSettings:
+          $ref: '#/components/schemas/TeamGuestSettings'
+        messagingSettings:
+          $ref: '#/components/schemas/TeamMessagingSettings'
+        funSettings:
+          $ref: '#/components/schemas/TeamFunSettings'
+        summary:
+          type: object
+          nullable: true
+          properties:
+            ownersCount:
+              type: integer
+            membersCount:
+              type: integer
+            guestsCount:
+              type: integer
+
+    TeamDiscoverySettings:
+      type: object
+      properties:
+        showInTeamsSearchAndSuggestions:
+          type: boolean
+
+    TeamMemberSettings:
+      type: object
+      properties:
+        allowCreateUpdateChannels:
+          type: boolean
+        allowCreatePrivateChannels:
+          type: boolean
+        allowDeleteChannels:
+          type: boolean
+        allowAddRemoveApps:
+          type: boolean
+        allowCreateUpdateRemoveTabs:
+          type: boolean
+        allowCreateUpdateRemoveConnectors:
+          type: boolean
+
+    TeamGuestSettings:
+      type: object
+      properties:
+        allowCreateUpdateChannels:
+          type: boolean
+        allowDeleteChannels:
+          type: boolean
+
+    TeamMessagingSettings:
+      type: object
+      properties:
+        allowUserEditMessages:
+          type: boolean
+        allowUserDeleteMessages:
+          type: boolean
+        allowOwnerDeleteMessages:
+          type: boolean
+        allowTeamMentions:
+          type: boolean
+        allowChannelMentions:
+          type: boolean
+
+    TeamFunSettings:
+      type: object
+      properties:
+        allowGiphy:
+          type: boolean
+        giphyContentRating:
+          type: string
+          enum:
+            - moderate
+            - strict
+            - unknownFutureValue
+        allowStickersAndMemes:
+          type: boolean
+        allowCustomMemes:
+          type: boolean
+
+    Channel:
+      type: object
+      properties:
+        '@odata.context':
+          type: string
+        id:
+          type: string
+          description: Unique identifier of the channel
+        createdDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        displayName:
+          type: string
+          description: Channel name as it will appear to the user
+        description:
+          type: string
+          nullable: true
+          description: Optional textual description for the channel
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: Email address for sending messages to the channel
+        webUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: A hyperlink to the channel in Microsoft Teams
+        membershipType:
+          type: string
+          enum:
+            - standard
+            - private
+            - unknownFutureValue
+            - shared
+          description: The type of the channel
+        isArchived:
+          type: boolean
+          nullable: true
+          description: Indicates whether the channel is archived
+        isFavoriteByDefault:
+          type: boolean
+          nullable: true
+          description: Indicates whether the channel should be marked as favorite by default
+        tenantId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The ID of the Azure AD tenant
+        summary:
+          type: object
+          nullable: true
+          properties:
+            ownersCount:
+              type: integer
+            membersCount:
+              type: integer
+            guestsCount:
+              type: integer
+            hasMembersFromOtherTenants:
+              type: boolean
+        filesFolder:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            createdDateTime:
+              type: string
+              format: date-time
+            lastModifiedDateTime:
+              type: string
+              format: date-time
+            name:
+              type: string
+            webUrl:
+              type: string
+              format: uri
+            size:
+              type: integer
+              format: int64
+            parentReference:
+              type: object
+              properties:
+                driveId:
+                  type: string
+                driveType:
+                  type: string
+                id:
+                  type: string
+                path:
+                  type: string
+            fileSystemInfo:
+              type: object
+              properties:
+                createdDateTime:
+                  type: string
+                  format: date-time
+                lastModifiedDateTime:
+                  type: string
+                  format: date-time
+            folder:
+              type: object
+              properties:
+                childCount:
+                  type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            target:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  target:
+                    type: string
+            innererror:
+              type: object
+              properties:
+                code:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                request-id:
+                  type: string
+                client-request-id:
+                  type: string
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Chats
+    description: Operations related to chats
+  - name: Chat Members
+    description: Operations related to chat members
+  - name: Chat Messages
+    description: Operations related to chat messages
+  - name: Teams
+    description: Operations related to teams
+  - name: Team Members
+    description: Operations related to team members
+  - name: Channels
+    description: Operations related to channels
+  - name: Channel Members
+    description: Operations related to channel members
+  - name: Channel Messages
+    description: Operations related to channel messages
