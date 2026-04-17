@@ -45,15 +45,6 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
         return true;
       }
 
-      // Modules inherit public access from their parent app
-      if (app.type === 'module') {
-        const isInPublicApp = await this.appRepository.isModuleInPublicApp(app.id);
-        if (isInPublicApp) {
-          this.organizationRepository.touchLastAccessedAt(app.organizationId);
-          return true;
-        }
-      }
-
       // Throw a custom exception if the app is not public
       try {
         return await super.canActivate(context);
