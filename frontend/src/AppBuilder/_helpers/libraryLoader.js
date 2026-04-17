@@ -2,6 +2,7 @@ import toast from 'react-hot-toast';
 import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
+import { RESERVED_PARAMS } from './libraryConstants';
 
 /**
  * Executes UMD/IIFE source code and captures the exported module.
@@ -110,7 +111,11 @@ export async function executePreloadedJS(code, libraryRegistry = {}) {
     const result = await fn(...fnArgs);
 
     if (result && typeof result === 'object' && !Array.isArray(result)) {
-      return result;
+      const filtered = {};
+      for (const [key, val] of Object.entries(result)) {
+        if (!RESERVED_PARAMS.has(key)) filtered[key] = val;
+      }
+      return filtered;
     }
 
     return {};
