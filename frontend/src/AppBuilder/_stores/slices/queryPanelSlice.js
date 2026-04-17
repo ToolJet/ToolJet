@@ -748,6 +748,12 @@ export const createQueryPanelSlice = (set, get) => ({
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
+            const result = handleFailure({
+              status: 'failed',
+              message: errorMessage,
+              data: e?.data || {},
+              description: errorMessage,
+            });
             resolve({ status: 'failed', message: errorMessage });
           });
       });
