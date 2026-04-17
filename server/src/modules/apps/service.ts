@@ -553,7 +553,7 @@ export class AppsService implements IAppsService {
       }
 
       // Modules skip the git sync block above — apply version-status freeze separately
-      if (app.type === APP_TYPES.MODULE && editingVersion?.status !== 'DRAFT') {
+      if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {
         response['should_freeze_editor'] = true;
       }
       response['editorEnvironment'] = {

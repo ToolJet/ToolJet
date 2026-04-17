@@ -68,7 +68,8 @@ export const createAppVersionSlice = (set, get) => ({
       // Modules don't participate in git branching — freeze based on version status directly
       // (can't rely on isEditorFreezed which is shared state contaminated by parent app's git sync)
       const selectedVersion = get().selectedVersion;
-      return selectedVersion?.status !== 'DRAFT';
+      const status = selectedVersion?.status;
+      return !!status && status !== 'DRAFT';
     }
     const isEditorFreezed = get().isEditorFreezed;
     const result =
