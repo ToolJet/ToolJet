@@ -29,6 +29,7 @@ export const createInitSlice = (set, get) => ({
               columnProperties: [],
               transformations: [],
             },
+            isRefreshing: false,
             expandedRows: {},
             lastExpandedRowIndex: null,
           };
@@ -49,6 +50,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
+        state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
         state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
@@ -210,6 +212,17 @@ export const createInitSlice = (set, get) => ({
   getLoadingState: (id) => {
     return get().components[id] ? get().components[id].loadingState : false;
   },
+  getIsRefreshing: (id) => {
+    return get().components[id] ? !!get().components[id].isRefreshing : false;
+  },
+  setIsRefreshing: (id, value) =>
+    set(
+      (state) => {
+        if (state.components[id]) state.components[id].isRefreshing = !!value;
+      },
+      false,
+      { type: 'setIsRefreshing', payload: { id, value } }
+    ),
   getHeaderVisibility: (id) => {
     return get().components[id]
       ? get().components[id].properties.showFilterButton || get().components[id].properties.displaySearchBox
@@ -219,7 +232,9 @@ export const createInitSlice = (set, get) => ({
     return get().components[id]
       ? get().components[id].properties.enablePagination ||
           get().components[id].properties.showAddNewRowButton ||
-          get().components[id].properties.showDownloadButton
+          get().components[id].properties.showDownloadButton ||
+          get().components[id].properties.showRefreshButton ||
+          !get().components[id].properties.hideColumnSelectorButton
       : false;
   },
   getMaxRowHeightValue: (id) => {
