@@ -245,7 +245,7 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  protected async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
+  async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
     try {
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
