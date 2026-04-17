@@ -10,8 +10,8 @@ describe('OrganizationEnvRegistryService', () => {
   beforeEach(() => {
     service = new OrganizationEnvRegistryService(
       { encryptColumnValue: jest.fn(), decryptColumnValue: jest.fn() } as any,
-      { findOne: jest.fn() } as any,
-      { log: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() } as any,
+      { findOne: jest.fn() } as any
+      // { log: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() } as any,
     );
   });
 

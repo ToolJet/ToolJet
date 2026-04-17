@@ -7,13 +7,13 @@ import {
   createBuilder,
   createEndUser,
   findEntity,
-  updateEntity,
+  findEntities,
   saveEntity,
   createGroupPermission,
+  createUserGroupPermissions,
 } from 'test-helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupAdmin } from '@entities/group_admin.entity';
-import { OrganizationUser } from '@entities/organization_user.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 
 /**
@@ -112,15 +112,32 @@ describe('GroupAdminController', () => {
           workspace: admin.workspace,
         });
 
-        // The service checks OrganizationUser.role. Seed sets it to 'all_users'.
-        // We explicitly set it to 'end-user' to match USER_ROLE.END_USER.
-        await updateEntity(OrganizationUser, endUser.orgUser.id, { role: 'end-user' } as any);
-
+        // createEndUser puts the user in the 'end-user' default permission group.
+        // isAdminOrBuilder() checks for membership in 'admin'/'builder' default groups,
+        // so this user is rejected without any extra DB manipulation.
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
 
         const response = await assignAdminViaApi(admin.cookie, admin.workspace.id, group.id, endUser.user.id);
 
         expect(response.statusCode).toBe(400);
+      });
+
+      it('is idempotent — assigning the same user twice returns existing row (no duplicate)', async () => {
+        const admin = await createAdmin(nestApp, 'admin-idempotent@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-idempotent@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        const first = await assignAdminViaApi(admin.cookie, admin.workspace.id, group.id, builder.user.id);
+        expect(first.statusCode).toBe(201);
+
+        const second = await assignAdminViaApi(admin.cookie, admin.workspace.id, group.id, builder.user.id);
+        expect(second.statusCode).toBe(201);
+        expect(second.body.id).toBe(first.body.id);
+
+        const rows = await findEntities(GroupAdmin, { where: { userId: builder.user.id, groupId: group.id } });
+        expect(rows).toHaveLength(1);
       });
 
       it('returns 403 when a non-admin builder tries to assign a group admin', async () => {
@@ -315,6 +332,170 @@ describe('GroupAdminController', () => {
 
         const remaining = await findEntity(GroupAdmin, { id: groupAdminRow.id });
         expect(remaining).toBeNull();
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // GET /api/v2/group-permissions/:id/admins | List admins for group
+    // -------------------------------------------------------------------------
+
+    describe('GET /api/v2/group-permissions/:id/admins | List admins for group', () => {
+      it('workspace admin gets 200 and sees assigned group admins', async () => {
+        const admin = await createAdmin(nestApp, 'admin-listadmins@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-listadmins@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        const groupAdminRow = await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: group.id,
+          organizationId: admin.workspace.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', admin.cookie);
+
+        expect(response.statusCode).toBe(200);
+        const ids = response.body.map((r: any) => r.id);
+        expect(ids).toContain(groupAdminRow.id);
+      });
+
+      it('group-admin builder can list admins for their own group → 200', async () => {
+        const admin = await createAdmin(nestApp, 'admin-listadmins-builder@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-listadmins-builder@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        // Make builder a group admin
+        await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: group.id,
+          organizationId: admin.workspace.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', builder.cookie);
+
+        expect(response.statusCode).toBe(200);
+      });
+
+      it('plain builder (no group-admin assignment) gets 403', async () => {
+        const admin = await createAdmin(nestApp, 'admin-listadmins-403@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-listadmins-403@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', builder.cookie);
+
+        expect(response.statusCode).toBe(403);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // GET /api/v2/group-permissions/:id/admins/addable | Addable admins
+    // -------------------------------------------------------------------------
+
+    describe('GET /api/v2/group-permissions/:id/admins/addable | Addable admins', () => {
+      it('workspace admin gets 200 — builders and admins appear, end-users do not', async () => {
+        const admin = await createAdmin(nestApp, 'admin-addable@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-addable@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const endUser = await createEndUser(nestApp, 'enduser-addable@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins/addable`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', admin.cookie);
+
+        expect(response.statusCode).toBe(200);
+
+        const userIds: string[] = response.body.map((u: any) => u.id);
+        expect(userIds).toContain(builder.user.id);
+        expect(userIds).not.toContain(endUser.user.id);
+      });
+
+      it('end-user who is also in a custom group is still excluded from addable list', async () => {
+        // Regression: the old query joined group_users without restricting to
+        // the default group, so an end-user in any custom group appeared eligible.
+        const admin = await createAdmin(nestApp, 'admin-addable-regression@tooljet.io');
+        const endUser = await createEndUser(nestApp, 'enduser-customgroup@tooljet.io', {
+          workspace: admin.workspace,
+        });
+
+        // Put end-user in a custom group — should NOT make them eligible.
+        const customGroup = await createCustomGroup(admin.workspace.id, 'custom-group-1');
+        await createUserGroupPermissions(nestApp, endUser.user as any, [customGroup.name]);
+
+        const targetGroup = await createCustomGroup(admin.workspace.id, 'target-group');
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${targetGroup.id}/admins/addable`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', admin.cookie);
+
+        expect(response.statusCode).toBe(200);
+        const userIds: string[] = response.body.map((u: any) => u.id);
+        expect(userIds).not.toContain(endUser.user.id);
+      });
+
+      it('already-assigned group admin is excluded from addable list', async () => {
+        const admin = await createAdmin(nestApp, 'admin-addable-exclude@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-addable-exclude@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: group.id,
+          organizationId: admin.workspace.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins/addable`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', admin.cookie);
+
+        expect(response.statusCode).toBe(200);
+        const userIds: string[] = response.body.map((u: any) => u.id);
+        expect(userIds).not.toContain(builder.user.id);
+      });
+
+      it('group-admin builder cannot access addable admins → 403', async () => {
+        // GET_ADDABLE_ADMINS is explicitly withheld from group-admin builders in
+        // the ability factory (comment: "Builders NEVER get: GET_ADDABLE_ADMINS").
+        const admin = await createAdmin(nestApp, 'admin-addable-builder403@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-addable-builder403@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const group = await createCustomGroup(admin.workspace.id, 'avengers');
+
+        await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: group.id,
+          organizationId: admin.workspace.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/v2/group-permissions/${group.id}/admins/addable`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', builder.cookie);
+
+        expect(response.statusCode).toBe(403);
       });
     });
 

@@ -237,6 +237,7 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
 
   const defaultGroups = [
     { name: 'admin', isAdmin: true },
+    { name: 'builder', isAdmin: true },
     { name: 'end-user', isAdmin: false },
   ];
 
