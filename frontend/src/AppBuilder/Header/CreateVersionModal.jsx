@@ -30,6 +30,9 @@ const CreateVersionModal = ({
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const {
     changeEditorVersionAction,
@@ -43,6 +46,7 @@ const CreateVersionModal = ({
     environments,
     setIsEditorFreezed,
     appGit,
+    branchingEnabled,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -60,6 +64,7 @@ const CreateVersionModal = ({
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
       appGit: state.appGit,
+      branchingEnabled: state.branchingEnabled,
     }),
     shallow
   );
@@ -151,7 +156,7 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
-      if (isGitSyncEnabled && isBranchingEnabled) {
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
         if (!appGit?.git_app_name || !appGit?.id) {
           toast.error(
             "Empty apps can't be versioned. Build your app first and then save your work through version control."
@@ -210,7 +215,7 @@ const CreateVersionModal = ({
       //     });
       // }
 
-      if (isGitSyncEnabled && isBranchingEnabled) {
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
         gitSyncService
           .createGitTag(
             appId,
