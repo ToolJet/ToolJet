@@ -225,6 +225,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
+      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
       const results = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -232,14 +233,20 @@ export class VersionUtilService implements IVersionUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = :versionId", { versionId })
+        .andWhere(
+          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') = :versionId
+           OR EXISTS (
+             SELECT 1 FROM app_versions av
+             WHERE av.id::text = :versionId
+               AND (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.name
+           )`,
+          { versionId }
+        )
         .getRawMany();
 
       const appNames = results.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
-        throw new BadRequestException(
-          `Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`
-        );
+        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`);
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -250,12 +257,24 @@ export class VersionUtilService implements IVersionUtilService {
 
   async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
     try {
+      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
         .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin('app_versions', 'mod_ver',
-          "mod_ver.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )`
+        )
         .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
         .select('DISTINCT mod_app.name', 'moduleName')
         .addSelect('mod_ver.name', 'versionName')

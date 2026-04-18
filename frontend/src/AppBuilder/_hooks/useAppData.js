@@ -273,7 +273,7 @@ const useAppData = (
         // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
         appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else if (versionId) {
-        appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
@@ -400,6 +400,7 @@ const useAppData = (
             appBuilderMode: appData.app_builder_mode || 'visual',
             isReleasedApp: isReleasedApp,
             appType: appData.type,
+            currentVersionId: appData.editing_version?.id || appData.current_version_id,
           },
           moduleId
         );

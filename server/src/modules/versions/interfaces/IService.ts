@@ -31,6 +31,8 @@ export interface IVersionService {
 
   getVersion(app: App, user: User, mode?: string): Promise<any>;
 
+  getVersionByStableIds(coRelationId: string, versionName: string, user: User, mode?: string): Promise<any>;
+
   update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto): Promise<void>;
 
   updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto): Promise<void>;
