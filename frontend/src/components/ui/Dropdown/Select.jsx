@@ -37,10 +37,7 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
       onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      <div
-        className="tw-flex tw-items-center tw-gap-[6px]"
-        style={props.leadingIcon ? { width: 'calc(100% - 28px)' } : {}}
-      >
+      <div className="tw-flex tw-items-center tw-gap-[6px] tw-flex-1 tw-min-w-0">
         {props.leadingIcon && (
           <LeadingIcon
             icon={props.leadingIcon}
@@ -49,12 +46,7 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
             avatarFall={props.avatarFall}
           />
         )}
-        <div
-          className={`[&>span]:tw-text-left [&>span]:tw-line-clamp-1`}
-          style={{ wordWrap: 'break-word', width: props.leadingIcon ? 'calc(100% - 20px)' : '116px' }}
-        >
-          {children}
-        </div>
+        <div className="[&>span]:tw-text-left [&>span]:tw-line-clamp-1 tw-flex-1 tw-min-w-0">{children}</div>
       </div>
       <SelectPrimitive.Icon asChild>
         <DropdownArrowIcon open={open} disabled={props.disabled} isHovered={isHovered} />
