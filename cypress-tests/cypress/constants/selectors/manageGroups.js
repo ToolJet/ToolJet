@@ -158,6 +158,7 @@ export const groupsSelector = {
   environmentSelectionContainer: '[data-cy="environment-selection-container"]',
   environmentTagsContainer: '[data-cy="environment-tags"]',
   environmentTag: '.environment-tag',
+  appEnvironmentTag: '[data-cy="apps-granular-access"] .environment-tag',
   selectedEnvironments: '[data-cy="environment-selection-container"] .selected-value',
   envContainerArrowIcon: '[data-cy="environment-selection-container"] .css-1wy0on6',
   envOptionList: "div.select-option",
