@@ -38,9 +38,18 @@ export const TableContainer = ({
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
+  const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const actions = useTableStore((state) => state.getActions(id), shallow);
+
+  const effectiveRowsPerPage = useMemo(() => {
+    if (serverSidePagination) {
+      const parsed = Number(serverSideRowsPerPage);
+      return parsed > 0 ? parsed : rowsPerPage;
+    }
+    return rowsPerPage;
+  }, [serverSidePagination, serverSideRowsPerPage, rowsPerPage]);
 
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
@@ -97,7 +106,7 @@ export const TableContainer = ({
       serverSidePagination,
       serverSideSort,
       serverSideFilter,
-      rowsPerPage,
+      rowsPerPage: effectiveRowsPerPage,
       globalFilter,
       setGlobalFilter,
     });
