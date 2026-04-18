@@ -28,7 +28,8 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppVersionStatus } from '@entities/app_version.entity';
+import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -49,7 +50,6 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 import { DataQuery } from '@entities/data_query.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
@@ -582,14 +582,22 @@ export class AppsService implements IAppsService {
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
 
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+      // Modules are common across all branches — git sync freeze does not apply
+      if (app.type !== APP_TYPES.MODULE) {
+        let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+        // Branch-copy apps (platform git sync) don't have their own app_git_sync record
+        if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
+          appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+        }
+        if (appGit && !isDraft) {
+          // Only apply git-based freezing for non-draft versions
+          response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+        }
       }
-      if (appGit && !isDraft) {
-        // Only apply git-based freezing for non-draft versions
-        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+
+      // Modules skip the git sync block above — apply version-status freeze separately
+      if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {
+        response['should_freeze_editor'] = true;
       }
       response['editorEnvironment'] = {
         id: appVersionEnvironment.id,
@@ -631,6 +639,7 @@ export class AppsService implements IAppsService {
 
       // serialize
       return {
+        id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: versionToLoad?.dataQueries,
         definition: versionToLoad?.definition,
@@ -705,6 +714,7 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.RELEASE }),
         resourceData: {
           appSlug: app.slug,
           isPublic: app.isPublic,

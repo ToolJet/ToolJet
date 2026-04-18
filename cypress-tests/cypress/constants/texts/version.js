@@ -27,8 +27,8 @@ export const onlydeleteVersionText = {
     //   text
     // )}?`;
   },
-  deleteToastMessage: (version) => {
-    return `Cannot delete only version of app`;
+  deleteToastMessage: (version, type = 'app') => {
+    return `Cannot delete only version of ${type}`;
   },
 };
 
