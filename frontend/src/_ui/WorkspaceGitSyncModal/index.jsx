@@ -309,6 +309,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                 onChange={handleBranchChange}
                 width="100%"
                 theme={darkMode ? 'dark' : 'light'}
+                showItemOverflowTooltip
               />
             </div>
 
