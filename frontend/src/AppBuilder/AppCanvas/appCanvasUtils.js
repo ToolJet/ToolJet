@@ -65,7 +65,6 @@ export const addNewWidgetToTheEditor = (
   if (moduleInfo) {
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
     componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
-    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 

@@ -46,9 +46,23 @@ const ReleaseVersionButton = function DeployVersionButton() {
         setIsReleasing(false);
         setShowConfirmation(false);
       })
-      .catch((_error) => {
-        toast.error('Oops, something went wrong');
+      .catch((error) => {
+        const rawError = error?.error || error?.message;
+        const errorMessage = typeof rawError === 'object' ? rawError.error : rawError || 'Oops, something went wrong';
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Release Failed',
+          message: errorMessage,
+          description: errorDetails || errorMessage,
+          error: { message: errorMessage, description: errorDetails || errorMessage },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
         setIsReleasing(false);
+        setShowConfirmation(false);
       });
   };
 

@@ -519,7 +519,6 @@ export class AppImportExportService {
     const moduleResourceMappings = {
       moduleApps: {},
       moduleVersions: {},
-      moduleEnvironments: {},
     };
 
     const existingModules =
@@ -542,16 +541,35 @@ export class AppImportExportService {
           // Module exists - map old IDs to existing module's IDs
           moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
 
-          const latestVersion = existingModule.editingVersion?.id;
-          const defaultEnvironment = existingModule?.editingVersion?.currentEnvironmentId;
+          // Fetch existing module's versions to map by name
+          const existingVersions = await this.entityManager.find(AppVersion, {
+            where: { appId: existingModule.id },
+            order: { createdAt: 'DESC' },
+          });
 
-          if (latestVersion) {
-            moduleResourceMappings.moduleVersions[importedModule?.appV2?.editingVersion.id] = latestVersion;
+          // Map all exported module versions to existing versions by name match
+          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          for (const importedVersion of importedModuleVersions) {
+            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
+            if (matchingVersion) {
+              moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
+            }
           }
 
-          if (defaultEnvironment) {
-            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion.currentEnvironmentId] =
-              defaultEnvironment;
+          // Fallback: map any unmatched imported versions to the latest existing version
+          // so that ModuleViewer components don't retain stale UUIDs from the source workspace
+          if (existingVersions.length > 0) {
+            for (const importedVersion of importedModuleVersions) {
+              if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
+                moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
+              }
+            }
+          }
+
+          // Also map the editingVersion if not already mapped
+          const editingVersionId = importedModule?.appV2?.editingVersion?.id;
+          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+            moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
           // Module doesn't exist - need to import it
@@ -567,10 +585,11 @@ export class AppImportExportService {
           );
 
           moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
-          moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
-          moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
+
+          // Map ALL version IDs from the import, not just editingVersion
+          for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
+            moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
+          }
         }
       }
     }
@@ -1347,6 +1366,13 @@ export class AppImportExportService {
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
+    // Dedupe key for folder mappings across ALL version iterations.
+    // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
+    // across versions with a shared co_relation_id (gitId), so the mappings file-set
+    // can contain N mappings that all reference the same query child. Without dedupe
+    // we'd attempt N inserts per child and violate the unique constraint on the 2nd.
+    const insertedMappingChildKeys = new Set<string>();
+
     for (const importingAppVersion of importingAppVersions) {
       let isHomePage = false;
       let updateHomepageId = null;
@@ -1511,24 +1537,44 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      // Import query folders and their mappings for this app version
+      // Import query folders and their mappings for this app version.
+      // Dedupe by name because all versions of an app share the same co_relation_id
+      // (see versions/util.service.ts — versions inherit app.co_relation_id). On git
+      // export every folder's appVersionId is rewritten to that shared gitId, so the
+      // foldersForVersion filter matches one row per (version × folder name) combo.
+      // Collapsing by name yields exactly one folder per logical name on the active
+      // version. folderIdMapping still maps every source folder.id to the surviving
+      // local folder so cross-version mapping rows resolve correctly.
       const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
       const foldersForVersion = importingDataQueryFolders.filter((f) => f.appVersionId === importingAppVersion.id);
       const folderIdMapping: Record<string, string> = {};
+      const nameToSavedFolderId: Record<string, string> = {};
 
       for (const folder of foldersForVersion) {
-        const newFolder = manager.create(DataQueryFolder, {
-          name: folder.name,
-          appVersionId: newAppVersionId,
-        });
-        const savedFolder = await manager.save(DataQueryFolder, newFolder);
-        folderIdMapping[folder.id] = savedFolder.id;
+        let savedId = nameToSavedFolderId[folder.name];
+        if (!savedId) {
+          const newFolder = manager.create(DataQueryFolder, {
+            name: folder.name,
+            appVersionId: newAppVersionId,
+          });
+          const savedFolder = await manager.save(DataQueryFolder, newFolder);
+          savedId = savedFolder.id;
+          nameToSavedFolderId[folder.name] = savedId;
+        }
+        folderIdMapping[folder.id] = savedId;
       }
 
+      // Scope query-child mappings to queries belonging to THIS version only.
+      // `appResourceMappings.dataQueryMapping` accumulates across versions, so filtering
+      // by it would re-insert prior versions' mappings and violate the
+      // UQ_data_query_folder_mapping_child unique constraint on (child_id, child_type).
+      const queryIdsForVersion = new Set(importingDataQueriesForAppVersion.map((q: { id: string }) => q.id));
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
           (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY && appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.QUERY &&
+            queryIdsForVersion.has(m.childId) &&
+            appResourceMappings.dataQueryMapping[m.childId])
       );
 
       for (const mapping of mappingsForVersion) {
@@ -1538,6 +1584,15 @@ export class AppImportExportService {
             : appResourceMappings.dataQueryMapping[mapping.childId];
         const newParentId = mapping.parentId ? (folderIdMapping[mapping.parentId] ?? null) : null;
         if (!newChildId) continue;
+
+        // Skip if we've already inserted a mapping for this (child, type) pair during a
+        // previous version iteration. Required because the DB enforces UNIQUE(child, type)
+        // and queries share co_relation_id across versions, producing duplicate mapping rows
+        // in the git export that all resolve to the same local child id on import.
+        const childKey = `${newChildId}|${mapping.childType}`;
+        if (insertedMappingChildKeys.has(childKey)) continue;
+        insertedMappingChildKeys.add(childKey);
+
         const newMapping = manager.create(DataQueryFolderMapping, {
           parentId: newParentId,
           childId: newChildId,
@@ -1680,13 +1735,6 @@ export class AppImportExportService {
                 }
               }
 
-              // Replace module environment ID
-              if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-                const oldEnvironmentId = properties.moduleEnvironmentId.value;
-                if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-                  properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-                }
-              }
             }
             newComponent.properties = properties || {};
 
@@ -2645,7 +2693,7 @@ export class AppImportExportService {
         version.globalSettings = appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
-        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -3224,7 +3272,7 @@ export class AppImportExportService {
       const inputItems = moduleContainer.properties?.inputItems?.value || [];
 
       // Process each property in the ModuleViewer component
-      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'visibility'];
 
       for (const [propertyKey, propertyValue] of Object.entries(properties)) {
         // Skip excluded properties
@@ -3821,13 +3869,6 @@ function transformComponentData(
           }
         }
 
-        // Replace module environment ID
-        if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-          const oldEnvironmentId = properties.moduleEnvironmentId.value;
-          if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-            properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
-          }
-        }
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);
