@@ -13,4 +13,5 @@ export enum FEATURE_KEY {
   GET_CONVERSATION = 'getConversation',
   UPDATE_KEY = 'updateKey',
   GET_KEY_SETTINGS = 'getKeySettings',
+  AUTO_SORT_QUERIES = 'autoSortQueries',
 }
