@@ -21,10 +21,10 @@ module.exports = defineConfig({
 
     baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
     specPattern: [
-      // "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
+      "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
       // "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/**/*.cy.js",
       // "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
-      // "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
       // "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
       // "cypress/e2e/happyPath/platform/eeTestcases/settings/**/*.cy.js",
       // "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
