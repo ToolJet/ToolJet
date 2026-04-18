@@ -2,20 +2,25 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
+import { Separator } from '@/components/ui/Rocket/shadcn/separator';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
+
+import NewLayoutHeader from './NewLayoutHeader';
 
 function Header({
   featureAccess,
   enableCollapsibleSidebar = false,
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
+  showNewHeader = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
@@ -81,6 +86,18 @@ function Header({
     return parts.length === 1 || (parts.length >= 2 && ['data-sources'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+
+  const showBranchingBtns =
+    featureAccess?.gitSync &&
+    canAccessGitControls &&
+    isBranchStoreInitialized &&
+    pathname !== 'Workspace constants' &&
+    isGitSupportedPage;
+
+  if (showNewHeader) {
+    return <NewLayoutHeader featureAccess={featureAccess} showBranchingBtns={showBranchingBtns} />;
+  }
+
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -171,16 +188,19 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
-              {featureAccess?.gitSync &&
-                canAccessGitControls &&
-                isBranchStoreInitialized &&
-                pathname !== 'Workspace constants' &&
-                isGitSupportedPage && (
-                  <>
-                    <WorkspaceBranchDropdown />
-                    <WorkspaceGitCTA />
-                  </>
-                )}
+              {showBranchingBtns && (
+                <div className="tw-flex tw-items-center tw-gap-1">
+                  <WorkspaceBranchDropdown />
+
+                  <Separator
+                    orientation="vertical"
+                    className={cn('tw-bg-border-weak tw-h-4 tw-hidden has-[+*]:tw-block')}
+                  />
+
+                  <WorkspaceGitCTA />
+                </div>
+              )}
+
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}

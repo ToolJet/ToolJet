@@ -16,7 +16,7 @@ export const commonText = {
   loginErrorToast: "Invalid email or password",
   welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
-    "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+    "You don’t have any apps yet",
   changeIconOption: "Change Icon",
   addToFolderOption: "Add to folder",
   removeFromFolderOption: "Remove from folder",
@@ -33,7 +33,7 @@ export const commonText = {
     "The app will be removed from this folder, do you want to continue?",
   appRemovedFromFolderTaost: "Application removed from folder successfully!",
   modalYesButton: "Yes",
-  emptyFolderText: "This folder is empty",
+  emptyFolderText: "No apps found in this folder",
   allApplicationsLink: "All applications",
   deleteAppModalMessage: (appName) => {
     return `The app ${appName} and the associated data will be permanently deleted, do you want to continue?`;
@@ -49,9 +49,8 @@ export const commonText = {
   deleteFolderOption: "Delete folder",
   updateFolderTitle: "Edit folder",
   updateFolderButton: "Update folder",
-  folderDeleteModalMessage: (folderName) => {
-    `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;
-  },
+  folderDeleteModalMessage:
+    "Are you sure you want to delete the folder ? Apps within the folder will not be deleted.",
   closeButton: "modal close",
   cloneAppErrorToast: "You do not have create datasource permissions to perform this action",
   workEmailLabel: "Email",

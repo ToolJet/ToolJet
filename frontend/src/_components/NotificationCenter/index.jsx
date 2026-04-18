@@ -1,4 +1,5 @@
 import React from 'react';
+import { Bell } from 'lucide-react';
 import { commentNotificationsService } from '@/_services';
 import { Notification } from './Notification';
 import { toast } from 'react-hot-toast';
@@ -6,7 +7,6 @@ import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NotificationCenter = ({ darkMode }) => {
   const [loading, setLoading] = React.useState(false);
@@ -112,7 +112,8 @@ export const NotificationCenter = ({ darkMode }) => {
       <div>
         <ToolTip message="Comment notifications" placement="right">
           <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
-            <SolidIcon data-cy="notifications-icon" name="notification" fill="var(--slate8)" />
+            <Bell data-cy="notifications-icon" size={16} />
+
             {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
           </div>
         </ToolTip>

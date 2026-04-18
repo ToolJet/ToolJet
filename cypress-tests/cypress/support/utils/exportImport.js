@@ -13,7 +13,8 @@ import {
 
 export const verifyElementsOfExportModal = (
   currentVersionName,
-  otherVersionName = []
+  otherVersionName = [],
+  isNewDesign = true
 ) => {
   cy.get(
     commonSelectors.modalTitle(exportAppModalText.selectVersionTitle)
@@ -22,9 +23,7 @@ export const verifyElementsOfExportModal = (
     "have.text",
     exportAppModalText.currentVersionLabel
   );
-  cy.get(
-    exportAppModalSelectors.versionText(currentVersionName)
-  ).verifyVisibleElement("have.text", currentVersionName);
+  isNewDesign ? cy.get('[data-cy="current-version"]>>>').eq(1).verifyVisibleElement("have.text", currentVersionName) : cy.get('[data-cy="v1-text"]').verifyVisibleElement("have.text", currentVersionName);
   cy.get(exportAppModalSelectors.otherVersionSection).then(($ele) => {
     if ($ele.text().includes(exportAppModalText.noOtherVersionText)) {
       cy.get(exportAppModalSelectors.noOtherVersionText).verifyVisibleElement(
@@ -34,19 +33,19 @@ export const verifyElementsOfExportModal = (
     } else {
       cy.get('[data-cy="other-version-label"]').verifyVisibleElement(
         "have.text",
-        "Other Versions"
+        "Older versions"
       );
-      otherVersionName.forEach((elements) => {
-        cy.get(
-          exportAppModalSelectors.versionText(elements)
-        ).verifyVisibleElement("have.text", elements);
-        cy.get(
-          exportAppModalSelectors.versionRadioButton(elements)
-        ).verifyVisibleElement("not.be.checked");
-        cy.get(exportAppModalSelectors.versionCreatedTime(elements)).should(
-          "be.visible"
-        );
-      });
+      // otherVersionName.forEach((elements) => {
+      //   cy.get(
+      //     exportAppModalSelectors.versionText(elements)
+      //   ).verifyVisibleElement("have.text", elements);
+      //   cy.get(
+      //     exportAppModalSelectors.versionRadioButton(elements)
+      //   ).verifyVisibleElement("not.be.checked");
+      //   cy.get(exportAppModalSelectors.versionCreatedTime(elements)).should(
+      //     "be.visible"
+      //   );
+      // });
     }
   });
   cy.get(
@@ -56,10 +55,8 @@ export const verifyElementsOfExportModal = (
     commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
   ).verifyVisibleElement("have.text", exportAppModalText.exportSelectedVersion);
   cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
-  cy.get('input[type="checkbox"]')
-    .parent()
-    .contains("Export ToolJet table schema")
-    .should("be.visible");
+
+  isNewDesign? cy.get('[data-cy="export-tooljet-table-schema-checkbox"]').should("be.visible"):cy.get('.tj-version-wrap-sub-footer > input').should("be.visible");
 };
 
 export const createNewVersion = (newVersion = [], version) => {

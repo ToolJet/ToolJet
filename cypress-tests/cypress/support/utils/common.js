@@ -4,6 +4,7 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
@@ -55,8 +56,32 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   return moment(startDate).format(format);
 };
 
+
+// New design: folder dropdown-based utilities
+export const closeFolderDropdown = () => {
+  cy.get(commonSelectors.allApplicationsLink).then(($el) => {
+    if ($el.attr("data-state") === "open") {
+      cy.get("body").type("{esc}");
+      cy.get(commonSelectors.allApplicationsLink).should(
+        "have.attr",
+        "data-state",
+        "closed"
+      );
+    }
+  });
+};
+
+export const openFolderDropdown = () => {
+  closeFolderDropdown();
+  // Wait for any active toast overlay to clear (Sonner sets pointer-events:none on body)
+  cy.get("body").should("not.have.css", "pointer-events", "none");
+  cy.wait(1000);
+  cy.get(commonSelectors.allApplicationsLink, { timeout: 20000 }).click();
+};
+
 export const createFolder = (folderName) => {
   cy.intercept("POST", "/api/folders").as("folderCreated");
+  openFolderDropdown();
   cy.get(commonSelectors.createNewFolderButton).click();
   cy.clearAndType(commonSelectors.folderNameInput, folderName);
   cy.get(commonSelectors.buttonSelector(commonText.createFolderButton)).click();
@@ -67,10 +92,26 @@ export const createFolder = (folderName) => {
   );
 };
 
+export const selectFolderFromDropdown = (folderName) => {
+  openFolderDropdown();
+  cy.get(dashboardSelector.folderName(folderName)).click();
+};
+
+export const editFolder = (folderName, newName) => {
+  openFolderDropdown();
+  cy.get(dashboardSelector.folderName(folderName)).click();
+  openFolderDropdown();
+  cy.get('[data-cy="edit-folder-icon-button"]').click();
+  cy.clearAndType(commonSelectors.folderNameInput, newName);
+  cy.get('[data-cy="edit-folder-button"]').click();
+};
+
 export const deleteFolder = (folderName) => {
-  viewFolderCardOptions(folderName);
-  cy.get(commonSelectors.deleteFolderOption(folderName)).click();
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  openFolderDropdown();
+  cy.get(dashboardSelector.folderName(folderName)).click();
+  openFolderDropdown();
+  cy.get('[data-cy="delete-folder-icon-button"]').click();
+  cy.get('[data-cy="delete-folder-button"]').click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -101,18 +142,26 @@ export const navigateToAppEditor = (appName) => {
   }
 };
 
-export const viewAppCardOptions = (appName) => {
-  if (Cypress.env("environment") !== "Community") {
-    cy.waitForElement('[data-cy="ai-icon"]');
-  }
-  cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
-    cy.get('[data-cy="app-card-menu-icon"]')
-      .should("be.visible")
-      .should("not.be.disabled");
-    // .click({ timeout: 10000 });
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
-    cy.get('[data-cy="app-card-menu-icon"]').click();
+export const viewAppCardOptions = (appName, retries = 3) => {
+  cy.get(`[data-cy="${cyParamName(appName)}-card"]`, { timeout: 20000 })
+    .first()
+    .click({ force: true })
+    .realHover()
+    .find('[data-cy="app-card-menu-icon"]')
+    .click();
+
+  cy.wait(1000);
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="card-options"]').length === 0) {
+      if (retries > 0) {
+        cy.log(`card-options not found, retrying... (${retries} left)`);
+        viewAppCardOptions(appName, retries - 1);
+      } else {
+        throw new Error(
+          `card-options not visible for "${appName}" after all retries`
+        );
+      }
+    }
   });
 };
 

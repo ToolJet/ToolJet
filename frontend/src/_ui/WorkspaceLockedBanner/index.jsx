@@ -1,6 +1,8 @@
 import React from 'react';
+
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import LockedBranchBanner from '@/AppBuilder/Header/LockedBranchBanner';
+
+import LockedBranchBanner from './LockedBranchBanner';
 
 export function WorkspaceLockedBanner({ pageContext = '' }) {
   const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore((state) => ({

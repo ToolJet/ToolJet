@@ -197,7 +197,12 @@ export const verifyUserPrivileges = (
   userRole = "End-user",
   shouldHaveWorkspaceSettings
 ) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
+  if (expectedButtonState === "be.disabled") {
+    // New UI hides the create button for users without create permission
+    cy.get("[data-cy='create-an-app-button']").should("not.exist");
+  } else {
+    cy.get(commonSelectors.appCreateButton).should(expectedButtonState);
+  }
   cy.get(commonSelectors.settingsIcon).click();
   if (!shouldHaveWorkspaceSettings) {
     cy.get(commonSelectors.workspaceSettings).should("not.exist");

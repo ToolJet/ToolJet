@@ -17,26 +17,6 @@
     }
   }
 
-  .get-started-footer {
-    flex-shrink: 0;
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    border-top: 1px solid var(--border-weak);
-
-    .org-select-container {
-      border-top: none;
-      cursor: pointer;
-      padding: 0 8px;
-      border-right: 1px solid var(--border-weak);
-    }
-
-    .tj-org-select .react-select__control {
-      background-color: var(--page-weak) !important;
-    }
-  }
-
   .ai-builder-chat-container {
     position: relative;
     .ai-builder-footer {

@@ -153,7 +153,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     page: number,
     searchKey: string,
     type: APP_TYPES,
-    branchId?: string
+    branchId?: string,
+    pageSize?: number
   ): Promise<{
     viewableApps: AppBase[];
     totalCount: number;
@@ -204,8 +205,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder
-          .take(9)
-          .skip(9 * (page - 1))
+          .take(pageSize || 9)
+          .skip((pageSize || 9) * (page - 1))
           .orderBy('apps.createdAt', 'DESC')
           .getMany(),
         viewableAppsInFolder.getCount(),

@@ -252,3 +252,30 @@ export const deepCamelCase = (obj) => {
 export const isTruthyOrZero = (value) => {
   return !!value || value === 0;
 };
+
+export const appIconNameMappingForTablerIcons = {
+  apps: 'IconLayout2',
+  archive: 'IconInbox',
+  floppydisk: 'IconDeviceFloppy',
+  layers: 'IconLayersSubtract',
+  folderupload: 'IconFolderUp',
+  grid: 'IconLayoutGrid',
+  home: 'IconSmartHome',
+  sentfast: 'IconSend2',
+  server: 'IconServer',
+  globe: 'IconWorld',
+  share: 'IconShare',
+  shield: 'IconShieldLock',
+  sun: 'IconSunHigh',
+  table: 'IconTable',
+  menuhome: 'IconHome2',
+  draghandle: 'IconGripVertical',
+};
+
+export const defaultAppIconList = Object.values(appIconNameMappingForTablerIcons);
+
+export const appTypeToDisplayNameMapping = {
+  module: 'Module',
+  'front-end': 'App',
+  workflow: 'Workflow',
+};

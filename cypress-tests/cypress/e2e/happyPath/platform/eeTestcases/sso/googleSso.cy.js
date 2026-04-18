@@ -83,7 +83,7 @@ describe('Google SSO Tests', () => {
 
             cy.apiLoginByGoogle('');
 
-            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
+            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'Applications');
 
         });
     });
@@ -111,7 +111,7 @@ describe('Google SSO Tests', () => {
 
             cy.visit(WORKSPACE_URL);
             cy.apiLoginByGoogle();
-            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
+            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'Applications');
 
         });
     });
@@ -125,7 +125,7 @@ describe('Google SSO Tests', () => {
 
         cy.apiLoginByGoogle()
         cy.get(commonSelectors.acceptInviteButton).click()
-        cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
+        cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'Applications');
 
     });
 });

@@ -5,15 +5,15 @@ export const cyParamName = (paramName = "") => {
 export const workflowSelector = {
   deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
-  createWorkFlowsButton: '[data-cy="create-workflow"]',
-  workflowsCreateButton: "[data-cy='create-new-workflows-button']",
+  createWorkFlowsButton: '[data-cy="create-a-workflow-button"]',
+  workflowsCreateButton: "[data-cy='create-new-workflow-button']",
   workflowRunButton: '[data-cy="workflow-run-button"]',
   workflowLogs: '[data-cy="Logs"] .text span',
   startNode: '[data-cy="start-node"]',
   startNodeHandleRight: '[data-cy="start-node-handle-right"]',
   optionsColumn: '[data-cy="options-column"]',
   importWorkFlowsOption: '[data-cy="import-dropdown-menu"]',
-  importWorkFlowsLabel: '[data-cy="import-option-label"]',
+  importWorkFlowsLabel: '[data-cy="button-import-an-app"]',
   importWorkFlowsButton: '[data-cy="import-workflow"]',
   runjsInputField:
     '[data-cy="runjs-input-field"] .cm-content[contenteditable="true"]',

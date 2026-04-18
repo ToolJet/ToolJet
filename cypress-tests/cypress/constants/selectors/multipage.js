@@ -6,7 +6,7 @@ export const multipageSelector = {
   pagesPinIcon: '[title="Pin"]',
 
   homePageLabel: '[data-cy="pages-name-home"]',
-  homePageIcon: '[data-cy="home-page-icon"]',
+  homePageIcon: '[data-cy="icon-home"]',
   pageMenuIcon: '[data-cy="page-menu-option-icon"]',
   pageEventHandler: '[data-cy="header-page-handle"]',
   pageHandleText: '[data-cy="page-handle-text"]',

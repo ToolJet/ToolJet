@@ -119,8 +119,10 @@ describe("Basic Permissions", () => {
 
         cy.apiLogin(data.email, data.password);
         cy.visit(data.workspaceSlug);
-        cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
-            "have.lengthOf", 1).and("be.enabled");
+        cy.get(commonSelectors.appCard(data.appName))
+            .find('[data-cy="launch-button"]')
+            .should("have.lengthOf", 1)
+            .and("be.enabled");
 
 
         //verify clone access

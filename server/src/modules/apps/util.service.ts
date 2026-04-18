@@ -482,7 +482,8 @@ export class AppsUtilService implements IAppsUtilService {
     searchKey: string,
     type: string,
     isGetAll: boolean,
-    branchId?: string
+    branchId?: string,
+    pageSize?: number
   ): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
@@ -538,8 +539,8 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
+        .take(pageSize || 9)
+        .skip((pageSize || 9) * (page - 1))
         .getMany();
     });
   }

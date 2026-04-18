@@ -181,7 +181,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             <div>
               <div className="current-version " data-cy="current-version-section">
                 <span data-cy="current-version-label" className="current-version-label">
-                  Current Version
+                  Current version
                 </span>
                 <InputRadioField
                   versionId={currentVersion?.id}
@@ -233,7 +233,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               data-cy="export-all-button"
               onClick={() => exportApp(app, null, exportTjDb, allTables)}
             >
-              Export All
+              Export all
             </ButtonSolid>
             <ButtonSolid
               className={`import-export-footer-btns ${versionSelectLoading ? 'btn-loading' : ''}`}

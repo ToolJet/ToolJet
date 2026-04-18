@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import cx from 'classnames';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { cn } from '@/lib/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { Button } from '@/components/ui/Button/Button';
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { WorkspaceSwitchBranchModal } from './SwitchBranchModal';
 import { toast } from 'react-hot-toast';
@@ -526,20 +528,22 @@ export function WorkspaceBranchDropdown() {
   return (
     <>
       <div
-        className={`branch-dropdown-container ${showDropdown ? 'selected' : ''} ${darkMode ? 'dark-theme' : ''}`}
+        className={cn(`branch-dropdown-container !tw-mx-0`, {
+          'tw-bg-button-outline-pressed': showDropdown,
+          'dark-theme': darkMode,
+        })}
         ref={buttonRef}
         data-cy="workspace-branch-dropdown-container"
       >
-        <button
-          className="branch-dropdown-button"
-          onClick={() => setShowDropdown(!showDropdown)}
+        <Button
+          size="medium"
+          variant="ghost"
+          leadingIcon="gitbranch"
           data-cy="workspace-branch-dropdown-header"
+          onClick={() => setShowDropdown(!showDropdown)}
         >
-          <SolidIcon name="gitbranch" width="16" fill="var(--slate12)" />
-          <span className="branch-name" data-cy="workspace-current-branch-name">
-            {displayBranchName}
-          </span>
-        </button>
+          {displayBranchName}
+        </Button>
       </div>
 
       <Overlay

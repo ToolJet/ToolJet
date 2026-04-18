@@ -202,6 +202,7 @@ describe("Manage Groups", () => {
 
                 cy.intercept("GET", "/api/apps/*").as("getApp");
 
+                cy.get(dashboardSelector.importDropdownMenu).click();
                 cy.get(dashboardSelector.importAppButton).click();
                 cy.get(importSelectors.importOptionInput)
                     .eq(0)

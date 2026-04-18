@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { cn } from '@/lib/utils';
 import useRouter from '@/_hooks/use-router';
 import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
@@ -24,6 +26,9 @@ function Layout({
   enableCollapsibleSidebar = false,
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
+  classes = null,
+  showNewHeader = false,
+  shouldWrapContentBody = true,
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
   const logo = useWhiteLabellingStore((state) => state.whiteLabelLogo);
@@ -139,8 +144,8 @@ function Layout({
                   ''
                 ) : logo ? (
                   <img
-                    width="26px"
-                    height="26px"
+                    width="18px"
+                    height="18px"
                     src={logo}
                     onError={(e) => {
                       e.currentTarget.onerror = null; // prevent infinite loop
@@ -167,15 +172,18 @@ function Layout({
           </div>
         </aside>
       </div>
-      <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
+
+      <div className={cn('col tw-pl-12 tw-pr-0', classes?.contentContainer)}>
         <Header
           featureAccess={featureAccess}
           enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
           toggleCollapsibleSidebar={toggleCollapsibleSidebar}
           licenseStatus={licenseStatus}
+          showNewHeader={showNewHeader}
         />
-        <div style={{ paddingTop: 48 }}>{children}</div>
+
+        {shouldWrapContentBody ? <div className={cn('tw-pt-12', classes?.contentBody)}>{children}</div> : children}
       </div>
 
       <UnsavedChangesDialog />

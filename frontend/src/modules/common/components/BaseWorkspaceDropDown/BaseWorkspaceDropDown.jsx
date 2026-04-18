@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { authenticationService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { decodeEntities } from '@/_helpers/utils';
-import { CreateOrganization } from '@/modules/common/components/OrganizationManager';
 import WorkspaceActions from '@/modules/dashboard/components/WorkspaceActions';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
-function BaseWorkspaceDropDown({ ...props }) {
+function BaseWorkspaceDropDown({ handleAddWorkspace, ...props }) {
   const workspacesLimit = props.workspacesLimit;
-  const [showCreateOrg, setShowCreateOrg] = useState(false);
   const { super_admin } = authenticationService.currentSessionValue;
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const Menu = (menuProps) => {
@@ -50,20 +48,14 @@ function BaseWorkspaceDropDown({ ...props }) {
       </div>
     </ToolTip>
   );
-  const handleAddWorkspace = () => {
-    if (workspacesLimit != null && !workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100) return;
-    setShowCreateOrg(true);
-  };
 
   return (
     <>
-      <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}
         width={'262px'}
         hasSearch={false}
         components={{ Menu, SingleValue }}
-        setShowCreateOrg={setShowCreateOrg}
         workspacesLimit={workspacesLimit}
         styles={{ border: 0, cursor: 'pointer' }}
         {...props}

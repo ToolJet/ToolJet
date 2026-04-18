@@ -6,16 +6,17 @@ import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirec
 import { ToolTip } from '@/_components';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 import { shallow } from 'zustand/shallow';
-import { EditOrganization } from '@/modules/common/components/OrganizationManager';
+import { CreateOrganization, EditOrganization } from '@/modules/common/components/OrganizationManager';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { WorkspaceDropDown } from '@/modules/dashboard/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import WorkspaceSelector from '@/_ui/Header/WorkspaceSelector';
 
 /* TODO: 
   each workspace related component has organizations list component which can be moved to a single wrapper. 
   otherwise this component will intiate everytime we switch between pages
 */
-const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, ...props }) => {
+const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, variant = 'legacy', ...props }) => {
   const { current_organization_id, admin, super_admin } = authenticationService.currentSessionValue;
   const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
     (state) => ({
@@ -28,6 +29,10 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
   const edition = fetchEdition();
   const showLicenseInfoToolTip = edition === 'cloud' && super_admin === false;
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const [showCreateOrg, setShowCreateOrg] = useState(false);
+  const [showEditOrg, setShowEditOrg] = useState(false);
+
   useEffect(() => {
     fetchOrganizations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,6 +69,15 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     newTabRef.current = false;
   };
 
+  const handleAddWorkspace = () => {
+    if (workspacesLimit != null && !workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100) return;
+    setShowCreateOrg(true);
+  };
+
+  const handleEditWorkspace = () => {
+    setShowEditOrg(true);
+  };
+
   const options = organizationList
     .map((org) => ({
       value: org.id,
@@ -96,11 +110,7 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
           </ToolTip>
           {org.id === current_organization_id && admin ? (
             <ToolTip message="Edit" placement="top">
-              <div
-                className="current-org-indicator"
-                data-cy="current-org-indicator"
-                onClick={() => setShowEditOrg(true)}
-              >
+              <div className="current-org-indicator" data-cy="current-org-indicator" onClick={handleEditWorkspace}>
                 <SolidIcon name="editable" fill="#3E63DD" data-cy="edit-rectangle-icon" width="16" />
               </div>
             </ToolTip>
@@ -125,24 +135,46 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     }))
     .sort((a, b) => (a.value === current_organization_id ? -1 : b.value === current_organization_id ? 1 : 0));
 
-  const [showEditOrg, setShowEditOrg] = useState(false);
   const currentValue = organizationList.find((option) => option?.id === current_organization_id);
 
   return (
-    <div className="org-select-container">
-      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} />
-      <WorkspaceDropDown
-        {...(workspacesLimit != null ? { workspacesLimit } : null)}
-        isLoading={isGettingOrganizations}
-        options={options}
-        value={current_organization_id}
-        onChange={handleOnChange}
-        className={`tj-org-select  ${darkMode && 'dark-theme'}`}
-        darkMode={darkMode}
-        {...props}
+    <>
+      {variant === 'new' && (
+        <WorkspaceSelector
+          workspaceList={organizationList ?? []}
+          onSwitchWorkspace={switchOrganization}
+          onCreateNewWorkspace={handleAddWorkspace}
+          onEditWorkspace={handleEditWorkspace}
+          workspacesLimit={workspacesLimit}
+        />
+      )}
+
+      {variant === 'legacy' && (
+        <div className="org-select-container">
+          {/* FOR CE : workspace limit will always be passed as null : we are making api call only for ee and cloud */}
+          <WorkspaceDropDown
+            {...(workspacesLimit != null ? { workspacesLimit } : null)}
+            isLoading={isGettingOrganizations}
+            options={options}
+            value={current_organization_id}
+            onChange={handleOnChange}
+            className={`tj-org-select  ${darkMode && 'dark-theme'}`}
+            darkMode={darkMode}
+            handleAddWorkspace={handleAddWorkspace}
+            {...props}
+          />
+        </div>
+      )}
+
+      <EditOrganization
+        variant={variant}
+        showEditOrg={showEditOrg}
+        setShowEditOrg={setShowEditOrg}
+        currentValue={currentValue}
       />
-      {/* FOR CE : workspace limit will always be passed as null : we are making api call only for ee and cloud */}
-    </div>
+
+      <CreateOrganization variant={variant} showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
+    </>
   );
 };
 export default BaseOrganizationList;

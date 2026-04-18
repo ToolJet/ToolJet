@@ -267,14 +267,6 @@
   }
 }
 
-.tj-leftsidebar-icon-wrap {
-  display: flex;
-  width: 44px;
-  max-height: 236px;
-  flex-direction: column;
-  align-items: center;
-}
-
 .tj-leftsidebar-icon-items-bottom {
   display: flex;
   justify-content: center;
@@ -287,31 +279,6 @@
   max-height: 230px;
   margin-bottom: var(--dynamic-margin-2,
       0px); //please Remove after Basicplan banner is removed..
-}
-
-.tj-leftsidebar-icon-items {
-  margin-bottom: 16px;
-  height: 32px;
-  width: 32px;
-  border-radius: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  &:hover {
-    background: var(--slate4);
-  }
-
-  &:focus-visible {
-    box-shadow: 0px 0px 0px 4px #dfe3e6;
-    background: var(--slate4);
-    outline: none;
-  }
-
-  &:active {
-    background: var(--indigo4);
-    box-shadow: none;
-  }
 }
 
 .left-sidebar-scrollbar {
@@ -480,10 +447,6 @@
       margin-right: 1px;
     }
   }
-}
-
-.application-brand {
-  margin-bottom: 24px !important;
 }
 
 .viewer-page-handler {
@@ -1069,7 +1032,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 8px;
+  padding-top: 0.675rem;
   width: 48px;
   border-right: 1px solid var(--border-weak);
 }
@@ -1077,7 +1040,6 @@
 .tj-leftsidebar-icon-wrap {
   display: flex;
   width: 44px;
-  max-height: 236px;
   flex-direction: column;
   align-items: center;
 }
@@ -1097,17 +1059,19 @@
 }
 
 .tj-leftsidebar-icon-items {
-  margin-bottom: 16px;
+  margin-bottom: 0.375rem;
   height: 32px;
   width: 32px;
-  border-radius: 4px;
+  border-radius: 0.375rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: var(--icon-strong);
 
-
-  &:hover {
-    background: var(--slate4);
+  &:hover,
+  &.active {
+    background-color: var(--background-accent-weak);
+    color: var(--icon-accent);
   }
 
   &:focus-visible {
@@ -1124,7 +1088,17 @@
 }
 
 .application-brand {
-  margin-bottom: 24px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2rem;
+  width: 2rem;
+  margin-bottom: 0.375rem;
+
+  a {
+    height: 1.125rem;
+    width: 1.125rem;
+  }
 }
 
 .current-seleted-route {

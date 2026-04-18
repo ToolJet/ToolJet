@@ -36,7 +36,7 @@ describe("Redirection error pages", () => {
             "Back to home page"
         );
         cy.get(commonSelectors.backToHomeButton).click();
-        cy.get(commonSelectors.pageSectionHeader).should("be.visible");
+        cy.get(commonSelectors.breadcrumbPageTitle).should("be.visible");
         cy.apiLogout();
         cy.wait(3000);
 
@@ -74,7 +74,7 @@ describe("Redirection error pages", () => {
         cy.url().should("eq", `${host}/error/invalid-link`);
 
         cy.get(commonSelectors.backToHomeButton).click();
-        cy.get(commonSelectors.pageSectionHeader).should("be.visible");
+        cy.get(commonSelectors.breadcrumbPageTitle).should("be.visible");
     });
 
     it("Verify error modal for app url of unreleased apps", () => {
@@ -109,7 +109,7 @@ describe("Redirection error pages", () => {
 
         cy.url().should("contain", "/error/");
         cy.get(commonSelectors.backToHomeButton).click();
-        cy.get(commonSelectors.pageSectionHeader).should("be.visible");
+        cy.get(commonSelectors.breadcrumbPageTitle).should("be.visible");
 
         cy.apiLogout();
         cy.apiLogin("dev@tooljet.io", "password");
@@ -131,7 +131,7 @@ describe("Redirection error pages", () => {
         );
         cy.url().should("contain", "/error/");
         cy.get(commonSelectors.backToHomeButton).click();
-        cy.get(commonSelectors.pageSectionHeader).should("be.visible");
+        cy.get(commonSelectors.breadcrumbPageTitle).should("be.visible");
         logout();
         cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);

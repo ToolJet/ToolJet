@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Separator } from '@/components/ui/Rocket/shadcn/separator';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceGitSyncModal } from '@/_ui/WorkspaceGitSyncModal';
@@ -27,26 +27,26 @@ export function WorkspaceGitCTA() {
 
   return (
     <>
-      <div className="lifecycle-cta-button">
-        {/* <Button variant="secondary" onClick={() => setShowModal(true)}>
-          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
-          <span>{isOnDefaultBranch ? 'Pull commit ' : 'Commit'}</span>
-        </Button> */}
-        <Button variant="secondary" onClick={() => openModal('pull')}>
-          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
-          <span>Pull</span>
-        </Button>
-      </div>
+      <Button isLucid size="medium" variant="ghost" leadingIcon="arrow-down-to-line" onClick={() => openModal('pull')}>
+        Pull
+      </Button>
 
-      {/* {showModal && <WorkspaceGitSyncModal isOnDefaultBranch={isOnDefaultBranch} onClose={() => setShowModal(false)} />} */}
       {!isOnDefaultBranch && (
-        <div className="lifecycle-cta-button">
-          <Button variant="secondary" onClick={() => openModal('push')}>
-            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
-            <span>Commit</span>
+        <>
+          <Separator orientation="vertical" className="tw-bg-border-weak tw-h-4" />
+
+          <Button
+            isLucid
+            size="medium"
+            variant="ghost"
+            leadingIcon="git-commit-horizontal"
+            onClick={() => openModal('push')}
+          >
+            Commit
           </Button>
-        </div>
+        </>
       )}
+
       {showModal && (
         <WorkspaceGitSyncModal
           isOnDefaultBranch={isOnDefaultBranch}

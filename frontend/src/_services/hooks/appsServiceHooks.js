@@ -1,0 +1,297 @@
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line import/no-unresolved
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { getWorkspaceId } from '@/_helpers/utils';
+import { useAppsStore } from '@/_stores/appsStore';
+import { useSearchStore } from '@/_stores/searchStore';
+import { appsService } from '@/_services/apps.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { appTypeToDisplayNameMapping } from '@/_helpers/appUtils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+
+export const handleError = (error) => {
+  if ([409, 451].includes(error.statusCode)) return;
+
+  const errorMessage = error?.error || error?.message || 'Some Error Occured';
+  toast.error(errorMessage, { position: 'top-center', style: { fontSize: '12px' } });
+};
+
+const selectApps = (raw) => ({
+  apps: raw?.apps ?? [],
+  meta: raw?.meta ?? {},
+});
+
+export function useFetchApps(queryParams, options) {
+  const { pageNo = 1, folderId = '', appSearchQuery = '', appType = 'front-end', pageSize } = queryParams;
+  const { enabled = true } = options;
+
+  return useQuery({
+    queryKey: ['apps', { pageNo, folderId, appSearchQuery, appType, pageSize }],
+    queryFn: () => appsService.getAll(pageNo, folderId, appSearchQuery, appType, pageSize),
+    select: selectApps,
+    enabled,
+  });
+}
+
+export function useFetchAppsLimit() {
+  return useQuery({
+    queryKey: ['appsLimit'],
+    queryFn: appsService.getAppsLimit,
+  });
+}
+
+const workflowLimitSelect = (raw) => raw?.appsCount;
+
+export function useFetchWorkflowLimit(type) {
+  return useQuery({
+    queryKey: ['workflowLimit', type],
+    queryFn: () => appsService.getWorkflowLimit(type),
+    select: workflowLimitSelect,
+  });
+}
+
+export function useCloneApp() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
+
+  return useMutation({
+    mutationFn: ({ body, appType }) => appsService.cloneResource(body, appType),
+    onError: (error) => {
+      handleError(error);
+    },
+    onSuccess: (response, variables) => {
+      toast.success(`${appTypeToDisplayNameMapping[variables.appType]} cloned successfully!`);
+
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, appType: variables.appType, pageSize }],
+      });
+
+      navigate(`/${getWorkspaceId()}/apps/${response?.imports?.app[0]?.id}`, {
+        state: { commitEnabled: variables?.isCommitEnabled ?? false },
+      });
+    },
+  });
+}
+
+export function useRenameApp() {
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
+
+  return useMutation({
+    mutationFn: ({ appId, name, appType }) => appsService.saveApp(appId, { name }, appType),
+    onError: (error) => {
+      handleError(error);
+    },
+    onSuccess: (response, variables) => {
+      toast.success(`${appTypeToDisplayNameMapping[variables.appType]} name has been updated!`);
+
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType, pageSize }],
+      });
+    },
+  });
+}
+
+export function useCreateApp() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
+
+  return useMutation({
+    mutationFn: ({ body }) => appsService.createApp(body),
+    onError: (error) => {
+      handleError(error);
+    },
+    onSuccess: (response, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, appType: variables?.body?.type, pageSize }],
+      });
+
+      posthogHelper.captureEvent('click_new_app', {
+        workspace_id:
+          authenticationService?.currentUserValue?.organization_id ||
+          authenticationService?.currentSessionValue?.current_organization_id,
+        app_id: response?.id,
+        button_name: 'click_new_app_button',
+      });
+
+      variables?.body?.type === 'front-end' &&
+        posthogHelper.captureEvent('app_created', {
+          entry_source: variables.body.prompt ? 'prompt' : 'create_button',
+          prompt: variables.body.prompt,
+        });
+
+      navigate(`/${getWorkspaceId()}/apps/${response.id}`, {
+        state: { commitEnabled: variables?.isCommitEnabled ?? false, prompt: variables?.body?.prompt },
+      });
+
+      variables?.body?.type !== 'front-end' &&
+        toast.success(`${appTypeToDisplayNameMapping[variables.body.type]} created successfully!`);
+    },
+  });
+}
+
+export function useDeleteApp() {
+  const queryClient = useQueryClient();
+
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
+
+  return useMutation({
+    mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
+    onError: () => {
+      toast.error('Could not delete the app.');
+    },
+    onSuccess: (response, variables) => {
+      toast.success(`${appTypeToDisplayNameMapping[variables.appType]} deleted successfully.`);
+
+      const currentAppsQueryData = queryClient.getQueryData([
+        'apps',
+        {
+          pageNo: currentPage,
+          folderId: currentFolderId,
+          appSearchQuery: searchQuery,
+          appType: variables.appType,
+          pageSize,
+        },
+      ]);
+
+      const numberOfAppsOnCurrentPageBeforeDeletion = currentAppsQueryData?.apps?.length ?? 0;
+
+      // If there are no apps left on the current page after deletion, move back to the previous page (if not on the first page)
+      setCurrentPage(
+        numberOfAppsOnCurrentPageBeforeDeletion
+          ? numberOfAppsOnCurrentPageBeforeDeletion === 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage
+          : 1
+      );
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { appType: variables.appType, pageSize }],
+      });
+
+      if (variables.appType === 'workflow') {
+        queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'instance'] });
+        queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'workspace'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['appsLimit'] });
+      }
+    },
+  });
+}
+
+export function useChangeAppIcon() {
+  const queryClient = useQueryClient();
+
+  const pageSize = useAppsStore((state) => state.pageSize);
+  const currentPage = useAppsStore((state) => state.currentPage);
+  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
+
+  return useMutation({
+    mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
+    onError: (error) => {
+      toast.error(error?.error ?? '');
+    },
+    onSuccess: (response, variables) => {
+      toast.success('Icon updated.');
+
+      queryClient.invalidateQueries({
+        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType, pageSize }],
+      });
+    },
+  });
+}
+
+export function useImportResource() {
+  return useMutation({
+    mutationFn: ({ body, appType }) => appsService.importResource(body, appType),
+  });
+}
+
+export function useFetchAppVersions(appId) {
+  return useQuery({
+    queryKey: ['appVersions', appId],
+    queryFn: () => appsService.getVersions(appId),
+    enabled: !!appId,
+  });
+}
+
+const selectAppTables = (raw) => raw?.tables;
+
+export function useFetchAppTables(appId) {
+  return useQuery({
+    queryKey: ['appTables', appId],
+    queryFn: () => appsService.getTables(appId),
+    enabled: !!appId,
+    select: selectAppTables,
+  });
+}
+
+const selectTablesFromVersion = (raw) => {
+  const { dataQueries = [] } = raw?.editing_version || {};
+  const extractedIdData = [];
+
+  dataQueries.forEach((item) => {
+    if (item.kind === 'tooljetdb' && item.options?.operation === 'join_tables') {
+      const joinOptions = item.options?.join_table?.joins ?? [];
+
+      joinOptions.forEach((join) => {
+        const { table, conditions } = join;
+
+        if (table) extractedIdData.push(table);
+
+        conditions?.conditionsList?.forEach((condition) => {
+          const { leftField, rightField } = condition;
+
+          if (leftField?.table) extractedIdData.push(leftField.table);
+          if (rightField?.table) extractedIdData.push(rightField.table);
+        });
+      });
+    }
+
+    if (item.kind === 'tooljetdb' && item.options?.tableId) extractedIdData.push(item.options.tableId);
+  });
+
+  return Array.from(new Set(extractedIdData)).map((id) => ({ table_id: id }));
+};
+
+export function useFetchAppByVersion(appId, versionId) {
+  return useQuery({
+    queryKey: ['appByVersion', appId, versionId],
+    queryFn: () => appsService.getAppByVersion(appId, versionId),
+    select: selectTablesFromVersion,
+    enabled: !!appId && !!versionId,
+  });
+}
+
+export const downloadExportedData = (data, fileName) => {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = fileName + '.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+export function useExportApp() {
+  return useMutation({
+    mutationFn: ({ requestBody, appType }) => appsService.exportResource(requestBody, appType),
+  });
+}

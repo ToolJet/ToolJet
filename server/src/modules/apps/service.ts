@@ -381,7 +381,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, pageSize } = appListDto;
     // When no branchId is provided (e.g. end users), fall back to the default branch
     // so that only default-branch apps are shown instead of all apps across all branches.
     let branchId = appListDto.branchId;
@@ -405,12 +405,21 @@ export class AppsService implements IAppsService {
           parseInt(page || '1'),
           searchKey,
           type as APP_TYPES,
-          branchId
+          branchId,
+          pageSize
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
+        apps = await this.appsUtilService.all(
+          user,
+          parseInt(page || '1'),
+          searchKey,
+          type,
+          isGetAll,
+          branchId,
+          pageSize
+        );
       }
 
       if (isGetAll) {
@@ -456,7 +465,7 @@ export class AppsService implements IAppsService {
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
       const meta = {
-        total_pages: Math.ceil(totalPageCount / 9),
+        total_pages: Math.ceil(totalPageCount / (pageSize || 9)),
         total_count: totalCount,
         folder_count: totalFolderCount,
         current_page: parseInt(page || '1'),

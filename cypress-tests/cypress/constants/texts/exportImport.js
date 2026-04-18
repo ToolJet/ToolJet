@@ -10,9 +10,10 @@ export const appVersionText = {
 
 export const exportAppModalText = {
   selectVersionTitle: "Select a version to export",
-  currentVersionLabel: "Current Version",
+  currentVersionLabel: "Current version",
+  olderVersionsLabel: "Older versions",
   noOtherVersionText: "No other versions found",
-  exportAll: "Export All",
+  exportAll: "Export all",
   exportSelectedVersion: "Export selected version",
   modalCloseButton: "modal-close",
 };

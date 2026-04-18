@@ -206,7 +206,7 @@ describe("Custom Group Permissions", () => {
 
     cy.ifEnv("Enterprise", () => {
       cy.get(commonSelectors.globalWorkFlowsIcon).click();
-      cy.get('[data-cy="create-new-workflows-button"]').should("exist");
+      cy.get('[data-cy="create-new-workflow-button"]').should("exist");
       cy.get(commonSelectors.appCard(workflowName1)).should("not.exist");
 
       cy.get(commonSelectors.globalDataSourceIcon).click();

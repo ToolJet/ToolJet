@@ -16,7 +16,7 @@ const inputVariants = cva(
     // Hover
     'hover:tw-border-border-strong',
     // Error (via aria-invalid)
-    'aria-[invalid=true]:tw-border-border-danger-strong aria-[invalid=true]:tw-bg-background-error-weak',
+    '[&:not(:focus-visible)[aria-invalid=true]]:tw-border-border-danger-strong',
     // Disabled
     'disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled disabled:tw-border-border-disabled',
   ],

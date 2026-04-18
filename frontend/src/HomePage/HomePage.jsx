@@ -2119,25 +2119,19 @@ class HomePageComponent extends React.Component {
                   </LicenseTooltip>
                 )}
               </div>
-              {this.props.appType === 'module' ? (
-                <div>
-                  <p></p>
-                </div>
-              ) : (
-                <Folders
-                  foldersLoading={this.state.foldersLoading}
-                  folders={this.state.folders}
-                  currentFolder={currentFolder}
-                  folderChanged={this.folderChanged}
-                  foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
-                  canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
-                  canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
-                  darkMode={this.props.darkMode}
-                  canCreateApp={this.canCreateApp()}
-                  appType={this.props.appType}
-                />
-              )}
+              <Folders
+                foldersLoading={this.state.foldersLoading}
+                folders={this.state.folders}
+                currentFolder={currentFolder}
+                folderChanged={this.folderChanged}
+                foldersChanged={this.foldersChanged}
+                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
+                canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
+                darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
+                appType={this.props.appType}
+              />
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}

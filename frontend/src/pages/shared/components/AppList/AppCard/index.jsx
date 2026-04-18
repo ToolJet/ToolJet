@@ -1,0 +1,303 @@
+import React, { useMemo } from 'react';
+import moment from 'moment';
+import urlJoin from 'url-join';
+import queryString from 'query-string';
+import * as TablerIcons from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button/Button';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { appIconNameMappingForTablerIcons } from '@/_helpers/appUtils';
+import { authenticationService } from '@/_services/authentication.service';
+import { decodeEntities, hasBuilderRole } from '@/_helpers/utils';
+import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
+import TooltipComp from '@/components/ui/Rocket/Tooltip';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+
+import AppMenu from './AppMenu';
+import TruncatedText from '../../TruncatedText';
+import ShimmerEffectSkeleton from '../../ShimmerEffectSkeleton';
+
+import { isValidSlug } from './helper';
+
+export default function AppCard({
+  appDetails,
+  appType,
+  basicPlan,
+  moduleEnabled,
+  currentSelectedFolder,
+  onMenuItemClick,
+  checkUserPermissions,
+  ownedFolders,
+}) {
+  const { t } = useTranslation();
+  const { id, name, icon, editing_version, created_at, updated_at, slug, home_page_handle, app_versions } = appDetails;
+
+  const { hasCreatePermission, hasUpdatePermission, hasDeletePermission, hasViewPermission } = useMemo(
+    () => checkUserPermissions(appDetails),
+    [appDetails]
+  );
+
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, id);
+
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
+
+  const hasNonReleasedPreviewAccess =
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
+
+  const updatedAt = editing_version?.updated_at || updated_at;
+  const formatedUpdatedAt = moment(updatedAt).fromNow(true);
+
+  const isAppTypeModuleAndModuleNotEnabled = appType === 'module' && !moduleEnabled;
+
+  const isStub = app_versions?.[0]?.is_stub;
+
+  const handleEditClick = () => {
+    posthogHelper.captureEvent('click_edit_button_on_card', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      app_id: id,
+      folder_id: currentSelectedFolder?.value,
+    });
+  };
+
+  const textBlock = (
+    <div className="tw-grid tw-gap-0.5 tw-overflow-hidden tw-w-full">
+      <TruncatedText
+        content={name}
+        data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-title`}
+        className="tw-w-full tw-min-w-0 tw-text-text-default tw-font-title-large tw-m-0"
+      >
+        {decodeEntities(name)}
+      </TruncatedText>
+
+      {hasUpdatePermission && (
+        <TooltipComp content={created_at ? moment(created_at).format('dddd, MMMM Do YYYY, h:mm:ss a') : ''}>
+          <p
+            data-cy="app-creation-details"
+            className="tw-m-0 tw-text-text-placeholder tw-font-body-default tw-truncate"
+          >
+            {`Edited ${formatedUpdatedAt} ${formatedUpdatedAt !== 'just now' ? 'ago' : ''}`}
+          </p>
+        </TooltipComp>
+      )}
+    </div>
+  );
+
+  const showLaunchButton = !isStub && appType !== 'module';
+  const showEditButton = hasUpdatePermission || appType === 'module';
+  const showAppMenu = hasDeletePermission || hasUpdatePermission || appType === 'module';
+  const showPreviewButton =
+    !hasUpdatePermission && hasViewPermission && appType !== 'module' && hasNonReleasedPreviewAccess;
+
+  const oldCustomIconNameMappingToTablerIconName =
+    appIconNameMappingForTablerIcons[icon] ?? appIconNameMappingForTablerIcons.apps;
+
+  // eslint-disable-next-line import/namespace
+  const IconComponent = TablerIcons[icon] ?? TablerIcons[oldCustomIconNameMappingToTablerIconName];
+
+  return (
+    <TooltipComp content={isAppTypeModuleAndModuleNotEnabled ? 'Modules are not available on your current plan.' : ''}>
+      <AppCardContainer
+        data-cy={`${name?.toLowerCase().replace(/\s+/g, '-')}-card`}
+        className={cn(
+          { 'tw-opacity-50 tw-pointer-events-none': isAppTypeModuleAndModuleNotEnabled },
+          { 'tw-group ': !isAppTypeModuleAndModuleNotEnabled }
+        )}
+      >
+        {/* Rest state: icon at top, text below */}
+        <div className="tw-absolute tw-inset-0 tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-opacity-100 group-hover:tw-opacity-0 tw-transition-opacity tw-duration-200 tw-pointer-events-auto group-hover:tw-pointer-events-none">
+          <IconComponent size={20} className="tw-shrink-0 tw-text-icon-default" data-cy={`app-card-${icon}-icon`} />
+
+          {textBlock}
+        </div>
+
+        {/* Hover state: text at top, action buttons at bottom */}
+        <div className="tw-absolute tw-inset-0 tw-p-4 tw-flex tw-flex-col tw-justify-between tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-200 tw-pointer-events-none group-hover:tw-pointer-events-auto">
+          {textBlock}
+
+          <div
+            className={cn('tw-flex tw-items-center tw-justify-between tw-gap-2 tw-w-full', {
+              'tw-justify-end': !showLaunchButton && !showPreviewButton,
+            })}
+          >
+            {showLaunchButton && (
+              <LaunchBtn
+                appSlug={slug}
+                appType={appType}
+                currentVersionId={appDetails.current_version_id}
+                isMaintenanceOn={appDetails.is_maintenance_on}
+                isBuilder={isBuilder}
+                environmentAccess={environmentAccess}
+              />
+            )}
+
+            {showPreviewButton && (
+              <ViewBtn
+                appId={id}
+                appSlug={slug}
+                homePageHandle={home_page_handle}
+                basicPlan={basicPlan}
+                isBuilder={isBuilder}
+                environmentAccess={environmentAccess}
+              />
+            )}
+
+            {(showEditButton || showAppMenu) && (
+              <div className="tw-flex tw-items-center tw-gap-2 ">
+                {showEditButton && (
+                  <TooltipComp content={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                    <Button
+                      isLucid
+                      size="medium"
+                      variant="secondary"
+                      leadingIcon="square-pen"
+                      onClick={handleEditClick}
+                      component={Link}
+                      reloadDocument
+                      to={getPrivateRoute('editor', {
+                        slug: isValidSlug(slug) ? slug : id,
+                      })}
+                      data-cy="edit-button"
+                      className="hover:tw-no-underline hover:tw-text-text-default"
+                    >
+                      {t('globals.edit', 'Edit')}
+                    </Button>
+                  </TooltipComp>
+                )}
+
+                {showAppMenu && (
+                  <AppMenu
+                    appType={appType}
+                    appDetails={appDetails}
+                    hasCreatePermission={hasCreatePermission}
+                    hasUpdatePermission={hasUpdatePermission}
+                    hasDeletePermission={hasDeletePermission}
+                    onMenuItemClick={onMenuItemClick}
+                    currentSelectedFolder={currentSelectedFolder}
+                    ownedFolders={ownedFolders}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </AppCardContainer>
+    </TooltipComp>
+  );
+}
+
+function AppCardContainer({ children, className, ...restProps }) {
+  return (
+    <div
+      className={cn(
+        'tw-relative tw-h-[6.625rem] tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-rounded-lg tw-cursor-pointer tw-transition-shadow tw-duration-200 hover:tw-shadow-[0px_0px_1px_0px_rgba(48,50,51,0.05),_0px_2px_4px_0px_rgba(48,50,51,0.1)]',
+        className
+      )}
+      {...restProps}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function AppCardSkeleton() {
+  return (
+    <AppCardContainer className="tw-px-4 tw-py-3 tw-grid tw-gap-3">
+      <ShimmerEffectSkeleton className="tw-w-5" />
+
+      <div className="tw-space-y-1">
+        <ShimmerEffectSkeleton className="tw-w-32" />
+        <ShimmerEffectSkeleton className="tw-w-20" />
+      </div>
+    </AppCardContainer>
+  );
+}
+
+function ViewBtn({ appId, appSlug, homePageHandle, basicPlan, isBuilder, environmentAccess }) {
+  const { t } = useTranslation();
+
+  const handlePreview = () => {
+    const pageHandle = homePageHandle || 'home';
+    const slugOrId = isValidSlug(appSlug) ? appSlug : appId;
+
+    // For preview, use first available environment from user's actual permissions
+    const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+
+    // Don't add env param if license is invalid or multi-environment feature is not available
+    const queryParams = basicPlan ? {} : { env: defaultEnv };
+    const previewQuery = queryString.stringify(queryParams);
+
+    const previewUrl = `/applications/${slugOrId}/${pageHandle}${previewQuery ? `?${previewQuery}` : ''}`;
+    window.open(previewUrl, '_blank');
+  };
+
+  return (
+    <Button isLucid size="medium" variant="outline" data-cy="preview-button" onClick={handlePreview}>
+      {t('globals.preview', 'Preview')}
+    </Button>
+  );
+}
+
+function LaunchBtn({ appSlug, appType, currentVersionId, isMaintenanceOn, isBuilder, environmentAccess }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Builders need explicit released access. End users can launch if the app is released.
+  const canAccessReleased = !isBuilder || environmentAccess.released;
+
+  const isDisabled = appType === 'workflow' ? true : currentVersionId === null || isMaintenanceOn || !canAccessReleased;
+
+  const isEndUser = authenticationService.currentSessionValue?.role?.name === 'end-user';
+
+  const btnVariant = isEndUser ? 'primary' : 'ghost';
+  const btnLabel =
+    appType !== 'workflow' && isMaintenanceOn
+      ? t('homePage.appCard.maintenance', 'Maintenance')
+      : t('homePage.appCard.launch', 'Launch');
+  const tooltipContent =
+    appType === 'workflow'
+      ? t('homePage.appCard.launchingWorkflowNotAvailable', 'Launching workflows is not currently available')
+      : appType === 'front-end'
+      ? currentVersionId === null
+        ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+        : !canAccessReleased
+        ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
+        : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+      : '';
+
+  const handleLaunch = () => {
+    if (appType === 'workflow') return;
+
+    if (currentVersionId && canAccessReleased) {
+      window.open(urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${appSlug}`));
+    } else {
+      navigate(currentVersionId ? `/applications/${appSlug}` : '');
+    }
+  };
+
+  return (
+    <TooltipComp content={tooltipContent}>
+      <Button
+        isLucid
+        size="medium"
+        leadingIcon="play"
+        data-cy="launch-button"
+        variant={btnVariant}
+        onClick={handleLaunch}
+        disabled={isDisabled}
+      >
+        {btnLabel}
+      </Button>
+    </TooltipComp>
+  );
+}

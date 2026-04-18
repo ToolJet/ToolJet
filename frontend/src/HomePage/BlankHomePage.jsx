@@ -1,7 +1,5 @@
 import React from 'react';
-import cx from 'classnames';
 import Layout from '@/_ui/Layout';
-import { OrganizationList } from '@/modules/dashboard/components';
 import GetStartedHome from '../GetStarted/GetStartedHome';
 import { withTranslation } from 'react-i18next';
 import { withRouter } from '@/_hoc/withRouter';
@@ -13,13 +11,15 @@ class HomePageComponent extends React.Component {
   render() {
     const { isToolJetCloud } = this.props;
     return (
-      <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} collapseSidebar={true}>
-        <div className="wrapper get-started-page">
+      <Layout
+        showNewHeader
+        shouldWrapContentBody={false}
+        darkMode={this.props.darkMode}
+        switchDarkMode={this.props.switchDarkMode}
+      >
+        <main className="wrapper get-started-page">
           <GetStartedHome isToolJetCloud={isToolJetCloud} />
-          <div className="get-started-footer">
-            <OrganizationList />
-          </div>
-        </div>
+        </main>
       </Layout>
     );
   }
