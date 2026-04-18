@@ -855,7 +855,7 @@ export const verifyGranularAccessByRole = (role) => {
 
     cy.ifEnv("Enterprise", () => {
         //verify environments for apps
-        verifyEnvironmentsTags(groupsSelector.environmentTag, role, config.environments);
+        verifyEnvironmentsTags(groupsSelector.appEnvironmentTag, role, config.environments);
 
         cy.verifyElement(groupsSelector.workflowsText, "Workflows");
 
