@@ -425,18 +425,46 @@ export class AppImportExportService {
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
-        versionId: moduleComponent.properties?.moduleVersionId.value,
+        // Post-migration: moduleVersionId.value holds version name (stable).
+        // Legacy: moduleVersionId.value holds DB UUID.
+        versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
       }));
+
+      // moduleAppId.value stores co_relation_id after migration — resolve to real DB ids
+      // so this.export() can fetch the module app correctly.
+      const coRelationIds = moduleAppIds.map((m) => m.moduleId).filter(Boolean);
+      const moduleAppsById: Record<string, string> = {};
+      if (coRelationIds.length > 0) {
+        const resolvedModules = await manager
+          .createQueryBuilder(App, 'app')
+          .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
+          .select(['app.id', 'app.co_relation_id'])
+          .getMany();
+        for (const mod of resolvedModules) {
+          moduleAppsById[mod.co_relation_id] = mod.id;
+        }
+      }
+
       const moduleApps = [];
       //call the export function for each moduleAppiDs
       await Promise.all(
-        moduleAppIds.map(async (moduleAppId) =>
+        moduleAppIds.map(async (moduleAppId) => {
+          const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
+          // Resolve versionIdentifier: may be a version name (post-migration) or UUID (legacy).
+          // Try name-based lookup first; fall back to treating it as a UUID.
+          let versionDbId: string | undefined;
+          if (moduleAppId.versionIdentifier && resolvedId) {
+            const byName = await manager.findOne(AppVersion, {
+              where: { name: moduleAppId.versionIdentifier, appId: resolvedId },
+            });
+            versionDbId = byName?.id ?? moduleAppId.versionIdentifier;
+          }
           moduleApps.push(
-            await this.export(user, moduleAppId.moduleId, {
-              version_id: moduleAppId.versionId,
+            await this.export(user, resolvedId, {
+              version_id: versionDbId,
             })
-          )
-        )
+          );
+        })
       );
 
       const componentsWithPermissionGroups = components.map((component) => {
@@ -568,7 +596,11 @@ export class AppImportExportService {
 
           // Also map the editingVersion if not already mapped
           const editingVersionId = importedModule?.appV2?.editingVersion?.id;
-          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+          if (
+            editingVersionId &&
+            !moduleResourceMappings.moduleVersions[editingVersionId] &&
+            existingVersions.length > 0
+          ) {
             moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
@@ -1734,7 +1766,6 @@ export class AppImportExportService {
                   properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
                 }
               }
-
             }
             newComponent.properties = properties || {};
 
@@ -3237,9 +3268,9 @@ export class AppImportExportService {
 
     const moduleAppId = properties.moduleAppId.value;
     try {
-      // Fetch the module from database using moduleAppId
+      // moduleAppId stores co_relation_id after migration — look up by co_relation_id
       const moduleApp = (await manager.findOne(App, {
-        where: { id: moduleAppId },
+        where: { co_relation_id: moduleAppId },
         relations: ['appVersions'],
       })) as App;
 
@@ -3868,7 +3899,6 @@ function transformComponentData(
             properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
           }
         }
-
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);

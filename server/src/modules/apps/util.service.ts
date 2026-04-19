@@ -247,7 +247,9 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
-      if (branchId) {
+      // Modules always get co_relation_id regardless of workspace type:
+      // ModuleViewer components reference modules by co_relation_id for stable cross-env resolution.
+      if (branchId || type === APP_TYPES.MODULE) {
         const coRelationId = uuidv4();
         await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
         app.co_relation_id = coRelationId;
@@ -783,7 +785,7 @@ export class AppsUtilService implements IAppsUtilService {
         moduleAppIds.length > 0
           ? await manager
               .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
               .distinct(true)
               .getMany()
           : [];

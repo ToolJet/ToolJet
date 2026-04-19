@@ -1,5 +1,6 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -244,6 +245,16 @@ export class VersionService implements IVersionService {
     // need to add freeze version logic here
     // need to add freeze version logic here
     return response;
+  }
+
+  async getVersionByStableIds(coRelationId: string, versionName: string, user: User, mode?: string): Promise<any> {
+    const app = await this.versionRepository.manager.findOne(App, {
+      where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE },
+    });
+    if (!app) throw new NotFoundException('Module not found');
+    const version = await this.versionRepository.findByName(versionName, app.id);
+    app.appVersions = [version];
+    return this.getVersion(app, user, mode);
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
