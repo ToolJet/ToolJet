@@ -41,6 +41,9 @@ const VALID_ORDER_DIRECTIONS = new Set(['ASC', 'DESC']);
 
 abstract class BaseDialect {
   abstract quote(id: string): string;
+  maxBindParams(): number {
+    return 65535;
+  }
   limitOffset(_limit: number | string | null | undefined, _offset: number | string | null | undefined): string {
     return '';
   }
@@ -89,6 +92,9 @@ class SnowflakeDialect extends BaseDialect {
   quote(id: string): string {
     // Snowflake uses double-quote identifiers (case-sensitive when quoted)
     return `"${String(id).replace(/"/g, '""')}"`;
+  }
+  maxBindParams(): number {
+    return 16384;
   }
   supportsIlike(): boolean {
     // Snowflake natively supports ILIKE
@@ -794,6 +800,14 @@ export class QueryBuilder {
     return { query, params: [...this._params] };
   }
 
+  private _buildInsertQuery(table: string, columnNames: string[], row: Record<string, unknown>): QueryResult {
+    this._reset();
+    const quotedColumns = columnNames.map((col) => this._dialect.quote(col));
+    const placeholders = columnNames.map((col) => this._addParam(row[col]));
+    const query = `INSERT INTO ${table} (${quotedColumns.join(', ')}) VALUES (${placeholders.join(', ')})`;
+    return { query, params: [...this._params] };
+  }
+
   private _snowflakeUpsert(
     table: string,
     primaryKey: string[],
@@ -801,7 +815,24 @@ export class QueryBuilder {
     updateCols: string[],
     row: Record<string, unknown>
   ): QueryResult {
-    // Snowflake MERGE: USING (SELECT ? AS col, ...) AS _source ON key match
+    this._reset();
+
+    const primaryKeySet = new Set(primaryKey);
+    const allPkValuesAbsent = primaryKey.every((pk) => {
+      const value = row[pk];
+      return value === undefined || value === null || value === '';
+    });
+
+    // Rule 3: PK column values not provided in input → INSERT the records
+    if (allPkValuesAbsent) {
+      const nonPrimaryKeyColumnNames = allCols.filter((col) => !primaryKeySet.has(col));
+      if (nonPrimaryKeyColumnNames.length === 0) {
+        throw new QueryBuilderError('No non-primary-key columns provided to insert');
+      }
+      return this._buildInsertQuery(table, nonPrimaryKeyColumnNames, row);
+    }
+
+    // Rules 1, 2 & 4: PK values provided → Snowflake MERGE USING (SELECT ? AS col, ...) AS _source
     const sourceColumns = allCols.map((col) => `${this._addParam(row[col])} AS ${this._dialect.quote(col)}`).join(', ');
     const onClause = primaryKey
       .map((pk) => `_target.${this._dialect.quote(pk)} = _source.${this._dialect.quote(pk)}`)
@@ -811,6 +842,8 @@ export class QueryBuilder {
     query += ` USING (SELECT ${sourceColumns}) AS _source`;
     query += ` ON ${onClause}`;
 
+    // Rule 1: PK exists in DB → UPDATE only the columns given as input (updateCols), not the entire row
+    // Rule 4: Only PK columns given as input → no WHEN MATCHED clause, just detect existence
     if (updateCols.length > 0) {
       const setClauses = updateCols.map(
         (col) => `_target.${this._dialect.quote(col)} = _source.${this._dialect.quote(col)}`
@@ -818,6 +851,7 @@ export class QueryBuilder {
       query += ` WHEN MATCHED THEN UPDATE SET ${setClauses.join(', ')}`;
     }
 
+    // Rule 2: PK not found in DB → INSERT the records
     const quotedCols = allCols.map((col) => this._dialect.quote(col));
     const sourceRefs = allCols.map((col) => `_source.${this._dialect.quote(col)}`);
     query += ` WHEN NOT MATCHED THEN INSERT (${quotedCols.join(', ')}) VALUES (${sourceRefs.join(', ')})`;

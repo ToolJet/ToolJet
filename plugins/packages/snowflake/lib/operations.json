@@ -249,6 +249,12 @@
           "description": "Column name and value pairs to insert or update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
           "columnSelectorDependsOn": ["table"]
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that upserts zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that affects no rows is still treated as successful"
         }
       },
       "delete_rows": {

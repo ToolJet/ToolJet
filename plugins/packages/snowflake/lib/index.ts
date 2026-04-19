@@ -16,6 +16,7 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
+import * as crypto from 'crypto';
 import got from 'got';
 
 export default class Snowflake implements QueryService {
@@ -186,12 +187,14 @@ export default class Snowflake implements QueryService {
           query: string;
           params: unknown[];
         };
-        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
-        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, [{ query, params }]);
+        return { status: 'ok', data: { rowsCreated: rowsAffected } };
       }
 
       case 'update_rows': {
-        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const allowMultipleUpdates = this._normalizeBool(allow_multiple_updates);
+        const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { columns, where_filters } = (queryOptions as any).update_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         if (!hasWhereFilters) {
@@ -202,25 +205,30 @@ export default class Snowflake implements QueryService {
           params: unknown[];
         };
         return await this.executeWriteQuery(connection, query, params, {
-          allow_multiple_updates,
-          zero_records_as_success,
+          allow_multiple_updates: allowMultipleUpdates,
+          zero_records_as_success: zeroRecordsAsSuccess,
           operationLabel: 'updated',
         });
       }
 
       case 'upsert_rows': {
+        const { zero_records_as_success = false } = queryOptions;
+        const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { primary_key_columns } = queryOptions;
         const { columns } = (queryOptions as any).upsert_rows || {};
         const { query, params } = queryBuilder.upsertRows(table, { primary_key_columns, columns }) as {
           query: string;
           params: unknown[];
         };
-        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
-        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+        return await this.executeWriteQuery(connection, query, params, {
+          zero_records_as_success: zeroRecordsAsSuccess,
+          operationLabel: 'upserted',
+        });
       }
 
       case 'delete_rows': {
-        const { zero_records_as_success } = queryOptions;
+        const { zero_records_as_success = false } = queryOptions;
+        const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { where_filters } = (queryOptions as any).delete_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         if (!hasWhereFilters) {
@@ -234,47 +242,81 @@ export default class Snowflake implements QueryService {
           query: string;
           params: unknown[];
         };
-        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
-        const rowsAffected = result.stmt.getNumRowsAffected();
-        if (zero_records_as_success === false && rowsAffected === 0) {
-          throw new QueryError('No rows deleted', 'No rows matched the filter conditions', {});
-        }
-        return { status: 'ok', data: { rowsAffected } };
+        return await this.executeWriteQuery(connection, query, params, {
+          zero_records_as_success: zeroRecordsAsSuccess,
+          operationLabel: 'deleted',
+        });
       }
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
-          query: string;
-          params: unknown[];
-        };
-        const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
-        return { status: 'ok', data: { rowsAffected: result.stmt.getNumRowsAffected() } };
+        const batchSize = this.computeBatchSize(records);
+        const recordBatches = this.splitIntoBatches(records, batchSize);
+        const batchInsertQueries = recordBatches.map((batchRecords) => {
+          const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: batchRecords }) as {
+            query: string;
+            params: unknown[];
+          };
+          return { query, params };
+        });
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, batchInsertQueries);
+        return { status: 'ok', data: { rowsAffected }, sqlCommand: 'BATCH INSERT' } as unknown as QueryResult;
       }
 
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          primary_key: primary_key_columns,
-          rows_update: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, queries);
-        return { status: 'ok', data: { rowsAffected }, bulk_update_status: 'success' } as unknown as QueryResult;
+        const batchSize = this.computeBatchSize(records);
+        const recordBatches = this.splitIntoBatches(records, batchSize);
+        const allUpdateQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            rows_update: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpdateQueries.push(...queries);
+        }
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, allUpdateQueries);
+        return { status: 'ok', data: { rowsAffected }, sqlCommand: 'BULK_UPDATE_BY_KEY' } as unknown as QueryResult;
       }
 
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          primary_key: primary_key_columns,
-          row_upsert: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, queries);
-        return { status: 'ok', data: { rowsAffected }, bulk_upsert_status: 'success' } as unknown as QueryResult;
+        const batchSize = this.computeBatchSize(records);
+        const recordBatches = this.splitIntoBatches(records, batchSize);
+        const allUpsertQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            row_upsert: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpsertQueries.push(...queries);
+        }
+        const rowsAffected = await this.executeBulkQueriesInTransaction(connection, allUpsertQueries);
+        return { status: 'ok', data: { rowsAffected }, sqlCommand: 'BULK_UPDATE_BY_KEY' } as unknown as QueryResult;
       }
 
       default:
         throw new QueryError('Unsupported operation', `GUI operation "${operation}" is not supported`, {});
     }
+  }
+
+  private _getRowsAffected(result: { stmt: any; rows: any[] }): number {
+    if (typeof result.stmt?.getNumRowsAffected === 'function') {
+      return result.stmt.getNumRowsAffected();
+    }
+    // Fallback: Snowflake DML result rows contain the affected counts
+    const resultRow = result.rows?.[0] ?? {};
+    return (
+      Number(resultRow['number of rows inserted'] ?? 0) +
+      Number(resultRow['number of rows updated'] ?? 0) +
+      Number(resultRow['number of rows deleted'] ?? 0)
+    );
+  }
+
+  private _normalizeBool(value: unknown): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === 'true';
+    return false;
   }
 
   private async executeWriteQuery(
@@ -284,21 +326,49 @@ export default class Snowflake implements QueryService {
     options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
   ): Promise<QueryResult> {
     const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
-    const result: any = await this.connExecuteAsync(connection, { sqlText, binds });
-    const rowsAffected = result.stmt.getNumRowsAffected();
 
-    if (allow_multiple_updates === false && rowsAffected > 1) {
-      throw new QueryError(
-        'Multiple rows affected',
-        'Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.',
-        {}
-      );
-    }
-    if (zero_records_as_success === false && rowsAffected === 0) {
-      throw new QueryError('No rows affected', `No rows were ${operationLabel}.`, {});
-    }
+    await this.connExecuteAsync(connection, { sqlText: 'BEGIN' });
+    try {
+      const result: any = await this.connExecuteAsync(connection, { sqlText, binds });
+      const rowsAffected = this._getRowsAffected(result);
 
-    return { status: 'ok', data: { rowsAffected } };
+      if (!allow_multiple_updates && rowsAffected > 1) {
+        throw new QueryError(
+          'Multiple rows affected',
+          'Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.',
+          {}
+        );
+      }
+      if (!zero_records_as_success && rowsAffected === 0) {
+        throw new QueryError('No rows affected', `No rows were ${operationLabel}.`, {});
+      }
+
+      await this.connExecuteAsync(connection, { sqlText: 'COMMIT' });
+      return { status: 'ok', data: { rowsAffected } };
+    } catch (err) {
+      await this.connExecuteAsync(connection, { sqlText: 'ROLLBACK' });
+      throw err;
+    }
+  }
+
+  private static readonly PARAM_THRESHOLD = 16384;
+
+  private computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const SAMPLE_SIZE = 500;
+    const sample =
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+    const numberOfColumns = Math.max(...sample.map((record) => Object.keys(record).length));
+    if (numberOfColumns === 0) return 1000;
+    return Math.max(1, Math.floor(Snowflake.PARAM_THRESHOLD / numberOfColumns));
+  }
+
+  private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
+    const batches: RecordType[][] = [];
+    for (let startIndex = 0; startIndex < records.length; startIndex += batchSize) {
+      batches.push(records.slice(startIndex, startIndex + batchSize));
+    }
+    return batches;
   }
 
   private async executeBulkQueriesInTransaction(
@@ -310,7 +380,7 @@ export default class Snowflake implements QueryService {
       let totalRowsAffected = 0;
       for (const { query, params } of queries) {
         const result: any = await this.connExecuteAsync(connection, { sqlText: query, binds: params });
-        totalRowsAffected += result.stmt.getNumRowsAffected();
+        totalRowsAffected += this._getRowsAffected(result);
       }
       await this.connExecuteAsync(connection, { sqlText: 'COMMIT' });
       return totalRowsAffected;
@@ -394,9 +464,15 @@ export default class Snowflake implements QueryService {
       }
       connectionConfig.username = sourceOptions.username;
       connectionConfig.authenticator = 'SNOWFLAKE_JWT';
-      connectionConfig.privateKey = sourceOptions.private_key;
-      if (sourceOptions.private_key_passphrase) {
-        connectionConfig.privateKeyPass = sourceOptions.private_key_passphrase;
+      try {
+        const privateKeyObject = crypto.createPrivateKey({
+          key: sourceOptions.private_key,
+          format: 'pem',
+          ...(sourceOptions.private_key_passphrase && { passphrase: sourceOptions.private_key_passphrase }),
+        });
+        connectionConfig.privateKey = privateKeyObject.export({ type: 'pkcs8', format: 'pem' }) as string;
+      } catch (err) {
+        throw new QueryError('Invalid private key', err.message, {});
       }
     } else if (sourceOptions.auth_type === 'basic') {
       connectionConfig.password = sourceOptions.password;
