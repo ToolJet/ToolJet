@@ -5,6 +5,7 @@ import {
   appsService,
   appVersionService,
   dataqueryService,
+  dataQueryFolderService,
   orgEnvironmentConstantService,
   authenticationService,
   customStylesService,
@@ -26,6 +27,8 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
@@ -74,6 +77,8 @@ const useAppData = (
   const setPages = useStore((state) => state.setPages);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const setFolders = useStore((state) => state.queryFolders?.setFolders);
+  const setFolderMappings = useStore((state) => state.queryFolders?.setFolderMappings);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const setComponentNameIdMapping = useStore((state) => state.setComponentNameIdMapping);
   const initDependencyGraph = useStore((state) => state.initDependencyGraph);
@@ -110,6 +115,8 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
+  const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -251,6 +258,7 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    let cancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -258,11 +266,21 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      const moduleDefinition = getModuleDefinition(appId);
+      // For public/unauthenticated viewers, use the pre-fetched definition
+      // from the parent app's response — the version API requires auth.
+      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      } else if (versionId) {
+        appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
       } else {
-        appDataPromise = appService.fetchApp(appId);
+        const cachedDefinition = getModuleDefinition(appId);
+        if (cachedDefinition) {
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       }
     } else {
       if (isPublicAccess) {
@@ -277,6 +295,7 @@ const useAppData = (
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
+        if (cancelled) return;
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
@@ -301,10 +320,7 @@ const useAppData = (
           try {
             const queryParams = { slug: slug };
 
-            const viewerEnvironment =
-              moduleMode && isPublicAccess
-                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
-                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
@@ -326,6 +342,9 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
+        if (!constantsResp) {
+          constantsResp = { constants: [] };
+        }
         constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
           constantsResp?.constants,
           editorEnvironment?.name
@@ -355,7 +374,10 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // appId prop is undefined for public app viewers (AppsRoute skips onValidSession → extraProps never set).
+        // Fall back to appData response so isReleasedApp evaluates correctly and the title omits "Preview -".
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
 
         setApp(
           {
@@ -504,6 +526,18 @@ const useAppData = (
             moduleId
           );
         }
+
+        if (mode === 'edit' && !moduleMode && setFolders) {
+          const versionId = appData.editing_version?.id || appData.current_version_id;
+          dataQueryFolderService
+            .getAll(versionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
+        }
+
         const constants = constantsResp?.constants;
 
         if (constants) {
@@ -562,33 +596,63 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-
-        return () => {
-          document.title = retrieveWhiteLabelText();
-        };
       })
       .catch((_error) => {
+        if (cancelled) return;
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode]);
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setApp, setEditorLoading, currentSession, mode, versionId]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
       mode === 'edit' && initSuggestions(moduleId);
-      runOnLoadQueries(moduleId).then(() => {
+
+      const loadLibrariesAndRun = async () => {
+        // Load JS libraries and preloaded JS from globalSettings before running queries
+        const globalSettings = useStore.getState().globalSettings;
+        const jsLibraries = globalSettings?.libraries?.javascript || [];
+        const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
+
+        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
+
+        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+          setJsLibraryLoading(true);
+          try {
+            const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
+
+            // Execute preloaded JS — its returned exports merge into the registry
+            const preloadedExports = await executePreloadedJS(preloadedJS, registry);
+            const fullRegistry = { ...registry, ...preloadedExports };
+
+            setJsLibraryRegistry(fullRegistry);
+          } catch (error) {
+            console.error('Failed to initialize JS libraries:', error);
+          } finally {
+            setJsLibraryLoading(false);
+          }
+        }
+
+        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      };
+
+      loadLibrariesAndRun();
     }
   }, [isComponentLayoutReady, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
-      page: pageTitles.EDITOR,
+      page: mode === 'edit' ? pageTitles.EDITOR : pageTitles.VIEWER,
       appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
@@ -647,7 +711,9 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // See comment at first effectiveAppId usage above
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.branch_app_name || appData.name,
           appId: appData.id,
@@ -715,6 +781,20 @@ const useAppData = (
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        }
+
+        if (setFolders) {
+          setFolders([]);
+          setFolderMappings([]);
+          if (mode === 'edit') {
+            dataQueryFolderService
+              .getAll(currentVersionId)
+              .then((folderData) => {
+                setFolders(folderData.folders ?? []);
+                setFolderMappings(folderData.folderMappings ?? []);
+              })
+              .catch(() => {});
+          }
         }
 
         try {

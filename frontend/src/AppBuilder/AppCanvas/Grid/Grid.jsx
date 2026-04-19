@@ -26,6 +26,7 @@ import {
   isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
+  getCanvasBottomBound,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -611,6 +612,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   return (
     <>
       <Moveable
+        // Point Moveable's geometric container explicitly to .canvas-content so it aligns targets exactly against its DOM location
         dragTargetSelf={true}
         dragTarget={isGroupHandleHoverd ? document.getElementById('multiple-components-config-handle') : undefined}
         ref={moveableRef}
@@ -1098,6 +1100,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
               top = Math.max(0, top);
+
+              const canvasBottomBound = getCanvasBottomBound();
+              if (canvasBottomBound !== Infinity) {
+                top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+              }
             }
 
             // Apply bounds clamping to prevent widget from going out of canvas
@@ -1165,14 +1172,19 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _canvasWidth = NO_OF_GRIDS * _gridWidth;
             left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
             top = Math.max(0, top);
+
+            const canvasBottomBound = getCanvasBottomBound();
+            if (canvasBottomBound !== Infinity) {
+              top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+            }
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
 
-          e.target.setAttribute(
-            'widget-pos2',
-            `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
-          );
+          // e.target.setAttribute(
+          //   'widget-pos2',
+          //   `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
+          // );
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
 
@@ -1304,7 +1316,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
-        bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
+        // bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{

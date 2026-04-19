@@ -17,6 +17,8 @@ import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
+import { appTypeToDisplayNameMapping } from './helper';
+
 export const Folders = function Folders({
   folders,
   foldersLoading,
@@ -140,7 +142,7 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    updateSidebarNAV(updateSidebarNAV(folder?.name ?? getDefaultLabel()));
+    updateSidebarNAV(folder?.name ?? getDefaultLabel());
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
   }
@@ -248,6 +250,10 @@ export const Folders = function Folders({
     setFilteredData(folders);
   }
 
+  const deleteFolderWarningMessage = `Are you sure you want to delete the folder ${deletingFolder?.name ?? ''}? ${
+    appTypeToDisplayNameMapping[appType] ?? 'App'
+  }s within the folder will not be deleted.`;
+
   return (
     <div
       className={`w-100 folder-list ${!canCreateApp && 'folder-list-user'}`}
@@ -255,13 +261,7 @@ export const Folders = function Folders({
     >
       <ConfirmDialog
         show={showDeleteConfirmation}
-        message={t(
-          'homePage.foldersSection.wishToDeleteFolder',
-          `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
-          {
-            folderName: deletingFolder?.name,
-          }
-        )}
+        message={deleteFolderWarningMessage}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
