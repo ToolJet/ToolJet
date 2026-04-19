@@ -285,6 +285,13 @@ export const tableConfig = {
         schema: { type: 'boolean' },
       },
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -769,6 +776,8 @@ export const tableConfig = {
       showAddNewRowButton: { value: '{{true}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: `{{false}}` },
       selectRowOnCellEdit: { value: '{{false}}' },

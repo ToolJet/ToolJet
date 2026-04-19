@@ -385,11 +385,19 @@ export const createResolvedSlice = (set, get) => ({
   setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
     set(
       (state) => {
-        if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+        const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        // If existing is undefined OR an array (component was previously inside
+        // a ListView row — per-row exposed values stored as an array) replace
+        // with a plain object before setting a named property. Arrays only
+        // accept numeric indices under Immer; assigning `.property = value`
+        // on one throws. Mirrors the logic in `setExposedValues` below.
+        if (existing === undefined || Array.isArray(existing)) {
           state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
             [property]: value,
           };
-        state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+        } else {
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+        }
       },
       false,
       {

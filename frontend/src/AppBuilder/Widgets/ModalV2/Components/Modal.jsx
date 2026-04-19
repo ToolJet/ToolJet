@@ -10,6 +10,7 @@ import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import Spinner from '@/_ui/Spinner';
 import classNames from 'classnames';
 import { shallow } from 'zustand/shallow';
+import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 export const ModalWidget = ({ ...restProps }) => {
   const {
@@ -39,8 +40,7 @@ export const ModalWidget = ({ ...restProps }) => {
   const setComponentProperty = useStore((state) => state.setComponentProperty);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const temporaryLayouts = useStore((state) => {
-    const transformedId = subContainerIndex ? `${id}-${subContainerIndex}` : id;
-    return state.temporaryLayouts?.[`${transformedId}-body`];
+    return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body')];
   }, shallow);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
 
@@ -127,6 +127,8 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     isDynamicHeightEnabled,
     temporaryLayouts,
+    _modalHeight,
+    id,
   ]);
 
   return (

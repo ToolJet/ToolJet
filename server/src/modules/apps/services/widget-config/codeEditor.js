@@ -57,6 +57,13 @@ export const codeEditorConfig = {
       },
       accordian: 'container',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -118,6 +125,8 @@ export const codeEditorConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-weak-border)' },

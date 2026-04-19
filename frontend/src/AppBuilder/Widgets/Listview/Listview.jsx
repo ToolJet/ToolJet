@@ -71,7 +71,7 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+    ...(isDynamicHeightEnabled && { minHeight: `${rowHeight || 100}px` }),
     height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
@@ -179,12 +179,8 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
-          <div
-            className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
-              isDynamicHeightEnabled ? 'flex-grow-1' : ''
-            }`}
-          >
-            {filteredData.map((listItem, index) => (
+          <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+            {filteredData.map((_listItem, index) => (
               <ListviewSubcontainer
                 key={index}
                 id={id}

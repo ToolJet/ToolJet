@@ -4,6 +4,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 export const ListviewSubcontainer = ({
   index,
@@ -30,8 +31,15 @@ export const ListviewSubcontainer = ({
     () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }] }),
     [parentContext.contextPath, id, index]
   );
+  const contextIndices = useMemo(
+    () => [...parentContext.contextPath.map((segment) => segment.index), index],
+    [parentContext.contextPath, index]
+  );
 
-  const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
+  const temporaryLayout = useStore(
+    (state) => state.temporaryLayouts?.[getDynamicLayoutKey(id, contextIndices)],
+    shallow
+  );
   const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
 
   useDynamicHeight({
@@ -61,7 +69,7 @@ export const ListviewSubcontainer = ({
         }}
         key={index}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
-        onClickCapture={(event) => {
+        onClickCapture={(_event) => {
           onRecordOrRowClicked(index);
         }}
       >

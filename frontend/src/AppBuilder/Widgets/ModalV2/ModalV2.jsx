@@ -4,7 +4,6 @@ import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
 import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZIndex';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -17,6 +16,7 @@ import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/Modal
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -37,6 +37,7 @@ export const ModalV2 = function Modal({
   componentType,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -99,20 +100,6 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
-
-  useDynamicHeight({
-    isDynamicHeightEnabled,
-    id,
-    height,
-    adjustComponentPositions,
-    currentLayout,
-    isContainer: true,
-    componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
-    visibility: isVisible,
-    subContainerIndex,
-    componentType,
-  });
 
   useEffect(() => {
     const exposedVariables = {
@@ -191,6 +178,21 @@ export const ModalV2 = function Modal({
     setExposedVariable,
     onHideModal,
     onShowModal,
+  });
+  const contextIndices = contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex;
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    visibility: isVisible,
+    subContainerIndex: contextIndices,
+    componentType,
   });
 
   const customStyles = createModalStyles({
@@ -324,7 +326,7 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
-          subContainerIndex,
+          subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
         }}
       />
