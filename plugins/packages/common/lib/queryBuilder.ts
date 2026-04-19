@@ -634,16 +634,8 @@ export class QueryBuilder {
     const primaryKeySet = new Set(primary_key);
     const table = this._buildTableRef(tableName, schema);
 
-    const queries = row_upsert.map((row, rowIndex) => {
+    const queries = row_upsert.map((row) => {
       this._reset();
-
-      for (const primaryKey of primary_key) {
-        if (!(primaryKey in row)) {
-          throw new QueryBuilderError(`Row ${rowIndex + 1} is missing primary key column "${primaryKey}"`, {
-            operation: 'bulk_upsert_with_primary_key',
-          });
-        }
-      }
 
       const allCols = Object.keys(row);
       const updateCols = allCols.filter((col) => !primaryKeySet.has(col));
@@ -669,18 +661,55 @@ export class QueryBuilder {
     updateCols: string[],
     row: Record<string, unknown>
   ): QueryResult {
-    const quotedCols = allCols.map((c) => this._dialect.quote(c));
-    const placeholders = allCols.map((col) => this._addParam(row[col]));
-    const conflictTarget = primaryKey.map((pk) => this._dialect.quote(pk)).join(', ');
+    const primaryKeySet = new Set(primaryKey);
 
-    let query = `INSERT INTO ${table} (${quotedCols.join(', ')}) VALUES (${placeholders.join(', ')})`;
-    query += ` ON CONFLICT (${conflictTarget})`;
-    query +=
-      updateCols.length === 0
-        ? ' DO NOTHING'
-        : ` DO UPDATE SET ${updateCols
-            .map((col) => `${this._dialect.quote(col)} = EXCLUDED.${this._dialect.quote(col)}`)
-            .join(', ')}`;
+    // Rule 2: All PK values absent/null → INSERT without PK columns (IDENTITY auto-gen)
+    // RETURNING * is embedded here because the upsert execution path does not append it.
+    const allPrimaryKeyValuesAbsentOrNull = primaryKey.every(
+      (primaryKeyColumn) => !(primaryKeyColumn in row) || row[primaryKeyColumn] == null
+    );
+    if (allPrimaryKeyValuesAbsentOrNull) {
+      const nonPrimaryKeyColumns = allCols.filter((col) => !primaryKeySet.has(col));
+
+      if (nonPrimaryKeyColumns.length === 0) {
+        return { query: `INSERT INTO ${table} DEFAULT VALUES RETURNING *`, params: [] };
+      }
+
+      const quotedColumns = nonPrimaryKeyColumns.map((col) => this._dialect.quote(col));
+      const placeholders = nonPrimaryKeyColumns.map((col) => this._addParam(row[col]));
+      const query = `INSERT INTO ${table} (${quotedColumns.join(', ')}) VALUES (${placeholders.join(', ')}) RETURNING *`; // prettier-ignore
+      return { query, params: [...this._params] };
+    }
+
+    // Rule 3: PK values provided AND columns to update exist.
+    // Rule 4: Only PK columns present, nothing to update → touch the row (no-op UPDATE) so INSERT is skipped.
+    //
+    // Two-CTE pattern (PostgreSQL equivalent of IF EXISTS → UPDATE ELSE INSERT):
+    // - "_upsert_update": attempts UPDATE first; RETURNING * surfaces the updated row.
+    // - "_upsert_insert": INSERT only when the UPDATE matched nothing (new record); RETURNING * surfaces inserted row.
+    // - Final SELECT unions both CTEs so ALL affected rows (updated OR inserted) are returned to the caller.
+    // RETURNING * is embedded — the upsert execution path must NOT append an additional RETURNING *.
+    const setClauses = updateCols.map((col) => `${this._dialect.quote(col)} = ${this._addParam(row[col])}`);
+    const updateWhereClauses = primaryKey.map((pk) => `${this._dialect.quote(pk)} = ${this._addParam(row[pk])}`);
+
+    const quotedAllCols = allCols.map((col) => this._dialect.quote(col));
+    const conflictTarget = primaryKey.map((pk) => this._dialect.quote(pk)).join(', ');
+    const insertPlaceholders = allCols.map((col) => this._addParam(row[col]));
+
+    // Rule 4: no updateCols → no-op UPDATE (SET pk = pk) just to detect existence.
+    const noOpSetClauses = primaryKey.map((pk) => `${this._dialect.quote(pk)} = ${this._dialect.quote(pk)}`).join(', ');
+    const updateSetClause = updateCols.length === 0 ? noOpSetClauses : setClauses.join(', ');
+
+    const query = [
+      `WITH "_upsert_update" AS (`,
+      `UPDATE ${table} SET ${updateSetClause} WHERE ${updateWhereClauses.join(' AND ')} RETURNING *`,
+      `), "_upsert_insert" AS (`,
+      `INSERT INTO ${table} (${quotedAllCols.join(', ')})`,
+      `SELECT ${insertPlaceholders.join(', ')} WHERE NOT EXISTS (SELECT 1 FROM "_upsert_update")`,
+      `ON CONFLICT (${conflictTarget}) DO NOTHING RETURNING *`,
+      `)`,
+      `SELECT * FROM "_upsert_update" UNION ALL SELECT * FROM "_upsert_insert"`,
+    ].join(' ');
 
     return { query, params: [...this._params] };
   }
