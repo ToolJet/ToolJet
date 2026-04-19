@@ -1532,25 +1532,33 @@ git commit -m "test: rewrite /generate-spec as thin alias to /generate-tests --f
 
 ## Milestone F: End-to-End Validation
 
-**NOTE:** Tasks 17–20 require a local ToolJet dev server. Start it with `pnpm dev` (or equivalent) and ensure you can log in as `dev@tooljet.io` / `password`. Each validation task creates a test app, drags the target component, captures the URL, then invokes the skill against that URL.
+**NOTE:** Tasks 17–20 require a local ToolJet dev server (start with `pnpm dev` or equivalent) and a working login for `dev@tooljet.io` / `password`.
+
+**Auto-provisioning:** Since the v2 pipeline includes an auto-provisioner (test-architect Phase D Step 0 dispatches `manual-tester` to create a throwaway app + drag the component + return a URL), you do NOT need to hand-create apps. Just pass `--component=<name>`:
+
+```
+/generate-tests --component=button
+/generate-tests --component=table
+```
+
+The pipeline provisions `autotest-<component>-<timestamp>`, uses it for scout, generates specs, then deletes the app in Phase E Step 6. On cleanup failure, orphan apps are flagged by name so you can bulk-purge later.
 
 ### Task 17: Validate on Button (flat component)
 
 **Files:**
 - None (validation run only)
 
-- [ ] **Step 1: Create a Button test app**
-
-In ToolJet UI:
-- Create new app: "button-validation-test"
-- Drag a Button widget to the canvas
-- Note the app URL: `http://localhost:8082/apps/<app-id>`
-
-- [ ] **Step 2: Run `/generate-tests` on the URL**
+- [ ] **Step 1: Run `/generate-tests` with auto-provisioning**
 
 ```
-/generate-tests http://localhost:8082/apps/<app-id>
+/generate-tests --component=button
 ```
+
+The pipeline will auto-provision `autotest-button-<timestamp>` via `manual-tester`, drag a Button widget, and use that URL for the rest of the flow. No manual app creation needed.
+
+- [ ] **Step 2: (skipped — merged into Step 1)**
+
+The previous manual-URL step is obsolete with auto-provisioning. If you want to test against a specific existing app, pass its URL as a positional argument: `/generate-tests http://localhost:8082/apps/<id> --component=button`.
 
 - [ ] **Step 3: Verify classification**
 
@@ -1611,14 +1619,10 @@ If NOT green: iterate — identify which gate failed, refine the failing agent p
 **Files:**
 - None (validation run only)
 
-- [ ] **Step 1: Create TextInput test app**
-
-Create app "textinput-validation-test", drag TextInput, capture URL.
-
-- [ ] **Step 2: Run pipeline**
+- [ ] **Step 1: Run pipeline with auto-provisioning**
 
 ```
-/generate-tests http://localhost:8082/apps/<app-id>
+/generate-tests --component=textInput
 ```
 
 - [ ] **Step 3: Verify surface includes validation properties**
@@ -1640,12 +1644,10 @@ Verify spec passes, citation lint PASS, coverage ≥ 95%, commit.
 **Files:**
 - None (validation run only)
 
-- [ ] **Step 1: Create Checkbox test app**
-
-- [ ] **Step 2: Run pipeline**
+- [ ] **Step 1: Run pipeline with auto-provisioning**
 
 ```
-/generate-tests http://localhost:8082/apps/<app-id>
+/generate-tests --component=checkbox
 ```
 
 - [ ] **Step 3: Verify**
@@ -1663,15 +1665,13 @@ Verify spec passes, citation lint PASS, coverage ≥ 95%, commit.
 **Files:**
 - None (validation run only)
 
-- [ ] **Step 1: Create Table test app**
-
-Create "table-validation-test", drag Table with default columns, capture URL.
-
-- [ ] **Step 2: Run pipeline**
+- [ ] **Step 1: Run pipeline with auto-provisioning**
 
 ```
-/generate-tests http://localhost:8082/apps/<app-id>
+/generate-tests --component=table
 ```
+
+The auto-provisioner will create a Table app with default columns. If you want to test with specific column configurations, pre-create the app and pass its URL (see Task 17 Step 2 for the syntax).
 
 - [ ] **Step 3: Verify classification is LARGE**
 

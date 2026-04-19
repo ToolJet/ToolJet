@@ -324,6 +324,26 @@ Per-chunk manifest (see 5.5) is the core defense. Additional rules:
 
 The model is never given a prompt bigger than the chunk requires. A smaller (Haiku-class) model can still succeed because the hallucination surface is tiny.
 
+## 5.9 Auto-Provisioning (added during implementation)
+
+The component flow supports running without a pre-existing URL. If the caller passes only `--component=<name>`, `test-architect` Phase D Step 0 dispatches `manual-tester` to:
+1. Log in with `dev@tooljet.io`
+2. Create a throwaway app named `autotest-<component>-<timestamp>`
+3. Drag the target widget onto the canvas
+4. Return the app URL for scout to consume
+
+Phase E Step 6 dispatches `manual-tester` again to delete the provisioned app on success. Cleanup failures log the orphan app name but do not fail the pipeline — the naming convention enables bulk purge.
+
+This reduces end-user flow from "create app manually, then run pipeline" to a single command:
+
+```
+/generate-tests --component=button
+```
+
+Caller-provided URLs still work and bypass provisioning — existing `/generate-spec <url>` behavior is unaffected.
+
+---
+
 ## 6. Backwards-compatible entry: `/generate-spec`
 
 Rewrite `.claude/commands/generate-spec.md` as a thin wrapper:
