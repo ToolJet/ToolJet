@@ -106,14 +106,15 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? 'v1' : workspaceBranch!.name,
+            name: type === APP_TYPES.WORKFLOW ? 'v1' : workspaceBranch!.name,
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
             status: AppVersionStatus.DRAFT,
-            // versionType: AppVersionType.BRANCH,
-            versionType:
-              type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? AppVersionType.VERSION : AppVersionType.BRANCH,
+            // Workflows don't participate in branching — keep them as VERSION.
+            // Apps and modules on a feature branch must be BRANCH-type so the
+            // editor recognises them as editable branch copies.
+            versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
@@ -517,19 +518,19 @@ export class AppsUtilService implements IAppsUtilService {
         branchId
       );
 
-      // Eagerly load appVersions for modules
+      // Eagerly load appVersions for modules, branch-filtered like apps.
       if (type === APP_TYPES.MODULE && !isGetAll) {
-        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-        // } else if (branchId) {
-        //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-        //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-        //     branchId,
-        //   });
+        if (branchId) {
+          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+            branchId,
+          });
+        } else {
+          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+        }
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
         // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        // Modules and workflows are common across all branches - no branch filter applied.
+        // Workflows remain common across all branches - no branch filter applied.
         viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
           branchId,
         });
@@ -786,9 +787,31 @@ export class AppsUtilService implements IAppsUtilService {
           ? await manager
               .createQueryBuilder(App, 'app')
               .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
               .distinct(true)
               .getMany()
           : [];
+
+      // Branch-scope each module's editingVersion to match the parent app's branch.
+      // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
+      // because it has no branch context. When the parent app is being viewed on a feature
+      // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
+      // stale default-branch content leaks through unless we override here.
+      const parentBranchId = app.editingVersion?.branchId;
+      if (parentBranchId && modules.length > 0) {
+        await Promise.all(
+          modules.map(async (moduleApp: any) => {
+            const branchVersion = await manager.findOne(AppVersion, {
+              where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
+              order: { updatedAt: 'DESC' },
+            });
+            if (branchVersion) {
+              moduleApp.editingVersion = branchVersion;
+            }
+          })
+        );
+      }
+
       return modules;
     });
     return modules;
@@ -877,6 +900,9 @@ export class AppsUtilService implements IAppsUtilService {
       // default branch are always frozen (edits must happen on feature branches).
       if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
         shouldFreezeEditor = true;
+      } else if (editingVersion?.versionType === AppVersionType.BRANCH) {
+        // Feature-branch versions are editable by definition — allowEditing on the
+        // canonical appGit (default branch) must not freeze branch copies.
       } else if (appGit) {
         shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
       }

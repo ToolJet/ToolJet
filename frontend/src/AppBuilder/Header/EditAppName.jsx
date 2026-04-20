@@ -10,7 +10,7 @@ import { PenLine } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId, isModuleEditor } = useModuleContext();
+  const { moduleId } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
@@ -28,8 +28,7 @@ function EditAppName() {
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
-  const isGitSyncEnabled =
-    !isModuleEditor && (orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
@@ -44,7 +43,7 @@ function EditAppName() {
 
   const getDisabledTooltipMessage = () => {
     if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
-      return "Renaming isn't allowed on master. Switch branch to update name.";
+      return "Renaming isn't allowed on default branch. Switch branch to update name.";
     }
     if (!isDraftVersion && isGitSyncEnabled) {
       return 'Renaming of app is only allowed on draft versions';

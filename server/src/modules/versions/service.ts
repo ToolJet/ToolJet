@@ -220,8 +220,8 @@ export class VersionService implements IVersionService {
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
         appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
       }
-      // Modules are common across all branches — git sync freeze does not apply
-      if (appGit && app.type !== 'module') {
+      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
+      if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {

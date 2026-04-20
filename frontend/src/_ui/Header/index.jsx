@@ -78,7 +78,7 @@ function Header({
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
   const isWorkspaceGitPage = (pathname) => {
     const parts = pathname.split('/').filter(Boolean);
-    return parts.length === 1 || (parts.length >= 2 && ['data-sources'].includes(parts[1]));
+    return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
   return (
