@@ -88,6 +88,7 @@ export const dataSourceSelector = {
   deleteModalMessage: '[data-cy="modal-message"]',
   deleteModalCancelButton: '[data-cy="modal-cancel-button"]',
   deleteModalConfirmButton: '[data-cy="modal-confirm-button"]',
+  deleteQueryConfirmButton: '[data-cy="confirm-delete-query"]',
 
   querySelectDropdown: "[data-cy='query-select-dropdown']",
   opetionQuerySave: "[data-cy='query-save-option']",
