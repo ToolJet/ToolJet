@@ -14,8 +14,7 @@ export const createLayoutSlice = (set, get) => ({
     // temporaryLayouts hold the previous layout's reflow output (keyed only by
     // componentId, not layout). Clearing prevents desktop reflow results from
     // being applied to the mobile canonical (or vice versa) for the one frame
-    // before useDynamicHeight re-fires. canonicalGapMap is keyed per layout
-    // and safe to keep.
+    // before useDynamicHeight re-fires.
     get().clearTemporaryLayouts();
     set({ currentLayout }, false, {
       type: 'TOGGLE_CURRENT_LAYOUT',

@@ -648,17 +648,6 @@ export const resolveWidgetMeasuredHeight = ({
   );
 };
 
-// Key format for the canonical gap map: includes currentLayout (desktop/
-// mobile are separate maps), serialized context (Listview rows have their own
-// entries), and a directional anchor→target pair.
-export const getCanonicalGapKey = ({ targetId, anchorId, currentLayout, contextIndices }) => {
-  if (!targetId || !anchorId) {
-    return null;
-  }
-
-  return `${currentLayout}:${serializeLayoutContext(contextIndices)}:${anchorId}->${targetId}`;
-};
-
 // Blocker enumeration — returns every widget canonically above `targetId`
 // that horizontally overlaps it, in canonical-top order. Every blocker,
 // whether in-flow or out-of-flow, contributes to the target's position
@@ -780,14 +769,8 @@ export const buildReflowPatch = ({
   currentPageComponents,
   temporaryLayouts,
   contextIndices,
-  // eslint-disable-next-line no-unused-vars
-  visibleMap,
   inFlowMap,
   resolvedHeights,
-  // eslint-disable-next-line no-unused-vars
-  canonicalGapMap,
-  // eslint-disable-next-line no-unused-vars
-  changedWidgetInFlow = true,
 }) => {
   const sortedComponentIds = sortByCanonicalPosition(componentIds, currentLayout, currentPageComponents);
   const connectedIds = getConnectedLaneComponentIds(
@@ -798,7 +781,6 @@ export const buildReflowPatch = ({
   );
   const computedLayouts = {};
   const temporaryLayoutPatch = {};
-  const canonicalGapPatch = {};
 
   // Debug: enable with `window.__DEBUG_REFLOW__ = true` in devtools. Prints
   // which widgets are seen, which ones make it into the connected lane, and
@@ -1016,7 +998,7 @@ export const buildReflowPatch = ({
     }
   });
 
-  return { sortedComponentIds, connectedIds, temporaryLayoutPatch, computedLayouts, canonicalGapPatch };
+  return { temporaryLayoutPatch };
 };
 
 // Determine the context indices to use when bubbling to the parent.

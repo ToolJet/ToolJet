@@ -20,10 +20,6 @@ import {
 //   - temporaryLayouts: per-widget override layouts (top/height) that the reflow
 //     engine writes after every pass. WidgetWrapper reads these to override
 //     canonical layouts during render. Cleared lazily (not on every reflow).
-//   - canonicalGapMap: stable visual gap between each (anchor, target) pair,
-//     seeded on reflow passes where both widgets are visible. Preserved across
-//     hide/show so restoring a hidden widget puts downstream widgets back at
-//     the right offset.
 //   - draggingComponentId / resizingComponentId / isGroupDragging / isGroupResizing:
 //     coarse UI flags consumed by mouse/keyboard handlers to decide whether to
 //     select, reflow, or noop.
@@ -38,7 +34,6 @@ const initialState = {
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
-  canonicalGapMap: {},
   draggingComponentId: null,
   resizingComponentId: null,
   isGroupDragging: false,
@@ -120,11 +115,8 @@ export const createGridSlice = (set, get) => ({
     set({ lastCanvasClickPosition: position });
   },
   setTemporaryLayouts: (layouts) => set((state) => ({ temporaryLayouts: { ...state.temporaryLayouts, ...layouts } })),
-  setCanonicalGapMap: (gapMapPatch) =>
-    set((state) => ({ canonicalGapMap: { ...state.canonicalGapMap, ...gapMapPatch } })),
   getTemporaryLayouts: () => get().temporaryLayouts,
   clearTemporaryLayouts: () => set(() => ({ temporaryLayouts: {} })),
-  clearCanonicalGapMap: () => set(() => ({ canonicalGapMap: {} })),
   deleteTemporaryLayouts: (componentId) => {
     const { temporaryLayouts } = get();
     const newLayouts = { ...temporaryLayouts };
@@ -161,11 +153,9 @@ export const createGridSlice = (set, get) => ({
   //      height maps. `resolvedHeights[componentId]` is the changed widget's
   //      new target height; siblings use `calculateMoveableBoxHeightWithId` so
   //      top-label inputs keep their bumped height.
-  //   4. Call `buildReflowPatch` (in dynamicHeightReflow.js) to produce:
-  //        - temporaryLayoutPatch: per-sibling {top, height} overrides.
-  //        - canonicalGapPatch:    newly-discovered (anchor, target) gaps to
-  //                                persist into canonicalGapMap.
-  //   5. Write the patches, bump `triggerCanvasUpdater`, then bubble to the
+  //   4. Call `buildReflowPatch` (in dynamicHeightReflow.js) to produce
+  //      `temporaryLayoutPatch`: per-sibling {top, height} overrides.
+  //   5. Write the patch, bump `triggerCanvasUpdater`, then bubble to the
   //      parent context if appropriate. Bubbling re-runs the same flow on the
   //      parent (container / tab / listview row / form / accordion / canvas)
   //      so child growth propagates upward.
@@ -176,8 +166,6 @@ export const createGridSlice = (set, get) => ({
       setTemporaryLayouts,
       incrementCanvasUpdater,
       temporaryLayouts,
-      canonicalGapMap,
-      setCanonicalGapMap,
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
@@ -333,12 +321,6 @@ export const createGridSlice = (set, get) => ({
         return accumulator;
       }, {});
 
-      // Same resolution for the changed widget itself — needed for the
-      // hidden-changed-anchor override inside buildReflowPatch.
-      const changedResolved = getResolvedComponent(componentId, contextIndices);
-      const changedCollapseWhenHidden = changedResolved?.properties?.collapseWhenHidden ?? false;
-      const changedInFlow = visibility || !changedCollapseWhenHidden;
-
       // resolvedHeights[sibling] = the sibling's CURRENT height. Prefer any
       // existing temp-layout height (siblings that previously grew via their
       // own dynamic-height pass), so a reflow triggered by a different widget
@@ -366,19 +348,16 @@ export const createGridSlice = (set, get) => ({
       // effectiveGap(V, target))` over every in-flow blocker V above it,
       // where effectiveGap subtracts the footprints of any out-of-flow
       // blockers sitting between V and the target. Returns per-sibling
-      // layout overrides and any new canonical gap entries to persist.
-      const { temporaryLayoutPatch, canonicalGapPatch } = buildReflowPatch({
+      // layout overrides.
+      const { temporaryLayoutPatch } = buildReflowPatch({
         changedComponentId: componentId,
         componentIds: siblingIds,
         currentLayout,
         currentPageComponents,
         temporaryLayouts,
         contextIndices,
-        visibleMap,
         inFlowMap,
         resolvedHeights,
-        canonicalGapMap,
-        changedWidgetInFlow: changedInFlow,
       });
 
       if (Object.keys(temporaryLayoutPatch).length === 0) {
@@ -396,9 +375,6 @@ export const createGridSlice = (set, get) => ({
       }
 
       setTemporaryLayouts(temporaryLayoutPatch);
-      if (Object.keys(canonicalGapPatch).length > 0) {
-        setCanonicalGapMap(canonicalGapPatch);
-      }
 
       incrementCanvasUpdater();
 
