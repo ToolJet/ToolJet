@@ -248,10 +248,17 @@ export class VersionService implements IVersionService {
   }
 
   async getVersionByStableIds(coRelationId: string, versionName: string, user: User, mode?: string): Promise<any> {
+    // Scope to the user's organization — co_relation_id is only unique per-org.
+    // Without this, findOne could return a module from a different workspace that
+    // shares the same co_relation_id (e.g. both workspaces pulled from the same git
+    // origin into the same Postgres DB).
     const app = await this.versionRepository.manager.findOne(App, {
-      where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE },
+      where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
+      order: { createdAt: 'ASC' },
     });
-    if (!app) throw new NotFoundException('Module not found');
+    if (!app) {
+      throw new NotFoundException('Module not found');
+    }
     const version = await this.versionRepository.findByName(versionName, app.id);
     app.appVersions = [version];
     return this.getVersion(app, user, mode);
