@@ -197,9 +197,8 @@ export default class Snowflake implements QueryService {
         const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { columns, where_filters } = (queryOptions as any).update_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
-        if (!hasWhereFilters) {
+        if (!hasWhereFilters)
           throw new QueryError('Filter required', 'Update rows requires at least one filter condition', {});
-        }
         const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
           query: string;
           params: unknown[];
@@ -212,7 +211,8 @@ export default class Snowflake implements QueryService {
       }
 
       case 'upsert_rows': {
-        const { zero_records_as_success = false } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const allowMultipleUpdates = this._normalizeBool(allow_multiple_updates);
         const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { primary_key_columns } = queryOptions;
         const { columns } = (queryOptions as any).upsert_rows || {};
@@ -221,13 +221,15 @@ export default class Snowflake implements QueryService {
           params: unknown[];
         };
         return await this.executeWriteQuery(connection, query, params, {
+          allow_multiple_updates: allowMultipleUpdates,
           zero_records_as_success: zeroRecordsAsSuccess,
           operationLabel: 'upserted',
         });
       }
 
       case 'delete_rows': {
-        const { zero_records_as_success = false } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const allowMultipleUpdates = this._normalizeBool(allow_multiple_updates);
         const zeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
         const { where_filters } = (queryOptions as any).delete_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
@@ -243,6 +245,7 @@ export default class Snowflake implements QueryService {
           params: unknown[];
         };
         return await this.executeWriteQuery(connection, query, params, {
+          allow_multiple_updates: allowMultipleUpdates,
           zero_records_as_success: zeroRecordsAsSuccess,
           operationLabel: 'deleted',
         });
@@ -392,7 +395,9 @@ export default class Snowflake implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
-      const connection = await this.getConnection(sourceOptions, {}, false);
+      const connection = await this.getConnection(sourceOptions, {}, false, undefined, undefined, undefined, {
+        connectionTimeout: 20000,
+      });
       const isConnectionValid = await connection.isValidAsync();
 
       if (isConnectionValid) return { status: 'ok' };
@@ -420,7 +425,7 @@ export default class Snowflake implements QueryService {
     });
   }
 
-  async buildConnection(sourceOptions: SourceOptions, context?) {
+  async buildConnection(sourceOptions: SourceOptions, context?, options?: { connectionTimeout?: number }) {
     const connectionConfig: any = {
       account: sourceOptions.account,
       warehouse: sourceOptions.warehouse,
@@ -429,6 +434,7 @@ export default class Snowflake implements QueryService {
       role: sourceOptions.role,
       clientSessionKeepAlive: true,
       clientSessionKeepAliveHeartbeatFrequency: 900,
+      ...(options?.connectionTimeout != null && { timeout: options.connectionTimeout }),
     };
 
     if (sourceOptions.auth_type === 'oauth2') {
@@ -695,7 +701,8 @@ export default class Snowflake implements QueryService {
     checkCache: boolean,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string,
-    context?
+    context?,
+    buildOptions?: { connectionTimeout?: number }
   ): Promise<any> {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
@@ -712,12 +719,12 @@ export default class Snowflake implements QueryService {
       if (connection && (await connection.isValidAsync())) {
         return connection;
       } else {
-        connection = await this.buildConnection(sourceOptions, context);
+        connection = await this.buildConnection(sourceOptions, context, buildOptions);
         cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
         return connection;
       }
     } else {
-      return await this.buildConnection(sourceOptions, context);
+      return await this.buildConnection(sourceOptions, context, buildOptions);
     }
   }
 }

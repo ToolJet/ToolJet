@@ -410,6 +410,7 @@ export class QueryBuilder {
 
     const { schema, columns, where_filters } = updateRows;
 
+    // Emtpy filter values are ignored, but column names are required if a value is provided
     const validColumnEntries = Object.values(columns || {}).filter((col) => {
       const hasColumn = !!(col.column && String(col.column).trim());
       const isValueEmpty = col.value === undefined || col.value === null || col.value === '';
@@ -444,6 +445,7 @@ export class QueryBuilder {
       throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
+    // Empty or fully empty column entries are not allowed for upsert, since we need to know which columns to update on conflict.
     const columnEntries = Object.values(columns || {}).filter((entry) => {
       const hasColumn = !!(entry.column && String(entry.column).trim());
       const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
@@ -478,6 +480,20 @@ export class QueryBuilder {
     this._assertTableName(tableName, 'delete_rows');
 
     const { schema, limit: rawLimit, where_filters } = deleteRows;
+
+    // Empty filter values are ignored, but column names are required if a value is provided
+    const validWhereFilters = Object.values(where_filters || {}).filter((filter) => {
+      const hasColumn = !!(filter.column && String(filter.column).trim());
+      const isValueEmpty = filter.value === undefined || filter.value === null || filter.value === '';
+      if (!hasColumn && isValueEmpty) return false; // skip fully empty
+      if (!hasColumn) throw new QueryBuilderError('A filter condition has a value but no column name specified');
+      return true;
+    });
+
+    if (validWhereFilters.length === 0) {
+      throw new QueryBuilderError('At least one filter condition is required for delete');
+    }
+
     const limitStr = rawLimit == null ? '' : String(rawLimit).trim();
     const limit = limitStr === '' ? undefined : limitStr;
     const table = this._buildTableRef(tableName, schema);
