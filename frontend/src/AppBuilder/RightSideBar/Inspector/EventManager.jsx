@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import { ActionTypes } from './ActionTypes';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/Rocket';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -30,7 +29,6 @@ import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSl
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -537,17 +535,8 @@ export const EventManager = ({
     const event = eventHandler?.event || {};
 
     return (
-      <Popover
-        id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'dark-theme'} shadow inspector-event-manager-popover`}
-        data-cy="popover-card"
-      >
-        <Popover.Body
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
+      <>
+        <div>
           <div className="row">
             <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
               {t('editor.inspector.eventManager.enableEvent', 'Enable event')}
@@ -1229,8 +1218,8 @@ export const EventManager = ({
               </div>
             </div>
           </div>
-        </Popover.Body>
-      </Popover>
+        </div>
+      </>
     );
   }
 
@@ -1282,15 +1271,12 @@ export const EventManager = ({
                     {renderDraggable((provided, snapshot) => {
                       if (snapshot.isDragging && focusedEventIndex !== null) {
                         setFocusedEventIndex(null);
-                        document.body.click(); // Hack: Close overlay while dragging
                       }
+                      const isOpen = focusedEventIndex === index && !snapshot.isDragging;
                       return (
-                        <OverlayTrigger
-                          trigger="click"
-                          placement={popoverPlacement || 'left'}
-                          rootClose={true}
-                          overlay={eventPopover(event, index)}
-                          onToggle={(showing) => {
+                        <Popover
+                          open={isOpen}
+                          onOpenChange={(showing) => {
                             if (showing) {
                               setFocusedEventIndex(index);
                               lastFocusedEventIndex.current = index;
@@ -1300,33 +1286,49 @@ export const EventManager = ({
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
                         >
-                          <div
-                            key={index}
-                            id={`${sourceId}-${index}`}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <ManageEventButton
-                              eventName={event?.name}
-                              eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
-                              actionName={actionMeta.name}
-                              removeHandler={removeHandler}
-                              index={index}
-                              darkMode={darkMode}
-                              isDisabled={!!event.event.disabled}
-                              actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
-                              eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
-                              eventsDeletedLoader={
-                                index === eventToDeleteLoaderIndex
-                                  ? eventToDeleteLoaderIndex === 0
-                                    ? true
-                                    : !!eventToDeleteLoaderIndex
-                                  : false
+                          <PopoverTrigger asChild>
+                            <div
+                              key={index}
+                              id={`${sourceId}-${index}`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              <ManageEventButton
+                                eventName={event?.name}
+                                eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                actionName={actionMeta.name}
+                                removeHandler={removeHandler}
+                                index={index}
+                                darkMode={darkMode}
+                                isDisabled={!!event.event.disabled}
+                                actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
+                                eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
+                                eventsDeletedLoader={
+                                  index === eventToDeleteLoaderIndex
+                                    ? eventToDeleteLoaderIndex === 0
+                                      ? true
+                                      : !!eventToDeleteLoaderIndex
+                                    : false
+                                }
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            side={popoverPlacement || 'left'}
+                            align="center"
+                            className="tw-w-[350px] tw-max-w-[350px] tw-p-3"
+                            data-cy="popover-card"
+                            onInteractOutside={(e) => {
+                              const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
+                              if (autocomplete && autocomplete.contains(e.target)) {
+                                e.preventDefault();
                               }
-                            />
-                          </div>
-                        </OverlayTrigger>
+                            }}
+                          >
+                            {eventPopover(event, index)}
+                          </PopoverContent>
+                        </Popover>
                       );
                     })}
                   </Draggable>
@@ -1347,17 +1349,6 @@ export const EventManager = ({
       </AddNewButton>
     );
   };
-
-  const shouldUsePopoverObserver = events.length !== 0 && eventSourceType === 'data_query';
-
-  usePopoverObserver(
-    shouldUsePopoverObserver ? document.getElementsByClassName('query-details')[0] : null,
-    document.getElementById(`${sourceId}-${lastFocusedEventIndex.current}`),
-    document.getElementById('popover-basic'),
-    focusedEventIndex !== null,
-    () => (document.getElementById('popover-basic').style.display = 'block'),
-    () => (document.getElementById('popover-basic').style.display = 'none')
-  );
 
   if (events.length === 0) {
     return (
