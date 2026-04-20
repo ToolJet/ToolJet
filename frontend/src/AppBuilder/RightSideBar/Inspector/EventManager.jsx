@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
-import { ArrowRight, Copy, Trash2 } from 'lucide-react';
+import { ArrowRight, Copy, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
 import {
   Popover,
@@ -27,7 +27,6 @@ import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
@@ -95,6 +94,7 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const lastFocusedEventIndex = useRef(null);
 
   const { t } = useTranslation();
@@ -455,10 +455,10 @@ export const EventManager = ({
     });
   }
 
-  function addHandler() {
+  function addHandler(eventId) {
     let newEvents = events;
     const eventIndex = newEvents.length;
-    const defaultEventId = Object.keys(eventMetaDefinition?.events)[0];
+    const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
 
@@ -482,9 +482,9 @@ export const EventManager = ({
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
-      name: getDefaultEventName(defaultEventId),
+      name: getDefaultEventName(selectedEventId),
       event: {
-        eventId: defaultEventId,
+        eventId: selectedEventId,
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
@@ -1444,9 +1444,41 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" isLoading={eventsCreatedLoader}>
-        {t('editor.inspector.eventManager.addHandler', 'New event handler')}
-      </AddNewButton>
+      <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="default"
+            leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
+            loading={eventsCreatedLoader}
+            className="tw-w-full"
+            data-cy="add-event-handler"
+          >
+            {t('editor.inspector.eventManager.addHandler', 'New event handler')}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="bottom"
+          align="center"
+          className="tw-w-[260px] tw-max-h-[280px] tw-gap-0 tw-overflow-auto tw-p-2"
+          data-cy="add-event-menu"
+        >
+          {possibleEvents.map((e) => (
+            <button
+              key={e.value}
+              type="button"
+              onClick={() => {
+                addHandler(e.value);
+                setAddMenuOpen(false);
+              }}
+              className="tw-w-full tw-cursor-pointer tw-appearance-none tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
+              data-cy={`event-trigger-option-${e.value}`}
+            >
+              {e.name}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
     );
   };
 
