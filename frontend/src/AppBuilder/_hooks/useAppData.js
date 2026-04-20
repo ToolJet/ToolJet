@@ -27,6 +27,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -114,6 +115,8 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
+  const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -264,7 +267,7 @@ const useAppData = (
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -330,10 +333,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -595,10 +600,38 @@ const useAppData = (
   useEffect(() => {
     if (isComponentLayoutReady) {
       mode === 'edit' && initSuggestions(moduleId);
-      runOnLoadQueries(moduleId).then(() => {
+
+      const loadLibrariesAndRun = async () => {
+        // Load JS libraries and preloaded JS from globalSettings before running queries
+        const globalSettings = useStore.getState().globalSettings;
+        const jsLibraries = globalSettings?.libraries?.javascript || [];
+        const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
+
+        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
+
+        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+          setJsLibraryLoading(true);
+          try {
+            const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
+
+            // Execute preloaded JS — its returned exports merge into the registry
+            const preloadedExports = await executePreloadedJS(preloadedJS, registry);
+            const fullRegistry = { ...registry, ...preloadedExports };
+
+            setJsLibraryRegistry(fullRegistry);
+          } catch (error) {
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
+          } finally {
+            setJsLibraryLoading(false);
+          }
+        }
+
+        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      };
+
+      loadLibrariesAndRun();
     }
   }, [isComponentLayoutReady, moduleId, mode]);
 
