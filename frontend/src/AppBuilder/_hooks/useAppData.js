@@ -66,6 +66,13 @@ const useAppData = (
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
+  // Track last versionId so we can reset per-module slices (components, dependencyGraph,
+  // resolvedStore, etc.) when a ModuleViewer's pin changes in-session. Without this the
+  // old version's dependency graph retains component IDs that no longer exist in the new
+  // version's state, and the next updateDependencyValues → validateProperty call throws
+  // "Cannot read properties of undefined (reading 'component')" → the then-block rejects →
+  // the "Error fetching module data" toast fires even though the API returned 200.
+  const lastModuleVersionRef = useRef(versionId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
 
@@ -259,6 +266,16 @@ const useAppData = (
       return;
     }
     let cancelled = false;
+    // Module in-session version switch (pin change): tear down the previous version's
+    // per-module slices before repopulating. Otherwise stale component IDs remain in
+    // dependencyGraph / resolvedStore and setResolvedGlobals → updateDependencyValues
+    // walks them, calling validateProperty(oldComponentId) which throws because
+    // getComponentDefinition returns undefined — triggering the "Error fetching module
+    // data" toast even on a successful fetch.
+    if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
+      initModules(moduleId);
+    }
+    lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -266,12 +283,22 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // For public/unauthenticated viewers, use the pre-fetched definition
-      // from the parent app's response — the version API requires auth.
-      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
-      if (moduleDefinition) {
-        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
-        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      // Authenticated viewers should always fetch the pinned version directly. The cached
+      // `moduleDefinition` from the parent app's response is branch-scoped (via fetchModules)
+      // and represents the parent's current-branch view of the module — using it would bypass
+      // any explicit version pin on the ModuleViewer. Truly public viewers can't call the
+      // auth-gated version API, so they fall back to the pre-fetched cached definition.
+      const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
+      if (isUnauthenticated) {
+        const moduleDefinition = getModuleDefinition(appId);
+        if (moduleDefinition) {
+          // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+        } else if (versionId) {
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       } else if (versionId) {
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
@@ -297,7 +324,11 @@ const useAppData = (
       .then(async (result) => {
         if (cancelled) return;
         let appData = { ...result };
-        let editorEnvironment = result.editorEnvironment;
+        // The module-by-name endpoint returns the module alone, without `editorEnvironment`
+        // (that field is only populated by the parent app's fetchApp response). Fall back to
+        // the environmentId prop so downstream `.id` access doesn't throw and surface a
+        // misleading "Error fetching module data" toast.
+        let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;

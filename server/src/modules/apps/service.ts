@@ -707,6 +707,15 @@ export class AppsService implements IAppsService {
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
+      // Auto-pin consumer ModuleViewer refs when a module is released on the org's default
+      // branch. An "unpinned" ref is stored as a branch name (e.g. "main", "new-branch") and
+      // resolves via fetchModules branch-scoping. Once the user releases a named version we
+      // want those refs to pin to that version so the consumer no longer follows the active
+      // draft on main.
+      if (app.type === APP_TYPES.MODULE && releasedVersion?.name) {
+        await this.pinUnpinnedModuleViewerRefs(manager, app, releasedVersion.name, user.organizationId);
+      }
+
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
@@ -726,6 +735,53 @@ export class AppsService implements IAppsService {
       });
       return;
     });
+  }
+
+  /**
+   * Rewrites consumer app ModuleViewer components on the default branch (main) whose
+   * `moduleVersionId.value` currently holds a branch name (the "unpinned, follows current
+   * branch" convention) to the released version name. Scope: same organization, same module
+   * (matched by co_relation_id), host app_version on the default branch only — feature-branch
+   * refs keep their unpinned semantics until their own branch is merged.
+   *
+   * Concretely performed as a single UPDATE:
+   *   - match components of type ModuleViewer
+   *   - whose moduleAppId.value equals this module's co_relation_id
+   *   - whose moduleVersionId.value is a branch name in this org's branch registry
+   *   - whose owning app_version is on the org's default branch
+   *   - whose owning app lives in this organization
+   * and set moduleVersionId.value to the released version name.
+   */
+  private async pinUnpinnedModuleViewerRefs(
+    manager: EntityManager,
+    moduleApp: App,
+    releasedVersionName: string,
+    organizationId: string
+  ): Promise<void> {
+    if (!moduleApp?.co_relation_id) return;
+    try {
+      await manager.query(
+        `UPDATE components c
+         SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
+         FROM pages p
+         JOIN app_versions av ON av.id = p.app_version_id
+         JOIN apps a ON a.id = av.app_id
+         JOIN organization_git_sync_branches hb ON hb.id = av.branch_id
+         WHERE c.page_id = p.id
+           AND c.type = 'ModuleViewer'
+           AND a.organization_id = $2
+           AND hb.organization_id = $2
+           AND hb.is_default = true
+           AND c.properties->'moduleAppId'->>'value' = $3
+           AND c.properties->'moduleVersionId'->>'value' IN (
+             SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $2
+           )`,
+        [releasedVersionName, organizationId, moduleApp.co_relation_id]
+      );
+    } catch (err) {
+      // Don't fail the release if the pin rewrite hits an edge — log and continue.
+      console.error('[module-release] pinUnpinnedModuleViewerRefs failed:', err?.message);
+    }
   }
 
   /**
