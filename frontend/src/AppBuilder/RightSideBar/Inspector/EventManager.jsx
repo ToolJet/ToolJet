@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
-import { Copy, Trash2 } from 'lucide-react';
+import { ArrowRight, Copy, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import { Popover, PopoverTrigger, PopoverContent, Button } from '@/components/ui/Rocket';
+import { Popover, PopoverTrigger, PopoverContent, Button, Switch, Spinner } from '@/components/ui/Rocket';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -18,7 +18,6 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
-import ManageEventButton from './ManageEventButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -1339,25 +1338,41 @@ export const EventManager = ({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
+                              data-cy="event-handler-card"
+                              className="tw-mb-1 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
                             >
-                              <ManageEventButton
-                                eventName={event?.name}
-                                eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
-                                actionName={actionMeta.name}
-                                removeHandler={removeHandler}
-                                index={index}
-                                darkMode={darkMode}
-                                isDisabled={!!event.event.disabled}
-                                actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
-                                eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
-                                eventsDeletedLoader={
-                                  index === eventToDeleteLoaderIndex
-                                    ? eventToDeleteLoaderIndex === 0
-                                      ? true
-                                      : !!eventToDeleteLoaderIndex
-                                    : false
-                                }
-                              />
+                              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
+                                <div className="tw-flex tw-w-full tw-items-center tw-gap-2">
+                                  <span
+                                    className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+                                    data-cy="event-handler-name"
+                                  >
+                                    {event?.name}
+                                  </span>
+                                  {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
+                                  index === eventToDeleteLoaderIndex ? (
+                                    <Spinner size="default" />
+                                  ) : (
+                                    <Switch
+                                      checked={!event.event.disabled}
+                                      onCheckedChange={(checked) => handlerChanged(index, 'disabled', !checked)}
+                                      onPointerDown={(e) => e.stopPropagation()}
+                                      onClick={(e) => e.stopPropagation()}
+                                      aria-label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+                                      data-cy="event-row-switch"
+                                    />
+                                  )}
+                                </div>
+                                <div className="tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-1">
+                                  <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                    {eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                  </span>
+                                  <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
+                                  <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-text-right tw-font-body-default tw-text-text-placeholder">
+                                    {actionMeta.name}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </PopoverTrigger>
                           <PopoverContent
