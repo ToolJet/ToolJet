@@ -15,7 +15,7 @@ For this guide, we are going to use one of the existing templates on ToolJet: **
 
 - Create a query named **`get_employees`** which is configured to fetch records from a database table such as **`ett_employee_details`**
 
-- Select the operation as **Liste rows** and select the mode as **GUI**
+- Select the operation as **List rows** and select the mode as **GUI**
 
 ### ListView Data Configuration
 
@@ -67,4 +67,4 @@ After setting up event handlers and configuring the ListView to navigate to a de
 
 On the destination page, this data is accessed using **`{{variables.selectedEmp[0].name}}`**
 
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/overview2.png" alt="Display data on the new page"/>   
+<img className="screenshot-full img-full" src="/img/how-to/display-listview-record-on-new-page/overview2.png" alt="Display data on the new page" />

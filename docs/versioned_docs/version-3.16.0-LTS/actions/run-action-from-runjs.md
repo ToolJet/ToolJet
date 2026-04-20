@@ -5,7 +5,7 @@ title: Run Actions from RunJS query
 
 ToolJet allows you to execute various [actions](/docs/actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
 
-### Run Query 
+## Run Query 
 
 To trigger a query, you can use the below functions:
 
@@ -25,7 +25,7 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 <img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
-### Reset Query
+## Reset Query
 
 To reset a query, you can use the below functions:
 
@@ -39,11 +39,11 @@ await actions.resetQuery('getSalesData')
 // replace getSalesData with your query name
 ```
 
-### Get Query Data
+## Get Query Data
 
 In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getLoadingState()` functions:
 
-#### Trigger a query and retrieve its data:
+### Trigger a query and retrieve its data:
 
 ```js
 await queries.getSalesData.run(); 
@@ -53,7 +53,7 @@ let value = queries.getSalesData.getData();
 // replace getSalesData with your query name
 ```
 
-#### Trigger a query and retrieve its raw data:
+### Trigger a query and retrieve its raw data:
 
 ```js
 await queries.getCustomerData.run(); 
@@ -63,7 +63,7 @@ let value = queries.getCustomerData.getRawData();
 // replace getCustomerData your with query name
 ```
 
-#### Trigger a query and retrieve its loading state:
+### Trigger a query and retrieve its loading state:
 
 ```js
 await queries.getTodos.run()
@@ -73,7 +73,7 @@ let value = queries.getTodos.getLoadingState();
 //replace getTodos with your query name
 ```
 
-### Set Variables
+## Set Variables
 
 To create a variable, you can use the below function:
 
@@ -81,7 +81,7 @@ To create a variable, you can use the below function:
 actions.setVariable('<variableName>', `<variableValue>`)
 ```
 
-### Unset Variable
+## Unset Variable
 
 To delete a created variable, you can use the below function:
 
@@ -91,11 +91,11 @@ To delete a created variable, you can use the below function:
 actions.unSetVariable('<variableName>')
 ```
 
-### Get Variables
+## Get Variables
 
 To access variables immediately after setting them in a RunJS query, you can use the `getVariable` and `getPageVariable` functions:
 
-#### Set and retrieve a variable: 
+### Set and retrieve a variable: 
 
 ```js
 actions.setVariable('mode','dark');
@@ -104,7 +104,7 @@ actions.setVariable('mode','dark');
 return actions.getVariable('mode');
 ```
 
-#### Set and retrieve a page-specific variable:
+### Set and retrieve a page-specific variable:
 ```js
 actions.setPageVariable('number',1);
 //replace number with your desired variable name
@@ -112,7 +112,7 @@ actions.setPageVariable('number',1);
 return actions.getPageVariable('number');
 ```
 
-### Logout
+## Logout
 
 To log out the current logged-in user from the ToolJet, use the below function:
 
@@ -120,7 +120,7 @@ To log out the current logged-in user from the ToolJet, use the below function:
 actions.logout();
 ```
 
-### Show Modal
+## Show Modal
 
 To open a modal using RunJS query, use the below function:
 
@@ -128,7 +128,7 @@ To open a modal using RunJS query, use the below function:
 actions.showModal('<modalName>')
 ```
 
-### Close Modal
+## Close Modal
 
 To close a modal using RunJS query, use the below function:
 
@@ -136,7 +136,7 @@ To close a modal using RunJS query, use the below function:
 actions.closeModal('<modalName>')
 ```
 
-### Set Local Storage 
+## Set Local Storage 
 
 Set a value in local storage using the below code:
 
@@ -146,7 +146,7 @@ Set a value in local storage using the below code:
 actions.setLocalStorage('key', 'value');
 ```
 
-### Copy to Clipboard
+## Copy to Clipboard
 
 Use the below code to copy content to the clipboard:
 
@@ -154,7 +154,7 @@ Use the below code to copy content to the clipboard:
 actions.copyToClipboard('<contentToCopy>')
 ```
 
-### Generate File
+## Generate File
 
 The below action can be used to generate a file.
 
@@ -182,7 +182,7 @@ Example for generating PDF file:
 actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}') // generate a text file named Pdffile1 with the data from the current page of table
 ```
 
-### Go to App
+## Go to App
 
 You can switch to a different application using the below action:
 
@@ -193,7 +193,7 @@ actions.goToApp('slug',queryparams)
 - `slug` can be found in URL of the released app after `application/` or in the share modal that opens up when you click on the `Share` button on the top-right of the app-builder
 - `queryparams` can be provided in this format - `[ ['key1','value1' ], ['key2','value2'] ]`
 
-### Show Alert
+## Show Alert
 
 To show an alert using RunJS query, use the below code:
 
@@ -208,11 +208,11 @@ Example:
 actions.showAlert('error' , 'This is an error' )
 ```
 
-### Run Multiple Actions From RunJS Query
+## Run Multiple Actions From RunJS Query
 
 To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
 
-Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/how-to/run-query-at-specified-intervals)**.
+Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/data-sources/run-query-at-specified-intervals)**.
 
 ```js
 actions.setVariable('interval',setInterval(countdown, 5000));

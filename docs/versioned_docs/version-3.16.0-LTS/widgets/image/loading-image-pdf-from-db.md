@@ -2,11 +2,8 @@
 id: loading-image-pdf-from-db
 title: Upload And View Images Using Base64 String
 ---
-<div style={{paddingBottom:'15px'}}>
 
 This guide shows how to upload and view images using the base64 string format in your ToolJet application. 
-
-</div>
 
 ## 1. Create a New Table In ToolJet Database
 
@@ -16,9 +13,9 @@ This guide shows how to upload and view images using the base64 string format in
 
 - Click on **Add more columns** button and add this column: `image` and select `varchar` as datatype.
 
-<i>While we are using the ToolJet Database for this guide; feel free to use other databases while applying the same principles.</i>
+While we are using the ToolJet Database for this guide; feel free to use other databases while applying the same principles.
 
-<img style={{ marginTop: '15px', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/create-table.png" alt="Create New Table in TJDB"  />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/create-table.png" alt="Create New Table in TJDB"  />
 
 ## 2. Upload File To The Database
 
@@ -44,9 +41,9 @@ This guide shows how to upload and view images using the base64 string format in
 {{components.image_picker.file[0].base64Data}}
 ```
 
-<i>In the above query, we are using the **exposed variables** of the filepicker component to get the base64 string of the file we had uploaded earlier.</i>
+In the above query, we are using the **exposed variables** of the filepicker component to get the base64 string of the file we had uploaded earlier.
 
-<img style={{ marginTop: '15px', marginTop: '15px', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/upload-query.png" alt="Add Files Query"  />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/upload-query.png" alt="Add Files Query"  />
 
 - Add a **[Button](/docs/widgets/button)** component below the filepicker and rename it to **upload**.
 
@@ -55,7 +52,7 @@ Event - `On click`, Action - `Run Query` and Query - `upload_files`.
 
 - Now, Click on the **Upload** button to upload the files that we had selected in the Filepicker component earlier.
 
-<img style={{ marginBottom:'15px' }}  className="screenshot-full img-full" src="/img/how-to/load-base64/image-event-handler.png" alt="Upload Button Properties"  />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/image-event-handler.png" alt="Upload Button Properties"  />
 
 The upload process is now complete. Whenever a file is selected in the Filepicker component and the upload button is clicked, the base64 string of the file will be automatically written to the database.
 
@@ -74,6 +71,6 @@ The upload process is now complete. Whenever a file is selected in the Filepicke
 {{'data:image;base64,' + queries.get_files.data[0].image}}
 ```
 
-<i>The provided code constructs a Data URL to display the base64-encoded data as an image.</i> 
+The provided code constructs a Data URL to display the base64-encoded data as an image.
 
-<img style={{ marginTop: '15px', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/display-image.png" alt="Final Preview"  />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/display-image.png" alt="Final Preview"  />

@@ -2,13 +2,8 @@
 id: use-to-py-function-in-runpy
 title: "Translating JavaScript Objects to Python in RunPy"
 ---
-<div style={{paddingBottom:'24px'}}>
 
 This guide demonstrates the utilization of the **`to_py()`** function in RunPy queries to convert JavaScript objects into their corresponding Python representations. It enables seamless interoperability between ToolJet components, JavaScript-based queries, and Python logic. Using `to_py()`, structured data such as objects and arrays can be safely accessed and processed within Python code.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## The to_py() Function
 
@@ -16,11 +11,9 @@ The **to_py()** function within the **Pyodide** library serves as the counterpar
 
 Similar to **to_js()**, **to_py()** facilitates the mapping and conversion of data types between JavaScript and Python. It effectively converts JavaScript objects, arrays, and other data structures into their Python counterparts.
 
-**Note**: Refer to the **[RunPy](/docs/data-sources/run-py)** documentation for a more in-depth understanding.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+:::info
+Refer to the **[RunPy](/docs/data-sources/run-py)** documentation for a more in-depth understanding.
+:::
 
 ## Using the to_py() Function
 
@@ -55,10 +48,6 @@ country:"India"
 By leveraging to_py(), JavaScript objects can seamlessly transition into Python representations, allowing for manipulation using Python code within the Pyodide environment.
 
 Both **to_js()** and **to_py()** functions offer a convenient means to exchange data between Python and JavaScript in Pyodide, enabling the utilization of both languages' strengths in a unified environment.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Why the Use of to_py() is Essential?
 
@@ -103,6 +92,4 @@ total = quantity * price
 }
 ```
 
-<img style={{ marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/to_py/example.png" alt="Appwrite update" />
-
-</div>
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-m" src="/img/how-to/to_py/example.png" alt="Appwrite update" />

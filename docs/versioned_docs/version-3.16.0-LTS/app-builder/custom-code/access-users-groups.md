@@ -31,17 +31,17 @@ The `groups` variable is an array that contains the names of the groups the user
 
 In this example, we'll disable the *Add new item* button for the users who are not a part of the *admin* group.
 
-1. **Click on the **Button** handle to open its properties and go to the **Disable** property**
+1. Click on the **Button** handle to open its properties and go to the **Disable** property.
 
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/v2/button.png" alt="Properties of button" />
+    <img className="screenshot-full img-m" src="/img/how-to/access-currentuser/v2/button.png" alt="Properties of button" />
 
 2. **Configure the Disable Property**  
     Set the Disable field to check whether the user belongs to the admin group. If the user is not part of the admin group, the button will be disabled. You can use the following code.
     ```javascript
     {{ !globals.currentUser.groups.includes("admin") }}
     ```
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/v2/disable.png" alt="Disable Property of button" />
+    <img className="screenshot-full img-m" src="/img/how-to/access-currentuser/v2/disable.png" alt="Disable Property of button" />
 
 3. After releasing the application, non-admin users will see the button in a disabled state.
 
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/v2/released.png" alt="Released button disabled when user is not admin" />
+    <img className="screenshot-full img-m" src="/img/how-to/access-currentuser/v2/released.png" alt="Released button disabled when user is not admin" />

@@ -205,7 +205,9 @@
                 "app-builder/connecting-with-data-sources/creating-managing-queries",
                 "app-builder/connecting-with-data-sources/accessing-query-results",
                 "app-builder/connecting-with-data-sources/transforming-data",
-                "app-builder/connecting-with-data-sources/binding-data-to-components"
+                "app-builder/connecting-with-data-sources/binding-data-to-components",
+                "app-builder/connecting-with-data-sources/run-query-at-specified-intervals",
+                "app-builder/connecting-with-data-sources/use-custom-parameters"
               ]
             },
             {
@@ -689,9 +691,7 @@
           ]
         },
         "data-sources/permissions",
-        "data-sources/sample-data-sources",
-        "data-sources/use-custom-parameters",
-        "data-sources/run-query-at-specified-intervals"
+        "data-sources/sample-data-sources"
       ]
     },
     {

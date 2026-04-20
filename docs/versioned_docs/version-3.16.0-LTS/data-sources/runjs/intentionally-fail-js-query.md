@@ -5,7 +5,7 @@ title: Intentionally Throwing an Error in RunJS for Debugging
 
 In ToolJet, Run JavaScript (RunJS) queries can be intentionally failed to simulate error scenarios, validate application error handling, and debug query execution flows. This document explains how to **intentionally fail a RunJS** query, by also using custom logs to gain better visibility into query execution using the Debugger panel.
 
-### Failing a RunJS Query Using JavaScript Errors
+## Failing a RunJS Query Using JavaScript Errors
 
 A RunJS query can be intentionally failed by throwing a JavaScript error. When an error is thrown:
 
@@ -14,7 +14,7 @@ A RunJS query can be intentionally failed by throwing a JavaScript error. When a
 - The error is surfaced in the Debugger panel
 
 
-### Creating the Error-Throwing RunJS Query
+## Creating the Error-Throwing RunJS Query
 
 1. Create a new RunJS query by clicking the `+ Add` button on the query panel.
 
@@ -25,7 +25,7 @@ A RunJS query can be intentionally failed by throwing a JavaScript error. When a
     ```
 This causes the RunJS query to fail and allows developers to test how the application responds to query errors.
 
-### Adding an Event Handler for Failure
+## Adding an Event Handler for Failure
 
 3. Now, enhance the query by adding an event handler that will display an alert when the query fails.
 
@@ -37,7 +37,7 @@ Refer to the screencast below:
 
 By following these steps, you can effectively simulate errors in your RunJS queries, aiding in the debugging process and improving the overall robustness of your code.
 
-### Example Query
+## Example Query
 
 The below example demonstrates how intentional failures can be combined with custom logs to trace execution flow during debugging.
 
@@ -54,10 +54,12 @@ actions.log("RunJS query finished");
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
-message:"Intentional failure to test debugging and error handling"
-
-description:"Intentional failure to test debugging and error handling"
-
-lineNumber:4
+    ```json
+    {
+      "message": "Intentional failure to test debugging and error handling",
+      "description": "Intentional failure to test debugging and error handling",
+      "lineNumber": 4
+    }
+    ```
 
 </details>

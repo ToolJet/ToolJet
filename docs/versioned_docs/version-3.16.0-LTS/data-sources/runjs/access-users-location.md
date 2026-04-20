@@ -47,7 +47,7 @@ For privacy reasons, Geolocation requires user permission before locating the de
    <img className="screenshot-full img-full" src="/img/how-to/access-location/v2/locationPrompt.png" alt="Location Prompt" />
 
 5. **Inspect the Returned Data**  
-   Once the query succesfully runs, the coordinates will be returned and displayed in the **Preview** section of query editor. To inspect the data returned by the query, go to the **Inspector** on the left sidebar, expand Queries and click `getLocation` (query name), and open *Preview*.
+   Once the query successfully runs, the coordinates will be returned and displayed in the **Preview** section of query editor. To inspect the data returned by the query, go to the **Inspector** on the left sidebar, expand Queries and click `getLocation` (query name), and open *Preview*.
 
 6. **Add the Map Component**  
 

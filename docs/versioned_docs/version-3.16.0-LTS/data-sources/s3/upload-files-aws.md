@@ -20,7 +20,7 @@ Once you have successfully added the AWS data source, build a basic UI using the
 
 ## Query Builder
 
-We'll create the following queries uisng the query builder in your ToolJet app.
+We'll create the following queries using the query builder in your ToolJet app.
 
 1. **get_buckets**
 2. **list_objects**
