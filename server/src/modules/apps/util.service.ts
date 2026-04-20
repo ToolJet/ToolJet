@@ -788,6 +788,7 @@ export class AppsUtilService implements IAppsUtilService {
               .createQueryBuilder(App, 'app')
               .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
               .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
               .distinct(true)
               .getMany()
           : [];

@@ -438,6 +438,8 @@ export class AppImportExportService {
         const resolvedModules = await manager
           .createQueryBuilder(App, 'app')
           .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
+          .andWhere('app.organization_id = :organizationId', { organizationId: appToExport.organizationId })
+          .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
           .select(['app.id', 'app.co_relation_id'])
           .getMany();
         for (const mod of resolvedModules) {
@@ -461,7 +463,9 @@ export class AppImportExportService {
             });
             if (byName) {
               versionDbId = byName.id;
-            } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(moduleAppId.versionIdentifier)) {
+            } else if (
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(moduleAppId.versionIdentifier)
+            ) {
               const byId = await manager.findOne(AppVersion, {
                 where: { id: moduleAppId.versionIdentifier, appId: resolvedId },
               });
@@ -1795,7 +1799,12 @@ export class AppImportExportService {
 
             // Handle ModuleViewer component query input mapping
             if (savedComponent.type === 'ModuleViewer') {
-              await this.handleModuleViewerComponent(savedComponent, appResourceMappings.dataQueryMapping, manager);
+              await this.handleModuleViewerComponent(
+                savedComponent,
+                appResourceMappings.dataQueryMapping,
+                manager,
+                user.organizationId
+              );
               // Save the component again if properties were updated
               await manager.save(savedComponent);
             }
@@ -3277,7 +3286,8 @@ export class AppImportExportService {
   protected async handleModuleViewerComponent(
     component: Component,
     dataQueryMapping: Record<string, unknown>,
-    manager: EntityManager
+    manager: EntityManager,
+    organizationId?: string
   ): Promise<void> {
     const properties = component.properties;
 
@@ -3288,9 +3298,15 @@ export class AppImportExportService {
 
     const moduleAppId = properties.moduleAppId.value;
     try {
-      // moduleAppId stores co_relation_id after migration — look up by co_relation_id
+      // moduleAppId stores co_relation_id after migration — look up by co_relation_id.
+      // Scope to module type (and organization when provided) so a colliding coRelId on
+      // an app row, or a module in another workspace sharing the same DB, can't be matched.
       const moduleApp = (await manager.findOne(App, {
-        where: { co_relation_id: moduleAppId },
+        where: {
+          co_relation_id: moduleAppId,
+          type: APP_TYPES.MODULE,
+          ...(organizationId ? { organizationId } : {}),
+        },
         relations: ['appVersions'],
       })) as App;
 
