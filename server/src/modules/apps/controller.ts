@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -53,6 +53,12 @@ export class AppsController implements IAppsController {
     }
 
     return this.appsService.create(user, appCreateDto);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG)
+  @Get('app-authentication-config/:slug')
+  getAppAuthenticationConfig(@Param('slug') slug: string) {
+    return this.appsService.getAppAuthenticationConfig(slug);
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)

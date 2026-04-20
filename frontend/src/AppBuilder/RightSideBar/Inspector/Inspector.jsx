@@ -41,7 +41,7 @@ import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
-import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import { copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
