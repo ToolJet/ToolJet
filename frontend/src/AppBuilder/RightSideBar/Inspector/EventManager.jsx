@@ -1301,7 +1301,7 @@ export const EventManager = ({
   const renderDraggable = useDraggableInPortal();
   const renderHandlers = (events) => {
     return (
-      <TooltipProvider delayDuration={300}>
+      <TooltipProvider delayDuration={100}>
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result);
@@ -1436,38 +1436,40 @@ export const EventManager = ({
   const renderAddHandlerBtn = () => {
     return (
       <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="default"
-            leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
-            loading={eventsCreatedLoader}
-            className="tw-w-full"
-            data-cy="add-event-handler"
-          >
-            {t('editor.inspector.eventManager.addHandler', 'New event handler')}
-          </Button>
+        <PopoverTrigger
+          type="button"
+          data-cy="add-event-handler"
+          className="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-bg-button-outline tw-px-3 tw-py-1.5 tw-font-title-default tw-text-text-default tw-shadow-elevation-100 hover:tw-bg-button-outline-hover"
+        >
+          <Plus className="tw-h-4 tw-w-4" />
+          {t('editor.inspector.eventManager.addHandler', 'New event handler')}
         </PopoverTrigger>
         <PopoverContent
           side="bottom"
           align="center"
-          className="tw-w-[260px] tw-max-h-[280px] tw-gap-0 tw-overflow-auto tw-p-2"
+          className="tw-z-[10000] tw-max-h-[280px] tw-w-[260px] tw-gap-0 tw-overflow-auto tw-p-2"
           data-cy="add-event-menu"
         >
-          {possibleEvents.map((e) => (
-            <button
-              key={e.value}
-              type="button"
-              onClick={() => {
-                addHandler(e.value);
-                setAddMenuOpen(false);
-              }}
-              className="tw-w-full tw-cursor-pointer tw-appearance-none tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
-              data-cy={`event-trigger-option-${e.value}`}
-            >
-              {e.name}
-            </button>
-          ))}
+          {possibleEvents.length === 0 ? (
+            <div className="tw-px-2 tw-py-1.5 tw-font-body-default tw-text-text-placeholder">
+              {t('editor.inspector.eventManager.noEventsAvailable', 'No events available')}
+            </div>
+          ) : (
+            possibleEvents.map((e) => (
+              <button
+                key={e.value}
+                type="button"
+                onClick={() => {
+                  addHandler(e.value);
+                  setAddMenuOpen(false);
+                }}
+                className="tw-w-full tw-cursor-pointer tw-appearance-none tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
+                data-cy={`event-trigger-option-${e.value}`}
+              >
+                {e.name}
+              </button>
+            ))
+          )}
         </PopoverContent>
       </Popover>
     );
