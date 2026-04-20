@@ -324,10 +324,8 @@ export default class Bigquery implements QueryService {
     sourceOptions: any,
     context?: { user?: User; app?: App }
   ): Promise<{ accessToken: string; needsOAuth?: any }> {
-    // Backward compatibility: treat missing authentication_type as service_account
-    // when a private_key is present (matches original plugin behaviour).
     const authType = sourceOptions['authentication_type'];
-    if (authType === 'service_account' || (!authType && sourceOptions['private_key'])) {
+    if (authType === 'service_account') {
       const token = await this.getServiceAccountToken(sourceOptions);
       return { accessToken: token };
     }
@@ -403,15 +401,11 @@ export default class Bigquery implements QueryService {
   }
 
   private async buildConnection(sourceOptions: any): Promise<any> {
-    // Backward compatibility: if authentication_type is not set, fall back to
-    // service_account when a private_key is present (original behaviour).
     const authType = sourceOptions['authentication_type'];
-    if (authType === 'service_account' || (!authType && sourceOptions['private_key'])) {
+    if (authType === 'service_account') {
       return this.getServiceAccountConnection(sourceOptions);
     }
 
-    // OAuth path – we need an access token that was already resolved
-    // The caller should pass the token through sourceOptions['access_token']
     const accessToken = sourceOptions['access_token'];
     if (!accessToken) {
       throw new QueryError(
@@ -421,7 +415,6 @@ export default class Bigquery implements QueryService {
       );
     }
 
-    // Create an OAuth2 client and set credentials
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -617,9 +610,7 @@ export default class Bigquery implements QueryService {
       // Handle OAuth 401/403 errors
       const statusCode = error.response?.statusCode || error.code || error.data?.statusCode || error.statusCode;
 
-      const isServiceAccount =
-        sourceOptions['authentication_type'] === 'service_account' ||
-        (!sourceOptions['authentication_type'] && sourceOptions['private_key']);
+      const isServiceAccount = sourceOptions['authentication_type'] === 'service_account';
 
       if (!isServiceAccount && (statusCode === 401 || statusCode === 403)) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', errorMessage, {
@@ -773,7 +764,7 @@ export default class Bigquery implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const authType = sourceOptions['authentication_type'];
-    if (authType === 'service_account' || (!authType && sourceOptions['private_key'])) {
+    if (authType === 'service_account') {
       const client = this.getServiceAccountConnection(sourceOptions);
       if (!client) {
         throw new Error('Invalid credentials');
