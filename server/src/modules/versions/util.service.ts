@@ -257,7 +257,9 @@ export class VersionUtilService implements IVersionUtilService {
 
   async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
     try {
-      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
+      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration).
+      // Branch rows are persisted with status=DRAFT, so filtering on status alone covers both
+      // "draft main version" and "feature-branch state" cases — no versionType check needed.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
