@@ -89,14 +89,13 @@ function DataSourcePicker({ darkMode }) {
     });
   };
 
-  // Group user-defined data sources by kind
-  const groupedSources = filteredUserDefinedDataSources.reduce((acc, source) => {
-    if (!acc[source.kind]) acc[source.kind] = { sources: [], representative: source };
-    acc[source.kind].sources.push(source);
-    return acc;
-  }, {});
-
   const flatItems = useMemo(() => {
+    const groupedSources = filteredUserDefinedDataSources.reduce((acc, source) => {
+      if (!acc[source.kind]) acc[source.kind] = { sources: [], representative: source };
+      acc[source.kind].sources.push(source);
+      return acc;
+    }, {});
+
     const items = [];
     Object.entries(groupedSources).forEach(([kind, { sources, representative }]) => {
       const isCollapsed = collapsedGroups.has(kind);
@@ -108,7 +107,7 @@ function DataSourcePicker({ darkMode }) {
       }
     });
     return items;
-  }, [groupedSources, collapsedGroups]);
+  }, [filteredUserDefinedDataSources, collapsedGroups]);
 
   const renderItem = (item) => {
     if (item.type === 'group-header') {
@@ -243,6 +242,7 @@ function DataSourcePicker({ darkMode }) {
           <Virtuoso
             style={{ height: 'calc(100vh - 420px)', minHeight: 200 }}
             data={flatItems}
+            itemKey={(_, item) => (item.type === 'group-item' ? item.source.id : `${item.type}-${item.kind}`)}
             itemContent={(_, item) => renderItem(item)}
           />
         </>

@@ -16,6 +16,17 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { ToolTip } from '@/_components';
 
+const ITEM_HEIGHTS = {
+  'defaults-header': 40,
+  'defaults-new-folder': 32,
+  'defaults-item': 32,
+  'group-header': 40,
+  'group-item': 32,
+  'sample-header': 40,
+  'sample-item': 32,
+  'group-end': 8,
+};
+
 function DataSourceSelect({
   isDisabled,
   selectRef,
@@ -122,62 +133,58 @@ function DataSourceSelect({
     if (e.key === 'Escape') closePopup();
   };
 
-  // Determine defaults list
-  const defaultsList = workflowDataSources ? defaultDataSources || [] : defaultStaticDataSources || [];
-
-  // Filter defaults by search
-  const filteredDefaults = searchTerm
-    ? defaultsList.filter((ds) => {
-        const term = searchTerm.toLowerCase();
-        const displayName = workflowDataSources
-          ? workflowDefaultSources[cleanWord(ds.name)]?.name || ds.name
-          : defaultSources[cleanWord(ds.name)]?.name || ds.name;
-        return displayName.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
-      })
-    : defaultsList;
-
-  // Build user-defined grouped sources
-  const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
-  const filteredUserDefined = availableDataSources
-    .filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC)
-    .filter((ds) => {
-      if (!searchTerm) return true;
-      const term = searchTerm.toLowerCase();
-      return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
-    })
-    .sort((a, b) => {
-      if (a.type === 'sample' && b.type !== 'sample') return -1;
-      if (b.type === 'sample' && a.type !== 'sample') return 1;
-      return 0;
-    });
-
-  const groupedUserDefined = Object.entries(groupBy(filteredUserDefined, 'kind'));
-
-  // Sample data sources (workflow mode only — provided as prop)
-  const filteredSampleDS = sampleDataSources.filter((ds) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
-  });
-  const groupedSampleDS = Object.entries(groupBy(filteredSampleDS, 'kind'));
-
-  const showNewFolder = allowNewFolder && !workflowDataSources && !!createFolder;
-  const showDefaultsSection = showNewFolder ? true : filteredDefaults.length > 0;
-
   const flatItems = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+
+    // Defaults section
+    const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
+    const defaultsList = workflowDataSources ? defaultDataSources || [] : staticSources;
+    const filteredDefaults = searchTerm
+      ? defaultsList.filter((ds) => {
+          const displayName = workflowDataSources
+            ? workflowDefaultSources[ds.name.replace(/default/g, '')]?.name || ds.name
+            : defaultSources[ds.name.replace(/default/g, '')]?.name || ds.name;
+          return displayName.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
+        })
+      : defaultsList;
+    const showNewFolder = allowNewFolder && !workflowDataSources && !!createFolder;
+    const showDefaultsSection = showNewFolder || filteredDefaults.length > 0;
+
+    // User-defined sources
+    const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
+    const filteredUserDefined = availableDataSources
+      .filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC)
+      .filter((ds) => {
+        if (!searchTerm) return true;
+        return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
+      })
+      .sort((a, b) => {
+        if (a.type === 'sample' && b.type !== 'sample') return -1;
+        if (b.type === 'sample' && a.type !== 'sample') return 1;
+        return 0;
+      });
+    const groupedUserDefined = Object.entries(groupBy(filteredUserDefined, 'kind'));
+
+    // Sample data sources (workflow mode, prop)
+    const filteredSampleDS = sampleDataSources.filter((ds) => {
+      if (!searchTerm) return true;
+      return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
+    });
+    const groupedSampleDS = Object.entries(groupBy(filteredSampleDS, 'kind'));
+
     const items = [];
 
     if (showDefaultsSection) {
-      items.push({ type: 'defaults-header' });
+      items.push({ type: 'defaults-header', showNewFolder });
       if (!defaultsCollapsed) {
         if (showNewFolder) items.push({ type: 'defaults-new-folder' });
         filteredDefaults.forEach((source) => {
           const displayName = workflowDataSources
-            ? workflowDefaultSources[cleanWord(source.name)]?.name || source.name
-            : defaultSources[cleanWord(source.name)]?.name || source.name;
+            ? workflowDefaultSources[source.name.replace(/default/g, '')]?.name || source.name
+            : defaultSources[source.name.replace(/default/g, '')]?.name || source.name;
           items.push({ type: 'defaults-item', source, displayName });
         });
-        items.push({ type: 'group-end' });
+        items.push({ type: 'group-end', key: 'defaults-end' });
       }
     }
 
@@ -188,7 +195,7 @@ function DataSourceSelect({
       items.push({ type: 'group-header', kind, kindName, representative: sources[0], isCollapsed });
       if (!isCollapsed) {
         sources.forEach((source) => items.push({ type: 'group-item', source, kind }));
-        items.push({ type: 'group-end' });
+        items.push({ type: 'group-end', key: `${kind}-end` });
       }
     });
 
@@ -200,37 +207,32 @@ function DataSourceSelect({
       items.push({ type: 'sample-header', kind, sampleKind, kindName, representative: sources[0], isCollapsed });
       if (!isCollapsed) {
         sources.forEach((source) => items.push({ type: 'sample-item', source }));
-        items.push({ type: 'group-end' });
+        items.push({ type: 'group-end', key: `${sampleKind}-end` });
       }
     });
 
     return items;
   }, [
-    showDefaultsSection,
-    defaultsCollapsed,
-    showNewFolder,
-    filteredDefaults,
-    groupedUserDefined,
-    groupedSampleDS,
+    searchTerm,
+    userDefinedSources,
+    sampleDataSources,
+    dataSources,
+    defaultDataSources,
+    workflowDataSources,
     collapsedKinds,
     dataSourcesKinds,
-    workflowDataSources,
+    defaultsCollapsed,
+    allowNewFolder,
+    createFolder,
   ]);
 
-  const ITEM_HEIGHTS = {
-    'defaults-header': 40,
-    'defaults-new-folder': 32,
-    'defaults-item': 32,
-    'group-header': 40,
-    'group-item': 32,
-    'sample-header': 40,
-    'sample-item': 32,
-    'group-end': 8,
-  };
-
-  const listHeight = Math.min(
-    flatItems.reduce((sum, item) => sum + (ITEM_HEIGHTS[item.type] || 32), 0),
-    448
+  const listHeight = useMemo(
+    () =>
+      Math.min(
+        flatItems.reduce((sum, item) => sum + (ITEM_HEIGHTS[item.type] || 32), 0),
+        448
+      ),
+    [flatItems]
   );
 
   const renderItem = (item) => {
@@ -440,6 +442,13 @@ function DataSourceSelect({
         className="tj-scrollbar"
         style={{ height: listHeight }}
         data={flatItems}
+        itemKey={(_, item) =>
+          item.type === 'group-item' || item.type === 'sample-item'
+            ? item.source.id
+            : item.type === 'group-end'
+            ? item.key
+            : `${item.type}-${item.kind ?? 'defaults'}`
+        }
         itemContent={(_, item) => renderItem(item)}
       />
 
