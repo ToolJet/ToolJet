@@ -8,6 +8,7 @@ import {
     releaseApp,
 } from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -302,6 +303,7 @@ describe("Custom Group Granular Access", () => {
         };
 
         cy.defaultWorkspaceLogin();
+        cleanAllUsers();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -462,8 +464,7 @@ describe("Custom Group Granular Access", () => {
         const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
         let appId1, appId2, groupId1;
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
-
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
         loginAsAdmin();
         createAndReleaseApp(data.appName, {
             componentValue: `{{globals.environment.name}}`,
@@ -574,6 +575,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(`/applications/${appId1}`);
             expectRestrictedModal();
         });
+        });
     });
 
     it("Should verify builder own app dev access and invalid environment preview handling", () => {
@@ -589,7 +591,7 @@ describe("Custom Group Granular Access", () => {
             appId1 = appId;
         });
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
 
         loginAsAdmin();
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
@@ -680,6 +682,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(previewUrl);
             cy.url().should("match", /\/error\/invalid-link?/);
         });
+        });
     });
 
     it("Should verify preview and released app access for End-user", () => {
@@ -707,7 +710,7 @@ describe("Custom Group Granular Access", () => {
                 appId1 = appId;
             })
             .then(() => {
-                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user");
+                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
 
                 //Scenario A : Can acces only released app and Preview button not visible
                 verifyEnvironmentAccess(
@@ -759,8 +762,7 @@ describe("Custom Group Granular Access", () => {
                     "production",
                 );
             });
-
-            
+        });
     });
 
     it("Should verify preview and released app access for custom group End-user", () => {
@@ -781,7 +783,7 @@ describe("Custom Group Granular Access", () => {
             appId2 = appId;
         });
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "end-user");
+        cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
 
         loginAsAdmin();
         cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
@@ -886,6 +888,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(previewUrl);
             cy.url().should("match", /\/error\/invalid-link?/);
         });
+        });
     });
 
     it("Should verify preview and released app access for Signed-up End-user", () => {
@@ -911,7 +914,7 @@ describe("Custom Group Granular Access", () => {
                     canAccessProduction: false,
                     canAccessReleased: false,
                 });
-                cy.apiUpdateAllowSignUp(true, "organization");
+                cy.apiUpdateAllowSignUp(true, "organization").then(()=>{
                 cy.apiLogout();
 
                 //Scenario G : Signing-up with app preview link and should land on app preview
@@ -934,6 +937,7 @@ describe("Custom Group Granular Access", () => {
                 signup(user1, email1);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
             });
+        });
     });
 });
 
