@@ -94,27 +94,52 @@ export default class Snowflake implements QueryService {
     }
   }
 
-  async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
+  async invokeMethod(methodName: string, context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
+    const { datasourceId, datasourceUpdatedAt, dataSourceOptionsEnvironmentId } =
+      (context as any)?.dataSourceDetails ?? {};
+    const dataSourceId =
+      datasourceId && dataSourceOptionsEnvironmentId
+        ? `${datasourceId}-${dataSourceOptionsEnvironmentId}`
+        : datasourceId;
+
     if (methodName === 'listTables') {
-      return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit);
+      return await this._fetchTables(
+        sourceOptions,
+        context,
+        args?.search,
+        args?.page,
+        args?.limit,
+        dataSourceId,
+        datasourceUpdatedAt
+      );
     }
     if (methodName === 'listColumns') {
       const table = args?.values?.table || '';
-      return await this._fetchColumns(sourceOptions, table);
+      return await this._fetchColumns(sourceOptions, context, table, dataSourceId, datasourceUpdatedAt);
     }
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the Snowflake plugin`, {});
   }
 
   private async _fetchTables(
     sourceOptions: SourceOptions,
+    context: unknown,
     search = '',
     page?: number,
-    limit?: number
+    limit?: number,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string
   ): Promise<
     Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     try {
-      const connection: any = await this.buildConnection(sourceOptions);
+      const connection: any = await this.getConnection(
+        sourceOptions,
+        {},
+        true,
+        dataSourceId,
+        dataSourceUpdatedAt,
+        context
+      );
       const searchPattern = `%${search.toUpperCase()}%`;
 
       const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
@@ -149,10 +174,20 @@ export default class Snowflake implements QueryService {
 
   private async _fetchColumns(
     sourceOptions: SourceOptions,
-    table: string
+    context: unknown,
+    table: string,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string
   ): Promise<Array<{ value: string; label: string }>> {
     try {
-      const connection: any = await this.buildConnection(sourceOptions);
+      const connection: any = await this.getConnection(
+        sourceOptions,
+        {},
+        true,
+        dataSourceId,
+        dataSourceUpdatedAt,
+        context
+      );
       const sqlText = `SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? ORDER BY ORDINAL_POSITION`;
       const result: any = await this.connExecuteAsync(connection, { sqlText, binds: [table.toUpperCase()] });
       return result.rows.map((row: any) => ({ value: row.COLUMN_NAME, label: row.COLUMN_NAME }));

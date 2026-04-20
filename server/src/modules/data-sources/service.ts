@@ -339,6 +339,12 @@ export class DataSourcesService implements IDataSourcesService {
         {
           user: { id: user?.id },
           app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+          dataSourceDetails: {
+            datasourceId: dataSource?.id,
+            datasourcekind: dataSource?.kind,
+            datasourceUpdatedAt: dataSourceOptions?.updatedAt,
+            dataSourceOptionsEnvironmentId: dataSourceOptions?.environmentId,
+          },
         },
         sourceOptions,
         args
