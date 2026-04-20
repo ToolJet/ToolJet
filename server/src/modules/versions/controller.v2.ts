@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -30,9 +30,10 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     @User() user: UserEntity,
     @Param('coRelationId') coRelationId: string,
     @Param('versionName') versionName: string,
-    @Query('mode') mode?: string
+    @Query('mode') mode?: string,
+    @Headers('x-branch-id') branchId?: string
   ) {
-    return this.versionService.getVersionByStableIds(coRelationId, versionName, user, mode);
+    return this.versionService.getVersionByStableIds(coRelationId, versionName, user, mode, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_ONE)
