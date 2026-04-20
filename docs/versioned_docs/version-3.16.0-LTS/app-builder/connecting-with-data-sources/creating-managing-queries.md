@@ -17,6 +17,39 @@ Queries are created in the Query Panel, located at the bottom of the App Builder
 
 <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/create-query.png" alt="App Builder: Create queries"/>
 
+## Query Folders
+
+Query Folders let you group related queries into named folders inside the Query Panel, making it easier to manage and navigate large numbers of queries in a single application.
+
+### Creating a Folder
+
+Click the **+** icon in the Query Panel header. From the menu that appears, select **New Folder**.
+
+:::info
+Folder names can only contain letters, numbers, and spaces - special characters are not allowed.
+:::
+
+<img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/query-folder-create.png" alt="App Builder: Create a query folder"/>
+
+### Adding Queries to a Folder
+
+There are three ways to add queries to a folder:
+
+- **Create directly inside a folder**: Click the three-dot menu on a folder and select **Add new query**. The new query will be created inside that folder.
+    <img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-add-query.png" alt="App Builder: Add query to folder"/>
+- **Move an existing query**: Click the three-dot menu on a query and select **Move to a folder**, then choose the destination folder. <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/query-add-folder.png" alt="App Builder: Add query to folder"/>
+- **Drag and drop**: Drag an existing query from the list and drop it into the target folder.
+
+### Deleting a Folder
+
+Click the three-dot menu on a folder and select **Delete**. You will be prompted to choose one of two options:
+
+- **Delete**: Removes the folder. All queries inside are moved back to the root level.
+- **Delete folder and queries**: Permanently deletes the folder along with all the queries inside it.
+
+<img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-delete.png" alt="App Builder: Delete query folder" />
+
 ## Configuring the Query
 
 The interface for configuring queries depends on the type of data source. If you are using any SQL data source, you can configure your query using either GUI mode or SQL mode. Rest of the data sources can be configured using form-based GUI.

@@ -159,9 +159,12 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/integrating-data",
         "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
+        "build-with-ai/bring-your-own-key",
+        "build-with-ai/tj-ai-enterprise",
         "build-with-ai/ai-credits",
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
@@ -307,6 +310,7 @@
               "label": "Component Catalog",
               "items": [
                 "widgets/audio-recorder",
+                "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
@@ -357,6 +361,7 @@
                 "widgets/dropdown",
                 "widgets/email-input",
                 "widgets/file-picker",
+                "widgets/file-input",
                 {
                   "type": "category",
                   "label": "Form",
@@ -424,6 +429,7 @@
                 "widgets/qr-scanner",
                 "widgets/radio-button-v2",
                 "widgets/range-slider",
+                "widgets/reorderable-list",
                 "widgets/spinner",
                 "widgets/star-rating",
                 "widgets/statistics",
@@ -685,7 +691,8 @@
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",
-                "marketplace/plugins/marketplace-plugin-weaviate"
+                "marketplace/plugins/marketplace-plugin-weaviate",
+                "marketplace/plugins/marketplace-plugin-xero"
               ]
             }
           ]
@@ -761,6 +768,14 @@
           "items": [
             "workflows/external-libraries/js",
             "workflows/external-libraries/py"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Environment & Versions",
+          "items": [
+            "workflows/versions-env/version-control",
+            "workflows/versions-env/environments"
           ]
         }
       ]

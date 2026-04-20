@@ -20,12 +20,44 @@ A draft can be saved as a version when you are ready to promote or release your 
 ### Color Schema
 The following color schema represents the status of ToolJet apps across different stages of the development lifecycle.
 
-| Color    | Status        |
-| -------- | -------       |
-| Orange   | Draft Version |
-| Blue     | Saved Version |
-| Green    | Released      |
+<center>
 
+<div style={{ display: 'flex' }} >
+
+<div style = {{ width:'30%' }} >
+
+<figure>
+  <img className="screenshot-full img-full" src="/img/workflows/versions/draft.png" alt="Draft Version"> </img>
+  <figcaption>Draft Version</figcaption>
+</figure>
+
+</div>
+
+<div style = {{ width:'5%' }} > </div>
+
+<div style = {{ width:'30%' }} >
+
+<figure>
+  <img className="screenshot-full img-full" src="/img/workflows/versions/saved.png" alt="Saved Version"> </img>
+  <figcaption>Saved Version</figcaption>
+</figure>
+
+</div>
+
+<div style = {{ width:'5%' }} > </div>
+
+<div style = {{ width:'30%' }} >
+
+<figure>
+  <img className="screenshot-full img-full" src="/img/workflows/versions/released.png" alt="Released Version"> </img>
+  <figcaption>Released Version</figcaption>
+</figure>
+
+</div>
+
+</div>
+
+</center>
 
 ## Creating a Draft Version
 

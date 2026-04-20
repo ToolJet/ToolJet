@@ -21,19 +21,6 @@ External library support for workflows is available on **Enterprise Edition** pl
 
 You can add multiple packages before the bundle finishes building. The bundle regenerates with all current dependencies.
 
-## Bundle Status
-
-After adding or removing packages, ToolJet generates a bundle in the background. The package manager panel displays the current status:
-
-| Status | Meaning |
-|--------|---------|
-| **None** | No packages have been added yet. |
-| **Building** | The bundle is being generated. JavaScript nodes will use the previous bundle (if any) until the new one is ready. |
-| **Ready** | The bundle is built and available for all JavaScript nodes in this workflow version. |
-| **Failed** | Bundle generation encountered an error. Check the error message in the panel and try rebuilding. |
-
-You can manually trigger a rebuild by clicking the **Rebuild** button in the package manager panel.
-
 ## Using Packages in JavaScript Nodes
 
 Once the bundle status is **Ready**, you can `import` the packages directly in any JavaScript node:
@@ -58,9 +45,19 @@ Packages are available to all JavaScript nodes in the workflow — you don't nee
 2. Click the **Remove** icon next to the package you want to remove.
 3. The bundle regenerates automatically without the removed package.
 
+<!-- 
 ## Limitations
 
 - **Enterprise only** — package management is not available in the Community Edition.
 - **npm packages only** — packages must be published to the npm registry.
 - **Bundle per workflow version** — each workflow version maintains its own independent set of dependencies.
-- **No native add-ons** — packages that require native C/C++ compilation during install are not supported. Pure JavaScript and pre-compiled packages work.
+- **No native add-ons** — packages that require native C/C++ compilation during install are not supported. Pure JavaScript and pre-compiled packages work. -->
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

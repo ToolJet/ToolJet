@@ -306,6 +306,7 @@ module.exports = {
             //   badge: false,
             // },
             "2.50.0-LTS": {
+              label: '2.50.0-LTS (Legacy)',
               banner: 'none',
               badge: false
             },
@@ -514,6 +515,10 @@ module.exports = {
             to: '/docs/setup/upgrade-to-v3',
             from: '/docs/setup/cloud-v3-migration',
           },
+          {
+            to: '/docs/tj-setup/observability/observability-otel',
+            from: '/docs/tj-setup/observability-otel',
+          }
           // {
           //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
           //   from: '/docs/workflows/trigger-workflow-from-app',

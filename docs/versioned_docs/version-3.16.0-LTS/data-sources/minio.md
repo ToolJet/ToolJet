@@ -52,6 +52,15 @@ Retrieve an object from a bucket.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/minio/read-query.png" alt="minIo read object"/>
 
+**Response Structure**
+
+The **Read Object** operation returns an object that includes a UTF-8 encoded string representation of the object along with its raw binary data.
+
+| Field     | Type     | Description |
+|----------|----------|-------------|
+| `Body`    | `string` | UTF-8 encoded string representation of the object data. Suitable for text-based formats such as JSON, CSV, and plain text. |
+| `rawData` | `Buffer` | Raw binary data of the object. Suitable for non-text content such as images, PDFs, and other binary files. |
+
 ### Put Object
 
 Upload or update an object in a bucket.

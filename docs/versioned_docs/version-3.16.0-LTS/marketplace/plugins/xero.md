@@ -1,0 +1,910 @@
+---
+id: marketplace-plugin-xero
+title: Xero
+---
+
+The Xero Plugin enables authenticated access to Xero’s APIs so you can perform supported operations across areas like accounting, payroll, projects, assets, and files from within ToolJet.
+
+The Xero Plugin uses OAuth 2.0 authentication and allows you to interact with multiple Xero service domains through a single data source configuration.
+
+
+### Generating Client ID and Client Secret
+
+- Go to the Xero Developer Portal and sign in.
+- Create a New App.
+- Choose Web App as the application type.
+- Copy the generated Client ID and Client Secret.
+- In your Xero app settings, add the Redirect URI provided by ToolJet.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
+
+
+## Connection
+To connect to Xero, the following credentials are required:
+
+ - **Client ID**: Enter your Client ID. This identifies your ToolJet application to Xero.
+
+ - **Client Secret**: Enter your Client Secret. Click 'Edit' in ToolJet and enter the value. This secret will be stored in the encrypted form.
+
+ - **Scope(s)**: Scope defines the permissions your ToolJet app will have in Xero. This field is pre-filled with commonly used scopes such as:
+"openid, profile, email, accounting.transactions,  accounting.reports.read, accounting.reports.tenninetynine.read"
+
+You can modify the scopes based on your use case.
+
+**⚠️ Ensure the scopes entered here exactly match the scopes configured in your Xero app.**
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/connection.png" alt="Configuring Xero in ToolJet" />
+
+- **Redirect URI**: ToolJet automatically generates a Redirect URI.
+
+```yaml
+{
+http://localhost:8082/oauth2/authorize
+}
+```
+
+This redirect URI is required for completing the OAuth authentication flow.
+
+## Selecting Tenant ID 
+
+The Xero Plugin in ToolJet provides a **Tenant selection mechanism** within the query builder to identify the Xero organization against which API operations are executed.
+
+Each Xero API request must be associated with a **Tenant ID**, which represents a specific Xero organization (tenant) that the authenticated user has access to.
+
+
+## Get Tenants
+
+The **Get Tenants** option allows ToolJet to dynamically fetch available Xero tenants after a successful and secure OAuth connection.
+
+
+## Manual Tenant ID Entry
+
+ToolJet also supports **manual Tenant ID input** for advanced use cases using the `fx` Expression Editor
+
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/get-tenant-xero.png" alt="Configuring Xero in ToolJet" />
+
+
+## Supported Operations
+
+Xero in ToolJet supports the following operations:
+
+1. **[Accounts](#accounts)**
+2. **[Finance](#finance)**
+3. **[Identity](#identity)**
+4. **[Bank Feeds](#bank-feeds)**
+5. **[App Store](#app-store)**
+6. **[Assets](#assets)**
+7. **[Payroll AU](#payroll-au)**
+8. **[Payroll UK](#payroll-uk)**
+9. **[Payroll NZ](#payroll-nz)**
+10. **[Projects](#projects)**
+11. **[Files](#files)**
+
+### Accounts
+Manage and retrieve the chart of accounts used for categorizing financial transactions in Xero.
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/ Accounts` | Retrieves the full chart of accounts. |
+| PUT | `/ Accounts` | Creates a new charts of accounts.     |
+| GET | `/BatchPayments` | Retrieves either one or many batch payments for invoices. |
+| PUT | `/BatchPayments` | Creates one or many batch payments for invoices. |
+| POST | `/BatchPayments` | Updates a specific batch payment for invoices and credit notes. |
+| GET | `/BankTransactions` | Retrieves any spent or received money transactions. |
+| PUT | `/BankTransactions` | Creates one or more spent or received money transactions. |
+| POST | `/BankTransactions` | Updates or creates one or more spent or received money transactions. |
+| GET | `/BankTransfers` | Retrieves all bank transfers. |
+| PUT | `/BankTransfers` | Creates a bank transfer. |
+| GET | `/BrandingThemes` | Retrieves all the branding themes. |
+| GET | `/Budgets` | Retrieves a list of budgets. |
+| GET | `/Contacts` | Retrieves all contacts in a Xero organisation. |
+| PUT | `/Contacts` | Creates multiple contacts (bulk) in a Xero organisation. |
+| POST | `/Contacts` | Updates or creates one or more contacts in a Xero organisation. |
+| GET | `/ContactGroups` | Retrieves the contact ID and name of each contact group. |
+| PUT | `/ContactGroups` | Creates a contact group. |
+| GET | `/CreditNotes` | Retrieves any credit notes. |
+| PUT | `/CreditNotes` | Creates a new credit note. |
+| POST | `/CreditNotes` | Updates or creates one or more credit notes. |
+| GET | `/Currencies` | Retrieves currencies for your Xero organisation. |
+| PUT | `/Currencies` | Creates a new currency for a Xero organisation. |
+| GET | `/Employees` | Retrieves employees used in Xero payroll. |
+| PUT | `/Employees` | Creates new employees used in Xero payroll. |
+| POST | `/Employees` | Updates or creates a single new employee used in Xero payroll. |
+| GET | `/ExpenseClaims` | Retrieves expense claims. |
+| PUT | `/ExpenseClaims` | Creates expense claims. |
+| GET | `/Invoices` | Retrieves sales invoices or purchase bills. |
+| PUT | `/Invoices` | Creates one or more sales invoices or purchase bills. |
+| POST | `/Invoices` | Updates or creates one or more sales invoices or purchase bills. |
+| GET | `/Items` | Retrieves items. |
+| PUT | `/Items` | Creates one or more items. |
+| POST | `/Items` | Updates or creates one or more items. |
+| GET | `/Journals` | Retrieves journals. |
+| GET | `/LinkedTransactions` | Retrieves linked transactions (billable expenses). |
+| PUT | `/LinkedTransactions` | Creates linked transactions (billable expenses). |
+| GET | `/ManualJournals` | Retrieves manual journals. |
+| PUT | `/ManualJournals` | Creates one or more manual journals. |
+| POST | `/ManualJournals` | Updates or creates a single manual journal. |
+| GET | `/Organisation` | Retrieves Xero organisation details. |
+| GET | `/Overpayments` | Retrieves overpayments. |
+| GET | `/Payments` | Retrieves payments for invoices and credit notes. |
+| PUT | `/Payments` | Creates multiple payments for invoices or credit notes. |
+| POST | `/Payments` | Creates a single payment for an invoice or credit note. |
+| GET | `/PaymentServices` | Retrieves payment services. |
+| PUT | `/PaymentServices` | Creates a payment service. |
+| GET | `/Prepayments` | Retrieves prepayments. |
+| GET | `/PurchaseOrders` | Retrieves purchase orders. |
+| PUT | `/PurchaseOrders` | Creates one or more purchase orders. |
+| POST | `/PurchaseOrders` | Updates or creates one or more purchase orders. |
+| GET | `/Quotes` | Retrieves sales quotes. |
+| PUT | `/Quotes` | Creates one or more quotes. |
+| POST | `/Quotes` | Updates or creates one or more quotes. |
+| GET | `/Receipts` | Retrieves draft expense claim receipts for any user. |
+| PUT | `/Receipts` | Creates draft expense claim receipts for any user. |
+| GET | `/RepeatingInvoices` | Retrieves repeating invoices. |
+| PUT | `/RepeatingInvoices` | Creates one or more repeating invoice templates. |
+| POST | `/RepeatingInvoices` | Updates or deletes one or more repeating invoice templates. |
+| GET | `/Reports` | Retrieves the organisation’s unique reports that require a GUID to fetch. |
+| POST | `/Setup` | Sets the chart of accounts, conversion date, and conversion balances. |
+| GET | `/TaxRates` | Retrieves tax rates. |
+| PUT | `/TaxRates` | Creates one or more tax rates. |
+| POST | `/TaxRates` | Updates tax rates. |
+| GET | `/TrackingCategories` | Retrieves tracking categories and options. |
+| PUT | `/TrackingCategories` | Creates tracking categories. |
+| GET | `/Users` | Retrieves users. |
+
+#### Account ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Accounts/{AccountID}` | Retrieves a single chart of accounts using a unique account ID . |
+| POST    | `/Accounts/{AccountID}` | Updates a chart of accounts. |
+| DELETE   | `/Accounts/{AccountID}` | Deletes a chart of accounts. |
+| GET   | `/Accounts/{AccountID}/Attachments` | Retrieves attachments for a specific account. |
+| GET   | `/Accounts/{AccountID}/Attachments/{AttachmentID}` | Retrieves a specific attachment using a unique attachment ID. |
+| GET   | `/Accounts/{AccountID}/Attachments/{FileName}` |  Retrieves an attachment by filename. |
+| POST   | `/Accounts/{AccountID}/Attachments/{FileName}` | Updates an attachment by filename. |
+| PUT    | `/Accounts/{AccountID}/Attachments/{FileName}` | Creates an attachment on a specific account. |
+
+#### Batch Payment ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/BatchPayments/{BatchPaymentID}` | Retrieves a specific batch payment using a unique batch payment ID. |
+| POST | `/BatchPayments/{BatchPaymentID}` | Updates a specific batch payment for invoices and credit notes. |
+| GET | `/BatchPayments/{BatchPaymentID}/History` | Retrieves history from a specific batch payment. |
+| PUT | `/BatchPayments/{BatchPaymentID}/History` | Creates a history record for a specific batch payment. |
+
+#### Bank Transaction ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/BankTransactions/{BankTransactionID}` | Retrieves a single spent or received money transaction using a unique bank transaction ID. |
+| POST | `/BankTransactions/{BankTransactionID}` | Updates a single spent or received money transaction. |
+| GET | `/BankTransactions/{BankTransactionID}/Attachments` | Retrieves any attachments from a specific bank transaction. |
+| GET | `/BankTransactions/{BankTransactionID}/Attachments/{AttachmentID}` | Retrieves a specific attachment from a bank transaction using a unique attachment ID. |
+| GET | `/BankTransactions/{BankTransactionID}/Attachments/{FileName}` | Retrieves a specific attachment from a bank transaction by filename. |
+| POST | `/BankTransactions/{BankTransactionID}/Attachments/{FileName}` | Updates a specific attachment from a bank transaction by filename. |
+| PUT | `/BankTransactions/{BankTransactionID}/Attachments/{FileName}` | Creates an attachment for a specific bank transaction by filename. |
+| GET | `/BankTransactions/{BankTransactionID}/History` | Retrieves history from a specific bank transaction using a unique bank transaction ID. |
+| PUT | `/BankTransactions/{BankTransactionID}/History` | Creates a history record for a specific bank transaction. |
+
+#### Bank Transfer ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/BankTransfers/{BankTransferID}` | Retrieves a specific bank transfer using a unique bank transfer ID. |
+| GET | `/BankTransfers/{BankTransferID}/Attachments` | Retrieves attachments from a specific bank transfer. |
+| GET | `/BankTransfers/{BankTransferID}/Attachments/{AttachmentID}` | Retrieves a specific attachment from a bank transfer using a unique attachment ID. |
+| GET | `/BankTransfers/{BankTransferID}/Attachments/{FileName}` | Retrieves a specific attachment on a bank transfer by file name. |
+| POST | `/BankTransfers/{BankTransferID}/Attachments/{FileName}` | Updates a specific attachment on a bank transfer by file name. |
+| PUT | `/BankTransfers/{BankTransferID}/Attachments/{FileName}` | Creates an attachment for a specific bank transfer by file name. |
+| GET | `/BankTransfers/{BankTransferID}/History` | Retrieves history from a specific bank transfer using a unique bank transfer ID. |
+| PUT | `/BankTransfers/{BankTransferID}/History` | Creates a history record for a specific bank transfer. |
+
+#### Branding Theme ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/BrandingThemes/{BrandingThemeID}` | Retrieves a specific branding theme using a unique branding theme ID. |
+| GET | `/BrandingThemes/{BrandingThemeID}/PaymentServices` | Retrieves payment services for a specific branding theme. |
+| POST | `/BrandingThemes/{BrandingThemeID}/PaymentServices` | Creates a new custom payment service for a specific branding theme. |
+
+#### Budget ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Budgets/{BudgetID}` | Retrieves a specific budget, including budget lines. |
+
+#### Contact Number
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Contacts/{ContactNumber}` | Retrieves a specific contact by contact number in a Xero organisation. |
+
+#### Contact ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Contacts/{ContactID}` | Retrieves a specific contact in a Xero organisation using a unique contact ID. |
+| POST | `/Contacts/{ContactID}` | Updates a specific contact in a Xero organisation. |
+| GET | `/Contacts/{ContactID}/Attachments` | Retrieves attachments for a specific contact in a Xero organisation. |
+| GET | `/Contacts/{ContactID}/Attachments/{AttachmentID}` | Retrieves a specific attachment from a contact using a unique attachment ID. |
+| GET | `/Contacts/{ContactID}/Attachments/{FileName}` | Retrieves a specific attachment from a contact by file name. |
+| POST | `/Contacts/{ContactID}/Attachments/{FileName}` | Updates a specific attachment from a contact by file name. |
+| PUT | `/Contacts/{ContactID}/Attachments/{FileName}` | Creates an attachment for a specific contact by file name. |
+| GET | `/Contacts/{ContactID}/CISSettings` | Retrieves CIS settings for a specific contact in a Xero organisation. |
+| GET | `/Contacts/{ContactID}/History` | Retrieves history records for a specific contact. |
+| PUT | `/Contacts/{ContactID}/History` | Creates a new history record for a specific contact. |
+
+#### Contact Group ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/ContactGroups/{ContactGroupID}` | Retrieves a specific contact group using a unique contact group ID. |
+| POST | `/ContactGroups/{ContactGroupID}` | Updates a specific contact group. |
+| PUT | `/ContactGroups/{ContactGroupID}/Contacts` | Creates contacts for a specific contact group. |
+| DELETE | `/ContactGroups/{ContactGroupID}/Contacts` | Deletes all contacts from a specific contact group. |
+| DELETE | `/ContactGroups/{ContactGroupID}/Contacts/{ContactID}` | Deletes a specific contac
+
+:::info
+**Accounts** Entity supports more operations. You can find them all in the query panel.
+:::
+
+### Finance
+Access financial insights and accounting activity metrics for analytics and BI use cases. 
+
+| Method | API Endpoint | Description |
+|--------|--------------|-------------|
+| GET | `/CashValidation` | Retrieves cash validation details |
+
+#### Account Usage
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/AccountingActivities/AccountUsage` | Retrieves account usage details |
+
+#### Lock History
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/AccountingActivities/LockHistory` | Retrieves lock history details |
+
+#### Report History
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/AccountingActivities/ReportHistory` | Retrieves report history details |
+
+#### User Activities
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/AccountingActivities/UserActivities` | Retrieves user activity details |
+
+#### Balance Sheet
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/FinancialStatements/BalanceSheet` | Retrieves the Balance Sheet report |
+
+#### Cashflow
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/FinancialStatements/Cashflow` | Retrieves the Cash Flow report |
+
+#### Profit and Loss
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/FinancialStatements/ProfitAndLoss` | Retrieves the Profit and Loss report |
+
+#### Trail Balance
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/FinancialStatements/TrialBalance` | Retrieves the Trial Balance report |
+
+#### Contacts
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+GET | `/FinancialStatements/contacts/revenue` | Retrieves revenue by contacts report |
+| GET | `/FinancialStatements/contacts/expense` | Retrieves expense by contacts report |
+
+#### Statements
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/BankStatementsPlus/statements` | Retrieves bank statement accounting details |
+
+### Identity
+Handle authentication and identity management using Xero’s OAuth 2.0 identity service. (Used for app sign-in and securing API access.)
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Connections` | Retrieves the connections for this user. |
+
+#### ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| DELETE | `/Connections/{id}` | Deletes connections for this user. (i.e.,disconnect a Tenant) |
+
+### Bank Feeds
+Provide transaction feeds and bank connection data for supported financial institutions.
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/FeedConnections` | Searches for feed connections. |
+| POST  | `/FeedConnections` | Creates one or more new feed connection. |
+| GET   | `/Statements` | Retrieves all statements. |
+| POST  | `/Statements` | Creates one or more new statements. |
+
+#### ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/FeedConnections/{id}` | Retrieves single feed connection based on an unique id provided. |
+
+#### Delete Requests
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/FeedConnections/DeleteRequests` | Deletes an existing feed connection. |
+
+#### Statement ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Statements/{StatmentId}` | Retrieves single statement based on an unique id provided. |
+
+### App Store
+Browse and manage third-party apps and integrations available in the Xero marketplace. 
+
+#### Subscription ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Subscriptions/{SubscriptionId}` | Retrieves a subscription for a given subscriptionId. |
+| POST  | `/Subscriptions/{SubscriptionId}/items//{SubscriptionItemId}/usage-records` | Send metered usage belonging to this subscription and subscription item. |
+| PUT   | `/Subscriptions/{SubscriptionId}/items//{SubscriptionItemId}/usage-records/{usageRecordId}` | Update and existing metered usage belonging to this subscription and subscription item. |
+| GET   | `/Subscriptions/{SubscriptionId}/usage-records` | Gets all usage records related to the subscription. |
+
+### Assets
+Manage fixed assets, including creation, depreciation tracking, and disposals.
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Assets` | Searches fixed asset. |
+| POST  | `/Assets` | Adds a fixed asset. |
+| GET   | `/AssetTypes` | Searches fixed asset types. |
+| POST  | `/AssetTypes` | Adds a fixed asset type. |
+| GET   | `/Settings` | Searches for fixed asset settings. |
+
+#### ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Assets/{id}` | Retrieves fixed asset by id. |
+
+### Payroll AU
+Access payroll features for Australian businesses, like syncing employees and pay details.
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Employees` | Searches payroll employees. |
+| POST  | `/Employees` | Creates payroll employees. |
+| GET   | `/LeaveApplications` | Retrieves leave applications. |
+| POST  | `/LeaveApplications` | Creates a leave application. |
+| GET   | `/PayItems` | Retrieves pay items. |
+| POST  | `/PayItems` | Creates a pay item. |
+| GET   | `/PayrollCalendars` | Retrieves payroll calendar. |
+| POST  | `/PayrollCalendars` | Creates a payroll calendar. |
+| GET   | `/PayRuns` | Retrieves pay runs. |
+| POST  | `/PayRuns` | Creates a pay run. |
+| GET   | `/Settings` | Retrieves payroll settings. |
+| GET   | `/Superfunds` | Retrieves superfunds. |
+| POST  | `/Superfunds` | Creates superfunds. |
+| GET   | `/SuperfundProducts` | Retrieves superfund products. |
+| GET   | `/Timesheets` | Retrieves timesheets. |
+| POST  | `/Timesheets` | Creates timesheets. |
+
+#### Employee ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Employees/{EmployeeID}` | Retrieves an employee's detail by unique employee id. |
+| POST | `/Employees/{EmployeeID}` | Updates an employee's detail. |
+
+#### V2
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/LeaveApplications/v2` | Retrieves leave applications including leave requests. |
+
+#### Leave Application ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/LeaveApplications/{LeaveApplicationID}` | Retrieves leave application by an unique leave application id . |
+| PUT | `/LeaveApplications/{LeaveApplicationID}` | Updates specific leave application. |
+| POST | `/LeaveApplications/{LeaveApplicationID}/approve` | Approves a requested leave application by an unique leave application id. |
+| POST | `/LeaveApplications/{LeaveApplicationID}/reject` | Rejects a leave application by an unique leave application id. |
+
+#### Payroll Calendar ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/PayrollCalendars/{PayrollCalendarID}` | Retrieves payroll calendar by using an unique payroll calendar id. |
+
+#### Payrun ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/PayRuns/{PayRunID}` | Retrieves pay run by using an unique pay run id. |
+| POST | `/PayRuns/{PayRunID}` | Updates a pay run. |
+
+#### Payslip ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/PaySlip/{PaySlipID}` | Retrieves for a payslip by an unique payslip id. |
+| POST | `/PaySlip/{PaySlipID}` | Updates a payslip. |
+
+#### Superfund ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/Superfunds/{SuperFundID}` | Retrieves a superfund by using unique superfund id. |
+| POST | `/Superfunds/{SuperFundID}` | Updates a superfund. |
+
+#### Timesheet ID
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Timesheets/{TimesheetId}` | Retrieves a timesheet by using unique timsheet id. |
+| POST  | `/Timesheets/{TimesheetId}` | updates a timesheet. |
+
+
+### Payroll UK
+Access payroll features for UK-based businesses, like employee and pay run data.
+
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET   | `/Employees` | Retrieves employees. |
+| POST  | `/Employees` | Creates employees. |
+| GET   | `/Benifits` | Retrieves employee benifits. |
+| POST  | `/Benifits` | Creates a new employee benifit. |
+| GET   | `/Deductions` | Retrieves deductions. |
+| POST  | `/Deductions` | Creates a new deduction. |
+| GET   | `/PayrollCalendars` | Retrieves payroll calendar. |
+| POST  | `/PayrollCalendars` | Creates a payroll calendar. |
+| GET   | `/EarningsOrders` | Retrieves earnings orders. |
+| GET   | `/EarningsRates` | Retrieves earnings rates. |
+| POST  | `/EarningsRates` | Creates a new earnings rate. |
+| GET   | `/LeaveTypes` | Retrieves leave types. |
+| POST  | `/LeaveTypes` | Creates a new leave type. |
+| GET   | `/Reimbursements` | Retrieves reimbursements. |
+| POST  | `/Reimbursements` | Creates a new reimbursement. |
+| GET   | `/Timesheets` | Retrieves timesheets. |
+| POST  | `/Timesheets` | Creates a new timesheet. |
+| GET   | `/PayRunCalendars` | Retrieves pay run calendars. |
+| POST  | `/PayRunCalendars` | Creates a new pay run calendar. |
+| GET | `/PayRuns` | Retrieves pay runs. |
+| GET | `/Payslips` | Retrieves pay slips. |
+| GET | `/Settings` | Retrieves payroll settings. |
+
+#### Employee ID
+
+| Method |            API Endpoint                        | Description                                                                   |
+|--------|------------------------------------------------|-------------------------------------------------------------------------------|
+| GET    | `/Employees/{EmployeeID}`                      | Retrieves specific employees' by using unique employee id. |
+| PUT | `/Employees/{EmployeeID}`                         | Updates a specific employee's detail. |
+| POST| `/Employees/{EmployeeID}/Employment` |  Creates employment detail for a specific employee using a unique employee ID. |
+| GET | `/Employees/{EmployeeID}/Tax` | Retrieves tax records for a specific employee using a unique employee ID. |
+| GET | ` /Employees/{EmployeeID}/ukopeningbalances` | Retrieves a specific employee's opening balances using a unique employee ID. |
+| POST |  `/Employees/{EmployeeID}/ukopeningbalances` | Creates an opening balance for a specific employee. |
+| PUT  | `/Employees/{EmployeeID}/ukopeningbalances` |  Updates a specific employee's opening balances. |
+| GET  | `/Employees/{EmployeeID}/Leave`|  specific employee's leave records using a unique employee ID.  |
+| POST | `/Employees/{EmployeeID}/Leave`| Creates leave records for a specific employee.|
+| GET  | `/Employees/{EmployeeID}/Leave/{LeaveID}` | Retrieves a specific employee's leave record using a unique employee ID. |
+| PUT  | `/Employees/{EmployeeID}/Leave/{LeaveID}` | Updates a specific employee's leave records. |
+| DELETE | `/Employees/{EmployeeID}/Leave/{LeaveID}` | Deletes a specific employee's leave record. |
+| GET  | `/Employees/{EmployeeID}/LeaveBalances` | Retrieves a specific employee's leave balances using a unique employee ID. |
+| GET    | `/Employees/{EmployeeID}/StatutoryLeaveBalance` | Retrieves a specific employee's leave balances using a unique employee ID.   |
+| GET    | `/Employees/{EmployeeID}/LeavePeriods` | Retrieves a specific employee's leave periods using a unique employee ID.    |
+| GET    | `/Employees/{EmployeeID}/LeaveTypes` | Retrieves a specific employee's leave types using a unique employee ID.      |
+| POST   | `/Employees/{EmployeeID}/LeaveTypes` | Creates employee leave type records. |
+| GET    | `/Employees/{EmployeeID}/PaymentMethods` | Retrieves a specific employee's payment method using a unique employee ID.   |
+| POST   | `/Employees/{EmployeeID}/PaymentMethods` | Creates an employee payment method. |
+| GET    | `/Employees/{EmployeeID}/PayTemplates` | Retrieves a specific employee pay templates using a unique employee ID. |
+| POST   | `/Employees/{EmployeeID}/PayTemplates/earnings` | Creates an earnings template records for a specific employee. |
+| PUT    | `/Employees/{EmployeeID}/PayTemplates/earnings/{PayTemplateEarningID}` | Updates a specific employee's earnings template records. |
+| DELETE | `/Employees/{EmployeeID}/PayTemplates/earnings/{PayTemplateEarningID}` | Deletes a specific employee's earnings template record.|
+| POST   | `/Employees/{EmployeeID}/paytemplateearnings` | Creates an employee's earnings template records. |
+| PUT    | `/Employees/{EmployeeID}/PayTemplates/earnings/{PayTemplateEarningID}` | Updates a specific employee's earnings template records. |
+| DELETE | `/Employees/{EmployeeID}/PayTemplates/earnings/{PayTemplateEarningID}` | Deletes a specific employee's earnings template record. |
+| POST   | `/Employees/{EmployeeID}/paytemplateearnings` | Creates multiple earnings template records for a specific employee using a unique employee ID. |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages` | Retrieves a specific employee's salary and wages by using a unique employee ID. |
+| POST   | `/Employees/{EmployeeID}/SalaryAndWages` | Creates a salary and wage record for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Retrieves a specific salary and wages record for a specific employee using a unique salary and wage id. |
+| PUT    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Updates salary and wages record for a employee. |
+| DELETE | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Deletes a salary and wages record for a employee. |
+
+#### Summary
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/StatutoryLeaves/Summary/{EmployeeID}` | Retrieves a specific employee's summary of statutory leaves using a unique employee ID. |
+
+
+#### Sick
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST   | `/StatutoryLeaves/Sick` | Creates statutory sick leave records. |
+| GET    | `/StatutoryLeaves/Sick/{StatutorySickLeaveID}` | Retrieves a statutory sick leave for an employee. |
+
+#### ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Benefits/{id}` | Retrieves a specific benefit by using a unique benefit ID. |
+| GET    | `/EarningsOrders/{id}`| Retrieves a specific earnings orders by using a unique earnings orders id. |
+
+#### Deduction ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Deductions/{deductionId}` | Retrieves a specific deduction by using a unique deduction ID. |
+
+#### Earnings Rate ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/EarningsRates/{EarningsRateID}`| Retrieves a specific earnings rates by using a unique earnings rate id. |
+
+#### Leave Type ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/LeaveTypes/{LeaveTypeID}` | Retrieves a specific leave type by using a unique leave type ID. |
+
+#### Reimbursement ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+ GET    | `/Reimbursements/{ReimbursementID}` | Retrieves a specific reimbursement by using a unique reimbursement id. |
+
+#### Timesheet ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Timesheets/{TimesheetID}` | Retrieves a specific timesheet by using a unique timesheet ID. |
+| DELETE | `/Timesheets/{TimesheetID}` | Deletes a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/Lines` | Creates a new timesheet line for a specific timesheet using a unique timesheet ID. |
+| POST   | `/Timesheets/{TimesheetID}/Approve` | Approves a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/RevertToDraft` | Reverts a specific timesheet to draft.  |
+| PUT    | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Updates a specific timesheet line for a specific timesheet. |
+| DELETE | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Deletes a specific timesheet line. |
+
+#### Payrun Calendar ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRunCalendars/{PayRunCalendarID}` | Retrieves a specific payrun calendar by using a unique payrun calendar ID. |
+
+#### Payrun ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRuns/{PayRunID}` | Retrieves a specific pay run by using a unique pay run ID. |
+| PUT    | `/PayRuns/{PayRunID}` | Updates a specific pay run. |
+
+#### Payslip ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Payslips/{PayslipID}` | Retrieves a specific payslip by using a unique payslip ID. |
+
+#### Tracking Categories
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Settings/trackingCategories`   | Retrieves tracking categories. |
+
+### Payroll NZ
+Manage payroll functions for New Zealand businesses with the NZ payroll API.
+
+| Method | API Endpoint                  | Description                                             |
+|--------|-------------------------------|---------------------------------------------------------|
+| GET    | `/Employees`                  | Retrieves employees.                                    |
+| POST   | `/Employees`                  | Creates an employees.                                   |
+| GET    | `/Deductions`                 | Retrieves deductions for a specific employee.           |
+| POST   | `/Deductions`                 | Creates a new deduction for a specific employee.        |
+| GET    | `/StatutoryDeductions`        | Retrieves statutory deductions.                         |
+| GET    | `/Superannuations`            | Retrieves superannuations.                              |
+| POST   | `/Superannuations`            | Creates a new superannuation.                           |
+| GET    | `/EarningsRates`              | Retrieves earnings rates.                               |
+| POST   | `/EarningsRates`              | Creates a new earnings rate.                            |
+| GET    | `/LeaveTypes`                 | Retrieves leave types.                                  |
+| POST   | `/LeaveTypes`                 | Creates a new leave type.                               |
+| GET    | `/Reimbursements`             | Retrieves reimbursements.                               |
+| POST   | `/Reimbursements`             | Creates a new reimbursement.                            |
+| GET    | `/Timesheets`                 | Retrieves timesheets.                                   |
+| POST   | `/Timesheets`                 | Creates a new timesheet.                                |
+| GET    | `/PayRunCalendars`            | Retrieves payrun calendars.                             |
+| POST   | `/PayRunCalendars`            | Creates a new payrun calendar.                          |
+| GET    | `/PayRuns`                    | Retrieves pay runs.                                     |
+| POST   | `/PayRuns`                    | Creates a pay run.                                      |
+| GET    | `/Payslips`                   | Retrieves payslips.                                     |
+| GET    | `/Settings`                   | Retrieves settings.                                     |
+
+#### Employee ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Employees/{EmployeeID}`     | Retrieves an employees using a unique employee ID.                                                               |
+| PUT    | `/Employees/{EmployeeID}`     | Updates an existing employee.                           |
+| POST   | `/Employees/{EmployeeID}/Employment`| Creates an employment detail for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/Tax` | Retrieves tax records for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/Tax` | Updates the tax records for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/OpeningBalances`  | Retrieves the opening balance for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/OpeningBalances` | Creates opening balances for a specific employee.   |
+| GET    | `/Employees/{EmployeeID}/Leave` | Retrieves leave records for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/Leave` | Creates leave records for a specific employee.  |
+| PUT    | `/Employees/{EmployeeID}/Leave/{LeaveID}`  | Updates leave records for a specific employee.  |
+| DELETE  | `/Employees/{EmployeeID}/Leave/{LeaveID}`  | Deletes a leave record for a specific employee.   |
+| GET    | `/Employees/{EmployeeID}/LeaveBalances`  | Retrieves leave balances for a specific employee.  |
+| GET    | `/Employees/{EmployeeID}/LeavePeriods` | Retrieves leave periods for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/LeaveSetup` | Creates a leave set-up for a specific employee. This is required before viewing, configuring and requesting leave for an employee. |
+| GET    | `/Employees/{EmployeeID}/LeaveTypes`  | Retrieves leave types for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/LeaveTypes` | Creates leave type records for a specific employee.  |
+| GET    | `/Employees/{EmployeeID}/PaymentMethods` | Retrieves available payment methods for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/PaymentMethods`  | Creates a payment method for an employee. |
+| GET    | `/Employees/{EmployeeID}/PayTemplates`  | Retrieves pay templates for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/PayTemplates/Earnings`  | Creates earnings template records for an employee.  |
+| PUT    | `/Employees/{EmployeeID}/PayTemplates/Earnings/{PayTemplateEarningID}` | Updates an earnings template records for an employee.  |
+| DELETE  | `/Employees/{EmployeeID}/PayTemplates/Earnings/{PayTemplateEarningID}` | Deletes an employee's earnings template record. |
+| POST   | `/Employees/{EmployeeID}/PayTemplateEarnings` | Creates multiple employee earnings template records for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages` | Retrieves an employee's salary and wages record. |
+| POST   | `/Employees/{EmployeeID}/SalaryAndWages`  | Creates an employee salary and wage record.   |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Retrieves an employee's salary and wages record by using a unique salary and wage ID. |
+| PUT    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Updates an employee's salary and wages record.   |
+| DELETE  | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}`   | Deletes an employee's salary and wages record.  |
+| GET    | `/Employees/{EmployeeID}/Working-Patterns`  | Retrieves employee's working patterns. |
+| POST   | `/Employees/{EmployeeID}/Working-Patterns` | Creates an employee working pattern.  |
+| GET    | `/Employees/{EmployeeID}/Working-Patterns/{EmployeeWorkingPatternID}`  | Retrieves employee's working patterns. |
+| DELETE  | `/Employees/{EmployeeID}/Working-Patterns/{EmployeeWorkingPatternID}`  | Deletes employee's working patterns.                                   |
+
+#### Deduction ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Deductions/{deductionId}`                       | Retrieves a single deduction by using a unique deduction ID.                                 |
+
+#### ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/StatutoryDeductions/{id}`                       | Retrieves a specific statutory deduction by using a unique statutory deductions id.          |
+
+#### Super Annuation ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Superannuations/{SuperannuationID}`             | Retrieves a specific superannuation using a unique superannuation ID.                        |
+
+#### Earnings Rated ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/EarningsRates/{EarningsRateID}`                 | Retrieves a specific earnings rates by using a unique earnings rate id.                      |
+
+#### Leave Type ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/LeaveTypes/{LeaveTypeID}`                       | Retrieves a specific leave type by using a unique leave type ID.                             |
+
+#### Reimbursement ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Reimbursements/{ReimbursementID}`               | Retrieves a specific reimbursement by using a unique reimbursement ID.                       |
+
+#### Timesheet ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Timesheets/{TimesheetID}` | Retrieves a specific timesheet by using a unique timesheet ID. |
+| DELETE | `/Timesheets/{TimesheetID}` | Deletes a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/Lines` | Creates a new timesheet line for a specific timesheet using a unique timesheet ID. |
+| POST   | `/Timesheets/{TimesheetID}/Approve` | Approves a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/RevertToDraft` | Reverts a specific timesheet to draft.  |
+| PUT    | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Updates a specific timesheet line for a specific timesheet. |
+| DELETE | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Deletes a specific timesheet line. |
+
+#### Payrun Calendar ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRunCalendars/{PayRunCalendarID}` | Retrieves a specific payrun calendar by using a unique payrun calendar ID. |
+
+#### Payrun ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRuns/{PayRunID}` | Retrieves a specific pay run by using a unique pay run ID. |
+| PUT    | `/PayRuns/{PayRunID}` | Updates a specific pay run. |
+
+#### Payslip ID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Payslips/{PayslipID}` | Retrieves a specific payslip by using a unique payslip ID. |
+| PUT    | `/Payslips/{PayslipID}` | Creates an employee Payslip. |
+
+#### Tracking Categories
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Settings/trackingCategories`   | Retrieves tracking categories. |
+
+### Projects
+Track project time, costs, and profitability (for service and project-based businesses).
+
+| Method | API Endpoint  | Description                                                                                     |
+|--------|---------------|-------------------------------------------------------------------------------------------------|
+| GET    | `/Projects`   | Retrieves all projects.                                                                         |
+| POST   | `/Projects`   | Creates one or more new projects.                                                               |
+| GET    | `/ProjectsUsers` | Retrieves a list of all project users.                                                       |
+
+#### Project ID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Projects/{projectId}`          | Retrieves a project.        |
+| PUT    | `/Projects/{projectId}` | Updates a specific project. |
+| PATCH  | `/Projects/{projectId}` | Creates a project for a specified contact. |
+| GET    | `/Projects/{projectId}/Tasks` | Retrieves all project tasks. |
+| POST   | `/Projects/{projectId}/Tasks` | Allows you to create a task. |
+| GET    | `/Projects/{projectId}/Tasks/{taskId}` | Retrieves a single project task. |
+| PUT    | `/Projects/{projectId}/Tasks/{taskId}` | Allows you to update a task. |
+| DELETE | `/Projects/{projectId}/Tasks/{taskId}` | Allows you to delete a task. |
+| GET    | `/Projects/{projectId}/Time`  | Retrieves all time entries associated with a specific project. |
+| POST   | `/Projects/{projectId}/Time`  | Creates a time entry for a specific project. |
+| GET    | `/Projects/{projectId}/Time/{timeEntryId}` | Retrieves a single time entry for a specific project. |
+| PUT    | `/Projects/{projectId}/Time/{timeEntryId}` | Updates a time entry for a specific project. |
+| DELETE | `/Projects/{projectId}/Time/{timeEntryId}` | Deletes a time entry for a specific project. |
+
+
+### Files
+Upload, retrieve, and attach documents like receipts and invoices to records in Xero.
+
+| Method | API Endpoint                            |Description                      |
+|--------|-----------------------------------------|---------------------------------|
+| GET    | `/Files`                                | Retrieves files.                |
+| POST   | `/Files`                                | Uploads a file to the inbox.    |
+| GET    | `/Folders`                              | Retrieves folders.              |
+| POST   | `/Folders`                              | Creates a new folder.           |
+| GET    | `/Inbox`                                | Retrieves inbox folder.         |
+
+#### File ID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Files/{FileId}`                                          | Retrieves a file by a unique file ID.  |
+| PUT    | `/Files/{FileId}`                                          | Updates a file.   |
+| DELETE | `/Files/{FileId}`                                          | Deletes a specific file.    |
+| GET    | `/Files/{FileId}/Content`                                  | Retrieves the content of a specific file.    |
+| GET    | `/Files/{FileId}/Associations`                             | Retrieves a specific file associations.   |
+| POST   | `/Files/{FileId}/Associations`                             | Creates a new file association.  |
+| DELETE | `/Files/{FileId}/Associations/{ObjectId}`                  | Deletes an existing file association.  |
+
+#### Folder ID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| POST   | `/Files/{FolderId}`                                        | Uploads a file to a specific folder. |
+| GET    | `/Folders/{FolderId}`                                      | Retrieves a specific folder by using a unique folder ID. |
+| PUT    | `/Folders/{FolderId}`                                      | Updates an existing folder. |
+| DELETE | `/Folders/{FolderId}`                                      | Deletes a folder. |
+
+#### Object ID
+
+| Method | API Endpoint                     | Description                                                |
+|--------|----------------------------------|------------------------------------------------------------|
+| GET    | `/Associations/{ObjectId}`       | Retrieves an association object using a unique object ID.  |
+
+#### Count
+
+| Method | API Endpoint                     | Description                                              |
+|--------|----------------------------------|----------------------------------------------------------|
+| GET    | `/Associations/Count`            | Retrieves a count of associations for a list of objects. |
+
+
+## Example Queries
+
+### Accounts 
+Get Accounts fetches all accounts associated with the selected Xero tenant. 
+
+Operation : GET ` /Accounts`
+
+**Optional Parameters**
+- where : allows you to filter the accounts based on specific conditions (for example, by Status or Type).
+- order : lets you sort the returned accounts by a selected field in ascending or descending order.
+
+<details id="tj-dropdown">
+<summary> **Response Example** </summary>
+```
+{
+  "Id": "05263684-a3fe-48bf-ad06-4fa1835f9df1",
+  "Status": "OK",
+  "ProviderName": "test",
+  "DateTimeUTC": "/Date(1767007119760)/",
+  "Accounts": [
+    {
+      "AccountID": "d7c6f5e4",
+      "Name": "Sales",
+      "Type": "REVENUE",
+      "Code": "200",
+      "Status": "ACTIVE",
+      "TaxType": "OUTPUT"
+    }
+  ]
+}
+```
+</details>
+
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-get.png" alt="Example query in Xero" />
+
+### Bank Transactions
+Create Bank Transactions allows you to create one or more bank transactions for the selected Xero tenant.
+
+Operation : POST `/BankTransactions`
+
+**Optional Parameters**
+- summarizeErrors : When set to `true`, validation errors are summarized instead of returning detailed error messages for each transaction.
+- unitdp : Specifies the number of decimal places to use for unit amounts in the transaction (for example, 2 or 4).
+
+**Request Body**
+- Pagination : Used to control pagination behavior in the request payload when applicable.
+- Warnings : An array used to capture any warnings returned during the processing of bank transactions.
+- BankTransation : An array containing one or more bank transaction objects to be created, including details such as transaction type, date, line items, and amounts.
+
+<details id="tj-dropdown">
+<summary> **Response Example** </summary>
+```
+{
+  "Id": "61609765-4c78-45df-8bdf-d2415c77372b",
+  "Status": "OK",
+  "ProviderName": "app1abc",
+  "DateTimeUTC": "/Date(1770616360380)/",
+  "BankTransactions": [
+    {
+      "BankTransactionID": "b2a3f6d9-9c44-4f88-b2d1-0f7d9e6a1234",
+      "Type": "SPEND",
+      "Contact": {
+        "ContactID": "e7a9c1b4-3d55-4a9e-8c22-7f6a8d9c5678",
+        "Name": "Office Supplies Ltd"
+      },
+      "Date": "/Date(1770600000000)/",
+      "LineAmountTypes": "Exclusive",
+      "LineItems": [
+        {
+          "Description": "Stationery purchase",
+          "Quantity": 2,
+          "UnitAmount": 250,
+          "AccountCode": "400",
+          "LineAmount": 500
+        }
+      ],
+      "SubTotal": 500,
+      "TotalTax": 0,
+      "Total": 500,
+      "Status": "AUTHORISED"
+    }
+  ]
+}
+```
+</details>
+
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-post.png" alt="Example query in Xero" />
+
+### Projects
+Get Projects retrieves projects associated with the selected Xero tenant. This operation supports filtering and pagination to narrow down the results.
+
+Operation : GET `/Projects`
+
+**Optional Parameters**
+- projectIds : A list of specific project IDs to retrieve. When provided, only projects matching these IDs are returned.
+- contactID : Filters projects linked to a specific contact.
+- states : Filters projects based on their current state (for example, `ACTIVE`, `CLOSED`).
+- page : Specifies the page number to retrieve. Used for paginated results.
+- pageSize : Defines the number of projects returned per page.
+
+<details id="tj-dropdown">
+<summary> **Response Example** </summary>
+```
+{
+  "projectIds": [
+    "111-22-33-444-555555"
+  ],
+  "contactID": "aaa-bbb-ccc-dd-ee",
+  "states": "ACTIVE",
+  "page": 1,
+  "pageSize": 20
+}
+```
+</details>
+
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-get-proj.png" alt="Example query in Xero" />
+
