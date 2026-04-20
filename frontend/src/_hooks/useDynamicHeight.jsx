@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { isTruthyOrZero } from '@/_helpers/appUtils';
 
 export const useDynamicHeight = ({
   isDynamicHeightEnabled,
@@ -15,15 +16,46 @@ export const useDynamicHeight = ({
   visibility,
   skipAdjustment = false,
   subContainerIndex,
+  isRowSubcontainer = false,
 }) => {
   const { contextPath } = useSubcontainerContext();
   const prevDynamicHeight = useRef(isDynamicHeightEnabled);
   const prevHeight = useRef(height);
 
   useEffect(() => {
-    const contextIndices = normalizeLayoutContext(
-      contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex
-    );
+    // Build contextIndices from contextPath + subContainerIndex. The two
+    // inputs mean different things depending on who is calling:
+    //
+    //  - Leaf widgets (TextArea, CodeEditor, etc.) inside a listview row:
+    //    their WidgetWrapper is rendered INSIDE the row's
+    //    SubcontainerContext.Provider, so `contextPath` ALREADY includes the
+    //    row. They also receive `subContainerIndex=rowIdx` as a prop, which
+    //    duplicates the path's last entry — use contextPath only.
+    //
+    //  - ListviewSubcontainer's own hook call: the component itself is
+    //    rendered OUTSIDE its own Provider (the Provider wraps its children).
+    //    `contextPath` reflects the PARENT row (or is empty at root), and
+    //    `subContainerIndex=rowIdx` is this row's index, NOT yet in the
+    //    path. Append to cover nested listviews: outer row's context +
+    //    inner row's index must both land in the key.
+    //    Callers that need this behavior pass `isRowSubcontainer: true`.
+    //
+    //  - ModalV2 pre-merges contextPath + row into an array and passes it as
+    //    `subContainerIndex` — trust the array and use it as-is.
+    const pathIndices = contextPath.map((segment) => segment.index);
+    let indices;
+    if (Array.isArray(subContainerIndex)) {
+      indices = subContainerIndex;
+    } else if (isRowSubcontainer && isTruthyOrZero(subContainerIndex)) {
+      indices = [...pathIndices, subContainerIndex];
+    } else if (pathIndices.length > 0) {
+      indices = pathIndices;
+    } else if (isTruthyOrZero(subContainerIndex)) {
+      indices = [subContainerIndex];
+    } else {
+      indices = [];
+    }
+    const contextIndices = normalizeLayoutContext(indices);
     const elementSelector = getDynamicElementSelector(id, contextIndices);
     const element = document.querySelector(elementSelector);
     // Note: element may be null when the caller is a row-context reflow for a
@@ -82,6 +114,7 @@ export const useDynamicHeight = ({
     visibility,
     skipAdjustment,
     subContainerIndex,
+    isRowSubcontainer,
     contextPath,
   ]);
 

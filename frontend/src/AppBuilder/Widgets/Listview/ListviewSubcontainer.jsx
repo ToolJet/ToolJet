@@ -51,6 +51,7 @@ export const ListviewSubcontainer = ({
     visibility,
     isContainer: true,
     subContainerIndex: index,
+    isRowSubcontainer: true,
     height: parentHeight,
     componentType,
   });
