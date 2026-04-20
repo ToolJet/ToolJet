@@ -1358,7 +1358,7 @@ export const EventManager = ({
                                       <TooltipContent
                                         side="top"
                                         showArrow={false}
-                                        className="tw-max-w-[260px]"
+                                        className="tw-z-[10001] tw-max-w-[260px]"
                                         data-cy="event-row-tooltip-name"
                                       >
                                         {event?.name}
@@ -1393,7 +1393,7 @@ export const EventManager = ({
                                     <TooltipContent
                                       side="top"
                                       showArrow={false}
-                                      className="tw-max-w-[260px]"
+                                      className="tw-z-[10001] tw-max-w-[260px]"
                                       data-cy="event-row-tooltip-action"
                                     >
                                       {eventMetaDefinition?.events[event.event.eventId]?.displayName}
