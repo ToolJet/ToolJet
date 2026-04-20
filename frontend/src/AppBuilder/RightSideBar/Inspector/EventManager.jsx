@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
+import { Copy, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/Rocket';
+import { Popover, PopoverTrigger, PopoverContent, Button } from '@/components/ui/Rocket';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -432,6 +433,18 @@ export const EventManager = ({
     deleteAppVersionEventHandler(eventId, index);
   }
 
+  function duplicateHandler(index) {
+    const source = events[index];
+    if (!source) return;
+    createAppVersionEventHandlers({
+      name: `${source.name} copy`,
+      event: deepClone(source.event),
+      eventType: source.target,
+      attachedTo: source.sourceId,
+      index: events.length,
+    });
+  }
+
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
@@ -536,7 +549,40 @@ export const EventManager = ({
 
     return (
       <>
-        <div>
+        <div className="tw-flex tw-h-11 tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4 tw-py-2">
+          <span className="tw-font-title-default tw-text-text-default">
+            {t('editor.inspector.eventManager.editEvent', 'Edit event')}
+          </span>
+          <div className="tw-flex tw-items-center tw-gap-0.5">
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              onClick={() => {
+                setFocusedEventIndex(null);
+                duplicateHandler(index);
+              }}
+              aria-label={t('editor.inspector.eventManager.duplicate', 'Duplicate')}
+              data-cy="event-duplicate-btn"
+            >
+              <Copy className="tw-h-3.5 tw-w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              onClick={() => {
+                setFocusedEventIndex(null);
+                removeHandler(index);
+              }}
+              aria-label={t('editor.inspector.eventManager.delete', 'Delete')}
+              data-cy="event-delete-btn"
+            >
+              <Trash2 className="tw-h-3.5 tw-w-3.5" />
+            </Button>
+          </div>
+        </div>
+        <div className="tw-p-4">
           <div className="row">
             <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
               {t('editor.inspector.eventManager.enableEvent', 'Enable event')}
@@ -1317,7 +1363,7 @@ export const EventManager = ({
                           <PopoverContent
                             side={popoverPlacement || 'left'}
                             align="center"
-                            className="tw-w-[350px] tw-max-w-[350px] tw-p-3"
+                            className="tw-w-[350px] tw-max-w-[350px] tw-p-0 tw-gap-0 tw-overflow-hidden"
                             data-cy="popover-card"
                             onInteractOutside={(e) => {
                               const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
