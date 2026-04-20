@@ -669,8 +669,12 @@ export const EventManager = ({
           </div>
 
           {actionLookup[event.actionId]?.options?.length > 0 && (
-            <div className="hr-text" data-cy="action-option">
-              {t('editor.inspector.eventManager.actionOptions', 'Action options')}
+            <div className="tw-my-3 tw-flex tw-h-5 tw-items-center tw-gap-1.5" data-cy="action-option">
+              <div className="tw-h-px tw-flex-1 tw-bg-border-weak" />
+              <span className="tw-font-title-small tw-text-text-placeholder">
+                {t('editor.inspector.eventManager.configureAction', 'Configure action')}
+              </span>
+              <div className="tw-h-px tw-flex-1 tw-bg-border-weak" />
             </div>
           )}
           <div>
@@ -1403,7 +1407,7 @@ export const EventManager = ({
                             <PopoverContent
                               side={popoverPlacement || 'left'}
                               align="center"
-                              className="tw-w-[350px] tw-max-w-[350px] tw-p-0 tw-gap-0 tw-overflow-hidden"
+                              className="inspector-event-manager-popover tw-w-[303px] tw-max-w-[303px] tw-gap-0 tw-overflow-hidden tw-p-0"
                               data-cy="popover-card"
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
