@@ -23,9 +23,7 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const em = queryRunner.manager;
 
-    const nestApp = await NestFactory.createApplicationContext(
-      await AppModule.register({ IS_GET_CONTEXT: true })
-    );
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
 
     // Load the service classes from the same path AppModule used so the class
     // references match the DI-registered tokens. SubModule.getProviders() does
@@ -55,10 +53,7 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
         try {
           await this.seedForOrg(em, versionsCreate, dataSourceBranchUtil, defaultBranch);
         } catch (err) {
-          console.error(
-            `${MIGRATION_NAME}: org=${defaultBranch.organizationId} failed; continuing.`,
-            err
-          );
+          console.error(`${MIGRATION_NAME}: org=${defaultBranch.organizationId} failed; continuing.`, err);
         }
         progress.show();
       }
@@ -192,9 +187,7 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
     const existingWithBranchName = await em.findOne(AppVersion, {
       where: { appId: moduleApp.id, name: targetBranch.name },
     });
-    const versionName = existingWithBranchName
-      ? `${targetBranch.name}_${Date.now()}`
-      : targetBranch.name;
+    const versionName = existingWithBranchName ? `${targetBranch.name}_${Date.now()}` : targetBranch.name;
 
     // Editable BRANCH versions must use Development (priority=1) as the
     // current environment — any higher-priority env freezes the editor via
@@ -219,11 +212,7 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
     await versionsCreate.setupNewVersion(newVersion, sourceVersion, organizationId, em);
   }
 
-  private async ensureAppGitSyncRow(
-    em: EntityManager,
-    moduleApp: App,
-    organizationGitId: string
-  ): Promise<void> {
+  private async ensureAppGitSyncRow(em: EntityManager, moduleApp: App, organizationGitId: string): Promise<void> {
     const existing = await em.findOne(AppGitSync, { where: { appId: moduleApp.id } });
     if (existing) return;
 
