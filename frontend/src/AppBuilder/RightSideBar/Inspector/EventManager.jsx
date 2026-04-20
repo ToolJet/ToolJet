@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
-import { ArrowRight, Copy, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
 import {
   Popover,
@@ -13,6 +13,12 @@ import {
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
 } from '@/components/ui/Rocket';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
@@ -27,7 +33,6 @@ import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import NoListItem from './Components/Table/NoListItem';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -1483,11 +1488,25 @@ export const EventManager = ({
   };
 
   if (events.length === 0) {
+    if (hideEmptyEventsAlert) {
+      return <div className="d-flex">{renderAddHandlerBtn()}</div>;
+    }
     return (
-      <>
-        {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
-        <div className="d-flex">{renderAddHandlerBtn()}</div>
-      </>
+      <Empty size="small" data-cy="no-event-handler-message">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <MousePointerClick />
+          </EmptyMedia>
+          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet.')}</EmptyTitle>
+          <EmptyDescription>
+            {t(
+              'editor.inspector.eventManager.emptyDescription',
+              'Add events to make your component interactive — like button clicks or form submissions'
+            )}
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>{renderAddHandlerBtn()}</EmptyContent>
+      </Empty>
     );
   }
 
