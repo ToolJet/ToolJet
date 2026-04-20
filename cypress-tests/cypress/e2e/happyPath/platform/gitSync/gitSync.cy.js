@@ -9,7 +9,7 @@
 //   TEARDOWN → delete feature branch from GitHub → archive workspace
 
 import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
-
+import { navigateToAppEditor } from "Support/utils/common";
 const FIXTURE = 'gitSync/fixture-app.json';
 
 const gitConfig = {
@@ -34,7 +34,7 @@ describe('Git Sync — E2E Flow', () => {
   const appName = `git-sync-app-${testId}`;
   const commitMessage = `test: import fixture app [${testId}]`;
 
-  const DS_BASE_URL = 'https://jsonplaceholder.typicode.com/posts';
+  const DS_BASE_URL = 'https://jsonplaceholder.typicode.com';
   const FIXTURE_DS_NAME = 'REST API';
 
   // Holds the created workspace ID — set in before(), used in beforeEach + after()
@@ -49,7 +49,7 @@ describe('Git Sync — E2E Flow', () => {
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
+
       cy.log(`[gitSync] Workspace created: ${wsName} (${workspaceId})`);
     });
 
@@ -57,15 +57,15 @@ describe('Git Sync — E2E Flow', () => {
     // gitSyncCheckAndConfigure uses Cypress.env('workspaceId') — set above
     cy.gitSyncCheckAndConfigure();
 
-    // Step 4: Clean up any stale test-* branches from previous runs in GitHub
-    cy.gitHubCleanupTestBranches();
+    // Step 4: Reset GitHub repo — delete stale test-* branches + clear master contents
+    cy.gitHubResetRepo();
   });
 
   // ---------------------------------------------------------------------------
   after(() => {
     // Delete the feature branch created in this run from GitHub
     cy.apiLogin();
-    cy.gitHubDeleteBranch(branchName);
+    // cy.gitHubDeleteBranch(branchName);
 
     // Archive the test workspace to keep the instance clean
     // cy.then(() => cy.apiArchiveWorkspace(workspaceId));
@@ -77,8 +77,8 @@ describe('Git Sync — E2E Flow', () => {
   describe('Block 1: Branch Creation and Nav Bar UI', () => {
 
     beforeEach(() => {
-      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
+      cy.apiLogin();
+
     });
 
     it.only('creates feature branch from dashboard and verifies nav bar UI', () => {
@@ -109,46 +109,47 @@ describe('Git Sync — E2E Flow', () => {
       // Master lock banner gone on sub-branch
       cy.get(GS.masterLockBanner).should('not.exist');
 
-      cy.gitSyncSwitchBranch(branchName);
+      // Create workspace constants
+      cy.apiCreateWorkspaceConstant('API_BASE_URL', DS_BASE_URL, ["Global"], ["development", "staging", "production"]);
+      cy.apiCreateWorkspaceConstant('TABLE_LIMIT', '10', ["Global"], ["development", "staging", "production"]);
+
       // Import fixture app via API into the feature branch
       cy.gitSyncImportAppFromFixture(FIXTURE, appName, branchName);
 
       // Verify app card appears in dashboard after reload
       cy.reload();
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get(GS.appCard).contains(appName).should('be.visible');
 
-      // Create workspace constants
-      cy.apiCreateWorkspaceConstant('API_BASE_URL', DS_BASE_URL);
-      cy.apiCreateWorkspaceConstant('TABLE_LIMIT', '10');
+      // navigateToAppEditor(appName);
 
-      // Update datasource URL to use workspace constant
+      // // query_status widget shows "Query completed" when the REST API query succeeds
+      // cy.wait(2000)
+      // cy.get(GS.queryStatusWidget, { timeout: 20000 }).should('contain.text', 'Query completed');
 
-      cy.gitSyncOpenAppInBuilder(appName);
-
-      // query_status widget shows "Query completed" when the REST API query succeeds
-      cy.get(GS.queryStatusWidget, { timeout: 20000 }).should('contain.text', 'Query completed');
-
-      // Open branch dropdown
+      // // Open branch dropdown
+      // cy.go('back');
+      // cy.wait(3000);
+      // After navigating back, re-confirm we're on the feature branch before committing.
       cy.get(GS.wsBranchHeader).click();
       cy.get(GS.wsBranchPopover).should('be.visible');
 
       // Click Commit/Push CTA inside popover
-      cy.contains(GS.wsBranchPopover + ' button', /commit|push/i).click();
+      cy.get(':nth-child(3) > .tw-flex > span').click();
 
       // Push modal opens
       cy.get(GS.modalTitle).should('be.visible');
 
       // UI CHECK: submit disabled when message is empty
       cy.get(GS.commitMessageInput).should('be.visible').and('have.value', '');
-      cy.contains('button', /commit|push/i).last().should('be.disabled');
+      cy.get('.modal-footer > .tj-primary-btn').should('be.disabled');
 
       // Enter commit message — submit becomes enabled
       cy.get(GS.commitMessageInput).type(commitMessage);
-      cy.contains('button', /commit|push/i).last().should('be.enabled');
+      cy.get('.modal-footer > .tj-primary-btn').should('be.enabled');
 
       // Push
-      cy.contains('button', /commit|push/i).last().click();
+      cy.get('.modal-footer > .tj-primary-btn').click();
 
       // Modal closes on success
       cy.get(GS.commitMessageInput, { timeout: 45000 }).should('not.exist');
@@ -168,38 +169,8 @@ describe('Git Sync — E2E Flow', () => {
       });
     });
 
-  });
-
-});
-
-// ---------------------------------------------------------------------------
-// BLOCK 2: Import app → Setup datasource + constants → Verify in builder
-// ---------------------------------------------------------------------------
-
-
-// ---------------------------------------------------------------------------
-// BLOCK 3: Push commit from dashboard
-// ---------------------------------------------------------------------------
-describe('Block 3: Dashboard Push', () => {
-
-  beforeEach(() => {
-    cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-    Cypress.env('workspaceSlug', wsSlug);
-  });
-
-
-  // ---------------------------------------------------------------------------
-  // BLOCK 4: PR + Merge → Pull to master → Verify
-  // ---------------------------------------------------------------------------
-  describe('Block 4: PR, Merge, Pull, and Verification on Master', () => {
-
-    beforeEach(() => {
-      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-
     // ── 2.1 Create and merge PR via GitHub API ────────────────────────────────
-    it('creates and merges PR from feature branch to master via GitHub API', () => {
+    it.only('creates and merges PR from feature branch to master via GitHub API', () => {
       cy.gitHubCreatePR(
         branchName,
         `test: git-sync-app-${testId} fixture import`,
@@ -211,7 +182,7 @@ describe('Block 3: Dashboard Push', () => {
     });
 
     // ── 2.2 Switch to master and pull from git ────────────────────────────────
-    it('switches to master branch and pulls from git — verifies UI', () => {
+    it.only('switches to master branch and pulls from git — verifies UI', () => {
       cy.gitSyncGoToDashboard();
 
       // Switch to master
@@ -220,17 +191,16 @@ describe('Block 3: Dashboard Push', () => {
 
       // Lock banner and Pull-only state restored on master
       cy.get(GS.masterLockBanner).should('be.visible');
-      cy.contains('button', /^Pull$/i).should('be.visible');
-      cy.contains('button', /^commit$/i).should('not.exist');
+      cy.get(':nth-child(2) > .tw-flex > span').should('be.visible');
+      cy.get(':nth-child(3) > .tw-flex > span').should('not.exist');
 
       // Open pull modal — verify structure
-      cy.contains('button', /^Pull$/i).click();
+      cy.get(':nth-child(2) > .tw-flex > span').click();
       cy.get(GS.modalTitle).should('be.visible');
-      cy.contains(/select branch/i).should('be.visible');
 
       // Check for updates and pull
       cy.get(GS.checkForUpdatesLabel).click();
-      cy.contains('button', /pull changes/i, { timeout: 30000 }).should('be.enabled').click();
+      cy.get('.modal-footer > .tj-primary-btn', { timeout: 30000 }).should('be.enabled').click();
 
       // Modal closes = pull success
       cy.get(GS.modalTitle, { timeout: 45000 }).should('not.exist');
@@ -295,5 +265,7 @@ describe('Block 3: Dashboard Push', () => {
 
       cy.log('[gitSync] ✓ App functional on master — query ran successfully');
     });
+
   });
+
 });

@@ -403,7 +403,7 @@
                   "id": "9aabb878-1a5d-441a-8742-5489079b9d4e",
                   "co_relation_id": null,
                   "type": "desktop",
-                  "top": 580,
+                  "top": 60,
                   "left": 15,
                   "width": 6,
                   "height": 40,
@@ -666,7 +666,7 @@
               "id": "f852dd3f-4537-4d03-9250-713f1ff633f8",
               "options": {
                 "url": {
-                  "value": "https://jsonplaceholder.typicode.com/users",
+                  "value": "{{constants.API_BASE_URL}}/users",
                   "encrypted": false
                 },
                 "scopes": {
@@ -783,7 +783,7 @@
               "id": "437f8cab-a145-4126-891f-ecd4848e3c3e",
               "options": {
                 "url": {
-                  "value": "https://jsonplaceholder.typicode.com/todos",
+                  "value": "{{constants.API_BASE_URL}}/todos",
                   "encrypted": false
                 },
                 "scopes": {

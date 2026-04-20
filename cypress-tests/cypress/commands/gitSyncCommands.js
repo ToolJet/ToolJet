@@ -20,11 +20,11 @@ Cypress.Commands.add('gsGetHeaders', () => {
 // Checks existing config via DB; configures via API if not finalized+enabled.
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncCheckAndConfigure', () => {
-  cy.gsGetHeaders().then((headers) => {
+  return cy.gsGetHeaders().then((headers) => {
     const orgId = Cypress.env('workspaceId');
 
     // Check current status via ToolJet API
-    cy.request({
+    return cy.request({
       method: 'GET',
       url: `${Cypress.env('server_host')}/api/git-sync/${orgId}/status`,
       headers,
@@ -33,15 +33,15 @@ Cypress.Commands.add('gitSyncCheckAndConfigure', () => {
       const isConfigured = res.status === 200 && res.body?.is_finalized && res.body?.is_enabled;
 
       if (isConfigured) {
-        cy.log('[gitSync] Already configured and enabled — skipping setup');
+        Cypress.log({ message: '[gitSync] Already configured and enabled — skipping setup' });
         return;
       }
 
-      cy.log('[gitSync] Not configured — setting up GitHub HTTPS git sync via API');
+      Cypress.log({ message: '[gitSync] Not configured — setting up GitHub HTTPS git sync via API' });
 
       const privateKey = Cypress.env('GITHUB_PRIVATE_KEY');
 
-      cy.request({
+      return cy.request({
         method: 'POST',
         url: `${Cypress.env('server_host')}/api/git-sync/configs`,
         headers,
@@ -55,7 +55,7 @@ Cypress.Commands.add('gitSyncCheckAndConfigure', () => {
         },
       }).then((configRes) => {
         expect(configRes.status, 'Git sync config').to.equal(201);
-        cy.log('[gitSync] GitHub HTTPS configured and enabled');
+        Cypress.log({ message: '[gitSync] GitHub HTTPS configured and enabled' });
       });
     });
   });
@@ -65,8 +65,8 @@ Cypress.Commands.add('gitSyncCheckAndConfigure', () => {
 // Workspace branch: get branch ID by name
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncGetBranchId', (branchName) => {
-  cy.gsGetHeaders().then((headers) => {
-    cy.request({
+  return cy.gsGetHeaders().then((headers) => {
+    return cy.request({
       method: 'GET',
       url: `${Cypress.env('server_host')}/api/workspace-branches`,
       headers,
@@ -82,8 +82,8 @@ Cypress.Commands.add('gitSyncGetBranchId', (branchName) => {
 // Workspace branch: create via API
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncCreateBranchViaApi', (branchName) => {
-  cy.gsGetHeaders().then((headers) => {
-    cy.request({
+  return cy.gsGetHeaders().then((headers) => {
+    return cy.request({
       method: 'GET',
       url: `${Cypress.env('server_host')}/api/workspace-branches`,
       headers,
@@ -92,18 +92,18 @@ Cypress.Commands.add('gitSyncCreateBranchViaApi', (branchName) => {
       const exists = branches.some((b) => b?.name === branchName);
 
       if (exists) {
-        cy.log(`[gitSync] Branch '${branchName}' already exists`);
+        Cypress.log({ message: `[gitSync] Branch '${branchName}' already exists` });
         return;
       }
 
-      cy.request({
+      return cy.request({
         method: 'POST',
         url: `${Cypress.env('server_host')}/api/workspace-branches`,
         headers,
         body: { name: branchName },
       }).then((branchRes) => {
         expect(branchRes.status, `Create branch '${branchName}'`).to.equal(201);
-        cy.log(`[gitSync] Branch '${branchName}' created`);
+        Cypress.log({ message: `[gitSync] Branch '${branchName}' created` });
       });
     });
   });
@@ -114,11 +114,11 @@ Cypress.Commands.add('gitSyncCreateBranchViaApi', (branchName) => {
 // Mirrors playwright's importAppViaApi
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncImportAppFromFixture', (fixturePath, appName, branchName) => {
-  cy.gsGetHeaders().then((headers) => {
+  return cy.gsGetHeaders().then((headers) => {
     const orgId = Cypress.env('workspaceId');
 
     // Get branch ID for the target branch
-    cy.request({
+    return cy.request({
       method: 'GET',
       url: `${Cypress.env('server_host')}/api/workspace-branches`,
       headers,
@@ -127,7 +127,7 @@ Cypress.Commands.add('gitSyncImportAppFromFixture', (fixturePath, appName, branc
       const branch = branches.find((b) => b?.name === branchName);
       const branchId = branch?.id || '';
 
-      cy.fixture(fixturePath).then((fixtureData) => {
+      return cy.fixture(fixturePath).then((fixtureData) => {
         fixtureData.organization_id = orgId;
 
         // Override app name in fixture
@@ -136,15 +136,15 @@ Cypress.Commands.add('gitSyncImportAppFromFixture', (fixturePath, appName, branc
           appName,
           definition: app.definition?.appV2
             ? {
-                ...app.definition,
-                appV2: { ...app.definition.appV2, name: appName },
-              }
+              ...app.definition,
+              appV2: { ...app.definition.appV2, name: appName },
+            }
             : app.definition,
         }));
 
         if (branchId) fixtureData.branchId = branchId;
 
-        cy.request({
+        return cy.request({
           method: 'POST',
           url: `${Cypress.env('server_host')}/api/v2/resources/import`,
           headers: {
@@ -154,7 +154,10 @@ Cypress.Commands.add('gitSyncImportAppFromFixture', (fixturePath, appName, branc
           body: fixtureData,
         }).then((importRes) => {
           expect(importRes.status, `Import app '${appName}'`).to.equal(201);
-          cy.log(`[gitSync] App '${appName}' imported to branch '${branchName}'`);
+          const appId = importRes.body?.imports?.app?.[0]?.id;
+          Cypress.env('appId', appId);
+          Cypress.log({ message: `[gitSync] App '${appName}' imported to branch '${branchName}' (id: ${appId})` });
+          return appId;
         });
       });
     });
@@ -165,8 +168,8 @@ Cypress.Commands.add('gitSyncImportAppFromFixture', (fixturePath, appName, branc
 // Create workspace constant via API
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncCreateWorkspaceConstant', (name, value) => {
-  cy.gsGetHeaders().then((headers) => {
-    cy.request({
+  return cy.gsGetHeaders().then((headers) => {
+    return cy.request({
       method: 'POST',
       url: `${Cypress.env('server_host')}/api/workspace-variables`,
       headers,
@@ -179,7 +182,7 @@ Cypress.Commands.add('gitSyncCreateWorkspaceConstant', (name, value) => {
     }).then((res) => {
       // 201 = created, 409 = already exists (both acceptable)
       expect(res.status, `Create constant '${name}'`).to.be.oneOf([201, 409]);
-      cy.log(`[gitSync] Constant '${name}' = '${value}'`);
+      Cypress.log({ message: `[gitSync] Constant '${name}' = '${value}'` });
     });
   });
 });
@@ -188,9 +191,9 @@ Cypress.Commands.add('gitSyncCreateWorkspaceConstant', (name, value) => {
 // Update datasource URL via API (by datasource name)
 // ---------------------------------------------------------------------------
 Cypress.Commands.add('gitSyncUpdateDatasourceUrl', (dsName, newUrl) => {
-  cy.gsGetHeaders().then((headers) => {
+  return cy.gsGetHeaders().then((headers) => {
     // Find datasource by name
-    cy.request({
+    return cy.request({
       method: 'GET',
       url: `${Cypress.env('server_host')}/api/data-sources`,
       headers,
@@ -205,14 +208,14 @@ Cypress.Commands.add('gitSyncUpdateDatasourceUrl', (dsName, newUrl) => {
         return opt;
       });
 
-      cy.request({
+      return cy.request({
         method: 'PUT',
         url: `${Cypress.env('server_host')}/api/data-sources/${dsId}`,
         headers,
         body: { options: updatedOptions },
       }).then((updateRes) => {
         expect(updateRes.status, `Update datasource '${dsName}'`).to.equal(200);
-        cy.log(`[gitSync] Datasource '${dsName}' URL updated to '${newUrl}'`);
+        Cypress.log({ message: `[gitSync] Datasource '${dsName}' URL updated to '${newUrl}'` });
       });
     });
   });
@@ -324,13 +327,45 @@ Cypress.Commands.add('gitSyncOpenAppInBuilder', (appName) => {
 });
 
 // ---------------------------------------------------------------------------
-// GitHub API: create PR
+// GitHub API: poll until branch has commits ahead of base (max 10 retries × 3s)
 // ---------------------------------------------------------------------------
-Cypress.Commands.add('gitHubCreatePR', (headBranch, title, baseBranch = 'main') => {
+Cypress.Commands.add('gitHubWaitForCommitsAhead', (headBranch, baseBranch = 'master', retries = 10) => {
   const owner = Cypress.env('GITHUB_REPO_OWNER');
   const repo = Cypress.env('GITHUB_REPO_NAME');
 
-  cy.request({
+  const check = (remaining) => {
+    return cy.request({
+      method: 'GET',
+      url: `https://api.github.com/repos/${owner}/${repo}/compare/${baseBranch}...${headBranch}`,
+      headers: {
+        Authorization: `Bearer ${Cypress.env('GITHUB_TOKEN')}`,
+        Accept: 'application/vnd.github+json',
+      },
+    }).then((res) => {
+      const aheadBy = res.body.ahead_by;
+      if (aheadBy > 0) {
+        Cypress.log({ message: `[gitSync] Branch '${headBranch}' is ${aheadBy} commit(s) ahead of '${baseBranch}'` });
+        return;
+      }
+      if (remaining <= 0) {
+        throw new Error(`Branch '${headBranch}' has no commits ahead of '${baseBranch}' after waiting`);
+      }
+      Cypress.log({ message: `[gitSync] Branch not ahead yet, retrying... (${remaining} left)` });
+      return cy.wait(3000).then(() => check(remaining - 1));
+    });
+  };
+
+  return check(retries);
+});
+
+// ---------------------------------------------------------------------------
+// GitHub API: create PR
+// ---------------------------------------------------------------------------
+Cypress.Commands.add('gitHubCreatePR', (headBranch, title, baseBranch = 'master') => {
+  const owner = Cypress.env('GITHUB_REPO_OWNER');
+  const repo = Cypress.env('GITHUB_REPO_NAME');
+
+  return cy.request({
     method: 'POST',
     url: `https://api.github.com/repos/${owner}/${repo}/pulls`,
     headers: {
@@ -341,9 +376,10 @@ Cypress.Commands.add('gitHubCreatePR', (headBranch, title, baseBranch = 'main') 
   }).then((res) => {
     expect(res.status, 'GitHub create PR').to.equal(201);
     Cypress.env('prNumber', res.body.number);
-    cy.log(`[gitSync] PR #${res.body.number} created: ${headBranch} → ${baseBranch}`);
+    Cypress.log({ message: `[gitSync] PR #${res.body.number} created: ${headBranch} → ${baseBranch}` });
     return res.body.number;
   });
+
 });
 
 // ---------------------------------------------------------------------------
@@ -353,7 +389,7 @@ Cypress.Commands.add('gitHubMergePR', (prNumber = Cypress.env('prNumber')) => {
   const owner = Cypress.env('GITHUB_REPO_OWNER');
   const repo = Cypress.env('GITHUB_REPO_NAME');
 
-  cy.request({
+  return cy.request({
     method: 'PUT',
     url: `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/merge`,
     headers: {
@@ -363,7 +399,7 @@ Cypress.Commands.add('gitHubMergePR', (prNumber = Cypress.env('prNumber')) => {
     body: { merge_method: 'squash' },
   }).then((res) => {
     expect(res.status, `GitHub merge PR #${prNumber}`).to.equal(200);
-    cy.log(`[gitSync] PR #${prNumber} merged to main`);
+    Cypress.log({ message: `[gitSync] PR #${prNumber} merged to main` });
   });
 });
 
@@ -374,7 +410,7 @@ Cypress.Commands.add('gitHubDeleteBranch', (branchName) => {
   const owner = Cypress.env('GITHUB_REPO_OWNER');
   const repo = Cypress.env('GITHUB_REPO_NAME');
 
-  cy.request({
+  return cy.request({
     method: 'DELETE',
     url: `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${branchName}`,
     headers: {
@@ -383,29 +419,68 @@ Cypress.Commands.add('gitHubDeleteBranch', (branchName) => {
     },
     failOnStatusCode: false,
   }).then((res) => {
-    cy.log(`[gitSync] GitHub branch '${branchName}' deleted (${res.status})`);
+    Cypress.log({ message: `[gitSync] GitHub branch '${branchName}' deleted (${res.status})` });
   });
 });
 
 // ---------------------------------------------------------------------------
-// GitHub API: cleanup all branches prefixed with 'test-'
+// GitHub API: full repo reset —
+//   1. delete all branches prefixed with 'test-'
+//   2. clear all file contents from master (empty-tree commit, force-push)
+// Branches without the 'test-' prefix, tags, and other repo objects are untouched.
 // ---------------------------------------------------------------------------
-Cypress.Commands.add('gitHubCleanupTestBranches', () => {
+Cypress.Commands.add('gitHubResetRepo', (defaultBranch = 'master') => {
   const owner = Cypress.env('GITHUB_REPO_OWNER');
-  const repo = Cypress.env('GITHUB_REPO_NAME');
+  const repo  = Cypress.env('GITHUB_REPO_NAME');
+  const ghHeaders = {
+    Authorization: `Bearer ${Cypress.env('GITHUB_TOKEN')}`,
+    Accept: 'application/vnd.github+json',
+  };
 
+  // Step 1: delete all test-* branches
   cy.request({
     method: 'GET',
     url: `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`,
-    headers: {
-      Authorization: `Bearer ${Cypress.env('GITHUB_TOKEN')}`,
-      Accept: 'application/vnd.github+json',
-    },
+    headers: ghHeaders,
   }).then((res) => {
     const testBranches = res.body.filter((b) => b.name.startsWith('test-'));
-    cy.log(`[gitSync] Cleaning up ${testBranches.length} test branch(es)`);
+    Cypress.log({ message: `[gitSync] Deleting ${testBranches.length} test branch(es)` });
     testBranches.forEach((branch) => {
       cy.gitHubDeleteBranch(branch.name);
+    });
+  });
+
+  // Step 2: clear master contents via empty-tree commit.
+  // Git's empty tree SHA is a universal constant — exists in every repo,
+  // no need to POST /git/trees (which rejects an empty array with 422).
+  const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
+
+  cy.request({
+    method: 'GET',
+    url: `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${defaultBranch}`,
+    headers: ghHeaders,
+  }).then((refRes) => {
+    const parentSha = refRes.body.object.sha;
+
+    cy.request({
+      method: 'POST',
+      url: `https://api.github.com/repos/${owner}/${repo}/git/commits`,
+      headers: ghHeaders,
+      body: {
+        message: 'chore: clear repo contents for test isolation',
+        tree: EMPTY_TREE_SHA,
+        parents: [parentSha],
+      },
+    }).then((commitRes) => {
+      cy.request({
+        method: 'PATCH',
+        url: `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${defaultBranch}`,
+        headers: ghHeaders,
+        body: { sha: commitRes.body.sha, force: true },
+      }).then((updateRes) => {
+        expect(updateRes.status).to.equal(200);
+        Cypress.log({ message: `[gitSync] '${defaultBranch}' cleared (commit: ${commitRes.body.sha.slice(0, 7)})` });
+      });
     });
   });
 });

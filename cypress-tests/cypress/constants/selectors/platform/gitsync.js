@@ -49,7 +49,7 @@ export const gitSyncSelectors = {
   // ─── Push / Pull Modal ─────────────────────────────────────────────────────
   modalTitle: '[data-cy="modal-title"]',
   modalClose: '[data-cy="modal-close-button"]',
-  commitMessageInput: '[data-cy="commit-message-input"]',
+  commitMessageInput: '[data-cy="commit-message-input"]', 
   pullModalTitle: "Pull Commit",
   checkForUpdatesLabel: '[data-cy="check-for-updates-label"]',
   pullModalCancelBtn: 'button:contains("Cancel")',
