@@ -420,26 +420,8 @@ export const EventManager = ({
     });
   }
 
-  function getEventSourceName() {
-    if (eventSourceType === 'component') {
-      return components?.[sourceId]?.component?.name || eventMetaDefinition?.name || 'Event';
-    }
-
-    if (eventSourceType === 'page') {
-      return pages?.find((page) => page.id === sourceId)?.name || 'Page';
-    }
-
-    if (eventSourceType === 'data_query') {
-      return callerQueryName || 'Query';
-    }
-
-    return '';
-  }
-
-  function getDefaultEventName(eventId) {
-    const sourceName = getEventSourceName();
-    const eventDisplayName = eventMetaDefinition?.events?.[eventId]?.displayName || eventId || 'event';
-    return `${sourceName} ${eventDisplayName}`.trim();
+  function getDefaultEventName() {
+    return `Event #${events.length + 1}`;
   }
 
   function removeHandler(index) {
@@ -487,7 +469,7 @@ export const EventManager = ({
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
-      name: getDefaultEventName(selectedEventId),
+      name: getDefaultEventName(),
       event: {
         eventId: selectedEventId,
         actionId: 'show-alert',
