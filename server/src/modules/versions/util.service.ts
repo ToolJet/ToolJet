@@ -255,11 +255,22 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
+  async checkDraftModulesInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
     try {
-      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration).
-      // Branch rows are persisted with status=DRAFT, so filtering on status alone covers both
-      // "draft main version" and "feature-branch state" cases — no versionType check needed.
+      // moduleVersionId.value stores one of:
+      //   1. a DB UUID (legacy) of a specific app_version
+      //   2. a version name (pinned) — restricted to version_type='version' so branch rows
+      //      that happen to share a name don't falsely match
+      //   3. a branch name (unpinned) — resolved here to the module's default-branch
+      //      version_type='version' row so we check whether that row is saved or still draft
+      //
+      // Status DRAFT on that resolved row means the module needs saving before the parent
+      // app can be saved/promoted. Branch-name refs resolve via case 3 instead of matching
+      // the branch row directly, because branch rows are always DRAFT.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -270,35 +281,99 @@ export class VersionUtilService implements IVersionUtilService {
           `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
            OR (
              (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
              AND mod_ver.app_id IN (
                SELECT id FROM apps
                WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
              )
-           )`
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )`,
+          { orgId: organizationId }
         )
         .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
         .select('DISTINCT mod_app.name', 'moduleName')
         .addSelect('mod_ver.name', 'versionName')
+        .addSelect(`component.properties::jsonb -> 'moduleVersionId' ->> 'value'`, 'rawRef')
         .where('component.type = :type', { type: 'ModuleViewer' })
         .andWhere('appVersion.id = :versionId', { versionId })
         .andWhere('mod_ver.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT })
         .getRawMany();
 
       if (draftModules.length > 0) {
-        const moduleList = draftModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        // Unpinned (branch-name) refs resolve to a different name than what's stored —
+        // the user should be guided to save a version on main. A pinned ref that matches
+        // the resolved name is a pinned-to-draft case.
+        const formatEntry = (m: { moduleName: string; versionName: string; rawRef: string }) =>
+          m.rawRef !== m.versionName
+            ? `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`
+            : `Module "${m.moduleName}" version "${m.versionName}" is still in draft. Save the module first.`;
+        const moduleList = draftModules.map(formatEntry).join(' ');
         const message =
           draftModules.length === 1
-            ? `Save blocked - Module "${draftModules[0].moduleName} (${draftModules[0].versionName})" is still in draft. Save the module first.`
-            : `Save blocked - ${draftModules.length} modules are still in draft. Save them first.`;
+            ? `Save blocked - ${formatEntry(draftModules[0])}`
+            : `Save blocked - ${draftModules.length} modules need saving. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Draft modules: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check draft modules in app', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions');
+    }
+  }
+
+  /**
+   * When a module's default-branch `version_type='version'` row transitions from DRAFT to a
+   * saved state, rewrite consumer `ModuleViewer` refs that are still "unpinned" (branch-name
+   * values) to the saved version name. Scope: same organization, same module (matched by
+   * co_relation_id), consumer app_version hosted on the default branch — feature-branch refs
+   * keep their unpinned semantics until their own branch is merged and saved on main.
+   */
+  async pinUnpinnedModuleViewerRefs(
+    manager: EntityManager,
+    moduleApp: App,
+    savedVersionName: string,
+    organizationId: string
+  ): Promise<void> {
+    if (!moduleApp?.co_relation_id) return;
+    try {
+      await manager.query(
+        `UPDATE components c
+         SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
+         FROM pages p
+         JOIN app_versions av ON av.id = p.app_version_id
+         JOIN apps a ON a.id = av.app_id
+         JOIN organization_git_sync_branches hb ON hb.id = av.branch_id
+         WHERE c.page_id = p.id
+           AND c.type = 'ModuleViewer'
+           AND a.organization_id = $2
+           AND hb.organization_id = $2
+           AND hb.is_default = true
+           AND c.properties->'moduleAppId'->>'value' = $3
+           AND c.properties->'moduleVersionId'->>'value' IN (
+             SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $2
+           )`,
+        [savedVersionName, organizationId, moduleApp.co_relation_id]
+      );
+    } catch (err) {
+      // Don't fail the save if the pin rewrite hits an edge — log and continue.
+      this.logger.error('pinUnpinnedModuleViewerRefs failed', err?.stack || err);
     }
   }
 

@@ -2,7 +2,8 @@ import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -268,12 +269,47 @@ export class VersionService implements IVersionService {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
+    const oldStatus = appVersion.status;
 
     if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
-      await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, this.versionRepository.manager);
+      await this.versionsUtilService.checkDraftModulesInApp(
+        appVersion.id,
+        user.organizationId,
+        this.versionRepository.manager
+      );
     }
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+
+    // Module "Save version" on main: DRAFT → non-DRAFT transition on the default-branch
+    // version_type='version' row. Rewrite any unpinned (branch-name) consumer ModuleViewer
+    // refs in the same org to this saved version name so the subsequent app save
+    // (checkDraftModulesInApp) sees a non-DRAFT module and the inspector warning clears.
+    const willBeNonDraft =
+      !!appVersionUpdateDto?.status && appVersionUpdateDto.status !== AppVersionStatus.DRAFT;
+    if (
+      app.type === APP_TYPES.MODULE &&
+      oldStatus === AppVersionStatus.DRAFT &&
+      willBeNonDraft &&
+      appVersion.versionType === AppVersionType.VERSION
+    ) {
+      const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { organizationId: user.organizationId, isDefault: true },
+      });
+      // Only pin when this save is happening on the default-branch version row.
+      // Accept a null branchId as a safety net for pre-backfill data.
+      if (
+        defaultBranch &&
+        (appVersion.branchId == null || appVersion.branchId === defaultBranch.id)
+      ) {
+        await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
+          this.versionRepository.manager,
+          app,
+          appVersion.name,
+          user.organizationId
+        );
+      }
+    }
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     } else if (
