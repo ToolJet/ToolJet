@@ -87,7 +87,6 @@ export const EventManager = ({
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const lastFocusedEventIndex = useRef(null);
-  const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
 
@@ -120,16 +119,6 @@ export const EventManager = ({
   let actionOptions = Object.keys(groupedOptions).map((groupName) => {
     return { label: groupName, options: groupedOptions[groupName] };
   });
-
-  let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
-  // Listen for click events on body
-  if (checkIfClicksAreInsideOf) {
-    document.body.addEventListener('mousedown', function (event) {
-      if (checkIfClicksAreInsideOf.contains(event.target)) {
-        event.stopPropagation();
-      }
-    });
-  }
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const styles = {
@@ -1302,17 +1291,6 @@ export const EventManager = ({
                           rootClose={true}
                           overlay={eventPopover(event, index)}
                           onToggle={(showing) => {
-                            // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
-                            if (shouldSkipOnToggle.current) {
-                              shouldSkipOnToggle.current = false;
-                              return;
-                            }
-
-                            // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
-                            if (focusedEventIndex !== null && showing) {
-                              shouldSkipOnToggle.current = true;
-                            }
-
                             if (showing) {
                               setFocusedEventIndex(index);
                               lastFocusedEventIndex.current = index;
@@ -1387,29 +1365,6 @@ export const EventManager = ({
         {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
         <div className="d-flex">{renderAddHandlerBtn()}</div>
       </>
-    );
-  }
-
-  const componentName = eventMetaDefinition?.name ? eventMetaDefinition.name : 'query';
-
-  if (events.length === 0) {
-    return (
-      <div className="d-flex">
-        {renderAddHandlerBtn()}
-        {!hideEmptyEventsAlert ? (
-          <div className="text-left">
-            <small className="color-disabled" data-cy="no-event-handler-message">
-              {t(
-                'editor.inspector.eventManager.emptyMessage',
-                "This {{componentName}} doesn't have any event handlers",
-                {
-                  componentName: componentName.toLowerCase(),
-                }
-              )}
-            </small>
-          </div>
-        ) : null}
-      </div>
     );
   }
 
