@@ -362,8 +362,8 @@ export const createComponentsSlice = (set, get) => ({
         const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
-        if (ancestorType === 'Listview' || ancestorType === 'Kanban') {
-          // Add 0 at the beginning for each ListView/Kanban ancestor (outer-most first)
+        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
+          // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
           parentIndices.unshift(0);
         }
         ancestorId = ancestorDef?.component?.parent;
@@ -1243,27 +1243,21 @@ export const createComponentsSlice = (set, get) => ({
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
         if (newComponent.component.component === 'Listview') {
-          const {
-            getResolvedComponent,
-            updateCustomResolvables,
-            checkIfParentIsListviewOrKanban,
-            getBaseParentId,
-            getComponentDefinition,
-          } = get();
+          const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
           if (Array.isArray(data) && data.length > 0) {
-            // Build parentIndices for nested ListView case
+            // Build parentIndices for each row-scoped ancestor (outer-most first)
             const parentIndices = [];
             const componentParentId = newComponent.component.parent;
             if (componentParentId) {
               let ancestorId = componentParentId;
               while (ancestorId) {
                 const baseAncestorId = getBaseParentId(ancestorId);
-                if (checkIfParentIsListviewOrKanban(baseAncestorId, moduleId)) {
+                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
                   parentIndices.unshift(0);
                 }
-                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
                 ancestorId = ancestorDef?.component?.parent;
               }
             }
@@ -2591,15 +2585,6 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     return refs;
-  },
-
-  checkIfParentIsListviewOrKanban: (parentId, moduleId) => {
-    const { getParentComponentType } = get();
-    const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' || parentComponentType === 'Kanban') {
-      return true;
-    }
-    return false;
   },
 
   // Walk up from startParentId through component.parent links to find the nearest per-row subcontainer ancestor (ListView or Kanban).
