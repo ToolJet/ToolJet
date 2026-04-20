@@ -79,8 +79,8 @@ export class OnboardingService implements IOnboardingService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly metadataUtilService: MetadataUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
-  ) {}
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+  ) { }
 
   private async getDefaultOrOldestWorkspaceOfInstance(
     manager: EntityManager
@@ -167,7 +167,7 @@ export class OnboardingService implements IOnboardingService {
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
           const edition = getTooljetEdition();
-          const isCE = edition === 'ce'; 
+          const isCE = edition === 'ce';
           if (isCE && !defaultWorkspace.enableSignUp) {
             throw new ForbiddenException(
               'Signup is disabled for the default workspace. Please contact the workspace admin.'
@@ -196,7 +196,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-    validatePasswordServer(password); 
+    validatePasswordServer(password);
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -279,7 +279,7 @@ export class OnboardingService implements IOnboardingService {
       const allowPersonalWorkspace =
         (await this.userRepository.count()) === 0 ||
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
-          'true';
+        'true';
 
       const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
       if (!(defaultWorkspace || allowPersonalWorkspace || organizationToken)) {

@@ -1,13 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import DataSourceSelect from '@/AppBuilder/QueryManager/Components/DataSourceSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { FileCode2 } from 'lucide-react';
 
 const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate, showMenu, setShowMenu }) => {
+  const { isModuleEditor } = useModuleContext();
   const selectRef = useRef();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const disabled = _disabled || shouldFreeze;
 
   useEffect(() => {

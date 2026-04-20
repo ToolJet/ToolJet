@@ -51,13 +51,13 @@ export const verifyGroupRemovedFromSidebar = (groupName) => {
 };
 
 export const addGranularPermissionViaUI = (permissionName, options = {}) => {
-  const {
-    resourceType = "app",
-    permission = "edit",
-    scope = "all",
-    environment = ["Released app"],
-    resources = [],
-  } = options;
+    const {
+        resourceType = "app",
+        permission = "edit",
+        scope = "all",
+        environment = ["Released app"],
+        resources = [],
+    } = options;
 
   cy.ifEnv("Community", () => {
     cy.get(groupsSelector.addAppsButton).click();
@@ -70,7 +70,9 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
       cy.get(groupsSelector.addWorkflowButton).click();
     } else if (resourceType === "datasource") {
       cy.get(groupsSelector.addDatasourceButton).click();
-    }
+    } else if (resourceType === "folder") {
+            cy.get(groupsSelector.addFolderButton).click();
+        }
   });
 
   cy.clearAndType(groupsSelector.permissionNameInput, permissionName);
@@ -93,7 +95,15 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
     } else if (permission === "configure") {
       cy.get(groupsSelector.configureDatasourceradio).check();
     }
-  }
+  }else if (resourceType === "folder") {
+        if (permission === "editFolder") {
+            cy.get(groupsSelector.editFolderRadio).check();
+        } else if (permission === "editApp") {
+            cy.get(groupsSelector.editAppRadio).check();
+        } else if (permission === "viewApp") {
+            cy.get(groupsSelector.viewAppRadio).check();
+        }
+    }
 
   if (Cypress.env("environment") === "enterprise" && resourceType === "app") {
     selectEnvironments(environment);

@@ -28,12 +28,13 @@ export class TemplatesService {
     identifier: string,
     appName: string,
     dependentPlugins: Array<string>,
-    shouldAutoImportPlugin: boolean
+    shouldAutoImportPlugin: boolean,
+    branchId?: string
   ) {
     const templateDefinition = this.findTemplateDefinition(identifier);
     if (dependentPlugins.length)
       await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
-    return this.importTemplate(currentUser, templateDefinition, appName, identifier);
+    return this.importTemplate(currentUser, templateDefinition, appName, identifier, branchId);
   }
 
   async createSampleApp(currentUser: User) {
@@ -57,12 +58,13 @@ export class TemplatesService {
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
 
-  async importTemplate(currentUser: User, templateDefinition: any, appName: string, identifier?: string) {
+  async importTemplate(currentUser: User, templateDefinition: any, appName: string, identifier?: string, branchId?: string) {
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
     importDto.tooljet_database = templateDefinition.tooljet_database;
     importDto.tooljet_version = templateDefinition.tooljet_version;
+    if (branchId) importDto.branchId = branchId;
 
     if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;

@@ -473,6 +473,7 @@ class DataSourceManagerComponent extends React.Component {
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
         elementsProps={this.props.formProps?.[kind]}
+        isWorkspaceBranchLocked={this.props.isWorkspaceBranchLocked}
       />
     );
   };
@@ -958,10 +959,20 @@ class DataSourceManagerComponent extends React.Component {
       ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
+    // For old-schema datasources (restapi, grpcv, etc.), DynamicForm.useLayoutEffect fills
+    // missing defaults into state.options but not into selectedDataSource.options (DB value).
+    // Normalize the baseline so those auto-filled defaults don't register as unsaved changes.
+    const dsDefaults = dataSourceMeta?.defaults ?? {};
+    const normalizedSavedOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...(selectedDataSource?.options ?? {}) }
+    );
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
@@ -1035,7 +1046,7 @@ class DataSourceManagerComponent extends React.Component {
                             data-cy="data-source-name-input-field"
                             autoFocus
                             autoComplete="off"
-                            disabled={!canUpdateDataSource(selectedDataSource.id)}
+                            disabled={this.props.isWorkspaceBranchLocked || !canUpdateDataSource(selectedDataSource.id)}
                           />
                           {!this.props.isEditing && (
                             <span className="input-icon-addon">
@@ -1233,7 +1244,7 @@ class DataSourceManagerComponent extends React.Component {
                           appId={this.state.appId}
                         />
                       </div>
-                      {!isSampleDb && (
+                      {!isSampleDb && this.props.showSaveBtn !== false && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
                             className={`m-2 datasource-save-btn-white-icon ${isSaving ? 'btn-loading' : ''}`}
@@ -1277,22 +1288,24 @@ class DataSourceManagerComponent extends React.Component {
                           {this.props.t('globals.readDocumentation', 'Read documentation')}
                         </a>
                       </div>
-                      <div className="col-auto" data-cy="db-connection-save-button">
-                        <ButtonSolid
-                          leftIcon="floppydisk"
-                          fill={'#FDFDFE'}
-                          className="m-2 datasource-save-btn-white-icon"
-                          disabled={
-                            isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
-                          }
-                          variant="primary"
-                          onClick={this.createDataSource}
-                        >
-                          {isSaving
-                            ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                            : this.props.t('globals.save', 'Save')}
-                        </ButtonSolid>
-                      </div>
+                      {this.props.showSaveBtn !== false && (
+                        <div className="col-auto" data-cy="db-connection-save-button">
+                          <ButtonSolid
+                            leftIcon="floppydisk"
+                            fill={'#FDFDFE'}
+                            className="m-2"
+                            disabled={
+                              isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                            }
+                            variant="primary"
+                            onClick={this.createDataSource}
+                          >
+                            {isSaving
+                              ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                              : this.props.t('globals.save', 'Save')}
+                          </ButtonSolid>
+                        </div>
+                      )}
                     </Modal.Footer>
                   )}
               </>

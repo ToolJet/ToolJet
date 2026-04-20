@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
@@ -95,13 +95,13 @@ export class ImportExportResourcesService {
           const pages = appParams?.pages;
           const queries = appParams?.dataQueries;
           const components = appParams?.components;
-          (pages?.length || queries?.length || components?.length) &&
-            (await this.appImportExportService.checkIfGroupPermissionsExist(
+          if (pages?.length || queries?.length || components?.length)
+            await this.appImportExportService.checkIfGroupPermissionsExist(
               pages,
               queries,
               components,
               user.organizationId
-            ));
+            );
         }
       }
     }
@@ -127,7 +127,8 @@ export class ImportExportResourcesService {
             isGitApp,
             importResourcesDto.tooljet_version,
             cloning,
-            manager
+            manager,
+            importResourcesDto.branchId
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });
@@ -153,7 +154,7 @@ export class ImportExportResourcesService {
     };
   }
 
-  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }] }: CloneResourcesDto) {
+  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }], branchId }: CloneResourcesDto) {
     const tablesForApp = await this.internalTableRepository.findTables(appId);
     const exportResourcesDto: ExportResourcesDto = {
       organization_id,
@@ -162,6 +163,15 @@ export class ImportExportResourcesService {
     };
 
     const resourceExport = await this.export(user, exportResourcesDto);
+
+    // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
+    // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.
+    const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
+    const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
+    if (exportedVersions.length > 0 && !hasNonStubVersion) {
+      throw new BadRequestException('Cannot clone an app that has not been pulled from git yet');
+    }
+
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
@@ -169,6 +179,7 @@ export class ImportExportResourcesService {
     const importResourcesDto: ImportResourcesDto = {
       organization_id,
       tooljet_version: globalThis.TOOLJET_VERSION,
+      ...(branchId && { branchId }),
       app: [
         {
           appName: newAppName,

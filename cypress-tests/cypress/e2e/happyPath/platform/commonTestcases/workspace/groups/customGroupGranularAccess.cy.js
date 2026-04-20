@@ -482,6 +482,7 @@ describe("Custom Group Granular Access", () => {
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -598,6 +599,7 @@ describe("Custom Group Granular Access", () => {
 
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -710,7 +712,7 @@ describe("Custom Group Granular Access", () => {
                 appId1 = appId;
             })
             .then(() => {
-                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
+                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(() => {
 
                 //Scenario A : Can acces only released app and Preview button not visible
                 verifyEnvironmentAccess(
@@ -762,7 +764,7 @@ describe("Custom Group Granular Access", () => {
                     "production",
                 );
             });
-        });
+        }); 
     });
 
     it("Should verify preview and released app access for custom group End-user", () => {
@@ -942,7 +944,7 @@ describe("Custom Group Granular Access", () => {
 });
 
 const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
-    cy.get(".css-uzxezq-multiValue").each(($el, index) => {
+    cy.get(".css-1dyz3mf .css-k3krtu-multiValue").each(($el, index) => {
         cy.wrap($el).should("contain", envTags[index]);
     });
     cy.get(".css-1wy0on6").click();
