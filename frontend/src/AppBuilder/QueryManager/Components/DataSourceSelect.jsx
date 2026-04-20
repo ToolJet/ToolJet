@@ -217,6 +217,22 @@ function DataSourceSelect({
     workflowDataSources,
   ]);
 
+  const ITEM_HEIGHTS = {
+    'defaults-header': 40,
+    'defaults-new-folder': 32,
+    'defaults-item': 32,
+    'group-header': 40,
+    'group-item': 32,
+    'sample-header': 40,
+    'sample-item': 32,
+    'group-end': 8,
+  };
+
+  const listHeight = Math.min(
+    flatItems.reduce((sum, item) => sum + (ITEM_HEIGHTS[item.type] || 32), 0),
+    448
+  );
+
   const renderItem = (item) => {
     switch (item.type) {
       case 'defaults-header':
@@ -422,7 +438,7 @@ function DataSourceSelect({
       <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
       <Virtuoso
         className="tj-scrollbar"
-        style={{ height: '448px' }}
+        style={{ height: listHeight }}
         data={flatItems}
         itemContent={(_, item) => renderItem(item)}
       />
