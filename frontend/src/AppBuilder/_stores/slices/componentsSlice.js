@@ -347,16 +347,17 @@ export const createComponentsSlice = (set, get) => ({
     let customResolvables = {};
     const parentId = component?.parent;
     const componentDetails = { componentId, paramType, property };
-    const nearestListviewId = findNearestSubcontainerAncestor(parentId, moduleId);
-    let index = nearestListviewId ? 0 : null;
+    // Nearest row-scoped ancestor (Listview / Kanban / Table) — the one whose per-row customResolvables this component resolves against.
+    const nearestRowScopedAncestorId = findNearestSubcontainerAncestor(parentId, moduleId);
+    let index = nearestRowScopedAncestorId ? 0 : null;
     if (index !== null) {
-      // For nested ListViews, we need to build parentIndices by walking up the ancestor chain.
-      // ListView parent IDs don't contain row indices - the row info is only available at render time.
-      // At drop time, we use index 0 for each ListView ancestor as a default for initial resolution.
+      // For components nested inside row-scoped ancestors, build parentIndices by walking up the ancestor chain.
+      // Row-scoped parent IDs don't contain row indices — the row info is only available at render time.
+      // At drop time, we use index 0 for each row-scoped ancestor as a default for initial resolution.
       const parentIndices = [];
 
-      // Walk up the ancestor chain starting from the nearest ListView's parent
-      const nearestDef = getComponentDefinition(nearestListviewId, moduleId);
+      // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
+      const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
       let ancestorId = nearestDef?.component?.parent;
       while (ancestorId) {
         const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
@@ -369,7 +370,7 @@ export const createComponentsSlice = (set, get) => ({
         ancestorId = ancestorDef?.component?.parent;
       }
 
-      customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
+      customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
@@ -2587,7 +2588,7 @@ export const createComponentsSlice = (set, get) => ({
     return refs;
   },
 
-  // Walk up from startParentId through component.parent links to find the nearest per-row subcontainer ancestor (ListView or Kanban).
+  // Walk up from startParentId through component.parent links to find the nearest row-scoped ancestor whose widget type is included in ROW_SCOPED_WIDGET_TYPES.
   // Returns the base UUID of that ancestor, or null if none found.
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
