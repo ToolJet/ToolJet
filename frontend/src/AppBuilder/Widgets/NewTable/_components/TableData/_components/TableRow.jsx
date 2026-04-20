@@ -107,7 +107,7 @@ export const TableRow = ({
                 ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
                 !contentWrap,
               'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
-              'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
+              'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(cell.column.columnDef?.meta?.columnType),
               'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
               'has-link': cell.column.columnDef?.meta?.columnType === 'link',
               'has-radio': cell.column.columnDef?.meta?.columnType === 'radio',

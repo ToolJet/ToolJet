@@ -13,6 +13,7 @@ import {
   StringTypeIcon,
   BadgeTypeIcon,
   TagsTypeIcon,
+  TagsV2TypeIcon,
   RadioTypeIcon,
   RatingTypeIcon,
   ButtonTypeIcon,
@@ -56,6 +57,8 @@ export const getColumnIcon = (columnType) => {
       return BadgeTypeIcon;
     case 'tags':
       return TagsTypeIcon;
+    case 'tagsV2':
+      return TagsV2TypeIcon;
     case 'rating':
       return RatingTypeIcon;
     case 'button':

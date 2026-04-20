@@ -7,6 +7,7 @@ export { LinkColumn } from './adapters/LinkColumnAdapter';
 export { ImageColumn } from './adapters/ImageColumnAdapter';
 export { DatepickerColumn } from './adapters/Datepicker';
 export { CustomSelectColumn } from './adapters/SelectColumnAdapter'; // Select & MultiSelect
+export { TagsV2Column } from './adapters/TagsV2ColumnAdapter'; // TagsV2
 export { JsonColumn } from './adapters/JsonColumnAdapter';
 export { MarkdownColumn } from './adapters/MarkdownColumnAdapter';
 export { HTMLColumn } from './adapters/HtmlColumnAdapter';

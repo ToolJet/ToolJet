@@ -10,6 +10,8 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { resolveReferences } from '@/_helpers/utils';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { unset } from 'lodash';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 
 export const OptionsList = ({
   column,
@@ -263,9 +265,40 @@ export const OptionsList = ({
   };
 
   items.push({
-    title: 'Options',
+    title: column.columnType === 'tagsV2' ? 'Tags' : 'Options',
     children: (
       <div className="d-flex custom-gap-7 flex-column">
+        {column.columnType === 'tagsV2' && (
+          <>
+            <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+              <label className="form-label">Sort tags</label>
+              <ToggleGroup
+                onValueChange={(value) => onColumnItemChange(index, 'sortTags', value)}
+                defaultValue={column?.sortTags || 'none'}
+                style={{ width: '58%' }}
+              >
+                <ToggleGroupItem value="none">None</ToggleGroupItem>
+                <ToggleGroupItem value="a-z">a-z</ToggleGroupItem>
+                <ToggleGroupItem value="z-a">z-a</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            <ProgramaticallyHandleProperties
+              label="Allow multiple selection"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="allowMultipleSelection"
+              props={column}
+              component={component}
+              paramMeta={{
+                type: 'toggle',
+                displayName: 'Allow multiple selection',
+              }}
+              paramType="properties"
+            />
+          </>
+        )}
         <ProgramaticallyHandleProperties
           label="Auto assign colors"
           currentState={currentState}
@@ -400,7 +433,7 @@ export const OptionsList = ({
                   className="tw-w-full mt-2"
                   width="100%"
                 >
-                  Add new option
+                  {column.columnType === 'tagsV2' ? 'Add new tag' : 'Add new option'}
                 </ButtonComponent>
               </div>
             </div>

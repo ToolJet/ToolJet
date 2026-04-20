@@ -22,7 +22,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     let modifiedColumn = { ...column };
 
     // Handle select/multiselect default options
-    if (property === 'columnType' && (value === 'select' || value === 'newMultiSelect')) {
+    if (property === 'columnType' && (value === 'select' || value === 'newMultiSelect' || value === 'tagsV2')) {
       if (modifiedColumn.options?.length > 0) {
         modifiedColumn.options = modifiedColumn.options.map((opt) => {
           const { makeDefaultOption, ...rest } = opt;

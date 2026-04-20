@@ -105,6 +105,7 @@ export const PropertiesTabElements = ({
                 { label: 'Date Picker', value: 'datepicker' },
                 { label: 'Select', value: 'select' },
                 { label: 'MultiSelect', value: 'newMultiSelect' },
+                { label: 'Tags', value: 'tagsV2' },
                 { label: 'Boolean', value: 'boolean' },
                 { label: 'Image', value: 'image' },
                 { label: 'Link', value: 'link' },
@@ -449,7 +450,7 @@ export const PropertiesTabElements = ({
           component={component}
         />
       )}
-      {['select', 'newMultiSelect'].includes(column.columnType) && (
+      {['select', 'newMultiSelect', 'tagsV2'].includes(column.columnType) && (
         <OptionsList
           column={column}
           props={props}
