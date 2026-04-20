@@ -1571,17 +1571,13 @@ export class AppImportExportService {
         folderIdMapping[folder.id] = savedId;
       }
 
-      // Scope query-child mappings to queries belonging to THIS version only.
-      // `appResourceMappings.dataQueryMapping` accumulates across versions, so filtering
-      // by it would re-insert prior versions' mappings and violate the
-      // UQ_data_query_folder_mapping_child unique constraint on (child_id, child_type).
-      const queryIdsForVersion = new Set(importingDataQueriesForAppVersion.map((q: { id: string }) => q.id));
+      const queryIdsForThisVersion = new Set(importingDataQueriesForAppVersion.map((q) => q.id));
+      const folderIdsForThisVersion = new Set(foldersForVersion.map((f) => f.id));
+
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
-          (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY &&
-            queryIdsForVersion.has(m.childId) &&
-            appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.FOLDER && folderIdsForThisVersion.has(m.childId)) ||
+          (m.childType === ChildType.QUERY && queryIdsForThisVersion.has(m.childId))
       );
 
       for (const mapping of mappingsForVersion) {
