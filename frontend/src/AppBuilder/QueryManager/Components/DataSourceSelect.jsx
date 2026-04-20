@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
@@ -6,6 +6,7 @@ import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { defaultSources, workflowDefaultSources } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
+import { Virtuoso } from 'react-virtuoso';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/common/components/DataSourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
@@ -163,6 +164,216 @@ function DataSourceSelect({
   const showNewFolder = allowNewFolder && !workflowDataSources && !!createFolder;
   const showDefaultsSection = showNewFolder ? true : filteredDefaults.length > 0;
 
+  const flatItems = useMemo(() => {
+    const items = [];
+
+    if (showDefaultsSection) {
+      items.push({ type: 'defaults-header' });
+      if (!defaultsCollapsed) {
+        if (showNewFolder) items.push({ type: 'defaults-new-folder' });
+        filteredDefaults.forEach((source) => {
+          const displayName = workflowDataSources
+            ? workflowDefaultSources[cleanWord(source.name)]?.name || source.name
+            : defaultSources[cleanWord(source.name)]?.name || source.name;
+          items.push({ type: 'defaults-item', source, displayName });
+        });
+        items.push({ type: 'group-end' });
+      }
+    }
+
+    groupedUserDefined.forEach(([kind, sources]) => {
+      const kindName =
+        dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
+      const isCollapsed = collapsedKinds.has(kind);
+      items.push({ type: 'group-header', kind, kindName, representative: sources[0], isCollapsed });
+      if (!isCollapsed) {
+        sources.forEach((source) => items.push({ type: 'group-item', source, kind }));
+        items.push({ type: 'group-end' });
+      }
+    });
+
+    groupedSampleDS.forEach(([kind, sources]) => {
+      const kindName =
+        dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
+      const sampleKind = `sample-${kind}`;
+      const isCollapsed = collapsedKinds.has(sampleKind);
+      items.push({ type: 'sample-header', kind, sampleKind, kindName, representative: sources[0], isCollapsed });
+      if (!isCollapsed) {
+        sources.forEach((source) => items.push({ type: 'sample-item', source }));
+        items.push({ type: 'group-end' });
+      }
+    });
+
+    return items;
+  }, [
+    showDefaultsSection,
+    defaultsCollapsed,
+    showNewFolder,
+    filteredDefaults,
+    groupedUserDefined,
+    groupedSampleDS,
+    collapsedKinds,
+    dataSourcesKinds,
+    workflowDataSources,
+  ]);
+
+  const renderItem = (item) => {
+    switch (item.type) {
+      case 'defaults-header':
+        return (
+          <button
+            style={{
+              ...accordionHeaderStyle,
+              borderBottom: defaultsCollapsed ? '1px solid var(--border-weak, #e4e7eb)' : 'none',
+            }}
+            onClick={() => setDefaultsCollapsed((v) => !v)}
+          >
+            <span style={{ fontWeight: 500, fontSize: '12px', color: 'var(--text-default, #1b1f24)' }}>Defaults</span>
+            <SolidIcon name={defaultsCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
+          </button>
+        );
+
+      case 'defaults-new-folder':
+        return (
+          <div style={{ padding: '0 8px' }}>
+            <ToolTip
+              message="Keep queries organized in folders. Available on paid plans."
+              placement="right"
+              show={!queryFoldersLicensed}
+            >
+              <button
+                style={{ ...itemStyle, cursor: queryFoldersLicensed ? 'pointer' : 'default' }}
+                className="ds-select-item"
+                onClick={queryFoldersLicensed ? handleNewFolder : undefined}
+                data-cy="new-folder-ds-select"
+              >
+                <DynamicIcon
+                  name="folder-plus"
+                  size={16}
+                  style={{ flexShrink: 0, color: queryFoldersLicensed ? 'var(--icon-default, #6a727c)' : '#9E9EA8' }}
+                />
+                <span
+                  style={{
+                    ...itemTextStyle,
+                    flex: 1,
+                    color: queryFoldersLicensed ? 'var(--text-default, #1b1f24)' : '#9E9EA8',
+                  }}
+                >
+                  New folder
+                </span>
+                {!queryFoldersLicensed && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+              </button>
+            </ToolTip>
+          </div>
+        );
+
+      case 'defaults-item':
+        return (
+          <div style={{ padding: '0 8px' }}>
+            <button
+              key={item.source.id || item.source.name}
+              style={itemStyle}
+              className="ds-select-item"
+              onClick={() => handleSourceClick(item.source)}
+              data-cy={`ds-${(item.source.name || '').toLowerCase()}`}
+            >
+              <DataSourceIcon source={item.source} height={16} />
+              <span style={itemTextStyle}>{item.displayName}</span>
+            </button>
+          </div>
+        );
+
+      case 'group-header':
+        return (
+          <button
+            style={{
+              ...accordionHeaderStyle,
+              borderBottom: item.isCollapsed ? '1px solid var(--border-weak, #e4e7eb)' : 'none',
+            }}
+            onClick={() => toggleKind(item.kind)}
+            data-cy={`ds-group-${item.kind}`}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <DataSourceIcon source={item.representative} height={16} />
+              <span
+                style={{
+                  fontWeight: 500,
+                  fontSize: '12px',
+                  color: 'var(--text-default, #1b1f24)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {item.kindName}
+              </span>
+            </div>
+            <SolidIcon name={item.isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
+          </button>
+        );
+
+      case 'group-item':
+        return (
+          <div style={{ padding: '0 8px' }}>
+            <button
+              style={itemStyle}
+              className="ds-select-item"
+              onClick={() => handleSourceClick(item.source)}
+              data-tooltip-id="tooltip-for-add-query-dd-option"
+              data-tooltip-content={decodeEntities(item.source.name)}
+              data-cy={`ds-${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              <span style={itemTextStyle}>{decodeEntities(item.source.name)}</span>
+            </button>
+          </div>
+        );
+
+      case 'sample-header':
+        return (
+          <button
+            style={{
+              ...accordionHeaderStyle,
+              borderBottom: item.isCollapsed ? '1px solid var(--border-weak, #e4e7eb)' : 'none',
+            }}
+            onClick={() => toggleKind(item.sampleKind)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <DataSourceIcon source={item.representative} height={16} />
+              <span
+                style={{
+                  fontWeight: 500,
+                  fontSize: '12px',
+                  color: 'var(--text-default, #1b1f24)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {item.kindName}
+              </span>
+            </div>
+            <SolidIcon name={item.isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
+          </button>
+        );
+
+      case 'sample-item':
+        return (
+          <div style={{ padding: '0 8px' }}>
+            <button
+              style={itemStyle}
+              className="ds-select-item"
+              onClick={() => handleSourceClick(item.source)}
+              data-cy={`ds-${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              <span style={itemTextStyle}>{decodeEntities(item.source.name)}</span>
+            </button>
+          </div>
+        );
+
+      case 'group-end':
+        return <div style={{ height: '8px', borderBottom: '1px solid var(--border-weak, #e4e7eb)' }} />;
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       style={{
@@ -207,164 +418,14 @@ function DataSourceSelect({
       {/* Divider */}
       <div style={{ height: '1px', background: 'var(--border-weak, #e4e7eb)', flexShrink: 0 }} />
 
-      {/* Scrollable list */}
-      <div style={{ maxHeight: '448px', overflowY: 'auto', flex: 1 }} className="tj-scrollbar">
-        {/* Defaults accordion */}
-        {showDefaultsSection && (
-          <div style={{ borderBottom: '1px solid var(--border-weak, #e4e7eb)' }}>
-            <button style={accordionHeaderStyle} onClick={() => setDefaultsCollapsed((v) => !v)}>
-              <span style={{ fontWeight: 500, fontSize: '12px', color: 'var(--text-default, #1b1f24)' }}>Defaults</span>
-              <SolidIcon name={defaultsCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
-            </button>
-            {!defaultsCollapsed && (
-              <div style={{ padding: '0 8px 8px' }}>
-                {showNewFolder && (
-                  <ToolTip
-                    message="Keep queries organized in folders. Available on paid plans."
-                    placement="right"
-                    show={!queryFoldersLicensed}
-                  >
-                    <button
-                      style={{ ...itemStyle, cursor: queryFoldersLicensed ? 'pointer' : 'default' }}
-                      className="ds-select-item"
-                      onClick={queryFoldersLicensed ? handleNewFolder : undefined}
-                      data-cy="new-folder-ds-select"
-                    >
-                      <DynamicIcon
-                        name="folder-plus"
-                        size={16}
-                        style={{
-                          flexShrink: 0,
-                          color: queryFoldersLicensed ? 'var(--icon-default, #6a727c)' : '#9E9EA8',
-                        }}
-                      />
-                      <span
-                        style={{
-                          ...itemTextStyle,
-                          flex: 1,
-                          color: queryFoldersLicensed ? 'var(--text-default, #1b1f24)' : '#9E9EA8',
-                        }}
-                      >
-                        New folder
-                      </span>
-                      {!queryFoldersLicensed && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
-                    </button>
-                  </ToolTip>
-                )}
-                {filteredDefaults.map((source) => {
-                  const displayName = workflowDataSources
-                    ? workflowDefaultSources[cleanWord(source.name)]?.name || source.name
-                    : defaultSources[cleanWord(source.name)]?.name || source.name;
-                  return (
-                    <button
-                      key={source.id || source.name}
-                      style={itemStyle}
-                      className="ds-select-item"
-                      onClick={() => handleSourceClick(source)}
-                      data-cy={`ds-${(source.name || '').toLowerCase()}`}
-                    >
-                      <DataSourceIcon source={source} height={16} />
-                      <span style={itemTextStyle}>{displayName}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* User-defined sources grouped by kind */}
-        {groupedUserDefined.map(([kind, sources]) => {
-          const representative = sources[0];
-          const kindName =
-            dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
-          const isCollapsed = collapsedKinds.has(kind);
-          return (
-            <div key={kind} style={{ borderBottom: '1px solid var(--border-weak, #e4e7eb)' }}>
-              <button style={accordionHeaderStyle} onClick={() => toggleKind(kind)} data-cy={`ds-group-${kind}`}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <DataSourceIcon source={representative} height={16} />
-                  <span
-                    style={{
-                      fontWeight: 500,
-                      fontSize: '12px',
-                      color: 'var(--text-default, #1b1f24)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {kindName}
-                  </span>
-                </div>
-                <SolidIcon name={isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
-              </button>
-              {!isCollapsed && (
-                <div style={{ padding: '0 8px 8px' }}>
-                  {sources.map((source) => (
-                    <button
-                      key={source.id}
-                      style={itemStyle}
-                      className="ds-select-item"
-                      onClick={() => handleSourceClick(source)}
-                      data-tooltip-id="tooltip-for-add-query-dd-option"
-                      data-tooltip-content={decodeEntities(source.name)}
-                      data-cy={`ds-${String(source.name).toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      <span style={itemTextStyle}>{decodeEntities(source.name)}</span>
-                      <Tooltip
-                        id="tooltip-for-add-query-dd-option"
-                        className="tooltip query-manager-ds-select-tooltip"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Sample data sources (workflow mode, from prop) */}
-        {groupedSampleDS.map(([kind, sources]) => {
-          const representative = sources[0];
-          const kindName =
-            dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
-          const isCollapsed = collapsedKinds.has(`sample-${kind}`);
-          return (
-            <div key={`sample-${kind}`} style={{ borderBottom: '1px solid var(--border-weak, #e4e7eb)' }}>
-              <button style={accordionHeaderStyle} onClick={() => toggleKind(`sample-${kind}`)}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <DataSourceIcon source={representative} height={16} />
-                  <span
-                    style={{
-                      fontWeight: 500,
-                      fontSize: '12px',
-                      color: 'var(--text-default, #1b1f24)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {kindName}
-                  </span>
-                </div>
-                <SolidIcon name={isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
-              </button>
-              {!isCollapsed && (
-                <div style={{ padding: '0 8px 8px' }}>
-                  {sources.map((source) => (
-                    <button
-                      key={source.id}
-                      style={itemStyle}
-                      className="ds-select-item"
-                      onClick={() => handleSourceClick(source)}
-                      data-cy={`ds-${String(source.name).toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      <span style={itemTextStyle}>{decodeEntities(source.name)}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Virtualized list */}
+      <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+      <Virtuoso
+        className="tj-scrollbar"
+        style={{ height: '448px' }}
+        data={flatItems}
+        itemContent={(_, item) => renderItem(item)}
+      />
 
       {/* Add new data source — last accordion's borderBottom already separates this */}
       {canCreateDataSource() && (
