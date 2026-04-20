@@ -2,7 +2,18 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import { ArrowRight, Copy, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import { Popover, PopoverTrigger, PopoverContent, Button, Switch, Spinner } from '@/components/ui/Rocket';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Button,
+  Switch,
+  Spinner,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/Rocket';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -1299,107 +1310,135 @@ export const EventManager = ({
   const renderDraggable = useDraggableInPortal();
   const renderHandlers = (events) => {
     return (
-      <DragDropContext
-        onDragEnd={(result) => {
-          onDragEnd(result);
-        }}
-        className="w-100"
-      >
-        <Droppable droppableId="droppable">
-          {({ innerRef, droppableProps, placeholder }) => (
-            <div {...droppableProps} ref={innerRef}>
-              {events.map((event, index) => {
-                const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-                // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
-                return (
-                  <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
-                    {renderDraggable((provided, snapshot) => {
-                      if (snapshot.isDragging && focusedEventIndex !== null) {
-                        setFocusedEventIndex(null);
-                      }
-                      const isOpen = focusedEventIndex === index && !snapshot.isDragging;
-                      return (
-                        <Popover
-                          open={isOpen}
-                          onOpenChange={(showing) => {
-                            if (showing) {
-                              setFocusedEventIndex(index);
-                              lastFocusedEventIndex.current = index;
-                            } else {
-                              setFocusedEventIndex(null);
-                            }
-                            if (typeof popOverCallback === 'function') popOverCallback(showing);
-                          }}
-                        >
-                          <PopoverTrigger asChild>
-                            <div
-                              key={index}
-                              id={`${sourceId}-${index}`}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              data-cy="event-handler-card"
-                              className="tw-mb-1 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
-                            >
-                              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
-                                <div className="tw-flex tw-w-full tw-items-center tw-gap-2">
-                                  <span
-                                    className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
-                                    data-cy="event-handler-name"
-                                  >
-                                    {event?.name}
-                                  </span>
-                                  {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
-                                  index === eventToDeleteLoaderIndex ? (
-                                    <Spinner size="default" />
-                                  ) : (
-                                    <Switch
-                                      checked={!event.event.disabled}
-                                      onCheckedChange={(checked) => handlerChanged(index, 'disabled', !checked)}
-                                      onPointerDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                      aria-label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
-                                      data-cy="event-row-switch"
-                                    />
-                                  )}
-                                </div>
-                                <div className="tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-1">
-                                  <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
-                                    {eventMetaDefinition?.events[event.event.eventId]?.displayName}
-                                  </span>
-                                  <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
-                                  <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-text-right tw-font-body-default tw-text-text-placeholder">
-                                    {actionMeta.name}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            side={popoverPlacement || 'left'}
-                            align="center"
-                            className="tw-w-[350px] tw-max-w-[350px] tw-p-0 tw-gap-0 tw-overflow-hidden"
-                            data-cy="popover-card"
-                            onInteractOutside={(e) => {
-                              const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
-                              if (autocomplete && autocomplete.contains(e.target)) {
-                                e.preventDefault();
+      <TooltipProvider delayDuration={300}>
+        <DragDropContext
+          onDragEnd={(result) => {
+            onDragEnd(result);
+          }}
+          className="w-100"
+        >
+          <Droppable droppableId="droppable">
+            {({ innerRef, droppableProps, placeholder }) => (
+              <div {...droppableProps} ref={innerRef}>
+                {events.map((event, index) => {
+                  const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                  // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                  return (
+                    <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
+                      {renderDraggable((provided, snapshot) => {
+                        if (snapshot.isDragging && focusedEventIndex !== null) {
+                          setFocusedEventIndex(null);
+                        }
+                        const isOpen = focusedEventIndex === index && !snapshot.isDragging;
+                        return (
+                          <Popover
+                            open={isOpen}
+                            onOpenChange={(showing) => {
+                              if (showing) {
+                                setFocusedEventIndex(index);
+                                lastFocusedEventIndex.current = index;
+                              } else {
+                                setFocusedEventIndex(null);
                               }
+                              if (typeof popOverCallback === 'function') popOverCallback(showing);
                             }}
                           >
-                            {eventPopover(event, index)}
-                          </PopoverContent>
-                        </Popover>
-                      );
-                    })}
-                  </Draggable>
-                );
-              })}
-              {placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                            <PopoverTrigger asChild>
+                              <div
+                                key={index}
+                                id={`${sourceId}-${index}`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                data-cy="event-handler-card"
+                                className="tw-mb-1 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
+                              >
+                                <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
+                                  <div className="tw-flex tw-w-full tw-items-center tw-gap-2">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span
+                                          className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+                                          data-cy="event-handler-name"
+                                        >
+                                          {event?.name}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="top"
+                                        showArrow={false}
+                                        className="tw-max-w-[260px]"
+                                        data-cy="event-row-tooltip-name"
+                                      >
+                                        {event?.name}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
+                                    index === eventToDeleteLoaderIndex ? (
+                                      <Spinner size="default" />
+                                    ) : (
+                                      <Switch
+                                        checked={!event.event.disabled}
+                                        onCheckedChange={(checked) => handlerChanged(index, 'disabled', !checked)}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
+                                        aria-label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+                                        data-cy="event-row-switch"
+                                      />
+                                    )}
+                                  </div>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-1">
+                                        <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                          {eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                        </span>
+                                        <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
+                                        <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-text-right tw-font-body-default tw-text-text-placeholder">
+                                          {actionMeta.name}
+                                        </span>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                      side="top"
+                                      showArrow={false}
+                                      className="tw-max-w-[260px]"
+                                      data-cy="event-row-tooltip-action"
+                                    >
+                                      {eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                      {' → '}
+                                      {actionMeta.name}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              side={popoverPlacement || 'left'}
+                              align="center"
+                              className="tw-w-[350px] tw-max-w-[350px] tw-p-0 tw-gap-0 tw-overflow-hidden"
+                              data-cy="popover-card"
+                              onInteractOutside={(e) => {
+                                const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
+                                if (autocomplete && autocomplete.contains(e.target)) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              {eventPopover(event, index)}
+                            </PopoverContent>
+                          </Popover>
+                        );
+                      })}
+                    </Draggable>
+                  );
+                })}
+                {placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </TooltipProvider>
     );
   };
 
