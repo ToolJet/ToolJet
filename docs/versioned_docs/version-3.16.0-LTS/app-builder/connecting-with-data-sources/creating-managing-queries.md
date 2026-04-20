@@ -36,10 +36,10 @@ Folder names can only contain letters, numbers, and spaces - special characters 
 There are three ways to add queries to a folder:
 
 - **Create directly inside a folder**: Click the three-dot menu on a folder and select **Add new query**. The new query will be created inside that folder.
-- **Move an existing query**: Click the three-dot menu on a query and select **Move to a folder**, then choose the destination folder.
+    <img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-add-query.png" alt="App Builder: Add query to folder"/>
+- **Move an existing query**: Click the three-dot menu on a query and select **Move to a folder**, then choose the destination folder. <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/query-add-folder.png" alt="App Builder: Add query to folder"/>
 - **Drag and drop**: Drag an existing query from the list and drop it into the target folder.
-
-<img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-add-query.png" alt="App Builder: Add query to folder"/>
 
 ### Deleting a Folder
 
