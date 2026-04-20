@@ -117,7 +117,6 @@ const useAppData = (
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
-  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -599,18 +598,18 @@ const useAppData = (
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady && isLicenseFetched) {
+    if (isComponentLayoutReady) {
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
-        // Load JS libraries and preloaded JS from globalSettings before running queries
+        // Load JS libraries and preloaded JS from globalSettings before running queries.
+        // The BE strips libraries from globalSettings when the org is not licensed, so
+        // no feature-access check is needed here.
         const globalSettings = useStore.getState().globalSettings;
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
-
-        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+        if (jsLibraries.length > 0 || preloadedJS) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
@@ -634,7 +633,7 @@ const useAppData = (
 
       loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
+  }, [isComponentLayoutReady, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
