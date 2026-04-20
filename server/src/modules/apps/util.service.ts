@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -106,13 +106,14 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? 'v1' : workspaceBranch!.name,
+            name: type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? 'v1' : workspaceBranch!.name,
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
             status: AppVersionStatus.DRAFT,
             // versionType: AppVersionType.BRANCH,
-            versionType: (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) ? AppVersionType.VERSION : AppVersionType.BRANCH,
+            versionType:
+              type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
@@ -393,12 +394,19 @@ export class AppsUtilService implements IAppsUtilService {
           await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
+
+      if (updatableParams.slug) {
+        const conflictingApp = await manager.findOne(App, {
+          where: { slug: updatableParams.slug, organizationId, id: Not(appId) },
+        });
+        if (conflictingApp) {
+          await manager.update(App, conflictingApp.id, { slug: conflictingApp.id });
+        }
+      }
+
       return await catchDbException(async () => {
         return await manager.update(App, appId, updatableParams);
-      }, [
-        { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
-        { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
-      ]);
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     }, manager);
   }
 
@@ -510,12 +518,12 @@ export class AppsUtilService implements IAppsUtilService {
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-      // } else if (branchId) {
-      //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-      //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-      //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-      //     branchId,
-      //   });
+        // } else if (branchId) {
+        //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
+        //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
+        //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+        //     branchId,
+        //   });
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
         // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
@@ -709,6 +717,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Navigation',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {

@@ -16,7 +16,7 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = ({ darkMode }) => {
+export const AppVersionsManager = ({ darkMode, disabled = false }) => {
   const { moduleId } = useModuleContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -161,7 +161,14 @@ export const AppVersionsManager = ({ darkMode }) => {
     );
   };
 
-  const options = versionsPromotedToEnvironment.map((appVersion) => ({
+  // In main-branch preview mode, exclude sub-branch versions from the dropdown.
+  // When disabled (sub-branch preview), keep all versions so the current branch name still renders.
+  const visibleVersions =
+    isViewer && !disabled
+      ? versionsPromotedToEnvironment.filter((v) => (v.versionType || v.version_type) !== 'branch')
+      : versionsPromotedToEnvironment;
+
+  const options = visibleVersions.map((appVersion) => ({
     value: appVersion.id,
     isReleasedVersion: appVersion.id === releasedVersionId,
     appVersionName: appVersion.name,
@@ -218,6 +225,7 @@ export const AppVersionsManager = ({ darkMode }) => {
   };
 
   const handleToggleMenu = async () => {
+    if (disabled) return;
     if (!forceMenuOpen && !appVersionsLazyLoaded) {
       setGetAppVersionStatus(appVersionLoadingStatus.loading);
       await lazyLoadAppVersions(appId);
@@ -278,6 +286,7 @@ export const AppVersionsManager = ({ darkMode }) => {
             currentEnvironment={selectedEnvironment}
             isEditable={isEditable}
             darkMode={darkMode}
+            isDisabled={disabled}
           />
         </div>
       </div>
