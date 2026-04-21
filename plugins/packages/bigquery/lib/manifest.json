@@ -74,6 +74,28 @@
       ]
     },
     "oauth2": {
+      "access_type": {
+        "label": "Access type",
+        "key": "access_type",
+        "type": "dropdown",
+        "description": "Select read or read/write access",
+        "list": [
+          {
+            "value": "read",
+            "name": "Read only"
+          },
+          {
+            "value": "write",
+            "name": "Read and Write"
+          }
+        ]
+      },
+      "project_id": {
+        "label": "Project ID",
+        "key": "project_id",
+        "type": "text",
+        "description": "Enter your Google Cloud Project ID"
+      },
       "oauth": {
         "key": "oauth",
         "type": "react-component-oauth",
@@ -120,11 +142,11 @@
         "encrypted": true
       },
       "scope": {
-      "label": "Scope",
-      "type": "string",
-      "title": "Scope",
-      "description": "Enter required scopes"
-    }
+        "label": "Scope",
+        "key": "scope",
+        "type": "text",
+        "description": "Enter required scopes"
+      }
     }
   }
 }

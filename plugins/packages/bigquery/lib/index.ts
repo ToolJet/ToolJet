@@ -6,7 +6,6 @@ import {
   App,
   User,
   ConnectionTestResult,
-  validateAndSetRequestOptionsBasedOnAuthType,
   getCurrentToken,
   cacheConnectionWithConfiguration,
   getCachedConnection,
@@ -14,12 +13,18 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { BigQuery } from '@google-cloud/bigquery';
-import got, { Headers, OptionsOfTextResponseBody } from 'got';
-import { google } from 'googleapis';
+import got, { Headers } from 'got';
 const JSON5 = require('json5');
 const _ = require('lodash');
-
 export default class Bigquery implements QueryService {
+  private getOptionValue(sourceOptions: any, key: string): any {
+    const option = sourceOptions?.[key];
+    if (option !== null && typeof option === 'object' && 'value' in option) {
+      return option.value;
+    }
+    return option;
+  }
+
   /* ────────────────────────────────────────────
    *  OAuth helpers
    * ──────────────────────────────────────────── */
@@ -231,6 +236,12 @@ export default class Bigquery implements QueryService {
       console.error(
         `Error while BigQuery refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
       );
+      if (error.response.statusCode === 401 || error.response.statusCode === 403) {
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error, {
+          ...error,
+          ...error,
+        });
+      }
       throw new QueryError(
         'could not connect to BigQuery',
         JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
@@ -239,132 +250,6 @@ export default class Bigquery implements QueryService {
     }
 
     return accessTokenDetails;
-  }
-
-  /* ────────────────────────────────────────────
-   *  Multi-auth / source-option helpers
-   * ──────────────────────────────────────────── */
-
-  private constructSourceOptions(sourceOptions: any) {
-    const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-
-    const accessType = sourceOptions?.access_type;
-    const dataScopes =
-      accessType === 'write'
-        ? 'https://www.googleapis.com/auth/bigquery'
-        : 'https://www.googleapis.com/auth/bigquery.readonly';
-
-    const alwaysScopes = ['https://www.googleapis.com/auth/cloud-platform.read-only'];
-    const allScopesSet = new Set(`${dataScopes} ${alwaysScopes.join(' ')}`.trim().split(/\s+/));
-    const finalScopes = Array.from(allScopesSet).join(' ');
-
-    const addSourceOptions = {
-      url: 'https://bigquery.googleapis.com/bigquery/v2',
-      auth_url: authUrl,
-      add_token_to: 'header',
-      header_prefix: 'Bearer ',
-      access_token_url: 'https://oauth2.googleapis.com/token',
-      audience: '',
-      username: '',
-      password: '',
-      bearer_token: '',
-      client_auth: 'header',
-      headers: [
-        ['', ''],
-        ['tj-x-forwarded-for', '::1'],
-      ],
-      custom_query_params: [
-        ['access_type', 'offline'],
-        ['prompt', 'consent'],
-      ],
-      custom_auth_params: [['', '']],
-      access_token_custom_headers: [['', '']],
-      ssl_certificate: 'none',
-      retry_network_errors: true,
-      scopes: finalScopes,
-    };
-
-    return { ...sourceOptions, ...addSourceOptions };
-  }
-
-  private convertQueryOptions(queryOptions: any = {}, customHeaders?: Record<string, string>): any {
-    const { operation = 'get', params = {} } = queryOptions;
-
-    const result: any = {
-      method: (operation || 'get').toLowerCase(),
-      headers: customHeaders || {},
-    };
-
-    if (params.query && Object.keys(params.query).length > 0) {
-      const urlParams = new URLSearchParams();
-      Object.entries(params.query).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            value.forEach((v) => urlParams.append(key, String(v)));
-          } else {
-            urlParams.append(key, String(value));
-          }
-        }
-      });
-      result.searchParams = urlParams;
-    }
-
-    if (!['get', 'delete'].includes(result.method) && params.request) {
-      result.json = params.request;
-    }
-
-    return result;
-  }
-
-  /**
-   * Resolves an access token from OAuth or service account, depending on
-   * the authentication_type in sourceOptions.
-   */
-  private async resolveAccessToken(
-    sourceOptions: any,
-    context?: { user?: User; app?: App }
-  ): Promise<{ accessToken: string; needsOAuth?: any }> {
-    const authType = sourceOptions['authentication_type'];
-    if (authType === 'service_account') {
-      const token = await this.getServiceAccountToken(sourceOptions);
-      return { accessToken: token };
-    }
-
-    const oauth_type = sourceOptions?.oauth_type?.value || sourceOptions?.oauth_type;
-    if (oauth_type === 'tooljet_app') {
-      sourceOptions['client_id'] = process.env.GOOGLE_CLIENT_ID;
-      sourceOptions['client_secret'] = process.env.GOOGLE_CLIENT_SECRET;
-    }
-
-    let accessToken = sourceOptions['access_token'];
-
-    if (sourceOptions['multiple_auth_enabled']) {
-      const customHeaders = { 'tj-x-forwarded-for': '::1' };
-      const newSourceOptions = this.constructSourceOptions(sourceOptions);
-      const authValidatedRequestOptions = this.convertQueryOptions({}, customHeaders);
-
-      const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
-        newSourceOptions,
-        context,
-        authValidatedRequestOptions as any,
-        { kind: 'bigquery' }
-      );
-
-      if (_requestOptions.status === 'needs_oauth') {
-        return { accessToken: '', needsOAuth: _requestOptions };
-      }
-
-      const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
-      const authHeader = requestOptions.headers['Authorization'];
-
-      if (Array.isArray(authHeader)) {
-        accessToken = authHeader[0].replace('Bearer ', '');
-      } else if (typeof authHeader === 'string') {
-        accessToken = authHeader.replace('Bearer ', '');
-      }
-    }
-
-    return { accessToken };
   }
 
   /* ────────────────────────────────────────────
@@ -401,12 +286,13 @@ export default class Bigquery implements QueryService {
   }
 
   private async buildConnection(sourceOptions: any): Promise<any> {
-    const authType = sourceOptions['authentication_type'];
+    const authType = this.getOptionValue(sourceOptions, 'authentication_type');
     if (authType === 'service_account') {
       return this.getServiceAccountConnection(sourceOptions);
     }
 
-    const accessToken = sourceOptions['access_token'];
+    // Token refresh is handled via refreshToken(),
+    const accessToken = this.getOptionValue(sourceOptions, 'access_token');
     if (!accessToken) {
       throw new QueryError(
         'Authentication required',
@@ -415,17 +301,28 @@ export default class Bigquery implements QueryService {
       );
     }
 
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: accessToken });
-
-    return new BigQuery({ authClient: oauth2Client as any });
+    const projectId = this.getOptionValue(sourceOptions, 'project_id');
+    const clientId = sourceOptions['client_id'];
+    const clientSecret = sourceOptions['client_secret'];
+    const refreshToken = sourceOptions['refresh_token'];
+    //Internally the access token is refrshed and cached by google-auth-library
+    return new BigQuery({
+      projectId,
+      credentials: {
+        type: 'authorized_user',
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+      },
+    } as any);
   }
 
   private getServiceAccountConnection(sourceOptions: any): BigQuery {
-    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
+    const privateKey = this.getPrivateKey(this.getOptionValue(sourceOptions, 'private_key'));
     let scopes: string[] = [];
-    if (sourceOptions?.scope) {
-      scopes = typeof sourceOptions?.scope === 'string' ? sourceOptions.scope.trim().split(/\s+/).filter(Boolean) : [];
+    const scopeValue = this.getOptionValue(sourceOptions, 'scope');
+    if (scopeValue) {
+      scopes = typeof scopeValue === 'string' ? scopeValue.trim().split(/\s+/).filter(Boolean) : [];
     }
 
     return new BigQuery({
@@ -436,30 +333,6 @@ export default class Bigquery implements QueryService {
       },
       ...(scopes.length > 0 ? { scopes } : {}),
     });
-  }
-
-  private async getServiceAccountToken(sourceOptions: any): Promise<string> {
-    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
-
-    const scopes = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform'];
-
-    const jwtClient = new google.auth.JWT({
-      email: privateKey?.client_email,
-      key: privateKey?.private_key,
-      scopes,
-    });
-
-    const tokenResponse = await jwtClient.authorize();
-
-    if (!tokenResponse || !tokenResponse.access_token) {
-      throw new QueryError(
-        'Connection could not be established',
-        'Failed to obtain access token for service account',
-        {}
-      );
-    }
-
-    return tokenResponse.access_token;
   }
 
   /* ────────────────────────────────────────────
@@ -473,16 +346,15 @@ export default class Bigquery implements QueryService {
     dataSourceUpdatedAt?: string,
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
-    // Resolve the access token (handles both OAuth and service account)
-    const { accessToken, needsOAuth } = await this.resolveAccessToken(sourceOptions, context);
-    if (needsOAuth) {
-      return needsOAuth;
-    }
+    const client = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    return this.executeOperation(client, sourceOptions, queryOptions);
+  }
 
-    // Inject the resolved token so getConnection can use it for OAuth path
-    const enrichedSourceOptions = { ...sourceOptions, access_token: accessToken };
-    const client = await this.getConnection(enrichedSourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
-
+  private async executeOperation(
+    client: any,
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions
+  ): Promise<QueryResult> {
     const operation = queryOptions.operation;
     let result = {};
 
@@ -610,7 +482,7 @@ export default class Bigquery implements QueryService {
       // Handle OAuth 401/403 errors
       const statusCode = error.response?.statusCode || error.code || error.data?.statusCode || error.statusCode;
 
-      const isServiceAccount = sourceOptions['authentication_type'] === 'service_account';
+      const isServiceAccount = this.getOptionValue(sourceOptions, 'authentication_type') === 'service_account';
 
       if (!isServiceAccount && (statusCode === 401 || statusCode === 403)) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', errorMessage, {
@@ -638,36 +510,20 @@ export default class Bigquery implements QueryService {
     sourceOptions: any,
     args?: any
   ): Promise<any> {
-    // Resolve access token for both auth types
-    const { accessToken, needsOAuth } = await this.resolveAccessToken(sourceOptions, context);
-    if (needsOAuth) {
-      throw new QueryError(
-        'Could not connect to BigQuery',
-        JSON.stringify({
-          statusCode: 401,
-          message: 'OAuth authentication required',
-          data: 'OAuth authentication required',
-        }),
-        {}
-      );
-    }
-
-    const enrichedSourceOptions = { ...sourceOptions, access_token: accessToken };
-
     if (methodName === 'listDatasets') {
-      return await this._fetchDatasets(enrichedSourceOptions, args?.search, args?.page, args?.limit);
+      return await this._fetchDatasets(sourceOptions, args?.search, args?.page, args?.limit);
     }
 
     if (methodName === 'listTables') {
       const datasetId = args?.values?.datasetId || '';
-      return await this._fetchTables(enrichedSourceOptions, datasetId, args?.search, args?.page, args?.limit);
+      return await this._fetchTables(sourceOptions, datasetId, args?.search, args?.page, args?.limit);
     }
 
     if (methodName === 'getTables') {
       const datasetId = args?.values?.datasetId || '';
       const isPaginated = !!args?.limit;
 
-      const result = await this.listTables(enrichedSourceOptions, '', '', {
+      const result = await this.listTables(sourceOptions, '', '', {
         datasetId,
         search: args?.search,
         page: args?.page,
@@ -763,7 +619,7 @@ export default class Bigquery implements QueryService {
    * ──────────────────────────────────────────── */
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const authType = sourceOptions['authentication_type'];
+    const authType = this.getOptionValue(sourceOptions, 'authentication_type');
     if (authType === 'service_account') {
       const client = this.getServiceAccountConnection(sourceOptions);
       if (!client) {
@@ -774,7 +630,7 @@ export default class Bigquery implements QueryService {
     }
 
     // OAuth test: verify the token is valid
-    const accessToken = sourceOptions['access_token'];
+    const accessToken = this.getOptionValue(sourceOptions, 'access_token');
     if (!accessToken) {
       throw new QueryError(
         'Connection could not be established',
