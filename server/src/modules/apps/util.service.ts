@@ -923,4 +923,102 @@ export class AppsUtilService implements IAppsUtilService {
 
     return shouldFreezeEditor;
   }
+
+  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
+    if (!moduleApp?.co_relation_id) return;
+    try {
+      // Match by co_relation_id (stable module identity across branches/orgs) — that's
+      // what moduleAppId.value stores in the post-608f4bd7e4 data model. Self-ref
+      // exclusion lets a module reference itself without blocking its own deletion.
+      const consumingApps = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(App, 'app', 'app.id = appVersion.appId')
+        .select('DISTINCT app.name', 'appName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :coRel`, {
+          coRel: moduleApp.co_relation_id,
+        })
+        .andWhere('app.id != :selfId', { selfId: moduleApp.id })
+        .getRawMany();
+
+      const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
+      if (appNames.length > 0) {
+        throw new BadRequestException(`Cannot delete this module.\nUsed by:\n${appNames.join('\n')}`);
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check if module is in use', error?.stack || error);
+      throw new BadRequestException('Failed to validate module references');
+    }
+  }
+
+  async checkModulesReleasedInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      // 3-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
+      // for the cases. Predicate: the module's apps.current_version_id (released version)
+      // must equal the resolved mod_ver.id. Null current_version_id means never released.
+      const unreleasedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )`,
+          { orgId: organizationId }
+        )
+        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .addSelect('mod_ver.name', 'versionName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
+        .getRawMany();
+
+      if (unreleasedModules.length > 0) {
+        const moduleList = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        const message =
+          unreleasedModules.length === 1
+            ? `Release blocked - Module "${unreleasedModules[0].moduleName} (${unreleasedModules[0].versionName})" hasn't been released yet.`
+            : `Release blocked - ${unreleasedModules.length} dependent modules haven't been released yet.`;
+        throw new BadRequestException({
+          message: { error: message, details: `Modules not released: ${moduleList}` },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check module release state', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions for release');
+    }
+  }
 }
