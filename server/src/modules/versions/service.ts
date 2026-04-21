@@ -294,48 +294,48 @@ export class VersionService implements IVersionService {
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
-    const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
-    const oldStatus = appVersion.status;
+    const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
+      const oldStatus = appVersion.status;
 
-    if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
-      await this.versionsUtilService.checkDraftModulesInApp(
-        appVersion.id,
-        user.organizationId,
-        this.versionRepository.manager
-      );
-    }
-
-    await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
-
-    // Module "Save version" on main: DRAFT → non-DRAFT transition on the default-branch
-    // version_type='version' row. Rewrite any unpinned (branch-name) consumer ModuleViewer
-    // refs in the same org to this saved version name so the subsequent app save
-    // (checkDraftModulesInApp) sees a non-DRAFT module and the inspector warning clears.
-    const willBeNonDraft =
-      !!appVersionUpdateDto?.status && appVersionUpdateDto.status !== AppVersionStatus.DRAFT;
-    if (
-      app.type === APP_TYPES.MODULE &&
-      oldStatus === AppVersionStatus.DRAFT &&
-      willBeNonDraft &&
-      appVersion.versionType === AppVersionType.VERSION
-    ) {
-      const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-        where: { organizationId: user.organizationId, isDefault: true },
-      });
-      // Only pin when this save is happening on the default-branch version row.
-      // Accept a null branchId as a safety net for pre-backfill data.
-      if (
-        defaultBranch &&
-        (appVersion.branchId == null || appVersion.branchId === defaultBranch.id)
-      ) {
-        await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
-          this.versionRepository.manager,
-          app,
-          appVersion.name,
-          user.organizationId
-        );
+      if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
+        await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
-    }
+
+      await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
+
+      // Module "Save version" on main: DRAFT → non-DRAFT transition on the default-branch
+      // version_type='version' row. Rewrite any unpinned (branch-name) consumer ModuleViewer
+      // refs in the same org to this saved version name so the subsequent app save
+      // (checkDraftModulesInApp) sees a non-DRAFT module and the inspector warning clears.
+      // Read the post-update row so the gate reflects the actual DB state — the DTO can
+      // legitimately omit `status` (rename-only payloads) and we still want the pin to fire
+      // when the persisted row transitioned DRAFT → saved.
+      const postUpdate = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
+      if (
+        app.type === APP_TYPES.MODULE &&
+        oldStatus === AppVersionStatus.DRAFT &&
+        postUpdate.status !== AppVersionStatus.DRAFT &&
+        postUpdate.versionType === AppVersionType.VERSION
+      ) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+        });
+        // Only pin when this save is happening on the default-branch version row.
+        // Accept null branchId for legacy rows predating branch assignment.
+        if (defaultBranch && (postUpdate.branchId == null || postUpdate.branchId === defaultBranch.id)) {
+          await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
+            manager,
+            app,
+            postUpdate.name,
+            user.organizationId
+          );
+        }
+      }
+
+      return appVersion;
+    });
+
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     } else if (

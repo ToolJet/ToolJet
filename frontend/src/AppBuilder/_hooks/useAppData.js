@@ -266,12 +266,7 @@ const useAppData = (
       return;
     }
     let cancelled = false;
-    // Module in-session version switch (pin change): tear down the previous version's
-    // per-module slices before repopulating. Otherwise stale component IDs remain in
-    // dependencyGraph / resolvedStore and setResolvedGlobals → updateDependencyValues
-    // walks them, calling validateProperty(oldComponentId) which throws because
-    // getComponentDefinition returns undefined — triggering the "Error fetching module
-    // data" toast even on a successful fetch.
+    // Module in-session pin change: reset per-module slices (see lastModuleVersionRef above).
     if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
       initModules(moduleId);
     }

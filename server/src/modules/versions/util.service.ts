@@ -64,7 +64,7 @@ export class VersionUtilService implements IVersionUtilService {
     return obj && typeof obj === 'object';
   }
 
-  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
+  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
     const editableParams = {};
 
     const { globalSettings, homePageId, pageSettings, name } = appVersion;
@@ -105,7 +105,11 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
-    await this.versionRepository.update(appVersion.id, editableParams);
+    if (manager) {
+      await manager.update(AppVersion, { id: appVersion.id }, editableParams);
+    } else {
+      await this.versionRepository.update(appVersion.id, editableParams);
+    }
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -352,29 +356,24 @@ export class VersionUtilService implements IVersionUtilService {
     organizationId: string
   ): Promise<void> {
     if (!moduleApp?.co_relation_id) return;
-    try {
-      await manager.query(
-        `UPDATE components c
-         SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
-         FROM pages p
-         JOIN app_versions av ON av.id = p.app_version_id
-         JOIN apps a ON a.id = av.app_id
-         JOIN organization_git_sync_branches hb ON hb.id = av.branch_id
-         WHERE c.page_id = p.id
-           AND c.type = 'ModuleViewer'
-           AND a.organization_id = $2
-           AND hb.organization_id = $2
-           AND hb.is_default = true
-           AND c.properties->'moduleAppId'->>'value' = $3
-           AND c.properties->'moduleVersionId'->>'value' IN (
-             SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $2
-           )`,
-        [savedVersionName, organizationId, moduleApp.co_relation_id]
-      );
-    } catch (err) {
-      // Don't fail the save if the pin rewrite hits an edge — log and continue.
-      this.logger.error('pinUnpinnedModuleViewerRefs failed', err?.stack || err);
-    }
+    await manager.query(
+      `UPDATE components c
+       SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
+       FROM pages p
+       JOIN app_versions av ON av.id = p.app_version_id
+       JOIN apps a ON a.id = av.app_id
+       JOIN organization_git_sync_branches hb ON hb.id = av.branch_id
+       WHERE c.page_id = p.id
+         AND c.type = 'ModuleViewer'
+         AND a.organization_id = $2
+         AND hb.organization_id = $2
+         AND hb.is_default = true
+         AND c.properties->'moduleAppId'->>'value' = $3
+         AND c.properties->'moduleVersionId'->>'value' IN (
+           SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $2
+         )`,
+      [savedVersionName, organizationId, moduleApp.co_relation_id]
+    );
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
