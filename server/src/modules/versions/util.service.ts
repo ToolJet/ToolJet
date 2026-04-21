@@ -266,7 +266,10 @@ export class VersionUtilService implements IVersionUtilService {
   ): Promise<void> {
     try {
       // moduleVersionId.value stores one of:
-      //   1. a DB UUID (legacy) of a specific app_version
+      //   1. a DB UUID — legacy, only produced today by import of pre-608f4bd7e4 YAMLs
+      //      (see app-import-export.service.ts:1787). TODO: add a data migration that
+      //      rewrites existing UUID-valued moduleVersionId refs to version names so this
+      //      case (and its twin in checkModulesPromotableToEnvironment) can be dropped.
       //   2. a version name (pinned) — restricted to version_type='version' so branch rows
       //      that happen to share a name don't falsely match
       //   3. a branch name (unpinned) — resolved here to the module's default-branch
@@ -339,6 +342,77 @@ export class VersionUtilService implements IVersionUtilService {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check draft modules in app', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions');
+    }
+  }
+
+  async checkModulesPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      // 3-case moduleVersionId resolution — see checkDraftModulesInApp for the cases.
+      // LEFT JOIN on app_environments so a module version with no current_environment_id
+      // (rare, legacy) also blocks promote — null priority is treated as "below target".
+      const unpromotedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )`,
+          { orgId: organizationId }
+        )
+        .leftJoin('app_environments', 'mod_env', 'mod_env.id = mod_ver.current_environment_id')
+        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .addSelect('mod_ver.name', 'versionName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere('(mod_env.priority IS NULL OR mod_env.priority < :targetPriority)', { targetPriority })
+        .getRawMany();
+
+      if (unpromotedModules.length > 0) {
+        const moduleList = unpromotedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        const message =
+          unpromotedModules.length === 1
+            ? `Promotion blocked - Module "${unpromotedModules[0].moduleName} (${unpromotedModules[0].versionName})" hasn't been promoted to ${targetEnvironmentName} yet.`
+            : `Promotion blocked - ${unpromotedModules.length} dependent modules haven't been promoted to ${targetEnvironmentName} yet.`;
+        throw new BadRequestException({
+          message: { error: message, details: `Modules not promoted to ${targetEnvironmentName}: ${moduleList}` },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check module environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions for promote');
     }
   }
 

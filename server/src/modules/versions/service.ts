@@ -283,6 +283,34 @@ export class VersionService implements IVersionService {
       });
     }
     if (!version) {
+      // Unpinned ref: moduleVersionId.value is an org branch name, not a version name.
+      // Resolve to the latest version_type='version' row on the module's default branch —
+      // matches the "Active draft" / "Current branch" semantics the save-side resolver
+      // uses (checkDraftModulesInApp case 3). Picking latest-by-createdAt returns the
+      // DRAFT row when one exists (save invariant: at most one DRAFT per app) and falls
+      // back to the most recent saved version otherwise.
+      const orgBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { name: versionName, organizationId: user.organizationId },
+      });
+      if (orgBranch) {
+        const defaultBranch = orgBranch.isDefault
+          ? orgBranch
+          : await this.versionRepository.manager.findOne(WorkspaceBranch, {
+              where: { organizationId: user.organizationId, isDefault: true },
+            });
+        if (defaultBranch) {
+          version = await this.versionRepository.manager.findOne(AppVersion, {
+            where: {
+              appId: app.id,
+              branchId: defaultBranch.id,
+              versionType: AppVersionType.VERSION,
+            },
+            order: { createdAt: 'DESC' },
+          });
+        }
+      }
+    }
+    if (!version) {
       // Use NotFoundException (not findOneOrFail) so drift between parent
       // reference and module state surfaces as 404 instead of 500.
       throw new NotFoundException('Module version not found');
