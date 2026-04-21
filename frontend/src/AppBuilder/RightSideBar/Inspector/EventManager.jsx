@@ -1356,7 +1356,7 @@ export const EventManager = ({
                                         </span>
                                       </TooltipTrigger>
                                       <TooltipContent
-                                        side="top"
+                                        side="left"
                                         showArrow={false}
                                         className="tw-z-[10001] tw-max-w-[260px]"
                                         data-cy="event-row-tooltip-name"
@@ -1391,7 +1391,7 @@ export const EventManager = ({
                                       </div>
                                     </TooltipTrigger>
                                     <TooltipContent
-                                      side="top"
+                                      side="left"
                                       showArrow={false}
                                       className="tw-z-[10001] tw-max-w-[260px]"
                                       data-cy="event-row-tooltip-action"
@@ -1408,7 +1408,7 @@ export const EventManager = ({
                               side={popoverPlacement || 'left'}
                               align="center"
                               sideOffset={8}
-                              className="inspector-event-manager-popover tw-z-[10001] tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0"
+                              className="inspector-event-manager-popover tw-z-[1042] tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0"
                               data-cy="popover-card"
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
@@ -1442,10 +1442,10 @@ export const EventManager = ({
             variant="outline"
             size="default"
             leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
-            className="tw-w-full"
+            className="tw-w-full tw-shadow-elevation-100"
             data-cy="add-event-handler"
           >
-            {t('editor.inspector.eventManager.addHandler', 'New event handler')}
+            {t('editor.inspector.eventManager.addHandler', 'Add new event handler')}
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -1484,7 +1484,7 @@ export const EventManager = ({
       return <div className="d-flex">{renderAddHandlerBtn()}</div>;
     }
     return (
-      <Empty size="small" data-cy="no-event-handler-message">
+      <Empty size="small" className="tw-px-0 tw-gap-3" data-cy="no-event-handler-message">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <MousePointerClick />
