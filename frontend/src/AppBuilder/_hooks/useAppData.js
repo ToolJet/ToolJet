@@ -395,16 +395,11 @@ const useAppData = (
           moduleId
         );
 
-        if (
-          !moduleMode &&
-          state?.prompt &&
-          !promptSentRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
-        ) {
+        if (state?.prompt && !promptSentRef.current && (conversation?.aiConversationMessages || []).length === 0) {
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          sendMessage(state.prompt);
+          sendMessage(state.prompt, {}, {}, moduleId);
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
           const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
