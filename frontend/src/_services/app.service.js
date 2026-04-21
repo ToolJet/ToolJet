@@ -103,10 +103,14 @@ function importResource(body) {
 }
 
 function cloneResource(body) {
+  // Include active branch ID so clones land on the correct workspace branch
+  // (applies to both apps and modules now that modules are branch-aware).
+  const branchId = getActiveBranchId();
+  const payload = { ...body, ...(branchId && !body.branchId && { branchId }) };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
     credentials: 'include',
   };
 

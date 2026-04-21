@@ -23,7 +23,8 @@ export class ImportExportResourcesService {
 
   async export(
     user: User,
-    exportResourcesDto: ExportResourcesDto
+    exportResourcesDto: ExportResourcesDto,
+    skipStubCheck = false
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -50,6 +51,13 @@ export class ImportExportResourcesService {
     if (exportResourcesDto.app?.length) {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
+        if (!skipStubCheck) {
+          const appData = await this.appsRepository.findOne({ where: { id: app.id } });
+          if (appData?.isStub) {
+            throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
+          }
+        }
+
         const exportedApp = {
           definition: await this.appImportExportService.export(user, app.id, app.search_params),
         };
@@ -155,6 +163,12 @@ export class ImportExportResourcesService {
   }
 
   async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }], branchId }: CloneResourcesDto) {
+    // Prevent cloning a stub app before doing any export work.
+    const appToClone = await this.appsRepository.findOne({ where: { id: appId } });
+    if (appToClone?.isStub) {
+      throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
+    }
+
     const tablesForApp = await this.internalTableRepository.findTables(appId);
     const exportResourcesDto: ExportResourcesDto = {
       organization_id,
@@ -162,15 +176,7 @@ export class ImportExportResourcesService {
       tooljet_database: tablesForApp,
     };
 
-    const resourceExport = await this.export(user, exportResourcesDto);
-
-    // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
-    // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.
-    const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
-    const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
-    if (exportedVersions.length > 0 && !hasNonStubVersion) {
-      throw new BadRequestException('Cannot clone an app that has not been pulled from git yet');
-    }
+    const resourceExport = await this.export(user, exportResourcesDto, true);
 
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error

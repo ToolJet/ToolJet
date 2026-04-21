@@ -38,6 +38,9 @@ export class WorkspaceBranch extends BaseEntity {
   @Column({ name: 'data_source_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
   dataSourceMetaHash: string;
 
+  @Column({ name: 'module_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
+  moduleMetaHash: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

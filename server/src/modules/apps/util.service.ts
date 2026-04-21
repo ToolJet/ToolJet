@@ -106,14 +106,15 @@ export class AppsUtilService implements IAppsUtilService {
           AppVersion,
           manager.create(AppVersion, {
             // name: uuidv4(),
-            name: type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? 'v1' : workspaceBranch!.name,
+            name: type === APP_TYPES.WORKFLOW ? 'v1' : workspaceBranch!.name,
             appId: app.id,
             definition: {},
             currentEnvironmentId: firstPriorityEnv.id,
             status: AppVersionStatus.DRAFT,
-            // versionType: AppVersionType.BRANCH,
-            versionType:
-              type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE ? AppVersionType.VERSION : AppVersionType.BRANCH,
+            // Workflows don't participate in branching — keep them as VERSION.
+            // Apps and modules on a feature branch must be BRANCH-type so the
+            // editor recognises them as editable branch copies.
+            versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
@@ -247,7 +248,9 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
-      if (branchId) {
+      // Modules always get co_relation_id regardless of workspace type:
+      // ModuleViewer components reference modules by co_relation_id for stable cross-env resolution.
+      if (branchId || type === APP_TYPES.MODULE) {
         const coRelationId = uuidv4();
         await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
         app.co_relation_id = coRelationId;
@@ -515,19 +518,27 @@ export class AppsUtilService implements IAppsUtilService {
         branchId
       );
 
-      // Eagerly load appVersions for modules
+      // Eagerly load appVersions for modules, branch-filtered like apps.
+      // We intentionally DO NOT filter out stub versions at this outer join —
+      // after a branch-create or workspace pull a net-new module has only a
+      // stub version on the branch, and filtering it out would hide the module
+      // from the dashboard entirely (apps work the same way without the filter).
+      // The UUID-name-leak concern is handled by the inner `versions`-aliased
+      // join in viewableAppsQueryUsingPermissions, which is what ModuleManager
+      // reads when a user drags a ModuleViewer onto a canvas. Stubs clicked from
+      // the dashboard hydrate lazily via AppsService.getOne → hydrateStubApp.
       if (type === APP_TYPES.MODULE && !isGetAll) {
-        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-        // } else if (branchId) {
-        //   // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-        //   // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        //   viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-        //     branchId,
-        //   });
+        if (branchId) {
+          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+            branchId,
+          });
+        } else {
+          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+        }
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
         // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        // Modules and workflows are common across all branches - no branch filter applied.
+        // Workflows remain common across all branches - no branch filter applied.
         viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
           branchId,
         });
@@ -560,7 +571,9 @@ export class AppsUtilService implements IAppsUtilService {
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
     if (type === APP_TYPES.MODULE) {
-      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
+      // Exclude stub versions: same rationale as the outer `all()` query — stubs
+      // carry UUID names that must not be surfaced as selectable module versions.
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');
     }
 
     if (type) {
@@ -783,10 +796,33 @@ export class AppsUtilService implements IAppsUtilService {
         moduleAppIds.length > 0
           ? await manager
               .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
               .distinct(true)
               .getMany()
           : [];
+
+      // Branch-scope each module's editingVersion to match the parent app's branch.
+      // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
+      // because it has no branch context. When the parent app is being viewed on a feature
+      // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
+      // stale default-branch content leaks through unless we override here.
+      const parentBranchId = app.editingVersion?.branchId;
+      if (parentBranchId && modules.length > 0) {
+        await Promise.all(
+          modules.map(async (moduleApp: any) => {
+            const branchVersion = await manager.findOne(AppVersion, {
+              where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
+              order: { updatedAt: 'DESC' },
+            });
+            if (branchVersion) {
+              moduleApp.editingVersion = branchVersion;
+            }
+          })
+        );
+      }
+
       return modules;
     });
     return modules;
@@ -875,11 +911,111 @@ export class AppsUtilService implements IAppsUtilService {
       // default branch are always frozen (edits must happen on feature branches).
       if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
         shouldFreezeEditor = true;
+      } else if (editingVersion?.versionType === AppVersionType.BRANCH) {
+        // Feature-branch versions are editable by definition — allowEditing on the
+        // canonical appGit (default branch) must not freeze branch copies.
       } else if (appGit) {
         shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
       }
     }
 
     return shouldFreezeEditor;
+  }
+
+  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
+    if (!moduleApp?.co_relation_id) return;
+    try {
+      // co_relation_id = stable module identity across branches. Self-ref excluded so a
+      // module can reference itself without blocking its own deletion.
+      const consumingApps = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(App, 'app', 'app.id = appVersion.appId')
+        .select('DISTINCT app.name', 'appName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :coRel`, {
+          coRel: moduleApp.co_relation_id,
+        })
+        .andWhere('app.id != :selfId', { selfId: moduleApp.id })
+        .getRawMany();
+
+      const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
+      if (appNames.length > 0) {
+        throw new BadRequestException(`Cannot delete this module.\nUsed by:\n${appNames.join('\n')}`);
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check if module is in use', error?.stack || error);
+      throw new BadRequestException('Failed to validate module references');
+    }
+  }
+
+  async checkModulesReleasedInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      // 3-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
+      // for the cases. Predicate: the module's apps.current_version_id (released version)
+      // must equal the resolved mod_ver.id. Null current_version_id means never released.
+      const unreleasedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+             )
+           )`,
+          { orgId: organizationId }
+        )
+        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .addSelect('mod_ver.name', 'versionName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
+        .getRawMany();
+
+      if (unreleasedModules.length > 0) {
+        const moduleList = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        const message =
+          unreleasedModules.length === 1
+            ? `Release blocked - Module "${unreleasedModules[0].moduleName} (${unreleasedModules[0].versionName})" hasn't been released yet.`
+            : `Release blocked - ${unreleasedModules.length} dependent modules haven't been released yet.`;
+        throw new BadRequestException({
+          message: { error: message, details: `Modules not released: ${moduleList}` },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check module release state', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions for release');
+    }
   }
 }
