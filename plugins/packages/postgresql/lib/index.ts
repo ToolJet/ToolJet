@@ -794,7 +794,7 @@ export default class PostgresqlQueryService implements QueryService {
     let resolvedHost: string = sourceOptions.host;
     let resolvedPort: number | undefined = Number(sourceOptions.port) || undefined;
     let resolvedUser: string = sourceOptions.username;
-    let resolvedPass: string = sourceOptions.password;
+    let resolvedPass: string = sourceOptions.password ?? '';
     let resolvedDb: string = sourceOptions.database;
 
     if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {

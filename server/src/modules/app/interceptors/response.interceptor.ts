@@ -76,7 +76,7 @@ export class ResponseInterceptor implements NestInterceptor {
               ipAddress: clientIp || (request && requestIp.getClientIp(request)),
               userAgent: request?.headers['user-agent'],
               resourceType: module,
-              actionType: featureInfo?.auditLogsKey || features[0],
+              actionType: logsData?.actionType || featureInfo?.auditLogsKey || features[0],
             });
           } catch (error) {
             this.logger.error('Failed to create audit log:', error);
