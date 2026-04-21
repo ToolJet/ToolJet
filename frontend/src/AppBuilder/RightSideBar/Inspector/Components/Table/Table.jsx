@@ -439,6 +439,7 @@ export const Table = (props) => {
     'loadingState',
     'showBulkUpdateActions',
     'visibility',
+    'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
   ];
