@@ -1,6 +1,6 @@
 ---
 id: cjis
-title: CJIS
+title: Criminal Justice Information Services
 ---
 
 # CJIS-Aligned Internal Tooling Using ToolJet
