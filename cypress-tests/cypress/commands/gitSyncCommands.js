@@ -1,7 +1,12 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
-import { apiConfigureGitSync, apiDeleteGitSync } from "Support/utils/platform/apiUtils/gitSyncApi";
+import {
+  apiConfigureGitSync,
+  apiDeleteGitSync,
+} from "Support/utils/platform/apiUtils/gitSyncApi";
 
-Cypress.Commands.add("apiConfigureGitSync", (config) => apiConfigureGitSync(config));
+Cypress.Commands.add("apiConfigureGitSync", (config) =>
+  apiConfigureGitSync(config),
+);
 Cypress.Commands.add("apiDeleteGitSync", (orgId) => apiDeleteGitSync(orgId));
 
 Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
@@ -45,7 +50,9 @@ Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
               githubEnterpriseUrl: "",
               githubEnterpriseApiUrl: "",
               githubAppId: Cypress.env("GITHUB_APP_ID"),
-              githubAppInstallationId: Cypress.env("GITHUB_APP_INSTALLATION_ID"),
+              githubAppInstallationId: Cypress.env(
+                "GITHUB_APP_INSTALLATION_ID",
+              ),
               githubAppPrivateKey: privateKey,
               useEnvConfig: false,
               gitType: "github_https",
@@ -181,66 +188,6 @@ Cypress.Commands.add(
     });
   },
 );
-
-Cypress.Commands.add("gitSyncCreateWorkspaceConstant", (name, value) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/workspace-variables`,
-        headers,
-        failOnStatusCode: false,
-        body: {
-          variable_name: name,
-          variable_value: value,
-          variable_type: "client",
-        },
-      })
-      .then((res) => {
-        // 201 = created, 409 = already exists (both acceptable)
-        expect(res.status, `Create constant '${name}'`).to.be.oneOf([201, 409]);
-        Cypress.log({ message: `[gitSync] Constant '${name}' = '${value}'` });
-      });
-  });
-});
-
-Cypress.Commands.add("gitSyncUpdateDatasourceUrl", (dsName, newUrl) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/data-sources`,
-        headers,
-      })
-      .then((res) => {
-        const datasources = res.body?.data_sources || res.body || [];
-        const ds = datasources.find((d) => d.name === dsName);
-        expect(ds, `Datasource '${dsName}' not found`).to.exist;
-
-        const dsId = ds.id;
-        const updatedOptions = (ds.options || []).map((opt) => {
-          if (opt.key === "url") return { ...opt, value: newUrl };
-          return opt;
-        });
-
-        return cy
-          .request({
-            method: "PUT",
-            url: `${Cypress.env("server_host")}/api/data-sources/${dsId}`,
-            headers,
-            body: { options: updatedOptions },
-          })
-          .then((updateRes) => {
-            expect(updateRes.status, `Update datasource '${dsName}'`).to.equal(
-              200,
-            );
-            Cypress.log({
-              message: `[gitSync] Datasource '${dsName}' URL updated to '${newUrl}'`,
-            });
-          });
-      });
-  });
-});
 
 Cypress.Commands.add("gitSyncCreateBranchViaUI", (branchName) => {
   cy.get("body").then(($body) => {

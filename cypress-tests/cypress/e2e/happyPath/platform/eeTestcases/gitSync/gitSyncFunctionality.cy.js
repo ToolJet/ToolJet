@@ -121,6 +121,7 @@ describe("Git Sync — E2E Flow", () => {
 
       cy.reload();
       cy.wait(3000);
+      cy.gitSyncSwitchBranch(branchName);
       cy.get(GS.appCard).contains(appName).should("be.visible");
 
       cy.get(GS.appCard, { timeout: 30000 }).contains(appName).click();
@@ -142,6 +143,7 @@ describe("Git Sync — E2E Flow", () => {
 
       cy.go("back");
       cy.wait(3000);
+      cy.gitSyncSwitchBranch(branchName);
 
       cy.get(GS.wsBranchHeader).click();
       cy.get(GS.wsBranchPopover).should("be.visible");
