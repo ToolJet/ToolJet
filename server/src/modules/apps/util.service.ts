@@ -570,12 +570,6 @@ export class AppsUtilService implements IAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (type === APP_TYPES.MODULE) {
-      // Exclude stub versions: same rationale as the outer `all()` query — stubs
-      // carry UUID names that must not be surfaced as selectable module versions.
-      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');
-    }
-
     if (type) {
       viewableAppsQb.andWhere('apps.type = :type', { type });
     }
