@@ -273,7 +273,10 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // Cached moduleDefinition is branch-scoped; authed viewers must refetch the pinned version.
+      // The moduleDefinition cached by the parent app reflects the module from the parent's current
+      // branch — not the specific version pinned on this ModuleViewer. Authenticated viewers call the
+      // version API directly to get the correct pinned version. Public (unauthenticated) viewers
+      // can't call that auth-gated API, so they fall back to the cached definition.
       const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
       if (isUnauthenticated) {
         const moduleDefinition = getModuleDefinition(appId);
