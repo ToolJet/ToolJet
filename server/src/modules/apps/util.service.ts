@@ -519,23 +519,21 @@ export class AppsUtilService implements IAppsUtilService {
       );
 
       // Eagerly load appVersions for modules, branch-filtered like apps.
-      // Exclude stub versions — they represent not-yet-hydrated branch placeholders
-      // whose names are random UUIDs (minted at pull time). Surfacing a stub as
-      // app_versions[0] leaks that UUID into the ModuleViewer dragged onto a canvas
-      // (see ModuleManager.jsx → versionId: editingVersion?.name), which then gets
-      // persisted as properties.moduleVersionId.value. On git round-trip to a fresh
-      // workspace the UUID doesn't match any local version's name and the
-      // by-correlation/by-name endpoint returns 404. Stubs aren't openable anyway.
+      // We intentionally DO NOT filter out stub versions at this outer join —
+      // after a branch-create or workspace pull a net-new module has only a
+      // stub version on the branch, and filtering it out would hide the module
+      // from the dashboard entirely (apps work the same way without the filter).
+      // The UUID-name-leak concern is handled by the inner `versions`-aliased
+      // join in viewableAppsQueryUsingPermissions, which is what ModuleManager
+      // reads when a user drags a ModuleViewer onto a canvas. Stubs clicked from
+      // the dashboard hydrate lazily via AppsService.getOne → hydrateStubApp.
       if (type === APP_TYPES.MODULE && !isGetAll) {
         if (branchId) {
-          viewableAppsQb.innerJoinAndSelect(
-            'apps.appVersions',
-            'appVersions',
-            'appVersions.branchId = :branchId AND appVersions.isStub = false',
-            { branchId }
-          );
+          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
+            branchId,
+          });
         } else {
-          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.isStub = false');
+          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
         }
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
