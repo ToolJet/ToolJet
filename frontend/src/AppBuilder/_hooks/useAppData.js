@@ -117,6 +117,7 @@ const useAppData = (
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
+  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -267,7 +268,7 @@ const useAppData = (
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -333,10 +334,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -596,7 +599,7 @@ const useAppData = (
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady) {
+    if (isComponentLayoutReady && isLicenseFetched) {
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -618,7 +621,7 @@ const useAppData = (
 
             setJsLibraryRegistry(fullRegistry);
           } catch (error) {
-            console.error('Failed to initialize JS libraries:', error);
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
           } finally {
             setJsLibraryLoading(false);
           }
@@ -631,7 +634,7 @@ const useAppData = (
 
       loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, moduleId, mode]);
+  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
