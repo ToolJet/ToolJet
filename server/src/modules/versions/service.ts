@@ -221,7 +221,7 @@ export class VersionService implements IVersionService {
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
         appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
       }
-      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
+      // Modules are branch-scoped like apps — same git-sync freeze applies.
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
@@ -243,8 +243,6 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
-    // need to add freeze version logic here
-    // need to add freeze version logic here
     return response;
   }
 
@@ -255,10 +253,7 @@ export class VersionService implements IVersionService {
     mode?: string,
     branchId?: string
   ): Promise<any> {
-    // Scope to the user's organization — co_relation_id is only unique per-org.
-    // Without this, findOne could return a module from a different workspace that
-    // shares the same co_relation_id (e.g. both workspaces pulled from the same git
-    // origin into the same Postgres DB).
+    // co_relation_id is only unique per-org — multiple orgs can share one after a git-origin clone.
     const app = await this.versionRepository.manager.findOne(App, {
       where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
       order: { createdAt: 'ASC' },
@@ -266,11 +261,7 @@ export class VersionService implements IVersionService {
     if (!app) {
       throw new NotFoundException('Module not found');
     }
-    // Prefer the branch-scoped, hydrated version when branchId is supplied.
-    // Fall back to any matching version on this app for backwards-compat with
-    // callers that haven't been updated to pass branchId yet. The fallback is
-    // non-deterministic across branches when the same version name exists on
-    // multiple branches — callers SHOULD pass branchId to avoid that.
+    // branchId is the hydrated path; the fallback is non-deterministic across branches.
     let version: AppVersion | null = null;
     if (branchId) {
       version = await this.versionRepository.manager.findOne(AppVersion, {
@@ -283,30 +274,35 @@ export class VersionService implements IVersionService {
       });
     }
     if (!version) {
-      // Unpinned ref: moduleVersionId.value is an org branch name, not a version name.
-      // Resolve to the latest version_type='version' row on the module's default branch —
-      // matches the "Active draft" / "Current branch" semantics the save-side resolver
-      // uses (checkDraftModulesInApp case 3). Picking latest-by-createdAt returns the
-      // DRAFT row when one exists (save invariant: at most one DRAFT per app) and falls
-      // back to the most recent saved version otherwise.
+      // Unpinned ref: moduleVersionId.value is an org branch name. Prefer the consumer's
+      // current branch (appId, branchId); fall back to the default branch for post-merge
+      // stale refs and embedded viewers that send no x-branch-id.
       const orgBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
         where: { name: versionName, organizationId: user.organizationId },
       });
       if (orgBranch) {
-        const defaultBranch = orgBranch.isDefault
-          ? orgBranch
-          : await this.versionRepository.manager.findOne(WorkspaceBranch, {
-              where: { organizationId: user.organizationId, isDefault: true },
-            });
-        if (defaultBranch) {
+        if (branchId) {
           version = await this.versionRepository.manager.findOne(AppVersion, {
-            where: {
-              appId: app.id,
-              branchId: defaultBranch.id,
-              versionType: AppVersionType.VERSION,
-            },
+            where: { appId: app.id, branchId },
             order: { createdAt: 'DESC' },
           });
+        }
+        if (!version) {
+          const defaultBranch = orgBranch.isDefault
+            ? orgBranch
+            : await this.versionRepository.manager.findOne(WorkspaceBranch, {
+                where: { organizationId: user.organizationId, isDefault: true },
+              });
+          if (defaultBranch) {
+            version = await this.versionRepository.manager.findOne(AppVersion, {
+              where: {
+                appId: app.id,
+                branchId: defaultBranch.id,
+                versionType: AppVersionType.VERSION,
+              },
+              order: { createdAt: 'DESC' },
+            });
+          }
         }
       }
     }
@@ -332,13 +328,9 @@ export class VersionService implements IVersionService {
 
       await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
 
-      // Module "Save version" on main: DRAFT → non-DRAFT transition on the default-branch
-      // version_type='version' row. Rewrite any unpinned (branch-name) consumer ModuleViewer
-      // refs in the same org to this saved version name so the subsequent app save
-      // (checkDraftModulesInApp) sees a non-DRAFT module and the inspector warning clears.
-      // Read the post-update row so the gate reflects the actual DB state — the DTO can
-      // legitimately omit `status` (rename-only payloads) and we still want the pin to fire
-      // when the persisted row transitioned DRAFT → saved.
+      // When a module's default-branch version transitions DRAFT → saved, rewrite unpinned
+      // consumer refs to the saved name so the consumer's draft-check clears.
+      // Re-read post-update: rename-only DTOs omit `status` but the row may still have flipped.
       const postUpdate = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
       if (
         app.type === APP_TYPES.MODULE &&
