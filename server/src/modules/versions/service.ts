@@ -248,7 +248,13 @@ export class VersionService implements IVersionService {
     return response;
   }
 
-  async getVersionByStableIds(coRelationId: string, versionName: string, user: User, mode?: string): Promise<any> {
+  async getVersionByStableIds(
+    coRelationId: string,
+    versionName: string,
+    user: User,
+    mode?: string,
+    branchId?: string
+  ): Promise<any> {
     // Scope to the user's organization — co_relation_id is only unique per-org.
     // Without this, findOne could return a module from a different workspace that
     // shares the same co_relation_id (e.g. both workspaces pulled from the same git
@@ -260,7 +266,27 @@ export class VersionService implements IVersionService {
     if (!app) {
       throw new NotFoundException('Module not found');
     }
-    const version = await this.versionRepository.findByName(versionName, app.id);
+    // Prefer the branch-scoped, hydrated version when branchId is supplied.
+    // Fall back to any matching version on this app for backwards-compat with
+    // callers that haven't been updated to pass branchId yet. The fallback is
+    // non-deterministic across branches when the same version name exists on
+    // multiple branches — callers SHOULD pass branchId to avoid that.
+    let version: AppVersion | null = null;
+    if (branchId) {
+      version = await this.versionRepository.manager.findOne(AppVersion, {
+        where: { name: versionName, appId: app.id, branchId, isStub: false },
+      });
+    }
+    if (!version) {
+      version = await this.versionRepository.manager.findOne(AppVersion, {
+        where: { name: versionName, appId: app.id },
+      });
+    }
+    if (!version) {
+      // Use NotFoundException (not findOneOrFail) so drift between parent
+      // reference and module state surfaces as 404 instead of 500.
+      throw new NotFoundException('Module version not found');
+    }
     app.appVersions = [version];
     return this.getVersion(app, user, mode);
   }

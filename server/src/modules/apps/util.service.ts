@@ -519,13 +519,23 @@ export class AppsUtilService implements IAppsUtilService {
       );
 
       // Eagerly load appVersions for modules, branch-filtered like apps.
+      // Exclude stub versions — they represent not-yet-hydrated branch placeholders
+      // whose names are random UUIDs (minted at pull time). Surfacing a stub as
+      // app_versions[0] leaks that UUID into the ModuleViewer dragged onto a canvas
+      // (see ModuleManager.jsx → versionId: editingVersion?.name), which then gets
+      // persisted as properties.moduleVersionId.value. On git round-trip to a fresh
+      // workspace the UUID doesn't match any local version's name and the
+      // by-correlation/by-name endpoint returns 404. Stubs aren't openable anyway.
       if (type === APP_TYPES.MODULE && !isGetAll) {
         if (branchId) {
-          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-            branchId,
-          });
+          viewableAppsQb.innerJoinAndSelect(
+            'apps.appVersions',
+            'appVersions',
+            'appVersions.branchId = :branchId AND appVersions.isStub = false',
+            { branchId }
+          );
         } else {
-          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.isStub = false');
         }
       } else if (branchId && type === APP_TYPES.FRONT_END) {
         // If branchId is provided -> Gitsync -> need to load app versions of the branch.
@@ -563,7 +573,9 @@ export class AppsUtilService implements IAppsUtilService {
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
     if (type === APP_TYPES.MODULE) {
-      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
+      // Exclude stub versions: same rationale as the outer `all()` query — stubs
+      // carry UUID names that must not be surfaced as selectable module versions.
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');
     }
 
     if (type) {
@@ -788,6 +800,7 @@ export class AppsUtilService implements IAppsUtilService {
               .createQueryBuilder(App, 'app')
               .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
               .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
               .distinct(true)
               .getMany()
           : [];
