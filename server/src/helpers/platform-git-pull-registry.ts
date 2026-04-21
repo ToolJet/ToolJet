@@ -15,6 +15,23 @@ export interface IPlatformGitPullService {
    * cascade in hydrateStubApp did not run).
    */
   hydrateStaleReferencedModules(parentApp: any, user: any, branchId: string): Promise<void>;
+  /**
+   * Create stub module rows + branch-specific AppVersion rows for every module
+   * listed in the repo's `.meta/moduleMeta.json`. Used by the single-app git
+   * import flow so ModuleViewer components in the imported app have valid
+   * co_relation_id targets in this workspace.
+   *
+   * `coRelationIdFilter` (optional): only process meta entries whose keys are in
+   * this set. Used by single-app imports to avoid pulling unrelated modules.
+   */
+  pullModules(
+    user: any,
+    repoPath: string,
+    organizationId: string,
+    branchId: string,
+    force?: boolean,
+    coRelationIdFilter?: Set<string>
+  ): Promise<{ imported: number; skipped: number; stale: number }>;
 }
 
 let _pullService: IPlatformGitPullService | null = null;

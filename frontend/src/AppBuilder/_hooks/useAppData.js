@@ -370,7 +370,10 @@ const useAppData = (
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
         const homePageId =
-          appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
+          appData.editing_version?.homePageId ||
+          appData.editing_version?.home_page_id ||
+          appData.home_page_id ||
+          appData.homePageId;
 
         appTypeRef.current = appData.type;
 
@@ -384,7 +387,7 @@ const useAppData = (
             appName: appData.branch_app_name || appData.name,
             appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
-            currentAppEnvironmentId: editorEnvironment.id,
+            currentAppEnvironmentId: editorEnvironment?.id,
             isMaintenanceOn:
               'is_maintenance_on' in result
                 ? result.is_maintenance_on

@@ -7,6 +7,7 @@ import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { FeatureAbilityGuard } from './ability/guard';
+import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
 import { App as AppEntity } from '@entities/app.entity';
@@ -24,7 +25,7 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   constructor(protected readonly versionService: VersionService) {}
 
   @InitFeature(FEATURE_KEY.GET_ONE)
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidModuleByCorrelationGuard, FeatureAbilityGuard)
   @Get('module/by-correlation/:coRelationId/versions/by-name/:versionName')
   getModuleVersionByStableIds(
     @User() user: UserEntity,
