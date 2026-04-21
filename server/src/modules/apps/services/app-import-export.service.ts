@@ -568,7 +568,11 @@ export class AppImportExportService {
 
           // Also map the editingVersion if not already mapped
           const editingVersionId = importedModule?.appV2?.editingVersion?.id;
-          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+          if (
+            editingVersionId &&
+            !moduleResourceMappings.moduleVersions[editingVersionId] &&
+            existingVersions.length > 0
+          ) {
             moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
@@ -1445,6 +1449,25 @@ export class AppImportExportService {
 
         appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
 
+        const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+        if (newAppVersionId) {
+          const existingVersionDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: dataSourceForAppVersion.id, appVersionId: newAppVersionId },
+          });
+          if (!existingVersionDsv) {
+            await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: dataSourceForAppVersion.id,
+                name: dataSourceForAppVersion.name || importingDataSource.name || 'v1',
+                isDefault: false,
+                isActive: true,
+                branchId: null,
+                appVersionId: newAppVersionId,
+              })
+            );
+          }
+        }
+
         // TODO: Have version based conditional based on app versions
         // currently we are checking on existence of keys and handling
         // imports accordingly. Would be pragmatic to do:
@@ -1734,7 +1757,6 @@ export class AppImportExportService {
                   properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
                 }
               }
-
             }
             newComponent.properties = properties || {};
 
@@ -2969,6 +2991,7 @@ export class AppImportExportService {
                 isDefault: true,
                 isActive: true,
                 branchId: null,
+                appVersionId: version.id,
               })
             );
           }
@@ -3868,7 +3891,6 @@ function transformComponentData(
             properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
           }
         }
-
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);
