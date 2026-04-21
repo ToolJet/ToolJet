@@ -425,7 +425,9 @@ export const PropertiesTabElements = ({
         </div>
       )}
 
-      {['select', 'newMultiSelect', 'datepicker', 'rating'].includes(column.columnType) && <hr className="mx-0 my-2" />}
+      {['select', 'newMultiSelect', 'datepicker', 'rating', 'tagsV2'].includes(column.columnType) && (
+        <hr className="mx-0 my-2" />
+      )}
       {column.columnType === 'datepicker' && (
         <div className="field" style={{ marginTop: '-24px' }}>
           <DatepickerProperties

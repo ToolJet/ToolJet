@@ -312,7 +312,7 @@ export default function generateColumnsData({
                   })) ?? [];
               }
 
-              const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? true;
+              const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
               const sortTags = getResolvedValue(column.sortTags) ?? 'none';
               const allowMultipleSelection = getResolvedValue(column.allowMultipleSelection) ?? true;
 

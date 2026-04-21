@@ -1,27 +1,13 @@
-import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isArray } from 'lodash';
+import '@/AppBuilder/Widgets/TagsInput/tagsInput.scss';
 import TagsInputMenuList from '@/AppBuilder/Widgets/TagsInput/TagsInputMenuList';
+import TagsInputOption from '@/AppBuilder/Widgets/TagsInput/TagsInputOption';
 import defaultStyles from '@/_ui/Select/styles';
-
-const COLORS = [
-  '#40474D33',
-  '#CE276133',
-  '#6745E233',
-  '#2576CE33',
-  '#1A9C6D33',
-  '#69AF2033',
-  '#F3571733',
-  '#EB2E3933',
-  '#A438C033',
-  '#405DE633',
-  '#1E8FA333',
-  '#34A94733',
-  '#F1911933',
-];
+import { DropdownIndicator, CustomMultiValueContainer, MultiValueRemove, getOverlay, COLORS } from './SelectRenderer';
 
 const sortOptions = (opts, sortTags) => {
   if (!sortTags || sortTags === 'none') return opts;
@@ -31,114 +17,66 @@ const sortOptions = (opts, sortTags) => {
   });
 };
 
-const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
-  const { label, value, data } = props;
-  const { optionColors } = props.selectProps;
+export const MenuListWithSearch = (props) => {
+  const { selectProps, optionsLoadingState, darkMode, allOptions, autoAssignColors, handleCreate } = props;
+  const { inputValue, onMenuInputFocus, onInputChange, inputRef } = selectProps || {};
 
   return (
     <div
-      ref={innerRef}
-      {...innerProps}
-      className="option-wrapper d-flex"
-      style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+      className="table-select-custom-menu-list"
+      style={{
+        backgroundColor: 'var(--cc-surface1-surface)',
+        border: '1px solid var(--cc-default-border)',
+        minWidth: '200px',
+      }}
     >
-      {props.selectProps.isMulti ? (
-        <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
-      ) : (
-        <div style={{ visibility: isSelected ? 'visible' : 'hidden' }}>
-          <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
-        </div>
-      )}
       <div
-        className="table-select-menu-pill"
-        style={{
-          background: optionColors?.[value] || 'var(--surfaces-surface-03)',
-          color: data?.labelColor || 'var(--text-primary)',
-          padding: '2px 6px',
-          borderRadius: '6px',
-          fontSize: '12px',
-        }}
+        className="table-select-column-type-search-box-wrapper"
+        style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
       >
-        {label}
+        {!inputValue && (
+          <span>
+            <SolidIcon name="search" width="14" />
+          </span>
+        )}
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => onInputChange(e.currentTarget.value, { action: 'input-change' })}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.target.focus();
+          }}
+          onFocus={onMenuInputFocus}
+          placeholder="Search..."
+          className="table-select-column-type-search-box"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck="false"
+        />
+      </div>
+      <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
+        <TagsInputMenuList
+          {...props}
+          selectProps={selectProps}
+          allowNewTags
+          inputValue={inputValue}
+          optionsLoadingState={optionsLoadingState}
+          darkMode={darkMode}
+          allOptions={allOptions}
+          onCreateTag={handleCreate}
+          autoPickChipColor={autoAssignColors}
+        />
       </div>
     </div>
   );
 };
 
-const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
-
-const CustomMultiValueContainer = ({ children }) => (
-  <div
-    style={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-    }}
-  >
-    {children}
-  </div>
-);
-
-const DropdownIndicator = ({ selectProps }) => {
-  return (
-    <div
-      className="cell-icon-display"
-      style={{ alignSelf: 'center' }}
-      onMouseDown={(e) => {
-        const isOpen = selectProps.menuIsOpen;
-        selectProps.onMenuOpen(!isOpen);
-
-        const tdElement = e.currentTarget.closest('td');
-        if (tdElement) {
-          const clickEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-          });
-          tdElement.dispatchEvent(clickEvent);
-        }
-      }}
-    >
-      <SolidIcon
-        name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
-        width="16"
-        height="16"
-        fill="#6A727C"
-      />
-    </div>
-  );
-};
-
-const getOverlay = (value, darkMode) => {
-  if (!isArray(value)) return <div />;
-
-  return (
-    <div
-      style={{ maxWidth: '266px' }}
-      className={`overlay-cell-table overlay-multiselect-table ${darkMode ? 'dark-theme' : ''}`}
-    >
-      {value.map((option) => (
-        <span
-          key={option.label || option}
-          style={{
-            padding: '2px 6px',
-            background: 'var(--surfaces-surface-03)',
-            borderRadius: '6px',
-            color: 'var(--text-primary)',
-            fontSize: '12px',
-          }}
-        >
-          {option.label || option}
-        </span>
-      ))}
-    </div>
-  );
-};
-
 /**
- * TagsRenderer — creatable tags dropdown for the Table TagsV2 column.
+ * TagsRenderer — tags dropdown for the Table TagsV2 column.
  *
- * Distinct from SelectRenderer: users can create new tag options at runtime
+ * Distinct from SelectRenderer: users can create transient tag selections
  * via TagsInputMenuList, tags are optionally auto-colored, and the option
  * list can be sorted. Borrows only control + valueContainer styles from
  * SelectRenderer via _sharedStyles; all other styling is local.
@@ -151,7 +89,7 @@ export const TagsRenderer = ({
   onChange,
   defaultOptionsList = [],
   isMulti,
-  autoAssignColors = true,
+  autoAssignColors = false,
   sortTags = 'none',
   placeholder,
   disabled,
@@ -168,10 +106,7 @@ export const TagsRenderer = ({
   isValid = true,
   validationError,
 }) => {
-  const [runtimeTags, setRuntimeTags] = useState([]);
-
-  const allOptions = useMemo(() => [...options, ...runtimeTags], [options, runtimeTags]);
-  const sortedOptions = useMemo(() => sortOptions(allOptions, sortTags), [allOptions, sortTags]);
+  const allOptions = useMemo(() => options || [], [options]);
 
   const optionColors = useMemo(
     () =>
@@ -188,32 +123,37 @@ export const TagsRenderer = ({
       const trimmed = (newLabel || '').trim();
       if (!trimmed) return;
       const newTag = { label: trimmed, value: trimmed };
-      setRuntimeTags((prev) => (prev.some((t) => t.value === trimmed) ? prev : [...prev, newTag]));
+
+      setIsFocused(false);
+
       if (isMulti) {
-        const currentValues = isArray(value) ? value.map((v) => (v && typeof v === 'object' ? v.value : v)) : [];
-        onChange([...currentValues, trimmed]);
+        const currentValues = isArray(value)
+          ? value.map((currentValue) => {
+              const rawValue = currentValue && typeof currentValue === 'object' ? currentValue.value : currentValue;
+              const matchedOption = allOptions.find((option) => option.value === rawValue);
+
+              return matchedOption || { label: String(rawValue), value: String(rawValue) };
+            })
+          : [];
+        const existsInSelection = currentValues.some(
+          (currentValue) => String(currentValue?.value).toLowerCase() === trimmed.toLowerCase()
+        );
+        onChange(existsInSelection ? currentValues : [...currentValues, newTag]);
       } else {
-        onChange(trimmed);
+        onChange(newTag);
       }
     },
-    [isMulti, value, onChange]
-  );
-
-  const isValidNewOption = useCallback(
-    (input) => {
-      if (!input || !input.trim()) return false;
-      const trimmed = input.trim().toLowerCase();
-      return !allOptions.some((o) => o.value?.toLowerCase() === trimmed);
-    },
-    [allOptions]
+    [allOptions, isMulti, value, onChange, setIsFocused]
   );
 
   const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (!isMulti && !isNewRow) return;
     const handleDocumentClick = (event) => {
-      if (!containerRef.current?.contains(event.target)) {
+      const menu = event.target.closest?.('.tags-input-menu-list, .table-select-custom-menu-list');
+      if (!containerRef.current?.contains(event.target) && !menu) {
         setIsFocused?.(false);
       }
     };
@@ -222,19 +162,8 @@ export const TagsRenderer = ({
   }, [isMulti, isNewRow, setIsFocused]);
 
   const customComponents = {
-    MenuList: (props) => (
-      <TagsInputMenuList
-        {...props}
-        allowNewTags
-        inputValue={props.selectProps?.inputValue}
-        optionsLoadingState={optionsLoadingState}
-        darkMode={darkMode}
-        allOptions={allOptions}
-        onCreateTag={handleCreate}
-        autoPickChipColor={autoAssignColors}
-      />
-    ),
-    Option: CustomOption,
+    MenuList: MenuListWithSearch,
+    Option: TagsInputOption,
     DropdownIndicator: isEditable ? DropdownIndicator : null,
     ...(isMulti && {
       MultiValueRemove,
@@ -301,6 +230,33 @@ export const TagsRenderer = ({
         boxShadow: 'var(--elevation-300-box-shadow)',
         border: '1px solid var(--border-weak)',
       }),
+      option: (provided, state) => {
+        // Use our controlled focus state instead of react-select's auto-focus
+        const { selectProps, data } = state;
+        const options = selectProps?.options || [];
+        const optionIndex = options.findIndex((opt) => opt.value === data?.value);
+        const isControlledFocused =
+          selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
+
+        // Use color-mix to get 50% of hover color (effectively 4% alpha from 8%)
+        const hoverBgColor = 'color-mix(in srgb, var(--interactive-overlays-fill-hover) 50%, transparent)';
+
+        return {
+          ...provided,
+          backgroundColor: isControlledFocused ? hoverBgColor : 'var(--surfaces-surface-01)',
+          color: 'var(--text-primary)',
+          opacity: state.isDisabled ? 0.3 : 1,
+          cursor: 'pointer',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          '&:active': {
+            backgroundColor: 'var(--interactive-overlays-fill-pressed)',
+          },
+          '&:hover': {
+            backgroundColor: hoverBgColor,
+          },
+        };
+      },
     }),
     [darkMode, isMulti, horizontalAlignment, textColor, optionColors]
   );
@@ -339,6 +295,8 @@ export const TagsRenderer = ({
     };
   }, [allOptions, value, isMulti, sortTags]);
 
+  const sortedOptions = useMemo(() => sortOptions(allOptions, sortTags), [allOptions, sortTags]);
+
   const handleChange = useCallback(
     (newValue) => {
       setIsFocused(false);
@@ -353,7 +311,7 @@ export const TagsRenderer = ({
 
   const isOverflowing = useCallback(() => {
     if (!containerRef.current) return false;
-    const valueContainer = containerRef.current.querySelector('.react-select__value-container');
+    const valueContainer = containerRef.current.querySelector('.tags-renderer-select__value-container');
     return valueContainer?.clientHeight > containerRef.current?.clientHeight;
   }, []);
 
@@ -382,7 +340,7 @@ export const TagsRenderer = ({
         >
           <Select
             options={sortedOptions}
-            hasSearch
+            hasSearch={false}
             isDisabled={disabled}
             className={className}
             components={customComponents}
@@ -394,17 +352,18 @@ export const TagsRenderer = ({
             defaultValue={defaultValue}
             placeholder={placeholder}
             isMulti={isMulti}
-            hideSelectedOptions={false}
+            hideSelectedOptions
             isClearable={false}
             clearIndicator={false}
             darkMode={darkMode}
             menuIsOpen={menuIsOpen}
             isFocused={isFocused}
             optionColors={optionColors}
-            creatable
-            onCreateOption={handleCreate}
-            formatCreateLabel={() => null}
-            isValidNewOption={isValidNewOption}
+            optionsLoadingState={optionsLoadingState}
+            allOptions={allOptions}
+            onCreateTag={handleCreate}
+            autoAssignColors={autoAssignColors}
+            inputRef={searchInputRef}
           />
         </div>
         {isEditable && !isValid && (

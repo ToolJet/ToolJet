@@ -270,7 +270,7 @@ export const OptionsList = ({
       <div className="d-flex custom-gap-7 flex-column">
         {column.columnType === 'tagsV2' && (
           <>
-            <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between">
               <label className="form-label">Sort tags</label>
               <ToggleGroup
                 onValueChange={(value) => onColumnItemChange(index, 'sortTags', value)}
@@ -282,21 +282,6 @@ export const OptionsList = ({
                 <ToggleGroupItem value="z-a">z-a</ToggleGroupItem>
               </ToggleGroup>
             </div>
-            <ProgramaticallyHandleProperties
-              label="Allow multiple selection"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="allowMultipleSelection"
-              props={column}
-              component={component}
-              paramMeta={{
-                type: 'toggle',
-                displayName: 'Allow multiple selection',
-              }}
-              paramType="properties"
-            />
           </>
         )}
         <ProgramaticallyHandleProperties
@@ -314,6 +299,23 @@ export const OptionsList = ({
           }}
           paramType="properties"
         />
+        {column.columnType === 'tagsV2' && (
+          <ProgramaticallyHandleProperties
+            label="Allow multiple selection"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="allowMultipleSelection"
+            props={column}
+            component={component}
+            paramMeta={{
+              type: 'toggle',
+              displayName: 'Allow multiple selection',
+            }}
+            paramType="properties"
+          />
+        )}
         <ProgramaticallyHandleProperties
           label="Dynamic option"
           currentState={currentState}

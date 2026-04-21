@@ -15,14 +15,14 @@ export const TagsV2Column = ({
   darkMode,
   defaultOptionsList = [],
   textColor = '',
-  allowMultipleSelection = true,
+  allowMultipleSelection,
   sortTags = 'none',
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
   column,
   isNewRow,
-  autoAssignColors = true,
+  autoAssignColors,
   id,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -39,21 +39,44 @@ export const TagsV2Column = ({
   });
   const { isValid, validationError } = validationData;
 
+  const normalizeTagValue = useCallback(
+    (tagValue) => {
+      if (tagValue == null || tagValue === '') return null;
+
+      if (typeof tagValue === 'object') {
+        const rawValue = tagValue.value ?? tagValue.label;
+        if (rawValue == null || rawValue === '') return null;
+
+        return {
+          label: String(tagValue.label ?? rawValue),
+          value: String(rawValue),
+        };
+      }
+
+      const matchedOption = options?.find((option) => option.value === tagValue);
+      return {
+        label: String(matchedOption?.label ?? tagValue),
+        value: String(tagValue),
+      };
+    },
+    [options]
+  );
+
   const handleChange = useCallback(
     (newValue) => {
       if (allowMultipleSelection) {
         const arr = isArray(newValue) ? newValue : [];
-        onChange(arr.map((v) => (v && typeof v === 'object' ? v.value : v)));
+        onChange(arr.map(normalizeTagValue).filter(Boolean));
       } else {
         if (newValue == null || newValue === '') {
-          onChange([]);
+          onChange(null);
           return;
         }
-        const v = typeof newValue === 'object' ? newValue.value : newValue;
-        onChange([v]);
+
+        onChange(normalizeTagValue(newValue));
       }
     },
-    [allowMultipleSelection, onChange]
+    [allowMultipleSelection, normalizeTagValue, onChange]
   );
 
   return (
