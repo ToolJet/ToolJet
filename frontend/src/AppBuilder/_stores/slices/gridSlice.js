@@ -371,7 +371,8 @@ export const createGridSlice = (set, get) => ({
           : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
-      const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const oldHeight =
+        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
       const dynamicHeightDifference = newHeight - oldHeight;
 
       // If the dynamic height difference is 0 and the component is not a container, we return
