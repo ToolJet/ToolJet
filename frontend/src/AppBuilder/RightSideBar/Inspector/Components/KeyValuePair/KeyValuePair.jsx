@@ -14,6 +14,7 @@ const ADDITIONAL_ACTIONS = [
   'showUpdateActions',
   'loadingState',
   'visibility',
+  'collapseWhenHidden',
   'disabledState',
   'tooltip',
 ];
