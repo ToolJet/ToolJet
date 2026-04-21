@@ -162,8 +162,9 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 };
 
 export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }) => {
-  const { getLoadingState } = useTableStore();
+  const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
+  const isRefreshing = getIsRefreshing(id);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -185,7 +186,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
     });
   };
 
-  if (loadingState) {
+  if (loadingState || isRefreshing) {
     return (
       <div className="w-100">
         <Loader height={28} />
