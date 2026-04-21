@@ -1,0 +1,59 @@
+.fields-container .field:first-child .cm-editor {
+  border-top-left-radius: 6px !important;
+  border-bottom-left-radius: 6px !important;
+
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.fields-container .field:nth-child(2) .cm-editor {
+  border-radius: 0 !important;
+}
+
+.fields-container .col .cm-editor {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.fields-container > .codehinter-plugins .cm-editor {
+  border-radius: 0 !important;
+}
+
+.fields-container .cm-scroller,
+.fields-container .code-hinter-wrapper,
+.fields-container .code-editor-basic-wrapper,
+.fields-container .codehinter-container {
+  overflow: visible !important;
+  border-radius: inherit;
+}
+.fields-container > .codehinter-plugins:first-child .cm-editor {
+  border-top-left-radius: 6px !important;
+  border-bottom-left-radius: 6px !important;
+}
+.delete-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 32px;
+
+  background: transparent;
+  border: none;
+
+  border-top: 1px solid var(--border-color, #d1d5db);
+  border-bottom: 1px solid var(--border-color, #d1d5db);
+  border-right: 1px solid var(--border-color, #d1d5db);
+
+  border-left: none;
+
+  border-radius: 0 6px 6px 0;
+
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.delete-filter-btn-dark {
+  background-color: #272822 !important;
+  border-color:var(--slate7) !important;
+}

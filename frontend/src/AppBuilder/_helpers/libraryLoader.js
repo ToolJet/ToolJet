@@ -2,6 +2,7 @@ import toast from 'react-hot-toast';
 import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
+import { RESERVED_PARAMS } from './libraryConstants';
 
 /**
  * Executes UMD/IIFE source code and captures the exported module.
@@ -21,7 +22,8 @@ function executeUMD(source) {
         amdResult = factory();
         return;
       }
-      // Handle: define(value) — plain object/string export
+      // Handle: define(value) — capture any direct non-string export
+      // (strings are intentionally ignored to avoid treating AMD IDs as exports)
       const value = args[args.length - 1];
       if (typeof value !== 'string') {
         amdResult = value;
@@ -45,6 +47,11 @@ function executeUMD(source) {
  * Returns the exported module object.
  */
 export async function loadLibraryFromURL(url) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Only HTTPS URLs are allowed for library loading');
+  }
+
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch library from ${url}: ${response.status} ${response.statusText}`);
@@ -89,7 +96,7 @@ export async function initializeLibraries(jsLibraries = []) {
 /**
  * Executes preloaded JavaScript and captures exported functions/variables.
  * The code must return an object — each property becomes a top-level variable
- * available in RunJS queries, transformations, and {{}} expressions.
+ * available in RunJS queries and query transformations.
  *
  * Libraries (both built-in and user-added) are available in scope.
  * No access to components, queries, globals, etc.
@@ -110,7 +117,11 @@ export async function executePreloadedJS(code, libraryRegistry = {}) {
     const result = await fn(...fnArgs);
 
     if (result && typeof result === 'object' && !Array.isArray(result)) {
-      return result;
+      const filtered = {};
+      for (const [key, val] of Object.entries(result)) {
+        if (!RESERVED_PARAMS.has(key)) filtered[key] = val;
+      }
+      return filtered;
     }
 
     return {};
