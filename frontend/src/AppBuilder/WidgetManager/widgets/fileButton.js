@@ -329,7 +329,7 @@ export const fileButtonConfig = {
       labelSize: { value: '14' },
       labelWeight: { value: 'medium' },
       labelColor: { value: 'var(--cc-surface1-surface)' },
-      icon: { value: 'IconFileUpload' },
+      icon: { value: 'IconFileSearch' },
       iconVisibility: { value: true },
       iconColor: { value: 'var(--cc-surface1-surface)' },
       iconDirection: { value: 'left' },
