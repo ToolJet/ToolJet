@@ -19,6 +19,14 @@ import {
   ButtonTypeIcon,
 } from './_assets';
 
+/** Default option rows for select / multiselect / TagsV2 columns (inspector + handlePropertyChange). */
+export const DEFAULT_SELECT_COLUMN_OPTIONS = [
+  { label: 'Reading', value: 'Reading' },
+  { label: 'Traveling', value: 'Traveling' },
+  { label: 'Photography', value: 'Photography' },
+  { label: 'Music', value: 'Music' },
+];
+
 export const getColumnIcon = (columnType) => {
   switch (columnType) {
     case 'default':

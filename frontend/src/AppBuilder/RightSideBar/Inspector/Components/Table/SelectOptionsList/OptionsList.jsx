@@ -12,6 +12,7 @@ import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { unset } from 'lodash';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import { DEFAULT_SELECT_COLUMN_OPTIONS } from '../utils';
 
 export const OptionsList = ({
   column,
@@ -60,7 +61,14 @@ export const OptionsList = ({
       props.component.component.definition.properties.columns || props.component.component.definition.properties.fields;
     const column = columns.value[index];
     const options = column.options || [];
-    options.push({ label: 'one', value: '1' });
+    const labelPrefix = 'Option';
+    let n = 1;
+    let label = `${labelPrefix} ${n}`;
+    while (options.some((o) => o.label === label || String(o.value) === String(label))) {
+      n += 1;
+      label = `${labelPrefix} ${n}`;
+    }
+    options.push({ label, value: label });
     column.options = options;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -255,12 +263,7 @@ export const OptionsList = ({
 
   const defaultOptionsValues = () => {
     return {
-      options: [
-        { label: 'Reading', value: 'Reading' },
-        { label: 'Traveling', value: 'Traveling' },
-        { label: 'Photography', value: 'Photography' },
-        { label: 'Music', value: 'Music' },
-      ],
+      options: DEFAULT_SELECT_COLUMN_OPTIONS.map((opt) => ({ ...opt })),
     };
   };
 
