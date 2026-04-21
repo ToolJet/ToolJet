@@ -33,6 +33,7 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/**/*.cy.js",
       "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/gitSync/**/*.cy.js",
     ],
 
     testIsolation: true,
