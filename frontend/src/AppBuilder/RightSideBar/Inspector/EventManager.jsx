@@ -1349,7 +1349,7 @@ export const EventManager = ({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span
-                                          className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+                                          className="tw-min-w-0 tw-leading-[1.25rem] tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
                                           data-cy="event-handler-name"
                                         >
                                           {event?.name}
@@ -1385,7 +1385,7 @@ export const EventManager = ({
                                           {eventMetaDefinition?.events[event.event.eventId]?.displayName}
                                         </span>
                                         <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
-                                        <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-text-right tw-font-body-default tw-text-text-placeholder">
+                                        <span className="tw-min-w-0 tw-text-left tw-flex-1 tw-truncate tw-font-body-default tw-text-text-placeholder">
                                           {actionMeta.name}
                                         </span>
                                       </div>
@@ -1407,7 +1407,8 @@ export const EventManager = ({
                             <PopoverContent
                               side={popoverPlacement || 'left'}
                               align="center"
-                              className="inspector-event-manager-popover tw-w-[303px] tw-max-w-[303px] tw-gap-0 tw-overflow-hidden tw-p-0"
+                              sideOffset={8}
+                              className="inspector-event-manager-popover tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0"
                               data-cy="popover-card"
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
