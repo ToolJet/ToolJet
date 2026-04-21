@@ -233,7 +233,7 @@ The following characteristics define how ToolJet aligns with CJIS expectations a
 
 These characteristics allow ToolJet to operate within regulated environments without introducing additional data exposure risk.
 
-## **CJIS Compliance Checklist with Policy Mapping**
+### **CJIS Compliance Checklist with Policy Mapping**
 
 All section references and excerpts are derived from the CJIS Security Policy published by the Federal Bureau of Investigation.
 
