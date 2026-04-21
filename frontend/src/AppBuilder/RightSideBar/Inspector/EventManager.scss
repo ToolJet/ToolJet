@@ -1,0 +1,15 @@
+// Base UI Combobox renders its Positioner with a hardcoded `tw-isolate tw-z-50`
+// in `src/components/ui/Rocket/shadcn/combobox.jsx` (shadcn primitives are not
+// edited). The Positioner is portaled to <body>, so no React className can
+// reach it from our Combobox call sites. `tw-isolate` creates a stacking
+// context at z-50, which sits behind the Inspector's event Popover (z-1042).
+//
+// Fix: target the Positioner via its child Popup's [data-slot=combobox-content]
+// using :has(). 1043 outranks the popover's 1042; `isolation: auto` undoes the
+// stacking-context isolation so the Popup itself stacks normally.
+//
+// Remove once Rocket's Combobox HOC exposes Positioner-level z-index control.
+:has(> [data-slot='combobox-content']) {
+  z-index: 1043 !important;
+  isolation: auto !important;
+}
