@@ -568,7 +568,11 @@ export class AppImportExportService {
 
           // Also map the editingVersion if not already mapped
           const editingVersionId = importedModule?.appV2?.editingVersion?.id;
-          if (editingVersionId && !moduleResourceMappings.moduleVersions[editingVersionId] && existingVersions.length > 0) {
+          if (
+            editingVersionId &&
+            !moduleResourceMappings.moduleVersions[editingVersionId] &&
+            existingVersions.length > 0
+          ) {
             moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
@@ -1567,17 +1571,13 @@ export class AppImportExportService {
         folderIdMapping[folder.id] = savedId;
       }
 
-      // Scope query-child mappings to queries belonging to THIS version only.
-      // `appResourceMappings.dataQueryMapping` accumulates across versions, so filtering
-      // by it would re-insert prior versions' mappings and violate the
-      // UQ_data_query_folder_mapping_child unique constraint on (child_id, child_type).
-      const queryIdsForVersion = new Set(importingDataQueriesForAppVersion.map((q: { id: string }) => q.id));
+      const queryIdsForThisVersion = new Set(importingDataQueriesForAppVersion.map((q) => q.id));
+      const folderIdsForThisVersion = new Set(foldersForVersion.map((f) => f.id));
+
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
-          (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY &&
-            queryIdsForVersion.has(m.childId) &&
-            appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.FOLDER && folderIdsForThisVersion.has(m.childId)) ||
+          (m.childType === ChildType.QUERY && queryIdsForThisVersion.has(m.childId))
       );
 
       for (const mapping of mappingsForVersion) {
@@ -1737,7 +1737,6 @@ export class AppImportExportService {
                   properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
                 }
               }
-
             }
             newComponent.properties = properties || {};
 
@@ -3874,7 +3873,6 @@ function transformComponentData(
             properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
           }
         }
-
       }
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);

@@ -1,5 +1,6 @@
 import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 /**
  * Module-level single-entry caches for context hints.
@@ -399,27 +400,15 @@ export const createCodeHinterSlice = (set, get) => ({
       const baseParentId = getBaseParentId(currentParentId);
       const parentType = getParentComponentType(currentParentId, moduleId);
 
-      if (parentType === 'Listview') {
+      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+        const resolvableKey = ROW_SCOPED_RESOLVABLE_KEY_MAP[parentType];
         nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
         const resolvables = customResolvables[baseParentId];
-        if (resolvables && resolvables[0]?.listItem !== undefined) {
-          const listItemData = resolvables[0].listItem;
-          hints.push({ hint: 'listItem', type: 'Object', isContext: true });
+        if (resolvables && resolvables[0]?.[resolvableKey] !== undefined) {
+          const data = resolvables[0][resolvableKey];
+          hints.push({ hint: resolvableKey, type: 'Object', isContext: true });
           hints.push(
-            ...traverseObjectToHints(listItemData, 'listItem', 3).map((h) => ({
-              ...h,
-              isContext: true,
-            }))
-          );
-        }
-      } else if (parentType === 'Kanban') {
-        nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
-        const resolvables = customResolvables[baseParentId];
-        if (resolvables && resolvables[0]?.cardData !== undefined) {
-          const cardData = resolvables[0].cardData;
-          hints.push({ hint: 'cardData', type: 'Object', isContext: true });
-          hints.push(
-            ...traverseObjectToHints(cardData, 'cardData', 3).map((h) => ({
+            ...traverseObjectToHints(data, resolvableKey, 3).map((h) => ({
               ...h,
               isContext: true,
             }))
