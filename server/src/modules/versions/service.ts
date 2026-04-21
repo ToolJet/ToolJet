@@ -261,43 +261,52 @@ export class VersionService implements IVersionService {
     if (!app) {
       throw new NotFoundException('Module not found');
     }
-    // branchId is the hydrated path; the fallback is non-deterministic across branches.
+    // Resolution is strictly scoped to the consumer's current branchId. A previous
+    // implementation had a cross-branch name-only fallback that leaked other branches'
+    // module content into the current branch — e.g. an app authored on a feature
+    // branch stores moduleVersionId="feature-1"; after merging to master, the same
+    // stored ref on master would match the feature branch's AppVersion row (which
+    // still exists under its original name until that branch is deleted) and return
+    // feature-branch content while the user is viewing master.
     let version: AppVersion | null = null;
     if (branchId) {
+      // Attempt 1: exact name match on the consumer's branch. Covers pinned refs
+      // (versionName is a real version name like "v1") and sub-branch unpinned refs
+      // (versionName equals the branch name, which hydrateStubApp also uses as the
+      // version name on non-default branches).
       version = await this.versionRepository.manager.findOne(AppVersion, {
         where: { name: versionName, appId: app.id, branchId, isStub: false },
       });
-    }
-    if (!version) {
-      version = await this.versionRepository.manager.findOne(AppVersion, {
-        where: { name: versionName, appId: app.id },
-      });
-    }
-    if (!version) {
-      // Unpinned ref: moduleVersionId.value is an org branch name. Resolve to the
-      // consumer's current branch first, then the org's default branch. Runs whether
-      // or not a WorkspaceBranch with that name exists — covers post-merge stale refs,
-      // never-pulled branches, and embedded viewers without x-branch-id.
-      if (branchId) {
+      // Attempt 2: unpinned ref on the consumer's branch — latest non-stub version
+      // for this module on this branch, regardless of name. Handles the case where
+      // the stored moduleVersionId is a foreign branch name (e.g. a merge from a
+      // feature branch into master brought "feature-1" along) and we just want the
+      // module content that belongs to this branch.
+      if (!version) {
         version = await this.versionRepository.manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId },
+          where: { appId: app.id, branchId, isStub: false },
           order: { createdAt: 'DESC' },
         });
       }
-      if (!version) {
-        const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
+    }
+    if (!version) {
+      // Fallback: consumer has no branchId header (embedded viewer, public access,
+      // etc.) or the module has never been pulled to the consumer's branch. Resolve
+      // to the org's default branch so the viewer isn't blank — but never match
+      // across arbitrary branches by name.
+      const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { organizationId: user.organizationId, isDefault: true },
+      });
+      if (defaultBranch) {
+        version = await this.versionRepository.manager.findOne(AppVersion, {
+          where: {
+            appId: app.id,
+            branchId: defaultBranch.id,
+            versionType: AppVersionType.VERSION,
+            isStub: false,
+          },
+          order: { createdAt: 'DESC' },
         });
-        if (defaultBranch) {
-          version = await this.versionRepository.manager.findOne(AppVersion, {
-            where: {
-              appId: app.id,
-              branchId: defaultBranch.id,
-              versionType: AppVersionType.VERSION,
-            },
-            order: { createdAt: 'DESC' },
-          });
-        }
       }
     }
     if (!version) {
