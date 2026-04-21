@@ -169,7 +169,7 @@ export class ImportExportResourcesService {
     const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
     const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
     if (exportedVersions.length > 0 && !hasNonStubVersion) {
-      throw new BadRequestException('Cannot clone an app that has not been pulled from git yet');
+      throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
     }
 
     // TODO: Verify if this is required as we always pass name on imports

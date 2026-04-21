@@ -1130,7 +1130,7 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       createNewVersion,
       branchId,
-      isGitApp || cloning
+      isGitApp || cloning || !!branchId
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2662,8 +2662,7 @@ export class AppImportExportService {
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
-    // Only applies to git-sync or clone operations — plain imports always use VERSION type
-    // so versions remain visible in the version manager UI.
+    // Applies to git-sync, clone, AND device imports on a feature branch (branchId set).
     let isSubBranch = false;
     if (branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
