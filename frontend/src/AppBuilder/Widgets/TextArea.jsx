@@ -28,12 +28,21 @@ export const TextArea = (props) => {
       return;
     }
     inputRef.current.style.height = 'auto';
-    // `scrollHeight` = content + padding. We add just the 2px top/bottom
-    // border so the outer box doesn't clip and trigger an unwanted scrollbar.
-    // Previously +20 was used here, which padded every grown textarea with
-    // an extra ~20px of empty space — visible as unexplained vertical slack.
+    // Subtract the input container's padding + border so the outer wrapper
+    // matches the authored widget height when content fits. Without this,
+    // wrapper = textarea + container padding/border, making dynamic-height
+    // textareas visibly taller than non-dynamic ones.
+    const container = inputRef.current.parentElement;
+    const cs = container ? window.getComputedStyle(container) : null;
+    const containerPaddingAndBorder = cs
+      ? parseFloat(cs.paddingTop) +
+        parseFloat(cs.paddingBottom) +
+        parseFloat(cs.borderTopWidth) +
+        parseFloat(cs.borderBottomWidth)
+      : 0;
+    const effectiveMax = Math.max(height - containerPaddingAndBorder, 0);
     inputRef.current.style.height =
-      height >= inputRef.current.scrollHeight ? `${height}px` : `${inputRef.current.scrollHeight + 2}px`;
+      effectiveMax >= inputRef.current.scrollHeight ? `${effectiveMax}px` : `${inputRef.current.scrollHeight}px`;
   }, [inputRef?.current, height, isDynamicHeightEnabled]);
 
   useLayoutEffect(() => {
