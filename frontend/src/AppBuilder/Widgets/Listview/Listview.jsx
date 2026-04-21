@@ -212,7 +212,7 @@ export const Listview = function Listview({
                 borderColor,
                 margin: '1px',
                 borderTop: 0,
-                ...(isDynamicHeightEnabled ? {} : { left: '1px', right: '1px' }),
+                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px' }),
               }}
             >
               <div style={{ backgroundColor }}>
