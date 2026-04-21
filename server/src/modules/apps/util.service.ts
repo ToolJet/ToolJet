@@ -925,9 +925,8 @@ export class AppsUtilService implements IAppsUtilService {
   async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
     if (!moduleApp?.co_relation_id) return;
     try {
-      // Match by co_relation_id (stable module identity across branches/orgs) — that's
-      // what moduleAppId.value stores in the post-608f4bd7e4 data model. Self-ref
-      // exclusion lets a module reference itself without blocking its own deletion.
+      // co_relation_id = stable module identity across branches. Self-ref excluded so a
+      // module can reference itself without blocking its own deletion.
       const consumingApps = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')

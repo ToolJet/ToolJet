@@ -66,12 +66,7 @@ const useAppData = (
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
-  // Track last versionId so we can reset per-module slices (components, dependencyGraph,
-  // resolvedStore, etc.) when a ModuleViewer's pin changes in-session. Without this the
-  // old version's dependency graph retains component IDs that no longer exist in the new
-  // version's state, and the next updateDependencyValues → validateProperty call throws
-  // "Cannot read properties of undefined (reading 'component')" → the then-block rejects →
-  // the "Error fetching module data" toast fires even though the API returned 200.
+  // Reset per-module slices on in-session pin change — stale graph references old-version IDs.
   const lastModuleVersionRef = useRef(versionId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
@@ -266,7 +261,6 @@ const useAppData = (
       return;
     }
     let cancelled = false;
-    // Module in-session pin change: reset per-module slices (see lastModuleVersionRef above).
     if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
       initModules(moduleId);
     }
@@ -278,11 +272,7 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // Authenticated viewers should always fetch the pinned version directly. The cached
-      // `moduleDefinition` from the parent app's response is branch-scoped (via fetchModules)
-      // and represents the parent's current-branch view of the module — using it would bypass
-      // any explicit version pin on the ModuleViewer. Truly public viewers can't call the
-      // auth-gated version API, so they fall back to the pre-fetched cached definition.
+      // Cached moduleDefinition is branch-scoped; authed viewers must refetch the pinned version.
       const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
       if (isUnauthenticated) {
         const moduleDefinition = getModuleDefinition(appId);

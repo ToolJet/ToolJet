@@ -266,18 +266,11 @@ export class VersionUtilService implements IVersionUtilService {
   ): Promise<void> {
     try {
       // moduleVersionId.value stores one of:
-      //   1. a DB UUID — legacy, only produced today by import of pre-608f4bd7e4 YAMLs
-      //      (see app-import-export.service.ts:1787). TODO: add a data migration that
-      //      rewrites existing UUID-valued moduleVersionId refs to version names so this
-      //      case (and its twin in checkModulesPromotableToEnvironment) can be dropped.
-      //   2. a version name (pinned) — restricted to version_type='version' so branch rows
-      //      that happen to share a name don't falsely match
-      //   3. a branch name (unpinned) — resolved here to the module's default-branch
-      //      version_type='version' row so we check whether that row is saved or still draft
-      //
-      // Status DRAFT on that resolved row means the module needs saving before the parent
-      // app can be saved/promoted. Branch-name refs resolve via case 3 instead of matching
-      // the branch row directly, because branch rows are always DRAFT.
+      //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
+      //      TODO: migrate existing rows to version names so this case can be dropped.
+      //   2. version name — pinned; scoped to version_type='version' + module's co_relation_id.
+      //   3. branch name — unpinned; resolved to the module's default-branch version row.
+      // A DRAFT resolved row means the module needs saving before the parent can save/promote.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -322,9 +315,7 @@ export class VersionUtilService implements IVersionUtilService {
         .getRawMany();
 
       if (draftModules.length > 0) {
-        // Unpinned (branch-name) refs resolve to a different name than what's stored —
-        // the user should be guided to save a version on main. A pinned ref that matches
-        // the resolved name is a pinned-to-draft case.
+        // Unpinned refs get "save on main" guidance; matching refs are pinned-to-draft.
         const formatEntry = (m: { moduleName: string; versionName: string; rawRef: string }) =>
           m.rawRef !== m.versionName
             ? `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`
