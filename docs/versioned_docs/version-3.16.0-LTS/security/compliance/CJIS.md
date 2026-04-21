@@ -1,27 +1,24 @@
 ---
 id: cjis
-title: Criminal Justice Information Services
+title: CJIS-Aligned Internal Tooling Using ToolJet
+sidebar_label: Criminal Justice Information Services
 ---
 
-# CJIS-Aligned Internal Tooling Using ToolJet
+## Scope and Objective
 
-## **Scope and Objective**
-
-This guide outlines how to implement CJIS-aligned (Criminal Justice Information Services)  internal tools using ToolJet within agency-controlled environments. It focuses on mapping requirements from the CJIS Security Policy to system design, infrastructure controls, and application-layer enforcement. The goal is to provide a structured approach to building internal tools that operate within CJIS expectations without introducing additional risk or complexity.
+This guide outlines how to implement CJIS-aligned (Criminal Justice Information Services) internal tools using ToolJet within agency-controlled environments. It focuses on mapping requirements from the CJIS Security Policy to system design, infrastructure controls, and application-layer enforcement. The goal is to provide a structured approach to building internal tools that operate within CJIS expectations without introducing additional risk or complexity.
 
 Now, before getting into implementation, it helps to clarify how CJIS defines compliance in practice.
 
-## **CJIS Compliance Model**
+## CJIS Compliance Model
 
 At a high level, CJIS compliance is about how controls are enforced across systems.
 
 - There is no CJIS certification for platforms
-
 - Responsibility lies with the agency
-
 - Systems must enforce defined controls consistently
 
-### **Responsibility Model**
+### Responsibility Model
 
 | Layer | Responsibility |
 |---|---|
@@ -32,11 +29,11 @@ At a high level, CJIS compliance is about how controls are enforced across syste
 
 With that in place, the next step is to define how the system is structured.
 
-## **System Model**
+## System Model
 
 This is where the system model becomes important.
 
-### **Components**
+### Components
 
 | Component | Role |
 |---|---|
@@ -45,19 +42,15 @@ This is where the system model becomes important.
 | Data Systems | Source of CJI |
 | Logging Systems | Audit and monitoring |
 
-### **Trust Boundaries**
+### Trust Boundaries
 
 - Network boundary: private VPC or on premise
-
 - Identity boundary: external authentication provider
-
 - Data boundary: systems containing CJI
 
-All boundary crossings must be authenticated, authorized, and logged.
+All boundary crossings must be authenticated, authorized, and logged. Once the system boundaries are clear, the focus shifts to control areas.
 
-Once the system boundaries are clear, the focus shifts to control areas.
-
-## **Control Areas and Implementation Focus**
+## Control Areas and Implementation Focus
 
 These control areas map directly to how internal tools need to behave.
 
@@ -70,7 +63,7 @@ These control areas map directly to how internal tools need to behave.
 | Network Security | Access restriction and segmentation |
 | System Integrity | Configuration and patching |
 
-## **ToolJet Capability Mapping**
+## ToolJet Capability Mapping
 
 | Control Area | ToolJet Capability |
 |---|---|
@@ -83,66 +76,54 @@ These control areas map directly to how internal tools need to behave.
 
 Now, translating this into implementation requires a structured approach.
 
-## **Implementation Workflow**
+## Implementation Workflow
 
 The process can be broken down into a set of configuration steps.
 
-### **1. Define Deployment Boundary**
+### 1. Define Deployment Boundary
 
 - Deploy ToolJet within private infrastructure
-
 - Restrict public access
-
 - Route traffic through controlled gateways
 
 Once the deployment boundary is defined, identity becomes the next control point.
 
-### **2. Configure Identity and Authentication**
+### 2. Configure Identity and Authentication
 
 - Integrate SAML-based SSO
-
 - Enforce MFA at identity provider level
-
 - Ensure unique user identification as required by the CJIS Security Policy
 
 After authentication, access needs to be restricted through roles.
 
-### **3. Configure Authorization**
+### 3. Configure Authorization
 
 - Define RBAC roles
-
 - Map roles to job functions
-
 - Enforce least privilege access
 
 With access defined, data access patterns need to be controlled.
 
-### **4. Configure Data Access**
+### 4. Configure Data Access
 
 - Connect to databases using secure connections
-
 - Enforce TLS
-
 - Avoid duplication of CJI
 
 At this stage, all actions must be logged for auditability.
 
-### **5. Enable Audit Logging**
+### 5. Enable Audit Logging
 
 - Capture user actions and queries
-
 - Export logs to SIEM systems such as Splunk or the Elastic Stack
-
 - Define retention policies aligned with CJIS requirements
 
 In parallel, network-level restrictions should be enforced.
 
-### **6. Enforce Network Controls**
+### 6. Enforce Network Controls
 
 - Restrict ingress and egress traffic
-
 - Use reverse proxies and firewalls
-
 - Segment workloads
 
 Next, encryption ensures data remains protected in all states.
