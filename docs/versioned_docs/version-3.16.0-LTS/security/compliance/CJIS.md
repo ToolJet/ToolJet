@@ -163,8 +163,6 @@ Next, encryption ensures data remains protected in all states.
 
 - Perform vulnerability scanning on infrastructure
 
-Over time, system integrity becomes equally important.
-
 ### **9. Configure AI Controls (Optional)**
 
 - Disable AI features for workflows involving CJI
@@ -172,8 +170,6 @@ Over time, system integrity becomes equally important.
 - Restrict usage to approved or internal models
 
 - Prevent logging of sensitive prompts or responses
-
-If AI features are introduced, additional controls are required.
 
 ## **Architecture That Aligns with CJIS Expectations**
 
@@ -191,7 +187,7 @@ ToolJet operates as an application-layer system within environments handling Cri
 
 Compliance with the CJIS Security Policy is achieved through correct configuration of infrastructure, identity systems, and application-layer controls. ToolJet participates in this model by enforcing user-level access, integrating with identity providers, and supporting auditability across workflows.
 
-**Shared Responsibility Model**
+### **Shared Responsibility Model**
 
 CJIS alignment follows a shared responsibility model across infrastructure, identity, and application layers.
 
@@ -219,7 +215,7 @@ A CJIS-aligned deployment requires clear separation of trust zones and controlle
 
 This separation ensures that CJI does not traverse uncontrolled paths and that each access point is governed by policy.
 
-**Security and Compliance Characteristics**
+### **Security and Compliance Characteristics**
 
 The following characteristics define how ToolJet aligns with CJIS expectations at the application layer:
 
@@ -233,12 +229,11 @@ The following characteristics define how ToolJet aligns with CJIS expectations a
 
 - Runs within agency-controlled infrastructure, supporting data residency and isolation requirements
 
-- Relies on underlying systems for encryption, including support for FIPS 140-2 aligned environments  \
- \
-These characteristics allow ToolJet to operate within regulated environments without introducing additional data exposure risk
+- Relies on underlying systems for encryption, including support for FIPS 140-2 aligned environments
 
-##  \
-**CJIS Compliance Checklist with Policy Mapping**
+These characteristics allow ToolJet to operate within regulated environments without introducing additional data exposure risk.
+
+## **CJIS Compliance Checklist with Policy Mapping**
 
 All section references and excerpts are derived from the CJIS Security Policy published by the Federal Bureau of Investigation.
 
@@ -326,7 +321,7 @@ The following failure modes are commonly observed in internal tooling systems:
 
 This typically violates least privilege expectations defined in the CJIS Security Policy.
 
-**Incomplete Audit Logging**
+### **Incomplete Audit Logging**
 
 - Missing logs for read operations on CJI
 
@@ -346,7 +341,7 @@ These gaps can make it difficult to reconstruct access patterns during audits.
 
 This increases the risk of unauthorized access to application interfaces.
 
-**Data Handling Misconfigurations**
+### **Data Handling Misconfigurations**
 
 - Caching or persisting CJI within the application layer
 
@@ -356,7 +351,7 @@ This increases the risk of unauthorized access to application interfaces.
 
 ToolJet should operate as a stateless layer without retaining CJI wherever possible.
 
-**Weak Encryption Enforcement**
+### **Weak Encryption Enforcement**
 
 - TLS not enforced across all internal connections
 
@@ -404,15 +399,15 @@ Access is enforced through:
 
 - Database-level access controls
 
-- **How are user actions audited?**
+4. **How are user actions audited?**
 
 User interactions, queries, and API calls should be logged and forwarded to SIEM systems such as Splunk. Logs should be retained and protected according to CJIS requirements.
 
-- **How is access revoked?**
+5. **How is access revoked?**
 
 Access is revoked through the identity provider by disabling user accounts or removing group memberships. Changes propagate to ToolJet via SSO enforcement.
 
-- **What happens during system failure?**
+6. **What happens during system failure?**
 
 - ToolJet does not act as a system of record
 
@@ -420,7 +415,7 @@ Access is revoked through the identity provider by disabling user accounts or re
 
 - Access is temporarily unavailable but data integrity remains intact
 
-- **How is data protected in transit and at rest?**
+7. **How is data protected in transit and at rest?**
 
 - TLS is enforced for all communications
 
@@ -428,7 +423,7 @@ Access is revoked through the identity provider by disabling user accounts or re
 
 - Cryptographic controls align with FIPS 140-2 requirements
 
-- **Are external integrations restricted?**
+8. **Are external integrations restricted?**
 
 External services, including APIs and AI models, should not process CJI unless explicitly approved and controlled. All outbound data flows should be audited.
 
