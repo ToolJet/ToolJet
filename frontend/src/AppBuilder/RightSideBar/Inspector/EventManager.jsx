@@ -1408,7 +1408,7 @@ export const EventManager = ({
                               side={popoverPlacement || 'left'}
                               align="center"
                               sideOffset={8}
-                              className="inspector-event-manager-popover tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0"
+                              className="inspector-event-manager-popover tw-z-[10001] tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0"
                               data-cy="popover-card"
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
@@ -1437,18 +1437,21 @@ export const EventManager = ({
   const renderAddHandlerBtn = () => {
     return (
       <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
-        <PopoverTrigger
-          type="button"
-          data-cy="add-event-handler"
-          className="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-bg-button-outline tw-px-3 tw-py-1.5 tw-font-title-default tw-text-text-default tw-shadow-elevation-100 hover:tw-bg-button-outline-hover"
-        >
-          <Plus className="tw-h-4 tw-w-4" />
-          {t('editor.inspector.eventManager.addHandler', 'New event handler')}
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="default"
+            leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
+            className="tw-w-full"
+            data-cy="add-event-handler"
+          >
+            {t('editor.inspector.eventManager.addHandler', 'New event handler')}
+          </Button>
         </PopoverTrigger>
         <PopoverContent
           side="bottom"
           align="center"
-          className="tw-z-[10000] tw-max-h-[280px] tw-w-[260px] tw-gap-0 tw-overflow-auto tw-p-2"
+          className="tw-z-[10001] tw-max-h-[280px] tw-w-[260px] tw-gap-0 tw-overflow-auto tw-p-2"
           data-cy="add-event-menu"
         >
           {possibleEvents.length === 0 ? (
