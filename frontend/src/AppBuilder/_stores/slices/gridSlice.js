@@ -212,6 +212,7 @@ export const createGridSlice = (set, get) => ({
         getComponentDefinition,
         getContainerChildrenMapping,
         getExposedPropertyForAdditionalActions,
+        calculateMoveableBoxHeightWithId,
       });
 
       // Target height for the changed widget. For containers: containerHeight.

@@ -418,6 +418,7 @@ export const resolveContainerHeight = ({
   getComponentDefinition,
   getContainerChildrenMapping,
   getExposedPropertyForAdditionalActions,
+  calculateMoveableBoxHeightWithId,
 }) => {
   const canonicalLayout = getCanonicalLayout(componentId, currentLayout, currentPageComponents);
   let containerHeight = canonicalLayout?.height ?? 0;
@@ -562,13 +563,30 @@ export const resolveContainerHeight = ({
     };
   }, {});
 
-  let currentMax = Object.values(componentLayouts).reduce((maxHeight, layoutEntry) => {
+  // Floor each child's flow height at `calculateMoveableBoxHeightWithId` —
+  // for top-label input widgets this adds the +20px label bump that
+  // WidgetWrapper applies at render time. Without this, a Dropdown (which
+  // never calls useDynamicHeight and therefore never writes a temp) reports
+  // its canonical height here and the container sizes ~20px too short,
+  // clipping the bottom of the control.
+  let currentMax = Object.entries(componentLayouts).reduce((maxHeight, [childId, layoutEntry]) => {
     const effectiveLayout = layoutEntry?.effective;
     if (!effectiveLayout) {
       return maxHeight;
     }
 
-    const flowHeight = layoutEntry?.inFlow ? effectiveLayout.height ?? 0 : 0;
+    let flowHeight = 0;
+    if (layoutEntry?.inFlow) {
+      flowHeight = effectiveLayout.height ?? 0;
+      if (typeof calculateMoveableBoxHeightWithId === 'function') {
+        const childDefinition = getComponentDefinition?.(childId);
+        const childStylesDefinition = childDefinition?.component?.definition?.styles;
+        const bumpedHeight = calculateMoveableBoxHeightWithId(childId, currentLayout, childStylesDefinition);
+        if (typeof bumpedHeight === 'number') {
+          flowHeight = Math.max(flowHeight, bumpedHeight);
+        }
+      }
+    }
     return Math.max(maxHeight, (effectiveLayout.top ?? 0) + flowHeight);
   }, 0);
 
