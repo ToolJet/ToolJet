@@ -71,7 +71,7 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    ...(isDynamicHeightEnabled && { minHeight: `${rowHeight || 100}px` }),
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
