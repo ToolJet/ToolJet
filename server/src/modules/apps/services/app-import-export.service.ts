@@ -42,6 +42,8 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
@@ -460,11 +462,26 @@ export class AppImportExportService {
         })
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
+
+      const appVersionIds = appVersions.map((v) => v.id);
+      const dataQueryFolders = await manager.find(DataQueryFolder, {
+        where: { appVersionId: In(appVersionIds) },
+      });
+      const folderIds = dataQueryFolders.map((f) => f.id);
+      const dataQueryIds = queriesWithPermissionGroups.map((q: any) => q.id);
+      const allChildIds = [...folderIds, ...dataQueryIds];
+      const dataQueryFolderMappings =
+        allChildIds.length > 0
+          ? await manager.find(DataQueryFolderMapping, { where: { childId: In(allChildIds) } })
+          : [];
+
       appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
       appToExport['dataQueries'] = queriesWithPermissionGroups;
       appToExport['dataSources'] = dataSources;
+      appToExport['dataQueryFolders'] = dataQueryFolders;
+      appToExport['dataQueryFolderMappings'] = dataQueryFolderMappings;
       appToExport['appVersions'] = appVersions;
       appToExport['appEnvironments'] = appEnvironments;
       appToExport['dataSourceOptions'] = dataSourceOptions;
@@ -502,7 +519,6 @@ export class AppImportExportService {
     const moduleResourceMappings = {
       moduleApps: {},
       moduleVersions: {},
-      moduleEnvironments: {},
     };
 
     const existingModules =
@@ -525,16 +541,39 @@ export class AppImportExportService {
           // Module exists - map old IDs to existing module's IDs
           moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
 
-          const latestVersion = existingModule.editingVersion?.id;
-          const defaultEnvironment = existingModule?.editingVersion?.currentEnvironmentId;
+          // Fetch existing module's versions to map by name
+          const existingVersions = await this.entityManager.find(AppVersion, {
+            where: { appId: existingModule.id },
+            order: { createdAt: 'DESC' },
+          });
 
-          if (latestVersion) {
-            moduleResourceMappings.moduleVersions[importedModule?.appV2?.editingVersion.id] = latestVersion;
+          // Map all exported module versions to existing versions by name match
+          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          for (const importedVersion of importedModuleVersions) {
+            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
+            if (matchingVersion) {
+              moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
+            }
           }
 
-          if (defaultEnvironment) {
-            moduleResourceMappings.moduleEnvironments[importedModule?.appV2?.editingVersion.currentEnvironmentId] =
-              defaultEnvironment;
+          // Fallback: map any unmatched imported versions to the latest existing version
+          // so that ModuleViewer components don't retain stale UUIDs from the source workspace
+          if (existingVersions.length > 0) {
+            for (const importedVersion of importedModuleVersions) {
+              if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
+                moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
+              }
+            }
+          }
+
+          // Also map the editingVersion if not already mapped
+          const editingVersionId = importedModule?.appV2?.editingVersion?.id;
+          if (
+            editingVersionId &&
+            !moduleResourceMappings.moduleVersions[editingVersionId] &&
+            existingVersions.length > 0
+          ) {
+            moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
           }
         } else {
           // Module doesn't exist - need to import it
@@ -550,10 +589,11 @@ export class AppImportExportService {
           );
 
           moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
-          moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
-          moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
+
+          // Map ALL version IDs from the import, not just editingVersion
+          for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
+            moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
+          }
         }
       }
     }
@@ -634,7 +674,9 @@ export class AppImportExportService {
         currentTooljetVersion,
         moduleResourceMappings,
         undefined,
-        branchId
+        branchId,
+        cloning,
+        isGitApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
 
@@ -918,6 +960,8 @@ export class AppImportExportService {
     importingPages: Page[];
     importingComponents: Component[];
     importingEvents: EventHandler[];
+    importingDataQueryFolders: DataQueryFolder[];
+    importingDataQueryFolderMappings: DataQueryFolderMapping[];
   } {
     const importingDataSources = appParams?.dataSources || [];
     const importingDataQueries = appParams?.dataQueries || [];
@@ -931,6 +975,8 @@ export class AppImportExportService {
     const importingPages = appParams?.pages || [];
     const importingComponents = appParams?.components || [];
     const importingEvents = appParams?.events || [];
+    const importingDataQueryFolders = appParams?.dataQueryFolders || [];
+    const importingDataQueryFolderMappings = appParams?.dataQueryFolderMappings || [];
 
     return {
       importingDataSources,
@@ -942,6 +988,8 @@ export class AppImportExportService {
       importingPages,
       importingComponents,
       importingEvents,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings,
     };
   }
 
@@ -959,7 +1007,9 @@ export class AppImportExportService {
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
     createNewVersion?: boolean,
-    branchId?: string
+    branchId?: string,
+    cloning = false,
+    isGitApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -993,15 +1043,42 @@ export class AppImportExportService {
       importingPages,
       importingComponents,
       importingEvents,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings,
     } = this.extractImportDataFromAppParams(appParams);
 
     // When importing multiple versions, skip branch-type versions — only import regular versions.
     // When importing a single branch-type version, allow it through (it will be adapted to
     // the target branch context inside createAppVersionsForImportedApp).
-    const filteredAppVersions =
-      importingAppVersions.length > 1
-        ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
-        : importingAppVersions;
+    // const filteredAppVersions =
+    //   importingAppVersions.length > 1
+    //     ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+    //     : importingAppVersions;
+
+    // When importing multiple versions, select the right versions to import based on context:
+    // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
+    //   versions matching the source branchId. Fall back to VERSION-type if none found.
+    // - All other cases (plain import, or cloning on default branch): skip BRANCH-type versions,
+    //   only import VERSION-type.
+    // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
+    let filteredAppVersions: any[];
+    if (importingAppVersions.length > 1) {
+      if (cloning && branchId) {
+        const nonStubBranchVersions = importingAppVersions.filter(
+          (v: any) => v.versionType === AppVersionType.BRANCH && v.branchId === branchId && !v.isStub
+        );
+        filteredAppVersions =
+          nonStubBranchVersions.length > 0
+            ? nonStubBranchVersions
+            : importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION);
+      } else {
+        filteredAppVersions = importingAppVersions.filter(
+          (v: any) => !v.versionType || v.versionType === AppVersionType.VERSION
+        );
+      }
+    } else {
+      filteredAppVersions = importingAppVersions;
+    }
 
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
@@ -1011,7 +1088,8 @@ export class AppImportExportService {
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
       createNewVersion,
-      branchId
+      branchId,
+      isGitApp || cloning
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1038,6 +1116,8 @@ export class AppImportExportService {
       importingEvents,
       tooljetVersion,
       moduleResourceMappings,
+      importingDataQueryFolders,
+      importingDataQueryFolderMappings,
       branchId
     );
 
@@ -1086,6 +1166,20 @@ export class AppImportExportService {
               index: pagePostionIntheList,
               disabled: page.disabled || false,
               hidden: page.hidden || false,
+              pageHeader: page.pageHeader || {
+                showOnDesktop: false,
+                showOnMobile: false,
+                backgroundColor: 'var(--cc-surface1-surface)',
+                border: 'var(--cc-weak-border)',
+                height: 60,
+              },
+              pageFooter: page.pageFooter || {
+                showOnDesktop: false,
+                showOnMobile: false,
+                backgroundColor: 'var(--cc-surface1-surface)',
+                border: 'var(--cc-weak-border)',
+                height: 60,
+              },
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
@@ -1273,9 +1367,18 @@ export class AppImportExportService {
     importingEvents: EventHandler[],
     tooljetVersion: string | null,
     moduleResourceMappings?: any,
+    importingDataQueryFolders: DataQueryFolder[] = [],
+    importingDataQueryFolderMappings: DataQueryFolderMapping[] = [],
     branchId?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
+
+    // Dedupe key for folder mappings across ALL version iterations.
+    // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
+    // across versions with a shared co_relation_id (gitId), so the mappings file-set
+    // can contain N mappings that all reference the same query child. Without dedupe
+    // we'd attempt N inserts per child and violate the unique constraint on the 2nd.
+    const insertedMappingChildKeys = new Set<string>();
 
     for (const importingAppVersion of importingAppVersions) {
       let isHomePage = false;
@@ -1306,6 +1409,38 @@ export class AppImportExportService {
       const importingDataQueriesForAppVersion = importingDataQueries.filter(
         (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === importingAppVersion.id
       );
+
+      // Normalize old-format DSO dataSourceIds before the DS loop.
+      // Old git exports wrote the original workspace UUID in dso.dataSourceId instead of
+      // the DS's co_relation_id. At import time importingDataSource.id = co_relation_id,
+      // so the filter (dso.dataSourceId === importingDataSource.id) never matches →
+      // createDatasourceOption never called → all fields (encrypted + non-encrypted) empty.
+      //
+      // Strategy: find DSO groups whose dataSourceId doesn't match any importing DS id
+      // (orphans), find importing DSes that have no matched DSOs (unmatched), and remap
+      // by position when counts are equal. Reliable for single-DS apps; best-effort for
+      // multi-DS apps where export preserved the DS / DSO group order.
+      const dsIdSet = new Set(importingDataSourcesForAppVersion.map((ds: DataSource) => ds.id));
+      const orphanedDsoDataSourceIds = [
+        ...new Set(
+          importingDataSourceOptions
+            .filter((dso: any) => !dsIdSet.has(dso.dataSourceId))
+            .map((dso: any) => dso.dataSourceId as string)
+        ),
+      ];
+      const unmatchedImportingDs = importingDataSourcesForAppVersion.filter(
+        (ds: DataSource) => !importingDataSourceOptions.some((dso: any) => dso.dataSourceId === ds.id)
+      );
+      if (orphanedDsoDataSourceIds.length > 0 && orphanedDsoDataSourceIds.length === unmatchedImportingDs.length) {
+        orphanedDsoDataSourceIds.forEach((oldDsId, idx) => {
+          const targetId = unmatchedImportingDs[idx].id;
+          for (const dso of importingDataSourceOptions) {
+            if (dso.dataSourceId === oldDsId) {
+              dso.dataSourceId = targetId;
+            }
+          }
+        });
+      }
 
       // associate data sources and queries for each of the app versions
       for (const importingDataSource of importingDataSourcesForAppVersion) {
@@ -1409,6 +1544,67 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
+      // Import query folders and their mappings for this app version.
+      // Dedupe by name because all versions of an app share the same co_relation_id
+      // (see versions/util.service.ts — versions inherit app.co_relation_id). On git
+      // export every folder's appVersionId is rewritten to that shared gitId, so the
+      // foldersForVersion filter matches one row per (version × folder name) combo.
+      // Collapsing by name yields exactly one folder per logical name on the active
+      // version. folderIdMapping still maps every source folder.id to the surviving
+      // local folder so cross-version mapping rows resolve correctly.
+      const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+      const foldersForVersion = importingDataQueryFolders.filter((f) => f.appVersionId === importingAppVersion.id);
+      const folderIdMapping: Record<string, string> = {};
+      const nameToSavedFolderId: Record<string, string> = {};
+
+      for (const folder of foldersForVersion) {
+        let savedId = nameToSavedFolderId[folder.name];
+        if (!savedId) {
+          const newFolder = manager.create(DataQueryFolder, {
+            name: folder.name,
+            appVersionId: newAppVersionId,
+          });
+          const savedFolder = await manager.save(DataQueryFolder, newFolder);
+          savedId = savedFolder.id;
+          nameToSavedFolderId[folder.name] = savedId;
+        }
+        folderIdMapping[folder.id] = savedId;
+      }
+
+      const queryIdsForThisVersion = new Set(importingDataQueriesForAppVersion.map((q) => q.id));
+      const folderIdsForThisVersion = new Set(foldersForVersion.map((f) => f.id));
+
+      const mappingsForVersion = importingDataQueryFolderMappings.filter(
+        (m) =>
+          (m.childType === ChildType.FOLDER && folderIdsForThisVersion.has(m.childId)) ||
+          (m.childType === ChildType.QUERY && queryIdsForThisVersion.has(m.childId))
+      );
+
+      for (const mapping of mappingsForVersion) {
+        const newChildId =
+          mapping.childType === ChildType.FOLDER
+            ? folderIdMapping[mapping.childId]
+            : appResourceMappings.dataQueryMapping[mapping.childId];
+        const newParentId = mapping.parentId ? (folderIdMapping[mapping.parentId] ?? null) : null;
+        if (!newChildId) continue;
+
+        // Skip if we've already inserted a mapping for this (child, type) pair during a
+        // previous version iteration. Required because the DB enforces UNIQUE(child, type)
+        // and queries share co_relation_id across versions, producing duplicate mapping rows
+        // in the git export that all resolve to the same local child id on import.
+        const childKey = `${newChildId}|${mapping.childType}`;
+        if (insertedMappingChildKeys.has(childKey)) continue;
+        insertedMappingChildKeys.add(childKey);
+
+        const newMapping = manager.create(DataQueryFolderMapping, {
+          parentId: newParentId,
+          childId: newChildId,
+          childType: mapping.childType,
+          index: mapping.index,
+        });
+        await manager.save(DataQueryFolderMapping, newMapping);
+      }
+
       const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
       const oldNewIdMap = {};
       const pageGroupIdArr = [];
@@ -1422,6 +1618,8 @@ export class AppImportExportService {
           pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          pageHeader: page.pageHeader || null,
+          pageFooter: page.pageFooter || null,
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
@@ -1473,33 +1671,37 @@ export class AppImportExportService {
             if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
           }
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
-          const isParentHeaderOrFooter =
-            component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+            const isParentHeaderOrFooter =
+              component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
-          if (isParentTabOrCalendar) {
-            const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+            if (isParentTabOrCalendar) {
+              const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
 
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
 
-            parentId = `${mappedParentId}-${childTabId}`;
-          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
+              parentId = `${mappedParentId}-${childTabId}`;
+            } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
 
-            parentId = `${mappedParentId}-modal`;
-          } else if (isParentHeaderOrFooter) {
-            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-            const mappedParentId = newComponentIdsMap[_parentId];
-            const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
-            parentId = `${mappedParentId}-${headerOrFooter}`;
-          } else {
-            if (component.parent && !newComponentIdsMap[parentId]) {
-              skipComponent = true;
+              parentId = `${mappedParentId}-modal`;
+            } else if (isParentHeaderOrFooter) {
+              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+              const mappedParentId = newComponentIdsMap[_parentId];
+              const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
+              parentId = `${mappedParentId}-${headerOrFooter}`;
+            } else {
+              if (component.parent && !newComponentIdsMap[parentId]) {
+                skipComponent = true;
+              }
+
+              parentId = newComponentIdsMap[parentId];
             }
-
-            parentId = newComponentIdsMap[parentId];
           }
           if (!skipComponent) {
             const { properties, styles, general, validation, generalStyles } = migrateProperties(
@@ -1533,14 +1735,6 @@ export class AppImportExportService {
                 const oldVersionId = properties.moduleVersionId.value;
                 if (moduleResourceMappings.moduleVersions[oldVersionId]) {
                   properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
-                }
-              }
-
-              // Replace module environment ID
-              if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-                const oldEnvironmentId = properties.moduleEnvironmentId.value;
-                if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-                  properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
                 }
               }
             }
@@ -2087,10 +2281,40 @@ export class AppImportExportService {
     if (existingBranchDsv) return;
 
     // Find the default DSV to copy from
-    const defaultDsv = await manager.findOne(DataSourceVersion, {
+    // const defaultDsv = await manager.findOne(DataSourceVersion, {
+    //   where: { dataSourceId: dataSource.id, isDefault: true },
+    // });
+    let defaultDsv = await manager.findOne(DataSourceVersion, {
       where: { dataSourceId: dataSource.id, isDefault: true },
     });
-    if (!defaultDsv) return;
+    // if (!defaultDsv) return;
+    if (!defaultDsv) {
+      defaultDsv = await manager.save(
+        manager.create(DataSourceVersion, {
+          dataSourceId: dataSource.id,
+          name: dataSource.name || 'v1',
+          isDefault: true,
+          isActive: true,
+          branchId: null,
+        })
+      );
+      // Create an empty DSVO for every org environment so the datasource page
+      // environment tabs don't crash. Without these rows the page queries
+      // DataSourceVersionOptions per env, gets nothing, and breaks.
+      // Fields will be empty — user reconfigures after import.
+      const orgEnvironments = await manager.find(AppEnvironment, {
+        where: { organizationId },
+      });
+      for (const env of orgEnvironments) {
+        await manager.save(
+          manager.create(DataSourceVersionOptions, {
+            dataSourceVersionId: defaultDsv.id,
+            environmentId: env.id,
+            options: {},
+          })
+        );
+      }
+    }
 
     // Create branch-specific DSV
     const branchDsv = await manager.save(
@@ -2364,7 +2588,8 @@ export class AppImportExportService {
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
     createNewVersion?: boolean,
-    branchId?: string
+    branchId?: string,
+    useBranchVersionType = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2382,8 +2607,10 @@ export class AppImportExportService {
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
+    // Only applies to git-sync or clone operations — plain imports always use VERSION type
+    // so versions remain visible in the version manager UI.
     let isSubBranch = false;
-    if (branchId) {
+    if (branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
         select: ['id', 'isDefault'],
@@ -2471,7 +2698,7 @@ export class AppImportExportService {
         version.globalSettings = appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
-        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -3050,7 +3277,7 @@ export class AppImportExportService {
       const inputItems = moduleContainer.properties?.inputItems?.value || [];
 
       // Process each property in the ModuleViewer component
-      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'visibility'];
 
       for (const [propertyKey, propertyValue] of Object.entries(properties)) {
         // Skip excluded properties
@@ -3584,29 +3811,33 @@ function transformComponentData(
 
     let parentId = component.parent ? component.parent : null;
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(
-      component,
-      allComponents,
-      parentId,
-      isNormalizedAppDefinitionSchema
-    );
+    // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+    // These are not UUID-based and should not be remapped
+    if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+      const isParentTabOrCalendar = isChildOfTabsOrCalendar(
+        component,
+        allComponents,
+        parentId,
+        isNormalizedAppDefinitionSchema
+      );
 
-    if (isParentTabOrCalendar) {
-      const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
-      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-      const mappedParentId = componentsMapping[_parentId];
+      if (isParentTabOrCalendar) {
+        const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+        const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+        const mappedParentId = componentsMapping[_parentId];
 
-      parentId = `${mappedParentId}-${childTabId}`;
-    } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
-      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-      const mappedParentId = componentsMapping[_parentId];
+        parentId = `${mappedParentId}-${childTabId}`;
+      } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
+        const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+        const mappedParentId = componentsMapping[_parentId];
 
-      parentId = `${mappedParentId}-modal`;
-    } else {
-      if (component.parent && !componentsMapping[parentId]) {
-        skipComponent = true;
+        parentId = `${mappedParentId}-modal`;
+      } else {
+        if (component.parent && !componentsMapping[parentId]) {
+          skipComponent = true;
+        }
+        parentId = componentsMapping[parentId];
       }
-      parentId = componentsMapping[parentId];
     }
 
     if (!skipComponent) {
@@ -3640,14 +3871,6 @@ function transformComponentData(
           const oldVersionId = properties.moduleVersionId.value;
           if (moduleResourceMappings.moduleVersions[oldVersionId]) {
             properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
-          }
-        }
-
-        // Replace module environment ID
-        if (properties.moduleEnvironmentId?.value && moduleResourceMappings.moduleEnvironments) {
-          const oldEnvironmentId = properties.moduleEnvironmentId.value;
-          if (moduleResourceMappings.moduleEnvironments[oldEnvironmentId]) {
-            properties.moduleEnvironmentId.value = moduleResourceMappings.moduleEnvironments[oldEnvironmentId];
           }
         }
       }

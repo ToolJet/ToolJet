@@ -14,3 +14,10 @@
     }
     background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface));
 }
+
+.dropdownV2-option-caption {
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--cc-placeholder-text);
+    margin-top: 2px;
+}

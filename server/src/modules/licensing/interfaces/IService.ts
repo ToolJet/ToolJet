@@ -25,6 +25,13 @@ export interface ILicenseOrganizationService {
 }
 
 export abstract class LicenseInitService {
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   * Used in migrations:
+   * - 1720434737529-MigrateCustomGroupToNewUserGroup.ts
+   * - 1742369617678-EnforceNewBasicPlanLimits.ts
+   * - 1720352990850-CreateDefaultGroupInExistingWorkspace.ts
+   */
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;

@@ -1,9 +1,10 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
+import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
 export const appsService = {
+  getAppAuthenticationConfig,
   validatePrivateApp,
   validateReleasedApp,
   setVisibility,
@@ -31,6 +32,13 @@ export const appsService = {
   getWorkflowLimit,
   releaseVersion,
 };
+
+function getAppAuthenticationConfig(slug) {
+  const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
+  return fetch(`${config.apiUrl}/apps/app-authentication-config/${slug}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
+}
 
 function getWorkflows(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -244,6 +252,8 @@ function importResource(body, appType) {
 }
 
 function cloneResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
