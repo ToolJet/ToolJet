@@ -8,6 +8,7 @@ import {
     releaseApp,
 } from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -302,6 +303,7 @@ describe("Custom Group Granular Access", () => {
         };
 
         cy.defaultWorkspaceLogin();
+        cleanAllUsers();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -463,7 +465,6 @@ describe("Custom Group Granular Access", () => {
         let appId1, appId2, groupId1;
 
         cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
-
         loginAsAdmin();
         createAndReleaseApp(data.appName, {
             componentValue: `{{globals.environment.name}}`,
@@ -915,7 +916,7 @@ describe("Custom Group Granular Access", () => {
                     canAccessProduction: false,
                     canAccessReleased: false,
                 });
-                cy.apiUpdateAllowSignUp(true, "organization");
+                cy.apiUpdateAllowSignUp(true, "organization").then(()=>{
                 cy.apiLogout();
 
                 //Scenario G : Signing-up with app preview link and should land on app preview
@@ -938,6 +939,7 @@ describe("Custom Group Granular Access", () => {
                 signup(user1, email1);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
             });
+        });
     });
 });
 

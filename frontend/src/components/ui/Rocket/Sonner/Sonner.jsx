@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+// eslint-disable-next-line import/no-unresolved
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
