@@ -274,35 +274,29 @@ export class VersionService implements IVersionService {
       });
     }
     if (!version) {
-      // Unpinned ref: moduleVersionId.value is an org branch name. Prefer the consumer's
-      // current branch (appId, branchId); fall back to the default branch for post-merge
-      // stale refs and embedded viewers that send no x-branch-id.
-      const orgBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-        where: { name: versionName, organizationId: user.organizationId },
-      });
-      if (orgBranch) {
-        if (branchId) {
+      // Unpinned ref: moduleVersionId.value is an org branch name. Resolve to the
+      // consumer's current branch first, then the org's default branch. Runs whether
+      // or not a WorkspaceBranch with that name exists — covers post-merge stale refs,
+      // never-pulled branches, and embedded viewers without x-branch-id.
+      if (branchId) {
+        version = await this.versionRepository.manager.findOne(AppVersion, {
+          where: { appId: app.id, branchId },
+          order: { createdAt: 'DESC' },
+        });
+      }
+      if (!version) {
+        const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+        });
+        if (defaultBranch) {
           version = await this.versionRepository.manager.findOne(AppVersion, {
-            where: { appId: app.id, branchId },
+            where: {
+              appId: app.id,
+              branchId: defaultBranch.id,
+              versionType: AppVersionType.VERSION,
+            },
             order: { createdAt: 'DESC' },
           });
-        }
-        if (!version) {
-          const defaultBranch = orgBranch.isDefault
-            ? orgBranch
-            : await this.versionRepository.manager.findOne(WorkspaceBranch, {
-                where: { organizationId: user.organizationId, isDefault: true },
-              });
-          if (defaultBranch) {
-            version = await this.versionRepository.manager.findOne(AppVersion, {
-              where: {
-                appId: app.id,
-                branchId: defaultBranch.id,
-                versionType: AppVersionType.VERSION,
-              },
-              order: { createdAt: 'DESC' },
-            });
-          }
         }
       }
     }
