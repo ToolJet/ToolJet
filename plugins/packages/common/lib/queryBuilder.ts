@@ -447,6 +447,20 @@ export class QueryBuilder {
     this._assertTableName(tableName, 'delete_rows');
 
     const { schema, limit: rawLimit, where_filters } = deleteRows;
+
+    // Empty filter values are ignored, but column names are required if a value is provided
+    const validWhereFilters = Object.values(where_filters || {}).filter((filter) => {
+      const hasColumn = !!(filter.column && String(filter.column).trim());
+      const isValueEmpty = filter.value === undefined || filter.value === null || filter.value === '';
+      if (!hasColumn && isValueEmpty) return false; // skip fully empty
+      if (!hasColumn) throw new QueryBuilderError('A filter condition has a value but no column name specified');
+      return true;
+    });
+
+    if (validWhereFilters.length === 0) {
+      throw new QueryBuilderError('At least one filter condition is required for delete');
+    }
+
     const limitStr = rawLimit == null ? '' : String(rawLimit).trim();
     const limit = limitStr === '' ? undefined : limitStr;
     const table = this._buildTableRef(tableName, schema);

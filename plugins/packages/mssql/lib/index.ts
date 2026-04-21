@@ -84,6 +84,8 @@ function createSSHTunnel(sourceOptions: SourceOptions): Promise<SSHTunnel> {
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
+  // MSSQL hard limit is 2100 parameters per batch; use 2000 as a safe threshold
+  private static readonly MSSQL_PARAM_THRESHOLD = 2000;
   private STATEMENT_TIMEOUT;
 
   constructor() {
@@ -213,11 +215,9 @@ export default class MssqlQueryService implements QueryService {
         const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
         const { columns, where_filters } = queryOptions.update_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
-        if (allow_multiple_updates !== true && !hasAtLeastOneFilter) {
-          throw new Error(
-            'At least one filter condition is required. Enable "Allow this query to update multiple rows" to update without filters.'
-          );
-        }
+        if (allow_multiple_updates !== true && !hasAtLeastOneFilter)
+          throw new Error('At least one filter condition is required.');
+
         const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
           query: string;
           params: unknown[];
@@ -249,6 +249,7 @@ export default class MssqlQueryService implements QueryService {
 
       case 'delete_rows': {
         const { limit } = queryOptions;
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
         const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
         const { where_filters } = queryOptions.delete_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
@@ -263,47 +264,71 @@ export default class MssqlQueryService implements QueryService {
           params: unknown[];
         };
         const queryWithOutput = this.injectMssqlOutput(query, 'DELETED');
-        const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        const deletedRecords = this._extractRecordset(result).length;
 
-        if (zero_records_as_success === false && deletedRecords === 0) {
-          throw new Error('No rows were deleted.');
-        }
+        const deletedRecords = await knexInstance.transaction(async (trx) => {
+          const result = await trx.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+          const deletedRows = this._extractRecordset(result);
+
+          if (allow_multiple_updates === false && deletedRows.length > 1) {
+            throw new Error(
+              'Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.'
+            );
+          }
+
+          if (zero_records_as_success === false && deletedRows.length === 0) {
+            throw new Error('No rows were deleted.');
+          }
+
+          return deletedRows.length;
+        });
 
         return { status: 'ok', data: { deletedRecords } };
       }
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: records }) as {
-          query: string;
-          params: unknown[];
-        };
-        const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
-        const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        return { status: 'ok', data: this._extractRecordset(result) };
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const batchInsertQueries: { query: string; params: unknown[] }[] = recordBatches.map((batchRecords) => {
+          const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: batchRecords }) as {
+            query: string;
+            params: unknown[];
+          };
+          return { query, params };
+        });
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, batchInsertQueries);
+        return { status: 'ok', data: { affectedRows } };
       }
 
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          schema,
-          primary_key: primary_key_columns,
-          rows_update: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
-        return { status: 'ok', data, bulk_update_status: 'success' } as unknown as QueryResult;
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpdateQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            rows_update: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpdateQueries.push(...queries);
+        }
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, allUpdateQueries);
+        return { status: 'ok', data: { affectedRows }, bulk_update_status: 'success' } as unknown as QueryResult;
       }
 
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          schema,
-          primary_key: primary_key_columns,
-          row_upsert: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
-        return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpsertQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            row_upsert: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpsertQueries.push(...queries);
+        }
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, allUpsertQueries);
+        return { status: 'ok', data: { affectedRows }, bulk_upsert_status: 'success' } as unknown as QueryResult;
       }
 
       default:
@@ -370,14 +395,7 @@ export default class MssqlQueryService implements QueryService {
     options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
   ): Promise<unknown[]> {
     const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
-    const hasConstraints = allow_multiple_updates === false || zero_records_as_success === false;
-
     const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
-
-    if (!hasConstraints) {
-      const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-      return this._extractRecordset(result);
-    }
 
     // Wrap in a transaction so any thrown error automatically rolls back the write
     return knexInstance.transaction(async (trx) => {
@@ -403,19 +421,39 @@ export default class MssqlQueryService implements QueryService {
     return result;
   }
 
-  private async executeBulkQueriesInTransaction(
+  private async executeBulkQueriesAndCountAffected(
     knexInstance: Knex,
     queries: { query: string; params: unknown[] }[]
-  ): Promise<unknown[]> {
-    const allRows: unknown[] = [];
+  ): Promise<number> {
+    let totalAffectedRows = 0;
     await knexInstance.transaction(async (transaction) => {
       for (const { query, params } of queries) {
+        // upsert queries already embed OUTPUT INSERTED.* in each IF/ELSE branch;
+        // injectMssqlOutput leaves them unchanged and adds it to plain INSERT/UPDATE.
         const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
         const result = await transaction.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        allRows.push(...(result.recordset ?? []));
+        totalAffectedRows += this._extractRecordset(result).length;
       }
     });
-    return allRows;
+    return totalAffectedRows;
+  }
+
+  private computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const SAMPLE_SIZE = 500;
+    const sample =
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+    const numberOfColumns = Math.max(...sample.map((record) => Object.keys(record).length));
+    if (numberOfColumns === 0) return 1000;
+    return Math.max(1, Math.floor(MssqlQueryService.MSSQL_PARAM_THRESHOLD / numberOfColumns));
+  }
+
+  private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
+    const batches: RecordType[][] = [];
+    for (let startIndex = 0; startIndex < records.length; startIndex += batchSize) {
+      batches.push(records.slice(startIndex, startIndex + batchSize));
+    }
+    return batches;
   }
 
   private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
