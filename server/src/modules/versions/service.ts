@@ -2,7 +2,8 @@ import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -220,7 +221,7 @@ export class VersionService implements IVersionService {
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
         appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
       }
-      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
+      // Modules are branch-scoped like apps — same git-sync freeze applies.
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
@@ -242,8 +243,6 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
-    // need to add freeze version logic here
-    // need to add freeze version logic here
     return response;
   }
 
@@ -254,10 +253,7 @@ export class VersionService implements IVersionService {
     mode?: string,
     branchId?: string
   ): Promise<any> {
-    // Scope to the user's organization — co_relation_id is only unique per-org.
-    // Without this, findOne could return a module from a different workspace that
-    // shares the same co_relation_id (e.g. both workspaces pulled from the same git
-    // origin into the same Postgres DB).
+    // co_relation_id is only unique per-org — multiple orgs can share one after a git-origin clone.
     const app = await this.versionRepository.manager.findOne(App, {
       where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
       order: { createdAt: 'ASC' },
@@ -265,11 +261,7 @@ export class VersionService implements IVersionService {
     if (!app) {
       throw new NotFoundException('Module not found');
     }
-    // Prefer the branch-scoped, hydrated version when branchId is supplied.
-    // Fall back to any matching version on this app for backwards-compat with
-    // callers that haven't been updated to pass branchId yet. The fallback is
-    // non-deterministic across branches when the same version name exists on
-    // multiple branches — callers SHOULD pass branchId to avoid that.
+    // branchId is the hydrated path; the fallback is non-deterministic across branches.
     let version: AppVersion | null = null;
     if (branchId) {
       version = await this.versionRepository.manager.findOne(AppVersion, {
@@ -280,6 +272,39 @@ export class VersionService implements IVersionService {
       version = await this.versionRepository.manager.findOne(AppVersion, {
         where: { name: versionName, appId: app.id },
       });
+    }
+    if (!version) {
+      // Unpinned ref: moduleVersionId.value is an org branch name. Prefer the consumer's
+      // current branch (appId, branchId); fall back to the default branch for post-merge
+      // stale refs and embedded viewers that send no x-branch-id.
+      const orgBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { name: versionName, organizationId: user.organizationId },
+      });
+      if (orgBranch) {
+        if (branchId) {
+          version = await this.versionRepository.manager.findOne(AppVersion, {
+            where: { appId: app.id, branchId },
+            order: { createdAt: 'DESC' },
+          });
+        }
+        if (!version) {
+          const defaultBranch = orgBranch.isDefault
+            ? orgBranch
+            : await this.versionRepository.manager.findOne(WorkspaceBranch, {
+                where: { organizationId: user.organizationId, isDefault: true },
+              });
+          if (defaultBranch) {
+            version = await this.versionRepository.manager.findOne(AppVersion, {
+              where: {
+                appId: app.id,
+                branchId: defaultBranch.id,
+                versionType: AppVersionType.VERSION,
+              },
+              order: { createdAt: 'DESC' },
+            });
+          }
+        }
+      }
     }
     if (!version) {
       // Use NotFoundException (not findOneOrFail) so drift between parent
@@ -293,13 +318,44 @@ export class VersionService implements IVersionService {
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
-    const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
+    const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
+      const oldStatus = appVersion.status;
 
-    if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
-      await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, this.versionRepository.manager);
-    }
+      if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
+        await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+      }
 
-    await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+      await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
+
+      // When a module's default-branch version transitions DRAFT → saved, rewrite unpinned
+      // consumer refs to the saved name so the consumer's draft-check clears.
+      // Re-read post-update: rename-only DTOs omit `status` but the row may still have flipped.
+      const postUpdate = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
+      if (
+        app.type === APP_TYPES.MODULE &&
+        oldStatus === AppVersionStatus.DRAFT &&
+        postUpdate.status !== AppVersionStatus.DRAFT &&
+        postUpdate.versionType === AppVersionType.VERSION
+      ) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+        });
+        // Only pin when this save is happening on the default-branch version row.
+        // Accept null branchId for legacy rows predating branch assignment.
+        if (defaultBranch && (postUpdate.branchId == null || postUpdate.branchId === defaultBranch.id)) {
+          await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
+            manager,
+            app,
+            postUpdate.name,
+            user.organizationId
+          );
+        }
+      }
+
+      return appVersion;
+    });
+
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     } else if (

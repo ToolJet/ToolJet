@@ -66,6 +66,8 @@ const useAppData = (
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
+  // Reset per-module slices on in-session pin change — stale graph references old-version IDs.
+  const lastModuleVersionRef = useRef(versionId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
 
@@ -259,6 +261,10 @@ const useAppData = (
       return;
     }
     let cancelled = false;
+    if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
+      initModules(moduleId);
+    }
+    lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -266,12 +272,18 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // For public/unauthenticated viewers, use the pre-fetched definition
-      // from the parent app's response — the version API requires auth.
-      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
-      if (moduleDefinition) {
-        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
-        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      // Cached moduleDefinition is branch-scoped; authed viewers must refetch the pinned version.
+      const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
+      if (isUnauthenticated) {
+        const moduleDefinition = getModuleDefinition(appId);
+        if (moduleDefinition) {
+          // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+        } else if (versionId) {
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       } else if (versionId) {
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
@@ -297,7 +309,11 @@ const useAppData = (
       .then(async (result) => {
         if (cancelled) return;
         let appData = { ...result };
-        let editorEnvironment = result.editorEnvironment;
+        // The module-by-name endpoint returns the module alone, without `editorEnvironment`
+        // (that field is only populated by the parent app's fetchApp response). Fall back to
+        // the environmentId prop so downstream `.id` access doesn't throw and surface a
+        // misleading "Error fetching module data" toast.
+        let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
