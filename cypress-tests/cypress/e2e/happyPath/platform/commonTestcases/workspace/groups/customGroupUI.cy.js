@@ -89,6 +89,7 @@ describe("Custom groups UI and Functionality verification", () => {
     addGranularPermissionViaUI(appPermissionName, {
       resourceType: "app",
       permission: "edit",
+      environment: ["Development", "Staging", "Released app"],
       scope: "all",
     });
 
@@ -107,7 +108,7 @@ describe("Custom groups UI and Functionality verification", () => {
     });
 
     verifyGranularAccessByRole("builder");
-    verifyGranularEditModal("custom");
+    verifyGranularEditModal("custom","builder");
   };
 
   const verifyAppGranularModalFlow = (groupName) => {
@@ -119,6 +120,20 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.wait(2000);
     cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
+
+    cy.get(groupsSelector.envContainerArrowIcon).click();
+    cy.get('[role="listbox"]').should("be.visible");
+    // Check all → verify all checked
+    cy.get('[data-cy="environment-check-*"]').check();
+    cy.get('[data-cy^="environment-check-"]').each(($el) => {
+        cy.wrap($el).should("be.checked");
+    });
+    // Uncheck all → verify all unchecked
+    cy.get('[data-cy="environment-check-*"]').uncheck();
+    cy.get('[data-cy^="environment-check-"]').each(($el) => {
+        cy.wrap($el).should("not.be.checked");
+    });
+    cy.get(groupsSelector.envContainerArrowIcon).click();
 
     verifyGranularPermissionModalStates("app", "custom");
 

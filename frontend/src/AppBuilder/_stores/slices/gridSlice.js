@@ -371,7 +371,8 @@ export const createGridSlice = (set, get) => ({
           : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
-      const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const oldHeight =
+        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
       const dynamicHeightDifference = newHeight - oldHeight;
 
       // If the dynamic height difference is 0 and the component is not a container, we return
@@ -536,10 +537,29 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
+    const {
+      clearSelectedComponents,
+      isGroupResizing,
+      isGroupDragging,
+      setCanvasHeaderSelected,
+      setCanvasFooterSelected,
+      draggingComponentId,
+      resizingComponentId,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
+    const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
+
+    const isMovingComponent = draggingComponentId || resizingComponentId || isGroupDragging || isGroupResizing;
+
+    if (!isMovingComponent && isClickedOnCanvasHeader) {
+      setCanvasHeaderSelected(true);
+    } else if (!isMovingComponent && isClickedOnCanvasFooter) {
+      setCanvasFooterSelected(true);
+    }
 
     // Check if any inspector popover is currently open
     const isInspectorPopoverOpen = () => {

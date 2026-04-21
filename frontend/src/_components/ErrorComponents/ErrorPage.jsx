@@ -1,5 +1,6 @@
 import { ERROR_MESSAGES } from '@/_helpers/constants';
 import { redirectToDashboard, getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { eraseCookie } from '@/_helpers/cookie';
 import React, { useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
@@ -145,7 +146,10 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
           {errorMsg?.cta ? (
             <button
               className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
-              onClick={() => redirectToDashboard()}
+              onClick={() => {
+                eraseCookie('redirectPath');
+                redirectToDashboard();
+              }}
               data-cy="back-to-home-button"
             >
               {t('globals.workspace-modal.continue-btn', errorMsg.cta)}

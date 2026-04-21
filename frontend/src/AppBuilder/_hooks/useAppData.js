@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   appEnvironmentService,
   appService,
   appsService,
   appVersionService,
   dataqueryService,
+  dataQueryFolderService,
   orgEnvironmentConstantService,
   authenticationService,
   customStylesService,
@@ -26,6 +27,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -75,6 +77,8 @@ const useAppData = (
   const setPages = useStore((state) => state.setPages);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const setFolders = useStore((state) => state.queryFolders?.setFolders);
+  const setFolderMappings = useStore((state) => state.queryFolders?.setFolderMappings);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const setComponentNameIdMapping = useStore((state) => state.setComponentNameIdMapping);
   const initDependencyGraph = useStore((state) => state.initDependencyGraph);
@@ -111,12 +115,34 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
+  const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
+  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+
+  const fetchAllModules = useCallback(async () => {
+    const allModules = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    while (currentPage <= totalPages) {
+      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const pageModules = data?.apps || [];
+
+      allModules.push(...pageModules);
+
+      const pageCount = Number(data?.meta?.total_pages);
+      totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+      currentPage += 1;
+    }
+
+    return allModules;
+  }, []);
 
   const themeAccess = useThemeAccess();
   const detectThemeChange = useStore((state) => state.detectThemeChange);
@@ -242,7 +268,7 @@ const useAppData = (
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -308,10 +334,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -337,7 +365,10 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // appId prop is undefined for public app viewers (AppsRoute skips onValidSession → extraProps never set).
+        // Fall back to appData response so isReleasedApp evaluates correctly and the title omits "Preview -".
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
 
         setApp(
           {
@@ -486,6 +517,18 @@ const useAppData = (
             moduleId
           );
         }
+
+        if (mode === 'edit' && !moduleMode && setFolders) {
+          const versionId = appData.editing_version?.id || appData.current_version_id;
+          dataQueryFolderService
+            .getAll(versionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
+        }
+
         const constants = constantsResp?.constants;
 
         if (constants) {
@@ -556,19 +599,47 @@ const useAppData = (
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady) {
+    if (isComponentLayoutReady && isLicenseFetched) {
       mode === 'edit' && initSuggestions(moduleId);
-      runOnLoadQueries(moduleId).then(() => {
+
+      const loadLibrariesAndRun = async () => {
+        // Load JS libraries and preloaded JS from globalSettings before running queries
+        const globalSettings = useStore.getState().globalSettings;
+        const jsLibraries = globalSettings?.libraries?.javascript || [];
+        const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
+
+        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
+
+        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+          setJsLibraryLoading(true);
+          try {
+            const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
+
+            // Execute preloaded JS — its returned exports merge into the registry
+            const preloadedExports = await executePreloadedJS(preloadedJS, registry);
+            const fullRegistry = { ...registry, ...preloadedExports };
+
+            setJsLibraryRegistry(fullRegistry);
+          } catch (error) {
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
+          } finally {
+            setJsLibraryLoading(false);
+          }
+        }
+
+        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      };
+
+      loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, moduleId, mode]);
+  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
-      page: pageTitles.EDITOR,
+      page: mode === 'edit' ? pageTitles.EDITOR : pageTitles.VIEWER,
       appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
@@ -627,7 +698,9 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // See comment at first effectiveAppId usage above
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.name,
           appId: appData.id,
@@ -694,6 +767,20 @@ const useAppData = (
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 
+        if (setFolders) {
+          setFolders([]);
+          setFolderMappings([]);
+          if (mode === 'edit') {
+            dataQueryFolderService
+              .getAll(currentVersionId)
+              .then((folderData) => {
+                setFolders(folderData.folders ?? []);
+                setFolderMappings(folderData.folderMappings ?? []);
+              })
+              .catch(() => {});
+          }
+        }
+
         try {
           const exposedTheme =
             appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
@@ -729,15 +816,21 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(0, '', '', 'module').then((data) => {
-            setModulesIsLoading(false);
-            setModulesList(data.apps);
-          });
+          fetchAllModules()
+            .then((modules) => {
+              setModulesList(modules);
+            })
+            .catch((error) => {
+              console.error('Failed to preload modules', error);
+            })
+            .finally(() => {
+              setModulesIsLoading(false);
+            });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
 
   return appTypeRef.current;
 };
