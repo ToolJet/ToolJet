@@ -439,9 +439,9 @@
           "description": "Select the table to update",
           "placeholder": "Select table"
         },
-        "primary_key_columns": {
+        "primary_key_column": {
           "label": "Primary key column(s)",
-          "key": "primary_key_columns",
+          "key": "primary_key_column",
           "type": "codehinter",
           "lineNumbers": false,
           "description": "Enter primary key column name or an array for composite keys",

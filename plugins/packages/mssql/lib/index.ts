@@ -300,7 +300,7 @@ export default class MssqlQueryService implements QueryService {
       }
 
       case 'bulk_update_pkey': {
-        const { primary_key_columns, records } = queryOptions;
+        const { primary_key_column: primary_key_columns, records } = queryOptions;
         const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
         const allUpdateQueries: { query: string; params: unknown[] }[] = [];
         for (const batchRecords of recordBatches) {
@@ -692,30 +692,6 @@ export default class MssqlQueryService implements QueryService {
     } else {
       return await this.buildConnection(sourceOptions);
     }
-  }
-
-  buildBulkUpdateQuery(queryOptions: QueryOptions): string {
-    let queryText = '';
-
-    const { table, primary_key_column, records } = queryOptions;
-
-    for (const record of records) {
-      const primaryKeyValue =
-        typeof record[primary_key_column] === 'string' ? `'${record[primary_key_column]}'` : record[primary_key_column];
-
-      queryText = `${queryText} UPDATE ${table} SET`;
-
-      for (const key of Object.keys(record)) {
-        if (key !== primary_key_column) {
-          queryText = ` ${queryText} ${key} = '${record[key]}',`;
-        }
-      }
-
-      queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primary_key_column} = ${primaryKeyValue};`;
-    }
-
-    return queryText.trim();
   }
 
   async listTables(

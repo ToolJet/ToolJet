@@ -35,7 +35,7 @@ export type QueryOptions = {
   mode: string;
   table: string;
   schema?: string;
-  primary_key_column?: string;
+  primary_key_column?: string | string[];
   primary_key_columns?: string | string[];
   records: Record<string, unknown>[];
   query_params: string[][];
