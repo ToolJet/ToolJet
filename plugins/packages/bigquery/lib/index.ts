@@ -305,9 +305,11 @@ export default class Bigquery implements QueryService {
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const refreshToken = sourceOptions['refresh_token'];
+    const location = this.getOptionValue(sourceOptions, 'location');
     //Internally the access token is refrshed and cached by google-auth-library
     return new BigQuery({
       projectId,
+      ...(location ? { location } : {}),
       credentials: {
         type: 'authorized_user',
         client_id: clientId,
@@ -319,6 +321,7 @@ export default class Bigquery implements QueryService {
 
   private getServiceAccountConnection(sourceOptions: any): BigQuery {
     const privateKey = this.getPrivateKey(this.getOptionValue(sourceOptions, 'private_key'));
+    const location = this.getOptionValue(sourceOptions, 'location');
     let scopes: string[] = [];
     const scopeValue = this.getOptionValue(sourceOptions, 'scope');
     if (scopeValue) {
@@ -332,6 +335,7 @@ export default class Bigquery implements QueryService {
         private_key: privateKey?.private_key,
       },
       ...(scopes.length > 0 ? { scopes } : {}),
+      ...(location ? { location } : {}),
     });
   }
 
