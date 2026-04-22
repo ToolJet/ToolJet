@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { Button, Combobox, ComboboxInput, ComboboxList, ComboboxItem, ComboboxEmpty } from '@/components/ui/Rocket';
-import { FieldRow, ComboboxContent } from './shared';
+import { Button } from '@/components/ui/Rocket';
+import { FieldRow, OptionCombobox } from './shared';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, component }) {
-  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [appOptions, setAppOptions] = useState([]);
   const queryParams = event.queryParams ?? [];
@@ -17,8 +15,6 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
       .finally(() => setIsLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const selectedApp = appOptions.find((o) => o.value === event.slug) ?? null;
 
   const updateQueryParams = (next) => handlerChanged(eventIndex, 'queryParams', next);
 
@@ -33,26 +29,14 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
   const deleteQueryParam = (index) => updateQueryParams(queryParams.filter((_, i) => i !== index));
 
   return (
-    <div className="tw-flex tw-flex-col tw-gap-[15px]" data-cy="go-to-app-panel">
+    <div className="tw-flex tw-flex-col tw-gap-3" data-cy="go-to-app-panel">
       <FieldRow label="App" dataCy="go-to-app-label">
-        <Combobox
-          items={appOptions}
-          itemToStringLabel={(item) => item?.name ?? ''}
-          value={selectedApp}
-          onValueChange={(item) => handlerChanged(eventIndex, 'slug', item?.value ?? null)}
-        >
-          <ComboboxInput placeholder={isLoading ? 'Loading…' : t('globals.select', 'Select') + '...'} />
-          <ComboboxContent>
-            <ComboboxList>
-              {(item) => (
-                <ComboboxItem key={item.value} value={item}>
-                  {item.name}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-          </ComboboxContent>
-        </Combobox>
+        <OptionCombobox
+          options={appOptions}
+          value={event.slug}
+          onChange={(value) => handlerChanged(eventIndex, 'slug', value)}
+          placeholder={isLoading ? 'Loading…' : undefined}
+        />
       </FieldRow>
 
       <div className="tw-flex tw-flex-col tw-gap-2">

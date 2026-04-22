@@ -25,16 +25,11 @@ import {
   SelectValue,
   SelectGroup,
   SelectLabel,
-  Combobox,
-  ComboboxInput,
-  ComboboxList,
-  ComboboxItem,
-  ComboboxEmpty,
   ToggleGroup as RocketToggleGroup,
   ToggleGroupItem as RocketToggleGroupItem,
 } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
-import { FieldRow, SelectContent, ComboboxContent } from './ActionConfigurationPanels/shared';
+import { FieldRow, SelectContent, OptionCombobox } from './ActionConfigurationPanels/shared';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -614,7 +609,7 @@ export const EventManager = ({
           )}
           <div
             className={cn(
-              'tw-flex tw-flex-col tw-gap-[15px]',
+              'tw-flex tw-flex-col tw-gap-3',
               !(actionLookup[event.actionId]?.options?.length > 0) && 'tw-mt-3'
             )}
           >
@@ -695,61 +690,21 @@ export const EventManager = ({
 
             {event.actionId === 'show-modal' && (
               <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
-                {(() => {
-                  const modalOptions = [...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')];
-                  const selectedId = event.modal?.id ?? event.modal;
-                  const selected = modalOptions.find((o) => o.value === selectedId) ?? null;
-                  return (
-                    <Combobox
-                      items={modalOptions}
-                      itemToStringLabel={(item) => item?.name ?? ''}
-                      value={selected}
-                      onValueChange={(item) => handlerChanged(index, 'modal', item?.value ?? null)}
-                    >
-                      <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                      <ComboboxContent>
-                        <ComboboxList>
-                          {(item) => (
-                            <ComboboxItem key={item.value} value={item}>
-                              {item.name}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                        <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                      </ComboboxContent>
-                    </Combobox>
-                  );
-                })()}
+                <OptionCombobox
+                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  value={event.modal?.id ?? event.modal}
+                  onChange={(value) => handlerChanged(index, 'modal', value)}
+                />
               </FieldRow>
             )}
 
             {event.actionId === 'close-modal' && (
               <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
-                {(() => {
-                  const modalOptions = [...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')];
-                  const selectedId = event.modal?.id ?? event.modal;
-                  const selected = modalOptions.find((o) => o.value === selectedId) ?? null;
-                  return (
-                    <Combobox
-                      items={modalOptions}
-                      itemToStringLabel={(item) => item?.name ?? ''}
-                      value={selected}
-                      onValueChange={(item) => handlerChanged(index, 'modal', item?.value ?? null)}
-                    >
-                      <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                      <ComboboxContent>
-                        <ComboboxList>
-                          {(item) => (
-                            <ComboboxItem key={item.value} value={item}>
-                              {item.name}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                        <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                      </ComboboxContent>
-                    </Combobox>
-                  );
-                })()}
+                <OptionCombobox
+                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  value={event.modal?.id ?? event.modal}
+                  onChange={(value) => handlerChanged(index, 'modal', value)}
+                />
               </FieldRow>
             )}
 
@@ -768,56 +723,36 @@ export const EventManager = ({
             {['run-query', 'reset-query'].includes(event.actionId) && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
-                  {(() => {
-                    const queryOptions = constructDataQueryOptions();
-                    const selected = queryOptions.find((o) => o.value === event?.queryId) ?? null;
-                    return (
-                      <div data-cy="query-selection-field">
-                        <Combobox
-                          items={queryOptions}
-                          itemToStringLabel={(item) => item?.name ?? ''}
-                          value={selected}
-                          onValueChange={(item) => {
-                            const value = item?.value;
-                            if (value == null) return;
-                            const query = dataQueries.find((dataquery) => dataquery.id === value);
-                            if (isModuleEditor && query === undefined) {
-                              handleQueryChange(index, {
-                                queryId: value,
-                                queryName: moduleInputDummyQueries[value],
-                                parameters: {},
-                              });
-                            } else {
-                              const parameters = (query?.options?.parameters ?? []).reduce(
-                                (paramObj, param) => ({
-                                  ...paramObj,
-                                  [param.name]: param.defaultValue,
-                                }),
-                                {}
-                              );
-                              handleQueryChange(index, {
-                                queryId: query.id,
-                                queryName: query.name,
-                                parameters: parameters,
-                              });
-                            }
-                          }}
-                        >
-                          <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                          <ComboboxContent>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item.value} value={item}>
-                                  {item.name}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                          </ComboboxContent>
-                        </Combobox>
-                      </div>
-                    );
-                  })()}
+                  <div data-cy="query-selection-field">
+                    <OptionCombobox
+                      options={constructDataQueryOptions()}
+                      value={event?.queryId}
+                      onChange={(value) => {
+                        if (value == null) return;
+                        const query = dataQueries.find((dataquery) => dataquery.id === value);
+                        if (isModuleEditor && query === undefined) {
+                          handleQueryChange(index, {
+                            queryId: value,
+                            queryName: moduleInputDummyQueries[value],
+                            parameters: {},
+                          });
+                        } else {
+                          const parameters = (query?.options?.parameters ?? []).reduce(
+                            (paramObj, param) => ({
+                              ...paramObj,
+                              [param.name]: param.defaultValue,
+                            }),
+                            {}
+                          );
+                          handleQueryChange(index, {
+                            queryId: query.id,
+                            queryName: query.name,
+                            parameters: parameters,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
                 </FieldRow>
                 {event.actionId === 'run-query' && (
                   <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
@@ -850,34 +785,15 @@ export const EventManager = ({
             {event.actionId === 'generate-file' && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.type', 'Type')} dataCy="type-label">
-                  {(() => {
-                    const typeOptions = [
+                  <OptionCombobox
+                    options={[
                       { name: 'CSV', value: 'csv' },
                       { name: 'Text', value: 'plaintext' },
                       { name: 'PDF', value: 'pdf' },
-                    ];
-                    const selected = typeOptions.find((o) => o.value === (event.fileType ?? 'csv')) ?? null;
-                    return (
-                      <Combobox
-                        items={typeOptions}
-                        itemToStringLabel={(item) => item?.name ?? ''}
-                        value={selected}
-                        onValueChange={(item) => handlerChanged(index, 'fileType', item?.value ?? null)}
-                      >
-                        <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                        <ComboboxContent>
-                          <ComboboxList>
-                            {(item) => (
-                              <ComboboxItem key={item.value} value={item}>
-                                {item.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                          <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                        </ComboboxContent>
-                      </Combobox>
-                    );
-                  })()}
+                    ]}
+                    value={event.fileType ?? 'csv'}
+                    onChange={(value) => handlerChanged(index, 'fileType', value)}
+                  />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.fileName', 'File name')} dataCy="file-name-label">
                   <CodeHinter
@@ -900,30 +816,11 @@ export const EventManager = ({
             {event.actionId === 'set-table-page' && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.table', 'Table')} dataCy="table-label">
-                  {(() => {
-                    const tableOptions = getComponentOptions('Table');
-                    const selected = tableOptions.find((o) => o.value === event.table) ?? null;
-                    return (
-                      <Combobox
-                        items={tableOptions}
-                        itemToStringLabel={(item) => item?.name ?? ''}
-                        value={selected}
-                        onValueChange={(item) => handlerChanged(index, 'table', item?.value ?? null)}
-                      >
-                        <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                        <ComboboxContent>
-                          <ComboboxList>
-                            {(item) => (
-                              <ComboboxItem key={item.value} value={item}>
-                                {item.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                          <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                        </ComboboxContent>
-                      </Combobox>
-                    );
-                  })()}
+                  <OptionCombobox
+                    options={getComponentOptions('Table')}
+                    value={event.table}
+                    onChange={(value) => handlerChanged(index, 'table', value)}
+                  />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.pageIndex', 'Page index')} dataCy="page-index-label">
                   <CodeHinter
@@ -1014,30 +911,11 @@ export const EventManager = ({
             {event.actionId === 'scroll-component-into-view' && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.component', 'Component')} dataCy="component-label">
-                  {(() => {
-                    const componentOptions = getComponentsOptionsWithoutModalChilds();
-                    const selected = componentOptions.find((o) => o.value === event.componentId) ?? null;
-                    return (
-                      <Combobox
-                        items={componentOptions}
-                        itemToStringLabel={(item) => item?.name ?? ''}
-                        value={selected}
-                        onValueChange={(item) => handlerChanged(index, 'componentId', item?.value ?? null)}
-                      >
-                        <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                        <ComboboxContent>
-                          <ComboboxList>
-                            {(item) => (
-                              <ComboboxItem key={item.value} value={item}>
-                                {item.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                          <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                        </ComboboxContent>
-                      </Combobox>
-                    );
-                  })()}
+                  <OptionCombobox
+                    options={getComponentsOptionsWithoutModalChilds()}
+                    value={event.componentId}
+                    onChange={(value) => handlerChanged(index, 'componentId', value)}
+                  />
                 </FieldRow>
                 <FieldRow label="Behaviour" dataCy="scroll-behavior-label">
                   <RocketSelect
@@ -1090,65 +968,25 @@ export const EventManager = ({
                   label={t('editor.inspector.eventManager.component', 'Component')}
                   dataCy="action-options-component-field-label"
                 >
-                  {(() => {
-                    const componentOptions = getComponentOptionsOfComponentsWithActions();
-                    const selected = componentOptions.find((o) => o.value === event?.componentId) ?? null;
-                    return (
-                      <div data-cy="action-options-component-selection-field">
-                        <Combobox
-                          items={componentOptions}
-                          itemToStringLabel={(item) => item?.name ?? ''}
-                          value={selected}
-                          onValueChange={(item) => handlerChanged(index, 'componentId', item?.value ?? null)}
-                        >
-                          <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                          <ComboboxContent>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item.value} value={item}>
-                                  {item.name}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                          </ComboboxContent>
-                        </Combobox>
-                      </div>
-                    );
-                  })()}
+                  <div data-cy="action-options-component-selection-field">
+                    <OptionCombobox
+                      options={getComponentOptionsOfComponentsWithActions()}
+                      value={event?.componentId}
+                      onChange={(value) => handlerChanged(index, 'componentId', value)}
+                    />
+                  </div>
                 </FieldRow>
                 <FieldRow
                   label={t('editor.inspector.eventManager.action', 'Action')}
                   dataCy="action-options-action-field-label"
                 >
-                  {(() => {
-                    const actionOpts = getComponentActionOptions(event?.componentId);
-                    const selected = actionOpts.find((o) => o.value === event?.componentSpecificActionHandle) ?? null;
-                    return (
-                      <div data-cy="action-options-action-selection-field">
-                        <Combobox
-                          items={actionOpts}
-                          itemToStringLabel={(item) => item?.name ?? ''}
-                          value={selected}
-                          onValueChange={(item) =>
-                            handlerChanged(index, 'componentSpecificActionHandle', item?.value ?? null)
-                          }
-                        >
-                          <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                          <ComboboxContent>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item.value} value={item}>
-                                  {item.name}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                          </ComboboxContent>
-                        </Combobox>
-                      </div>
-                    );
-                  })()}
+                  <div data-cy="action-options-action-selection-field">
+                    <OptionCombobox
+                      options={getComponentActionOptions(event?.componentId)}
+                      value={event?.componentSpecificActionHandle}
+                      onChange={(value) => handlerChanged(index, 'componentSpecificActionHandle', value)}
+                    />
+                  </div>
                 </FieldRow>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
@@ -1162,7 +1000,6 @@ export const EventManager = ({
                     const currentValue = valueForComponentSpecificActionHandle(event, param);
 
                     if (param.type === 'select') {
-                      const selected = (optionsList ?? []).find((o) => o.value === currentValue) ?? null;
                       return (
                         <FieldRow
                           key={param.handle}
@@ -1170,31 +1007,13 @@ export const EventManager = ({
                           dataCy={`action-options-${param?.displayName}-field-label`}
                         >
                           <div data-cy="action-options-action-selection-field">
-                            <Combobox
-                              items={optionsList ?? []}
-                              itemToStringLabel={(item) => item?.name ?? ''}
-                              value={selected}
-                              onValueChange={(item) =>
-                                onChangeHandlerForComponentSpecificActionHandle(
-                                  item?.value ?? null,
-                                  index,
-                                  param,
-                                  event
-                                )
+                            <OptionCombobox
+                              options={optionsList ?? []}
+                              value={currentValue}
+                              onChange={(value) =>
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event)
                               }
-                            >
-                              <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                              <ComboboxContent>
-                                <ComboboxList>
-                                  {(item) => (
-                                    <ComboboxItem key={item.value} value={item}>
-                                      {item.name}
-                                    </ComboboxItem>
-                                  )}
-                                </ComboboxList>
-                                <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                              </ComboboxContent>
-                            </Combobox>
+                            />
                           </div>
                         </FieldRow>
                       );
@@ -1229,35 +1048,16 @@ export const EventManager = ({
             {event.actionId === 'toggle-app-mode' && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.appMode', 'App mode')} dataCy="app-mode-label">
-                  {(() => {
-                    const appModeOptions = [
-                      { name: 'Light', value: 'light' },
-                      { name: 'Dark', value: 'dark' },
-                    ];
-                    const selected = appModeOptions.find((o) => o.value === event?.appMode) ?? null;
-                    return (
-                      <div data-cy="query-selection-field">
-                        <Combobox
-                          items={appModeOptions}
-                          itemToStringLabel={(item) => item?.name ?? ''}
-                          value={selected}
-                          onValueChange={(item) => handlerChanged(index, 'appMode', item?.value ?? null)}
-                        >
-                          <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-                          <ComboboxContent>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item.value} value={item}>
-                                  {item.name}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-                          </ComboboxContent>
-                        </Combobox>
-                      </div>
-                    );
-                  })()}
+                  <div data-cy="query-selection-field">
+                    <OptionCombobox
+                      options={[
+                        { name: 'Light', value: 'light' },
+                        { name: 'Dark', value: 'dark' },
+                      ]}
+                      value={event?.appMode}
+                      onChange={(value) => handlerChanged(index, 'appMode', value)}
+                    />
+                  </div>
                 </FieldRow>
                 <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>

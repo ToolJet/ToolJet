@@ -2,13 +2,12 @@ import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { Button, Combobox, ComboboxInput, ComboboxList, ComboboxItem, ComboboxEmpty } from '@/components/ui/Rocket';
-import { FieldRow, ComboboxContent } from './shared';
+import { Button } from '@/components/ui/Rocket';
+import { FieldRow, OptionCombobox } from './shared';
 
 export function SwitchPage({ getPages, event, handlerChanged, eventIndex, component }) {
   const { t } = useTranslation();
   const pageOptions = getPages();
-  const selectedPage = pageOptions.find((o) => o.value === event.pageId) ?? null;
   const queryParams = event.queryParams ?? [];
 
   const updateQueryParams = (next) => handlerChanged(eventIndex, 'queryParams', next);
@@ -24,26 +23,13 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, compon
   const deleteQueryParam = (index) => updateQueryParams(queryParams.filter((_, i) => i !== index));
 
   return (
-    <div className="tw-flex tw-flex-col tw-gap-[15px]" data-cy="switch-page-label-and-input">
+    <div className="tw-flex tw-flex-col tw-gap-3" data-cy="switch-page-label-and-input">
       <FieldRow label={t('globals.page', 'Page')} dataCy="switch-page-label">
-        <Combobox
-          items={pageOptions}
-          itemToStringLabel={(item) => item?.name ?? ''}
-          value={selectedPage}
-          onValueChange={(item) => handlerChanged(eventIndex, 'pageId', item?.value ?? null)}
-        >
-          <ComboboxInput placeholder={t('globals.select', 'Select') + '...'} />
-          <ComboboxContent>
-            <ComboboxList>
-              {(item) => (
-                <ComboboxItem key={item.value} value={item}>
-                  {item.name}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-            <ComboboxEmpty>{t('globals.noResultsFound', 'No results found.')}</ComboboxEmpty>
-          </ComboboxContent>
-        </Combobox>
+        <OptionCombobox
+          options={pageOptions}
+          value={event.pageId}
+          onChange={(value) => handlerChanged(eventIndex, 'pageId', value)}
+        />
       </FieldRow>
 
       <div className="tw-flex tw-flex-col tw-gap-2">
