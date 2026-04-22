@@ -360,6 +360,7 @@ export class VersionService implements IVersionService {
       // of falling through to the active-draft fallback.
       if (
         app.type === APP_TYPES.MODULE &&
+        appVersion.versionType === AppVersionType.VERSION &&
         appVersionUpdateDto?.name &&
         appVersion.name !== appVersionUpdateDto.name
       ) {
