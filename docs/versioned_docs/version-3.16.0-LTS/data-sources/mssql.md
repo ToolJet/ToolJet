@@ -68,7 +68,7 @@ Provide the following details:
 - **Client ID** – The Application (client) ID from the Azure app registration
 - **Client Secret** – The client secret value generated for the app
 
-<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
 
 ### Enabling Encryption with a Self-Signed Certificate
 
@@ -200,6 +200,8 @@ Retrieve records from the selected table with optional filtering, sorting, and p
 - **Limit**: Restricts the number of rows returned in the result.
 - **Offset**: Skips a specified number of rows before starting to return results.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/listrows-gui.png" alt="MSsql list row gui mode"/>
+
 ### Create Rows
 Insert a new row into the selected table by providing values for the required columns.
 
@@ -207,6 +209,8 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Optional Parameters
 - **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/createrows-gui.png" alt="MSsql create row gui mode"/>
 
 ### Update Rows
 Modify existing row values in the selected table based on the specified conditions or identifiers.
@@ -219,6 +223,8 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 #### Optional Parameters
 - **Filter**: Apply conditions to identify which row(s) should be updated.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/updaterows-gui.png" alt="MSsql update row gui mode"/>
+
 ### Delete Rows
 Remove one or more rows from the selected table that match the given conditions.
 
@@ -228,6 +234,8 @@ Remove one or more rows from the selected table that match the given conditions.
 #### Optional Parameters
 - **Limit**: Specify the maximum number of rows to delete.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/deleterows-gui.png" alt="MSsql delete row gui mode"/>
+
 ### Upsert Rows
 Insert a new row or update an existing row if a matching primary or unique key already exists.
 
@@ -236,6 +244,8 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 #### Required Parameters
 - **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
 - **Columns**: Provide the column names and values to be inserted or updated.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/upsertrows-gui.png" alt="MSsql upsert row gui mode"/>
 
 ### Bulk Insert
 Inserts multiple rows into the table in a single operation using an array of records.
@@ -250,6 +260,8 @@ Inserts multiple rows into the table in a single operation using an array of rec
 {{components.filepicker1.file[0].parsedData}}
 ```
 </details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-insert-gui.png" alt="MSsql bulk insert gui mode"/>
 
 ### Bulk Update using Primary Key
 Update multiple existing rows at once by matching records using their primary key values.
@@ -271,6 +283,8 @@ Update multiple existing rows at once by matching records using their primary ke
 ```
 </details>
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-update-gui.png" alt="MSsql bulk update gui mode"/>
+
 ### Bulk Upsert using Primary Key
 Insert multiple new rows or update existing ones by matching rows using primary key values.
 
@@ -286,6 +300,8 @@ In this operation, if a row with the matching primary key exists, it is updated;
 {{components.filepicker1.file[0].parsedData}}
 ```
 </details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-upsert-gui.png" alt="MSsql bulk upsert gui mode"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
