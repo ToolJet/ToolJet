@@ -21,14 +21,12 @@ import {
   EmptyContent,
   Select as RocketSelect,
   SelectTrigger,
-  SelectContent as RocketSelectContent,
   SelectItem,
   SelectValue,
   SelectGroup,
   SelectLabel,
   Combobox,
   ComboboxInput,
-  ComboboxContent as RocketComboboxContent,
   ComboboxList,
   ComboboxItem,
   ComboboxEmpty,
@@ -36,6 +34,7 @@ import {
   ToggleGroupItem as RocketToggleGroupItem,
 } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
+import { FieldRow, SelectContent, ComboboxContent } from './ActionConfigurationPanels/shared';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -58,27 +57,6 @@ import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSl
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import './EventManager.scss';
-
-const FieldRow = ({ label, dataCy, children, className }) => (
-  <div className={cn('tw-flex tw-h-8 tw-items-center tw-justify-between', className)}>
-    <span data-cy={dataCy} className="tw-font-body-default tw-text-text-default">
-      {label}
-    </span>
-    <div className="tw-w-[168px]">{children}</div>
-  </div>
-);
-
-const POPOVER_MENU_Z = 'tw-z-[1043]';
-
-const isDarkThemeActive = () => typeof window !== 'undefined' && window.localStorage?.getItem('darkMode') === 'true';
-
-const SelectContent = ({ className, ...props }) => (
-  <RocketSelectContent {...props} className={cn(POPOVER_MENU_Z, isDarkThemeActive() && 'dark-theme', className)} />
-);
-
-const ComboboxContent = ({ className, ...props }) => (
-  <RocketComboboxContent {...props} className={cn(POPOVER_MENU_Z, isDarkThemeActive() && 'dark-theme', className)} />
-);
 
 export const EventManager = ({
   sourceId,
@@ -627,14 +605,19 @@ export const EventManager = ({
 
           {actionLookup[event.actionId]?.options?.length > 0 && (
             <div className="tw-my-3 tw-flex tw-h-5 tw-items-center tw-gap-1.5" data-cy="action-option">
-              <div className="tw-h-px tw-flex-1 tw-bg-border-weak" />
+              <div className="tw-h-px tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-border-dashed" />
               <span className="tw-font-title-small tw-text-text-placeholder">
                 {t('editor.inspector.eventManager.configureAction', 'Configure action')}
               </span>
-              <div className="tw-h-px tw-flex-1 tw-bg-border-weak" />
+              <div className="tw-h-px tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-border-dashed" />
             </div>
           )}
-          <div className="tw-flex tw-flex-col tw-gap-[15px]">
+          <div
+            className={cn(
+              'tw-flex tw-flex-col tw-gap-[15px]',
+              !(actionLookup[event.actionId]?.options?.length > 0) && 'tw-mt-3'
+            )}
+          >
             {event.actionId === 'show-alert' && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.message', 'Message')} dataCy="message-label">
@@ -706,7 +689,7 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
-                darkMode={darkMode}
+                component={component}
               />
             )}
 
@@ -1025,7 +1008,7 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
-                darkMode={darkMode}
+                component={component}
               />
             )}
             {event.actionId === 'scroll-component-into-view' && (
@@ -1367,14 +1350,14 @@ export const EventManager = ({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 data-cy="event-handler-card"
-                                className="tw-mb-1 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
+                                className="tw-mb-1 tw-h-14 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
                               >
                                 <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
                                   <div className="tw-flex tw-w-full tw-items-center tw-gap-2">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span
-                                          className="tw-min-w-0 tw-leading-[1.25rem] tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+                                          className="tw-min-w-0 tw-leading-5 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
                                           data-cy="event-handler-name"
                                         >
                                           {event?.name}
@@ -1391,7 +1374,7 @@ export const EventManager = ({
                                     </Tooltip>
                                     {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
                                     index === eventToDeleteLoaderIndex ? (
-                                      <Spinner size="default" />
+                                      <Spinner size="default" className="tw-text-icon-brand" />
                                     ) : (
                                       <Switch
                                         checked={!event.event.disabled}
