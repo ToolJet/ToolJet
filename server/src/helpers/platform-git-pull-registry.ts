@@ -6,7 +6,13 @@
  */
 
 export interface IPlatformGitPullService {
-  hydrateStubApp(stubApp: any, user: any, branchId?: string): Promise<any>;
+  hydrateStubApp(stubApp: any, user: any, branchId?: string, tagSha?: string, tagName?: string, useTagNameOnSubBranch?: boolean): Promise<any>;
+  /**
+   * Last path segment of an `appPath` like `apps/folder/my-app` → `my-app`, or
+   * `modules/my-module` → `my-module`. Used by callers that need to resolve a
+   * module/app name from moduleMeta/appMeta entries.
+   */
+  extractAppNameFromPath(appPath: string): string;
   /**
    * Given a parent app already materialised for a branch, look up every
    * ModuleViewer component's moduleAppId.value and hydrate any module that
