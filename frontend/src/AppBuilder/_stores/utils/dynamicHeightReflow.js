@@ -953,11 +953,21 @@ export const buildReflowPatch = ({
         // avoid affecting blocker math for unrelated widgets whose temp
         // heights might legitimately differ from canonical in nested
         // contexts (e.g., Listview row templates).
+        //
+        // The vertical-sandwich check (wTop >= vCanonicalBottom &&
+        // wTop < targetTopCanonical) mirrors the out-of-flow slot
+        // subtraction above. Without it, a sibling of V that sorts after
+        // V only by left/id (same canonical top) would wrongly have its
+        // shrinkage subtracted from V's gap — e.g., when Accordion
+        // collapses next to a tall Container, Container's constraint on
+        // a downstream Button must not be reduced by Accordion's shrink.
         let inFlowDelta = 0;
         for (let wi = vi + 1; wi < blockers.length; wi++) {
           const w = blockers[wi];
           if (!w.isInFlow) continue;
           if (w.id !== changedComponentId) continue;
+          const wTop = w.canonicalLayout?.top ?? 0;
+          if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
           const wCurrentHeight = w.currentBottom - w.currentTop;
           const wCanonicalHeight = w.canonicalLayout?.height ?? 0;
           inFlowDelta += wCurrentHeight - wCanonicalHeight;
