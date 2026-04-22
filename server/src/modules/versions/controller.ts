@@ -21,8 +21,8 @@ export class VersionController implements IVersionController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions')
-  fetchVersions(@App() app: AppEntity) {
-    return this.versionService.getAllVersions(app);
+  fetchVersions(@App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
+    return this.versionService.getAllVersions(app, branchId);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
