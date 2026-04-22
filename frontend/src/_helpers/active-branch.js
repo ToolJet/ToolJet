@@ -56,16 +56,18 @@ export function getActiveBranchId(orgId) {
 export function cleanupStaleBranchKeys(orgId) {
   const id = orgId || getOrgId();
   if (!id) return;
-  try {
-    const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
-    const stored = localStorage.getItem(currentKey);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (!parsed?.id) {
-        localStorage.removeItem(currentKey);
+  const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
+  for (const storage of [localStorage, sessionStorage]) {
+    try {
+      const stored = storage.getItem(currentKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!parsed?.id) {
+          storage.removeItem(currentKey);
+        }
       }
+    } catch {
+      // ignore storage errors
     }
-  } catch {
-    // ignore localStorage errors
   }
 }
