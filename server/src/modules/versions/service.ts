@@ -355,6 +355,23 @@ export class VersionService implements IVersionService {
           );
         }
       }
+      // When a module version is renamed, update all consumer ModuleViewer refs that were
+      // pinned to the old name so they continue to resolve to the correct version instead
+      // of falling through to the active-draft fallback.
+      if (
+        app.type === APP_TYPES.MODULE &&
+        appVersion.versionType === AppVersionType.VERSION &&
+        appVersionUpdateDto?.name &&
+        appVersion.name !== appVersionUpdateDto.name
+      ) {
+        await this.versionsUtilService.updateRenamedModuleVersionRefs(
+          manager,
+          app,
+          appVersion.name,
+          appVersionUpdateDto.name,
+          user.organizationId
+        );
+      }
 
       return appVersion;
     });
