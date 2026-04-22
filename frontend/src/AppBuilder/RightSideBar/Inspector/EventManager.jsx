@@ -1536,7 +1536,7 @@ export const EventManager = ({
   return (
     <>
       {renderHandlers(events)}
-      {renderAddHandlerBtn()}
+      <div className="[&_button]:tw-w-full">{renderAddHandlerBtn()}</div>
     </>
   );
 };
