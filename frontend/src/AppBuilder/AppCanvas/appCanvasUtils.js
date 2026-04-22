@@ -63,8 +63,16 @@ export const addNewWidgetToTheEditor = (
   let customLayouts = undefined;
 
   if (moduleInfo) {
+    // Default to unpinned: write the parent app's current branch name. On feature branches
+    // `currentBranch.name` is set; on main it's null, so fall back to the org's default branch
+    // (or 'main'). Unpinned refs resolve per parent context via fetchModules branch-scoping.
+    const storeState = useStore.getState();
+    const parentBranch = storeState.currentBranch;
+    const defaultBranch = (storeState.allBranches ?? []).find((b) => b.isDefault || b.is_default);
+    const unpinnedBranchName = parentBranch?.name ?? defaultBranch?.name ?? 'main';
+
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
+    componentData.definition.properties.moduleVersionId = { value: unpinnedBranchName };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 

@@ -3,6 +3,7 @@ import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditi
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
@@ -19,14 +20,12 @@ const AppCanvasBanner = ({ appId = '' }) => {
     fetchDevelopmentVersions(appId);
   }, [appId, environments]);
 
-  // Hide banner for modules — git sync banners are not applicable
-  if (isModuleEditor) return null;
-
   const renderBanner = () => {
-    if (currentMode === 'edit') {
-      return <FreezeVersionInfo hide={false} />;
+    if (currentMode !== 'edit') return null;
+    if (isModuleEditor) {
+      return <WorkspaceLockedBanner pageContext="modules" />;
     }
-    return null;
+    return <FreezeVersionInfo hide={false} />;
   };
   return <div>{renderBanner()}</div>;
 };

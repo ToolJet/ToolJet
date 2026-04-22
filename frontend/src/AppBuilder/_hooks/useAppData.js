@@ -66,6 +66,8 @@ const useAppData = (
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
+  // Reset per-module slices on in-session pin change — stale graph references old-version IDs.
+  const lastModuleVersionRef = useRef(versionId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
 
@@ -260,6 +262,10 @@ const useAppData = (
       return;
     }
     let cancelled = false;
+    if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
+      initModules(moduleId);
+    }
+    lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -267,14 +273,23 @@ const useAppData = (
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      // For public/unauthenticated viewers, use the pre-fetched definition
-      // from the parent app's response — the version API requires auth.
-      const moduleDefinition = isPublicAccess && getModuleDefinition(appId);
-      if (moduleDefinition) {
-        // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
-        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      // The moduleDefinition cached by the parent app reflects the module from the parent's current
+      // branch — not the specific version pinned on this ModuleViewer. Authenticated viewers call the
+      // version API directly to get the correct pinned version. Public (unauthenticated) viewers
+      // can't call that auth-gated API, so they fall back to the cached definition.
+      const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
+      if (isUnauthenticated) {
+        const moduleDefinition = getModuleDefinition(appId);
+        if (moduleDefinition) {
+          // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+        } else if (versionId) {
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        } else {
+          appDataPromise = appService.fetchApp(appId);
+        }
       } else if (versionId) {
-        appDataPromise = appVersionService.getAppVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
@@ -298,7 +313,11 @@ const useAppData = (
       .then(async (result) => {
         if (cancelled) return;
         let appData = { ...result };
-        let editorEnvironment = result.editorEnvironment;
+        // The module-by-name endpoint returns the module alone, without `editorEnvironment`
+        // (that field is only populated by the parent app's fetchApp response). Fall back to
+        // the environmentId prop so downstream `.id` access doesn't throw and surface a
+        // misleading "Error fetching module data" toast.
+        let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
@@ -371,7 +390,10 @@ const useAppData = (
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
         const homePageId =
-          appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
+          appData.editing_version?.homePageId ||
+          appData.editing_version?.home_page_id ||
+          appData.home_page_id ||
+          appData.homePageId;
 
         appTypeRef.current = appData.type;
 
@@ -385,7 +407,7 @@ const useAppData = (
             appName: appData.branch_app_name || appData.name,
             appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
-            currentAppEnvironmentId: editorEnvironment.id,
+            currentAppEnvironmentId: editorEnvironment?.id,
             isMaintenanceOn:
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
@@ -401,6 +423,7 @@ const useAppData = (
             appBuilderMode: appData.app_builder_mode || 'visual',
             isReleasedApp: isReleasedApp,
             appType: appData.type,
+            currentVersionId: appData.editing_version?.id || appData.current_version_id,
           },
           moduleId
         );
