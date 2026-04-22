@@ -441,33 +441,6 @@ export class VersionUtilService implements IVersionUtilService {
     );
   }
 
-  // Saved versions only exist on the default branch; apps/modules are created on feature
-  // branches and can be pulled onto main. A consumer on any branch (feature or main) that
-  // pins moduleVersionId="v1" can only refer to the default branch's saved "v1" — feature
-  // branches carry BRANCH-type versions with branch names, never saved version names. So
-  // we update all consumers across all branches in the org rather than scoping by branch.
-  async updateRenamedModuleVersionRefs(
-    manager: EntityManager,
-    moduleApp: App,
-    oldVersionName: string,
-    newVersionName: string,
-    organizationId: string
-  ): Promise<void> {
-    if (!moduleApp?.co_relation_id) return;
-    await manager.query(
-      `UPDATE components c
-       SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
-       FROM pages p
-       JOIN app_versions av ON av.id = p.app_version_id
-       JOIN apps a ON a.id = av.app_id
-       WHERE c.page_id = p.id
-         AND c.type = 'ModuleViewer'
-         AND a.organization_id = $2
-         AND c.properties->'moduleAppId'->>'value' = $3
-         AND c.properties->'moduleVersionId'->>'value' = $4`,
-      [newVersionName, organizationId, moduleApp.co_relation_id, oldVersionName]
-    );
-  }
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
