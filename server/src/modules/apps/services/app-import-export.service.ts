@@ -1225,6 +1225,14 @@ export class AppImportExportService {
           nonStubBranchVersions.length > 0
             ? nonStubBranchVersions
             : importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION);
+      } else if (isGitApp && branchId) {
+        // Hydrate path: the git folder being imported already represents one branch's
+        // snapshot. Every version file in it belongs here regardless of versionType /
+        // stored branchId — pull.service.ts re-parents and rewrites versionType, name,
+        // branchId on the imported row anyway. Stripping BRANCH-type versions here
+        // (the original cross-workspace-import rule) leaves zero versions and crashes
+        // hydration with "No versions found after import".
+        filteredAppVersions = importingAppVersions;
       } else {
         filteredAppVersions = importingAppVersions.filter(
           (v: any) => !v.versionType || v.versionType === AppVersionType.VERSION
