@@ -278,18 +278,18 @@ export class AppImportExportService {
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-      const legacyLocalDataSources =
-        appVersions?.length &&
-        (await manager
-          .createQueryBuilder(DataSource, 'data_sources')
-          .where('data_sources.appVersionId IN(:...versionId)', {
-            versionId: appVersions.map((v) => v.id),
-          })
-          .andWhere('data_sources.scope != :scope', {
-            scope: DataSourceScopes.GLOBAL,
-          })
-          .orderBy('data_sources.created_at', 'ASC')
-          .getMany());
+      const legacyLocalDataSources: DataSource[] = appVersions?.length
+        ? await manager
+            .createQueryBuilder(DataSource, 'data_sources')
+            .where('data_sources.appVersionId IN(:...versionId)', {
+              versionId: appVersions.map((v) => v.id),
+            })
+            .andWhere('data_sources.scope != :scope', {
+              scope: DataSourceScopes.GLOBAL,
+            })
+            .orderBy('data_sources.created_at', 'ASC')
+            .getMany()
+        : [];
 
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
@@ -302,16 +302,18 @@ export class AppImportExportService {
       let dataQueries: DataQuery[] = [];
       let dataSourceOptions: any[] = [];
 
-      const globalQueries: DataQuery[] = await manager
-        .createQueryBuilder(DataQuery, 'data_query')
-        .innerJoinAndSelect('data_query.dataSource', 'dataSource')
-        .where('data_query.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
-        })
-        .andWhere('dataSource.scope = :scope', {
-          scope: DataSourceScopes.GLOBAL,
-        })
-        .getMany();
+      const globalQueries: DataQuery[] = appVersions?.length
+        ? await manager
+            .createQueryBuilder(DataQuery, 'data_query')
+            .innerJoinAndSelect('data_query.dataSource', 'dataSource')
+            .where('data_query.appVersionId IN(:...versionId)', {
+              versionId: appVersions.map((v) => v.id),
+            })
+            .andWhere('dataSource.scope = :scope', {
+              scope: DataSourceScopes.GLOBAL,
+            })
+            .getMany()
+        : [];
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
@@ -361,16 +363,18 @@ export class AppImportExportService {
         });
       }
 
-      const pages = await manager
-        .createQueryBuilder(Page, 'page')
-        .leftJoinAndSelect('page.permissions', 'permission')
-        .leftJoinAndSelect('permission.users', 'pageUser')
-        .leftJoinAndSelect('pageUser.permissionGroup', 'permissionGroup')
-        .where('page.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
-        })
-        .orderBy('page.created_at', 'ASC')
-        .getMany();
+      const pages = appVersions?.length
+        ? await manager
+            .createQueryBuilder(Page, 'page')
+            .leftJoinAndSelect('page.permissions', 'permission')
+            .leftJoinAndSelect('permission.users', 'pageUser')
+            .leftJoinAndSelect('pageUser.permissionGroup', 'permissionGroup')
+            .where('page.appVersionId IN(:...versionId)', {
+              versionId: appVersions.map((v) => v.id),
+            })
+            .orderBy('page.created_at', 'ASC')
+            .getMany()
+        : [];
 
       const pagesWithPermissionGroups = pages.map((page) => {
         const groupPermission = page.permissions.find((perm) => perm.type === 'GROUP');
@@ -496,18 +500,22 @@ export class AppImportExportService {
         };
       });
 
-      const events = await manager
-        .createQueryBuilder(EventHandler, 'event_handlers')
-        .where('event_handlers.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
-        })
-        .orderBy('event_handlers.created_at', 'ASC')
-        .getMany();
+      const events = appVersions?.length
+        ? await manager
+            .createQueryBuilder(EventHandler, 'event_handlers')
+            .where('event_handlers.appVersionId IN(:...versionId)', {
+              versionId: appVersions.map((v) => v.id),
+            })
+            .orderBy('event_handlers.created_at', 'ASC')
+            .getMany()
+        : [];
 
       const appVersionIds = appVersions.map((v) => v.id);
-      const dataQueryFolders = await manager.find(DataQueryFolder, {
-        where: { appVersionId: In(appVersionIds) },
-      });
+      const dataQueryFolders = appVersionIds.length
+        ? await manager.find(DataQueryFolder, {
+            where: { appVersionId: In(appVersionIds) },
+          })
+        : [];
       const folderIds = dataQueryFolders.map((f) => f.id);
       const dataQueryIds = queriesWithPermissionGroups.map((q: any) => q.id);
       const allChildIds = [...folderIds, ...dataQueryIds];
