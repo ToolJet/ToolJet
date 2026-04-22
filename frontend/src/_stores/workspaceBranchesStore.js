@@ -48,13 +48,13 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
-            // Prefer localStorage branch over server-returned activeBranchId
+            // Prefer sessionStorage branch over server-returned activeBranchId
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
-            // Persist resolved branch to localStorage
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
@@ -76,7 +76,7 @@ export const useWorkspaceBranchesStore = create(
           try {
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
-            // Prefer localStorage branch over server default
+            // Prefer sessionStorage branch over server default
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
@@ -167,6 +167,7 @@ export const useWorkspaceBranchesStore = create(
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
