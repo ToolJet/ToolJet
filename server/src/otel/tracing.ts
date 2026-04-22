@@ -590,16 +590,20 @@ loadEnvVars();
 // endpoint closes the connection after sending an error response (e.g. 415, 401).
 // The OTEL SDK does not attach error listeners to the socket, so without this the
 // Node.js default behaviour is to throw and kill the process.
-process.on('uncaughtException', (err: any) => {
-  if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
-    if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.error('[OTEL] Suppressed transport error (server still running):', err.code, err.message);
+// Only register when OTEL is actually enabled — no point installing a global handler otherwise.
+if (process.env.ENABLE_OTEL === 'true') {
+  process.on('uncaughtException', (err: any) => {
+    if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        console.error('[OTEL] Suppressed transport error (server still running):', err.code, err.message);
+      }
+      return;
     }
-    return;
-  }
-  // Re-throw anything unrelated to OTEL transport
-  throw err;
-});
+    // For non-OTEL errors, log and exit — throwing inside uncaughtException causes a re-emit loop.
+    console.error('[OTEL] Uncaught non-transport exception:', err);
+    process.exit(1);
+  });
+}
 
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   console.log('[OTEL] Auto-start code reached');

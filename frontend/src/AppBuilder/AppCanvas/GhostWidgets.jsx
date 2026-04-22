@@ -13,7 +13,7 @@ export const DragResizeGhostWidget = () => {
     <div
       id="moveable-ghost-widget"
       style={{
-        zIndex: 4,
+        zIndex: 11,
         position: 'absolute',
         background: '#D9E2FC',
         opacity: '0.7',
