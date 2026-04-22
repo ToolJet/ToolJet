@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const useDynamicHeight = ({
   isDynamicHeightEnabled,
@@ -95,6 +96,19 @@ export const useDynamicHeight = ({
       });
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       if (element) element.style.height = `${height}px`;
+      // Container toggled off: drop the container's own inflated temp so
+      // WidgetWrapper reads canonical height this render. Descendants
+      // keep their own temps — their grown state (e.g., a TextArea's
+      // typed content) is still accurate and self-managed by each
+      // widget's own useDynamicHeight hook.
+      //
+      // Skipped for `isRowSubcontainer` callers: Listview's per-row hook
+      // would otherwise re-clear on every row. The Listview widget file
+      // owns the clear at the widget level instead.
+      if (isContainer && !isRowSubcontainer) {
+        const clearContainerTempLayouts = useStore.getState().clearContainerTempLayouts;
+        clearContainerTempLayouts?.(id, contextIndices);
+      }
       requestAnimationFrame(() => {
         adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
       });

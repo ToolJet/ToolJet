@@ -433,6 +433,19 @@ export const resolveContainerHeight = ({
     containerHeight = component?.properties?.rowHeight ?? containerHeight;
   }
 
+  // Explicit dynamic-height opt-out: the container stays at its authored
+  // height and does NOT derive height from children. This is the toggle-off
+  // pathway — any leftover row / child temps from a prior dynamic run are
+  // simply ignored (they remain in store, dormant, until dynamic turns back
+  // on and the normal reflow overwrites them).
+  //
+  // Listview row-context retains `rowHeight` (set above) as its floor so the
+  // non-dynamic row still matches the configured row size.
+  const gatedComponent = getResolvedComponent(componentId, context);
+  if (gatedComponent?.properties?.dynamicHeight === false) {
+    return containerHeight;
+  }
+
   // Listview widget-level (no context) OR a renderable row context:
   //
   // Compute the row-sum-based height from per-row temp layouts. This is

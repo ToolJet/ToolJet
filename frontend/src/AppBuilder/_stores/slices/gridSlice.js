@@ -134,6 +134,45 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
+  // Clear temp layouts for a single container across all its subcontainer
+  // contexts (widget-level key + every row-index / slot-suffixed key). Used
+  // on dynamic-height toggle-off so the container's own inflated height
+  // override is dropped and WidgetWrapper immediately reads canonical.
+  //
+  // Descendants' own temps are NOT cleared — a TextArea inside the container
+  // keeps its own grown height (it's still grown), and a Button shifted to
+  // accommodate that TextArea stays shifted (the shift is still accurate).
+  // Descendants overflow/clip inside the now-canonical-sized container,
+  // which is the expected non-dynamic semantics.
+  //
+  // `contextPrefix` scopes to a branch (e.g., a Listview nested inside a
+  // parent row passes the parent row context so sibling rows stay untouched).
+  // `null`/empty matches the container's key at any context.
+  clearContainerTempLayouts: (containerId, contextPrefix = null) => {
+    const normalizedPrefix = normalizeLayoutContext(contextPrefix);
+    const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
+
+    const matches = (key) => {
+      if (!prefix) {
+        return key === containerId || key.startsWith(`${containerId}-`);
+      }
+      return key === `${containerId}-${prefix}` || key.startsWith(`${containerId}-${prefix}.`);
+    };
+
+    set((state) => {
+      const next = {};
+      let changed = false;
+      for (const [key, value] of Object.entries(state.temporaryLayouts || {})) {
+        if (matches(key)) {
+          changed = true;
+          continue;
+        }
+        next[key] = value;
+      }
+      return changed ? { temporaryLayouts: next } : {};
+    });
+  },
+
   // ───────────────────────────────────────────────────────────────────────────
   // adjustComponentPositions — the single entry point for dynamic-height
   // reflow. Invoked by `useDynamicHeight` whenever a widget changes size,
