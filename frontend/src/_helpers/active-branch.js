@@ -48,6 +48,45 @@ export function getActiveBranchId(orgId) {
   return branch?.id || null;
 }
 
+// Module-level ref ensures only one listener is registered at a time
+let _focusSyncListener = null;
+
+/**
+ * Registers a visibilitychange listener that writes the current tab's branch
+ * from sessionStorage to localStorage whenever the tab becomes visible.
+ * This ensures new tabs opened from this tab inherit its active branch.
+ * Safe to call multiple times — removes any existing listener before re-registering.
+ */
+export function registerBranchFocusSync() {
+  if (_focusSyncListener) {
+    document.removeEventListener('visibilitychange', _focusSyncListener);
+  }
+  _focusSyncListener = () => {
+    if (document.visibilityState !== 'visible') return;
+    const id = getOrgId();
+    if (!id) return;
+    try {
+      const key = `${BRANCH_KEY_PREFIX}${id}`;
+      const sessionStored = sessionStorage.getItem(key);
+      // Only write to localStorage if sessionStorage has a value — avoids
+      // wiping the localStorage seed when a fresh tab hasn't initialised yet
+      if (sessionStored) {
+        localStorage.setItem(key, sessionStored);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+  document.addEventListener('visibilitychange', _focusSyncListener);
+}
+
+export function unregisterBranchFocusSync() {
+  if (_focusSyncListener) {
+    document.removeEventListener('visibilitychange', _focusSyncListener);
+    _focusSyncListener = null;
+  }
+}
+
 /**
  * Remove stale tj_active_branch_* keys for the current org only.
  * Clears the key if the stored value is corrupted or has no valid branch ID.

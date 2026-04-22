@@ -1,7 +1,13 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import { getActiveBranch, setActiveBranch, cleanupStaleBranchKeys } from '@/_helpers/active-branch';
+import {
+  getActiveBranch,
+  setActiveBranch,
+  cleanupStaleBranchKeys,
+  registerBranchFocusSync,
+  unregisterBranchFocusSync,
+} from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -59,6 +65,7 @@ export const useWorkspaceBranchesStore = create(
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,
@@ -150,6 +157,7 @@ export const useWorkspaceBranchesStore = create(
         },
 
         reset() {
+          unregisterBranchFocusSync();
           set(initialState);
         },
 
@@ -172,6 +180,7 @@ export const useWorkspaceBranchesStore = create(
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,
