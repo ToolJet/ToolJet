@@ -10,8 +10,16 @@ export function getActiveBranch(orgId) {
   const id = orgId || getOrgId();
   if (!id) return null;
   try {
-    const stored = localStorage.getItem(`${BRANCH_KEY_PREFIX}${id}`);
-    return stored ? JSON.parse(stored) : null;
+    const key = `${BRANCH_KEY_PREFIX}${id}`;
+    const sessionStored = sessionStorage.getItem(key);
+    if (sessionStored) return JSON.parse(sessionStored);
+    // Seed sessionStorage from localStorage so new tabs inherit the active branch
+    const localStored = localStorage.getItem(key);
+    if (localStored) {
+      sessionStorage.setItem(key, localStored);
+      return JSON.parse(localStored);
+    }
+    return null;
   } catch {
     return null;
   }
@@ -21,13 +29,17 @@ export function setActiveBranch(branch, orgId) {
   const id = orgId || getOrgId();
   if (!id) return;
   try {
+    const key = `${BRANCH_KEY_PREFIX}${id}`;
     if (branch) {
-      localStorage.setItem(`${BRANCH_KEY_PREFIX}${id}`, JSON.stringify({ id: branch.id, name: branch.name }));
+      const value = JSON.stringify({ id: branch.id, name: branch.name });
+      sessionStorage.setItem(key, value);
+      localStorage.setItem(key, value);
     } else {
-      localStorage.removeItem(`${BRANCH_KEY_PREFIX}${id}`);
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
     }
   } catch {
-    // ignore localStorage errors
+    // ignore storage errors
   }
 }
 
