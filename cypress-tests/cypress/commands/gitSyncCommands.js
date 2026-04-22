@@ -223,25 +223,21 @@ Cypress.Commands.add("gitSyncDashboardPush", (message) => {
   cy.get(GS.wsBranchHeader).click();
   cy.get(GS.wsBranchPopover).should("be.visible");
 
-  cy.contains(GS.wsBranchPopover + " button", /commit|push/i).click();
+  // Commit/Push CTA is the 3rd item in the branch popover (matches the inline
+  // flow used in gitSyncFunctionality.cy.js).
+  cy.get(":nth-child(3) > .tw-flex > span").click();
 
-  cy.get(GS.commitMessageInput).should("be.visible");
-
-  // UI checks on modal
-  cy.get(GS.commitMessageInput).should("be.visible");
-  cy.contains("button", /commit|push/i)
-    .filter(":not([disabled])")
-    .should("be.disabled"); // disabled when message is empty
+  cy.get(GS.commitMessageInput).should("be.visible").and("have.value", "");
+  cy.get(".modal-footer > .tj-primary-btn").should("be.disabled");
 
   cy.get(GS.commitMessageInput).type(message);
 
-  cy.contains("button", /commit|push/i)
-    .filter(":not([disabled])")
-    .last()
-    .click();
+  cy.wait(2000);
+  cy.get(".modal-footer > .tj-primary-btn").should("be.enabled").click();
 
   // Wait for modal to close = success
   cy.get(GS.commitMessageInput, { timeout: 45000 }).should("not.exist");
+  cy.wait(2000);
   cy.log(`[gitSync] Dashboard commit pushed: "${message}"`);
 });
 
@@ -448,9 +444,246 @@ Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
 Cypress.Commands.add("gitSyncGoToDashboard", () => {
   const workspace = Cypress.env("workspaceSlug") || "";
   const url = workspace ? `/${workspace}` : "/";
-  cy.visit(url);
+  cy.visit(url, { redirectionLimit: 20 });
   cy.wait(3000);
   cy.get('[data-cy="dashboard-section-header"]', { timeout: 15000 }).should(
     "be.visible",
+  );
+});
+
+Cypress.Commands.add("gitSyncSwitchToWorkspace", (workspaceId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/switch/${workspaceId}`,
+        headers,
+        failOnStatusCode: false,
+      })
+      .then((res) => {
+        expect(res.status, `Switch to workspace ${workspaceId}`).to.be.oneOf([200, 201]);
+        Cypress.log({ message: `[gitSync] Session switched to workspace ${workspaceId}` });
+      }),
+  );
+});
+
+// --- Module helpers (scout-captured shapes, see PR #16020 context doc) -----
+
+Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/modules`,
+        headers,
+        body: { name: moduleName, icon: "floppydisk", type: "module", branchId },
+      })
+      .then((res) => {
+        expect(res.status, `Create module '${moduleName}'`).to.equal(201);
+        const module = res.body;
+        Cypress.log({ message: `[gitSync] Module '${moduleName}' created (id: ${module.id})` });
+        return module;
+      }),
+  );
+});
+
+Cypress.Commands.add("apiGetModuleCorrelationId", (moduleId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps/${moduleId}`,
+        headers,
+      })
+      .then((res) => {
+        expect(res.status).to.equal(200);
+        const correlationId =
+          res.body?.co_relation_id ||
+          res.body?.app?.co_relation_id ||
+          res.body?.data?.co_relation_id;
+        expect(correlationId, "co_relation_id on module").to.be.a("string");
+        return correlationId;
+      }),
+  );
+});
+
+Cypress.Commands.add("apiGetAppEditingVersionId", (appId) => {
+  // Fresh apps return empty pages inline; /api/apps/:id/versions is the
+  // authoritative source for the editing version.
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
+        headers,
+      })
+      .then((res) => {
+        expect(res.status).to.equal(200);
+        const versions = Array.isArray(res.body)
+          ? res.body
+          : res.body?.versions || res.body?.data || [];
+        const versionId = versions?.[0]?.id;
+        const debugMsg = versionId
+          ? ""
+          : ` | versions response keys: [${Object.keys(res.body || {}).join(",")}] | preview: ${JSON.stringify(res.body).slice(0, 300)}`;
+        expect(versionId, `editing_version id from versions endpoint${debugMsg}`).to.be.a(
+          "string",
+        );
+        return versionId;
+      }),
+  );
+});
+
+Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/modules/${moduleId}`,
+        headers,
+        body: { app: { name: newName } },
+      })
+      .then((res) => {
+        expect(res.status, `Rename module to '${newName}'`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({ message: `[gitSync] Module ${moduleId} renamed to '${newName}'` });
+      }),
+  );
+});
+
+Cypress.Commands.add("apiCreateApp", (appName, branchId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/apps`,
+        headers,
+        body: { name: appName, icon: "floppydisk", type: "front-end", branchId },
+      })
+      .then((res) => {
+        expect(res.status, `Create app '${appName}'`).to.equal(201);
+        const app = res.body;
+        Cypress.log({ message: `[gitSync] App '${appName}' created (id: ${app.id})` });
+        return app;
+      }),
+  );
+});
+
+// Creates a ModuleViewer component inside the given app/version, wired to a
+// specific module correlation id + version name (or branch name for draft-pin).
+// Uses the component-save "diff" shape observed by scout on the live UI.
+Cypress.Commands.add(
+  "apiAddModuleViewerToApp",
+  (appId, appVersionId, pageId, moduleCorrelationId, pinnedVersionName) => {
+    const componentId = `moduleviewer-${Date.now().toString(36)}`;
+    const componentDiff = {
+      [componentId]: {
+        component: {
+          name: "moduleviewer1",
+          component: "ModuleViewer",
+          definition: {
+            properties: {
+              moduleAppId: { value: moduleCorrelationId },
+              moduleVersionId: { value: pinnedVersionName },
+              visibility: { value: true },
+              input1: { value: "" },
+              input2: { value: "" },
+            },
+            styles: {},
+            generalStyles: {},
+          },
+          properties: {},
+          general: {},
+          others: {},
+          events: {},
+          styles: {},
+          validate: true,
+          generalStyles: {},
+        },
+        layouts: {
+          desktop: { top: 0, left: 0, width: 20, height: 100 },
+          mobile: { top: 0, left: 0, width: 20, height: 100 },
+        },
+      },
+    };
+    return cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${appVersionId}/components`,
+          headers,
+          body: { pageId, diff: componentDiff, is_user_switched_version: false },
+          failOnStatusCode: false,
+        })
+        .then((res) => {
+          // Some envs accept PUT-style diff on POST; fall back to PUT if POST rejects
+          if (res.status >= 400) {
+            return cy
+              .request({
+                method: "PUT",
+                url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${appVersionId}/components`,
+                headers,
+                body: { pageId, diff: componentDiff, is_user_switched_version: false },
+              })
+              .then((putRes) => {
+                expect(putRes.status).to.be.oneOf([200, 201, 204]);
+                Cypress.log({ message: `[gitSync] ModuleViewer added (PUT) pinning ${pinnedVersionName}` });
+                return componentId;
+              });
+          }
+          Cypress.log({ message: `[gitSync] ModuleViewer added pinning ${pinnedVersionName}` });
+          return componentId;
+        }),
+    );
+  },
+);
+
+// Reads the app's first ModuleViewer component's pinned version name —
+// for sticky/draft/broken-pin assertions post-merge.
+Cypress.Commands.add("apiReadAppModulePin", (appId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+        headers,
+      })
+      .then((res) => {
+        expect(res.status).to.equal(200);
+        const pages =
+          res.body?.editing_version?.pages ||
+          res.body?.pages ||
+          res.body?.app?.editing_version?.pages ||
+          [];
+        for (const page of pages) {
+          const components = page?.components || [];
+          for (const c of components) {
+            const def = c?.component || c;
+            if (def?.component === "ModuleViewer" || def?.type === "ModuleViewer") {
+              return {
+                moduleAppId: def?.definition?.properties?.moduleAppId?.value,
+                moduleVersionId: def?.definition?.properties?.moduleVersionId?.value,
+              };
+            }
+          }
+        }
+        return { moduleAppId: null, moduleVersionId: null };
+      }),
+  );
+});
+
+Cypress.Commands.add("apiGetAppIdByNameOnBranch", (appName, branchId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps?page=1&folder=&searchKey=${encodeURIComponent(appName)}&type=front-end&branch_id=${branchId}`,
+        headers,
+      })
+      .then((res) => {
+        expect(res.status).to.equal(200);
+        const apps = res.body?.apps || res.body?.meta?.apps || res.body || [];
+        const match = (Array.isArray(apps) ? apps : []).find((a) => a?.name === appName);
+        return match?.id || null;
+      }),
   );
 });
