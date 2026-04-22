@@ -9,7 +9,7 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Credential } from '@entities/credential.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager, In, DeepPartial } from 'typeorm';
+import { Brackets, EntityManager, In, DeepPartial } from 'typeorm';
 import {
   defaultAppEnvironments,
   catchDbException,
@@ -546,78 +546,138 @@ export class AppImportExportService {
   }
 
   async mapModulesForAppImport(
+    manager: EntityManager,
     appParams: any,
     user: User,
     externalResourceMappings: any,
     isGitApp: boolean,
-    tooljetVersion: string
+    tooljetVersion: string,
+    branchId?: string
   ) {
-    let moduleAppNames = [];
+    // ModuleViewer components store STABLE keys in their properties:
+    //   properties.moduleAppId.value     = module App.co_relation_id
+    //   properties.moduleVersionId.value = AppVersion.name
+    // Legacy pre-migration rows may still hold a raw DB id / UUID.
+    // The ModuleViewer rewrite sites look up these maps by the stored value,
+    // so keys must be STABLE keys. We write dual entries (passport/name
+    // primary, raw id legacy fallback) and always store the target's stable
+    // key as the value — that's what the resolver's findOne(App, { co_relation_id })
+    // expects.
+    const moduleAppNames: string[] = [];
+    const moduleAppCoRelIds: string[] = [];
 
     if (appParams?.modules?.length > 0 && appParams?.type === APP_TYPES.FRONT_END) {
-      moduleAppNames = appParams?.modules?.map((module) => module.appV2?.name);
+      for (const module of appParams.modules) {
+        if (module?.appV2?.name) moduleAppNames.push(module.appV2.name);
+        if (module?.appV2?.co_relation_id) moduleAppCoRelIds.push(module.appV2.co_relation_id);
+      }
     }
-    const moduleResourceMappings = {
+    const moduleResourceMappings: {
+      moduleApps: Record<string, string>;
+      moduleVersions: Record<string, string>;
+    } = {
       moduleApps: {},
       moduleVersions: {},
     };
 
     const existingModules =
-      moduleAppNames.length > 0
-        ? await this.entityManager
+      moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
+        ? await manager
             .createQueryBuilder(App, 'app')
-            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .andWhere(
+              new Brackets((qb: any) => {
+                if (moduleAppNames.length > 0) {
+                  qb.where('app.name IN (:...moduleAppNames)', { moduleAppNames });
+                }
+                if (moduleAppCoRelIds.length > 0) {
+                  qb.orWhere('app.co_relation_id IN (:...moduleAppCoRelIds)', { moduleAppCoRelIds });
+                }
+              })
+            )
             .distinct(true)
             .getMany()
         : [];
 
+    // Index existing modules by passport first, name as fallback.
+    const existingByCoRel = new Map<string, App>(
+      existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
+    );
+    const existingByName = new Map<string, App>(existingModules.map((m) => [m.name, m]));
+
+    // If consumer is on a non-default branch, we'll need to hydrate a BRANCH-type
+    // stub row for each module on that branch so the module appears in the branch's
+    // Modules tab (dashboard filters by branch_id). Resolve branch once.
+    const targetBranch =
+      branchId !== undefined
+        ? await manager.findOne(WorkspaceBranch, {
+            where: { id: branchId },
+            select: ['id', 'isDefault'],
+          })
+        : null;
+    const shouldHydrateBranchStub = !!targetBranch && !targetBranch.isDefault;
+
+    // Collect the target App ids that need a stub row on the consumer's branch.
+    const moduleAppIdsForStub: string[] = [];
+
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
       for (const importedModule of appParams.modules) {
-        // Find matching module by name in existing modules
-        const existingModule = existingModules.find((module) => module.name === importedModule?.appV2?.name);
+        // Prefer passport match (survives renames and cross-lineage name collisions).
+        const existingModule =
+          (importedModule?.appV2?.co_relation_id &&
+            existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
+          existingByName.get(importedModule?.appV2?.name);
 
         if (existingModule) {
-          // Module exists - map old IDs to existing module's IDs
-          moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
+          // Existing module on target — map imported refs to the target's stable keys.
+          const targetAppKey = existingModule.co_relation_id ?? existingModule.id;
+          if (importedModule?.appV2?.co_relation_id) {
+            moduleResourceMappings.moduleApps[importedModule.appV2.co_relation_id] = targetAppKey;
+          }
+          // Legacy: components that pre-date the passport migration may still
+          // hold the source App.id in moduleAppId.value.
+          if (importedModule?.appV2?.id) {
+            moduleResourceMappings.moduleApps[importedModule.appV2.id] = targetAppKey;
+          }
+          if (shouldHydrateBranchStub) moduleAppIdsForStub.push(existingModule.id);
 
           // Fetch existing module's versions to map by name
-          const existingVersions = await this.entityManager.find(AppVersion, {
+          const existingVersions = await manager.find(AppVersion, {
             where: { appId: existingModule.id },
             order: { createdAt: 'DESC' },
           });
 
-          // Map all exported module versions to existing versions by name match
           const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          const fallbackVersionName = existingVersions[0]?.name;
+
           for (const importedVersion of importedModuleVersions) {
             const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
-            if (matchingVersion) {
-              moduleResourceMappings.moduleVersions[importedVersion.id] = matchingVersion.id;
-            }
-          }
+            const targetVersionName = matchingVersion?.name ?? fallbackVersionName;
+            if (!targetVersionName) continue;
 
-          // Fallback: map any unmatched imported versions to the latest existing version
-          // so that ModuleViewer components don't retain stale UUIDs from the source workspace
-          if (existingVersions.length > 0) {
-            for (const importedVersion of importedModuleVersions) {
-              if (!moduleResourceMappings.moduleVersions[importedVersion.id]) {
-                moduleResourceMappings.moduleVersions[importedVersion.id] = existingVersions[0].id;
-              }
+            // Name key — matches post-migration components that store a version name.
+            if (importedVersion.name) {
+              moduleResourceMappings.moduleVersions[importedVersion.name] = targetVersionName;
+            }
+            // UUID key — matches legacy YAML where moduleVersionId.value is a DB UUID.
+            if (importedVersion.id) {
+              moduleResourceMappings.moduleVersions[importedVersion.id] = targetVersionName;
             }
           }
 
           // Also map the editingVersion if not already mapped
-          const editingVersionId = importedModule?.appV2?.editingVersion?.id;
-          if (
-            editingVersionId &&
-            !moduleResourceMappings.moduleVersions[editingVersionId] &&
-            existingVersions.length > 0
-          ) {
-            moduleResourceMappings.moduleVersions[editingVersionId] = existingVersions[0].id;
+          const editingVersion = importedModule?.appV2?.editingVersion;
+          if (editingVersion && fallbackVersionName) {
+            if (editingVersion.name && !moduleResourceMappings.moduleVersions[editingVersion.name]) {
+              moduleResourceMappings.moduleVersions[editingVersion.name] = fallbackVersionName;
+            }
+            if (editingVersion.id && !moduleResourceMappings.moduleVersions[editingVersion.id]) {
+              moduleResourceMappings.moduleVersions[editingVersion.id] = fallbackVersionName;
+            }
           }
         } else {
-          // Module doesn't exist - need to import it
+          // Module doesn't exist — import it fresh.
 
           const { newApp, resourceMapping } = await this.import(
             user,
@@ -626,18 +686,69 @@ export class AppImportExportService {
             externalResourceMappings,
             isGitApp,
             tooljetVersion,
-            false
+            false,
+            manager,
+            branchId
           );
 
-          moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
+          // createImportedAppForUser sets new.co_relation_id = source.id. Use
+          // the target's co_relation_id as the stable key so consumer
+          // components resolve via findOne by co_relation_id.
+          const targetAppKey = newApp.co_relation_id ?? newApp.id;
+          if (importedModule?.appV2?.co_relation_id) {
+            moduleResourceMappings.moduleApps[importedModule.appV2.co_relation_id] = targetAppKey;
+          }
+          if (importedModule?.appV2?.id) {
+            moduleResourceMappings.moduleApps[importedModule.appV2.id] = targetAppKey;
+          }
+          if (shouldHydrateBranchStub) moduleAppIdsForStub.push(newApp.id);
 
-          // Map ALL version IDs from the import, not just editingVersion
-          for (const [oldVersionId, newVersionId] of Object.entries(resourceMapping.appVersionMapping)) {
-            moduleResourceMappings.moduleVersions[oldVersionId] = newVersionId;
+          // Names are preserved during import, so the target version's name
+          // equals the source's name. Write dual keys (name + legacy UUID).
+          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          for (const importedVersion of importedModuleVersions) {
+            if (!importedVersion.name) continue;
+            if (resourceMapping.appVersionMapping[importedVersion.id]) {
+              moduleResourceMappings.moduleVersions[importedVersion.name] = importedVersion.name;
+              moduleResourceMappings.moduleVersions[importedVersion.id] = importedVersion.name;
+            }
           }
         }
       }
     }
+
+    // Hydrate BRANCH-type stub rows on the consumer's branch for every module
+    // the consumer references. Without this, the Modules tab on the consumer's
+    // branch won't list these modules (dashboard filters by branch_id). Skips
+    // modules that already have a row on this branch.
+    if (shouldHydrateBranchStub && moduleAppIdsForStub.length > 0) {
+      const stubBranchId = targetBranch.id;
+      const uniqueAppIds = Array.from(new Set(moduleAppIdsForStub));
+
+      const existingRows = await manager.find(AppVersion, {
+        where: uniqueAppIds.map((appId) => ({ appId, branchId: stubBranchId })),
+        select: ['appId'],
+      });
+      const alreadyOnBranch = new Set(existingRows.map((r) => r.appId));
+
+      for (const appId of uniqueAppIds) {
+        if (alreadyOnBranch.has(appId)) continue;
+        const stub = manager.create(AppVersion, {
+          name: uuid(),
+          appId,
+          versionType: AppVersionType.BRANCH,
+          branchId: stubBranchId,
+          isStub: true,
+          status: AppVersionStatus.DRAFT,
+          definition: {},
+          globalSettings: {},
+          pageSettings: {},
+          showViewerNavigation: false,
+        } as DeepPartial<AppVersion>);
+        await manager.save(AppVersion, stub);
+      }
+    }
+
     return moduleResourceMappings;
   }
 
@@ -678,11 +789,13 @@ export class AppImportExportService {
       }
 
       const moduleResourceMappings = await this.mapModulesForAppImport(
+        manager,
         appParams,
         user,
         externalResourceMappings,
         isGitApp,
-        tooljetVersion
+        tooljetVersion,
+        branchId
       );
 
       const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
