@@ -6,7 +6,7 @@
  */
 
 export interface IPlatformGitPullService {
-  hydrateStubApp(stubApp: any, user: any, branchId?: string, tagSha?: string, tagName?: string): Promise<any>;
+  hydrateStubApp(stubApp: any, user: any, branchId?: string, tagSha?: string, tagName?: string, useTagNameOnSubBranch?: boolean): Promise<any>;
   /**
    * Last path segment of an `appPath` like `apps/folder/my-app` → `my-app`, or
    * `modules/my-module` → `my-module`. Used by callers that need to resolve a

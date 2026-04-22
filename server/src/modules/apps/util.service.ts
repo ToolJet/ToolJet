@@ -34,9 +34,6 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { APP_TYPES } from './constants';
-import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
-import { RequestContext } from '@modules/request-context/service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { Component } from 'src/entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -882,63 +879,6 @@ export class AppsUtilService implements IAppsUtilService {
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
     return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
-    }, manager);
-  }
-
-  /**
-   * Atomically promote a version to the production environment AND mark the app
-   * as released (`apps.current_version_id = versionId`). Writes a release audit
-   * entry matching `AppsService.release`'s shape.
-   *
-   * Skips the per-env promote chain and the release endpoint's multi-env guard
-   * by design — callers that invoke this have already validated whatever
-   * preconditions their flow requires (e.g. external-API autoDeploy accepts
-   * any non-draft version; git-import gates on successful module hydration).
-   *
-   * Used by:
-   *  - `ExternalApisService.autoDeployApp` — "publish latest tag" programmatic flow
-   *  - `AppGitOperationsUtil.createGitApp` — auto-release newly imported app
-   */
-  async releaseVersionToProduction(
-    app: App,
-    user: User,
-    versionId: string,
-    options: { writeAuditLog?: boolean; manager?: EntityManager } = {}
-  ): Promise<App> {
-    const { writeAuditLog = true, manager } = options;
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const environments = await this.appEnvironmentUtilService.getAllEnvironments(user.organizationId, manager);
-      environments.sort((a, b) => a.priority - b.priority);
-      const prodEnv = environments[environments.length - 1];
-
-      await this.versionRepository.updateVersion(
-        versionId,
-        { currentEnvironmentId: prodEnv.id, status: AppVersionStatus.PUBLISHED, updatedAt: new Date() },
-        manager
-      );
-      await manager.update(App, app.id, { currentVersionId: versionId });
-
-      if (writeAuditLog) {
-        const releasedVersion = await this.versionRepository.findVersion(versionId);
-        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-          userId: user.id,
-          organizationId: user.organizationId,
-          resourceId: app.id,
-          resourceName: app.name,
-          ...(app.type === APP_TYPES.MODULE && { actionType: MODULE_VERSION_AUDIT_KEYS.RELEASE }),
-          resourceData: {
-            appSlug: app.slug,
-            isPublic: app.isPublic,
-            releasedVersionId: versionId,
-            releasedVersionName: releasedVersion?.name,
-            environmentId: prodEnv.id,
-            environmentName: prodEnv.name,
-          },
-          metadata: { data: { name: 'App Released', versionToBeReleased: versionId } },
-        });
-      }
-
-      return this.appRepository.findByAppId(app.id, manager);
     }, manager);
   }
 
