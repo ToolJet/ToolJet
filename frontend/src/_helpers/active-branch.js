@@ -10,8 +10,16 @@ export function getActiveBranch(orgId) {
   const id = orgId || getOrgId();
   if (!id) return null;
   try {
-    const stored = localStorage.getItem(`${BRANCH_KEY_PREFIX}${id}`);
-    return stored ? JSON.parse(stored) : null;
+    const key = `${BRANCH_KEY_PREFIX}${id}`;
+    const sessionStored = sessionStorage.getItem(key);
+    if (sessionStored) return JSON.parse(sessionStored);
+    // Seed sessionStorage from localStorage so new tabs inherit the active branch
+    const localStored = localStorage.getItem(key);
+    if (localStored) {
+      sessionStorage.setItem(key, localStored);
+      return JSON.parse(localStored);
+    }
+    return null;
   } catch {
     return null;
   }
@@ -21,19 +29,62 @@ export function setActiveBranch(branch, orgId) {
   const id = orgId || getOrgId();
   if (!id) return;
   try {
+    const key = `${BRANCH_KEY_PREFIX}${id}`;
     if (branch) {
-      localStorage.setItem(`${BRANCH_KEY_PREFIX}${id}`, JSON.stringify({ id: branch.id, name: branch.name }));
+      const value = JSON.stringify({ id: branch.id, name: branch.name });
+      sessionStorage.setItem(key, value);
+      localStorage.setItem(key, value);
     } else {
-      localStorage.removeItem(`${BRANCH_KEY_PREFIX}${id}`);
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
     }
   } catch {
-    // ignore localStorage errors
+    // ignore storage errors
   }
 }
 
 export function getActiveBranchId(orgId) {
   const branch = getActiveBranch(orgId);
   return branch?.id || null;
+}
+
+// Module-level ref ensures only one listener is registered at a time
+let _focusSyncListener = null;
+
+/**
+ * Registers a visibilitychange listener that writes the current tab's branch
+ * from sessionStorage to localStorage whenever the tab becomes visible.
+ * This ensures new tabs opened from this tab inherit its active branch.
+ * Safe to call multiple times — removes any existing listener before re-registering.
+ */
+export function registerBranchFocusSync() {
+  if (_focusSyncListener) {
+    document.removeEventListener('visibilitychange', _focusSyncListener);
+  }
+  _focusSyncListener = () => {
+    if (document.visibilityState !== 'visible') return;
+    const id = getOrgId();
+    if (!id) return;
+    try {
+      const key = `${BRANCH_KEY_PREFIX}${id}`;
+      const sessionStored = sessionStorage.getItem(key);
+      // Only write to localStorage if sessionStorage has a value — avoids
+      // wiping the localStorage seed when a fresh tab hasn't initialised yet
+      if (sessionStored) {
+        localStorage.setItem(key, sessionStored);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+  document.addEventListener('visibilitychange', _focusSyncListener);
+}
+
+export function unregisterBranchFocusSync() {
+  if (_focusSyncListener) {
+    document.removeEventListener('visibilitychange', _focusSyncListener);
+    _focusSyncListener = null;
+  }
 }
 
 /**
@@ -44,16 +95,18 @@ export function getActiveBranchId(orgId) {
 export function cleanupStaleBranchKeys(orgId) {
   const id = orgId || getOrgId();
   if (!id) return;
-  try {
-    const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
-    const stored = localStorage.getItem(currentKey);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (!parsed?.id) {
-        localStorage.removeItem(currentKey);
+  const currentKey = `${BRANCH_KEY_PREFIX}${id}`;
+  for (const storage of [localStorage, sessionStorage]) {
+    try {
+      const stored = storage.getItem(currentKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!parsed?.id) {
+          storage.removeItem(currentKey);
+        }
       }
+    } catch {
+      // ignore storage errors
     }
-  } catch {
-    // ignore localStorage errors
   }
 }
