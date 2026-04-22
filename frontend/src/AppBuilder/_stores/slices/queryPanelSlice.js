@@ -616,7 +616,9 @@ export const createQueryPanelSlice = (set, get) => ({
           let versionId = currentVersionId;
           // IMPORTANT: This logic needs to be changed when we implement the module versioning
           if (moduleId !== 'canvas') {
-            versionId = get().resolvedStore.modules.canvas.components[moduleId].properties.moduleVersionId;
+            // Read the resolved DB version UUID from the loaded module state, not from the
+            // component property (which stores a stable version name for GitSync portability).
+            versionId = get().appStore.modules[moduleId]?.app?.currentVersionId;
           }
           queryExecutionPromise = dataqueryService.run(
             queryId,

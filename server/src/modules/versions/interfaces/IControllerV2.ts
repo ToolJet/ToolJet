@@ -5,6 +5,13 @@ import { PromoteVersionDto } from '../dto';
 
 export interface IVersionControllerV2 {
   getVersion(user: UserEntity, app: AppEntity, mode?: string): Promise<any>;
+  getModuleVersionByStableIds(
+    user: UserEntity,
+    coRelationId: string,
+    versionName: string,
+    mode?: string,
+    branchId?: string
+  ): Promise<any>;
   updateVersion(user: UserEntity, app: AppEntity, appVersionUpdateDto: AppVersionUpdateDto): Promise<any>;
   updateGlobalSettings(user: UserEntity, app: AppEntity, appVersionUpdateDto: AppVersionUpdateDto): Promise<any>;
   promoteVersion(user: UserEntity, app: AppEntity, promoteVersionDto: PromoteVersionDto): Promise<any>;

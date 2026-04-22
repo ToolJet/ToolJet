@@ -6,6 +6,10 @@ export class PlatformGitPullService {
     return { imported: 0, skipped: 0, stale: 0 };
   }
 
+  async pullModules(..._args: any[]): Promise<{ imported: number; skipped: number; stale: number }> {
+    return { imported: 0, skipped: 0, stale: 0 };
+  }
+
   async pullDataSources(..._args: any[]): Promise<void> {
     return;
   }
