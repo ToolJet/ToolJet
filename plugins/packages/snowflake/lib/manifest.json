@@ -196,7 +196,7 @@
       "bearer_token": {
         "label": "Bearer token",
         "key": "bearer_token",
-        "type": "codehinter",
+        "type": "password",
         "description": "Enter the OAuth bearer token",
         "encrypted": true
       }
