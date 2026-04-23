@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
@@ -17,6 +17,8 @@ export const Checkbox = ({
   id,
 }) => {
   const isInitialRender = useRef(true);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const isMandatory = validation?.mandatory ?? false;
   const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
@@ -215,7 +217,7 @@ export const Checkbox = ({
                 onClick={toggleValue}
                 defaultChecked={defaultValue}
                 checked={checked}
-                id={`component-${id}`}
+                id={inputId}
                 aria-disabled={disable}
                 aria-busy={loading}
                 aria-required={isMandatory}
@@ -254,7 +256,7 @@ export const Checkbox = ({
               whiteSpace="normal"
               width={width - 20}
             >
-              <label htmlFor={`component-${id}`}>
+              <label htmlFor={inputId}>
                 {label}
                 {isMandatory && !checked && (
                   <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
