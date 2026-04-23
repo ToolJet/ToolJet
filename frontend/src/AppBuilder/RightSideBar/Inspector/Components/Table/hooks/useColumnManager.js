@@ -34,6 +34,15 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       modifiedColumn.defaultOptionsList = [];
     }
 
+    if (property === 'columnType' && value === 'tagsV2') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        sortTags: 'none',
+        allowMultipleSelection: true,
+        autoAssignColors: true,
+      };
+    }
+
     // Handle datepicker initialization
     if (property === 'columnType' && value === 'datepicker') {
       modifiedColumn = {

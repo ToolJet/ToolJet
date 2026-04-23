@@ -65,8 +65,8 @@ export const MenuListWithSearch = (props) => {
       className="table-select-custom-menu-list"
       style={{
         backgroundColor: 'var(--cc-surface1-surface)',
-        border: '1px solid var(--cc-default-border)',
         minWidth: '200px',
+        boxShadow: 'var(--elevation-300-box-shadow)',
       }}
     >
       <div
@@ -323,12 +323,13 @@ export const TagsRenderer = ({
   );
 
   const selectedValue = useMemo(() => {
-    if (isMulti) {
-      const items = value == null || value === '' ? [] : isArray(value) ? value : [value];
+    if (!value) return null;
+    if (isMulti && value?.length) {
+      const items = isArray(value) ? value : [value];
       return items.map(resolveSelectedOption).filter(Boolean);
     }
     const item = isArray(value) ? value[0] : value;
-    return resolveSelectedOption(item);
+    return resolveSelectedOption(item) || [];
   }, [value, isMulti, resolveSelectedOption]);
 
   const sortedOptions = useMemo(() => sortOptions(allOptions, sortTags), [allOptions, sortTags]);
@@ -363,6 +364,7 @@ export const TagsRenderer = ({
     const valueContainer = containerRef.current.querySelector('.tags-renderer-select__value-container');
     return valueContainer?.clientHeight > containerRef.current?.clientHeight;
   }, []);
+
   return (
     <OverlayTrigger
       placement="bottom"
@@ -392,11 +394,12 @@ export const TagsRenderer = ({
             isDisabled={disabled}
             className={className}
             components={customComponents}
-            value={isMulti ? (selectedValue?.length > 0 ? selectedValue : defaultValue) : selectedValue || defaultValue}
+            value={selectedValue}
             onMenuInputFocus={() => setIsFocused(true)}
             onChange={handleChange}
             useCustomStyles={true}
             styles={customStyles}
+            defaultValue={defaultValue}
             placeholder={placeholder}
             isMulti={isMulti}
             hideSelectedOptions
