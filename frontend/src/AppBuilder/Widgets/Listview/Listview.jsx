@@ -92,6 +92,26 @@ export const Listview = function Listview({
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
 
+  // Dynamic-height toggle-off transition: drop this Listview's own inflated
+  // temp (widget-level + per-row heights). Done once at the widget level so
+  // it doesn't re-fire per row. Descendants (row template widgets) keep
+  // their own temps — they stay at whatever layout they currently hold, and
+  // the resolveContainerHeight gate on `dynamicHeight=false` stops row temps
+  // from feeding back into the widget height.
+  //
+  // parentIndices scopes the clear: at root the listview's keys across all
+  // row contexts are cleared; for a Listview nested inside a parent row,
+  // only keys under that parent row context are cleared so sibling parent
+  // rows stay untouched.
+  const clearContainerTempLayouts = useStore((state) => state.clearContainerTempLayouts, shallow);
+  const prevDynamicRef = useRef(isDynamicHeightEnabled);
+  useEffect(() => {
+    if (prevDynamicRef.current && !isDynamicHeightEnabled) {
+      clearContainerTempLayouts?.(id, parentIndices);
+    }
+    prevDynamicRef.current = isDynamicHeightEnabled;
+  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts]);
+
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
   const onRecordOrRowClicked = useCallback(
