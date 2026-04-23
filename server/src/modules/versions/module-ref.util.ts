@@ -54,9 +54,10 @@ function findDefaultBranch(manager: EntityManager, organizationId: string) {
 }
 
 /**
- * versionType='version' is load-bearing: sub-branches store an editable copy
- * whose `name` equals the branch name with versionType='branch'. That row
- * must never be treated as a pin target.
+ * Only versionType='version' rows count as pin targets. Sub-branches also
+ * store a row with versionType='branch' whose `name` equals the branch
+ * name (the editable working copy) — without this filter, a ref like
+ * "feature-1" would match that row and be misclassified as pinned.
  */
 function findSavedVersionOnDefaultBranch(
   manager: EntityManager,
