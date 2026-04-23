@@ -18,31 +18,68 @@ const sortOptions = (opts, sortTags) => {
   });
 };
 
-const TagsMultiValueRemove = ({ innerProps }) => (
-  <div
-    {...innerProps}
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      paddingRight: '4px',
-    }}
-  >
-    <IconX size={16} stroke={2} fill="#000" opacity={0.2} />
-  </div>
-);
+const getTagChipStyles = (data, selectProps) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  background: selectProps?.optionColors?.[data?.value] || 'var(--surfaces-surface-03)',
+  borderRadius: '6px',
+  color: data?.labelColor || selectProps?.textColor || 'var(--text-primary)',
+  fontSize: '12px',
+});
+
+const TagsMultiValueRemove = ({ innerProps, selectProps }) => {
+  if (!selectProps?.isEditable) return null;
+
+  return (
+    <div
+      {...innerProps}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        paddingRight: '4px',
+      }}
+    >
+      <IconX size={16} stroke={2} fill="#000" opacity={0.2} />
+    </div>
+  );
+};
 
 const TagsMultiValueContainer = ({ children, data, selectProps }) => (
-  <div
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      background: selectProps?.optionColors?.[data?.value] || 'var(--surfaces-surface-03)',
-      borderRadius: '6px',
-      color: data?.labelColor || selectProps?.textColor || 'var(--text-primary)',
-      fontSize: '12px',
-    }}
-  >
-    {children}
+  <div style={getTagChipStyles(data, selectProps)}>{children}</div>
+);
+
+const TagsSingleValue = ({ children, data, selectProps }) => (
+  <div style={getTagChipStyles(data, selectProps)}>
+    <div
+      style={{
+        padding: '4px 7px',
+        color: 'inherit',
+        fontSize: 'inherit',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}
+    >
+      {children}
+    </div>
+    {selectProps?.isEditable && (
+      <div
+        onMouseDown={(event) => {
+          console.log('onMouseDown', event);
+          event.preventDefault();
+          event.stopPropagation();
+          selectProps?.onChange?.('');
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          paddingRight: '4px',
+          cursor: 'pointer',
+        }}
+      >
+        <IconX size={16} stroke={2} fill="#000" opacity={0.2} />
+      </div>
+    )}
   </div>
 );
 
@@ -221,6 +258,9 @@ export const TagsRenderer = ({
     MenuList: MenuListWithSearch,
     Option: TagsInputOption,
     DropdownIndicator: isEditable ? DropdownIndicator : null,
+    ...(!isMulti && {
+      SingleValue: TagsSingleValue,
+    }),
     ...(isMulti && {
       MultiValueRemove: TagsMultiValueRemove,
       MultiValueContainer: TagsMultiValueContainer,
@@ -262,17 +302,6 @@ export const TagsRenderer = ({
           };
         },
       }),
-      singleValue: (provided, state) => {
-        const option = state.data;
-        return {
-          ...provided,
-          padding: '2px 6px',
-          background: optionColors?.[option.value] || 'var(--surfaces-surface-03)',
-          borderRadius: '6px',
-          color: option?.labelColor || textColor || 'var(--text-primary)',
-          fontSize: '12px',
-        };
-      },
       menuList: (provided) => ({
         ...provided,
         display: 'flex',
@@ -290,7 +319,7 @@ export const TagsRenderer = ({
         border: 'unset',
       }),
     }),
-    [darkMode, isMulti, horizontalAlignment, textColor, optionColors]
+    [darkMode, isMulti, horizontalAlignment]
   );
 
   const defaultValue = useMemo(
@@ -406,6 +435,7 @@ export const TagsRenderer = ({
             isClearable={false}
             clearIndicator={false}
             darkMode={darkMode}
+            isEditable={isEditable}
             menuIsOpen={menuIsOpen}
             isFocused={isFocused}
             optionColors={optionColors}

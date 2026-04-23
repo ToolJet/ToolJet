@@ -68,8 +68,8 @@ export const TagsV2Column = ({
         const arr = isArray(newValue) ? newValue : [];
         onChange(arr.map(normalizeTagValue).filter(Boolean));
       } else {
-        if (newValue == null || newValue === '') {
-          onChange(null);
+        if (!newValue) {
+          onChange([]);
           return;
         }
 
