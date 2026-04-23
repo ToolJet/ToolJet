@@ -268,7 +268,6 @@ const EmptyDataSource = () => (
 );
 
 const AutoSortButton = ({ darkMode: _darkMode }) => {
-  const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
   const isAutoSorting = useStore((state) => state.queryFolders?.isAutoSorting ?? false);
   const autoSort = useStore((state) => state.queryFolders?.autoSort);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -277,14 +276,9 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
   // Hide entirely if the AI feature is not in the license at all
   if (featureAccess?.aiEnabled === false) return null;
 
-  const noFolders = allFolders.length === 0;
-  const disabled = noFolders || shouldFreeze || isAutoSorting;
+  const disabled = shouldFreeze || isAutoSorting;
 
-  const tooltipMsg = noFolders
-    ? 'Create folders first to use auto-sort'
-    : isAutoSorting
-    ? 'Auto-sorting in progress...'
-    : 'Auto-sort unsorted queries into folders';
+  const tooltipMsg = isAutoSorting ? 'Auto-sorting in progress...' : 'Auto-sort unsorted queries into folders';
 
   return (
     <ToolTip message={tooltipMsg} placement="bottom">
