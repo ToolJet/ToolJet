@@ -625,8 +625,7 @@ export class AppImportExportService {
       for (const importedModule of appParams.modules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
         const existingModule =
-          (importedModule?.appV2?.co_relation_id &&
-            existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
+          (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
           existingByName.get(importedModule?.appV2?.name);
 
         if (existingModule) {
@@ -1721,6 +1720,9 @@ export class AppImportExportService {
           const newFolder = manager.create(DataQueryFolder, {
             name: folder.name,
             appVersionId: newAppVersionId,
+            // git-sync writes co_relation_id into `id` on export, so preserve it here to
+            // keep folder identity stable across push/pull cycles and avoid diff churn.
+            co_relation_id: (folder as any).co_relation_id ?? folder.id ?? uuid(),
           });
           const savedFolder = await manager.save(DataQueryFolder, newFolder);
           savedId = savedFolder.id;
@@ -1759,6 +1761,9 @@ export class AppImportExportService {
           childId: newChildId,
           childType: mapping.childType,
           index: mapping.index,
+          // git-sync writes co_relation_id into `id` on export, so preserve it here to
+          // keep mapping identity stable across push/pull cycles and avoid diff churn.
+          co_relation_id: (mapping as any).co_relation_id ?? mapping.id ?? uuid(),
         });
         await manager.save(DataQueryFolderMapping, newMapping);
       }
