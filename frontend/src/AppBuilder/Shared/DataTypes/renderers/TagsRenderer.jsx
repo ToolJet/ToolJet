@@ -66,7 +66,7 @@ export const MenuListWithSearch = (props) => {
       style={{
         backgroundColor: 'var(--cc-surface1-surface)',
         minWidth: '200px',
-        boxShadow: 'var(--elevation-300-box-shadow)',
+        border: '1px solid var(--border-weak)',
       }}
     >
       <div
@@ -287,7 +287,7 @@ export const TagsRenderer = ({
         marginTop: '5px',
         borderRadius: '8px',
         boxShadow: 'var(--elevation-300-box-shadow)',
-        border: '1px solid var(--border-weak)',
+        border: 'unset',
       }),
     }),
     [darkMode, isMulti, horizontalAlignment, textColor, optionColors]
