@@ -15,6 +15,8 @@ const initialState = {
         components: {},
         secrets: {},
         customResolvables: {},
+        lazyResolvableParents: {}, // { [componentId]: true } — parents that defer resolution (e.g. Table expandable rows)
+        lazyRowIndices: {}, // { [componentId]: number[] } — row indices to resolve for lazy parents
         exposedValues: {
           queries: {} /* IMPORTANT: Query is subscribed by the moduleContainer component */,
           components: {},
@@ -386,17 +388,14 @@ export const createResolvedSlice = (set, get) => ({
     set(
       (state) => {
         const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
-        // If existing is undefined OR an array (component was previously inside
-        // a ListView row — per-row exposed values stored as an array) replace
-        // with a plain object before setting a named property. Arrays only
-        // accept numeric indices under Immer; assigning `.property = value`
-        // on one throws. Mirrors the logic in `setExposedValues` below.
+        // Array.isArray check handles the case where a component was previously inside a subcontainer (ListView/Kanban/Table) — exposed values stored as a per-row array
+        // Stale array must be replaced with a plain object before setting named properties, otherwise Immer throws error.
         if (existing === undefined || Array.isArray(existing)) {
           state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
             [property]: value,
           };
         } else {
-          state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+          existing[property] = value;
         }
       },
       false,
@@ -478,6 +477,33 @@ export const createResolvedSlice = (set, get) => ({
     });
     updateChildComponentsLength(componentId, data.length, data, moduleId, parentIndices);
     updateDependencyValues(`components.${componentId}.${key}`, moduleId, parentIndices);
+    invalidateContextHintsCache();
+  },
+
+  // Lazy variant of updateCustomResolvables -
+  // stores data without triggering updateChildComponentsLength or updateDependencyValues.
+  // Currently used by Table expandable rows so that resolution is deferred until a row is actually expanded.
+  updateCustomResolvablesLazy: (componentId, data, moduleId = 'canvas', parentIndices = []) => {
+    const { invalidateContextHintsCache } = get();
+    set((state) => {
+      if (parentIndices.length === 0) {
+        state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
+      } else {
+        if (!state.resolvedStore.modules[moduleId].customResolvables[componentId]) {
+          state.resolvedStore.modules[moduleId].customResolvables[componentId] = {};
+        }
+        let current = state.resolvedStore.modules[moduleId].customResolvables[componentId];
+        for (let i = 0; i < parentIndices.length - 1; i++) {
+          if (!current[parentIndices[i]]) {
+            current[parentIndices[i]] = {};
+          }
+          current = current[parentIndices[i]];
+        }
+        current[parentIndices[parentIndices.length - 1]] = data;
+      }
+      // Mark as lazy so resolution guards in componentsSlice scope to expanded rows only
+      state.resolvedStore.modules[moduleId].lazyResolvableParents[componentId] = true;
+    });
     invalidateContextHintsCache();
   },
 
@@ -675,6 +701,8 @@ export const createResolvedSlice = (set, get) => ({
     set((state) => {
       state.resolvedStore.modules[moduleId].components = {};
       state.resolvedStore.modules[moduleId].customResolvables = {};
+      state.resolvedStore.modules[moduleId].lazyResolvableParents = {};
+      state.resolvedStore.modules[moduleId].lazyRowIndices = {};
       state.resolvedStore.modules[moduleId].exposedValues.queries = {};
       state.resolvedStore.modules[moduleId].exposedValues.components = {};
       state.resolvedStore.modules[moduleId].exposedValues.variables = {};
@@ -830,5 +858,24 @@ export const createResolvedSlice = (set, get) => ({
     set((state) => {
       state.resolvedStore.modules[moduleId].exposedValues.output = {};
     });
+  },
+
+  // Cleans up all lazy resolution state for a component (customResolvables, lazyResolvableParents, lazyRowIndices)
+  cleanupLazyResolvables: (componentId, moduleId = 'canvas') => {
+    set((state) => {
+      const mod = state.resolvedStore.modules[moduleId];
+      delete mod.customResolvables[componentId];
+      delete mod.lazyResolvableParents[componentId];
+      delete mod.lazyRowIndices[componentId];
+    });
+  },
+
+  isLazyResolvableParent: (componentId, moduleId = 'canvas') =>
+    !!get().resolvedStore.modules[moduleId].lazyResolvableParents?.[componentId],
+
+  getLazyRowIndices: (componentId, moduleId = 'canvas', includeZero = false) => {
+    const indices = get().resolvedStore.modules[moduleId].lazyRowIndices?.[componentId] || [];
+    if (includeZero && !indices.includes(0)) return [0, ...indices];
+    return indices;
   },
 });

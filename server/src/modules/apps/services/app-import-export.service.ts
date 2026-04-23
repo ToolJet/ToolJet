@@ -1208,10 +1208,13 @@ export class AppImportExportService {
         folderIdMapping[folder.id] = savedFolder.id;
       }
 
+      const queryIdsForThisVersion = new Set(importingDataQueriesForAppVersion.map((q) => q.id));
+      const folderIdsForThisVersion = new Set(foldersForVersion.map((f) => f.id));
+
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
-          (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY && appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.FOLDER && folderIdsForThisVersion.has(m.childId)) ||
+          (m.childType === ChildType.QUERY && queryIdsForThisVersion.has(m.childId))
       );
 
       for (const mapping of mappingsForVersion) {

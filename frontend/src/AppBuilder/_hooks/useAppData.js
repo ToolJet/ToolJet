@@ -117,6 +117,7 @@ const useAppData = (
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
+  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -598,7 +599,7 @@ const useAppData = (
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady) {
+    if (isComponentLayoutReady && isLicenseFetched) {
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -633,7 +634,7 @@ const useAppData = (
 
       loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, moduleId, mode]);
+  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
