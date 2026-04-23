@@ -3,9 +3,11 @@ export type SourceOptions = {
   scope?: string;
 };
 export type QueryOptions = {
+  mode?: string;
   operation: string;
   options: string;
   query: string;
+  query_params?: [string, any][];
   datasetId: string;
   queryOptions: string;
   queryResultsOptions: string;

@@ -71,15 +71,7 @@
           "value": "service_account",
           "name": "Service Account"
         }
-      ],
-      "commonFields": {
-        "location": {
-          "label": "Region",
-          "key": "location",
-          "type": "text",
-          "description": "Geographic location of datasets (e.g. US, EU, asia-south1). Leave empty for default."
-        }
-      }
+      ]
     },
     "oauth2": {
       "access_type": {
@@ -103,6 +95,12 @@
         "key": "project_id",
         "type": "text",
         "description": "Enter your Google Cloud Project ID"
+      },
+      "location": {
+        "label": "Region",
+        "key": "location",
+        "type": "text",
+        "description": "Geographic location of datasets (e.g. US, EU, asia-south1). Leave empty for default."
       },
       "oauth": {
         "key": "oauth",
@@ -154,6 +152,12 @@
         "key": "scope",
         "type": "text",
         "description": "Enter required scopes"
+      },
+      "location": {
+        "label": "Region",
+        "key": "location",
+        "type": "text",
+        "description": "Geographic location of datasets (e.g. US, EU, asia-south1). Leave empty for default."
       }
     }
   }

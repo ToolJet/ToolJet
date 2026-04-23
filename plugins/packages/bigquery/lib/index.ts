@@ -351,7 +351,55 @@ export default class Bigquery implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+
+    if (queryOptions.mode === 'sql') {
+      return this.executeSqlMode(client, sourceOptions, queryOptions);
+    }
+
+    // 'gui' mode or no mode field (backward compat for existing queries)
     return this.executeOperation(client, sourceOptions, queryOptions);
+  }
+
+  private async executeSqlMode(
+    client: any,
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions
+  ): Promise<QueryResult> {
+    try {
+      //SQL query params sends string only, we need to coerce them to their original type before sending to BigQuery
+      const coerce = (value: any): any => {
+        if (typeof value !== 'string') return value;
+        try {
+          return JSON.parse(value.trim());
+        } catch {
+          return value;
+        }
+      };
+
+      const queryParams = (queryOptions.query_params || []).filter(([key]: [string, any]) => key?.trim());
+      const jobOptions: any = {
+        ...this.parseJSON(queryOptions.queryOptions),
+        query: queryOptions.query,
+      };
+
+      if (queryParams.length > 0) {
+        jobOptions.params = Object.fromEntries(queryParams.map(([key, value]: [string, any]) => [key, coerce(value)]));
+      }
+
+      const [job] = await client.createQueryJob(jobOptions);
+      const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+      return { status: 'ok', data: rows };
+    } catch (error) {
+      const errorMessage = error.message || 'An unknown error occurred.';
+      const statusCode = error.response?.statusCode || error.code || error.data?.statusCode || error.statusCode;
+      const isServiceAccount = this.getOptionValue(sourceOptions, 'authentication_type') === 'service_account';
+
+      if (!isServiceAccount && (statusCode === 401 || statusCode === 403)) {
+        throw new OAuthUnauthorizedClientError('Query could not be completed', errorMessage, error);
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, {});
+    }
   }
 
   private async executeOperation(
