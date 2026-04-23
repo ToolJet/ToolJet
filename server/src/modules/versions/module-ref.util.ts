@@ -7,10 +7,13 @@ import { APP_TYPES } from '@modules/apps/constants';
 /**
  * Module version resolution.
  *
- * A parent app references an embedded module by (moduleAppId, moduleVersionId).
- * moduleAppId is a co_relation_id (stable across branches and git-cloned
- * workspaces). moduleVersionId is a name, not a UUID: `app_versions.id` is
- * re-minted per workspace/branch, so a UUID FK would snap on clone.
+ * A ModuleViewer stores two strings in its component properties:
+ *   moduleAppId     — the module's co_relation_id; stable across branches
+ *                     and git-cloned workspaces.
+ *   moduleVersionId — the version's *name* (e.g. "v1"), not its DB id.
+ *                     `app_versions.id` is regenerated on each hydrate, so
+ *                     a UUID foreign key would break after a clone; a name
+ *                     survives the hop.
  *
  * The name has no type tag; meaning is inferred at read time:
  *
