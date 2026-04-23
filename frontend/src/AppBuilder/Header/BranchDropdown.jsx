@@ -250,7 +250,18 @@ export function BranchDropdown({ appId, organizationId }) {
     const isOnDefaultWorkspaceBranch =
       !workspaceActiveBranch || workspaceActiveBranch.is_default || workspaceActiveBranch.isDefault;
     if (!targetBranchName && branchVersions.length === 1 && !isOnDefaultWorkspaceBranch) {
-      targetBranchName = branchVersions[0].name;
+      const singleVersion = branchVersions[0];
+      const singleVersionBranchId = singleVersion.branchId || singleVersion.branch_id;
+      // Guard: only auto-switch when the sole branch version actually belongs to the
+      // current workspace branch. After SeedPushModulesBranch migration, legacy modules
+      // have exactly one BRANCH-type version named 'push-modules' — without this check
+      // every feature branch would incorrectly switch to push-modules on load.
+      const matchesCurrentWsBranch =
+        (singleVersionBranchId && workspaceActiveBranch?.id && singleVersionBranchId === workspaceActiveBranch.id) ||
+        singleVersion.name === workspaceActiveBranch?.name;
+      if (matchesCurrentWsBranch) {
+        targetBranchName = singleVersion.name;
+      }
     }
 
     if (!targetBranchName || targetBranchName === defaultBranch) {

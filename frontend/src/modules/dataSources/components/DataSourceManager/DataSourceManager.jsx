@@ -970,10 +970,15 @@ class DataSourceManagerComponent extends React.Component {
       },
       { ...(selectedDataSource?.options ?? {}) }
     );
-    const isSaveDisabled = selectedDataSource
-      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
-        selectedDataSource?.name === datasourceName
-      : true;
+    // Sample datasources are read-only (no DynamicForm, no save button), so they're never "editing".
+    // Without this guard, normalizedSavedOptions gets defaults added that state.options never receives
+    // (since DynamicForm which fills defaults isn't rendered for sample dbs), causing a false mismatch.
+    const isSaveDisabled =
+      isSampleDb ||
+      (selectedDataSource
+        ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+          selectedDataSource?.name === datasourceName
+        : true);
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
