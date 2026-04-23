@@ -178,12 +178,20 @@ export async function resolveModuleRef(
 
 /**
  * After hydrating a feature-branch AppVersion, inherit pinned moduleVersionId
- * values from the matching component on the default branch. The YAML on disk
- * can be stale pre-pin (pinUnpinnedModuleViewerRefs never propagates to git),
- * so without this pass branch creation silently drops the pin.
+ * values from the matching component on the default branch. The component JSON
+ * committed to git can be stale pre-pin (pinUnpinnedModuleViewerRefs writes
+ * only to the DB; push is manual), so without this pass the feature branch
+ * lands with whatever ref was last pushed — usually an unpinned branch-name.
  *
- * Match key: component.co_relation_id. Only `pinned` default-branch refs are
- * copied; unpinned/orphaned refs keep their branch-following semantics.
+ * Match key: component.co_relation_id.
+ *
+ * Policy:
+ *   - Only `pinned` default-branch refs are eligible to copy.
+ *   - A feature-branch component that already classifies as `pinned` is left
+ *     alone — the user's explicit pin on this branch wins over main's pin,
+ *     even if they differ.
+ *   - Unpinned/orphaned feature-branch refs are overwritten with the default's
+ *     pin so branch creation doesn't silently drop the pin.
  */
 export async function reconcileModuleViewerPinsFromDefault(
   manager: EntityManager,
@@ -246,8 +254,14 @@ export async function reconcileModuleViewerPinsFromDefault(
     });
     if (!moduleApp) continue;
 
-    const ref = await classifyModuleRef(manager, moduleApp, def.moduleVersionId, organizationId);
-    if (ref.kind !== 'pinned') continue;
+    // Don't overwrite a manual pin already set on the feature branch.
+    if (feat.moduleVersionId) {
+      const featRef = await classifyModuleRef(manager, moduleApp, feat.moduleVersionId, organizationId);
+      if (featRef.kind === 'pinned') continue;
+    }
+
+    const defRef = await classifyModuleRef(manager, moduleApp, def.moduleVersionId, organizationId);
+    if (defRef.kind !== 'pinned') continue;
 
     await manager.query(
       `UPDATE components
