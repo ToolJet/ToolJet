@@ -146,11 +146,14 @@ export class AppsUtilService implements IAppsUtilService {
                 outputItems: { value: [] },
                 visibility: { value: '{{true}}' },
               },
+              general: {},
               styles: { backgroundColor: { value: '#fff' } },
+              generalStyles: {},
               displayPreferences: {
                 showOnDesktop: { value: '{{true}}' },
                 showOnMobile: { value: '{{true}}' },
               },
+              validation: {},
             })
           );
           await manager.save(
@@ -204,11 +207,14 @@ export class AppsUtilService implements IAppsUtilService {
                 outputItems: { value: [] },
                 visibility: { value: '{{true}}' },
               },
+              general: {},
               styles: { backgroundColor: { value: '#fff' } },
+              generalStyles: {},
               displayPreferences: {
                 showOnDesktop: { value: '{{true}}' },
                 showOnMobile: { value: '{{true}}' },
               },
+              validation: {},
             })
           );
           await manager.save(
