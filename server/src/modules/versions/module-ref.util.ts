@@ -30,6 +30,13 @@ import { APP_TYPES } from '@modules/apps/constants';
  * back to the default branch.
  */
 
+/**
+ * UI mapping (ModuleViewerInspector dropdown):
+ *   pinned   → "Pinned to <versionName>"
+ *   unpinned → "Active draft" on the default branch,
+ *              "Current branch" on a sub-branch
+ *   orphaned → no dedicated label; shares the unpinned ⚠ banner
+ */
 export type ModuleRef =
   | { kind: 'pinned'; versionName: string }
   | { kind: 'unpinned'; branchName: string }
