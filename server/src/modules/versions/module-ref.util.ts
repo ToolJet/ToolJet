@@ -37,8 +37,10 @@ import { APP_TYPES } from '@modules/apps/constants';
  * UI mapping (ModuleViewerInspector dropdown):
  *   pinned   → "Pinned to <versionName>"
  *   unpinned → "Active draft" on the default branch,
- *              "Current branch" on a sub-branch
- *   orphaned → no dedicated label; shares the unpinned ⚠ banner
+ *              "Current branch" on a sub-branch (⚠ warning icon)
+ *   orphaned → renders as the unpinned option; the inspector treats any
+ *              non-pinned-name ref the same, so orphaned refs share the
+ *              "Current branch"/"Active draft" display and its ⚠ icon.
  */
 export type ModuleRef =
   | { kind: 'pinned'; versionName: string }
