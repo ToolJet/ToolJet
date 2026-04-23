@@ -1188,6 +1188,10 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppFromTemplateModal = async (template) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ showSwitchBranchForCreate: true });
+      return;
+    }
     try {
       const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
         (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
@@ -2120,7 +2124,15 @@ class HomePageComponent extends React.Component {
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
                           showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                            this.props.appType !== 'module'
+                              ? () => {
+                                  if (this.isWorkspaceBranchLocked()) {
+                                    this.setState({ showSwitchBranchForCreate: true });
+                                    return;
+                                  }
+                                  this.showTemplateLibraryModal();
+                                }
+                              : undefined
                           }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
@@ -2128,6 +2140,12 @@ class HomePageComponent extends React.Component {
                             this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
                           }
                           readAndImport={this.readAndImport}
+                          onImportFromDeviceClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                              return false;
+                            }
+                          }}
                           appType={this.props.appType}
                         />
                       </Dropdown>
@@ -2250,6 +2268,12 @@ class HomePageComponent extends React.Component {
                       isLoading={true}
                       createApp={this.createApp}
                       readAndImport={this.readAndImport}
+                      onImportFromDeviceClick={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                          return false;
+                        }
+                      }}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
@@ -2302,7 +2326,13 @@ class HomePageComponent extends React.Component {
                         disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
-                        onClick={this.openCreateAppModal}
+                        onClick={() => {
+                          if (this.isWorkspaceBranchLocked()) {
+                            this.setState({ showSwitchBranchForCreate: true });
+                            return;
+                          }
+                          this.openCreateAppModal();
+                        }}
                         data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
