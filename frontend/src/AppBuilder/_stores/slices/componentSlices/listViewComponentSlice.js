@@ -6,6 +6,39 @@ export const listViewComponentSlice = (set, get) => ({
   // Per-row exposed value write for ListView children.
   // After writing, derives the parent ListView's children/data directly in the store.
   setExposedValuePerRow: (componentId, property, value, indices, moduleId = 'canvas') => {
+    if (typeof value !== 'function' && get().isExposedValueBatching()) {
+      get().bufferExposedValueMutation(
+        (state) => {
+          const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+          if (!Array.isArray(components[componentId])) components[componentId] = [];
+          let current = components[componentId];
+          for (let i = 0; i < indices.length - 1; i++) {
+            const idx = indices[i];
+            if (!current[idx]) current[idx] = [];
+            else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
+            current = current[idx];
+          }
+          const lastIdx = indices[indices.length - 1];
+          if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
+            current[lastIdx] = {};
+          }
+          current[lastIdx][property] = value;
+        },
+        [{ path: `components.${componentId}.${property}`, moduleId }]
+      );
+      // _deriveListviewChain reads from the store — it must run after all buffered mutations
+      // are flushed. Register once per (listview, row) via dedupeKey.
+      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        get().bufferExposedValuePostFlush(
+          () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+          `${nearestListviewId}|${indices.join(',')}|${moduleId}`
+        );
+      }
+      return;
+    }
+
     set(
       (state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
@@ -52,6 +85,39 @@ export const listViewComponentSlice = (set, get) => ({
 
   // Batch per-row exposed value write for ListView children.
   setExposedValuesPerRow: (componentId, values, indices, moduleId = 'canvas') => {
+    if (get().isExposedValueBatching()) {
+      const depPaths = Object.keys(values)
+        .filter((key) => typeof values[key] !== 'function')
+        .map((key) => ({ path: `components.${componentId}.${key}`, moduleId }));
+      get().bufferExposedValueMutation((state) => {
+        const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+        if (!Array.isArray(components[componentId])) components[componentId] = [];
+        let current = components[componentId];
+        for (let i = 0; i < indices.length - 1; i++) {
+          const idx = indices[i];
+          if (!current[idx]) current[idx] = [];
+          else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
+          current = current[idx];
+        }
+        const lastIdx = indices[indices.length - 1];
+        if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
+          current[lastIdx] = {};
+        }
+        Object.entries(values).forEach(([key, value]) => {
+          current[lastIdx][key] = value;
+        });
+      }, depPaths);
+      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        get().bufferExposedValuePostFlush(
+          () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+          `${nearestListviewId}|${indices.join(',')}|${moduleId}`
+        );
+      }
+      return;
+    }
+
     const skipKeys = new Set();
     set(
       (state) => {
