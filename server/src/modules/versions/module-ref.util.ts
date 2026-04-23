@@ -24,10 +24,10 @@ import { APP_TYPES } from '@modules/apps/constants';
  * Lookup A runs first so a version named after a branch (e.g. "main")
  * classifies as pinned — explicit user intent wins.
  *
- * Resolution scopes to the consumer's branchId (from x-branch-id). Default-
- * branch fallback fires only when the consumer has no branch context
- * (embedded viewer / public access) — never as a name-matching search across
- * branches (cross-branch match was the bug fixed in d9c4ccf969).
+ * Resolution is always scoped to the consumer's branchId (from the
+ * x-branch-id header). When the request has no branchId — a public-share
+ * URL or an embedded viewer without an auth session — the resolver falls
+ * back to the default branch.
  */
 
 export type ModuleRef =
