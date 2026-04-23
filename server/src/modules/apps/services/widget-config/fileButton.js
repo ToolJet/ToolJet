@@ -170,7 +170,7 @@ export const fileButtonConfig = {
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconFileSearch' },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconFileUpload' },
       accordian: 'label and icon',
       visibility: false,
     },
