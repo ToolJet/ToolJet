@@ -277,7 +277,31 @@ export class VersionService implements IVersionService {
       version = await this.versionRepository.manager.findOne(AppVersion, {
         where: { name: versionName, appId: app.id, branchId, isStub: false },
       });
-      // Attempt 2: unpinned ref on the consumer's branch — latest non-stub version
+      // Attempt 2: consumer is on a feature branch asking for a named saved
+      // version (e.g. "v1") that only exists on the org's default branch.
+      // Saved VERSION rows are authored only on the default branch and represent
+      // canonical, immutable module history, so serving them cross-branch is
+      // safe. Gated to `versionType = VERSION` and the default branch, so
+      // feature-branch working content (DRAFT rows) can never be returned here
+      // — no cross-branch leak of unmerged changes. Runs before attempt 3 so
+      // an explicit pin to "v1" wins over the feature branch's own latest draft.
+      if (!version) {
+        const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+        });
+        if (defaultBranch && defaultBranch.id !== branchId) {
+          version = await this.versionRepository.manager.findOne(AppVersion, {
+            where: {
+              name: versionName,
+              appId: app.id,
+              branchId: defaultBranch.id,
+              versionType: AppVersionType.VERSION,
+              isStub: false,
+            },
+          });
+        }
+      }
+      // Attempt 3: unpinned ref on the consumer's branch — latest non-stub version
       // for this module on this branch, regardless of name. Handles the case where
       // the stored moduleVersionId is a foreign branch name (e.g. a merge from a
       // feature branch into master brought "feature-1" along) and we just want the
