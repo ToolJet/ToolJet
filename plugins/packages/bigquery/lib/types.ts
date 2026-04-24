@@ -13,6 +13,8 @@ export type QueryOptions = {
   queryResultsOptions: string;
   tableId: string;
   rows: string;
+  records?: any;
+  primary_key_columns?: any;
   condition: string;
   columns: object;
   viewcolumns: string;

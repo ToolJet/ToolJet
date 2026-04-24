@@ -101,6 +101,18 @@
           {
             "value": "update_record",
             "name": "Update Record"
+          },
+          {
+            "value": "bulk_insert",
+            "name": "Bulk insert"
+          },
+          {
+            "value": "bulk_update_pkey",
+            "name": "Bulk update using primary key"
+          },
+          {
+            "value": "bulk_upsert_pkey",
+            "name": "Bulk upsert using primary key"
           }
         ]
       },
@@ -539,6 +551,170 @@
           "description": "Enter Query results options",
           "height": "150px",
           "editorType": "extendedSingleLine"
+        }
+      },
+      "bulk_insert": {
+        "datasetId": {
+          "label": "Dataset id",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table id",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "records": {
+          "label": "Records to insert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_update_pkey": {
+        "datasetId": {
+          "label": "Dataset id",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table id",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "One or more primary key columns. Enter a single column name or an array for composite keys.",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to update",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to update. Each row must include all primary key column values.",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_upsert_pkey": {
+        "datasetId": {
+          "label": "Dataset id",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table id",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "One or more primary key columns used to detect conflicts. Enter a single column name or an array for composite keys.",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update. Each row must include all primary key column values.",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
         }
       }
     }

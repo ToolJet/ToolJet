@@ -512,6 +512,51 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
+
+        case 'bulk_insert': {
+          const records = Array.isArray(queryOptions.records)
+            ? queryOptions.records
+            : (this.parseJSON(queryOptions.records) as any[]);
+          const insertResult = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).insert(records);
+          result = { ...insertResult[0], inserted: records.length };
+          break;
+        }
+
+        case 'bulk_update_pkey': {
+          const records = Array.isArray(queryOptions.records)
+            ? queryOptions.records
+            : (this.parseJSON(queryOptions.records) as any[]);
+          const pkColumns = this.parsePrimaryKeyColumns(queryOptions.primary_key_columns);
+          const query = this.buildMergeQuery(
+            queryOptions.datasetId,
+            queryOptions.tableId,
+            pkColumns,
+            records,
+            'update'
+          );
+          const [job] = await client.createQueryJob({ query });
+          const [rows] = await job.getQueryResults();
+          result = rows;
+          break;
+        }
+
+        case 'bulk_upsert_pkey': {
+          const records = Array.isArray(queryOptions.records)
+            ? queryOptions.records
+            : (this.parseJSON(queryOptions.records) as any[]);
+          const pkColumns = this.parsePrimaryKeyColumns(queryOptions.primary_key_columns);
+          const query = this.buildMergeQuery(
+            queryOptions.datasetId,
+            queryOptions.tableId,
+            pkColumns,
+            records,
+            'upsert'
+          );
+          const [job] = await client.createQueryJob({ query });
+          const [rows] = await job.getQueryResults();
+          result = rows;
+          break;
+        }
       }
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body || error.message });
@@ -711,6 +756,66 @@ export default class Bigquery implements QueryService {
       columString.push(`${key}=${primaryKeyValue}`);
     }
     return columString.join(',');
+  }
+
+  private parsePrimaryKeyColumns(primary_key_columns: any): string[] {
+    if (Array.isArray(primary_key_columns)) return primary_key_columns;
+    const s = String(primary_key_columns).trim();
+    try {
+      const parsed = JSON.parse(s);
+      return Array.isArray(parsed) ? parsed : [s];
+    } catch {
+      return [s];
+    }
+  }
+
+  private bqLiteral(value: any): string {
+    if (value === null || value === undefined) return 'NULL';
+    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+    if (typeof value === 'number') return String(value);
+    if (typeof value === 'string') return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    return `'${JSON.stringify(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  }
+
+  private buildMergeQuery(
+    datasetId: string,
+    tableId: string,
+    pkColumns: string[],
+    records: any[],
+    mode: 'update' | 'upsert'
+  ): string {
+    if (!records.length) throw new Error('No records provided');
+
+    const allColumns = Object.keys(records[0]);
+    const nonPkColumns = allColumns.filter((col) => !pkColumns.includes(col));
+
+    const structRows = records.map((record) => {
+      const fields = allColumns.map((col) => `${this.bqLiteral(record[col])} AS \`${col}\``);
+      return `STRUCT(${fields.join(', ')})`;
+    });
+
+    if (mode === 'update' && nonPkColumns.length === 0) {
+      throw new Error('No non-primary-key columns to update.');
+    }
+
+    const joinCondition = pkColumns.map((pk) => `T.\`${pk}\` = S.\`${pk}\``).join(' AND ');
+
+    let query = `MERGE \`${datasetId}.${tableId}\` AS T
+USING UNNEST([${structRows.join(', ')}]) AS S
+ON ${joinCondition}`;
+
+    if (nonPkColumns.length > 0) {
+      const updateSet = nonPkColumns.map((col) => `T.\`${col}\` = S.\`${col}\``).join(', ');
+      query += `\nWHEN MATCHED THEN UPDATE SET ${updateSet}`;
+    }
+
+    if (mode === 'upsert') {
+      const insertCols = allColumns.map((col) => `\`${col}\``).join(', ');
+      const insertVals = allColumns.map((col) => `S.\`${col}\``).join(', ');
+      query += `\nWHEN NOT MATCHED THEN INSERT (${insertCols}) VALUES (${insertVals})`;
+    }
+
+    return query;
   }
 
   private async _fetchDatasets(
