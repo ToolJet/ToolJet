@@ -2,7 +2,7 @@ import { MigrationProgress, processDataInBatches } from '@helpers/migration.help
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 const MIGRATION_NAME = 'UpdatePostgresqlAndMySQLPrimaryKeyColumnVariableToPrimaryKeyColumns';
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 100;
 
 export class UpdatePostgresqlAndMySQLPrimaryKeyColumnVariableToPrimaryKeyColumns1776977100104 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
