@@ -6,19 +6,22 @@ const SuspenseCountContext = createContext();
 
 // Added this to track the number of pending Suspense components
 // deferCheck: When true, defers the resolution check to handle nested lazy loading (e.g., ModuleContainer -> Table)
-export const SuspenseCountProvider = ({ onAllResolved, children, deferCheck = false }) => {
+export const SuspenseCountProvider = ({ onAllResolved, children, deferCheck = false, disabled = false }) => {
   const pendingCount = useRef(0);
   const hasInitialized = useRef(false);
   const hasResolved = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAndResolve = useCallback(() => {
+    // When disabled (e.g. pageLoader=true, Container hidden), don't fire onAllResolved.
+    // The provider will remount with disabled=false once the Container is shown.
+    if (disabled) return;
     if (pendingCount.current === 0 && hasInitialized.current && !hasResolved.current) {
       hasResolved.current = true;
       setIsLoading(false);
       onAllResolved();
     }
-  }, [onAllResolved]);
+  }, [onAllResolved, disabled]);
 
   const increment = useCallback(() => {
     pendingCount.current += 1;
