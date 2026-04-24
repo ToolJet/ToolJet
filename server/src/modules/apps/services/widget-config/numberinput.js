@@ -56,6 +56,13 @@ export const numberinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -312,6 +319,8 @@ export const numberinputConfig = {
       decimalPlaces: { value: '{{2}}' },
       tooltip: { value: '' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       showClearBtn: { value: '{{false}}' },
