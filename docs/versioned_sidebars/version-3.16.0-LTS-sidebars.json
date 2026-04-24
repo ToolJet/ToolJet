@@ -314,6 +314,7 @@
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
+                "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
                 {
