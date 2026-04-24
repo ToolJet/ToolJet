@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 // import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
 import _ from 'lodash';
@@ -35,8 +36,6 @@ export const Listview = function Listview({
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
-  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch, shallow);
-  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const isWidgetInContainerDragging = useStore(
     (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -127,8 +126,6 @@ export const Listview = function Listview({
     } else setPositiveColumns(columns);
   }, [columns]);
 
-  const prevRenderedRowCount = useRef(0);
-
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {
     setCurrentPage(page);
@@ -172,21 +169,7 @@ export const Listview = function Listview({
 
   const renderedRowCount = filteredData.length;
 
-  // Start a batch before children's mount useEffects fire (useLayoutEffect runs before any useEffect)
-  // so that all setExposedValuePerRow calls from newly mounted children are coalesced into one
-  // store write instead of N×M individual writes.
-  useLayoutEffect(() => {
-    if (renderedRowCount > prevRenderedRowCount.current) {
-      startExposedValueBatch();
-    }
-  }, [renderedRowCount]);
-
-  useEffect(() => {
-    if (renderedRowCount > prevRenderedRowCount.current) {
-      prevRenderedRowCount.current = renderedRowCount;
-      flushExposedValueBatch();
-    }
-  }, [renderedRowCount]);
+  useExposedValueBatch(renderedRowCount);
 
   return (
     <div

@@ -240,6 +240,10 @@ export const createAppSlice = (set, get) => ({
       return;
     }
 
+    // Set the flag synchronously before the first yieldToMain so rapid back-to-back
+    // switchPage calls don't slip through the guard above while doSwitch is awaiting.
+    get().setPageSwitchInProgress(true);
+
     const doSwitch = async () => {
       const {
         setCurrentPageId,
@@ -322,7 +326,6 @@ export const createAppSlice = (set, get) => ({
       );
       setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
       initDependencyGraph('canvas');
-      setPageSwitchInProgress(true);
       setIsComponentLayoutReady(false, moduleId);
       await yieldToMain(); // Let React commit all state changes before showing the Container
 
@@ -333,6 +336,8 @@ export const createAppSlice = (set, get) => ({
     doSwitch().catch((error) => {
       console.error('Page switch failed:', error);
       get().setPageLoader(false);
+      get().setPageSwitchInProgress(false);
+      get().flushExposedValueBatch();
     });
   },
   setPageSwitchInProgress: (isInProgress) =>

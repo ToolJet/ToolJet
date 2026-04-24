@@ -1040,7 +1040,7 @@ export const createComponentsSlice = (set, get) => ({
           if (parentId) {
             let cur = components[parentId];
             while (cur) {
-              if (cur.component.component === 'Listview') return;
+              if (ROW_SCOPED_WIDGET_TYPES.includes(cur.component.component)) return;
               cur = components[cur.component.parent];
             }
           }

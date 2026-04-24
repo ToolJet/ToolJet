@@ -75,9 +75,9 @@ export function createBatchManager<S extends StoreWithDependencies>(
     },
 
     flush: (actionName = 'batchFlush') => {
+      if (_depth === 0) return;
       _depth--;
       if (_depth > 0) return;
-      _depth = 0;
 
       const mutations = _mutations;
       const depPaths = _depPaths;

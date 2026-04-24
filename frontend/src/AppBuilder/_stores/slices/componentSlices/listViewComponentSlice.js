@@ -7,6 +7,14 @@ export const listViewComponentSlice = (set, get) => ({
   // After writing, derives the parent ListView's children/data directly in the store.
   setExposedValuePerRow: (componentId, property, value, indices, moduleId = 'canvas') => {
     if (typeof value !== 'function' && get().isExposedValueBatching()) {
+      // Only register a dep path when this is an update to an existing row slot.
+      // Brand-new row slots have no downstream dependents yet, so dep traversal is a no-op.
+      const existingComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
+      const lastIdx = indices[indices.length - 1];
+      let existingRow = Array.isArray(existingComponents?.[componentId]) ? existingComponents[componentId] : null;
+      for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
+      const isUpdate = existingRow?.[lastIdx]?.[property] !== undefined;
+
       get().bufferExposedValueMutation(
         (state) => {
           const components = state.resolvedStore.modules[moduleId].exposedValues.components;
@@ -18,13 +26,12 @@ export const listViewComponentSlice = (set, get) => ({
             else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
             current = current[idx];
           }
-          const lastIdx = indices[indices.length - 1];
           if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
             current[lastIdx] = {};
           }
           current[lastIdx][property] = value;
         },
-        [{ path: `components.${componentId}.${property}`, moduleId }]
+        isUpdate ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
       );
       // _deriveListviewChain reads from the store — it must run after all buffered mutations
       // are flushed. Register once per (listview, row) via dedupeKey.

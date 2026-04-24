@@ -2,6 +2,7 @@ import { resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
+import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import _ from 'lodash';
 
 const initialState = {
@@ -44,6 +45,28 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
 
 export const createResolvedSlice = (set, get) => {
   const _exposedValueBatch = createBatchManager(set, get);
+
+  // Implicit microtask batch: coalesces dep cascades from setVariable / setExposedValue
+  // calls that happen outside an explicit batch window (ListView/Form bracket).
+  // Store writes are synchronous (reads work immediately in the same runJS context);
+  // only the dep resolution is deferred.
+  let _implicitBatchScheduled = false;
+  const scheduleDependencyUpdate = (depPath, moduleId) => {
+    if (_exposedValueBatch.isBatching()) {
+      // Explicit batch already open — add the dep path to it
+      _exposedValueBatch.bufferMutation(() => {}, [{ path: depPath, moduleId }]);
+      return;
+    }
+    if (!_implicitBatchScheduled) {
+      _implicitBatchScheduled = true;
+      _exposedValueBatch.startBatch();
+      queueMicrotask(() => {
+        _implicitBatchScheduled = false;
+        _exposedValueBatch.flush('implicitMicrotaskBatch');
+      });
+    }
+    _exposedValueBatch.bufferMutation(() => {}, [{ path: depPath, moduleId }]);
+  };
 
   return {
     ...initialState,
@@ -138,10 +161,9 @@ export const createResolvedSlice = (set, get) => {
         'setVariablesBatch'
       );
 
-      get().updateDependencyValuesBatch(
-        keys.map((key) => `variables.${key}`),
-        moduleId
-      );
+      // Route all dep paths through scheduleDependencyUpdate so they coalesce with
+      // any concurrent setVariable / setExposedVariable calls in the same microtask batch.
+      keys.forEach((key) => scheduleDependencyUpdate(`variables.${key}`, moduleId));
       get().rebuildVariableHints(moduleId);
     },
 
@@ -162,14 +184,16 @@ export const createResolvedSlice = (set, get) => {
 
     // variables
     setVariable: (key, value, moduleId = 'canvas') => {
+      // Synchronous write so getVariable reads the new value immediately in the same runJS context.
       set(
         (state) => {
           state.resolvedStore.modules[moduleId].exposedValues.variables[key] = value;
         },
         false,
-        'setVariables'
+        'setVariable'
       );
-      get().updateDependencyValues(`variables.${key}`, moduleId);
+      // Dep cascade is deferred — coalesces with concurrent setVariable / setExposedVariable calls.
+      scheduleDependencyUpdate(`variables.${key}`, moduleId);
       get().rebuildVariableHints(moduleId);
     },
 
@@ -436,7 +460,8 @@ export const createResolvedSlice = (set, get) => {
       if (_exposedValueBatch.isBatching()) {
         _exposedValueBatch.bufferMutation(
           (state) => {
-            if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+            const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+            if (existing === undefined || Array.isArray(existing))
               state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
             state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
           },
@@ -447,7 +472,8 @@ export const createResolvedSlice = (set, get) => {
 
       set(
         (state) => {
-          if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          if (existing === undefined || Array.isArray(existing))
             state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
               [property]: value,
             };
@@ -459,7 +485,9 @@ export const createResolvedSlice = (set, get) => {
           payload: { componentId, property, value, moduleId },
         }
       );
-      get().updateDependencyValues(`components.${componentId}.${property}`, moduleId);
+      if (typeof value !== 'function') {
+        scheduleDependencyUpdate(`components.${componentId}.${property}`, moduleId);
+      }
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
@@ -511,7 +539,7 @@ export const createResolvedSlice = (set, get) => {
       );
       Object.entries(values).forEach(([key, value]) => {
         if (typeof value !== 'function' && !skipKeys.has(key))
-          get().updateDependencyValues(`components.${id}.${key}`, moduleId);
+          scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
       });
     },
 
@@ -526,7 +554,7 @@ export const createResolvedSlice = (set, get) => {
       if (parentId) {
         let cur = get().getComponentDefinition(parentId, moduleId);
         while (cur) {
-          if (cur.component.component === 'Listview') return;
+          if (ROW_SCOPED_WIDGET_TYPES.includes(cur.component.component)) return;
           cur = get().getComponentDefinition(cur.component.parent, moduleId);
         }
       }
@@ -783,6 +811,8 @@ export const createResolvedSlice = (set, get) => {
       set((state) => {
         state.resolvedStore.modules[moduleId].components = {};
         state.resolvedStore.modules[moduleId].customResolvables = {};
+        state.resolvedStore.modules[moduleId].lazyResolvableParents = {};
+        state.resolvedStore.modules[moduleId].lazyRowIndices = {};
         state.resolvedStore.modules[moduleId].exposedValues.queries = {};
         state.resolvedStore.modules[moduleId].exposedValues.components = {};
         state.resolvedStore.modules[moduleId].exposedValues.variables = {};
