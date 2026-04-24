@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "rxjs"]
+  },
   "exclude": [
     "node_modules",
     "test",
