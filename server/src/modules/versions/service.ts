@@ -19,7 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
-import { classifyModuleRef, resolveModuleRef } from './module-ref.util';
+import { classifyModuleRef, listModuleVersions, resolveModuleRef } from './module-ref.util';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -126,7 +126,15 @@ export class VersionService implements IVersionService {
     // No-op in CE, EE overrides to capture history
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
-    const result = await this.versionRepository.getVersionsInApp(app.id, branchId);
+    const result =
+      app.type === APP_TYPES.MODULE
+        ? await listModuleVersions(
+            this.versionRepository.manager,
+            app,
+            branchId,
+            app.organizationId
+          )
+        : await this.versionRepository.getVersionsInApp(app.id, branchId);
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
