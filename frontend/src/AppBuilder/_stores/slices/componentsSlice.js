@@ -3060,9 +3060,26 @@ export const createComponentsSlice = (set, get) => ({
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
     if (parentType === 'Listview') {
-      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
+      let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;
+      }
+      // For nested Listviews (Listview-inside-Listview), the parent Listview's
+      // exposed value is itself an array indexed by outer-row indices — each
+      // outer-row entry holds a separate `{ children: [...] }` structure for
+      // that row's copy of the inner Listview. Walk through every index
+      // except the last to reach the correct leaf, then index `children`
+      // with the last (immediate-row) index. Without this traversal the
+      // lookup falls through at the array level and returns undefined, which
+      // makes callers like `resolveContainerHeight` (Accordion's
+      // `isExpanded` check) treat the component as its default state
+      // (expanded) regardless of actual runtime state.
+      const outerIndices = Array.isArray(indices) ? indices.slice(0, -1) : [];
+      for (const idx of outerIndices) {
+        parentComponent = parentComponent?.[idx];
+        if (parentComponent == null) {
+          return undefined;
+        }
       }
       const subcontainerParentComponent = parentComponent?.children?.[lastIndex];
       return subcontainerParentComponent?.[componentName]?.[property];

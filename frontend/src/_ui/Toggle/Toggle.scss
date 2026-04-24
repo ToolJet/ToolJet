@@ -2,6 +2,10 @@
     margin-left: 8px;
 }
 
+.form-check-input.tj-toggle-switch:not(:checked) {
+    border: 1px solid var(--slate7); 
+}
+
 .form-check-input.tj-toggle-switch{
     width: 28px !important;
     height: 16px !important;
