@@ -985,6 +985,7 @@ export class AppsUtilService implements IAppsUtilService {
                SELECT id FROM apps
                WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
+                 AND organization_id = :orgId
              )
            )
            OR (
@@ -1000,6 +1001,7 @@ export class AppsUtilService implements IAppsUtilService {
                SELECT id FROM apps
                WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
+                 AND organization_id = :orgId
              )
            )`,
           { orgId: organizationId }
