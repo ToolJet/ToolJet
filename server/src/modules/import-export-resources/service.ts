@@ -10,6 +10,7 @@ import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { AppsRepository } from '@modules/apps/repository';
+import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
@@ -80,7 +81,8 @@ export class ImportExportResourcesService {
     importResourcesDto: ImportResourcesDto,
     cloning = false,
     isGitApp = false,
-    isTemplateApp = false
+    isTemplateApp = false,
+    manager?: EntityManager
   ) {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
@@ -143,7 +145,7 @@ export class ImportExportResourcesService {
       }
 
       return imports;
-    });
+    }, manager);
   }
 
   async legacyImport(user: User, templateDefinition: any, appName: string) {
