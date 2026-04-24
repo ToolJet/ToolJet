@@ -1613,7 +1613,8 @@ export class AppImportExportService {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
-          user
+          user,
+          isGitApp
         );
 
         appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
@@ -2316,7 +2317,8 @@ export class AppImportExportService {
   async findOrCreateDataSourceForAppVersion(
     manager: EntityManager,
     dataSource: DataSource,
-    user: User
+    user: User,
+    isGitApp = false
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
@@ -2374,6 +2376,13 @@ export class AppImportExportService {
       (await globalDataSourceWithSameNameExists(dataSource));
 
     if (existingDatasource) return existingDatasource;
+
+    if (isGitApp) {
+      throw new BadRequestException(
+        `The connected branch doesn't have the data source "${dataSource.name}" available. ` +
+          `Make sure it's committed to the data-sources/ folder in your branch.`
+      );
+    }
 
     const createDsFromPluginInstalled = async (ds: DataSource): Promise<DataSource> => {
       const plugin = await manager.findOneOrFail(Plugin, {
