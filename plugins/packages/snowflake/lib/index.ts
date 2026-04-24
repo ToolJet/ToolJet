@@ -495,7 +495,7 @@ export default class Snowflake implements QueryService {
         throw new QueryError('Bearer token not found', 'Bearer token is required for bearer token authentication', {});
       }
       connectionConfig.token = sourceOptions.bearer_token;
-      connectionConfig.authenticator = 'OAUTH';
+      connectionConfig.authenticator = 'PROGRAMMATIC_ACCESS_TOKEN';
     } else if (sourceOptions.auth_type === 'key_pair') {
       if (!sourceOptions.username) {
         throw new QueryError('Username not found', 'Username is required for key pair authentication', {});
