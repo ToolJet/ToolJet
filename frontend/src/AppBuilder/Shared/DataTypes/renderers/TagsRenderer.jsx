@@ -18,14 +18,16 @@ const sortOptions = (opts, sortTags) => {
   });
 };
 
-const getTagChipStyles = (data, selectProps) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  background: selectProps?.optionColors?.[data?.value] || 'var(--surfaces-surface-03)',
-  borderRadius: '6px',
-  color: data?.labelColor || selectProps?.textColor || 'var(--text-primary)',
-  fontSize: '12px',
-});
+const getTagChipStyles = (data, selectProps) => {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    background: selectProps?.optionColors?.[data?.value] || 'var(--surfaces-surface-03)',
+    borderRadius: '6px',
+    color: data?.labelColor || selectProps?.selectedTextColor || 'var(--text-primary)',
+    fontSize: '12px',
+  };
+};
 
 const TagsMultiValueRemove = ({ innerProps, selectProps }) => {
   if (!selectProps?.isEditable) return null;
@@ -198,7 +200,7 @@ export const TagsRenderer = ({
 
       return {
         bg: optionColors?.[optionValue] || 'var(--surfaces-surface-03)',
-        text: matchedOption?.labelColor || textColor || 'var(--text-primary)',
+        text: matchedOption?.labelColor || 'var(--text-primary)',
       };
     },
     [allOptions, optionColors, textColor]
@@ -334,6 +336,7 @@ export const TagsRenderer = ({
     [isMulti, defaultOptionsList]
   );
 
+  console.log('defaultValue', defaultValue);
   const resolveSelectedOption = useCallback(
     (item) => {
       if (item == null || item === '') return null;

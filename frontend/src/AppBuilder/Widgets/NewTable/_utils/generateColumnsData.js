@@ -324,7 +324,7 @@ export default function generateColumnsData({
                   disabled={!isEditable}
                   darkMode={darkMode}
                   containerWidth={columnSize}
-                  defaultOptionsList={column?.defaultOptionsList || []}
+                  defaultOptionsList={useDynamicOptions ? [] : column?.defaultOptionsList || []}
                   optionsLoadingState={
                     useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
                   }
