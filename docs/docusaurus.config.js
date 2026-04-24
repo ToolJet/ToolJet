@@ -371,145 +371,8 @@ module.exports = {
             from: '/docs/slack',
           },
           {
-            to: '/docs/security/constants/',
-            from: '/docs/org-management/workspaces/workspace_constants/',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/overview',
-            from: '/docs/gitsync',
-          },
-          {
-            to: '/docs/user-management/role-based-access/access-control',
-            from: '/docs/tutorial/manage-users-groups',
-          },
-          {
-            to: '/docs/security/constants/variables',
-            from: '/docs/org-management/workspaces/workspace-variables-migration',
-          },
-          {
-            to: '/docs/tj-setup/smtp-setup/configuration',
-            from: '/docs/org-management/smtp-configuration/',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/enterprise/superadmin',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/category/openid-connect',
-          },
-          {
-            to: '/docs/development-lifecycle/release/share-app',
-            from: '/docs/dashboard',
-          },
-          {
-            to: '/docs/security/audit-logs',
-            from: '/docs/enterprise/audit_logs/',
-          },
-          {
-            to: '/docs/tj-setup/org-branding/white-labeling',
-            from: '/docs/enterprise/white-label',
-          },
-          {
-            to: '/docs/tj-setup/licensing/self-hosted',
-            from: '/docs/org-management/licensing/self-hosted',
-          },
-          {
-            to: '/docs/user-management/role-based-access/access-control',
-            from: '/docs/org-management/permissions/',
-          },
-          {
-            to: '/docs/tj-setup/workspaces',
-            from: '/docs/org-management/workspaces/workspace_overview',
-          },
-          {
-            to: '/docs/security/constants/variables',
-            from: '/docs/org-management/workspaces/workspace-variables',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/delete-gitsync',
-            from: '/docs/release-management/gitsync/delete-gitsync',
-          },
-          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
-          // {
-          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-          //   from: '/docs/release-management/gitsync/ssh-config',
-          // },
-          // {
-          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-          //   from: '/docs/release-management/gitsync/tj-config',
-          // },
-          {
-            to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
-            from: '/docs/release-management/multi-environment',
-          },
-          {
             to: '/docs/security/compliance',
             from: '/docs/security/',
-          },
-          {
-            to: '/docs/setup/try-tooljet/',
-            from: '/docs/setup/client/',
-          },
-          {
-            to: '/docs/build-with-ai/overview',
-            from: '/docs/tooljet-ai/overview',
-          },
-          {
-            to: '/docs/tooljet-api',
-            from: '/docs/tutorial/tooljet-api',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/overview',
-            from: '/docs/user-authentication/general-settings',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/user-authentication/password-login',
-          },
-          {
-            to: '/docs/user-management/sso/github',
-            from: '/docs/user-authentication/sso/github',
-          },
-          {
-            to: '/docs/user-management/sso/google',
-            from: '/docs/user-authentication/sso/google',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/user-authentication/sso/oidc',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/azuread',
-            from: '/docs/user-authentication/sso/openid/azuread/',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/google',
-            from: '/docs/user-authentication/sso/openid/google-openid',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/okta',
-            from: '/docs/user-authentication/sso/openid/okta',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/user-authentication/sso/openid/setup',
-          },
-          {
-            to: '/docs/user-management/sso/saml/setup',
-            from: '/docs/user-authentication/sso/saml',
-          },
-          {
-            to: '/docs/user-management/onboard-users/overview',
-            from: '/docs/user-authentication/user-lifecycle/',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/workspace-login',
-            from: '/docs/user-authentication/workspace-login',
-          },
-          {
-            to: '/docs/widgets/table/',
-            from: '/docs/widgets/table/table-properties',
           },
           {
             to: '/docs/setup/upgrade-to-v3',
@@ -519,10 +382,6 @@ module.exports = {
             to: '/docs/tj-setup/observability/observability-otel',
             from: '/docs/tj-setup/observability-otel',
           }
-          // {
-          //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
-          //   from: '/docs/workflows/trigger-workflow-from-app',
-          // }
         ],
       },
     ],
