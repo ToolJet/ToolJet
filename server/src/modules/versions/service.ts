@@ -19,6 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
+import { classifyModuleRef, resolveModuleRef } from './module-ref.util';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -124,8 +125,8 @@ export class VersionService implements IVersionService {
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
-  async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
-    const result = await this.versionRepository.getVersionsInApp(app.id);
+  async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
+    const result = await this.versionRepository.getVersionsInApp(app.id, branchId);
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
@@ -254,68 +255,33 @@ export class VersionService implements IVersionService {
     branchId?: string
   ): Promise<any> {
     // co_relation_id is only unique per-org — multiple orgs can share one after a git-origin clone.
-    const app = await this.versionRepository.manager.findOne(App, {
+    const moduleApp = await this.versionRepository.manager.findOne(App, {
       where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
       order: { createdAt: 'ASC' },
     });
-    if (!app) {
+    if (!moduleApp) {
       throw new NotFoundException('Module not found');
     }
-    // Resolution is strictly scoped to the consumer's current branchId. A previous
-    // implementation had a cross-branch name-only fallback that leaked other branches'
-    // module content into the current branch — e.g. an app authored on a feature
-    // branch stores moduleVersionId="feature-1"; after merging to master, the same
-    // stored ref on master would match the feature branch's AppVersion row (which
-    // still exists under its original name until that branch is deleted) and return
-    // feature-branch content while the user is viewing master.
-    let version: AppVersion | null = null;
-    if (branchId) {
-      // Attempt 1: exact name match on the consumer's branch. Covers pinned refs
-      // (versionName is a real version name like "v1") and sub-branch unpinned refs
-      // (versionName equals the branch name, which hydrateStubApp also uses as the
-      // version name on non-default branches).
-      version = await this.versionRepository.manager.findOne(AppVersion, {
-        where: { name: versionName, appId: app.id, branchId, isStub: false },
-      });
-      // Attempt 2: unpinned ref on the consumer's branch — latest non-stub version
-      // for this module on this branch, regardless of name. Handles the case where
-      // the stored moduleVersionId is a foreign branch name (e.g. a merge from a
-      // feature branch into master brought "feature-1" along) and we just want the
-      // module content that belongs to this branch.
-      if (!version) {
-        version = await this.versionRepository.manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId, isStub: false },
-          order: { createdAt: 'DESC' },
-        });
-      }
-    }
+
+    const ref = await classifyModuleRef(
+      this.versionRepository.manager,
+      moduleApp,
+      versionName,
+      user.organizationId
+    );
+    const version = await resolveModuleRef(
+      this.versionRepository.manager,
+      moduleApp,
+      ref,
+      branchId,
+      user.organizationId
+    );
     if (!version) {
-      // Fallback: consumer has no branchId header (embedded viewer, public access,
-      // etc.) or the module has never been pulled to the consumer's branch. Resolve
-      // to the org's default branch so the viewer isn't blank — but never match
-      // across arbitrary branches by name.
-      const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-        where: { organizationId: user.organizationId, isDefault: true },
-      });
-      if (defaultBranch) {
-        version = await this.versionRepository.manager.findOne(AppVersion, {
-          where: {
-            appId: app.id,
-            branchId: defaultBranch.id,
-            versionType: AppVersionType.VERSION,
-            isStub: false,
-          },
-          order: { createdAt: 'DESC' },
-        });
-      }
-    }
-    if (!version) {
-      // Use NotFoundException (not findOneOrFail) so drift between parent
-      // reference and module state surfaces as 404 instead of 500.
+      // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
       throw new NotFoundException('Module version not found');
     }
-    app.appVersions = [version];
-    return this.getVersion(app, user, mode);
+    moduleApp.appVersions = [version];
+    return this.getVersion(moduleApp, user, mode);
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
