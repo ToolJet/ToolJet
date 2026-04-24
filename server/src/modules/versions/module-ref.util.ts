@@ -92,6 +92,48 @@ function findLatestSavedOnDefaultBranch(
   });
 }
 
+async function listSavedVersionsOnDefaultBranch(
+  manager: EntityManager,
+  moduleApp: App,
+  organizationId: string
+): Promise<AppVersion[]> {
+  const defaultBranch = await findDefaultBranch(manager, organizationId);
+  if (!defaultBranch) return [];
+  return manager.find(AppVersion, {
+    where: {
+      appId: moduleApp.id,
+      branchId: defaultBranch.id,
+      versionType: AppVersionType.VERSION,
+      isStub: false,
+    },
+    order: { createdAt: 'DESC' },
+  });
+}
+
+/**
+ * Consumer-branch draft (if any) plus saved versions on the default branch.
+ * A pure branchId filter would drop saved versions on feature branches.
+ */
+export async function listModuleVersions(
+  manager: EntityManager,
+  moduleApp: App,
+  branchId: string | undefined,
+  organizationId: string
+): Promise<AppVersion[]> {
+  const savedVersions = await listSavedVersionsOnDefaultBranch(manager, moduleApp, organizationId);
+  const branchDraft = branchId
+    ? await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          branchId,
+          versionType: AppVersionType.BRANCH,
+          isStub: false,
+        },
+      })
+    : null;
+  return [branchDraft, ...savedVersions].filter((v): v is AppVersion => !!v);
+}
+
 export async function classifyModuleRef(
   manager: EntityManager,
   moduleApp: App,
