@@ -207,6 +207,25 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
+  'Accordion',
+  'CodeEditor',
+  'Container',
+  'Form',
+  'JSONEditor',
+  'JSONExplorer',
+  'KeyValuePair',
+  'Listview',
+  'ModalV2',
+  'RichTextEditor',
+  'Table',
+  'Tabs',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TreeSelect',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
@@ -1189,10 +1208,13 @@ export class AppImportExportService {
         folderIdMapping[folder.id] = savedFolder.id;
       }
 
+      const queryIdsForThisVersion = new Set(importingDataQueriesForAppVersion.map((q) => q.id));
+      const folderIdsForThisVersion = new Set(foldersForVersion.map((f) => f.id));
+
       const mappingsForVersion = importingDataQueryFolderMappings.filter(
         (m) =>
-          (m.childType === ChildType.FOLDER && folderIdMapping[m.childId]) ||
-          (m.childType === ChildType.QUERY && appResourceMappings.dataQueryMapping[m.childId])
+          (m.childType === ChildType.FOLDER && folderIdsForThisVersion.has(m.childId)) ||
+          (m.childType === ChildType.QUERY && queryIdsForThisVersion.has(m.childId))
       );
 
       for (const mapping of mappingsForVersion) {
@@ -2700,6 +2722,11 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
+    properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
