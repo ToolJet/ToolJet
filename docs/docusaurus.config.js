@@ -363,24 +363,132 @@ module.exports = {
       {
         redirects: [
           {
-            to: '/docs/',
             from: '/',
+            to: '/docs/',
           },
           {
-            to: 'https://join.slack.com/t/tooljet/shared_invite/zt-38298nyhf-hK7tNkKNPwYSg1BhRU5mTA',
             from: '/docs/slack',
+            to: 'https://join.slack.com/t/tooljet/shared_invite/zt-38298nyhf-hK7tNkKNPwYSg1BhRU5mTA',
           },
           {
-            to: '/docs/security/compliance',
             from: '/docs/security/',
+            to: '/docs/security/compliance/',
           },
           {
-            to: '/docs/setup/upgrade-to-v3',
             from: '/docs/setup/cloud-v3-migration',
+            to: '/docs/setup/upgrade-to-v3/',
           },
           {
-            to: '/docs/tj-setup/observability/observability-otel',
             from: '/docs/tj-setup/observability-otel',
+            to: '/docs/tj-setup/observability/observability-otel/',
+          },
+          {
+            from: '/docs/how-to/build-dynamic-forms/',
+            to: '/docs/widgets/form/',
+          },
+          {
+            from: '/docs/how-to/use-form-component/',
+            to: '/docs/widgets/form/use-form-component/',
+          },
+          {
+            from: '/docs/how-to/use-events-on-chart',
+            to: '/docs/widgets/chart/',
+          },
+          {
+            from: '/docs/how-to/bulk-update-multiple-rows',
+            to: '/docs/widgets/table/bulk-row-operations/',
+          },
+          {
+            from: '/docs/how-to/delete-multiple-rows',
+            to: '/docs/widgets/table/bulk-row-operations/',
+          },
+          {
+            from: '/docs/how-to/loading-image-pdf-from-db',
+            to: '/docs/widgets/pdf/loading-image-pdf-from-db/',
+          },
+          {
+            from: '/docs/how-to/pass-query-params-in-custom-components',
+            to: '/docs/widgets/custom-component/pass-query-params-in-custom-components/',
+          },
+          {
+            from: '/docs/how-to/access-cellvalue-rowdata',
+            to: '/docs/widgets/table/conditional-formatting/',
+          },
+          {
+            from: '/docs/how-to/conditionally-format-table',
+            to: '/docs/widgets/table/conditional-formatting/',
+          },
+          {
+            from: '/docs/how-to/display-listview-record-on-new-page',
+            to: '/docs/widgets/listview/display-listview-record-on-new-page/',
+          },
+          {
+            from: '/docs/how-to/setup-rsyslog',
+            to: '/docs/security/audit-logs/setup-rsyslog/',
+          },
+          {
+            from: '/docs/how-to/access-currentuser',
+            to: '/docs/app-builder/custom-code/access-currentuser/',
+          },
+          {
+            from: '/docs/how-to/run-actions-from-runjs',
+            to: '/docs/actions/run-actions-from-runjs/',
+          },
+          {
+            from: '/docs/how-to/print-multi-tabs-report',
+            to: '/docs/widgets/tabs/print-multi-tabs-report/',
+          },
+          {
+            from: '/docs/how-to/access-users-location',
+            to: '/docs/data-sources/runjs/access-users-location/',
+          },
+          {
+            from: '/docs/how-to/use-axios-in-runjs',
+            to: '/docs/data-sources/runjs/use-axios-in-runjs/',
+          },
+          {
+            from: '/docs/how-to/intentionally-fail-js-query',
+            to: '/docs/data-sources/runjs/intentionally-fail-js-query/',
+          },
+          {
+            from: '/docs/how-to/pass-values-in-rest-api',
+            to: '/docs/data-sources/restapi/pass-values-in-rest-api/',
+          },
+          {
+            from: '/docs/how-to/use-to-py-function-in-runpy',
+            to: '/docs/data-sources/runpy/use-to-py-function-in-runpy/',
+          },
+          {
+            from: '/docs/how-to/use-s3-signed-url-to-upload-docs',
+            to: '/docs/data-sources/s3/use-s3-signed-url-to-upload-docs/',
+          },
+          {
+            from: '/docs/how-to/s3-custom-endpoints',
+            to: '/docs/data-sources/s3/s3-custom-endpoints/',
+          },
+          {
+            from: '/docs/how-to/upload-files-aws',
+            to: '/docs/data-sources/s3/upload-files-aws/',
+          },
+          {
+            from: '/docs/how-to/upload-files-gcs',
+            to: '/docs/data-sources/gcs/upload-files-gcs/',
+          },
+          {
+            from: '/docs/how-to/use-url-params-on-load',
+            to: '/docs/app-builder/building-ui/pages/',
+          },
+          {
+            from: '/docs/how-to/conditionally-display-components',
+            to: '/docs/app-builder/dynamic-access-rule/component-level/',
+          },
+          {
+            from: '/docs/how-to/use-inspector',
+            to: '/docs/app-builder/debugging/inspector/',
+          },
+          {
+            from: '/docs/how-to/use-server-side-pagination',
+            to: '/docs/widgets/table/serverside-operations/pagination/',
           }
         ],
       },
