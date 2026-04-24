@@ -489,6 +489,14 @@ module.exports = {
           {
             from: '/docs/how-to/use-server-side-pagination',
             to: '/docs/widgets/table/serverside-operations/pagination/',
+          },
+          {
+            from: '/docs/how-to/run-query-at-specified-intervals',
+            to: '/docs/app-builder/connecting-with-data-sources/run-query-at-specified-intervals/',
+          },
+          {
+            from: '/docs/how-to/use-custom-parameters',
+            to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
           }
         ],
       },
