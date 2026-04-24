@@ -92,7 +92,6 @@ function findLatestSavedOnDefaultBranch(
   });
 }
 
-/** Plural of findSavedVersionOnDefaultBranch — all pin-target rows. */
 async function listSavedVersionsOnDefaultBranch(
   manager: EntityManager,
   moduleApp: App,
