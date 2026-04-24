@@ -2241,120 +2241,162 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
     return childComponents;
   },
-  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+  applyDependencyUpdate: (
+    dependency,
+    path,
+    moduleId = 'canvas',
+    parentIndices = [],
+    preloadedExposedValues,
+    batchedStateMutations = null
+  ) => {
     const {
       getAllExposedValues,
-      getDependencies,
       getNodeData,
       getEntityResolvedValueLength,
       updateChildComponentResolvedValues,
       getComponentTypeFromId,
-      getResolvedComponent,
     } = get();
-    const dependecies = getDependencies(path, moduleId);
-    if (dependecies?.length) {
-      dependecies.forEach((dependency) => {
-        // Handle query options sentinel — trigger re-run instead of resolution
-        if (dependency.endsWith('.__options__')) {
-          const nodeData = getNodeData(dependency, moduleId);
-          if (nodeData?.queryId) {
-            const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
-            if (query?.options?.runOnDependencyChange) {
-              // Use live name from store (queryIdNameMapping is updated on rename)
-              const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
-              scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
-            }
-          }
-          return;
-        }
-        const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
-        // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
-        if (itemsLength) {
-          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
-        } else {
-          const [entityType, entityId, type, ...keys] = dependency.split('.');
-          const key = keys.join('.');
-          const unResolvedValue = getNodeData(dependency, moduleId);
-          const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, []);
+    const applyOrQueueMutation = (mutator) => {
+      if (Array.isArray(batchedStateMutations)) {
+        batchedStateMutations.push(mutator);
+        return;
+      }
 
-          if (type === undefined) {
-            set(
-              (state) => {
-                // This will set the value for fx on canvas backgroundColor & page settings
-                state.resolvedStore.modules[moduleId][entityType][entityId] = resolvedValue;
-              },
-              false,
-              'updateDependencyValues'
-            );
-          } else {
-            const shouldValidate = entityType === 'components' && entityId;
-            const validatedValue = shouldValidate
-              ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
-              : resolvedValue;
+      set(
+        (state) => {
+          mutator(state);
+        },
+        false,
+        'updateDependencyValues'
+      );
+    };
 
-            // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
-            if (hasArrayNotation(key)) {
-              const keys = parsePropertyPath(key);
-              // Triggering a re-render of the table component if any of the dependent component is updated
-              // This is done to calculate the callValues in the table component
-              // Need to find a better way to handle this
-              if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
-                set(
-                  (state) => {
-                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                    if (Array.isArray(entity)) {
-                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                    }
-                    lodashSet(
-                      entity,
-                      ['properties', 'shouldRender'],
-                      (getResolvedComponent(entityId, null, moduleId)?.['properties']?.['shouldRender'] ?? 0) + 1
-                    );
-                  },
-                  false,
-                  'updateDependencyValues'
-                );
-              } else {
-                set(
-                  (state) => {
-                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                    if (Array.isArray(entity)) {
-                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                    }
-                    lodashSet(
-                      entity,
-                      [type, ...keys],
-                      getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
-                    );
-                  },
-                  false,
-                  'updateDependencyValues'
-                );
-              }
-            } else {
-              set(
-                (state) => {
-                  let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                  // Guard: stale array format from previous ListView/Kanban parent
-                  if (Array.isArray(entity)) {
-                    entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                    state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                  }
-                  if (!entity[type]) {
-                    entity[type] = {};
-                  }
-                  entity[type][key] = validatedValue;
-                },
-                false,
-                'updateDependencyValues'
-              );
-            }
-          }
+    // Handle query options sentinel - trigger re-run instead of resolution
+    if (dependency.endsWith('.__options__')) {
+      const nodeData = getNodeData(dependency, moduleId);
+      if (nodeData?.queryId) {
+        const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
+        if (query?.options?.runOnDependencyChange) {
+          // Use live name from store (queryIdNameMapping is updated on rename)
+          const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
+          scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
         }
+      }
+      return;
+    }
+
+    const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
+    // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
+    if (itemsLength) {
+      updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
+      return;
+    }
+
+    const [entityType, entityId, type, ...keys] = dependency.split('.');
+    const key = keys.join('.');
+    const unResolvedValue = getNodeData(dependency, moduleId);
+    const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
+    const resolvedValue = resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []);
+
+    if (type === undefined) {
+      applyOrQueueMutation((state) => {
+        // This will set the value for fx on canvas backgroundColor & page settings
+        state.resolvedStore.modules[moduleId][entityType][entityId] = resolvedValue;
+      });
+      return;
+    }
+
+    const shouldValidate = entityType === 'components' && entityId;
+    const validatedValue = shouldValidate
+      ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
+      : resolvedValue;
+
+    // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
+    if (hasArrayNotation(key)) {
+      const keys = parsePropertyPath(key);
+      // Triggering a re-render of the table component if any of the dependent component is updated
+      // This is done to calculate the callValues in the table component
+      // Need to find a better way to handle this
+      if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
+        applyOrQueueMutation((state) => {
+          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (Array.isArray(entity)) {
+            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+          }
+          const currentShouldRender = entity?.properties?.shouldRender ?? 0;
+          lodashSet(entity, ['properties', 'shouldRender'], currentShouldRender + 1);
+        });
+      } else {
+        applyOrQueueMutation((state) => {
+          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (Array.isArray(entity)) {
+            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+          }
+          lodashSet(
+            entity,
+            [type, ...keys],
+            getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
+          );
+        });
+      }
+    } else {
+      applyOrQueueMutation((state) => {
+        let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+        // Guard: stale array format from previous ListView/Kanban parent
+        if (Array.isArray(entity)) {
+          entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+          state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+        }
+        if (!entity[type]) {
+          entity[type] = {};
+        }
+        entity[type][key] = validatedValue;
       });
     }
+  },
+
+  updateDependencyValuesBatch: (paths = [], moduleId = 'canvas', parentIndices = []) => {
+    const { getDependencies, applyDependencyUpdate, getAllExposedValues } = get();
+    const uniqueDependencies = new Map();
+    const exposedValues = getAllExposedValues(moduleId);
+    const batchedStateMutations = [];
+
+    paths.forEach((path) => {
+      const dependencies = getDependencies(path, moduleId);
+      if (!dependencies?.length) return;
+
+      dependencies.forEach((dependency) => {
+        if (!uniqueDependencies.has(dependency)) {
+          uniqueDependencies.set(dependency, path);
+        }
+      });
+    });
+
+    uniqueDependencies.forEach((sourcePath, dependency) => {
+      applyDependencyUpdate(dependency, sourcePath, moduleId, parentIndices, exposedValues, batchedStateMutations);
+    });
+
+    if (batchedStateMutations.length > 0) {
+      set(
+        (state) => {
+          batchedStateMutations.forEach((mutator) => mutator(state));
+        },
+        false,
+        'updateDependencyValuesBatch'
+      );
+    }
+  },
+
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+    const { getDependencies, applyDependencyUpdate } = get();
+    const dependencies = getDependencies(path, moduleId);
+    if (!dependencies?.length) return;
+
+    dependencies.forEach((dependency) => {
+      applyDependencyUpdate(dependency, path, moduleId, parentIndices);
+    });
   },
   computePageSettings: (currentPageSettings) => {
     try {

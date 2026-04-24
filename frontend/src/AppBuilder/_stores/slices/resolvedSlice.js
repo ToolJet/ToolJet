@@ -117,6 +117,27 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   // variables
+  setVariables: (variables = {}, moduleId = 'canvas') => {
+    if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+
+    const keys = Object.keys(variables);
+    if (keys.length === 0) return;
+
+    set(
+      (state) => {
+        Object.assign(state.resolvedStore.modules[moduleId].exposedValues.variables, variables);
+      },
+      false,
+      'setVariablesBatch'
+    );
+
+    get().updateDependencyValuesBatch(
+      keys.map((key) => `variables.${key}`),
+      moduleId
+    );
+    get().rebuildVariableHints(moduleId);
+  },
+
   setVariable: (key, value, moduleId = 'canvas') => {
     set(
       (state) => {
