@@ -130,6 +130,8 @@ export class AppsUtilService implements IAppsUtilService {
             handle: 'home',
             appVersionId: branchVersion.id,
             index: 1,
+            disabled: false,
+            hidden: false,
             autoComputeLayout: true,
             appId: app.id,
           })
@@ -191,6 +193,8 @@ export class AppsUtilService implements IAppsUtilService {
             handle: 'home',
             appVersionId: appVersion.id,
             index: 1,
+            disabled: false,
+            hidden: false,
             autoComputeLayout: true,
             appId: app.id,
           })
