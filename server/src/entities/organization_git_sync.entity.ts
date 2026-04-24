@@ -74,4 +74,8 @@ export class OrganizationGitSync extends BaseEntity {
 
   @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
+
+  get isEnabled(): boolean {
+    return !!(this.gitSsh?.isEnabled || this.gitHttps?.isEnabled || this.gitLab?.isEnabled);
+  }
 }

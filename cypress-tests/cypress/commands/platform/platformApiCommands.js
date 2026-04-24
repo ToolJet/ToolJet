@@ -108,8 +108,8 @@ Cypress.Commands.add(
       userMetadata: normalizedMetaData,
     };
 
-    cy.getAuthHeaders().then((headers) => {
-      cy.request(
+    return cy.getAuthHeaders().then((headers) => {
+    return cy.request(
         {
           method: "POST",
           url: `${Cypress.env("server_host")}/api/organization-users`,
@@ -801,23 +801,25 @@ Cypress.Commands.add(
       const groupArray = Array.isArray(groups) ? groups : [groups];
       const groupIds = [];
 
-      cy.wrap(groupArray)
+      return cy.wrap(groupArray)
         .each((groupName) => {
-          cy.apiGetGroupId(groupName).then((id) => {
+         return cy.apiGetGroupId(groupName).then((id) => {
             groupIds.push(id);
           });
         })
         .then(() => {
-          cy.apiUserInvite(userName, userEmail, userRole, metaData, groupIds);
-          performOnboarding(userEmail, userPassword, organizationToken);
+          return cy.apiUserInvite(userName, userEmail, userRole, metaData, groupIds).then(()=>{
+            return performOnboarding(userEmail, userPassword, organizationToken);
+          });
         });
     } else {
-      cy.apiUserInvite(userName, userEmail, userRole, metaData, []);
-      performOnboarding(userEmail, userPassword, organizationToken);
+      return cy.apiUserInvite(userName, userEmail, userRole, metaData, []).then(()=>{
+        return performOnboarding(userEmail, userPassword, organizationToken);
+      })
     }
 
     function performOnboarding(email, password, orgToken) {
-      cy.task("dbConnection", {
+      return cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
       SELECT ou.invitation_token 

@@ -14,7 +14,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
  * - Feature Branch: "Commit" - Opens git sync modal to commit changes
  */
 const LifecycleCTAButton = () => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
 
   const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed, isGitSyncConfigured } =
     useStore(
@@ -31,8 +31,8 @@ const LifecycleCTAButton = () => {
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
-  // If git sync is not available in the plan or license is expired, hide completely
-  if (!isGitSyncEnabled) {
+  // Git sync banners not applicable for modules
+  if (!isGitSyncEnabled || isModuleEditor) {
     return null;
   }
 

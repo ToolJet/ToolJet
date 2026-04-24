@@ -88,15 +88,15 @@ export const EditorHeader = ({ darkMode }) => {
                     <>
                       <PreviewAndShareIcons />
                       {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                      {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
-                      {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
-                        <VersionManagerErrorBoundary>
-                          <VersionManagerDropdown darkMode={darkMode} />
-                        </VersionManagerErrorBoundary>
-                      )}
-                      <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                     </>
                   )}
+                  {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
+                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
+                    <VersionManagerErrorBoundary>
+                      <VersionManagerDropdown darkMode={darkMode} />
+                    </VersionManagerErrorBoundary>
+                  )}
+                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                 </div>
               </div>
             </div>

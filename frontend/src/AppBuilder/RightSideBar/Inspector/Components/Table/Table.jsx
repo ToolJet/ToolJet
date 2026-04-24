@@ -257,7 +257,10 @@ export const Table = (props) => {
               property="disableActionButton"
               props={action}
               component={component}
-              paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+              paramMeta={{
+                type: 'toggle',
+                displayName: 'Disable action button',
+              }}
               paramType="properties"
             />
             <EventManager
@@ -265,7 +268,9 @@ export const Table = (props) => {
               sourceId={component?.id}
               eventSourceType="table_action"
               customEventRefs={actionRef}
-              eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
+              eventMetaDefinition={{
+                events: { onClick: { displayName: 'On click' } },
+              }}
               currentState={currentState}
               dataQueries={dataQueries}
               components={components}
@@ -391,8 +396,16 @@ export const Table = (props) => {
     () => [
       'allowSelection',
       ...(allowSelection
-        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        ? [
+            'highlightSelectedRow',
+            'disableRowDeselection',
+            'showBulkSelector',
+            'defaultSelectedRow',
+            'selectRowOnCellEdit',
+          ]
         : []),
+      'enableExpandableRows',
+      'expansionHeight',
     ],
     [allowSelection]
   );
@@ -414,14 +427,18 @@ export const Table = (props) => {
       'enablePagination',
       ...(enablePagination ? ['serverSidePagination'] : []),
       ...(enablePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      ...(enablePagination && serverSidePagination ? ['enablePrevButton', 'enableNextButton', 'totalRecords'] : []),
+      ...(enablePagination && serverSidePagination
+        ? ['serverSideRowsPerPage', 'enablePrevButton', 'enableNextButton', 'totalRecords']
+        : []),
     ],
     [enablePagination, serverSidePagination]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
+    'showRefreshButton',
     'hideColumnSelectorButton',
     'loadingState',
     'showBulkUpdateActions',
@@ -551,9 +568,15 @@ export const Table = (props) => {
                     darkMode={darkMode}
                     callbackFunction={(index, property, value) => setAllColumnsEditable(value)}
                     property="isAllColumnsEditable"
-                    props={{ isAllColumnsEditable: `{{${isAllColumnsEditable}}}` }}
+                    props={{
+                      isAllColumnsEditable: `{{${isAllColumnsEditable}}}`,
+                    }}
                     component={component}
-                    paramMeta={{ type: 'toggle', displayName: 'Make all columns editable', isFxNotRequired: true }}
+                    paramMeta={{
+                      type: 'toggle',
+                      displayName: 'Make all columns editable',
+                      isFxNotRequired: true,
+                    }}
                     paramType="properties"
                   />
                 </div>
@@ -569,7 +592,13 @@ export const Table = (props) => {
             <span>Action buttons</span>
             <ToolTip
               message={
-                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                <div
+                  style={{
+                    padding: '8px 4px',
+                    textAlign: 'left',
+                    width: '185px',
+                  }}
+                >
                   These Action buttons are deprecated and will be removed in a future update. Use the new Button column
                   instead by adding a new column and selecting type as a button.
                 </div>

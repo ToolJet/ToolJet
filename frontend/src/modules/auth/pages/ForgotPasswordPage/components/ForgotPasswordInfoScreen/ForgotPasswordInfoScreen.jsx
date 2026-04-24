@@ -6,9 +6,13 @@ import { FormHeader } from '@/modules/common/components';
 import './resources/styles/forgot-password-info.styles.scss';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
 
-const ForgotPasswordInfoScreen = ({ email }) => {
+const ForgotPasswordInfoScreen = ({ email, appSlug, redirectTo }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const loginPath = appSlug
+    ? `/applications/${appSlug}/login?redirectTo=${encodeURIComponent(redirectTo || `/applications/${appSlug}`)}`
+    : '/login';
 
   const message = t(
     'forgotPasswordInfo.message',
@@ -29,7 +33,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
         </span>
         <SepratorComponent />
         <div className="action-buttons">
-          <button onClick={() => navigate('/login')} className="back-to-login-button" data-cy="back-to-login">
+          <button onClick={() => navigate(loginPath)} className="back-to-login-button" data-cy="back-to-login">
             <span className="button-text">{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
           </button>
         </div>

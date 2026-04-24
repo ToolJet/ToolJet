@@ -29,6 +29,13 @@ export class SampleDataSourceService {
     }, manager);
   }
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1726649944702-AddConnectionTypeToSampleDataSources.ts
+   * - 1731279588337-ReplaceTheSampleDBConnectionValues.ts
+   */
   async updateSampleDs(manager?: EntityManager) {
     const options = [
       {

@@ -155,7 +155,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return serviceNamesAndMethods;
   }
 
-  // IMPORTANT: Should not do any changes on this function. Its used in migrations
+  /**
+   * IMPORTANT: Do not modify this function - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1639734070615-BackfillDataSourcesAndQueriesForAppVersions.ts
+   *
+   * This function internally calls:
+   * - CredentialsService.create()
+   */
   async parseOptionsForCreate(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
     if (!options) return {};
     return await dbTransactionWrap(async (entityManager: EntityManager) => {

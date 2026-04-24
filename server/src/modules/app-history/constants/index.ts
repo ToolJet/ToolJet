@@ -14,6 +14,12 @@ export enum ACTION_TYPE {
   QUERY_UPDATE = 'query_update',
   QUERY_DELETE = 'query_delete',
 
+  // Query folder actions
+  QUERY_FOLDER_ADD = 'query_folder_add',
+  QUERY_FOLDER_UPDATE = 'query_folder_update',
+  QUERY_FOLDER_DELETE = 'query_folder_delete',
+  QUERY_FOLDER_REORDER = 'query_folder_reorder',
+
   // Page actions
   PAGE_ADD = 'page_add',
   PAGE_UPDATE = 'page_update',

@@ -382,6 +382,7 @@ const DynamicForm = ({
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
+          disabled: isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'dropdown':
       case 'dropdown-component-flip':

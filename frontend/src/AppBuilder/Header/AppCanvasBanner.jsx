@@ -6,7 +6,7 @@ import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const { fetchDevelopmentVersions, currentMode, environments } = useStore(
     (state) => ({
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
@@ -18,6 +18,10 @@ const AppCanvasBanner = ({ appId = '' }) => {
   useEffect(() => {
     fetchDevelopmentVersions(appId);
   }, [appId, environments]);
+
+  // Hide banner for modules — git sync banners are not applicable
+  if (isModuleEditor) return null;
+
   const renderBanner = () => {
     if (currentMode === 'edit') {
       return <FreezeVersionInfo hide={false} />;

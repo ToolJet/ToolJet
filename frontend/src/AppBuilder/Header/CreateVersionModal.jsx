@@ -30,6 +30,9 @@ const CreateVersionModal = ({
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const {
     changeEditorVersionAction,
@@ -43,6 +46,7 @@ const CreateVersionModal = ({
     environments,
     setIsEditorFreezed,
     appGit,
+    branchingEnabled,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -60,6 +64,7 @@ const CreateVersionModal = ({
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
       appGit: state.appGit,
+      branchingEnabled: state.branchingEnabled,
     }),
     shallow
   );
@@ -151,7 +156,7 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
-      if (isGitSyncEnabled && isBranchingEnabled) {
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
         if (!appGit?.git_app_name || !appGit?.id) {
           toast.error(
             "Empty apps can't be versioned. Build your app first and then save your work through version control."
@@ -210,7 +215,7 @@ const CreateVersionModal = ({
       //     });
       // }
 
-      if (isGitSyncEnabled && isBranchingEnabled) {
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
         gitSyncService
           .createGitTag(
             appId,
@@ -296,10 +301,22 @@ const CreateVersionModal = ({
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
-      } else if (error?.error) {
-        toast.error(error?.error);
       } else {
-        toast.error('Error while creating version. Please try again.');
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Save Failed',
+          message: errorMessage,
+          description: errorDetails,
+          error: { message: errorMessage, description: errorDetails },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
       }
     } finally {
       setIsCreatingVersion(false);

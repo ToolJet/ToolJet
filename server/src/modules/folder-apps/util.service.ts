@@ -13,7 +13,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
-  constructor(protected readonly abilityService: AbilityService) { }
+  constructor(protected readonly abilityService: AbilityService) {}
 
   async allFoldersWithAppCount(
     user: User,
@@ -23,7 +23,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     searchKey?: string,
     branchId?: string
   ): Promise<Folder[]> {
-    return this.getFolderQuery(user.organizationId, manager, userAppPermissions as UserAppsPermissions, type, searchKey, branchId)
+    return this.getFolderQuery(
+      user.organizationId,
+      manager,
+      userAppPermissions as UserAppsPermissions,
+      type,
+      searchKey,
+      branchId
+    )
       .distinct()
       .getMany();
   }
@@ -78,14 +85,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     const viewableApps = userAppPermissions.hideAll
       ? [null, ...explicitVisibleApps]
       : [
-        null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-          ])
-        ),
-      ];
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+            ])
+          ),
+        ];
 
     const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey, branchId);
 
@@ -106,8 +113,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
           query.andWhere('folder_apps.appId IN (:...viewableApps)', {
             viewableApps,
           });
-        }
-        else {// No need to return any
+        } else {
+          // No need to return any
           query.andWhere('1=0');
         }
       }
@@ -119,12 +126,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   protected getBaseAppsQuery(
     manager: EntityManager,
     folderAppIds: string[],
-    searchKey?: string
+    searchKey?: string,
+    branchId?: string
   ): SelectQueryBuilder<AppBase> {
     const query = manager
       .createQueryBuilder(AppBase, 'apps')
       .innerJoin('apps.user', 'user')
       .addSelect(['user.firstName', 'user.lastName']);
+
+    if (branchId) {
+      query.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+    }
 
     if (searchKey) {
       query.andWhere('LOWER(apps.name) LIKE :searchKey', {
@@ -169,7 +181,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         };
       }
 
-      const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey);
+      const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
       this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
 
       if (branchId) {
@@ -255,14 +267,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         : isAllViewable
           ? [null, ...folderAppIds].filter((id) => !hiddenNonEditable.includes(id))
           : [
-            null,
-            ...Array.from(
-              new Set([
-                ...userAppPermissions.editableAppsId,
-                ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-              ])
-            ),
-          ];
+              null,
+              ...Array.from(
+                new Set([
+                  ...userAppPermissions.editableAppsId,
+                  ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+                ])
+              ),
+            ];
 
     // Keep only apps in this folder
     const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];

@@ -26,6 +26,7 @@ import {
 } from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
@@ -145,6 +146,7 @@ export class VersionService implements IVersionService {
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.DELETE }),
       metadata: {
         data: {
           versionId: versionToDelete.id,
@@ -217,7 +219,8 @@ export class VersionService implements IVersionService {
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
         appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
       }
-      if (appGit) {
+      // Modules are common across all branches — git sync freeze does not apply
+      if (appGit && app.type !== 'module') {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
@@ -248,6 +251,10 @@ export class VersionService implements IVersionService {
 
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
+    if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
+      await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, this.versionRepository.manager);
+    }
+
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
@@ -275,6 +282,7 @@ export class VersionService implements IVersionService {
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.SAVE }),
       metadata: { data: { updatedAppVersionName: appVersionUpdateDto.name, version: app.appVersions[0] } },
     });
     return;
@@ -358,6 +366,7 @@ export class VersionService implements IVersionService {
           organizationId: user.organizationId,
           resourceId: app.id,
           resourceName: app.name,
+          ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.PROMOTE }),
           metadata: {
             data: {
               name: 'Version Promoted',

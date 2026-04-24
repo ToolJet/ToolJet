@@ -18,6 +18,7 @@ const PasswordInput = ({
   hint = `Password must be at least ${minLength} characters`,
   disabled = false,
   showForgotPassword = false,
+  forgotPasswordUrl = '/forgot-password',
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ const PasswordInput = ({
           {label} <span className="password-input__required">*</span>
         </label>
         {showForgotPassword && (
-          <Link to="/forgot-password" tabIndex="-1" className="forgot-password" data-cy="forgot-password-link">
+          <Link to={forgotPasswordUrl} tabIndex="-1" className="forgot-password" data-cy="forgot-password-link">
             {t('loginSignupPage.forgot', 'Forgot?')}
           </Link>
         )}

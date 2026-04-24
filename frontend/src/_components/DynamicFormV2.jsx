@@ -573,6 +573,8 @@ const DynamicFormV2 = ({
           defaultChecked: currentValue,
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'toggle-flip':
         // eslint-disable-next-line no-case-declarations
@@ -581,7 +583,8 @@ const DynamicFormV2 = ({
           checked: isEnabled,
           label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
             handleOptionChange(

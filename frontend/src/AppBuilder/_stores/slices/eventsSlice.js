@@ -416,6 +416,7 @@ export const createEventsSlice = (set, get) => ({
           'onImageSave',
           'onExpand',
           'onCollapse',
+          'onFieldClick',
           'onSaveKeyValuePairChanges',
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',

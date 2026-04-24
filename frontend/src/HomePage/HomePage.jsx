@@ -61,6 +61,8 @@ import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
+import { appTypeToDisplayNameMapping } from './helper';
+
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
   constructor(props) {
@@ -398,7 +400,13 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
+      // Fetch current editing version for the app
+      const versionsResp = await appsService.getVersions(appId);
+      const versions = versionsResp?.versions || [];
+      const currentEditingVersion = versions.find((version) => version?.isCurrentEditingVersion);
+      const editingVersionId = currentEditingVersion?.id;
+      const savePayload = editingVersionId ? { name: newAppName, editingVersionId } : { name: newAppName };
+      await appsService.saveApp(appId, savePayload, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -798,7 +806,11 @@ class HomePageComponent extends React.Component {
   isWorkspaceBranchLocked = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+
+    const isBranchingEnabled =
+      this.props.appType === 'front-end' // Branching is enabled only for front-end apps as of now
+        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
+        : false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
   };
@@ -833,8 +845,8 @@ class HomePageComponent extends React.Component {
           this.fetchAppsLimit();
         }
       })
-      .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+      .catch((error) => {
+        toast.error(error?.error || error?.message || 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -1045,12 +1057,17 @@ class HomePageComponent extends React.Component {
           showCloneAppModal: true,
         });
         break;
-      case 'rename-app':
+      case 'rename-app': {
+        if (this.isWorkspaceBranchLocked()) {
+          toast.error("Renaming isn't allowed on master. Switch branch to update name.");
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,
         });
         break;
+      }
     }
   };
 
@@ -1733,10 +1750,9 @@ class HomePageComponent extends React.Component {
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}
-            message={this.props.t(
-              'homePage.removeAppFromFolder',
-              'The app will be removed from this folder, do you want to continue?'
-            )}
+            message={`The ${
+              appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'
+            } will be removed from this folder, do you want to continue?`}
             confirmButtonLoading={isDeletingAppFromFolder}
             onConfirm={() => this.removeAppFromFolder()}
             onCancel={() =>
@@ -2052,11 +2068,7 @@ class HomePageComponent extends React.Component {
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() => {
-                            if (
-                              this.isWorkspaceBranchLocked() &&
-                              this.props.appType !== 'module' &&
-                              this.props.appType !== 'workflow'
-                            ) {
+                            if (this.isWorkspaceBranchLocked()) {
                               this.setState({ showSwitchBranchForCreate: true });
                             } else {
                               this.setState({ showCreateAppModal: true });
@@ -2108,25 +2120,19 @@ class HomePageComponent extends React.Component {
                   </LicenseTooltip>
                 )}
               </div>
-              {this.props.appType === 'module' ? (
-                <div>
-                  <p></p>
-                </div>
-              ) : (
-                <Folders
-                  foldersLoading={this.state.foldersLoading}
-                  folders={this.state.folders}
-                  currentFolder={currentFolder}
-                  folderChanged={this.folderChanged}
-                  foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
-                  canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
-                  canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
-                  darkMode={this.props.darkMode}
-                  canCreateApp={this.canCreateApp()}
-                  appType={this.props.appType}
-                />
-              )}
+              <Folders
+                foldersLoading={this.state.foldersLoading}
+                folders={this.state.folders}
+                currentFolder={currentFolder}
+                folderChanged={this.folderChanged}
+                foldersChanged={this.foldersChanged}
+                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
+                canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
+                darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
+                appType={this.props.appType}
+              />
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -2233,11 +2239,7 @@ class HomePageComponent extends React.Component {
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
-                        if (
-                          this.isWorkspaceBranchLocked() &&
-                          this.props.appType !== 'module' &&
-                          this.props.appType !== 'workflow'
-                        ) {
+                        if (this.isWorkspaceBranchLocked()) {
                           this.setState({ showSwitchBranchForCreate: true });
                         } else {
                           this.openCreateAppModal();
@@ -2308,6 +2310,8 @@ class HomePageComponent extends React.Component {
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.appType === 'module'
+                        ? 'No Modules found'
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>

@@ -24,7 +24,11 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 
 // Debounce timers for query re-runs triggered by dependency changes
@@ -264,6 +268,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab =
             state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
@@ -342,29 +348,30 @@ export const createComponentsSlice = (set, get) => ({
     let customResolvables = {};
     const parentId = component?.parent;
     const componentDetails = { componentId, paramType, property };
-    const nearestListviewId = findNearestSubcontainerAncestor(parentId, moduleId);
-    let index = nearestListviewId ? 0 : null;
+    // Nearest row-scoped ancestor (Listview / Kanban / Table) — the one whose per-row customResolvables this component resolves against.
+    const nearestRowScopedAncestorId = findNearestSubcontainerAncestor(parentId, moduleId);
+    let index = nearestRowScopedAncestorId ? 0 : null;
     if (index !== null) {
-      // For nested ListViews, we need to build parentIndices by walking up the ancestor chain.
-      // ListView parent IDs don't contain row indices - the row info is only available at render time.
-      // At drop time, we use index 0 for each ListView ancestor as a default for initial resolution.
+      // For components nested inside row-scoped ancestors, build parentIndices by walking up the ancestor chain.
+      // Row-scoped parent IDs don't contain row indices — the row info is only available at render time.
+      // At drop time, we use index 0 for each row-scoped ancestor as a default for initial resolution.
       const parentIndices = [];
 
-      // Walk up the ancestor chain starting from the nearest ListView's parent
-      const nearestDef = getComponentDefinition(nearestListviewId, moduleId);
+      // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
+      const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
       let ancestorId = nearestDef?.component?.parent;
       while (ancestorId) {
         const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
-        if (ancestorType === 'Listview' || ancestorType === 'Kanban') {
-          // Add 0 at the beginning for each ListView/Kanban ancestor (outer-most first)
+        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
+          // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
           parentIndices.unshift(0);
         }
         ancestorId = ancestorDef?.component?.parent;
       }
 
-      customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
+      customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
@@ -574,7 +581,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (parentType === 'Listview' || parentType === 'Kanban') {
+      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -599,23 +606,33 @@ export const createComponentsSlice = (set, get) => ({
 
       // Check if this is the leaf level (array of listItem objects)
       const isLeafLevel =
-        (Array.isArray(resolvables) &&
-          resolvables.length > 0 &&
-          resolvables[0] &&
-          typeof resolvables[0] === 'object' &&
-          'listItem' in resolvables[0]) ||
-        'cardData' in resolvables[0];
+        Array.isArray(resolvables) &&
+        resolvables.length > 0 &&
+        resolvables[0] &&
+        typeof resolvables[0] === 'object' &&
+        ('listItem' in resolvables[0] || 'cardData' in resolvables[0] || 'rowData' in resolvables[0]);
 
       if (isLeafLevel) {
         // At the leaf level of nested ListView traversal — resolvables is an array of
         // per-row { listItem } objects. Now resolve the expression for each row, with
         // row-scoped components so that {{components.checkbox1.value}} returns the
         // row-specific value, not the full per-row array.
+
+        // For lazy parents (eg. Table expandable rows),
+        // only resolve index 0 (template) + any currently needed rows.
+        // Remaining rows are resolved on-demand.
+        const { isLazyResolvableParent, getLazyRowIndices } = get();
+        const isLazy = isLazyResolvableParent(innermostListview, moduleId);
+        const indicesToResolve = isLazy
+          ? getLazyRowIndices(innermostListview, moduleId, true)
+          : Array.from({ length: resolvables.length }, (_, i) => i);
+
         const state = getAllExposedValues(moduleId);
         const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
         const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
-        for (let i = 0; i < resolvables.length; i++) {
+        for (const i of indicesToResolve) {
+          if (i >= resolvables.length) continue;
           const fullIndices = [...currentIndices, i];
           if (scopeCtx) updateRowScope(scopeCtx, i);
           const resolvedValue = shouldResolve
@@ -1154,18 +1171,18 @@ export const createComponentsSlice = (set, get) => ({
       return false;
     }
 
-    // Check ListView nesting restriction:
-    // If adding a ListView into a slot inside a nested ListView (2+ levels), block it
-    if (currentWidget === 'Listview') {
+    // Check nesting depth restrictions from NESTING_LEVEL_LIMITS (e.g., Listview: 2, Table: 3)
+    const nestingLimit = NESTING_LEVEL_LIMITS[currentWidget];
+    if (nestingLimit) {
       let currentParentId = parentId;
-      let listviewCount = 0;
+      let count = 0;
       while (currentParentId) {
         const baseId = getBaseParentId?.(currentParentId) || currentParentId;
         const parentDef = getComponentDefinition(baseId, moduleId);
-        if (parentDef?.component?.component === 'Listview') {
-          listviewCount++;
-          if (listviewCount >= 2) {
-            toast.error('ListView nesting is limited to 2 levels');
+        if (parentDef?.component?.component === currentWidget) {
+          count++;
+          if (count >= nestingLimit) {
+            toast.error(`${currentWidget} nesting is limited to ${nestingLimit} levels`);
             return false;
           }
         }
@@ -1228,27 +1245,21 @@ export const createComponentsSlice = (set, get) => ({
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
         if (newComponent.component.component === 'Listview') {
-          const {
-            getResolvedComponent,
-            updateCustomResolvables,
-            checkIfParentIsListviewOrKanban,
-            getBaseParentId,
-            getComponentDefinition,
-          } = get();
+          const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
           if (Array.isArray(data) && data.length > 0) {
-            // Build parentIndices for nested ListView case
+            // Build parentIndices for each row-scoped ancestor (outer-most first)
             const parentIndices = [];
             const componentParentId = newComponent.component.parent;
             if (componentParentId) {
               let ancestorId = componentParentId;
               while (ancestorId) {
                 const baseAncestorId = getBaseParentId(ancestorId);
-                if (checkIfParentIsListviewOrKanban(baseAncestorId, moduleId)) {
+                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
                   parentIndices.unshift(0);
                 }
-                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
                 ancestorId = ancestorDef?.component?.parent;
               }
             }
@@ -1637,10 +1648,8 @@ export const createComponentsSlice = (set, get) => ({
       const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
-        newParentComponentType === 'Listview' ||
-        newParentComponentType === 'Kanban' ||
-        oldParentComponentType === 'Listview' ||
-        oldParentComponentType === 'Kanban'
+        ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+        ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
         // Add the component to the resolved store
         let resolvedComponentValues = { [componentId]: {} };
@@ -1971,10 +1980,8 @@ export const createComponentsSlice = (set, get) => ({
     const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
 
     if (
-      newParentComponentType === 'Listview' ||
-      newParentComponentType === 'Kanban' ||
-      oldParentComponentType === 'Listview' ||
-      oldParentComponentType === 'Kanban'
+      ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+      ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
     ) {
       // Add the component to the resolved store
       const { component } = getComponentDefinition(componentId, moduleId);
@@ -2023,6 +2030,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = components;
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (components.length === 1) {
           if (state.isRightSidebarOpen) {
             state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
@@ -2041,6 +2050,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
@@ -2400,8 +2411,18 @@ export const createComponentsSlice = (set, get) => ({
     const scopeCtx = resolvableParentId ? prepareRowScope(state.components, resolvableParentId, moduleId) : null;
     const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
 
+    // For lazy parents (eg. Table expandable rows),
+    // only resolve required rows instead of all 0..length-1.
+    // This is a no-op for ListView/Kanban.
+    const { isLazyResolvableParent, getLazyRowIndices } = get();
+    const isLazy = isLazyResolvableParent(resolvableParentId, moduleId);
+    const indicesToResolve = isLazy
+      ? getLazyRowIndices(resolvableParentId, moduleId)
+      : Array.from({ length }, (_, i) => i);
+    if (isLazy && indicesToResolve.length === 0) return;
+
     const updates = [];
-    for (let i = 0; i < length; i++) {
+    for (const i of indicesToResolve) {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
       if (scopeCtx) updateRowScope(scopeCtx, i);
       const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
@@ -2561,19 +2582,15 @@ export const createComponentsSlice = (set, get) => ({
       refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'cardData' });
     }
 
+    // rowData — coarse dependency on the Table (same pattern as listItem above).
+    if ((value.includes('rowData') && checkSubstringRegex(value, 'rowData')) || value === '{{rowData}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'rowData' });
+    }
+
     return refs;
   },
 
-  checkIfParentIsListviewOrKanban: (parentId, moduleId) => {
-    const { getParentComponentType } = get();
-    const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' || parentComponentType === 'Kanban') {
-      return true;
-    }
-    return false;
-  },
-
-  // Walk up from startParentId through component.parent links to find the nearest per-row subcontainer ancestor (ListView or Kanban).
+  // Walk up from startParentId through component.parent links to find the nearest row-scoped ancestor whose widget type is included in ROW_SCOPED_WIDGET_TYPES.
   // Returns the base UUID of that ancestor, or null if none found.
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
@@ -2582,7 +2599,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId(currentId) || currentId;
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (def.component?.component === 'Listview' || def.component?.component === 'Kanban') return baseId;
+      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
       currentId = def.component?.parent;
     }
     return null;

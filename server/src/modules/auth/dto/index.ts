@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -50,6 +50,11 @@ export class AppForgotPasswordDto {
   @IsNotEmpty()
   @Transform(({ value }) => lowercaseString(value))
   email: string;
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^\/applications\//, { message: 'redirectTo must be a relative /applications/ path' })
+  redirectTo?: string;
 }
 
 export class AppPasswordResetDto {
