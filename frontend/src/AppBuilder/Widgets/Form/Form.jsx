@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -185,6 +185,26 @@ const FormComponent = (props) => {
     });
     return result;
   }, shallow);
+
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch, shallow);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch, shallow);
+  const prevComponentCountRef = useRef(0);
+
+  // Mirror the ListView pattern: open the exposed-value batch in useLayoutEffect (which fires
+  // before any child useEffect) so all Form children's setExposedVariable calls on mount are
+  // coalesced into a single store write instead of N individual writes.
+  useLayoutEffect(() => {
+    if (componentCount > prevComponentCountRef.current) {
+      startExposedValueBatch();
+    }
+  }, [componentCount]);
+
+  useEffect(() => {
+    if (componentCount > prevComponentCountRef.current) {
+      prevComponentCountRef.current = componentCount;
+      flushExposedValueBatch();
+    }
+  }, [componentCount]);
 
   // Derive childrenData from raw exposed values + component definitions (read imperatively).
   // Only recomputes when childExposedMap actually changes.

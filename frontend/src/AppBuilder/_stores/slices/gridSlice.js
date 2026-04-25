@@ -115,19 +115,35 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
-  adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
+  adjustComponentPositions: (
+    componentId,
+    currentLayout = 'desktop',
+    isContainer = false,
+    subContainerIndex = null,
+    _pendingLayouts = null
+  ) => {
     const {
       getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
       incrementCanvasUpdater,
-      temporaryLayouts,
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
       getExposedPropertyForAdditionalActions,
     } = get();
+
+    // On the outermost call, create the accumulator; inner recursive levels share it.
+    // All layout mutations are collected here and flushed in ONE store write at the end,
+    // replacing the N×(setTemporaryLayouts + incrementCanvasUpdater) calls that previously
+    // fired at every level of the container nesting chain.
+    const isRootCall = _pendingLayouts === null;
+    const pendingLayouts = isRootCall ? {} : _pendingLayouts;
+    // Merge the stored state with any pending-but-not-yet-flushed updates so that each
+    // recursive level sees the full picture (e.g. a parent container reads its child's
+    // already-updated height when computing its own new height).
+    const temporaryLayouts = { ...get().temporaryLayouts, ...pendingLayouts };
 
     try {
       // Getting all the components on the current page
@@ -390,7 +406,9 @@ export const createGridSlice = (set, get) => ({
       // ModalV2 is rendered as an overlay; its body size must not push
       // sibling components of the trigger button on the canvas.
       if (componentType === 'ModalV2' && isContainer) {
-        setTemporaryLayouts(updatedLayouts);
+        Object.assign(pendingLayouts, updatedLayouts);
+        if (isRootCall) setTemporaryLayouts(pendingLayouts);
+        // Intentionally no incrementCanvasUpdater for ModalV2 — preserved from original behaviour.
         return;
       }
 
@@ -499,9 +517,10 @@ export const createGridSlice = (set, get) => ({
         }
       }
 
-      setTemporaryLayouts(updatedLayouts);
-
-      incrementCanvasUpdater();
+      // Accumulate this level's layout changes into the shared pending object.
+      // The store write and canvas increment are deferred to the root call so the entire
+      // chain (widget → Form → Container → …) triggers only ONE set() + ONE re-render.
+      Object.assign(pendingLayouts, updatedLayouts);
 
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
         // Bubble the height change up to the parent container.
@@ -519,8 +538,14 @@ export const createGridSlice = (set, get) => ({
           parentComponentId &&
           !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
         ) {
-          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex, pendingLayouts);
         }
+      }
+
+      // Only the root call flushes to the store — all levels have finished accumulating by now.
+      if (isRootCall) {
+        setTemporaryLayouts(pendingLayouts);
+        incrementCanvasUpdater();
       }
 
       return updatedLayouts;
