@@ -22,16 +22,21 @@ export const useExposedValueBatch = (count) => {
     }
   }, [count]);
 
+  // No cleanup here — a cleanup on [count] runs AFTER the new useLayoutEffect opens the
+  // batch but BEFORE newly mounted children's useEffects buffer their writes, causing a
+  // premature flush that empties the batch before children can use it.
   useEffect(() => {
     if (count > prevCountRef.current) {
       prevCountRef.current = count;
       flushExposedValueBatch();
     }
+  }, [count]);
+
+  // Separate unmount-only safety: if the component is removed after startExposedValueBatch
+  // but before flushExposedValueBatch fires, flush to prevent the batch staying open forever.
+  useEffect(() => {
     return () => {
-      // Guard: if the component unmounts after startExposedValueBatch but before
-      // flushExposedValueBatch fires, flush now to prevent the batch staying open
-      // and silently buffering all subsequent setExposedVariable calls forever.
       if (isExposedValueBatching()) flushExposedValueBatch();
     };
-  }, [count]);
+  }, []);
 };

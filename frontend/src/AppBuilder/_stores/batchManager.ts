@@ -64,6 +64,10 @@ export function createBatchManager<S extends StoreWithDependencies>(
       if (depPaths?.length) _depPaths.push(...depPaths);
     },
 
+    bufferDepPath: (path: string, moduleId: string) => {
+      _depPaths.push({ path, moduleId });
+    },
+
     // Register a callback to run after the outermost flush completes.
     // dedupeKey: if provided, only the first registration with that key is kept.
     bufferPostFlushCallback: (cb: () => void, dedupeKey?: string) => {
@@ -87,21 +91,22 @@ export function createBatchManager<S extends StoreWithDependencies>(
       _postFlushKeys = new Set();
       _postFlushCallbacks = [];
 
-      if (mutations.length === 0) {
+      if (mutations.length === 0 && depPaths.length === 0) {
         postFlushCallbacks.forEach((cb) => cb());
         return;
       }
 
-      set(
-        (state) => {
-          mutations.forEach((m) => m(state));
-          if (useShallowReturn) return { ...state };
-        },
-        false,
-        actionName
-      );
-
-      if (useShallowReturn) return;
+      if (mutations.length > 0) {
+        set(
+          (state) => {
+            mutations.forEach((m) => m(state));
+            if (useShallowReturn) return { ...state };
+          },
+          false,
+          actionName
+        );
+        if (useShallowReturn) return;
+      }
 
       const seen = new Set<string>();
       depPaths.forEach(({ path, moduleId }) => {

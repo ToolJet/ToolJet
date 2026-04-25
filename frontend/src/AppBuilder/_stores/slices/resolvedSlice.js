@@ -54,7 +54,7 @@ export const createResolvedSlice = (set, get) => {
   const scheduleDependencyUpdate = (depPath, moduleId) => {
     if (_exposedValueBatch.isBatching()) {
       // Explicit batch already open — add the dep path to it
-      _exposedValueBatch.bufferMutation(() => {}, [{ path: depPath, moduleId }]);
+      _exposedValueBatch.bufferDepPath(depPath, moduleId);
       return;
     }
     if (!_implicitBatchScheduled) {
@@ -65,7 +65,7 @@ export const createResolvedSlice = (set, get) => {
         _exposedValueBatch.flush('implicitMicrotaskBatch');
       });
     }
-    _exposedValueBatch.bufferMutation(() => {}, [{ path: depPath, moduleId }]);
+    _exposedValueBatch.bufferDepPath(depPath, moduleId);
   };
 
   return {
