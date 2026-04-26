@@ -51,6 +51,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
 
+  const isQueryCurrentlyDisabled = useStore((state) => {
+    const expr = selectedQuery?.options?.disableQuery;
+    if (!expr) return false;
+    return !!state.getResolvedValue?.(expr);
+  });
+
   useEffect(() => {
     setDataSourceMeta(
       selectedQuery?.plugin_id
@@ -272,7 +278,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderTimeout = () => {
     return (
-      <div className="d-flex" data-cy="query-timeout-section">
+      <div className="d-flex" data-cy="query-timeout-section" style={{ marginBottom: '16px' }}>
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
           {t('editor.queryManager.timeout', 'Timeout ( ms )')}
         </div>
@@ -282,6 +288,61 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             initialValue={selectedQuery?.options?.query_timeout ?? ''}
             onChange={(value) => optionchanged('query_timeout', value)}
             cyLabel="query-timeout-input"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisableQuery = () => {
+    return (
+      <div
+        className={cx('d-flex', { 'disabled ': isFreezed })}
+        data-cy="query-disable-section"
+        style={{ marginBottom: '16px' }}
+      >
+        <div className="form-label mt-2" data-cy="query-manager-disable-label">
+          {t('editor.queryManager.disableQuery', 'Disable')}
+        </div>
+        <div className="flex-grow-1" style={{ maxWidth: '460px' }}>
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disableQuery ?? ''}
+            onChange={(value) => optionchanged('disableQuery', value)}
+            placeholder="{{components.toggleswitch1.value}}"
+            cyLabel="query-disable-expression"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisabledMessage = () => {
+    const hasDisableExpression = !!selectedQuery?.options?.disableQuery;
+    return (
+      <div
+        className={cx('d-flex', { 'disabled ': isFreezed })}
+        data-cy="query-disabled-message-section"
+        style={{ marginBottom: '16px' }}
+      >
+        <div className="form-label mt-2" data-cy="query-manager-disabled-message-label">
+          {t('editor.queryManager.disabledMessageLabel', 'Disable message')}
+        </div>
+        <div
+          className="flex-grow-1"
+          style={{
+            maxWidth: '460px',
+            opacity: hasDisableExpression ? 1 : 0.3,
+            pointerEvents: hasDisableExpression ? 'auto' : 'none',
+          }}
+        >
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disabledMessage ?? ''}
+            onChange={(value) => optionchanged('disabledMessage', value)}
+            placeholder={t('editor.queryManager.queryDisabledDefault', 'This query is disabled')}
+            cyLabel="query-disabled-message"
+            disabled={!hasDisableExpression}
           />
         </div>
       </div>
@@ -336,6 +397,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         {renderEventManager()}
         {renderTimeout()}
+        {renderDisableQuery()}
+        {renderDisabledMessage()}
       </div>
     );
   };
