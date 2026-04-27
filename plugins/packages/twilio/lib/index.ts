@@ -21,7 +21,6 @@ export default class TwilioQueryService implements QueryService {
           .then((message) => message);
       }
     } catch (error) {
-      console.log(error.response);
       throw new QueryError('Query could not be completed', error.message, {});
     }
 
