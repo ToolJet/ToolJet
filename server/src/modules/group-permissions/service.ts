@@ -89,7 +89,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
           manager
         );
 
-        manager.insert(
+        await manager.insert(
           GroupUsers,
           groupUsers.map((user) => ({ userId: user.user.id, groupId: newGroup.id }))
         );
