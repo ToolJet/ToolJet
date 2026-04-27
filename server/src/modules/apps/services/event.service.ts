@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
@@ -15,6 +15,7 @@ import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class EventsService implements IEventsService {
+  protected readonly logger = new Logger(EventsService.name);
   /**
    * Hook called before event creation - override in EE to capture state for history
    */
@@ -217,7 +218,7 @@ export class EventsService implements IEventsService {
 
     const operationTimestamp = Date.now();
     this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message));
+      .catch((err) => this.logger.error('[AppHistory] Fire-and-forget afterEventCreate failed', err.stack));
 
     return result;
   }
@@ -318,7 +319,7 @@ export class EventsService implements IEventsService {
 
     const operationTimestamp = Date.now();
     this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message));
+      .catch((err) => this.logger.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed', err.stack));
 
     return results;
   }
@@ -361,7 +362,7 @@ export class EventsService implements IEventsService {
 
     const operationTimestamp = Date.now();
     this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
+      .catch((err) => this.logger.error('[AppHistory] Fire-and-forget afterEventUpdate failed', err.stack));
 
     return result;
   }
@@ -407,7 +408,7 @@ export class EventsService implements IEventsService {
 
     const operationTimestamp = Date.now();
     this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message));
+      .catch((err) => this.logger.error('[AppHistory] Fire-and-forget afterEventDelete failed', err.stack));
 
     return result;
   }
