@@ -2,7 +2,9 @@ import * as Y from 'yjs';
 import Redis, { Cluster } from 'ioredis';
 import * as encoding from 'lib0/encoding';
 import * as awarenessProtocol from 'y-protocols/awareness';
+import { Logger } from '@nestjs/common';
 
+const logger = new Logger('RedisPubSub');
 const messageAwareness = 1;
 export class RedisInstance {
   rps: RedisPubSub;
@@ -86,7 +88,7 @@ export class RedisPubSub {
             this.subscriber
           );
         } catch (exception) {
-          console.error(exception, exception.stack);
+          logger.error(exception, exception.stack);
         }
       } else {
         const pdoc = this.docs.get(channel);
