@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
@@ -44,6 +44,8 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
+  private readonly logger = new Logger(AuthUtilService.name);
+
   constructor(
     protected readonly userRepository: UserRepository,
     protected readonly licenseUserService: LicenseUserService,
@@ -167,7 +169,7 @@ export class AuthUtilService implements IAuthUtilService {
         await this.profileUtilService.addAvatar(user.id, profilePhoto, `${email}.jpeg`);
       } catch (error) {
         /* Should not break the flow */
-        console.log('Profile picture upload failed', error);
+        this.logger.warn('Profile picture upload failed', error);
       }
     }
 
@@ -351,7 +353,7 @@ export class AuthUtilService implements IAuthUtilService {
           await this.profileUtilService.addAvatar(userId, profilePhoto, `${email}.jpeg`);
         } catch (error) {
           /* Should not break the flow */
-          console.log('Profile picture upload failed', error);
+          this.logger.warn('Profile picture upload failed', error);
         }
       }
     }, manager);
