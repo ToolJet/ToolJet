@@ -1245,7 +1245,13 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
+      <Popover
+        open={addMenuOpen}
+        onOpenChange={(showing) => {
+          setAddMenuOpen(showing);
+          if (typeof popOverCallback === 'function') popOverCallback(showing);
+        }}
+      >
         <PopoverTrigger asChild>
           <Button
             variant="outline"
