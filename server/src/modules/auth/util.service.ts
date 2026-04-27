@@ -315,7 +315,7 @@ export class AuthUtilService implements IAuthUtilService {
               },
             });
             if (appCounts > 0) {
-              newRole = USER_ROLE.END_USER;
+              newRole = USER_ROLE.BUILDER;
             }
           }
         }
