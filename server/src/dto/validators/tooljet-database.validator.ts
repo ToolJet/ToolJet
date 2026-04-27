@@ -28,7 +28,7 @@ export const getLatestSchemaVersion = (schemaName: string): string | null => {
   const schemasDir = getSchemaDirectory();
 
   if (!fs.existsSync(schemasDir)) {
-    console.error(`Schemas directory not found: ${schemasDir}`);
+    logger.error(`Schemas directory not found: ${schemasDir}`);
     throw new Error('ToolJet database schema validation: Schema directory were not found');
   }
 
@@ -57,7 +57,7 @@ export const loadSchema = (version: string, schemaName: string): Record<string, 
   if (fs.existsSync(schemaPath)) {
     return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   }
-  console.error(`Schema file not found: ${schemaPath}`);
+  logger.error(`Schema file not found: ${schemaPath}`);
   throw new Error(`ToolJet database schema validation: Schema file not found`);
 };
 
