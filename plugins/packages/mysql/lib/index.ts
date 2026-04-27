@@ -26,7 +26,8 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
           return reject(err);
         }
         stream.on('error', (streamErr) => {
-          console.error('SSH stream error (suppressed):', streamErr.message);
+          // SSH stream errors are non-fatal; the connection will be cleaned up on close
+          void streamErr;
         });
 
         stream.on('close', () => {
@@ -35,8 +36,8 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
               if (sshClient) {
                 sshClient.destroy();
               }
-            } catch (e) {
-              console.error('Error closing SSH client (suppressed):', e.message);
+            } catch (_e) {
+              // Ignore errors during SSH client cleanup
             }
           });
         });
@@ -50,11 +51,11 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
     });
 
     sshClient.on('end', () => {
-      console.log('SSH connection ended');
+      // SSH connection lifecycle — no action required
     });
 
     sshClient.on('close', () => {
-      console.log('SSH connection closed');
+      // SSH connection lifecycle — no action required
     });
 
     sshClient.connect({
