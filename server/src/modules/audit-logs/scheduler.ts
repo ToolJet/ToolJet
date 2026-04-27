@@ -1,4 +1,5 @@
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -7,10 +8,13 @@ import { EntityManager, LessThan } from 'typeorm';
 
 @Injectable()
 export class AuditLogsClearScheduler {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly transactionLogger: TransactionLogger
+  ) {}
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async handleCron() {
-    console.log('Starting job to clear audit logs');
+    this.transactionLogger.log('Starting job to clear audit logs');
     // To avoid clearing if audit logs -> set AUDIT_LOGS_RETENTION_PERIOD=0
     const auditLogsRetentionPeriod = this.configService.get<string>('AUDIT_LOGS_RETENTION_PERIOD');
     const retentionPeriodNum =
@@ -19,14 +23,16 @@ export class AuditLogsClearScheduler {
         : 90;
 
     if (retentionPeriodNum === 0) {
-      console.log('Audit logs retention period is set to 0. Skipping clearing of logs.');
+      this.transactionLogger.log('Audit logs retention period is set to 0. Skipping clearing of logs.');
       return;
     }
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionPeriodNum);
 
-    console.log(`Starting job to clear logs older than ${retentionPeriodNum} days at ${new Date().toISOString()}`);
+    this.transactionLogger.log(
+      `Starting job to clear logs older than ${retentionPeriodNum} days at ${new Date().toISOString()}`
+    );
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       return manager.delete(AuditLog, {
@@ -34,6 +40,6 @@ export class AuditLogsClearScheduler {
       });
     });
 
-    console.log('Audit logs cleared successfully.');
+    this.transactionLogger.log('Audit logs cleared successfully.');
   }
 }
