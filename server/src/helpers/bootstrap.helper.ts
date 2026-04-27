@@ -75,8 +75,6 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
     logger.log(`✅ License validation completed`);
     logger.log(`License valid: ${licenseInfo.isValid}`);
     logger.log(`License terms: ${JSON.stringify(licenseInfo.terms)}`);
-
-    console.log(`License valid : ${licenseInfo.isValid} License Terms : ${JSON.stringify(licenseInfo.terms)} 🚀`);
   } catch (error) {
     logger.error('❌ Failed to initialize licensing:', error);
     throw error;
