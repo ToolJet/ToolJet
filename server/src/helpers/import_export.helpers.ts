@@ -1,5 +1,8 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
+import { createLogger } from './bootstrap.helper';
+
+const logger = createLogger('ImportExportHelpers');
 
 function findExpression(input) {
   const matches = [];
@@ -387,7 +390,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
 
     return { references };
   } catch (error) {
-    console.log(error);
+    logger.error('Failed to extract references from app definition', error);
     return { references: [] };
   }
 }
