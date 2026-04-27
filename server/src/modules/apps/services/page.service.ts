@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -25,6 +25,8 @@ import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class PageService implements IPageService {
+  private readonly logger = new Logger(PageService.name);
+
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
@@ -172,7 +174,7 @@ export class PageService implements IPageService {
 
     const operationTimestamp = Date.now();
     this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message)
     );
 
     return result;
@@ -236,7 +238,7 @@ export class PageService implements IPageService {
     const operationTimestamp = Date.now();
     if (clonedPage) {
       this.afterPageClone(context, [clonedPage], appVersionId, historyUserId, operationTimestamp).catch((err) =>
-        console.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message)
+        this.logger.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message)
       );
     }
 
@@ -416,7 +418,7 @@ export class PageService implements IPageService {
       for (const component of clonedComponents) {
         const originalComponent = pageComponents.find((c) => componentsIdMap[c.id] === component.id);
         if (!originalComponent) {
-          console.error(`Original component not found for cloned component ID: ${component.id}`);
+          this.logger.error(`Original component not found for cloned component ID: ${component.id}`);
           continue;
         }
 
@@ -458,7 +460,7 @@ export class PageService implements IPageService {
 
     const operationTimestamp = Date.now();
     this.afterPageReorder(context, diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message)
     );
 
     return result;
@@ -485,7 +487,7 @@ export class PageService implements IPageService {
 
     const operationTimestamp = Date.now();
     this.afterPageUpdate(context, pageUpdates.diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message)
     );
 
     return result;
@@ -542,7 +544,7 @@ export class PageService implements IPageService {
 
     const operationTimestamp = Date.now();
     this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message)
     );
 
     return result;
