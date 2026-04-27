@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, LessThan, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -13,6 +13,8 @@ const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
+  private readonly logger = new Logger(OrganizationRepository.name);
+
   constructor(private dataSource: DataSource) {
     super(Organization, dataSource.createEntityManager());
   }
@@ -218,7 +220,7 @@ export class OrganizationRepository extends Repository<Organization> {
           where: { isDefault: true },
         });
       } catch {
-        console.error('No default workspace in this instance');
+        this.logger.error('No default workspace in this instance');
         return null;
       }
     });
@@ -239,7 +241,7 @@ export class OrganizationRepository extends Repository<Organization> {
     this.manager
       .update(Organization, { id: organizationId, lastAccessedAt: LessThan(threshold) }, { lastAccessedAt: new Date() })
       .catch((err) => {
-        console.error('error while updating organization last_accessed_at', err);
+        this.logger.error('error while updating organization last_accessed_at', err);
       });
   }
 }
