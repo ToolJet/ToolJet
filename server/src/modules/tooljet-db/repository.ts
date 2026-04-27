@@ -1,4 +1,3 @@
-import { App } from '@entities/app.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
@@ -7,7 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 @Injectable()
 export class InternalTableRepository extends Repository<InternalTable> {
   constructor(private dataSource: DataSource) {
-    super(App, dataSource.createEntityManager());
+    super(InternalTable, dataSource.createEntityManager());
   }
 
   async findTables(appId: string): Promise<{ table_id: string }[]> {
