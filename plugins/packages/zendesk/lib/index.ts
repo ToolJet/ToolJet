@@ -88,8 +88,7 @@ export default class Zendesk implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      console.log(error?.response?.body);
-      throw Error('could not connect to Zendesk');
+      throw new Error(`could not connect to Zendesk: ${error?.response?.body ?? error?.message ?? error}`);
     }
 
     return authDetails;
@@ -178,8 +177,6 @@ export default class Zendesk implements QueryService {
           break;
       }
     } catch (error) {
-      console.log(error.response);
-
       if (error?.response?.statusCode === 401) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
       }
