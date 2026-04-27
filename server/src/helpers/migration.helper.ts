@@ -1,9 +1,12 @@
+import { Logger } from '@nestjs/common';
 import { EncryptionService } from '@modules/encryption/service';
 import { CredentialsService } from '@modules/encryption/services/credentials.service';
 import { AppVersion } from '@entities/app_version.entity';
 import { Organization } from '@entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import { Credential } from '@entities/credential.entity';
+
+const migrationLogger = new Logger('MigrationHelper');
 
 export enum WHITE_LABELLING_SETTINGS {
   WHITE_LABEL_LOGO = 'WHITE_LABEL_LOGO',
@@ -28,7 +31,7 @@ export class MigrationProgress {
 
   show() {
     this.progress++;
-    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
+    migrationLogger.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
   }
 }
 
@@ -50,7 +53,7 @@ export const updateCurrentEnvironmentId = async (manager: EntityManager, migrati
     for (const { current_version_id, id } of apps) {
       const appVersions = await manager.query('select id from app_versions where app_id = $1', [id]);
       for (const appVersion of appVersions) {
-        console.log('Updating app version =>', appVersion.id);
+        migrationLogger.log(`Updating app version => ${appVersion.id}`);
         let envToUpdate = developmentEnvironment.id;
 
         if (current_version_id && current_version_id === appVersion.id) {
@@ -165,7 +168,7 @@ export const deleteAppHistoryForStructuralMigration = async (
   },
   migrationName = ''
 ): Promise<void> => {
-  console.log(`[${migrationName}] Starting app history cleanup for structural migration`);
+  migrationLogger.log(`[${migrationName}] Starting app history cleanup for structural migration`);
 
   try {
     let appVersionIds = options.appVersionIds;
@@ -173,7 +176,7 @@ export const deleteAppHistoryForStructuralMigration = async (
     // If componentIds are provided but not appVersionIds, resolve appVersionIds from components.
     // Batch the lookup in chunks of 5000 to avoid passing huge arrays to ANY($1).
     if (!appVersionIds && options.componentIds?.length > 0) {
-      console.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
+      migrationLogger.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
 
       const LOOKUP_BATCH = 5000;
       const versionIdSet = new Set<string>();
@@ -191,11 +194,11 @@ export const deleteAppHistoryForStructuralMigration = async (
       }
 
       appVersionIds = [...versionIdSet];
-      console.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
+      migrationLogger.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
     }
 
     if (!appVersionIds?.length) {
-      console.log(`[${migrationName}] No app versions to clean up history for`);
+      migrationLogger.log(`[${migrationName}] No app versions to clean up history for`);
       return;
     }
 
@@ -242,17 +245,17 @@ export const deleteAppHistoryForStructuralMigration = async (
 
         totalDeleted += deleted;
         batchNumber++;
-        console.log(
+        migrationLogger.log(
           `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
         );
       }
     }
 
-    console.log(
+    migrationLogger.log(
       `[${migrationName}] Completed: Deleted ${totalDeleted} app history entries for ${appVersionIds.length} app versions`
     );
   } catch (error) {
-    console.error(`[${migrationName}] Failed to delete app history:`, error);
+    migrationLogger.error(`[${migrationName}] Failed to delete app history`, error);
     throw error;
   }
 };
