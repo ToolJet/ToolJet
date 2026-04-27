@@ -1,4 +1,4 @@
-import { DynamicModule } from '@nestjs/common';
+import { DynamicModule, Logger } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -19,6 +19,8 @@ import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
 
 export class AppModuleLoader {
+  private static readonly logger = new Logger(AppModuleLoader.name);
+
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
@@ -188,7 +190,7 @@ export class AppModuleLoader {
         const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
         dynamicModules.push(await AuditLogsModule.register(configs));
       } catch (error) {
-        console.error('Error loading dynamic modules:', error);
+        AppModuleLoader.logger.error('Error loading dynamic modules:', error);
       }
     }
 

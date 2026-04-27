@@ -77,8 +77,11 @@ import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { Logger } from '@nestjs/common';
 
 export class AppModule implements OnModuleInit, NestModule {
+  private readonly logger = new Logger(AppModule.name);
+
   constructor(
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
@@ -206,8 +209,8 @@ export class AppModule implements OnModuleInit, NestModule {
   }
 
   async onModuleInit() {
-    console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
-    console.log(`Initializing server modules 📡 `);
+    this.logger.log(`Version: ${globalThis.TOOLJET_VERSION}`);
+    this.logger.log(`Initializing server modules`);
 
     const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
     const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
