@@ -1,4 +1,4 @@
-import { metrics } from '@opentelemetry/api';
+import { metrics, diag } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
 
 /**
@@ -273,21 +273,13 @@ export const initializeAuditLogMetrics = () => {
     unit: '1',
   });
 
-  console.log('✅ Audit log metrics initialized with separate meters:');
-  console.log('   Platform metrics (tooljet-platform):');
-  console.log('     - audit.logs.total, audit.logs.actions, audit.logs.resources');
-  console.log('     - audit.logs.active_users, audit.logs.organization_activity');
-  console.log('     - user.sessions.total');
-  console.log('   App metrics (tooljet-app):');
-  console.log('     - query.executions.total (with mode/environment), query.failures.total, query.duration');
-  console.log('     - app.usage.total, app.active_users, app.success_rate, app.errors.total');
-  console.log('     - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
-  console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
-  console.log('');
-  console.log('⚙️  Configuration:');
-  console.log(`   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`);
-  if (process.env.OTEL_INCLUDE_QUERY_TEXT === 'true') {
-    console.log('   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
+  diag.info('Audit log metrics initialized with separate meters:');
+  diag.info('  Platform metrics (tooljet-platform): audit.logs.total, audit.logs.actions, audit.logs.resources, audit.logs.active_users, audit.logs.organization_activity, user.sessions.total');
+  diag.info('  App metrics (tooljet-app): query.executions.total, query.failures.total, query.duration, app.usage.total, app.active_users, app.success_rate, app.errors.total, app.creations.total, app.updates.total, app.deletions.total, app.releases.total, datasource.creations.total, datasource.updates.total, datasource.deletions.total');
+  const queryTextEnabled = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
+  diag.info(`  OTEL_INCLUDE_QUERY_TEXT: ${queryTextEnabled ? 'enabled' : 'disabled (default)'}`);
+  if (queryTextEnabled) {
+    diag.warn('  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
   }
 };
 
