@@ -31,8 +31,8 @@ export default class AnthropicService implements QueryService {
           errorDetails = {requestId: error?.request_id,
             errorType: error?.error?.error?.type,
             statusCode: error?.status,}
-        } catch (parseError) {
-          console.error('Failed to parse Anthropic error response:', parseError);
+        } catch (parseError: any) {
+          errorDetails = { parseError: parseError?.message };
         }
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
@@ -58,7 +58,7 @@ export default class AnthropicService implements QueryService {
         max_tokens: 1,
         messages: [{ role: 'user', content: 'ping' }],
       });
-      
+
     } catch (error: any) {
       let errorMessage = 'Unknown error occured';
       let errorDetails: any = {};
@@ -68,8 +68,8 @@ export default class AnthropicService implements QueryService {
           errorDetails = {requestId: error?.request_id,
             errorType: error?.error?.error?.type,
             statusCode: error?.status,}
-        } catch (parseError) {
-          console.error('Failed to parse Anthropic error response:', parseError);
+        } catch (parseError: any) {
+          errorDetails = { parseError: parseError?.message };
         }
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
