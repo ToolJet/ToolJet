@@ -49,7 +49,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
               const newVersionQuery = manager
                 .createQueryBuilder(AppVersion, 'appVersion')
                 .select(['appVersion.name', 'appVersion.id', 'appVersion.currentEnvironmentId'])
-                .where('appVersion.appId = :appId', { appId: 'your_app_id' })
+                .where('appVersion.appId = :appId', { appId })
                 .orderBy('appVersion.updatedAt', 'DESC')
                 .limit(1)
                 .getQuery();
@@ -80,7 +80,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
                   manager
                     .createQueryBuilder(AppEnvironment, 'innerEnv')
                     .select('innerEnv.priority')
-                    .where('innerEnv.id = :id', { id: 'your_environment_id' })
+                    .where('innerEnv.id = :id', { id: editorEnvironmentId })
                     .getQuery() +
                   ')'
               )
