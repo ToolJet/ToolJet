@@ -49,7 +49,7 @@ export interface QueryService {
 export { QueryError, OAuthUnauthorizedClientError };
 
 export interface GetQueryVariables {
-  appVersionId?: string;
+  // appVersionId removed: released versions now use is_default DSV
   environmentId?: string;
   types?: DataSourceTypes[];
   shouldIncludeWorkflows?: boolean;
