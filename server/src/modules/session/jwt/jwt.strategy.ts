@@ -124,7 +124,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             });
           } catch (error) {
             // Don't let metrics tracking failures affect authentication
-            console.error('Error tracking user activity:', error);
+            this.transactionLogger.error('Error tracking user activity:', error);
           }
         }
       }
