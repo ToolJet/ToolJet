@@ -122,8 +122,8 @@ export class MetricsService implements OnModuleInit {
         external: memoryUsage.external,
       },
       cpu: {
-        user: cpuUsage.user / 1000, // ms
-        system: cpuUsage.system / 1000, // ms
+        user: cpuUsage.user / 1e6, // seconds
+        system: cpuUsage.system / 1e6, // seconds
       },
       system: {
         loadAverage: loadAvg,
