@@ -116,12 +116,13 @@ export class PluginsService implements IPluginsService {
         updatedPlugin.repo = repo || '';
         updatedPlugin.version = version;
 
-        return manager.save(updatedPlugin);
+        const result = await manager.save(updatedPlugin);
+        await queryRunner.commitTransaction();
+        return result;
       } catch (error) {
         await queryRunner.rollbackTransaction();
         throw new InternalServerErrorException(error);
       } finally {
-        await queryRunner.commitTransaction();
         await queryRunner.release();
       }
     });
