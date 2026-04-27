@@ -29,28 +29,14 @@ import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
-/**
- * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
- * This will get redundanted once api response for appdata is made uniform across all the endpoints.
- **/
+// Editor (data-queries API) returns options with camelCase keys, but public/
+// released/preview-for-version paths return snake_case. Shallow-camelCase the
+// top-level option keys so downstream readers see one shape. Nested values
+// (REST headers, params, body, transformation code) are user-controlled and
+// preserved as-is.
 export const normalizeQueryTransformationOptions = (query) => {
-  if (query?.options) {
-    if (query.options.enable_transformation) {
-      const enableTransformation = query.options.enable_transformation;
-      delete query.options.enable_transformation;
-      if (!query.options.enableTransformation) {
-        query.options.enableTransformation = enableTransformation;
-      }
-    }
-
-    if (query.options.transformation_language) {
-      const transformationLanguage = query.options.transformation_language;
-      delete query.options.transformation_language;
-      if (!query.options.transformationLanguage) {
-        query.options.transformationLanguage = transformationLanguage;
-      }
-    }
-  }
+  if (!query?.options || typeof query.options !== 'object') return query;
+  query.options = mapKeys(query.options, (_v, key) => camelCase(key));
   return query;
 };
 
