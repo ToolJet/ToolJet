@@ -63,44 +63,6 @@
     outline: dotted 2px #CCD1D5 !important;
 }
 
-// .module-container-canvas {
-//     &.module-container-canvas--editor {
-//         >div:first-child {
-//             /* Firefox scrollbar support */
-//             scrollbar-width: thin;
-//             scrollbar-color: transparent transparent;
-//             height: 100%;
-//             overflow: hidden auto;
-
-//             /* Hide scrollbar by default */
-//             &::-webkit-scrollbar {
-//                 width: 6px;
-//                 background: transparent;
-//             }
-
-//             &::-webkit-scrollbar-thumb {
-//                 background: transparent;
-//             }
-
-//             /* Show scrollbar only on hover */
-//             &:hover {
-//                 &::-webkit-scrollbar-thumb {
-//                     background-color: #6a727c4d;
-//                     border-radius: 3px;
-//                 }
-//             }
-
-//             &:hover {
-//                 scrollbar-color: #6a727c4d transparent;
-//             }
-//         }
-//     }
-//     &.disabled{
-//         pointer-events: none;
-//         opacity: 0.5;
-//     }
-// }
-
 .module-container-canvas {
     >div:first-child {
         /* Firefox scrollbar support */
@@ -109,7 +71,7 @@
         height: 100%;
         overflow: hidden;
 
-        // /* Hide scrollbar by default */
+        /* Hide scrollbar by default */
         &::-webkit-scrollbar {
             width: 6px;
             background: transparent;
