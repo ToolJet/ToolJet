@@ -208,6 +208,7 @@
       .table-row.selected {
         --tblr-table-accent-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
         background: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface));
       }
 
       td {
@@ -426,12 +427,14 @@
       .table-row:hover,
       .table-row:focus {
         background: var(--cc-table-row-hover, #ECEEF0) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-row-hover, #ECEEF0);
       }
 
       &.table-striped {
         .table-row[data-index]:nth-child(even) {
           &:hover, &:focus {
             background: var(--cc-table-striped-row-hover, #ECEEF0) !important;
+            --cc-table-pinned-column-bg: var(--cc-table-striped-row-hover, #ECEEF0);
           }
         }
       }
@@ -1697,6 +1700,7 @@
       tr[data-index]:nth-child(even) {
         background-color: var(--cc-table-striped-row-bg-color);
         --tblr-table-accent-bg: none;
+        --cc-table-pinned-column-bg: var(--cc-table-striped-row-bg-color);
         color: inherit !important;
       }
     }

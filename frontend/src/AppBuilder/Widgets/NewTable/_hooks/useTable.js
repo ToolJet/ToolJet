@@ -41,10 +41,16 @@ export function useTable({
       return acc;
     }, {});
 
-    return {
-      left: columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'left'),
-      right: columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'right'),
-    };
+    const leftPinned = columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'left');
+    const rightPinned = columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'right');
+
+    // Pin the selection (checkbox) column to the extreme left only when other columns are pinned
+    const hasOtherLeftPins = leftPinned.some((id) => id !== 'selection');
+    if (hasOtherLeftPins && !leftPinned.includes('selection')) {
+      leftPinned.unshift('selection');
+    }
+
+    return { left: leftPinned, right: rightPinned };
   }, [columns, columnOrder]);
 
   useEffect(() => {
