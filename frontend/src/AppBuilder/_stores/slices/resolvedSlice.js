@@ -43,6 +43,16 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
   general: {},
 };
 
+// Builds the Immer mutation for writing a single exposed-value property.
+// Handles the case where a component moved from ListView (array structure) to canvas (plain object).
+const buildExposedValueMutation = (componentId, property, value, moduleId) => (state) => {
+  const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+  if (components[componentId] === undefined || Array.isArray(components[componentId])) {
+    components[componentId] = { [property]: value };
+  }
+  components[componentId][property] = value;
+};
+
 export const createResolvedSlice = (set, get) => {
   const _exposedValueBatch = createBatchManager(set, get);
 
@@ -103,26 +113,18 @@ export const createResolvedSlice = (set, get) => {
     setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
       set(
         (state) => {
-          // Handle object assignment
-          if (!state.resolvedStore.modules[moduleId].exposedValues.globals[objKey]) {
-            state.resolvedStore.modules[moduleId].exposedValues.globals[objKey] = {};
-          }
+          const globals = state.resolvedStore.modules[moduleId].exposedValues.globals;
           if (Object.keys(values).length === 0) {
-            // Set an empty object
-            state.resolvedStore.modules[moduleId].exposedValues.globals[objKey] = {};
+            globals[objKey] = {};
           } else {
-            // Handle nested object assignment
-            Object.entries(values).forEach(([key, value]) => {
-              state.resolvedStore.modules[moduleId].exposedValues.globals[objKey][key] = value;
-            });
+            if (!globals[objKey]) globals[objKey] = {};
+            Object.assign(globals[objKey], values);
           }
         },
         false,
         'setResolvedGlobals'
       );
-      Object.entries(values).forEach(() => {
-        get().updateDependencyValues(`globals.${objKey}`, moduleId);
-      });
+      get().updateDependencyValues(`globals.${objKey}`, moduleId);
     },
     setResolvedConstants: (constants = {}, moduleId = 'canvas') => {
       set(
@@ -453,41 +455,19 @@ export const createResolvedSlice = (set, get) => {
       );
     },
     setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
-      // Skip if the value is already set to the same value
       const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
       if (existing !== undefined && _.isEqual(existing, value)) return;
 
+      const mutation = buildExposedValueMutation(componentId, property, value, moduleId);
+      const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
+
       if (_exposedValueBatch.isBatching()) {
-        _exposedValueBatch.bufferMutation(
-          (state) => {
-            const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
-            if (existing === undefined || Array.isArray(existing))
-              state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
-            state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
-          },
-          typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
-        );
+        _exposedValueBatch.bufferMutation(mutation, depPaths);
         return;
       }
 
-      set(
-        (state) => {
-          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
-          if (existing === undefined || Array.isArray(existing))
-            state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
-              [property]: value,
-            };
-          state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
-        },
-        false,
-        {
-          type: 'setExposedValue',
-          payload: { componentId, property, value, moduleId },
-        }
-      );
-      if (typeof value !== 'function') {
-        scheduleDependencyUpdate(`components.${componentId}.${property}`, moduleId);
-      }
+      set(mutation, false, { type: 'setExposedValue', payload: { componentId, property, value, moduleId } });
+      depPaths.forEach(({ path }) => scheduleDependencyUpdate(path, moduleId));
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
@@ -523,8 +503,8 @@ export const createResolvedSlice = (set, get) => {
                 [key]: value,
               };
             } else {
-              // If the value is equal to the existing value, add the key to the skipKeys set and do not update it
-              // using lodash's isEqual as the state is immer proxy and cannot be compared directly
+              // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
+              // and lodash's deep comparison works correctly against them.
               if (_.isEqual(value, existing[key])) {
                 skipKeys.add(key);
               } else existing[key] = value;

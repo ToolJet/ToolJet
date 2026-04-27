@@ -9,13 +9,19 @@ import { shallow } from 'zustand/shallow';
  * Usage: useExposedValueBatch(renderedRowCount) or useExposedValueBatch(componentCount)
  */
 export const useExposedValueBatch = (count) => {
-  const startExposedValueBatch = useStore((s) => s.startExposedValueBatch, shallow);
-  const flushExposedValueBatch = useStore((s) => s.flushExposedValueBatch, shallow);
-  const isExposedValueBatching = useStore((s) => s.isExposedValueBatching, shallow);
+  const { startExposedValueBatch, flushExposedValueBatch, isExposedValueBatching } = useStore(
+    (s) => ({
+      startExposedValueBatch: s.startExposedValueBatch,
+      flushExposedValueBatch: s.flushExposedValueBatch,
+      isExposedValueBatching: s.isExposedValueBatching,
+    }),
+    shallow
+  );
   const prevCountRef = useRef(count);
 
-  // useLayoutEffect fires after all children's layout effects but before any useEffect —
-  // the right moment to open the batch before children's mount effects write exposed values.
+  // Open batch before children's mount useEffects write exposed values.
+  // useLayoutEffect fires after children's layout effects but before any useEffect —
+  // the right moment so the batch is open when children's mount effects run.
   useLayoutEffect(() => {
     if (count > prevCountRef.current) {
       startExposedValueBatch();

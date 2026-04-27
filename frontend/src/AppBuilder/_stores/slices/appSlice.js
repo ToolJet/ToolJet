@@ -251,9 +251,9 @@ export const createAppSlice = (set, get) => ({
         initDependencyGraph,
         setQueryMapping,
         cleanUpStore,
+        clearTemporaryLayouts,
         setResolvedGlobals,
         setResolvedPageConstants,
-        setPageSwitchInProgress,
         setIsComponentLayoutReady,
         getCurrentPageId,
         startExposedValueBatch,
@@ -276,7 +276,7 @@ export const createAppSlice = (set, get) => ({
       const isSamePage = previousPageId === pageId;
 
       cleanUpStore(true);
-      get().clearTemporaryLayouts();
+      clearTemporaryLayouts();
       setCurrentPageId(pageId, moduleId);
       setComponentNameIdMapping(moduleId);
       setQueryMapping(moduleId);

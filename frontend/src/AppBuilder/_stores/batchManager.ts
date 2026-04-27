@@ -105,7 +105,10 @@ export function createBatchManager<S extends StoreWithDependencies>(
           false,
           actionName
         );
-        if (useShallowReturn) return;
+        if (useShallowReturn) {
+          postFlushCallbacks.forEach((cb) => cb());
+          return;
+        }
       }
 
       const seen = new Set<string>();
