@@ -327,12 +327,18 @@ export const listViewComponentSlice = (set, get) => ({
     let currentIndices = [...indices];
 
     while (currentLV && currentIndices.length > 0) {
+      const lvDef = getComponentDefinition(currentLV, moduleId);
+      const componentType = lvDef?.component?.component;
       const rowIndex = currentIndices[currentIndices.length - 1];
       const outerIndices = currentIndices.slice(0, -1);
-      deriveListviewExposedData(currentLV, rowIndex, outerIndices, moduleId);
 
-      // Move up to outer ListView
-      const lvDef = getComponentDefinition(currentLV, moduleId);
+      // Table acts as a subcontainer for expandable rows but should not expose
+      // ListView-style children/data variables on the table itself.
+      if (componentType !== 'Table') {
+        deriveListviewExposedData(currentLV, rowIndex, outerIndices, moduleId);
+      }
+
+      // Move up to outer ListView/Kanban (Table may itself be nested inside one)
       const lvParent = lvDef?.component?.parent;
       currentLV = lvParent ? findNearestSubcontainerAncestor(lvParent, moduleId) : null;
       currentIndices = outerIndices;

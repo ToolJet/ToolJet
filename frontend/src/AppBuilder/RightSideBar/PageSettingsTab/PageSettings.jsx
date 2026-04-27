@@ -292,7 +292,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-          Show app header
+          Show app title
           <LicenseTooltip
             message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
             placement="bottom"

@@ -748,6 +748,12 @@ export const createQueryPanelSlice = (set, get) => ({
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
+            const result = handleFailure({
+              status: 'failed',
+              message: errorMessage,
+              data: e?.data || {},
+              description: errorMessage,
+            });
             resolve({ status: 'failed', message: errorMessage });
           });
       });
@@ -1220,6 +1226,9 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedPage = deepClone(currentState?.page);
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
+          const hasJsLibrariesAccess = get().license?.featureAccess?.appJsLibraries;
+          const libraryRegistry = hasJsLibrariesAccess ? get().jsLibraryRegistry || {} : {};
+
           const evalFunction = Function(
             [
               'data',
@@ -1233,6 +1242,7 @@ export const createQueryPanelSlice = (set, get) => ({
               'constants',
               ...(appType === 'module' ? ['input'] : []),
               'actions',
+              ...Object.keys(libraryRegistry),
             ],
             transformation
           );
@@ -1258,7 +1268,8 @@ export const createQueryPanelSlice = (set, get) => ({
               log: function (log) {
                 return actions.log.call(actions, log, true);
               },
-            }
+            },
+            ...Object.values(libraryRegistry)
           );
         } catch (err) {
           const stackLines = err.stack.split('\n');
@@ -1536,6 +1547,8 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+        const hasJsLibrariesAccess = get().license?.featureAccess?.appJsLibraries;
+        const libraryRegistry = hasJsLibrariesAccess ? get().jsLibraryRegistry || {} : {};
         const fnParams = [
           'moment',
           '_',
@@ -1549,6 +1562,7 @@ export const createQueryPanelSlice = (set, get) => ({
           'constants',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
+          ...Object.keys(libraryRegistry),
           code,
         ];
         var evalFn = new AsyncFunction(...fnParams);
@@ -1566,6 +1580,7 @@ export const createQueryPanelSlice = (set, get) => ({
           resolvedState?.constants,
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
+          ...Object.values(libraryRegistry),
         ];
         result = {
           status: 'ok',

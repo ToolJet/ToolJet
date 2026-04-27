@@ -52,6 +52,14 @@
       },
       "custom_query_params": {
         "type": "object"
+      },
+      "private_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "private_key_passphrase": {
+        "type": "string",
+        "encrypted": true
       }
     }
   },
@@ -94,6 +102,95 @@
       "type": "text",
       "description": "Enter account"
     },
+    "auth_type": {
+      "label": "Authentication type",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Select the authentication type",
+      "list": [
+        { "value": "basic", "name": "Basic" },
+        { "value": "oauth2", "name": "OAuth 2.0" },
+        { "value": "key_pair", "name": "Key pair" }
+      ]
+    },
+    "basic": {
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "password": {
+        "label": "Password",
+        "key": "password",
+        "type": "password",
+        "description": "Enter password",
+        "encrypted": true
+      }
+    },
+    "oauth2": {
+      "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "A component for snowflake",
+        "oauth_configs": {
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ],
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret",
+              "auth_url",
+              "access_token_url",
+              "access_token_custom_headers"
+            ]
+          },
+          "allowed_scope_field": true,
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": [
+                "custom_app"
+              ],
+              "ee": [
+                "custom_app"
+              ],
+              "cloud": [
+                "custom_app",
+                "tooljet_app"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "key_pair": {
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "private_key": {
+        "label": "Private key",
+        "key": "private_key",
+        "type": "textarea",
+        "description": "Enter the RSA private key in PEM format",
+        "encrypted": true
+      },
+      "private_key_passphrase": {
+        "label": "Private key passphrase",
+        "key": "private_key_passphrase",
+        "type": "password",
+        "description": "Enter passphrase (only required if the private key is encrypted)",
+        "encrypted": true
+      }
+    },
     "database": {
       "label": "Database",
       "key": "database",
@@ -117,55 +214,9 @@
       "key": "role",
       "type": "text",
       "description": "Enter role"
-    },
-    "oauth": {
-      "key": "oauth",
-      "type": "react-component-oauth",
-      "description": "A component for snowflake",
-      "oauth_configs": {
-        "allowed_auth_types": [
-          "oauth2",
-          "basic"
-        ],
-        "allowed_grant_types": [
-          "authorization_code"
-        ],
-        "allowed_field_groups": {
-          "authorization_code": [
-            "client_id",
-            "client_secret",
-            "auth_url",
-            "access_token_url",
-            "access_token_custom_headers"
-          ],
-          "basic": [
-            "username",
-            "password"
-          ]
-        },
-        "allowed_scope_field": true,
-        "oauthTypes": {
-          "required": true,
-          "default_value": "custom_app",
-          "editions": {
-            "ce": [
-              "custom_app"
-            ],
-            "ee": [
-              "custom_app"
-            ],
-            "cloud": [
-              "custom_app",
-              "tooljet_app"
-            ]
-          }
-        }
-      }
     }
   },
   "required": [
-    "account",
-    "username",
-    "password"
+    "account"
   ]
 }

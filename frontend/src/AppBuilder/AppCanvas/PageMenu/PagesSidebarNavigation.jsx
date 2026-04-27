@@ -47,6 +47,7 @@ export const PagesSidebarNavigation = ({
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+
   const { isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
@@ -494,9 +495,8 @@ export const PagesSidebarNavigation = ({
           'no-header': headerHidden && logoHidden,
         })}
         style={{
-          position: 'sticky',
-          height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
-          top: '0px',
+          position: 'relative',
+          height: currentMode === 'edit' ? '100%' : `calc(100% - var(--preview-header-height, 0px))`,
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           borderRight: (() => {
@@ -549,6 +549,7 @@ export const PagesSidebarNavigation = ({
           justifyContent: 'center',
           width: '100%',
         }),
+        height: '100%',
         position: 'relative', // Add relative positioning to the parent
       }}
     >
