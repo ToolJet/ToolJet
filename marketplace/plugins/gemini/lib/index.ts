@@ -24,8 +24,6 @@ export default class GeminiService implements QueryService {
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error: any) {
-      console.error('Error in Gemini query:', error);
-
       let errorMessage = 'Unknown error occurred';
       let errorDetails: any = {};
 
@@ -38,7 +36,7 @@ export default class GeminiService implements QueryService {
             statusCode: error.response?.status || error.status,
           };
         } catch (parseError: any) {
-          console.error('Failed to parse Gemini error response:', parseError);
+          errorDetails = { parseError: parseError?.message };
         }
       }
 
