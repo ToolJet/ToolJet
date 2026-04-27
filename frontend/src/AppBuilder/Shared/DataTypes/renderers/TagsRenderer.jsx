@@ -10,6 +10,15 @@ import TagsInputOption from '@/AppBuilder/Widgets/TagsInput/TagsInputOption';
 import defaultStyles from '@/_ui/Select/styles';
 import { DropdownIndicator, getOverlay, COLORS } from './SelectRenderer';
 
+const DEFAULT_TAG_BACKGROUND_COLOR = 'var(--surfaces-surface-03)';
+
+const getAutoAssignedChipColor = (value) => {
+  const stringValue = String(value ?? '');
+  const colorIndex = Array.from(stringValue).reduce((sum, char) => sum + char.charCodeAt(0), 0) % COLORS.length;
+
+  return COLORS[colorIndex];
+};
+
 const sortOptions = (opts, sortTags) => {
   if (!sortTags || sortTags === 'none') return opts;
   return [...opts].sort((a, b) => {
@@ -19,10 +28,14 @@ const sortOptions = (opts, sortTags) => {
 };
 
 const getTagChipStyles = (data, selectProps) => {
+  const background =
+    selectProps?.optionColors?.[data?.value] ||
+    (selectProps?.autoPickChipColor ? getAutoAssignedChipColor(data?.value) : DEFAULT_TAG_BACKGROUND_COLOR);
+
   return {
     display: 'inline-flex',
     alignItems: 'center',
-    background: selectProps?.optionColors?.[data?.value] || 'var(--surfaces-surface-03)',
+    background,
     borderRadius: '6px',
     color: data?.labelColor || selectProps?.selectedTextColor || 'var(--text-primary)',
     fontSize: '12px',
@@ -188,7 +201,7 @@ export const TagsRenderer = ({
     () =>
       allOptions.reduce((acc, option, index) => {
         acc[option.value] =
-          option.optionColor || (autoAssignColors ? COLORS[index % COLORS.length] : 'var(--surfaces-surface-03)');
+          option.optionColor || (autoAssignColors ? COLORS[index % COLORS.length] : DEFAULT_TAG_BACKGROUND_COLOR);
         return acc;
       }, {}),
     [allOptions, autoAssignColors]
@@ -199,11 +212,13 @@ export const TagsRenderer = ({
       const matchedOption = allOptions.find((option) => option.value === optionValue);
 
       return {
-        bg: optionColors?.[optionValue] || 'var(--surfaces-surface-03)',
+        bg:
+          optionColors?.[optionValue] ||
+          (autoAssignColors ? getAutoAssignedChipColor(optionValue) : DEFAULT_TAG_BACKGROUND_COLOR),
         text: matchedOption?.labelColor || 'var(--text-primary)',
       };
     },
-    [allOptions, optionColors, textColor]
+    [allOptions, optionColors, autoAssignColors]
   );
 
   const handleCreate = useCallback(
