@@ -10,8 +10,9 @@ import { createLogger } from '@helpers/bootstrap.helper';
 
 const logForm = winston.format.printf((info) => `${info.timestamp} ${info.level} [${info.label}]: ${info.message}`);
 
+const logger = createLogger('Log-to-file-transport');
+
 export const logFileTransportConfig = (filePath, processId) => {
-  const logger = createLogger('Log-to-file-transport');
 
   try {
     const absoluteLogDir = path.join(os.homedir(), filePath, 'tooljet_log');
@@ -33,11 +34,11 @@ export const logFileTransportConfig = (filePath, processId) => {
       json: true,
     });
     transport.on('rotate', function (oldFilename, newFilename) {
-      console.log(`Rotating old log file - ${oldFilename} and creating new log file ${newFilename}`);
+      logger.log(`Rotating old log file - ${oldFilename} and creating new log file ${newFilename}`);
       readObjectFromLines(oldFilename);
     });
     transport.on('error', (err) => {
-      console.error('Log file generation error:', err);
+      logger.error('Log file generation error:', err);
     });
     return transport;
   } catch (error) {
@@ -78,13 +79,13 @@ export const readObjectFromLines = (logFilePath) => {
     const jsonContent = JSON.stringify(eval(modifiedContent), null, 2);
     fs.writeFile(`${logFilePath}.json`, jsonContent, (err) => {
       if (err) {
-        console.error('Error writing file:', err);
+        logger.error('Error writing file:', err);
         return;
       }
     });
   });
 
   rl.on('error', (err) => {
-    console.error('Error reading file:', err);
+    logger.error('Error reading file:', err);
   });
 };
