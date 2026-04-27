@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import License from '@modules/licensing/configs/License';
 import { EntityManager } from 'typeorm';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -8,6 +9,7 @@ import LicenseBase from '../configs/LicenseBase';
 
 @Injectable()
 export class LicenseInitService extends ILicenseInitService {
+  private readonly logger = new Logger(LicenseInitService.name);
   /**
    * IMPORTANT: Do not modify this function signature - it is used in data migrations.
    *
@@ -22,7 +24,7 @@ export class LicenseInitService extends ILicenseInitService {
   }
 
   async init(): Promise<void> {
-    console.log('Skip license initialization');
+    this.logger.log('Skip license initialization');
     License.Reload('', new Date());
     return;
   }
