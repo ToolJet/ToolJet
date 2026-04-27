@@ -269,11 +269,9 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(
             dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase()),
         ).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
     //Verify the released app
