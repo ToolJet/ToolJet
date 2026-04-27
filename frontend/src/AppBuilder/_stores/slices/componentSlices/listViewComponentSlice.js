@@ -93,9 +93,17 @@ export const listViewComponentSlice = (set, get) => ({
   // Batch per-row exposed value write for ListView children.
   setExposedValuesPerRow: (componentId, values, indices, moduleId = 'canvas') => {
     if (get().isExposedValueBatching()) {
-      const depPaths = Object.keys(values)
-        .filter((key) => typeof values[key] !== 'function')
-        .map((key) => ({ path: `components.${componentId}.${key}`, moduleId }));
+      const existingComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
+      const lastIdx = indices[indices.length - 1];
+      let existingRow = Array.isArray(existingComponents?.[componentId]) ? existingComponents[componentId] : null;
+      for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
+      const isNewSlot = !existingRow || existingRow[lastIdx] === undefined;
+
+      const depPaths = isNewSlot
+        ? []
+        : Object.keys(values)
+            .filter((key) => typeof values[key] !== 'function')
+            .map((key) => ({ path: `components.${componentId}.${key}`, moduleId }));
       get().bufferExposedValueMutation((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         if (!Array.isArray(components[componentId])) components[componentId] = [];
