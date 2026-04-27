@@ -24,8 +24,8 @@ export const ComboboxContent = ({ className, ...props }) => (
 );
 
 export const FieldRow = ({ label, dataCy, children, className }) => (
-  <div className={cn('tw-flex tw-h-8 tw-items-center tw-justify-between', className)}>
-    <span data-cy={dataCy} className="tw-font-body-default tw-text-text-default">
+  <div className={cn('tw-flex tw-min-h-8 tw-items-start tw-justify-between', className)}>
+    <span data-cy={dataCy} className="tw-flex tw-h-8 tw-items-center tw-font-body-default tw-text-text-default">
       {label}
     </span>
     <div className="tw-w-[168px]">{children}</div>
