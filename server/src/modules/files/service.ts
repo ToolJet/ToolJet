@@ -14,7 +14,7 @@ export class FilesService implements IFilesService {
 
     response.set({
       'Content-Disposition': `inline; filename="${file.filename}"`,
-      'Content-Type': 'image',
+      'Content-Type': 'image/*',
     });
 
     // https://docs.nestjs.com/techniques/streaming-files
