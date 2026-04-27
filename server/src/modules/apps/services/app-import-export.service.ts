@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -230,6 +230,8 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 @Injectable()
 export class AppImportExportService {
+  private readonly logger = new Logger(AppImportExportService.name);
+
   constructor(
     protected dataSourcesUtilService: DataSourcesUtilService,
     protected dataSourcesRepository: DataSourcesRepository,
@@ -3249,14 +3251,14 @@ export class AppImportExportService {
       })) as App;
 
       if (!moduleApp) {
-        console.warn(`Module with ID ${moduleAppId} not found`);
+        this.logger.warn(`Module with ID ${moduleAppId} not found`);
         return;
       }
 
       // Get the module's editing version or latest version
       const moduleVersion = moduleApp.appVersions?.[0]; // Assuming first version is the editing version
       if (!moduleVersion) {
-        console.warn(`No version found for module with ID ${moduleAppId}`);
+        this.logger.warn(`No version found for module with ID ${moduleAppId}`);
         return;
       }
 
@@ -3270,7 +3272,7 @@ export class AppImportExportService {
 
       const moduleContainer = moduleComponents[0];
       if (!moduleContainer) {
-        console.warn(`ModuleContainer not found in module ${moduleAppId}`);
+        this.logger.warn(`ModuleContainer not found in module ${moduleAppId}`);
         return;
       }
 
@@ -3306,7 +3308,7 @@ export class AppImportExportService {
       // Update component properties with the processed values
       component.properties = properties;
     } catch (error) {
-      console.error(`Error handling ModuleViewer component ${component.id}:`, error);
+      this.logger.error(`Error handling ModuleViewer component ${component.id}:`, error);
       // Continue processing even if module handling fails
     }
   }
