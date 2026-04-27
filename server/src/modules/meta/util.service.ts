@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import got from 'got';
@@ -19,6 +19,8 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 @Injectable()
 export class MetadataUtilService implements IMetaUtilService {
+  private readonly logger = new Logger(MetadataUtilService.name);
+
   constructor(
     protected configService: ConfigService,
     protected licenseTermsService: LicenseTermsService,
@@ -121,7 +123,7 @@ export class MetadataUtilService implements IMetaUtilService {
         },
       });
     } catch (error) {
-      console.error('Error while connecting to URL https://hub.tooljet.io/subscribe', error);
+      this.logger.error('Error while connecting to URL https://hub.tooljet.io/subscribe', error);
     }
   }
 
@@ -160,7 +162,7 @@ export class MetadataUtilService implements IMetaUtilService {
           },
         });
       } catch (error) {
-        console.error('Error while connecting to URL https://hub.tooljet.io/telemetry', error);
+        this.logger.error('Error while connecting to URL https://hub.tooljet.io/telemetry', error);
       }
     });
   }
