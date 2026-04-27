@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -19,6 +19,8 @@ import { AppHistoryUtilService } from '@modules/app-history/util.service';
 
 @Injectable()
 export class PageService implements IPageService {
+  protected readonly logger = new Logger(PageService.name);
+
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
@@ -64,7 +66,7 @@ export class PageService implements IPageService {
         },
       });
     } catch (error) {
-      console.error('Failed to queue history capture for page creation:', error);
+      this.logger.error('Failed to queue history capture for page creation:', error);
     }
 
     return result;
@@ -145,7 +147,7 @@ export class PageService implements IPageService {
           },
         });
       } catch (error) {
-        console.error('Failed to queue history capture for page cloning:', error);
+        this.logger.error('Failed to queue history capture for page cloning:', error);
       }
     }
 
@@ -321,7 +323,7 @@ export class PageService implements IPageService {
       for (const component of clonedComponents) {
         const originalComponent = pageComponents.find((c) => componentsIdMap[c.id] === component.id);
         if (!originalComponent) {
-          console.error(`Original component not found for cloned component ID: ${component.id}`);
+          this.logger.error(`Original component not found for cloned component ID: ${component.id}`);
           continue;
         }
 
@@ -367,7 +369,7 @@ export class PageService implements IPageService {
         affectedCount: pageIds.length,
       });
     } catch (error) {
-      console.error('Failed to queue history capture for page reordering:', error);
+      this.logger.error('Failed to queue history capture for page reordering:', error);
     }
 
     return result;
@@ -404,7 +406,7 @@ export class PageService implements IPageService {
         isSettingsUpdate,
       });
     } catch (error) {
-      console.error('Failed to queue history capture for page update:', error);
+      this.logger.error('Failed to queue history capture for page update:', error);
     }
 
     return result;
@@ -456,7 +458,7 @@ export class PageService implements IPageService {
         // No need to pre-fetch pageName - queue processor will resolve from history
       });
     } catch (error) {
-      console.error('Failed to queue history capture for page deletion:', error);
+      this.logger.error('Failed to queue history capture for page deletion:', error);
     }
 
     return result;
