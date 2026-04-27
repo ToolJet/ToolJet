@@ -1,7 +1,9 @@
 import { DataSource } from 'typeorm';
 import { getTooljetEdition } from './utils.helper';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { Metadata } from '@entities/metadata.entity';
+
+const logger = new Logger('EditionHelper');
 
 const EDITION_PRIORITY = {
   ce: 0,
@@ -30,7 +32,7 @@ export async function validateEdition(app: INestApplication) {
 
   if (savedEdition) {
     if (isEditionDowngrade(savedEdition, currentEdition)) {
-      console.error(
+      logger.error(
         `Cannot downgrade from ${savedEdition} to ${currentEdition}. Please use an equal or higher edition or reset the database.`
       );
       await app.close();
