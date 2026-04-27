@@ -74,7 +74,7 @@ export default class Create extends Command {
 
     const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
     const pluginsJson = JSON.parse(buffer);
-    pluginsJson.map((plugin: any) => {
+    pluginsJson.forEach((plugin: any) => {
       if (plugin.id === args.plugin_name.toLowerCase()) {
         this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin id already exists');
         process.exit(1);
@@ -86,7 +86,7 @@ export default class Create extends Command {
     await runner(hygenArgs, {
       templates: defaultTemplates,
       cwd: process.cwd(),
-      logger: new Logger(console.log.bind(console)),
+      logger: new Logger(this.log.bind(this)),
       createPrompter: () => require('enquirer'),
       exec: (action: any, body: string | any[]) => {
         const opts = body && body.length > 0 ? { input: body } : {};
