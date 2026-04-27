@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Intercom Datasource",
-  "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more",
+  "description": "Integrate with Intercom API to manage contacts, support tickets, and conversations etc",
   "type": "api",
   "source": {
     "name": "Intercom",

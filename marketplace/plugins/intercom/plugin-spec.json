@@ -2,7 +2,7 @@
   "metadata": {
     "name": "Intercom",
     "kind": "intercom",
-    "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more.",
+    "description": "Integrate with Intercom API to manage contacts, support tickets, and conversations etc",
     "operationsMode": "api-endpoint",
     "specUrl": "@spec/intercom/intercom"
   },
