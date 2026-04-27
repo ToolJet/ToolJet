@@ -8,6 +8,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, IsNull, Not, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class VersionRepository extends Repository<AppVersion> {
@@ -35,6 +36,7 @@ export class VersionRepository extends Repository<AppVersion> {
             status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
+            moduleReferenceId: uuid(),
             ...(branchId && { branchId }),
           })
         );

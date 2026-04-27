@@ -425,8 +425,8 @@ export class AppImportExportService {
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
-        // Post-migration: moduleVersionId.value holds version name (stable).
-        // Legacy: moduleVersionId.value holds DB UUID.
+        // moduleVersionId.value holds the version's module_reference_id (uuid),
+        // stable across instances. Empty string signals an unpinned ref.
         versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
       }));
 
@@ -452,25 +452,14 @@ export class AppImportExportService {
       await Promise.all(
         moduleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
-          // Resolve versionIdentifier: may be a version name (post-migration) or UUID (legacy).
-          // Try name lookup first, then UUID lookup. If neither resolves to a real row,
-          // fall back to undefined so this.export() picks the default editing version —
-          // passing the raw identifier would crash the UUID-typed app_versions.id query.
+          // versionIdentifier is a module_reference_id (uuid). Single lookup; if absent,
+          // empty, or unresolvable, this.export() will pick the default editing version.
           let versionDbId: string | undefined;
           if (moduleAppId.versionIdentifier && resolvedId) {
-            const byName = await manager.findOne(AppVersion, {
-              where: { name: moduleAppId.versionIdentifier, appId: resolvedId },
+            const byRefId = await manager.findOne(AppVersion, {
+              where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
             });
-            if (byName) {
-              versionDbId = byName.id;
-            } else if (
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(moduleAppId.versionIdentifier)
-            ) {
-              const byId = await manager.findOne(AppVersion, {
-                where: { id: moduleAppId.versionIdentifier, appId: resolvedId },
-              });
-              versionDbId = byId?.id;
-            }
+            versionDbId = byRefId?.id;
           }
           moduleApps.push(
             await this.export(user, resolvedId, {
@@ -744,6 +733,7 @@ export class AppImportExportService {
           globalSettings: {},
           pageSettings: {},
           showViewerNavigation: false,
+          moduleReferenceId: uuid(),
         } as DeepPartial<AppVersion>);
         await manager.save(AppVersion, stub);
       }
@@ -1889,24 +1879,16 @@ export class AppImportExportService {
             newComponent.parent = component.parent ? parentId : null;
 
             if (component.type === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
-              // Git imports store stable references in the YAML:
-              //   moduleAppId.value   = module App.co_relation_id
-              //   moduleVersionId.value = AppVersion.name
-              // Rewriting them to workspace-local DB ids would make cross-workspace pulls
-              // fail (the frontend's by-correlation/by-name endpoint expects stable keys).
-              // Only rewrite for non-git imports (file upload, clone), where the YAML
-              // still contains source-DB UUIDs that must be mapped to the target workspace.
+              // ModuleViewer properties carry stable cross-instance keys:
+              //   moduleAppId.value     = module App.co_relation_id
+              //   moduleVersionId.value = AppVersion.module_reference_id (uuid) or "" (unpinned)
+              // The version id is portable across instances by design — no rewrite needed.
+              // Only the app id may need remapping for non-git imports (file upload, clone)
+              // where the source payload could contain a DB id rather than a co_relation_id.
               if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
                 const oldAppId = properties.moduleAppId.value;
                 if (moduleResourceMappings.moduleApps[oldAppId]) {
                   properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
-                }
-              }
-
-              if (properties.moduleVersionId?.value && moduleResourceMappings.moduleVersions) {
-                const oldVersionId = properties.moduleVersionId.value;
-                if (moduleResourceMappings.moduleVersions[oldVersionId]) {
-                  properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
                 }
               }
             }
@@ -2883,6 +2865,9 @@ export class AppImportExportService {
           createdById: user.id,
           co_relation_id: appVersion.id || null,
           branchId: isWorkflow ? null : branchId,
+          // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
+          // Generate fresh for legacy payloads predating the column.
+          moduleReferenceId: appVersion.moduleReferenceId || uuid(),
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -3095,6 +3080,7 @@ export class AppImportExportService {
       currentEnvironmentId,
       createdAt: new Date(),
       updatedAt: new Date(),
+      moduleReferenceId: uuid(),
     });
     await manager.save(version);
 
@@ -4059,19 +4045,12 @@ function transformComponentData(
       transformedComponent.parent = component.parent ? parentId : null;
 
       if (componentData.component === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
-        // See note in setupAppVersionAssociations: keep stable (coRelId / versionName)
-        // references untouched for git imports so cross-workspace pulls work.
+        // moduleVersionId.value is a portable module_reference_id — no rewrite needed.
+        // Only the app id may need remapping for non-git imports.
         if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
           const oldAppId = properties.moduleAppId.value;
           if (moduleResourceMappings.moduleApps[oldAppId]) {
             properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
-          }
-        }
-
-        if (properties.moduleVersionId?.value && moduleResourceMappings.moduleVersions) {
-          const oldVersionId = properties.moduleVersionId.value;
-          if (moduleResourceMappings.moduleVersions[oldVersionId]) {
-            properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
           }
         }
       }

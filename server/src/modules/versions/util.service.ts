@@ -20,6 +20,7 @@ import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -200,6 +201,7 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
+          moduleReferenceId: uuid(),
           ...(branchId && { branchId }),
         })
       );
@@ -413,18 +415,18 @@ export class VersionUtilService implements IVersionUtilService {
 
   /**
    * When a module's default-branch `version_type='version'` row transitions from DRAFT to a
-   * saved state, rewrite consumer `ModuleViewer` refs that are still "unpinned" (branch-name
-   * values) to the saved version name. Scope: same organization, same module (matched by
-   * co_relation_id), consumer app_version hosted on the default branch — feature-branch refs
-   * keep their unpinned semantics until their own branch is merged and saved on main.
+   * saved state, rewrite consumer `ModuleViewer` refs that are still "unpinned" (empty value)
+   * to the saved version's module_reference_id. Scope: same organization, same module
+   * (matched by co_relation_id), consumer app_version hosted on the default branch —
+   * feature-branch refs keep their unpinned semantics until their own branch is merged.
    */
   async pinUnpinnedModuleViewerRefs(
     manager: EntityManager,
     moduleApp: App,
-    savedVersionName: string,
+    savedModuleReferenceId: string,
     organizationId: string
   ): Promise<void> {
-    if (!moduleApp?.co_relation_id) return;
+    if (!moduleApp?.co_relation_id || !savedModuleReferenceId) return;
     await manager.query(
       `UPDATE components c
        SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
@@ -438,10 +440,8 @@ export class VersionUtilService implements IVersionUtilService {
          AND hb.organization_id = $2
          AND hb.is_default = true
          AND c.properties->'moduleAppId'->>'value' = $3
-         AND c.properties->'moduleVersionId'->>'value' IN (
-           SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $2
-         )`,
-      [savedVersionName, organizationId, moduleApp.co_relation_id]
+         AND COALESCE(c.properties->'moduleVersionId'->>'value', '') = ''`,
+      [savedModuleReferenceId, organizationId, moduleApp.co_relation_id]
     );
   }
 

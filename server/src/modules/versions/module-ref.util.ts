@@ -8,24 +8,25 @@ import { APP_TYPES } from '@modules/apps/constants';
  * Module version resolution.
  *
  * A ModuleViewer stores two strings in its component properties:
- *   moduleAppId     — the module's co_relation_id; stable across branches
- *                     and git-cloned workspaces.
- *   moduleVersionId — the version's *name* (e.g. "v1"), not its DB id.
- *                     `app_versions.id` is regenerated on each hydrate, so
- *                     a UUID foreign key would break after a clone; a name
- *                     survives the hop.
+ *   moduleAppId       — the module's co_relation_id; stable across branches
+ *                       and git-cloned workspaces.
+ *   moduleVersionId   — the version's module_reference_id (uuid). Stable across
+ *                       branches and across instances; round-trips through
+ *                       git push/pull and zip export/import via JSON. Empty
+ *                       string signals "unpinned" (follow the consumer's
+ *                       current branch).
  *
- * The name has no type tag; meaning is inferred at read time:
+ * Resolution rules:
  *
- *   Lookup A: app_versions                    — saved version on default branch?
- *   Lookup B: organization_git_sync_branches  — live branch name in this org?
- *
- *     A hits    → PINNED    ("v1"):        freeze to that saved version
- *     B hits    → UNPINNED  ("feature-1"): follow that branch's latest
- *     neither   → ORPHANED  (deleted branch / cross-org import): best-effort
- *
- * Lookup A runs first so a version named after a branch (e.g. "main")
- * classifies as pinned — explicit user intent wins.
+ *   value present + matches a row's module_reference_id  → pinned, prefer
+ *                                                          consumer's branch row
+ *                                                          else default-branch row
+ *   value absent (null/empty)                            → unpinned, latest
+ *                                                          non-stub on consumer
+ *                                                          branch (or default)
+ *   value present but no row matches                     → orphaned, fall back
+ *                                                          to latest saved on
+ *                                                          default
  *
  * Resolution is always scoped to the consumer's branchId (from the
  * x-branch-id header). When the request has no branchId — a public-share
@@ -33,62 +34,9 @@ import { APP_TYPES } from '@modules/apps/constants';
  * back to the default branch.
  */
 
-/**
- * UI mapping (ModuleViewerInspector dropdown):
- *   pinned   → "Pinned to <versionName>"
- *   unpinned → "Active draft" on the default branch,
- *              "Current branch" on a sub-branch
- *   orphaned → renders as the unpinned option; the inspector treats any
- *              non-pinned-name ref the same, so orphaned refs share the
- *              "Current branch"/"Active draft" display.
- */
-export type ModuleRef =
-  | { kind: 'pinned'; versionName: string }
-  | { kind: 'unpinned'; branchName: string }
-  | { kind: 'orphaned'; moduleVersionId: string };
-
 function findDefaultBranch(manager: EntityManager, organizationId: string) {
   return manager.findOne(WorkspaceBranch, {
     where: { organizationId, isDefault: true },
-  });
-}
-
-/**
- * Only versionType='version' rows count as pin targets. Sub-branches also
- * store a row with versionType='branch' whose `name` equals the branch
- * name (the editable working copy) — without this filter, a ref like
- * "feature-1" would match that row and be misclassified as pinned.
- */
-function findSavedVersionOnDefaultBranch(
-  manager: EntityManager,
-  moduleAppId: string,
-  versionName: string,
-  defaultBranchId: string
-) {
-  return manager.findOne(AppVersion, {
-    where: {
-      appId: moduleAppId,
-      name: versionName,
-      branchId: defaultBranchId,
-      versionType: AppVersionType.VERSION,
-      isStub: false,
-    },
-  });
-}
-
-function findLatestSavedOnDefaultBranch(
-  manager: EntityManager,
-  moduleAppId: string,
-  defaultBranchId: string
-) {
-  return manager.findOne(AppVersion, {
-    where: {
-      appId: moduleAppId,
-      branchId: defaultBranchId,
-      versionType: AppVersionType.VERSION,
-      isStub: false,
-    },
-    order: { createdAt: 'DESC' },
   });
 }
 
@@ -134,65 +82,52 @@ export async function listModuleVersions(
   return [branchDraft, ...savedVersions].filter((v): v is AppVersion => !!v);
 }
 
-export async function classifyModuleRef(
+/**
+ * Resolve a ModuleViewer reference to an actual AppVersion row.
+ *
+ *   moduleReferenceId present + matches → pinned. Prefer the consumer-branch
+ *                                         copy (post git pull); fall back to
+ *                                         the default-branch copy.
+ *   moduleReferenceId absent             → unpinned. Latest non-stub on the
+ *                                         consumer's branch (or default).
+ *   moduleReferenceId present, no match → orphaned. Fall back to latest saved
+ *                                         on the default branch.
+ */
+export async function resolveModuleRef(
   manager: EntityManager,
   moduleApp: App,
-  moduleVersionId: string,
-  organizationId: string
-): Promise<ModuleRef> {
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (defaultBranch) {
-    const saved = await findSavedVersionOnDefaultBranch(
-      manager,
-      moduleApp.id,
-      moduleVersionId,
-      defaultBranch.id
-    );
-    if (saved) return { kind: 'pinned', versionName: moduleVersionId };
-  }
-
-  // Lookup B — is this string the name of a live branch in this org?
-  const branch = await manager.findOne(WorkspaceBranch, {
-    where: { organizationId, name: moduleVersionId },
-  });
-  if (branch) return { kind: 'unpinned', branchName: moduleVersionId };
-
-  return { kind: 'orphaned', moduleVersionId };
-}
-
-async function resolvePinned(
-  manager: EntityManager,
-  moduleApp: App,
-  ref: Extract<ModuleRef, { kind: 'pinned' }>,
+  moduleReferenceId: string | null | undefined,
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
-  if (consumerBranchId) {
-    // Prefer a local copy on the consumer's branch (pulled via git sync).
-    const local = await manager.findOne(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        name: ref.versionName,
-        branchId: consumerBranchId,
-        isStub: false,
-      },
-    });
-    if (local) return local;
+  if (moduleReferenceId) {
+    if (consumerBranchId) {
+      const local = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          moduleReferenceId,
+          branchId: consumerBranchId,
+          isStub: false,
+        },
+      });
+      if (local) return local;
+    }
+    const defaultBranch = await findDefaultBranch(manager, organizationId);
+    if (defaultBranch) {
+      const onDefault = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          moduleReferenceId,
+          branchId: defaultBranch.id,
+          isStub: false,
+        },
+      });
+      if (onDefault) return onDefault;
+    }
+    // id present but neither branch had a match — orphan fallback below.
   }
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) return null;
-  return findSavedVersionOnDefaultBranch(manager, moduleApp.id, ref.versionName, defaultBranch.id);
-}
 
-async function resolveUnpinned(
-  manager: EntityManager,
-  moduleApp: App,
-  _ref: Extract<ModuleRef, { kind: 'unpinned' }>,
-  consumerBranchId: string | undefined,
-  organizationId: string
-): Promise<AppVersion | null> {
-  // "Follow my branch" — latest non-stub for this module on the consumer's
-  // branch. No branch context (embedded viewer / public access) → default.
+  // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
   const targetBranchId =
     consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
   if (!targetBranchId) return null;
@@ -202,51 +137,19 @@ async function resolveUnpinned(
   });
 }
 
-async function resolveOrphaned(
-  manager: EntityManager,
-  moduleApp: App,
-  _ref: Extract<ModuleRef, { kind: 'orphaned' }>,
-  _consumerBranchId: string | undefined,
-  organizationId: string
-): Promise<AppVersion | null> {
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) return null;
-  return findLatestSavedOnDefaultBranch(manager, moduleApp.id, defaultBranch.id);
-}
-
-export async function resolveModuleRef(
-  manager: EntityManager,
-  moduleApp: App,
-  ref: ModuleRef,
-  consumerBranchId: string | undefined,
-  organizationId: string
-): Promise<AppVersion | null> {
-  switch (ref.kind) {
-    case 'pinned':
-      return resolvePinned(manager, moduleApp, ref, consumerBranchId, organizationId);
-    case 'unpinned':
-      return resolveUnpinned(manager, moduleApp, ref, consumerBranchId, organizationId);
-    case 'orphaned':
-      return resolveOrphaned(manager, moduleApp, ref, consumerBranchId, organizationId);
-  }
-}
-
 /**
  * After hydrating a feature-branch AppVersion, inherit pinned moduleVersionId
  * values from the matching component on the default branch. The component JSON
- * committed to git can be stale pre-pin (pinUnpinnedModuleViewerRefs writes
- * only to the DB; push is manual), so without this pass the feature branch
- * lands with whatever ref was last pushed — usually an unpinned branch-name.
+ * committed to git can be stale (the component might still hold an older ref
+ * from when the branch was first created), so without this pass the feature
+ * branch lands with whatever was last pushed.
  *
- * Match key: component.co_relation_id.
+ * Match key: component.co_relation_id (matches across the two app_version rows).
  *
  * Policy:
- *   - Only `pinned` default-branch refs are eligible to copy.
- *   - A feature-branch component that already classifies as `pinned` is left
- *     alone — the user's explicit pin on this branch wins over main's pin,
- *     even if they differ.
- *   - Unpinned/orphaned feature-branch refs are overwritten with the default's
- *     pin so branch creation doesn't silently drop the pin.
+ *   - Only copy when default's value is set (a pinned id) AND differs from feature's.
+ *   - A feature-branch component that already has the same id is left alone.
+ *   - Empty/missing values on default are skipped (nothing to inherit).
  */
 export async function reconcileModuleViewerPinsFromDefault(
   manager: EntityManager,
@@ -262,11 +165,15 @@ export async function reconcileModuleViewerPinsFromDefault(
   const defaultBranch = await findDefaultBranch(manager, organizationId);
   if (!defaultBranch) return;
 
-  const defaultVersion = await findLatestSavedOnDefaultBranch(
-    manager,
-    featureVersion.appId,
-    defaultBranch.id
-  );
+  const defaultVersion = await manager.findOne(AppVersion, {
+    where: {
+      appId: featureVersion.appId,
+      branchId: defaultBranch.id,
+      versionType: AppVersionType.VERSION,
+      isStub: false,
+    },
+    order: { createdAt: 'DESC' },
+  });
   if (!defaultVersion) return;
 
   type ViewerRow = {
@@ -300,23 +207,16 @@ export async function reconcileModuleViewerPinsFromDefault(
   for (const feat of featureViewers) {
     if (!feat.co_relation_id) continue;
     const def = defaultByCoRel.get(feat.co_relation_id);
-    if (!def?.moduleAppId || !def?.moduleVersionId) continue;
-    if (feat.moduleVersionId === def.moduleVersionId) continue;
+    if (!def?.moduleVersionId) continue; // nothing to inherit
+    if (feat.moduleVersionId === def.moduleVersionId) continue; // already matches
 
-    const moduleApp = await manager.findOne(App, {
-      where: { co_relation_id: def.moduleAppId, type: APP_TYPES.MODULE, organizationId },
-      order: { createdAt: 'ASC' },
-    });
+    const moduleApp = def.moduleAppId
+      ? await manager.findOne(App, {
+          where: { co_relation_id: def.moduleAppId, type: APP_TYPES.MODULE, organizationId },
+          order: { createdAt: 'ASC' },
+        })
+      : null;
     if (!moduleApp) continue;
-
-    // Don't overwrite a manual pin already set on the feature branch.
-    if (feat.moduleVersionId) {
-      const featRef = await classifyModuleRef(manager, moduleApp, feat.moduleVersionId, organizationId);
-      if (featRef.kind === 'pinned') continue;
-    }
-
-    const defRef = await classifyModuleRef(manager, moduleApp, def.moduleVersionId, organizationId);
-    if (defRef.kind !== 'pinned') continue;
 
     await manager.query(
       `UPDATE components

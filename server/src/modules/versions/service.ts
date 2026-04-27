@@ -19,7 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
-import { classifyModuleRef, listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { listModuleVersions, resolveModuleRef } from './module-ref.util';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -257,7 +257,7 @@ export class VersionService implements IVersionService {
 
   async getVersionByStableIds(
     coRelationId: string,
-    versionName: string,
+    moduleReferenceId: string,
     user: User,
     mode?: string,
     branchId?: string
@@ -271,16 +271,10 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
-    const ref = await classifyModuleRef(
-      this.versionRepository.manager,
-      moduleApp,
-      versionName,
-      user.organizationId
-    );
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
-      ref,
+      moduleReferenceId,
       branchId,
       user.organizationId
     );
@@ -324,7 +318,7 @@ export class VersionService implements IVersionService {
           await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
             manager,
             app,
-            postUpdate.name,
+            postUpdate.moduleReferenceId,
             user.organizationId
           );
         }
