@@ -11,6 +11,7 @@ import {
   LinkColumn,
   ImageColumn,
   CustomSelectColumn,
+  TagsV2Column,
   TextColumn,
   JsonColumn,
   MarkdownColumn,
@@ -285,6 +286,52 @@ export default function generateColumnsData({
                   autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
+                  className="select-search table-select-search"
+                  column={column}
+                  isNewRow={columnForAddNewRow}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  id={id}
+                />
+              );
+            }
+
+            case 'tagsV2': {
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              if (useDynamicOptions) {
+                const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
+                columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+                columnOptions.selectOptions =
+                  options?.map((option) => ({
+                    label: option.label,
+                    value: option.value,
+                    optionColor: option.optionColor,
+                    labelColor: option.labelColor,
+                  })) ?? [];
+              }
+
+              const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+              const sortTags = getResolvedValue(column.sortTags) ?? 'none';
+              const allowMultipleSelection = getResolvedValue(column.allowMultipleSelection) ?? false;
+
+              return (
+                <TagsV2Column
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  disabled={!isEditable}
+                  darkMode={darkMode}
+                  containerWidth={columnSize}
+                  defaultOptionsList={useDynamicOptions ? [] : column?.defaultOptionsList || []}
+                  optionsLoadingState={
+                    useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
+                  }
+                  autoAssignColors={tagsAutoAssignColors}
+                  isEditable={isEditable}
+                  allowMultipleSelection={allowMultipleSelection}
+                  sortTags={sortTags}
                   className="select-search table-select-search"
                   column={column}
                   isNewRow={columnForAddNewRow}
