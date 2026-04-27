@@ -1,10 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from 'nestjs-pino';
 import { Stripe } from 'stripe';
 
 @Injectable()
 export class StripeWebhookGuard implements CanActivate {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private readonly logger: Logger
+  ) {}
 
   async validateStripeEvent(payload): Promise<boolean> {
     const endpointSecret = this.configService.get<string>('STRIPE_WEBHOOK_ENDPOINT_SECRET');
@@ -19,7 +23,7 @@ export class StripeWebhookGuard implements CanActivate {
         stripe.webhooks.constructEvent(payload, header, endpointSecret);
         return true;
       } catch (err) {
-        console.log(`⚠️  Webhook signature verification failed.`, err.message);
+        this.logger.warn(`Webhook signature verification failed: ${err.message}`);
         return false;
       }
     }
