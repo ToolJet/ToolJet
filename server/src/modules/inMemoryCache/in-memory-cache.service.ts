@@ -6,6 +6,10 @@ export class InMemoryCacheService implements ICacheService {
   private static cacheStore: Map<string, Promise<any>> = new Map();
 
   set(key: string, value: Promise<any>): void {
+    // Evict the entry if the promise rejects so a subsequent request can retry.
+    value.catch(() => {
+      InMemoryCacheService.cacheStore.delete(key);
+    });
     InMemoryCacheService.cacheStore.set(key, value);
   }
 
