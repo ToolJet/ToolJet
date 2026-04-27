@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import {
@@ -25,6 +25,8 @@ import { decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing
 
 @Injectable()
 export class SessionService {
+  private readonly logger = new Logger(SessionService.name);
+
   constructor(
     protected readonly userRepository: UserRepository,
     protected readonly sessionUtilService: SessionUtilService,
@@ -52,7 +54,7 @@ export class SessionService {
           });
         }
       } catch (error) {
-        console.error('Error decrementing session metrics:', error);
+        this.logger.error('Error decrementing session metrics:', error);
       }
 
       const auditLogData = {
