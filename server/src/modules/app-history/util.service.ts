@@ -161,7 +161,7 @@ export class AppHistoryUtilService {
         await this.queueHistoryCapture(appVersion.id, actionType, operationScope);
       }
     } catch (error) {
-      console.error('Failed to queue history capture for settings update:', error);
+      this.logger.error('Failed to queue history capture for settings update:', error);
     }
   }
 
