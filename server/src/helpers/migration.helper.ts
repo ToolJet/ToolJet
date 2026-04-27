@@ -1,9 +1,12 @@
+import { Logger } from '@nestjs/common';
 import { EncryptionService } from '@modules/encryption/service';
 import { CredentialsService } from '@modules/encryption/services/credentials.service';
 import { AppVersion } from '@entities/app_version.entity';
 import { Organization } from '@entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import { Credential } from '@entities/credential.entity';
+
+const migrationLogger = new Logger('MigrationHelper');
 
 export enum WHITE_LABELLING_SETTINGS {
   WHITE_LABEL_LOGO = 'WHITE_LABEL_LOGO',
@@ -165,14 +168,16 @@ export const deleteAppHistoryForStructuralMigration = async (
   },
   migrationName = ''
 ): Promise<void> => {
-  console.log(`[${migrationName}] Starting app history cleanup for structural migration`);
+  migrationLogger.log(`[${migrationName}] Starting app history cleanup for structural migration`);
 
   try {
     let appVersionIds = options.appVersionIds;
 
     // If componentIds are provided but not appVersionIds, get appVersionIds from components
     if (!appVersionIds && options.componentIds && options.componentIds.length > 0) {
-      console.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
+      migrationLogger.log(
+        `[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`
+      );
 
       // Use raw query for better performance with large datasets
       const result = await entityManager.query(
@@ -186,11 +191,11 @@ export const deleteAppHistoryForStructuralMigration = async (
       );
 
       appVersionIds = result.map((row: any) => row.app_version_id);
-      console.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
+      migrationLogger.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
     }
 
     if (!appVersionIds || appVersionIds.length === 0) {
-      console.log(`[${migrationName}] No app versions to clean up history for`);
+      migrationLogger.log(`[${migrationName}] No app versions to clean up history for`);
       return;
     }
 
@@ -204,7 +209,7 @@ export const deleteAppHistoryForStructuralMigration = async (
 
       const result = await entityManager.query(
         `
-        DELETE FROM app_history 
+        DELETE FROM app_history
         WHERE app_version_id = ANY($1)
         `,
         [batch]
@@ -213,14 +218,16 @@ export const deleteAppHistoryForStructuralMigration = async (
       const deleted = result[1] || 0; // PostgreSQL returns [query result, affected rows]
       totalDeleted += deleted;
 
-      console.log(`[${migrationName}] Batch ${Math.floor(i / batchSize) + 1}: Deleted ${deleted} history entries`);
+      migrationLogger.log(
+        `[${migrationName}] Batch ${Math.floor(i / batchSize) + 1}: Deleted ${deleted} history entries`
+      );
     }
 
-    console.log(
+    migrationLogger.log(
       `[${migrationName}] Completed: Deleted ${totalDeleted} app history entries for ${appVersionIds.length} app versions`
     );
   } catch (error) {
-    console.error(`[${migrationName}] Failed to delete app history:`, error);
+    migrationLogger.error(`[${migrationName}] Failed to delete app history:`, error);
     throw error;
   }
 };
