@@ -7,6 +7,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   Button,
+  Input,
   Switch,
   Spinner,
   Tooltip,
@@ -529,16 +530,13 @@ export const EventManager = ({
                 </div>
               </FieldRow>
               <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
-                <div data-cy="event-name-input">
-                  <CodeHinter
-                    type="basic"
-                    initialValue={eventHandler?.name}
-                    onChange={(value) => handlerChanged(index, 'name', value)}
-                    usePortalEditor={false}
-                    component={component}
-                    cyLabel={`event-name`}
-                  />
-                </div>
+                <Input
+                  type="text"
+                  value={eventHandler?.name ?? ''}
+                  onChange={(e) => handlerChanged(index, 'name', e.target.value)}
+                  className="tw-w-full"
+                  data-cy="event-name-input"
+                />
               </FieldRow>
             </div>
             <div className="tw-flex tw-flex-col tw-gap-3">
