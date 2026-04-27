@@ -313,18 +313,26 @@ export const OpenDropdownWithSelection = {
 //
 // Documents the "Truncating long values" pattern from Select.spec.md.
 //
-// The selected value already clips visually (shadcn applies line-clamp-1 to
-// the trigger's child spans). To reveal the full string on hover, the
-// consumer wraps the value in a div + TruncatingText. The div escapes the
-// line-clamp selector so TruncatingText's measurement works correctly.
+// Two pieces of overflow handling are demonstrated together:
 //
-// TruncatingText sets the browser's native `title` attribute when the text
-// overflows. Since SelectValue renders text from Radix context (not a string
-// child), pass the label explicitly via the `title` prop. Hover the
-// truncated text and the OS tooltip appears after ~500ms.
+//   Trigger (selected value):
+//   - `<TruncatingText title={QUERIES[value]}><SelectValue /></TruncatingText>`
+//     wrapped inside a div that escapes shadcn's `[&>span]:tw-line-clamp-1`.
+//     Hover the clipped trigger to see the OS tooltip with the full string.
 //
-// Stateful labels (controlled Select) make this easy: track the selected
-// value's display label in state and pass it as `title`.
+//   Dropdown (option rows):
+//   - `<TruncatingText>{label}</TruncatingText>` per SelectItem.
+//   - PLUS the dropdown is bounded: `align="end"` is irrelevant here (trigger
+//     fills the host) but the popover needs `!tw-w-max !tw-max-w-[<inner>px]`
+//     and a `data-tj-fit-host` marker so the global `:has()` rule overrides
+//     Radix's popper-wrapper `min-width: max-content`. Without these, the
+//     dropdown grows to fit the longest row and TruncatingText never clips —
+//     because the rows always have enough room.
+//
+// The `<style>` tag is inline so the story is self-contained. In an app, the
+// rule lives once in a global stylesheet (e.g. EventManager.scss).
+//
+// Host: 240px outer, 16px padding (tw-p-4) → 208px inner. Cap is 208px.
 
 const QUERIES = {
   short: 'getProducts',
@@ -336,24 +344,31 @@ export const LongSelectedValue = {
   render: () => {
     const [value, setValue] = React.useState('long');
     return (
-      <div className="tw-w-[240px] tw-p-4">
-        <Select value={value} onValueChange={setValue}>
-          <SelectTrigger>
-            <div className="tw-min-w-0 tw-flex-1">
-              <TruncatingText title={QUERIES[value]}>
-                <SelectValue placeholder="Select query" />
-              </TruncatingText>
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(QUERIES).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                <TruncatingText>{label}</TruncatingText>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <>
+        <style>{`
+          [data-radix-popper-content-wrapper]:has([data-tj-fit-host]) {
+            min-width: 0;
+          }
+        `}</style>
+        <div className="tw-w-[240px] tw-p-4">
+          <Select value={value} onValueChange={setValue}>
+            <SelectTrigger>
+              <div className="tw-min-w-0 tw-flex-1">
+                <TruncatingText title={QUERIES[value]}>
+                  <SelectValue placeholder="Select query" />
+                </TruncatingText>
+              </div>
+            </SelectTrigger>
+            <SelectContent data-tj-fit-host="" className="!tw-w-max !tw-max-w-[208px]">
+              {Object.entries(QUERIES).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  <TruncatingText>{label}</TruncatingText>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </>
     );
   },
   parameters: { layout: 'padded' },
