@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 /**
  * Centralized BullMQ Queue Configuration
  *
@@ -109,7 +111,7 @@ export function mapDbStatusToDisplayState(dbStatus: string | undefined | null): 
   if (!dbStatus) return 'completed'; // fallback for legacy rows without status
   const mapped = DB_STATUS_TO_DISPLAY_STATE[dbStatus];
   if (!mapped) {
-    console.warn(`[WORKFLOW_STATUS] Unknown DB status "${dbStatus}", falling back to "completed"`);
+    new Logger('WorkflowStatus').warn(`Unknown DB status "${dbStatus}", falling back to "completed"`);
     return 'completed';
   }
   return mapped;
