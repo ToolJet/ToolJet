@@ -1,5 +1,5 @@
 import { DataSource } from '@entities/data_source.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
@@ -26,6 +26,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
+  private readonly logger = new Logger(DataSourcesUtilService.name);
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly credentialService: CredentialsService,
@@ -705,7 +706,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             constant.value
           );
         } catch (error) {
-          console.error(`Error resolving constant ${key}:`, error);
+          this.logger.error(`Error resolving constant ${key}:`, error);
           return fullMatch;
         }
       })
