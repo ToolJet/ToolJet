@@ -5,6 +5,7 @@ import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { getPinnedStyles } from '../pinColumnsUtils';
 
 export const TableRow = ({
   id,
@@ -21,6 +22,7 @@ export const TableRow = ({
   rowStyles,
   measureElement,
   componentName,
+  table,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
@@ -59,11 +61,24 @@ export const TableRow = ({
     >
       {row.getVisibleCells().map((cell) => {
         const isButtonColumn = cell.column.columnDef?.meta?.columnType === 'button';
+        const {
+          pinnedPosition,
+          isPinnedBoundary,
+          style: pinnedStyles,
+        } = getPinnedStyles({
+          column: cell.column,
+          table,
+        });
+        const resolvedCellBackgroundColor = getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor, {
+          rowData: row.original,
+          cellValue: cell.getValue(),
+        });
+        const cellBackgroundColor =
+          pinnedPosition && [undefined, null, '', 'inherit', 'transparent'].includes(resolvedCellBackgroundColor)
+            ? 'var(--cc-table-pinned-column-bg, var(--cc-surface1-surface))'
+            : resolvedCellBackgroundColor ?? 'inherit';
         const cellStyles = {
-          backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
-            rowData: row.original,
-            cellValue: cell.getValue(),
-          }),
+          backgroundColor: cellBackgroundColor,
           justifyContent: isButtonColumn
             ? undefined
             : determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
@@ -71,6 +86,8 @@ export const TableRow = ({
           alignItems: 'center',
           textAlign: isButtonColumn ? undefined : cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
+          flex: '0 0 auto',
+          ...pinnedStyles,
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -117,6 +134,11 @@ export const TableRow = ({
               'has-dropdown': cell.column.columnDef?.meta?.columnType === 'dropdown',
               isEditable: isEditable,
               isEdited: isEdited,
+              'pinned-column': !!pinnedPosition,
+              'pinned-column-left': pinnedPosition === 'left',
+              'pinned-column-right': pinnedPosition === 'right',
+              'pinned-column-boundary-left': pinnedPosition === 'left' && isPinnedBoundary,
+              'pinned-column-boundary-right': pinnedPosition === 'right' && isPinnedBoundary,
             })}
             onClick={(e) => {
               const columnType = cell.column.columnDef?.meta?.columnType;

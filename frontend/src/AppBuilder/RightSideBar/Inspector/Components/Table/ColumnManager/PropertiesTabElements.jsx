@@ -22,6 +22,9 @@ import RatingIconToggle from './RatingColumn/RatingIconToggle';
 import RatingColumnProperties from './RatingColumn/RatingColumnProperties';
 import { ButtonListManager } from './ButtonListManager';
 import { ButtonPropertiesTab } from './ButtonPropertiesTab';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -63,6 +66,27 @@ const CustomValueContainer = ({ data, ...props }) => {
   );
 };
 
+const PinColumnControl = ({ value, onChange }) => {
+  return (
+    <div className="d-flex pin-column-control">
+      <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+        Freeze column
+      </label>
+      <ToggleGroup defaultValue={value} onValueChange={onChange} style={{ width: '58%' }}>
+        <ToggleGroupItem value="left">
+          <ArrowLeft size={14} />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="unpinned">
+          <Minus size={14} />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="right">
+          <ArrowRight size={14} />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+};
+
 export const PropertiesTabElements = ({
   column,
   index,
@@ -86,7 +110,6 @@ export const PropertiesTabElements = ({
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),
   };
-
   return (
     <>
       {!selectedButtonId && (
@@ -248,6 +271,7 @@ export const PropertiesTabElements = ({
           />
         </>
       )}
+
       {column.columnType === 'button' && selectedButtonId && (
         <ButtonPropertiesTab
           button={getButton(selectedButtonId)}
@@ -424,6 +448,14 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
+      <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+          <PinColumnControl
+            value={column?.pinPosition ?? 'unpinned'}
+            onChange={(value) => value && onColumnItemChange(index, 'pinPosition', value)}
+          />
+        </div>
+      </div>
 
       {['select', 'newMultiSelect', 'datepicker', 'rating', 'tagsV2'].includes(column.columnType) && (
         <hr className="mx-0 my-2" />
