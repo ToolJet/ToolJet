@@ -23,7 +23,7 @@ export class InfoCommand extends Command {
   static description = 'This command returns the information about where tooljet is being run';
 
   async run() {
-    console.log(`
+    this.log(`
     Operating System:
       platform: ${chalk.green(os.platform())}
       arch: ${chalk.green(os.arch())}
