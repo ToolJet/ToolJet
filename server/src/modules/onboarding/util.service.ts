@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@entities/user.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
@@ -46,6 +46,8 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class OnboardingUtilService implements IOnboardingUtilService {
+  private readonly logger = new Logger(OnboardingUtilService.name);
+
   constructor(
     protected readonly userRepository: UserRepository,
     protected readonly licenseUserService: LicenseUserService,
@@ -642,7 +644,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
           const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
-          if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
+          if (!userOrg) this.logger.warn('userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
           
           return await this.sessionUtilService.generateLoginResultPayload(
             response,
