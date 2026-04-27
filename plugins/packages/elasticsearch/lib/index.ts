@@ -68,7 +68,6 @@ export default class ElasticsearchService implements QueryService {
           throw new Error(`Unsupported operation: ${operation}`);
       }
     } catch (err) {
-      console.log(err);
       throw new QueryError('Query could not be completed', err.message, {});
     }
 
