@@ -433,15 +433,16 @@ export const createQueryPanelSlice = (set, get) => ({
       });
       const disableQueryExpr = dataQuery.options?.disableQuery;
       if (disableQueryExpr) {
-        const resolvedDisable = get().getResolvedValue(disableQueryExpr, {}, moduleId);
+        const resolvedDisable = get().getResolvedValue(disableQueryExpr, queryState, moduleId);
         if (resolvedDisable) {
           const messageExpr = dataQuery.options?.disabledMessage;
-          const resolvedMessage = messageExpr ? get().getResolvedValue(messageExpr, {}, moduleId) : '';
+          const resolvedMessage = messageExpr ? get().getResolvedValue(messageExpr, queryState, moduleId) : '';
           const trimmedMsg = typeof resolvedMessage === 'string' ? resolvedMessage.trim() : '';
-          const disabledMessage = trimmedMsg || 'This query is disabled';
-          toast(disabledMessage, {
-            icon: '⚠️',
-          });
+          if (trimmedMsg) {
+            toast(trimmedMsg, {
+              icon: '⚠️',
+            });
+          }
           if (shouldSetPreviewData) {
             setPreviewLoading(false);
           }
@@ -451,7 +452,7 @@ export const createQueryPanelSlice = (set, get) => ({
             type: 'query',
             kind: query.kind,
             key: query.name,
-            message: `Query skipped: ${disabledMessage}`,
+            message: `Query skipped${trimmedMsg ? `: ${trimmedMsg}` : ''}`,
             errorTarget: 'Queries',
           });
           return;
