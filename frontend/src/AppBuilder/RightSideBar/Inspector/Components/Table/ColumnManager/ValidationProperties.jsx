@@ -97,6 +97,7 @@ export const ValidationProperties = ({
       case 'dropdown':
       case 'select':
       case 'newMultiSelect':
+      case 'tagsV2':
         return [
           {
             property: 'customRule',
