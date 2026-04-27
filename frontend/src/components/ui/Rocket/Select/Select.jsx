@@ -83,6 +83,10 @@ const SelectItem = forwardRef(function SelectItem({ className, ...props }, ref) 
         // Move check indicator from right → left
         '[&>span:first-child]:tw-left-2 [&>span:first-child]:tw-right-auto',
         '[&>span:first-child_svg]:tw-text-text-brand',
+        // Allow Radix's ItemText (the second span child) to shrink below its
+        // intrinsic content width — flex children otherwise default to
+        // min-width: auto, blocking truncation primitives inside.
+        '[&>span:nth-child(2)]:tw-min-w-0',
         className
       )}
       {...props}
