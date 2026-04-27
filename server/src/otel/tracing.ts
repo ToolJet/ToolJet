@@ -199,7 +199,7 @@ const cleanupInactiveUsers = () => {
     }
 
     if ((cleanedUsers > 0 || cleanedSessions > 0) && process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log(
+      diag.debug(
         `[OTEL] Cleaned up ${cleanedUsers} inactive user entries and ${cleanedSessions} inactive session entries from memory`
       );
     }
@@ -209,12 +209,12 @@ const cleanupInactiveUsers = () => {
       const totalUsers = activeUsersByWorkspace.size;
       const totalSessions = activeSessionsByWorkspace.size;
       const memoryEstimateMB = (((totalUsers + totalSessions) * 100) / (1024 * 1024)).toFixed(2);
-      console.log(
+      diag.debug(
         `[OTEL] Active tracking: ${totalUsers} users, ${totalSessions} sessions (~${memoryEstimateMB} MB), window: ${ACTIVITY_WINDOW_MINUTES}min`
       );
     }
   } catch (error) {
-    console.error('[OTEL] Error during cleanup:', error);
+    diag.error('[OTEL] Error during cleanup:', error as string);
   }
 };
 
@@ -302,7 +302,7 @@ const initializeCustomMetrics = () => {
         'metric_type': 'workspace_total',
       });
     } catch (error) {
-      console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
+      diag.error('[OTEL] Error in concurrentUsersGauge callback:', error as string);
     }
   });
 
@@ -351,7 +351,7 @@ const initializeCustomMetrics = () => {
         'workspace.id': 'all',
       });
     } catch (error) {
-      console.error('[OTEL] Error in sessionsActiveGauge callback:', error);
+      diag.error('[OTEL] Error in sessionsActiveGauge callback:', error as string);
     }
   });
 
@@ -418,10 +418,10 @@ process.on('SIGTERM', () => {
       .shutdown()
       .then(() => {
         if (process.env.OTEL_LOG_LEVEL === 'debug') {
-          console.log('OpenTelemetry instrumentation shutdown successfully');
+          diag.debug('OpenTelemetry instrumentation shutdown successfully');
         }
       })
-      .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
+      .catch((err) => diag.error('Error shutting down OpenTelemetry instrumentation', err))
       .finally(() => process.exit(0));
   } else {
     process.exit(0);
@@ -445,14 +445,14 @@ export const startOpenTelemetry = async (): Promise<void> => {
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log('OpenTelemetry instrumentation initialized');
-      console.log(
+      diag.debug('OpenTelemetry instrumentation initialized');
+      diag.debug(
         'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
       );
-      console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
+      diag.debug(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
     }
   } catch (error) {
-    console.error('Error initializing OpenTelemetry instrumentation', error);
+    diag.error('Error initializing OpenTelemetry instrumentation', error as string);
     throw error;
   }
 };
@@ -470,7 +470,7 @@ export const trackUserActivity = (attributes: {
     // Validate required fields
     if (!attributes?.workspaceId || !attributes?.userId) {
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
-        console.warn('[OTEL] Invalid user activity attributes:', attributes);
+        diag.warn('[OTEL] Invalid user activity attributes:', attributes);
       }
       return;
     }
@@ -491,7 +491,7 @@ export const trackUserActivity = (attributes: {
       if (oldestKey) {
         activeUsersByWorkspace.delete(oldestKey);
         if (process.env.OTEL_LOG_LEVEL === 'debug') {
-          console.warn('[OTEL] Max tracked users reached, removed oldest entry');
+          diag.warn('[OTEL] Max tracked users reached, removed oldest entry');
         }
       }
     }
@@ -512,7 +512,7 @@ export const trackUserActivity = (attributes: {
         if (oldestKey) {
           activeSessionsByWorkspace.delete(oldestKey);
           if (process.env.OTEL_LOG_LEVEL === 'debug') {
-            console.warn('[OTEL] Max tracked sessions reached, removed oldest entry');
+            diag.warn('[OTEL] Max tracked sessions reached, removed oldest entry');
           }
         }
       }
@@ -525,7 +525,7 @@ export const trackUserActivity = (attributes: {
     }
   } catch (error) {
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.error('[OTEL] Error tracking user activity:', error);
+      diag.error('[OTEL] Error tracking user activity:', error as string);
     }
     // Don't throw - metric collection should never break the app
   }
@@ -616,15 +616,15 @@ function loadEnvVars() {
 loadEnvVars();
 
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
-  console.log('[OTEL] Auto-start code reached');
-  console.log('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
+  diag.debug('[OTEL] Auto-start code reached');
+  diag.debug('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
 }
 
 let isInitialized = false;
 
 if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
   if (process.env.OTEL_LOG_LEVEL === 'debug') {
-    console.log('[OTEL] Condition met, checking edition...');
+    diag.debug('[OTEL] Condition met, checking edition...');
   }
 
   try {
@@ -636,12 +636,12 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
     const tooljetEdition = getTooljetEdition();
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log('[OTEL] Edition:', tooljetEdition);
+      diag.debug('[OTEL] Edition:', tooljetEdition);
     }
 
     if (tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud) {
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
-        console.log('[OTEL] Starting SDK at import time (before any modules load)...');
+        diag.debug('[OTEL] Starting SDK at import time (before any modules load)...');
       }
 
       // Start OTEL SDK - this registers instrumentations immediately
@@ -650,11 +650,11 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
         .then(() => {
           isInitialized = true;
           if (process.env.OTEL_LOG_LEVEL === 'debug') {
-            console.log('[OTEL] ✅ SDK started successfully');
+            diag.debug('[OTEL] SDK started successfully');
           }
         })
         .catch((err) => {
-          console.error('[OTEL] ❌ Failed to start SDK:', err);
+          diag.error('[OTEL] Failed to start SDK:', err);
           // Log the error but don't throw - observability should never break the app
         });
 
@@ -662,14 +662,14 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
       isInitialized = true;
     } else {
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
-        console.log('[OTEL] ⏭️  Skipping OTEL - not Enterprise or Cloud edition');
+        diag.debug('[OTEL] Skipping OTEL - not Enterprise or Cloud edition');
       }
     }
   } catch (error) {
-    console.error('[OTEL] Error during auto-start:', error);
+    diag.error('[OTEL] Error during auto-start:', error as string);
   }
 } else {
   if (process.env.OTEL_LOG_LEVEL === 'debug') {
-    console.log('[OTEL] Condition NOT met. ENABLE_OTEL:', process.env.ENABLE_OTEL, 'isInitialized:', isInitialized);
+    diag.debug('[OTEL] Condition NOT met. ENABLE_OTEL:', process.env.ENABLE_OTEL, 'isInitialized:', isInitialized);
   }
 }
