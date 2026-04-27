@@ -20,6 +20,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
+import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import QueryCardMenuBase from './QueryCardMenu';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 
@@ -114,6 +115,7 @@ export const QueryDataPane = ({ darkMode }) => {
         <div className="queries-header">
           <AddDataSourceButton darkMode={darkMode} />
           <div className="queries-header-actions">
+            <AutoSortButton darkMode={darkMode} />
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
@@ -264,6 +266,49 @@ const EmptyDataSource = () => (
     </span>
   </div>
 );
+
+const AutoSortButton = ({ darkMode: _darkMode }) => {
+  const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
+  const isAutoSorting = useStore((state) => state.queryFolders?.isAutoSorting ?? false);
+  const autoSort = useStore((state) => state.queryFolders?.autoSort);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+
+  // Hide entirely if the AI feature is not in the license at all
+  if (featureAccess?.aiEnabled === false) return null;
+
+  const noFolders = allFolders.length === 0;
+  const disabled = noFolders || shouldFreeze || isAutoSorting;
+
+  const tooltipMsg = noFolders
+    ? 'Create folders first to use auto-sort'
+    : isAutoSorting
+    ? 'Auto-sorting in progress...'
+    : 'Auto-sort unsorted queries into folders';
+
+  return (
+    <ToolTip message={tooltipMsg} placement="bottom">
+      <span>
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="ghost"
+          disabled={disabled}
+          onClick={() => !disabled && autoSort?.()}
+          data-cy="query-autosort-button"
+          style={!disabled ? { color: '#F3A53C' } : undefined}
+        >
+          {isAutoSorting ? (
+            <span className="spinner-border spinner-border-sm" style={{ width: '14px', height: '14px' }} />
+          ) : (
+            <AITripleSparkles width="16" height="16" />
+          )}
+        </Button>
+      </span>
+    </ToolTip>
+  );
+};
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
