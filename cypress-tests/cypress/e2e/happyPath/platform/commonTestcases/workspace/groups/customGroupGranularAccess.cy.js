@@ -914,7 +914,7 @@ describe("Custom Group Granular Access", () => {
                     canAccessProduction: false,
                     canAccessReleased: false,
                 });
-                cy.apiUpdateAllowSignUp(true, "organization").then(()=>{
+                cy.apiUpdateAllowSignUp(true, "organization");
                 cy.apiLogout();
 
                 //Scenario G : Signing-up with app preview link and should land on app preview
@@ -936,7 +936,6 @@ describe("Custom Group Granular Access", () => {
                 cy.visit(previewUrl);
                 signup(user1, email1);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
-            });
         });
     });
 });
