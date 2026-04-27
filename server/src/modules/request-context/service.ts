@@ -1,7 +1,9 @@
 import { AsyncLocalStorage } from 'async_hooks';
+import { Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 export class RequestContext {
+  private static readonly logger = new Logger(RequestContext.name);
   static cls = new AsyncLocalStorage<RequestContext>();
 
   static get currentContext() {
@@ -11,7 +13,7 @@ export class RequestContext {
   static setLocals(key: string, data: any) {
     const context = this.currentContext;
     if (!context) {
-      console.error('RequestContext is not set');
+      RequestContext.logger.error('RequestContext is not set');
       return;
     }
     if (!context.res.locals) {
