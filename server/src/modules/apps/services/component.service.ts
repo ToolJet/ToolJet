@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -21,6 +21,8 @@ const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
+  private readonly logger = new Logger(ComponentsService.name);
+
   constructor(protected eventHandlerService: EventsService) {}
 
   findOne(id: string): Promise<Component> {
@@ -61,7 +63,7 @@ export class ComponentsService implements IComponentsService {
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
       this.afterComponentCreate(context, componentDiff, pageId, appVersionId, historyUserId, operationTimestamp).catch(
-        (err) => console.error('[AppHistory] Fire-and-forget afterComponentCreate failed:', err.message)
+        (err) => this.logger.error('[AppHistory] Fire-and-forget afterComponentCreate failed:', err.message)
       );
     }
     return result;
@@ -91,7 +93,7 @@ export class ComponentsService implements IComponentsService {
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
       this.afterComponentCreate(context, componentDiff, pageId, appVersionId, historyUserId, operationTimestamp).catch(
-        (err) => console.error('[AppHistory] Fire-and-forget afterComponentCreate failed:', err.message)
+        (err) => this.logger.error('[AppHistory] Fire-and-forget afterComponentCreate failed:', err.message)
       );
     }
   }
@@ -111,7 +113,7 @@ export class ComponentsService implements IComponentsService {
 
     const operationTimestamp = Date.now();
     this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterComponentUpdate failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterComponentUpdate failed:', err.message)
     );
 
     return result;
@@ -130,7 +132,7 @@ export class ComponentsService implements IComponentsService {
 
     const operationTimestamp = Date.now();
     this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterComponentDelete failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterComponentDelete failed:', err.message)
     );
 
     return result;
@@ -187,7 +189,7 @@ export class ComponentsService implements IComponentsService {
         appVersionId,
         historyUserId,
         operationTimestamp
-      ).catch((err) => console.error('[AppHistory] Fire-and-forget afterComponentLayoutChange failed:', err.message));
+      ).catch((err) => this.logger.error('[AppHistory] Fire-and-forget afterComponentLayoutChange failed:', err.message));
     }
 
     return result;
