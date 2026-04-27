@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 /**
  * CE stub for ScheduleBootstrapService.
@@ -6,8 +6,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
  */
 @Injectable()
 export class ScheduleBootstrapService implements OnModuleInit {
+  private readonly logger = new Logger(ScheduleBootstrapService.name);
+
   async onModuleInit() {
     // No-op in CE: workflow scheduling is an Enterprise feature
-    console.log('ℹ️ Workflow scheduling is available in Enterprise Edition');
+    this.logger.log('Workflow scheduling is available in Enterprise Edition only');
   }
 }
