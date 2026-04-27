@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
@@ -38,6 +38,8 @@ import { incrementActiveSessions, incrementConcurrentUsers } from '@otel/tracing
 
 @Injectable()
 export class SessionUtilService {
+  private readonly logger = new Logger(SessionUtilService.name);
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly userRepository: UserRepository,
@@ -160,7 +162,7 @@ export class SessionUtilService {
             userRole: permissionData.admin ? 'admin' : 'member',
           });
         } catch (error) {
-          console.error('Error incrementing concurrent users metric:', error);
+          this.logger.error('Error incrementing concurrent users metric:', error);
         }
       }
 
@@ -312,7 +314,7 @@ export class SessionUtilService {
           sessionType: 'user',
         });
       } catch (error) {
-        console.error('Error incrementing active sessions metric:', error);
+        this.logger.error('Error incrementing active sessions metric:', error);
       }
 
       return session;
@@ -559,7 +561,7 @@ export class SessionUtilService {
       session.lastLoggedIn = new Date();
 
       manager.save(session).catch((err) => {
-        console.error('error while extending session expiry', err);
+        this.logger.error('error while extending session expiry', err);
       });
 
       // Fire-and-forget: update workspace last_accessed_at at most once per interval
