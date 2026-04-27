@@ -188,8 +188,8 @@ GUI mode can be used to query MSSQL database without writing queries.
 ### List Rows
 Retrieve records from the selected table with optional filtering, sorting, and pagination options.
 
-#### Required Parameter
-- **Schema**: Select the required schema either by using the `fx` expression for dynamic values or by clicking the "Fetch Schemas" button to choose schema from the dropdown list.
+#### Required Parameters
+- **Schema**: Select the required schema either by using the `fx` expression for dynamic values or by clicking the **Fetch Schemas** button to choose schema from the dropdown list.
 - **Table**: Select the table from which rows need to be retrieved.
 
 #### Optional Parameters
@@ -207,7 +207,7 @@ Insert a new row into the selected table by providing values for the required co
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Optional Parameters
+#### Optional Parameter
 - **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/createrows-gui.png" alt="MSsql create row gui mode"/>
@@ -257,7 +257,11 @@ Inserts multiple rows into the table in a single operation using an array of rec
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 ```json
-{{components.filepicker1.file[0].parsedData}}
+{{ [
+  { id: 101, first_name: 'Alice', email: 'alice@example.com' },
+  { id: 102, first_name: 'Bob', email: 'bob@example.com' },
+  { id: 103, first_name: 'Charlie', email: 'charlie@example.com' }
+] }}
 ```
 </details>
 
@@ -274,11 +278,8 @@ Update multiple existing rows at once by matching records using their primary ke
 <summary>**Example Values**</summary>
 ```json
 {{ [
-  { id: 14, firstname: 'updated_secondupdate' },
-  { id: 15, firstname: 'updated_john' },
-  { id: 16, firstname: 'updated_doe' },
-  { id: 17, firstname: 'updated_alice' },
-  { id: 18, firstname: 'updated_bob' }
+  { id: 101, first_name: 'Alice Charles', email: 'alice_charles@example.com' },
+  { id: 102, first_name: 'Bob Mark', email: 'bob_mark@example.com' }
 ] }}
 ```
 </details>
@@ -297,7 +298,11 @@ In this operation, if a row with the matching primary key exists, it is updated;
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 ```json
-{{components.filepicker1.file[0].parsedData}}
+{{ [
+  { id: 101, first_name: 'Alice Charlie', email: 'alice_charlie@example.com' },
+  { id: 104, first_name: 'David', email: 'david@example.com' }, 
+  { id: 105, first_name: 'Emma Jackson', email: 'emma_jack@example.com' }    
+] }}
 ```
 </details>
 
