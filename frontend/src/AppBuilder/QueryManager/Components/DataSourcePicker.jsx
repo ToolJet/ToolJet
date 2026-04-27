@@ -22,7 +22,7 @@ function DataSourcePicker({ darkMode }) {
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
-    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC
+    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
   );
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);

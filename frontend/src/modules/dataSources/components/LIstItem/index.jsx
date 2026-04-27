@@ -10,6 +10,9 @@ import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
 
+const DUMMY_DS_LABEL = 'Undefined data source';
+const DUMMY_DS_TOOLTIP = 'Undefined data source. Pull from git to restore.';
+
 export const ListItem = ({
   dataSource,
   key,
@@ -89,8 +92,18 @@ export const ListItem = ({
         >
           <div className="ds-svg-container">{icon}</div>
 
-          <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px', display: 'flex' }}>
-            {decodeEntities(dataSource.name)}
+          <div
+            className="font-400 tj-text-xsm text-truncate tw-flex tw-items-center tw-gap-1"
+            style={{ paddingLeft: '6px' }}
+          >
+            {dataSource.is_dummy ? DUMMY_DS_LABEL : decodeEntities(dataSource.name)}
+            {dataSource.is_dummy && (
+              <ToolTip placement="right" message={DUMMY_DS_TOOLTIP}>
+                <span className="tw-inline-flex tw-items-center" data-cy="dummy-ds-warning-icon">
+                  <SolidIcon name="warning" width="14" fill="var(--icon-warning)" />
+                </span>
+              </ToolTip>
+            )}
             {isSampleDb && (
               <div
                 className="font-400 tj-text-xxsm text-truncate"

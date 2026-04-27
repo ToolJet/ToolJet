@@ -5,6 +5,7 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 export const ChangeDataSource = ({ dataSources, onChange, value, isVersionReleased }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isDummy = !!value?.is_dummy;
 
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],
@@ -17,8 +18,11 @@ export const ChangeDataSource = ({ dataSources, onChange, value, isVersionReleas
 
   return (
     <Select
-      className="w-100"
-      options={dataSources.map((ds) => ({ label: decodeEntities(ds.name), value: ds.id }))}
+      className={`w-100 ${isDummy ? 'tw-border tw-border-solid tw-border-border-danger-strong tw-rounded' : ''}`}
+      options={dataSources.map((ds) => ({
+        label: ds.is_dummy ? 'Undefined data source' : decodeEntities(ds.name),
+        value: ds.id,
+      }))}
       value={value?.id}
       onChange={(value) => {
         const dataSource = dataSources.find((ds) => ds.id === value);

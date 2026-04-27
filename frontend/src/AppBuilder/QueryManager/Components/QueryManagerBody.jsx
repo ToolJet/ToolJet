@@ -345,7 +345,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
-      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
+      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC)
+      // Hide dummy DSes from the picker — they aren't valid switch targets.
+      // Keep the currently bound dummy in the list so the dropdown can render its label.
+      .filter((ds) => !ds.is_dummy || ds.id === selectedDataSource?.id);
     if (isEmpty(selectableDataSources)) {
       return '';
     }
@@ -388,6 +391,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 changeDataQuery(newDataSource);
               }}
             />
+            {selectedDataSource?.is_dummy && (
+              <div
+                className="tw-text-text-danger tw-mt-1 tw-font-body-small"
+                data-cy="query-manager-source-missing-warning"
+              >
+                {t(
+                  'editor.queryManager.datasourceMissingPullFromGit',
+                  'Data source #{{id}} is missing, pull from git to resolve this',
+                  { id: selectedDataSource?.co_relation_id }
+                )}
+              </div>
+            )}
             <div style={{ marginBottom: '2px' }} data-cy="query-manager-source-doc-link">
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
