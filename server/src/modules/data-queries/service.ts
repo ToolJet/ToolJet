@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { EntityManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -23,7 +24,8 @@ export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository
+    protected readonly dataSourceRepository: DataSourcesRepository,
+    protected readonly logger: Logger
   ) {}
 
   /**
@@ -155,7 +157,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     const operationTimestamp = Date.now();
     this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message)
+      this.logger.error({ msg: '[AppHistory] Fire-and-forget afterQueryCreate failed', error: err.message })
     );
 
     return result;
@@ -178,7 +180,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     const operationTimestamp = Date.now();
     this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message)
+      this.logger.error({ msg: '[AppHistory] Fire-and-forget afterQueryUpdate failed', error: err.message })
     );
   }
 
@@ -194,7 +196,7 @@ export class DataQueriesService implements IDataQueriesService {
     const operationTimestamp = Date.now();
     const appVersionId = (context as any)?.appVersionId || null;
     this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message)
+      this.logger.error({ msg: '[AppHistory] Fire-and-forget afterQueryDelete failed', error: err.message })
     );
   }
 
@@ -297,7 +299,7 @@ export class DataQueriesService implements IDataQueriesService {
           metadata: error?.metadata,
         };
       } else {
-        console.error(error);
+        this.logger.error({ msg: 'Data query execution failed', error });
         result = {
           status: 'failed',
           message: error?.message || 'Internal server error',
@@ -329,7 +331,7 @@ export class DataQueriesService implements IDataQueriesService {
           data: error?.data,
         };
       } else {
-        console.error(error);
+        this.logger.error({ msg: 'Data query execution failed', error });
         result = {
           status: 'failed',
           message: 'Internal server error',
