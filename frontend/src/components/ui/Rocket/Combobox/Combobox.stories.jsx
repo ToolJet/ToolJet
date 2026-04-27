@@ -14,6 +14,7 @@ import {
   ComboboxSeparator,
 } from './Combobox';
 import { Field, FieldLabel, FieldDescription, FieldError } from '../Field/Field';
+import { TruncatingText } from '../TruncatingText/TruncatingText';
 import { ChevronDown } from 'lucide-react';
 
 const frameworks = ['React', 'Vue', 'Angular', 'Svelte', 'Solid', 'Qwik'];
@@ -408,5 +409,47 @@ export const AllStates = {
       </div>
     );
   },
+  parameters: { layout: 'padded' },
+};
+
+// ── Long Option Names — opt-in TruncatingText pattern ────────────────────
+//
+// Documents the "Truncating long values" pattern from Combobox.spec.md.
+//
+// Each row's label is wrapped in TruncatingText. When the row label
+// overflows the dropdown width, TruncatingText sets the native `title`
+// attribute and the OS tooltip appears on hover after ~500ms. Short rows
+// show no tooltip.
+//
+// The selected-value-in-input case is intentionally not covered here —
+// inputs scroll horizontally instead of clipping with ellipsis, so they
+// need a different mechanism (tracked separately).
+
+const longQueries = [
+  'getProducts',
+  'getProductsByCategory',
+  'getProductsThatIsReallyLongToFitInaDropdownAndWillDefinitelyOverflow',
+  'getOrders',
+  'updateUserShippingAddressForCheckoutFlowWithLongName',
+];
+
+export const LongOptionNames = {
+  render: () => (
+    <div className="tw-w-[240px] tw-p-4">
+      <Combobox items={longQueries}>
+        <ComboboxInput placeholder="Search query..." />
+        <ComboboxContent>
+          <ComboboxList>
+            {(item) => (
+              <ComboboxItem key={item} value={item}>
+                <TruncatingText>{item}</TruncatingText>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+          <ComboboxEmpty>No results found.</ComboboxEmpty>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
   parameters: { layout: 'padded' },
 };

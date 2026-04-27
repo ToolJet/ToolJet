@@ -10,6 +10,7 @@ import {
   SelectSeparator,
 } from './Select';
 import { Field, FieldLabel, FieldDescription, FieldError } from '../Field/Field';
+import { TruncatingText } from '../TruncatingText/TruncatingText';
 import { User, Globe, Mail, Pencil, Trash2 } from 'lucide-react';
 
 export default {
@@ -305,6 +306,56 @@ export const OpenDropdownWithSelection = {
       </Select>
     </div>
   ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Long Selected Value — opt-in TruncatingText pattern ──────────────────
+//
+// Documents the "Truncating long values" pattern from Select.spec.md.
+//
+// The selected value already clips visually (shadcn applies line-clamp-1 to
+// the trigger's child spans). To reveal the full string on hover, the
+// consumer wraps the value in a div + TruncatingText. The div escapes the
+// line-clamp selector so TruncatingText's measurement works correctly.
+//
+// TruncatingText sets the browser's native `title` attribute when the text
+// overflows. Since SelectValue renders text from Radix context (not a string
+// child), pass the label explicitly via the `title` prop. Hover the
+// truncated text and the OS tooltip appears after ~500ms.
+//
+// Stateful labels (controlled Select) make this easy: track the selected
+// value's display label in state and pass it as `title`.
+
+const QUERIES = {
+  short: 'getProducts',
+  medium: 'getProductsByCategory',
+  long: 'getProductsThatIsReallyLongToFitInaDropdownAndWillDefinitelyOverflow',
+};
+
+export const LongSelectedValue = {
+  render: () => {
+    const [value, setValue] = React.useState('long');
+    return (
+      <div className="tw-w-[240px] tw-p-4">
+        <Select value={value} onValueChange={setValue}>
+          <SelectTrigger>
+            <div className="tw-min-w-0 tw-flex-1">
+              <TruncatingText title={QUERIES[value]}>
+                <SelectValue placeholder="Select query" />
+              </TruncatingText>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(QUERIES).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                <TruncatingText>{label}</TruncatingText>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  },
   parameters: { layout: 'padded' },
 };
 
