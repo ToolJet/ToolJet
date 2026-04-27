@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
@@ -29,6 +29,8 @@ import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
+  private readonly logger = new Logger(VersionsCreateService.name);
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
@@ -559,7 +561,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         );
 
         if (!newComponent) {
-          console.error(`ERROR: New component instance not found for original ID ${originalComponent.id}.`);
+          this.logger.error(`New component instance not found for original ID ${originalComponent.id}.`);
           continue;
         }
 
