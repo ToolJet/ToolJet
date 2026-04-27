@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -34,6 +34,8 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
+  private readonly logger = new Logger(VersionService.name);
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
@@ -274,7 +276,7 @@ export class VersionService implements IVersionService {
 
     const operationTimestamp = Date.now();
     this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp).catch((err) =>
-      console.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message)
+      this.logger.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message)
     );
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -297,7 +299,7 @@ export class VersionService implements IVersionService {
 
     const settingsOperationTimestamp = Date.now();
     this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto, user.id, settingsOperationTimestamp).catch(
-      (err) => console.error('[AppHistory] Fire-and-forget afterVersionSettingsUpdate failed:', err.message)
+      (err) => this.logger.error('[AppHistory] Fire-and-forget afterVersionSettingsUpdate failed:', err.message)
     );
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
