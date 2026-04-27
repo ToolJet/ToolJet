@@ -187,17 +187,19 @@ export class EmailUtilService implements IEmailUtilService {
 
       /* if development environment and disabled SMTP, log the content of email instead of sending actual emails */
       if (this.NODE_ENV === 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]) {
-        console.log('Captured email');
-        console.log('to: ', to);
-        console.log('Subject: ', subject);
-        console.log('content: ', htmlToSend);
+        this.logger.log('Captured email');
+        this.logger.log(`to: ${to}`);
+        this.logger.log(`Subject: ${subject}`);
+        this.logger.log(`content: ${htmlToSend}`);
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const previewEmail = require('preview-email');
         const transport = nodemailer.createTransport({
           jsonTransport: true,
         });
         const result = await transport.sendMail(mailOptions);
-        previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
+        previewEmail(JSON.parse(result.message))
+          .then((url: string) => this.logger.log(`Preview email URL: ${url}`))
+          .catch((err: Error) => this.logger.error(`Failed to generate preview email: ${err.message}`));
       } else {
         const transport = this.mailTransport(this.SMTP);
         const result = await transport.sendMail(mailOptions);
