@@ -4,6 +4,9 @@
  * This file contains all queue-related configurations for workflow execution and scheduling.
  * Centralizing these values makes it easier to reason about and maintain queue behavior.
  */
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('QueueConfig');
 
 /**
  * Priority levels for workflow execution jobs
@@ -109,7 +112,7 @@ export function mapDbStatusToDisplayState(dbStatus: string | undefined | null): 
   if (!dbStatus) return 'completed'; // fallback for legacy rows without status
   const mapped = DB_STATUS_TO_DISPLAY_STATE[dbStatus];
   if (!mapped) {
-    console.warn(`[WORKFLOW_STATUS] Unknown DB status "${dbStatus}", falling back to "completed"`);
+    logger.warn(`[WORKFLOW_STATUS] Unknown DB status "${dbStatus}", falling back to "completed"`);
     return 'completed';
   }
   return mapped;
