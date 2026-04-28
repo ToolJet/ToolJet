@@ -491,13 +491,9 @@ export default class Snowflake implements QueryService {
         throw new QueryError('OAuth access token not found', 'Access token is required for OAuth authentication', {});
       }
     } else if (sourceOptions.auth_type === 'bearer_token') {
-      if (!sourceOptions.username) {
-        throw new QueryError('Username not found', 'Username is required for PAT authentication', {});
-      }
       if (!sourceOptions.bearer_token) {
         throw new QueryError('Bearer token not found', 'Bearer token is required for bearer token authentication', {});
       }
-      connectionConfig.username = sourceOptions.username;
       connectionConfig.token = sourceOptions.bearer_token;
       connectionConfig.authenticator = 'PROGRAMMATIC_ACCESS_TOKEN';
     } else if (sourceOptions.auth_type === 'key_pair') {

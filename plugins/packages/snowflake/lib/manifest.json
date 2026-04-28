@@ -193,12 +193,6 @@
       }
     },
     "bearer_token": {
-      "username": {
-        "label": "Username",
-        "key": "username",
-        "type": "text",
-        "description": "Enter username"
-      },
       "bearer_token": {
         "label": "Bearer token",
         "key": "bearer_token",
