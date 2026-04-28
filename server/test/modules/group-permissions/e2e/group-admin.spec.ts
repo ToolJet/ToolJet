@@ -8,12 +8,14 @@ import {
   createEndUser,
   findEntity,
   findEntities,
+  findEntityOrFail,
   saveEntity,
   createGroupPermission,
   createUserGroupPermissions,
 } from 'test-helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupAdmin } from '@entities/group_admin.entity';
+import { GroupUsers } from 'src/entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 
 /**
@@ -263,6 +265,73 @@ describe('GroupAdminController', () => {
           .set('tj-workspace-id', admin.workspace.id)
           .set('Cookie', builder.cookie)
           .send({ userIds: [targetUser.user.id], groupId: groupB.id });
+
+        expect(response.statusCode).toBe(403);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // DELETE /api/v2/group-permissions/users/:id | Scoped remove-user for group-admin
+    // -------------------------------------------------------------------------
+
+    describe('DELETE /api/v2/group-permissions/users/:id | Scoped remove-user for group-admin', () => {
+      it('group-admin builder can remove a user from their administered group → 200', async () => {
+        const admin = await createAdmin(nestApp, 'admin-rmuser@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-rmuser@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const targetUser = await createEndUser(nestApp, 'enduser-rmuser@tooljet.io', {
+          workspace: admin.workspace,
+        });
+
+        const group = await createCustomGroup(admin.workspace.id, 'avengers-rm');
+
+        // Seed the target user into the group and make builder a group admin
+        await createUserGroupPermissions(nestApp, targetUser.user as any, [group.name]);
+        await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: group.id,
+          organizationId: admin.workspace.id,
+        });
+
+        const groupUser = await findEntityOrFail(GroupUsers, { groupId: group.id, userId: targetUser.user.id } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .delete(`/api/v2/group-permissions/users/${groupUser.id}`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', builder.cookie);
+
+        expect(response.statusCode).toBe(200);
+        const remaining = await findEntity(GroupUsers, { id: groupUser.id } as any);
+        expect(remaining).toBeNull();
+      });
+
+      it('group-admin builder cannot remove a user from a group they do NOT administer → 403', async () => {
+        const admin = await createAdmin(nestApp, 'admin-nrmuser@tooljet.io');
+        const builder = await createBuilder(nestApp, 'builder-nrmuser@tooljet.io', {
+          workspace: admin.workspace,
+        });
+        const targetUser = await createEndUser(nestApp, 'enduser-nrmuser@tooljet.io', {
+          workspace: admin.workspace,
+        });
+
+        const groupA = await createCustomGroup(admin.workspace.id, 'avengers-nrm');
+        const groupB = await createCustomGroup(admin.workspace.id, 'titans-nrm');
+
+        // builder administers groupA only; target user is in groupB
+        await saveEntity(GroupAdmin, {
+          userId: builder.user.id,
+          groupId: groupA.id,
+          organizationId: admin.workspace.id,
+        });
+        await createUserGroupPermissions(nestApp, targetUser.user as any, [groupB.name]);
+
+        const groupUser = await findEntityOrFail(GroupUsers, { groupId: groupB.id, userId: targetUser.user.id } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .delete(`/api/v2/group-permissions/users/${groupUser.id}`)
+          .set('tj-workspace-id', admin.workspace.id)
+          .set('Cookie', builder.cookie);
 
         expect(response.statusCode).toBe(403);
       });

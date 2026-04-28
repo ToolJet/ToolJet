@@ -259,6 +259,14 @@ class BaseManageGroupPermissions extends React.Component {
       });
       return;
     }
+    if (value && /[^a-zA-Z0-9_-]/.test(value)) {
+      this.setState({
+        newGroupName: value,
+        isSaveBtnDisabled: true,
+        groupNameMessage: 'Group name can only contain letters, numbers, underscores and hyphens',
+      });
+      return;
+    }
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
@@ -285,7 +293,7 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   createGroup = () => {
-    const regex = /^[a-zA-Z0-9_ -]+$/;
+    const regex = /^[a-zA-Z0-9_-]+$/;
     if (!regex.test(this.state.newGroupName)) {
       toast.error('Group name can only contain letters, numbers, underscores and hyphens');
       return;
@@ -374,6 +382,11 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   executeGroupUpdation = () => {
+    const regex = /^[a-zA-Z0-9_-]+$/;
+    if (!regex.test(this.state.newGroupName)) {
+      toast.error('Group name can only contain letters, numbers, underscores and hyphens');
+      return;
+    }
     this.setState({ isUpdatingGroupName: true });
     groupPermissionV2Service
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
@@ -422,8 +435,11 @@ class BaseManageGroupPermissions extends React.Component {
     const isValidLicense = featureAccess?.licenseStatus.isLicenseValid;
     const planType = featureAccess?.licenseStatus?.licenseType;
 
+    const hasInvalidGroupNameChars = this.state.newGroupName && /[^a-zA-Z0-9_-]/.test(this.state.newGroupName);
     const grounNameErrorStyle =
-      this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
+      this.state.newGroupName?.length > 50 || hasInvalidGroupNameChars
+        ? { color: '#ff0000', borderColor: '#ff0000' }
+        : {};
     const {
       addPermission,
       addApps,
@@ -680,7 +696,9 @@ class BaseManageGroupPermissions extends React.Component {
                       <input
                         type="text"
                         required
-                        className={`form-control ${this.state.newGroupName?.length >= 50 ? 'custom-input-error' : ''}`}
+                        className={`form-control ${
+                          this.state.newGroupName?.length >= 50 || hasInvalidGroupNameChars ? 'custom-input-error' : ''
+                        }`}
                         placeholder={this.props.t(
                           'header.organization.menus.manageGroups.permissions.enterName',
                           'Enter group name'

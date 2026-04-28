@@ -889,7 +889,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                     </div>
                   </ToolTip>
                 )}
-                {groupPermission.type === 'custom' && (
+                {groupPermission.type === 'custom' && isAdmin && (
                   <div className="user-group-actions">
                     <Link
                       onClick={() => this.props.updateGroupName(groupPermission)}
