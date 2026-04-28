@@ -395,7 +395,13 @@ const useAppData = (
           moduleId
         );
 
-        if (state?.prompt && !promptSentRef.current && (conversation?.aiConversationMessages || []).length === 0) {
+        const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
+        if (
+          state?.prompt &&
+          !promptSentRef.current &&
+          (conversation?.aiConversationMessages || []).length === 0 &&
+          (liveMessages || []).length === 0
+        ) {
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
