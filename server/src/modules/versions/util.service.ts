@@ -413,38 +413,6 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  /**
-   * When a module's default-branch `version_type='version'` row transitions from DRAFT to a
-   * saved state, rewrite consumer `ModuleViewer` refs that are still "unpinned" (empty value)
-   * to the saved version's module_reference_id. Scope: same organization, same module
-   * (matched by co_relation_id), consumer app_version hosted on the default branch —
-   * feature-branch refs keep their unpinned semantics until their own branch is merged.
-   */
-  async pinUnpinnedModuleViewerRefs(
-    manager: EntityManager,
-    moduleApp: App,
-    savedModuleReferenceId: string,
-    organizationId: string
-  ): Promise<void> {
-    if (!moduleApp?.co_relation_id || !savedModuleReferenceId) return;
-    await manager.query(
-      `UPDATE components c
-       SET properties = jsonb_set(c.properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
-       FROM pages p
-       JOIN app_versions av ON av.id = p.app_version_id
-       JOIN apps a ON a.id = av.app_id
-       JOIN organization_git_sync_branches hb ON hb.id = av.branch_id
-       WHERE c.page_id = p.id
-         AND c.type = 'ModuleViewer'
-         AND a.organization_id = $2
-         AND hb.organization_id = $2
-         AND hb.is_default = true
-         AND c.properties->'moduleAppId'->>'value' = $3
-         AND COALESCE(c.properties->'moduleVersionId'->>'value', '') = ''`,
-      [savedModuleReferenceId, organizationId, moduleApp.co_relation_id]
-    );
-  }
-
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];

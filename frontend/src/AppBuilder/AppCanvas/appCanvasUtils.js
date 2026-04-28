@@ -63,10 +63,12 @@ export const addNewWidgetToTheEditor = (
   let customLayouts = undefined;
 
   if (moduleInfo) {
-    // Default to unpinned (empty string): the resolver follows the consuming app's
-    // current branch context. The user can pin a specific version later via the inspector.
+    // Pin the dragged ModuleViewer to the module's current version's module_reference_id
+    // (a stable cross-instance id from the modules list). Falls back to '' (unpinned) if
+    // the module has no version yet. Users can opt into follow-latest semantics via the
+    // inspector ("Current branch" option writes '' back to value).
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: '' };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId ?? '' };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 

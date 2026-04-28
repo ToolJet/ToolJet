@@ -82,16 +82,21 @@ export async function listModuleVersions(
   return [branchDraft, ...savedVersions].filter((v): v is AppVersion => !!v);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
  *
- *   moduleReferenceId present + matches → pinned. Prefer the consumer-branch
- *                                         copy (post git pull); fall back to
- *                                         the default-branch copy.
- *   moduleReferenceId absent             → unpinned. Latest non-stub on the
- *                                         consumer's branch (or default).
- *   moduleReferenceId present, no match → orphaned. Fall back to latest saved
- *                                         on the default branch.
+ *   moduleReferenceId is a valid UUID + matches → pinned. Prefer the consumer-branch
+ *                                                copy (post git pull); fall back to
+ *                                                the default-branch copy.
+ *   moduleReferenceId absent / not a UUID       → unpinned. Latest non-stub on the
+ *                                                consumer's branch (or default).
+ *   moduleReferenceId is a UUID, no match       → orphaned. Fall back to latest saved
+ *                                                on the default branch.
+ *
+ * The UUID guard prevents `where: { moduleReferenceId: <non-uuid> }` from crashing
+ * the postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
  */
 export async function resolveModuleRef(
   manager: EntityManager,
@@ -100,7 +105,7 @@ export async function resolveModuleRef(
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
-  if (moduleReferenceId) {
+  if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
     if (consumerBranchId) {
       const local = await manager.findOne(AppVersion, {
         where: {
