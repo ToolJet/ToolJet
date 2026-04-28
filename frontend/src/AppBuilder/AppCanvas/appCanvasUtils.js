@@ -156,8 +156,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       const height = layout.height ? layout.height : componentMeta.defaultSize.height;
       const top = layout.top ? layout.top : 0;
       const left = layout.left ? layout.left : 0;
-      const newComponentDefinition = {
+      const newComponentProperties = {
         ...componentData.definition.properties,
+      };
+      const newComponentStyles = {
+        ...componentData.definition.styles,
       };
 
       if (_.isArray(properties) && properties.length > 0) {
@@ -166,11 +169,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentProperties, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.properties', newComponentDefinition);
+        _.set(componentData, 'definition.properties', newComponentProperties);
       }
 
       if (_.isArray(styles) && styles.length > 0) {
@@ -179,11 +182,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentStyles, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {
