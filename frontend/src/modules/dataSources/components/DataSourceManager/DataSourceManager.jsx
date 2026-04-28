@@ -1111,7 +1111,14 @@ class DataSourceManagerComponent extends React.Component {
                             )}
                           </div>
                           {selectedDataSource.is_dummy && (
-                            <ToolTip placement="right" message="Undefined data source. Pull from git to restore.">
+                            <ToolTip
+                              placement="right"
+                              message={
+                                selectedDataSource.co_relation_id
+                                  ? `Data source #${selectedDataSource.co_relation_id} is missing, pull from git to resolve this`
+                                  : 'Data source is missing, pull from git to resolve this'
+                              }
+                            >
                               <span className="tw-inline-flex tw-items-center" data-cy="dummy-ds-header-warning-icon">
                                 <SolidIcon name="warning" width="18" fill="var(--icon-warning)" />
                               </span>

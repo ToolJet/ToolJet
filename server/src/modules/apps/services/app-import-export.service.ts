@@ -636,8 +636,7 @@ export class AppImportExportService {
       for (const importedModule of appParams.modules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
         const existingModule =
-          (importedModule?.appV2?.co_relation_id &&
-            existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
+          (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
           existingByName.get(importedModule?.appV2?.name);
 
         if (existingModule) {
@@ -1625,7 +1624,8 @@ export class AppImportExportService {
           manager,
           importingDataSource,
           user,
-          isGitApp
+          isGitApp,
+          branchId
         );
 
         appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
@@ -2333,7 +2333,8 @@ export class AppImportExportService {
     manager: EntityManager,
     dataSource: DataSource,
     user: User,
-    isGitApp = false
+    isGitApp = false,
+    branchId?: string
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
@@ -2395,17 +2396,33 @@ export class AppImportExportService {
       (await globalDataSourceByCoRelationId(dataSource)) ||
       (await globalDataSourceWithSameNameExists(dataSource));
 
-    if (existingDatasource) return existingDatasource;
+    // For git imports on a specific branch, a real DS that exists in the
+    // workspace but has no DSV on this branch is effectively not-yet-pulled
+    // here (e.g. user created the DS on another branch and only pushed the
+    // app, not the workspace data sources). Treat it as missing so we fall
+    // through to dummy creation; queries get bound to the dummy until a later
+    // workspace pull brings the DS file into git, creates a branch DSV, and
+    // reconcileDummyDataSources retargets the queries to the real DS.
+    let useExisting = !!existingDatasource;
+    if (existingDatasource && isGitApp && branchId) {
+      const branchDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId: existingDatasource.id, branchId, isActive: true },
+      });
+      if (!branchDsv) {
+        useExisting = false;
+      }
+    }
+    if (useExisting && existingDatasource) return existingDatasource;
 
     if (isGitApp) {
       // Per-app dataSources are no longer pushed to git. When a query
       // references a co_relation_id that doesn't resolve to any global DS
       // in this workspace (and no root data-sources/{coRelId}.json exists
       // either), we create a dummy placeholder so the app still imports.
-      // - Name: `<original>_dummy` (or `unresolved_<short>_dummy` if unknown)
+      // - Name: `<original>_dummy` (or `unresolved_<full-co_relation_id>_dummy` if unknown)
       // - Kind: from git file if known, else 'restapi' (safe generic)
       // - co_relation_id: preserved so a later pull can swap in the real DS
-      const baseName = (dataSource.name || `unresolved_${(dataSource.id || '').slice(0, 8)}`).replace(/_dummy$/, '');
+      const baseName = (dataSource.name || `unresolved_${dataSource.id || ''}`).replace(/_dummy$/, '');
       const dummyName = `${baseName}_dummy`;
       const dummyKind = dataSource.kind || 'restapi';
       let pluginId: string | null = null;
