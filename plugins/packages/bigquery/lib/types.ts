@@ -9,8 +9,8 @@ export type QueryOptions = {
   query: string;
   query_params?: [string, any][];
   datasetId: string;
-  queryOptions: string;
-  queryResultsOptions: string;
+  queryOptions: string | object;
+  queryResultsOptions: string | object;
   tableId: string;
   rows: string;
   records?: any;

@@ -119,7 +119,7 @@
       "list_datasets": {},
       "insert_record": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -137,7 +137,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -168,7 +168,7 @@
       },
       "delete_record": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -186,7 +186,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -237,7 +237,7 @@
       },
       "create_table": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -255,15 +255,15 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter table id",
+          "description": "Enter Table ID",
           "width": "320px",
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Enter table id"
+          "placeholder": "Enter Table ID"
         },
         "options": {
           "label": "Options",
@@ -278,7 +278,7 @@
       },
       "delete_table": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -296,7 +296,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -317,7 +317,7 @@
       },
       "create_view": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -335,7 +335,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -406,7 +406,7 @@
       },
       "update_record": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -424,7 +424,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -484,7 +484,7 @@
       },
       "get_dataset_info": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -504,7 +504,7 @@
       },
       "list_tables": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -527,10 +527,18 @@
           "label": "Query",
           "key": "query",
           "type": "codehinter",
-          "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = 'TX' LIMIT 100",
+          "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = @state LIMIT 100",
           "description": "Enter query",
           "height": "150px",
           "editorType": "extendedSingleLine"
+        },
+        "query_params": {
+          "key": "query_params",
+          "label": "SQL Parameters",
+          "type": "react-component-headers",
+          "description": "Parameters for the SQL query",
+          "buttonText": "Add parameter",
+          "tooltip": "Use these parameters in the SQL query using name notation < @parameter_name >"
         },
         "queryOptions": {
           "label": "Query options",
@@ -555,7 +563,7 @@
       },
       "bulk_insert": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -573,7 +581,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -603,7 +611,7 @@
       },
       "bulk_update_pkey": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -621,7 +629,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -661,7 +669,7 @@
       },
       "bulk_upsert_pkey": {
         "datasetId": {
-          "label": "Dataset id",
+          "label": "Dataset ID",
           "key": "datasetId",
           "type": "dynamic-selector",
           "fxEnabled": false,
@@ -679,7 +687,7 @@
           "placeholder": "Select dataset"
         },
         "tableId": {
-          "label": "Table id",
+          "label": "Table ID",
           "key": "tableId",
           "type": "dynamic-selector",
           "fxEnabled": false,

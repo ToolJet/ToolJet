@@ -266,33 +266,55 @@ export default class Bigquery implements QueryService {
     _options?: object,
     checkCache?: boolean,
     dataSourceId?: string,
-    dataSourceUpdatedAt?: string
+    dataSourceUpdatedAt?: string,
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<any> {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+      const cacheKeySuffix = isMultiAuthEnabled && userId ? `${userId}_${optionsHash}` : optionsHash;
+      const enhancedCacheKey = `${dataSourceId}_${cacheKeySuffix}`;
       let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection) {
         return connection;
       } else {
-        connection = await this.buildConnection(sourceOptions);
+        connection = await this.buildConnection(sourceOptions, userId, isAppPublic);
         cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
         return connection;
       }
     } else {
-      return await this.buildConnection(sourceOptions);
+      return await this.buildConnection(sourceOptions, userId, isAppPublic);
     }
   }
 
-  private async buildConnection(sourceOptions: any): Promise<any> {
+  private async buildConnection(sourceOptions: any, userId?: string, isAppPublic?: boolean): Promise<any> {
     const authType = this.getOptionValue(sourceOptions, 'authentication_type');
     if (authType === 'service_account') {
       return this.getServiceAccountConnection(sourceOptions);
     }
 
-    // Token refresh is handled via refreshToken(),
-    const accessToken = this.getOptionValue(sourceOptions, 'access_token');
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    let accessToken: string;
+    let refreshToken: string;
+
+    if (isMultiAuthEnabled) {
+      const userToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
+      if (!userToken) {
+        throw new QueryError(
+          'Authentication required',
+          'Access token not found for current user. Please authenticate via OAuth first.',
+          {}
+        );
+      }
+      accessToken = userToken['access_token'];
+      refreshToken = userToken['refresh_token'];
+    } else {
+      accessToken = this.getOptionValue(sourceOptions, 'access_token');
+      refreshToken = sourceOptions['refresh_token'];
+    }
+
     if (!accessToken) {
       throw new QueryError(
         'Authentication required',
@@ -304,9 +326,8 @@ export default class Bigquery implements QueryService {
     const projectId = this.getOptionValue(sourceOptions, 'project_id');
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
-    const refreshToken = sourceOptions['refresh_token'];
     const location = this.getOptionValue(sourceOptions, 'location');
-    //Internally the access token is refrshed and cached by google-auth-library
+    //Internally the access token is refreshed and cached by google-auth-library
     return new BigQuery({
       projectId,
       ...(location ? { location } : {}),
@@ -350,14 +371,33 @@ export default class Bigquery implements QueryService {
     dataSourceUpdatedAt?: string,
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
-    const client = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    const userId = context?.user?.id;
+    const isAppPublic = context?.app?.isPublic;
+    const client = await this.getConnection(
+      sourceOptions,
+      {},
+      true,
+      dataSourceId,
+      dataSourceUpdatedAt,
+      userId,
+      isAppPublic
+    );
 
     if (queryOptions.mode === 'sql') {
       return this.executeSqlMode(client, sourceOptions, queryOptions);
     }
 
-    // 'gui' mode or no mode field (backward compat for existing queries)
     return this.executeOperation(client, sourceOptions, queryOptions);
+  }
+
+  // SQL query params arrive as strings; coerce back to their original type before sending to BigQuery
+  private coerceParam(value: any): any {
+    if (typeof value !== 'string') return value;
+    try {
+      return JSON.parse(value.trim());
+    } catch {
+      return value;
+    }
   }
 
   private async executeSqlMode(
@@ -366,16 +406,6 @@ export default class Bigquery implements QueryService {
     queryOptions: QueryOptions
   ): Promise<QueryResult> {
     try {
-      //SQL query params sends string only, we need to coerce them to their original type before sending to BigQuery
-      const coerce = (value: any): any => {
-        if (typeof value !== 'string') return value;
-        try {
-          return JSON.parse(value.trim());
-        } catch {
-          return value;
-        }
-      };
-
       const queryParams = (queryOptions.query_params || []).filter(([key]: [string, any]) => key?.trim());
       const jobOptions: any = {
         ...this.parseJSON(queryOptions.queryOptions),
@@ -383,7 +413,9 @@ export default class Bigquery implements QueryService {
       };
 
       if (queryParams.length > 0) {
-        jobOptions.params = Object.fromEntries(queryParams.map(([key, value]: [string, any]) => [key, coerce(value)]));
+        jobOptions.params = Object.fromEntries(
+          queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(value)])
+        );
       }
 
       const [job] = await client.createQueryJob(jobOptions);
@@ -467,10 +499,17 @@ export default class Bigquery implements QueryService {
         }
 
         case 'query': {
-          const [job] = await client.createQueryJob({
+          const queryParams = (queryOptions.query_params || []).filter(([key]: [string, any]) => key?.trim());
+          const jobOptions: any = {
             ...this.parseJSON(queryOptions.queryOptions),
             query: queryOptions.query,
-          });
+          };
+          if (queryParams.length > 0) {
+            jobOptions.params = Object.fromEntries(
+              queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(value)])
+            );
+          }
+          const [job] = await client.createQueryJob(jobOptions);
           const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
           result = rows;
           break;
@@ -607,25 +646,38 @@ export default class Bigquery implements QueryService {
     sourceOptions: any,
     args?: any
   ): Promise<any> {
+    const userId = context?.user?.id;
+    const isAppPublic = context?.app?.isPublic;
+
     if (methodName === 'listDatasets') {
-      return await this._fetchDatasets(sourceOptions, args?.search, args?.page, args?.limit);
+      return await this._fetchDatasets(sourceOptions, args?.search, args?.page, args?.limit, userId, isAppPublic);
     }
 
     if (methodName === 'listTables') {
       const datasetId = args?.values?.datasetId || '';
-      return await this._fetchTables(sourceOptions, datasetId, args?.search, args?.page, args?.limit);
+      return await this._fetchTables(
+        sourceOptions,
+        datasetId,
+        args?.search,
+        args?.page,
+        args?.limit,
+        userId,
+        isAppPublic
+      );
     }
 
     if (methodName === 'getTables') {
       const datasetId = args?.values?.datasetId || '';
       const isPaginated = !!args?.limit;
 
-      const result = await this.listTables(sourceOptions, '', '', {
-        datasetId,
-        search: args?.search,
-        page: args?.page,
-        limit: args?.limit,
-      });
+      const result = await this.listTables(
+        sourceOptions,
+        '',
+        '',
+        { datasetId, search: args?.search, page: args?.page, limit: args?.limit },
+        userId,
+        isAppPublic
+      );
 
       const payload = (result as any)?.data ?? [];
 
@@ -661,11 +713,21 @@ export default class Bigquery implements QueryService {
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    queryOptions?: { datasetId?: string; search?: string; page?: number; limit?: number }
+    queryOptions?: { datasetId?: string; search?: string; page?: number; limit?: number },
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<QueryResult> {
     try {
       const checkCache = !!dataSourceId;
-      const client = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
+      const client = await this.getConnection(
+        sourceOptions,
+        {},
+        checkCache,
+        dataSourceId,
+        dataSourceUpdatedAt,
+        userId,
+        isAppPublic
+      );
       const search = queryOptions?.search || '';
       const page = queryOptions?.page || 1;
       const limit = queryOptions?.limit;
@@ -727,7 +789,15 @@ export default class Bigquery implements QueryService {
     }
 
     // OAuth test: verify the token is valid
-    const accessToken = this.getOptionValue(sourceOptions, 'access_token');
+    const isMultiAuthEnabled = (sourceOptions as any)['multiple_auth_enabled'];
+    let accessToken: string;
+    if (isMultiAuthEnabled) {
+      const tokenData = (sourceOptions as any)['tokenData'];
+      const firstToken = Array.isArray(tokenData) ? tokenData[0] : null;
+      accessToken = firstToken?.access_token;
+    } else {
+      accessToken = this.getOptionValue(sourceOptions, 'access_token');
+    }
     if (!accessToken) {
       throw new QueryError(
         'Connection could not be established',
@@ -822,12 +892,14 @@ ON ${joinCondition}`;
     sourceOptions: SourceOptions,
     search = '',
     page?: number,
-    limit?: number
+    limit?: number,
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<
     Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     try {
-      const client = await this.getConnection(sourceOptions);
+      const client = await this.getConnection(sourceOptions, {}, false, undefined, undefined, userId, isAppPublic);
       const [datasets] = await client.getDatasets();
 
       const searchLower = search.toLowerCase();
@@ -852,12 +924,14 @@ ON ${joinCondition}`;
     datasetId: string,
     search = '',
     page?: number,
-    limit?: number
+    limit?: number,
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<
     Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     try {
-      const client = await this.getConnection(sourceOptions);
+      const client = await this.getConnection(sourceOptions, {}, false, undefined, undefined, userId, isAppPublic);
       const [tables] = await client.dataset(datasetId).getTables();
 
       const searchLower = search.toLowerCase();
@@ -880,8 +954,9 @@ ON ${joinCondition}`;
     }
   }
 
-  private parseJSON(json?: string): object {
+  private parseJSON(json?: string | object): object {
     if (!json) return {};
+    if (typeof json === 'object') return json;
     return JSON5.parse(json);
   }
 
