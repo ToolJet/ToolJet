@@ -550,7 +550,7 @@ Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
   );
 });
 
-Cypress.Commands.add("apiCreateApp", (appName, branchId) => {
+Cypress.Commands.add("apiCreateAppGitsync", (appName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
       .request({
