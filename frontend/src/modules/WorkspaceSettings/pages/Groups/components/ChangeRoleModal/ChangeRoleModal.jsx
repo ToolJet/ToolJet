@@ -14,8 +14,51 @@ function ChangeRoleModal({
   isLoading,
 }) {
   const isAddUserScenario = autoRoleChangeMessageType === 'USER_ROLE_CHANGE_ADD_USERS';
+  const isDowngradeBlockedByGroupAdmin = autoRoleChangeMessageType === 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN';
 
   const renderModalContent = () => {
+    if (isDowngradeBlockedByGroupAdmin) {
+      return (
+        <div className="role-change-modal-content">
+          <div className="d-flex align-items-start justify-content-between">
+            <div className="modal-icon-container" data-cy="modal-icon">
+              <SolidIcon fill="var(--tomato9)" name="lock" width="40" />
+            </div>
+            <div onClick={handleAutoRoleChangeModalClose} className="icon-btn" data-cy="modal-close-button">
+              <SolidIcon fill="var(--slate9)" name="remove" width="16" />
+            </div>
+          </div>
+          <div style={{ width: '100%' }}>
+            <h3 className="modal-title" data-cy="modal-title">
+              Cannot change role to end-user
+            </h3>
+            <div className="modal-description" data-cy="modal-description">
+              <p>
+                This user is a group admin in one or more groups. Remove them as a group admin before downgrading their
+                role to end-user.
+              </p>
+            </div>
+            {autoRoleChangeModalList?.length > 0 && (
+              <ol
+                style={{
+                  fontSize: '14px',
+                  paddingBottom: '4px',
+                  margin: '8px 0',
+                  maxHeight: '140px',
+                  overflowY: 'auto',
+                }}
+                data-cy="item-list"
+              >
+                {autoRoleChangeModalList.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     if (isAddUserScenario && autoRoleChangeModalList.length === 1) {
       return (
         <div className="role-change-modal-content">

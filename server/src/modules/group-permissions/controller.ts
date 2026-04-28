@@ -6,7 +6,7 @@ import { GroupExistenceGuard } from './guards/group-existance.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY } from './constants';
+import { FEATURE_KEY, USER_ROLE } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { IGroupPermissionsControllerV2 } from './interfaces/IController';
@@ -14,6 +14,8 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GetUsersResponse } from './types';
 import { GroupUsers } from '@entities/group_users.entity';
 import { Group } from './decorators/group.decorator';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
 
 @Controller({
   path: 'group-permissions',
@@ -46,9 +48,17 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
 
   @InitFeature(FEATURE_KEY.GET_ALL)
   @Get()
-  async getAll(@User() user: UserEntity): Promise<GetUsersResponse> {
+  async getAll(
+    @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions
+  ): Promise<GetUsersResponse> {
     const { organizationId } = user;
-    return await this.groupPermissionsService.getAllGroup(organizationId);
+    user.roleGroup = userPermissions.isAdmin
+      ? USER_ROLE.ADMIN
+      : userPermissions.isEndUser
+        ? USER_ROLE.END_USER
+        : USER_ROLE.BUILDER;
+    return await this.groupPermissionsService.getAllGroup(organizationId, user);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)

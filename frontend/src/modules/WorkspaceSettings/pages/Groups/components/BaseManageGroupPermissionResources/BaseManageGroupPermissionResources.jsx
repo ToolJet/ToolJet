@@ -66,9 +66,16 @@ class BaseManageGroupPermissionResources extends React.Component {
       updateParam: {},
       hasEndUserMembers: false, // Whether this custom group contains any end-users
       endUserIds: null, // Cache of end-user IDs to avoid repeated API calls
+      groupAdmins: [],
+      addableAdmins: [],
+      isLoadingAdmins: false,
+      selectedAdminUsers: [],
+      showAdminSearchBox: false,
+      adminSearchString: '',
     };
     this.userListRef = React.createRef();
     this.searchDebounceTimer = null;
+    this.adminSearchDebounceTimer = null;
   }
 
   componentDidMount() {
@@ -76,9 +83,11 @@ class BaseManageGroupPermissionResources extends React.Component {
   }
 
   componentWillUnmount() {
-    // Clean up debounce timer
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
+    }
+    if (this.adminSearchDebounceTimer) {
+      clearTimeout(this.adminSearchDebounceTimer);
     }
   }
 
@@ -87,6 +96,8 @@ class BaseManageGroupPermissionResources extends React.Component {
       this.fetchGroupAndResources(this.props.groupPermissionId);
       this.setState({
         showUserSearchBox: false,
+        showAdminSearchBox: false,
+        adminSearchString: '',
         currentTab: 'users',
         hasEndUserMembers: false, // Reset when switching groups
         endUserIds: null, // Reset cache
@@ -367,34 +378,57 @@ class BaseManageGroupPermissionResources extends React.Component {
     const { updatingUserRole, groupPermission, selectedNewRole } = this.state;
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = currentSession?.current_user;
-    this.setState({
-      isLoadingUsers: true,
-    });
-    const body = {
-      newRole: selectedNewRole,
-      userId: updatingUserRole.id,
+    this.setState({ isLoadingUsers: true });
+
+    const proceedWithRoleChange = () => {
+      const body = {
+        newRole: selectedNewRole,
+        userId: updatingUserRole.id,
+      };
+      groupPermissionV2Service
+        .updateUserRole(body)
+        .then(() => {
+          this.fetchUsersInGroup(groupPermission.id);
+          toast.success('Role updated successfully');
+          if (currentUser.id === updatingUserRole.id) window.location.reload(true);
+        })
+        .catch(({ error, statusCode }) => {
+          if (statusCode !== 451) {
+            this.setState({
+              showEditRoleErrorModal: true,
+              errorTitle: error?.title ? error?.title : 'Cannot update the user role',
+              errorMessage: error.error,
+              errorIconName: 'usergear',
+              errorListItems: error.data,
+            });
+          }
+        })
+        .finally(() => {
+          this.closeChangeRoleModal();
+        });
     };
-    groupPermissionV2Service
-      .updateUserRole(body)
-      .then(() => {
-        this.fetchUsersInGroup(groupPermission.id);
-        toast.success('Role updated successfully');
-        if (currentUser.id === updatingUserRole.id) window.location.reload(true);
-      })
-      .catch(({ error, statusCode }) => {
-        if (statusCode !== 451) {
-          this.setState({
-            showEditRoleErrorModal: true,
-            errorTitle: error?.title ? error?.title : 'Cannot update the user role',
-            errorMessage: error.error,
-            errorIconName: 'usergear',
-            errorListItems: error.data,
-          });
-        }
-      })
-      .finally(() => {
-        this.closeChangeRoleModal();
-      });
+
+    if (selectedNewRole === 'end-user') {
+      groupPermissionV2Service
+        .getUserAdminGroups(updatingUserRole.id)
+        .then(({ groups }) => {
+          if (groups.length > 0) {
+            this.closeChangeRoleModal();
+            this.setState({
+              showAutoRoleChangeModal: true,
+              autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
+              autoRoleChangeModalList: groups.map((g) => g.name),
+            });
+          } else {
+            proceedWithRoleChange();
+          }
+        })
+        .catch(() => {
+          proceedWithRoleChange();
+        });
+    } else {
+      proceedWithRoleChange();
+    }
   };
   closeChangeRoleModal = () =>
     this.setState({
@@ -497,6 +531,115 @@ class BaseManageGroupPermissionResources extends React.Component {
 
   updateParamState = (updateParam) => {
     this.setState({ updateParam });
+  };
+
+  fetchGroupAdmins = () => {
+    this.setState({ isLoadingAdmins: true });
+    groupPermissionV2Service
+      .getGroupAdmins(this.props.groupPermissionId)
+      .then((data) => {
+        this.setState({ groupAdmins: Array.isArray(data) ? data : [], isLoadingAdmins: false });
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+        this.setState({ isLoadingAdmins: false });
+      });
+  };
+
+  fetchAddableAdmins = () => {
+    const isBuilder = authenticationService.currentSessionValue?.user_permissions?.is_builder;
+
+    console.log('isBuilder', isBuilder);
+
+    // if the user is a builder, don't fetch addable admins as they won't have permissions to add any admins to the group
+    if (isBuilder === true) {
+      return;
+    }
+
+    groupPermissionV2Service
+      .getAddableAdmins(this.props.groupPermissionId)
+      .then((data) => {
+        this.setState({ addableAdmins: Array.isArray(data) ? data : [] });
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  searchAddableAdmins = (query) => {
+    const q = (query || '').toLowerCase();
+    const filtered = this.state.addableAdmins.filter((u) => {
+      const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+      return name.includes(q) || (u.email || '').toLowerCase().includes(q);
+    });
+    return Promise.resolve(
+      filtered.map((u) => ({
+        name: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
+        value: u.id,
+        email: u.email,
+        first_name: u.firstName,
+        last_name: u.lastName,
+      }))
+    );
+  };
+
+  addSelectedAdminsToGroup = () => {
+    const { selectedAdminUsers } = this.state;
+    const { groupPermissionId } = this.props;
+    Promise.all(selectedAdminUsers.map((u) => groupPermissionV2Service.assignGroupAdmin(groupPermissionId, u.value)))
+      .then(() => {
+        toast.success('Group admin(s) assigned');
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      })
+      .finally(() => {
+        this.setState({ selectedAdminUsers: [] });
+        this.fetchGroupAdmins();
+        this.fetchAddableAdmins();
+      });
+  };
+
+  removeAdminSelection = (selected, value) => {
+    this.setState({ selectedAdminUsers: selected.filter((d) => d.value !== value) });
+  };
+
+  generateAdminSelection = (selected) => {
+    return selected?.map((d) => (
+      <div className="selected-item tj-ms tj-ms-usergroup" key={d.value}>
+        <FilterPreview text={`${d?.email}`} onClose={() => this.removeAdminSelection(selected, d.value)} />
+      </div>
+    ));
+  };
+
+  handleAdminSearchInGroup = (e) => {
+    const searchValue = e?.target?.value;
+    if (this.adminSearchDebounceTimer) {
+      clearTimeout(this.adminSearchDebounceTimer);
+    }
+    this.adminSearchDebounceTimer = setTimeout(() => {
+      this.setState({ adminSearchString: searchValue || '' });
+    }, 300);
+  };
+
+  toggleAdminTabSearchBox = () => {
+    this.setState((prevState) => ({
+      showAdminSearchBox: !prevState.showAdminSearchBox,
+      adminSearchString: '',
+    }));
+  };
+
+  revokeAdmin = (adminId) => {
+    groupPermissionV2Service
+      .revokeGroupAdmin(this.props.groupPermissionId, adminId)
+      .then(() => {
+        toast.success('Group admin removed');
+        this.fetchGroupAdmins();
+        this.fetchAddableAdmins();
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
   };
 
   renderFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
@@ -623,11 +766,15 @@ class BaseManageGroupPermissionResources extends React.Component {
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
     const { customGroups: isFeatureEnabled } = featureAccess || {};
 
+    // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
+    // and cannot change user roles (but can still add/remove users).
+    const isAdmin = !!authenticationService.currentSessionValue?.admin;
+
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
-      isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
+      !isAdmin || isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
 
     const disableNonPromoteReleasePermissions =
       disablePermissionUpdate ||
@@ -742,7 +889,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                     </div>
                   </ToolTip>
                 )}
-                {groupPermission.type === 'custom' && (
+                {groupPermission.type === 'custom' && isAdmin && (
                   <div className="user-group-actions">
                     <Link
                       onClick={() => this.props.updateGroupName(groupPermission)}
@@ -774,7 +921,27 @@ class BaseManageGroupPermissionResources extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
-
+                {groupPermission?.type === 'custom' && !isCE && (
+                  <a
+                    onClick={() => {
+                      this.setState({ currentTab: 'groupAdmins', showUserSearchBox: false }, () => {
+                        this.fetchGroupAdmins();
+                        this.fetchAddableAdmins();
+                      });
+                      this.setSelectedUsers([]);
+                    }}
+                    className={cx('nav-item nav-link', { active: currentTab === 'groupAdmins' })}
+                    data-cy="group-admins-link"
+                  >
+                    <SolidIcon
+                      name="usergroup"
+                      fill={currentTab === 'groupAdmins' ? '#3E63DD' : '#C1C8CD'}
+                      className="manage-group-tab-icons"
+                      width="16"
+                    />
+                    Group Admins
+                  </a>
+                )}
                 <a
                   onClick={() => {
                     this.setState({ currentTab: 'permissions', showUserSearchBox: false });
@@ -949,6 +1116,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                           isRoleGroup={isRoleGroup}
                           removeUserFromGroup={this.removeUserFromGroup}
                           openChangeRoleModal={this.openChangeRoleModal}
+                          canChangeRole={isAdmin}
                           t={this.props.t}
                         />
                       ) : !showUserSearchBox ? (
@@ -1195,8 +1363,193 @@ class BaseManageGroupPermissionResources extends React.Component {
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
                       hasEndUsers={hasEndUsers}
+                      isAdmin={isAdmin}
                     />
                   </aside>
+
+                  {/* Group Admins Tab */}
+                  {currentTab === 'groupAdmins' &&
+                    (() => {
+                      const {
+                        groupAdmins,
+                        isLoadingAdmins,
+                        selectedAdminUsers,
+                        showAdminSearchBox,
+                        adminSearchString,
+                      } = this.state;
+
+                      const filteredAdmins = adminSearchString
+                        ? groupAdmins.filter((ga) => {
+                            const name = `${ga.user?.firstName || ''} ${ga.user?.lastName || ''}`.toLowerCase();
+                            return (
+                              name.includes(adminSearchString.toLowerCase()) ||
+                              (ga.user?.email || '').toLowerCase().includes(adminSearchString.toLowerCase())
+                            );
+                          })
+                        : groupAdmins;
+
+                      return (
+                        <div className="tab-pane active show group-admins-tab">
+                          {/* Add admin row — visible to all, button disabled for non-workspace-admins */}
+                          <div className="row">
+                            <div className="col" data-cy="admin-multi-select-search">
+                              <MultiSelectUser
+                                className={{
+                                  container: searchSelectClass,
+                                  value: `${searchSelectClass}__value`,
+                                  input: `${searchSelectClass}__input`,
+                                  select: `${searchSelectClass}__select`,
+                                  options: `${searchSelectClass}__options`,
+                                  row: `${searchSelectClass}__row`,
+                                  option: `${searchSelectClass}__option`,
+                                  group: `${searchSelectClass}__group`,
+                                  'group-header': `${searchSelectClass}__group-header`,
+                                  'is-selected': 'is-selected',
+                                  'is-highlighted': 'is-highlighted',
+                                  'is-loading': 'is-loading',
+                                  'is-multiple': 'is-multiple',
+                                  'has-focus': 'has-focus',
+                                  'not-found': `${searchSelectClass}__not-found`,
+                                }}
+                                onSelect={(val) => this.setState({ selectedAdminUsers: val })}
+                                onSearch={this.searchAddableAdmins}
+                                selectedValues={selectedAdminUsers}
+                                onReset={() => this.setState({ selectedAdminUsers: [] })}
+                                placeholder="Select builders to add as group admins"
+                                searchLabel="Enter name or email"
+                              />
+                            </div>
+                            <div className="col-auto">
+                              <ButtonSolid
+                                onClick={this.addSelectedAdminsToGroup}
+                                disabled={selectedAdminUsers.length === 0 || !isAdmin}
+                                leftIcon="plus"
+                                fill={
+                                  selectedAdminUsers.length !== 0 && isAdmin
+                                    ? '#ffffff'
+                                    : this.props.darkMode
+                                    ? '#131620'
+                                    : '#C1C8CD'
+                                }
+                                iconWidth="16"
+                                className="add-users-button"
+                                data-cy="group-admin-add-button"
+                                style={{
+                                  width: 'fit-content',
+                                }}
+                              >
+                                Assign group admin
+                              </ButtonSolid>
+                            </div>
+                            {selectedAdminUsers.length > 0 && (
+                              <div className="row mt-2">
+                                <div className="selected-section">
+                                  <div className="selected-text">Selected Users :</div>
+                                  {this.generateAdminSelection(selectedAdminUsers)}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <br />
+
+                          {/* Search toggle + list */}
+                          <div>
+                            {showAdminSearchBox ? (
+                              <div className="searchbox-custom">
+                                <SearchBox
+                                  dataCy="group-admin"
+                                  width="600px !important"
+                                  callBack={this.handleAdminSearchInGroup}
+                                  placeholder="Search"
+                                  customClass="tj-common-search-input-user"
+                                  onClearCallback={this.toggleAdminTabSearchBox}
+                                  autoFocus={true}
+                                />
+                              </div>
+                            ) : (
+                              <div className="manage-group-table-head">
+                                <ButtonSolid
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    this.toggleAdminTabSearchBox();
+                                  }}
+                                  size="xsm"
+                                  rightIcon="search"
+                                  iconWidth="15"
+                                  fill="#889096"
+                                  className="search-user-group-btn"
+                                  data-cy="group-admin-search-btn"
+                                />
+                                <p className="tj-text-xsm" data-cy="name-header" style={{ padding: '10px' }}>
+                                  User name
+                                </p>
+                                <p className="tj-text-xsm" data-cy="email-header">
+                                  Email id
+                                </p>
+                                <p className="tj-text-xsm"></p> {/* DO NOT REMOVE FOR TABLE ALIGNMENT */}
+                              </div>
+                            )}
+
+                            {isLoadingAdmins ? (
+                              <section className="group-users-list-container">
+                                <tr>
+                                  <td className="col-auto">
+                                    <div className="row">
+                                      <div className="skeleton-line w-10 col mx-3"></div>
+                                    </div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                </tr>
+                              </section>
+                            ) : filteredAdmins.length > 0 ? (
+                              <VirtualizedUserList
+                                users={filteredAdmins}
+                                isRoleGroup={!isAdmin}
+                                removeUserFromGroup={this.revokeAdmin}
+                                openChangeRoleModal={() => {}}
+                                canChangeRole={false}
+                                t={this.props.t}
+                              />
+                            ) : !showAdminSearchBox ? (
+                              <section className="group-users-list-container">
+                                <div className="manage-groups-no-apps-wrap">
+                                  <div className="manage-groups-no-apps-icon" data-cy="admin-empty-page-icon">
+                                    <BulkIcon name="users" fill="#3E63DD" width="48" />
+                                  </div>
+                                  <p className="tj-text-md font-weight-500" data-cy="admin-empty-page">
+                                    No group admins assigned
+                                  </p>
+                                  <span className="tj-text-sm text-center" data-cy="admin-empty-page-info-text">
+                                    Assign a group admin to delegate <br />
+                                    membership management for this group.
+                                  </span>
+                                </div>
+                              </section>
+                            ) : (
+                              <section className="group-users-list-container">
+                                <div className="manage-groups-no-apps-wrap">
+                                  <div className="manage-groups-no-apps-icon" data-cy="admin-empty-page-icon">
+                                    <SolidIcon name="warning-user-notfound" width="48" />
+                                  </div>
+                                  <p className="tj-text-md font-weight-500" data-cy="admin-empty-page">
+                                    No results found
+                                  </p>
+                                  <span className="tj-text-sm text-center" data-cy="admin-empty-page-info-text">
+                                    There were no results found for your search. Please <br />
+                                    try changing the filters and try again.
+                                  </span>
+                                </div>
+                              </section>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
             </div>

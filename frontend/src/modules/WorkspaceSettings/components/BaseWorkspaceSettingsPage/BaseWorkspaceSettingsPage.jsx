@@ -3,13 +3,14 @@ import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import Layout from '@/_ui/Layout';
-import { authenticationService } from '@/_services';
+import { authenticationService, licenseService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { BreadCrumbContext } from '@/App/App';
 import { checkConditionsForRoute } from '@/_helpers/utils';
 import { OrganizationList } from '@/modules/dashboard/components';
+
 export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const workspaceSettingsLinks = constructWorkspaceSettingsLinks(extraLinks);
   const admin = authenticationService.currentSessionValue?.admin;
@@ -20,23 +21,43 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const edition = fetchEdition();
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
 
+  // null = not yet fetched; {} = fetch failed (fail open — show Groups tab)
+  const [featureAccess, setFeatureAccess] = useState(null);
+
+  useEffect(() => {
+    licenseService
+      .getFeatureAccess()
+      .then(setFeatureAccess)
+      .catch(() => setFeatureAccess({}));
+  }, []);
+
+  const hasCustomGroupsLicense =
+    featureAccess === null ||
+    (featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false);
+
   const [conditionObj, setConditionObj] = useState(() => {
     const current = authenticationService.currentSessionValue || {};
     const isAdmin = !!current.admin;
     const isBuilder = !!current.user_permissions?.is_builder;
+    const isGroupAdmin = !!current.is_group_admin;
     return {
       admin: isAdmin,
       isBuilder,
+      isGroupAdmin,
       wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
-      // admins and builders only on EE or Cloud
       canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+      canManageGroups: isAdmin || isGroupAdmin,
     };
   });
 
   //Filtered Links from the workspace settings links array
   const filteredLinks = () =>
     workspaceSettingsLinks.filter((item) => {
-      return checkConditionsForRoute(item.conditions, conditionObj);
+      const effectiveConditionObj = {
+        ...conditionObj,
+        canManageGroups: conditionObj.admin || (conditionObj.isGroupAdmin && hasCustomGroupsLicense),
+      };
+      return checkConditionsForRoute(item.conditions, effectiveConditionObj);
     });
 
   const getMenuFromRoute = (route) => {
@@ -47,13 +68,16 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       const isAdmin = !!newOrd?.admin;
       const isBuilder = !!newOrd?.user_permissions?.is_builder;
+      const isGroupAdmin = !!newOrd?.is_group_admin;
       const editionNow = fetchEdition();
       const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
       setConditionObj({
         admin: isAdmin,
         isBuilder,
+        isGroupAdmin,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
         canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
+        canManageGroups: isAdmin || isGroupAdmin,
       });
     });
 
@@ -159,7 +183,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
 function constructWorkspaceSettingsLinks(extraLinks) {
   const commonLinks = [
     { id: 'users', name: 'Users', route: 'users', conditions: ['admin'] },
-    { id: 'groups', name: 'Groups', route: 'groups', conditions: ['admin'] },
+    { id: 'groups', name: 'Groups', route: 'groups', conditions: ['canManageGroups'] },
     {
       id: 'workspace-login',
       name: 'Workspace login',
