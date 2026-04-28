@@ -22,7 +22,6 @@ import {
   EmptyContent,
   Select as RocketSelect,
   SelectTrigger,
-  SelectItem,
   SelectValue,
   SelectGroup,
   SelectLabel,
@@ -30,7 +29,7 @@ import {
   ToggleGroupItem as RocketToggleGroupItem,
 } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
-import { FieldRow, SelectContent, OptionCombobox } from './ActionConfigurationPanels/shared';
+import { FieldRow, SelectContent, SelectItem, OptionCombobox } from './ActionConfigurationPanels/shared';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
