@@ -70,6 +70,7 @@ Icon gap: tw-gap-1.5 for large/default, tw-gap-1 for medium/small
 | outline | text + icon | default | icon/strong | tw-text-text-medium |
 | all | focus ring | focus | interactive/focus-outline | focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-1 |
 | all | cursor | disabled | — | disabled:tw-pointer-events-none disabled:tw-opacity-50 |
+| all | icon (svg/img) | disabled | — | disabled:[&_svg]:tw-grayscale disabled:[&_img]:tw-grayscale |
 
 ## Slots
 

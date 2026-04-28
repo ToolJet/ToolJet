@@ -1,11 +1,11 @@
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, Not, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 
@@ -178,13 +178,15 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
-  getVersionsInApp(appId: string, manager?: EntityManager): Promise<AppVersion[]> {
+  getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap((manager: EntityManager) => {
+      const where = branchId
+        ? { appId, branchId, isStub: false }
+        : { appId };
+
       return manager.find(AppVersion, {
-        where: { appId },
-        order: {
-          createdAt: 'DESC',
-        },
+        where,
+        order: { createdAt: 'DESC' },
       });
     }, manager || this.manager);
   }

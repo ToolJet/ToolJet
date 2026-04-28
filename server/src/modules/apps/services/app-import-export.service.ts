@@ -226,6 +226,25 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
+  'Accordion',
+  'CodeEditor',
+  'Container',
+  'Form',
+  'JSONEditor',
+  'JSONExplorer',
+  'KeyValuePair',
+  'Listview',
+  'ModalV2',
+  'RichTextEditor',
+  'Table',
+  'Tabs',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TreeSelect',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
@@ -1089,7 +1108,7 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       createNewVersion,
       branchId,
-      isGitApp || cloning
+      isGitApp || cloning || !!branchId
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2604,18 +2623,24 @@ export class AppImportExportService {
       where: { organizationId: user?.organizationId },
     });
     const isGitSyncConfigured = !!orgGitSync;
+    // Workflows are branch-agnostic — they are not synced to git and must not be
+    // scoped to a branch or use the BRANCH version type, otherwise the versions
+    // list (which filters by default branch / VERSION type) will hide them.
+    const isWorkflow = importedApp.type === APP_TYPES.WORKFLOW;
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
     // Only applies to git-sync or clone operations — plain imports always use VERSION type
     // so versions remain visible in the version manager UI.
     let isSubBranch = false;
-    if (branchId && useBranchVersionType) {
+    let targetBranchName: string | null = null;
+    if (!isWorkflow && branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
-        select: ['id', 'isDefault'],
+        select: ['id', 'isDefault', 'name'],
       });
       isSubBranch = !!targetBranch && !targetBranch.isDefault;
+      if (isSubBranch) targetBranchName = targetBranch.name;
     }
 
     // Find the latest draft version
@@ -2677,10 +2702,11 @@ export class AppImportExportService {
           versionStatus = appVersion.status || AppVersionStatus.DRAFT;
         }
 
+        const isLastVersion = appVersion === appVersions[appVersions.length - 1];
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
-          name: appVersion.name,
+          name: isSubBranch && isLastVersion && targetBranchName ? targetBranchName : appVersion.name,
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -2689,7 +2715,7 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          branchId,
+          branchId: isWorkflow ? null : branchId,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -3341,6 +3367,11 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
+    properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
