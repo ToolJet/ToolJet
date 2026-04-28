@@ -1,4 +1,4 @@
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { NestFactory } from '@nestjs/core';
 import { MigrationProgress } from '@helpers/migration.helper';
@@ -88,9 +88,6 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
       await dataSourceBranchUtil.cloneDataSourceVersions(defaultBranch.id, branch.id, em);
     }
 
-    // No filter on currentVersionId: modules created AFTER
-    // PromoteAndReleaseExistingModuleVersions1776419051000 ran won't have it set.
-    // cloneReleasedVersionToBranch falls back to the latest version by created_at.
     const modules = await em
       .createQueryBuilder(App, 'app')
       .where('app.organizationId = :orgId', { orgId: defaultBranch.organizationId })
@@ -103,103 +100,107 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
       where: { organizationId: defaultBranch.organizationId },
     });
 
-    // NOTE: creationMode is an ORIGIN marker ('GIT' = materialized from a git pull,
-    // 'DEFAULT' = created in UI). Backfilling legacy UI-created modules to 'GIT'
-    // would lie about their origin. The frontend's LifecycleCTAButton visibility
-    // issue should be fixed at the frontend check instead (participation signal,
-    // not origin signal). Not mutating creationMode here.
-
-    // Seed BRANCH-type DRAFT versions onto EVERY non-default workspace branch
-    // that already existed when this migration runs. Without this, pre-existing
-    // feature branches have no module version row, so AppsService.getOne falls
-    // back to the default-branch released VERSION row — which the freeze logic
-    // renders as read-only and hides the lifecycle CTA. New branches created
-    // after this migration runs are handled by WorkspaceBranchesService.createBranch
-    // (it calls pullModules at branch-creation time).
     const nonDefaultBranches = await em.find(WorkspaceBranch, {
       where: { organizationId: defaultBranch.organizationId, isDefault: false },
     });
 
+    // Step 1: seed module BRANCH versions on every non-default branch. The app
+    // remap pass below depends on these rows existing on the target branch.
     for (const moduleApp of modules) {
       for (const targetBranch of nonDefaultBranches) {
-        await this.cloneReleasedVersionToBranch(
+        await this.cloneVersionToBranch(
           em,
           versionsCreate,
           moduleApp,
           targetBranch,
-          defaultBranch.organizationId
+          defaultBranch.organizationId,
+          /* stampModuleReferenceId */ true
         );
       }
       if (orgGit) await this.ensureAppGitSyncRow(em, moduleApp, orgGit.id);
     }
+
+    // Step 2: seed BRANCH versions for non-module apps that contain at least one
+    // ModuleViewer, then rewrite each viewer's moduleVersionId.value from the
+    // default-branch module_reference_id to the freshly-stamped branch-version
+    // module_reference_id. Apps without a ModuleViewer aren't relevant to this
+    // migration's purpose (module-pin reconciliation across branches).
+    const appsWithModuleViewers = await this.findAppsWithModuleViewers(em, defaultBranch.organizationId);
+    for (const app of appsWithModuleViewers) {
+      for (const targetBranch of nonDefaultBranches) {
+        const newAppVersion = await this.cloneVersionToBranch(
+          em,
+          versionsCreate,
+          app,
+          targetBranch,
+          defaultBranch.organizationId,
+          /* stampModuleReferenceId */ false
+        );
+        if (newAppVersion) {
+          await this.remapModuleViewerPins(em, newAppVersion.id, targetBranch.id, defaultBranch.organizationId);
+        }
+      }
+    }
   }
 
-  private async cloneReleasedVersionToBranch(
+  /**
+   * Clone the source app's released (or latest) default-branch version onto the
+   * target branch as a hydrated DRAFT BRANCH version. Returns the freshly-created
+   * row, or null if a hydrated BRANCH version already exists (idempotent — never
+   * overwrites pre-existing branch content).
+   *
+   * stampModuleReferenceId: stamp a fresh UUID on the new row's module_reference_id.
+   * True for type='module' apps so cross-instance pin resolution works; false for
+   * regular apps (the column only carries meaning for module versions).
+   */
+  private async cloneVersionToBranch(
     em: EntityManager,
     versionsCreate: VersionsCreateService,
-    moduleApp: App,
+    sourceApp: App,
     targetBranch: WorkspaceBranch,
-    organizationId: string
-  ): Promise<void> {
-    // Idempotency: skip only if a HYDRATED (non-stub) BRANCH version already exists.
-    // Stub rows left over from a failed earlier pull attempt would pass the loose
-    // BRANCH-type-only check, but `AppsService.getOne` filters `isStub: false` when
-    // picking the branch's editingVersion — so a pre-existing stub would leave the
-    // frontend falling back to the default-branch PUBLISHED row (frozen editor).
+    organizationId: string,
+    stampModuleReferenceId: boolean
+  ): Promise<AppVersion | null> {
     const existing = await em.findOne(AppVersion, {
       where: {
-        appId: moduleApp.id,
+        appId: sourceApp.id,
         branchId: targetBranch.id,
         versionType: AppVersionType.BRANCH,
         isStub: false,
       },
     });
-    if (existing) return;
+    if (existing) return null;
 
-    // If only stub BRANCH versions exist on this branch, delete them before seeding
-    // a real one. The stub is empty (no pages/queries) so cascade deletes are safe.
     await em.delete(AppVersion, {
-      appId: moduleApp.id,
+      appId: sourceApp.id,
       branchId: targetBranch.id,
       versionType: AppVersionType.BRANCH,
       isStub: true,
     });
 
-    // Prefer the released version when set; otherwise fall back to the latest version
-    // on the module (matches PromoteAndReleaseExistingModuleVersions' "pick latest" rule,
-    // and handles modules created before they've been released).
-    const sourceVersion = moduleApp.currentVersionId
+    const sourceVersion = sourceApp.currentVersionId
       ? await em.findOne(AppVersion, {
-          where: { id: moduleApp.currentVersionId },
+          where: { id: sourceApp.currentVersionId },
           relations: ['dataSources'],
         })
       : await em.findOne(AppVersion, {
-          where: { appId: moduleApp.id },
+          where: { appId: sourceApp.id },
           order: { createdAt: 'DESC' },
           relations: ['dataSources'],
         });
-    if (!sourceVersion) return;
+    if (!sourceVersion) return null;
 
-    // Branch-version naming: match `ensureBranchVersion` in app-git-operations.util.ts
-    // — use the branch name, falling back to a timestamped suffix on conflict.
-    // This is the convention for HYDRATED BRANCH versions. UUID naming is only used
-    // for STUB versions (isStub=true) during pulls; this migration creates
-    // isStub=false versions so we use the user-facing name.
     const existingWithBranchName = await em.findOne(AppVersion, {
-      where: { appId: moduleApp.id, name: targetBranch.name },
+      where: { appId: sourceApp.id, name: targetBranch.name },
     });
     const versionName = existingWithBranchName ? `${targetBranch.name}_${Date.now()}` : targetBranch.name;
 
-    // Editable BRANCH versions must use Development (priority=1) as the
-    // current environment — any higher-priority env freezes the editor via
-    // shouldFreezeEditor. Copying sourceVersion.currentEnvironmentId would
-    // pull in production (the released env) and render the module read-only.
     const devEnv = await em.findOne(AppEnvironment, {
       where: { organizationId, priority: 1 },
     });
 
     const newVersion = em.create(AppVersion, {
-      appId: moduleApp.id,
+      appId: sourceApp.id,
       name: versionName,
       definition: {},
       status: AppVersionStatus.DRAFT,
@@ -208,13 +209,114 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
       parentVersionId: sourceVersion.id,
       currentEnvironmentId: devEnv?.id ?? sourceVersion.currentEnvironmentId,
       isStub: false,
-      // Module-only migration (caller filters type=='module'); stamp a fresh
-      // module_reference_id so pinning + cross-instance resolve work for these
-      // seeded branch-versions. setupNewVersion below just saves the entity as-is.
-      moduleReferenceId: randomUUID(),
+      moduleReferenceId: stampModuleReferenceId ? randomUUID() : null,
     });
 
     await versionsCreate.setupNewVersion(newVersion, sourceVersion, organizationId, em);
+    return newVersion;
+  }
+
+  /**
+   * Apps (type != 'module') that contain at least one ModuleViewer in any of their
+   * versions. DISTINCT on app id — versions with multiple viewers would otherwise
+   * pull the same app in many times.
+   */
+  private async findAppsWithModuleViewers(em: EntityManager, organizationId: string): Promise<App[]> {
+    const rows: { id: string }[] = await em.query(
+      `SELECT DISTINCT a.id
+       FROM apps a
+       JOIN app_versions av ON av.app_id = a.id
+       JOIN pages p ON p.app_version_id = av.id
+       JOIN components c ON c.page_id = p.id
+       WHERE a.organization_id = $1
+         AND a.type <> 'module'
+         AND c.type = 'ModuleViewer'`,
+      [organizationId]
+    );
+    if (rows.length === 0) return [];
+    return em.find(App, { where: { id: In(rows.map((r) => r.id)) } });
+  }
+
+  /**
+   * Walks ModuleViewer components inside a freshly-cloned app BRANCH version and
+   * rewrites moduleVersionId.value to the target branch's BRANCH-version
+   * module_reference_id.
+   *
+   * Pre-condition: 1776470400000-GenerateCoRelationIdForModules has run, so the
+   * cloned-in value is one of:
+   *   ''     was DRAFT-pinned on default; leave unpinned.
+   *   <uuid> a default-branch module_reference_id (non-DRAFT); remap to the
+   *          target-branch BRANCH-version's module_reference_id.
+   *   other  orphan; unpin.
+   *
+   * The defensive sourceVersion.status check exists because between 1776470400000
+   * and this migration a hand-edit could re-introduce a DRAFT pin.
+   */
+  private async remapModuleViewerPins(
+    em: EntityManager,
+    appVersionId: string,
+    targetBranchId: string,
+    organizationId: string
+  ): Promise<void> {
+    type ViewerRow = { id: string; moduleAppId: string | null; moduleVersionId: string | null };
+
+    const viewers: ViewerRow[] = await em.query(
+      `SELECT c.id,
+              c.properties->'moduleAppId'->>'value' AS "moduleAppId",
+              c.properties->'moduleVersionId'->>'value' AS "moduleVersionId"
+       FROM components c
+       JOIN pages p ON p.id = c.page_id
+       WHERE p.app_version_id = $1
+         AND c.type = 'ModuleViewer'`,
+      [appVersionId]
+    );
+    if (viewers.length === 0) return;
+
+    for (const viewer of viewers) {
+      // Already unpinned (1776470400000 collapsed DRAFT pins to ''); leave alone.
+      if (!viewer.moduleVersionId) continue;
+      // No moduleAppId → can't resolve; leave the existing value rather than guess.
+      if (!viewer.moduleAppId) continue;
+
+      const moduleApp = await em.findOne(App, {
+        where: { co_relation_id: viewer.moduleAppId, type: APP_TYPES.MODULE, organizationId },
+      });
+      if (!moduleApp) {
+        await this.setModuleVersionIdValue(em, viewer.id, '');
+        continue;
+      }
+
+      const sourceVersion = await em.findOne(AppVersion, {
+        where: { appId: moduleApp.id, moduleReferenceId: viewer.moduleVersionId },
+      });
+      if (!sourceVersion || sourceVersion.status === AppVersionStatus.DRAFT) {
+        await this.setModuleVersionIdValue(em, viewer.id, '');
+        continue;
+      }
+
+      const branchModuleVersion = await em.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          branchId: targetBranchId,
+          versionType: AppVersionType.BRANCH,
+          isStub: false,
+        },
+      });
+      // No branch row yet — leave the default-branch UUID; resolveModuleRef falls
+      // back to default for unmatched pins, so behavior stays correct.
+      if (!branchModuleVersion?.moduleReferenceId) continue;
+
+      await this.setModuleVersionIdValue(em, viewer.id, branchModuleVersion.moduleReferenceId);
+    }
+  }
+
+  private async setModuleVersionIdValue(em: EntityManager, componentId: string, value: string): Promise<void> {
+    await em.query(
+      `UPDATE components
+       SET properties = jsonb_set(properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))::json
+       WHERE id = $2`,
+      [value, componentId]
+    );
   }
 
   private async ensureAppGitSyncRow(em: EntityManager, moduleApp: App, organizationGitId: string): Promise<void> {
