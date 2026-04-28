@@ -238,7 +238,6 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     organizationId: string,
     environmentId?: string,
     branchId?: string
-    // appVersionId removed: released versions now use is_default DSV
   ): Promise<DataSourceVersionOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
