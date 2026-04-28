@@ -126,6 +126,13 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+  // Subscribe to THIS module's cached definition so the child useAppData effect
+  // re-fires when the parent's pull/version-switch refreshes the cache. Without
+  // this, the effect's deps don't change on pull (versionId stays '' for unpinned)
+  // and the ModuleViewer keeps showing pre-pull content.
+  const cachedModuleDefinitionForApp = useStore((state) =>
+    moduleMode ? state?.modulesStore?.moduleDefinition?.[appId] : null
+  );
 
   const fetchAllModules = useCallback(async () => {
     const allModules = [];
@@ -638,7 +645,7 @@ const useAppData = (
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setApp, setEditorLoading, currentSession, mode, versionId]);
+  }, [setApp, setEditorLoading, currentSession, mode, versionId, cachedModuleDefinitionForApp]);
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
@@ -778,6 +785,13 @@ const useAppData = (
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
+
+        // Refresh the module-definition cache so unpinned ModuleViewers pick up
+        // post-pull / post-version-switch content without a full page refresh.
+        // Mirrors the initial-load population at the !moduleMode branch above.
+        if (!moduleMode && appData.modules) {
+          setModuleDefinition(appData.modules);
+        }
         // const queryData = await dataqueryService.getAll(currentVersionId);
 
         if (isEnvChanged) {
