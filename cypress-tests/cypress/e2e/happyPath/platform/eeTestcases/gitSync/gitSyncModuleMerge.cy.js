@@ -130,7 +130,7 @@ describe("Git Sync — Module Merge Scenarios (sub → main)", { retries: 0 }, (
 
     cy.gitSyncCreateBranchViaApi(branchName);
     cy.gitSyncGetBranchId(branchName).then((branchId) => {
-      cy.apiCreateApp(appName, branchId).then((app) => {
+      cy.apiCreateAppOnBranch(appName, branchId).then((app) => {
         expect(app.id, "created app id").to.be.a("string");
       });
     });
