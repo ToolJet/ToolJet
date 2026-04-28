@@ -48,6 +48,12 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
     // can resolve the reference portably across environments. Components configured
     // by the user pin a specific app_version row by its DB id; we rewrite that to
     // the row's module_reference_id which is preserved across push/pull.
+    //
+    // Split by version status: DRAFT pins are auto-pins from drop time (the drop
+    // handler used to write the editing draft's id), NOT deliberate user pins —
+    // the new inspector would render those as "pinned to v1 (Draft)" which
+    // misrepresents user intent. Convert DRAFT-pointing refs to '' (unpinned).
+    // Non-DRAFT pins are explicit user choices and survive as module_reference_id.
     await queryRunner.query(`
       UPDATE components c
       SET properties = jsonb_set(
@@ -58,7 +64,22 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
       FROM app_versions av
       WHERE c.type = 'ModuleViewer'
         AND (c.properties::jsonb -> 'moduleVersionId') IS NOT NULL
-        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.id::text;
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.id::text
+        AND av.status <> 'DRAFT';
+    `);
+
+    await queryRunner.query(`
+      UPDATE components c
+      SET properties = jsonb_set(
+        c.properties::jsonb,
+        '{moduleVersionId,value}',
+        '""'::jsonb
+      )::json
+      FROM app_versions av
+      WHERE c.type = 'ModuleViewer'
+        AND (c.properties::jsonb -> 'moduleVersionId') IS NOT NULL
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.id::text
+        AND av.status = 'DRAFT';
     `);
   }
 
