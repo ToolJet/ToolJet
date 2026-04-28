@@ -29,14 +29,39 @@ import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
-// Editor (data-queries API) returns options with camelCase keys, but public/
-// released/preview-for-version paths return snake_case. Shallow-camelCase the
-// top-level option keys so downstream readers see one shape. Nested values
-// (REST headers, params, body, transformation code) are user-controlled and
-// preserved as-is.
+/* 
+Whitelist of cross-cutting query option keys that need snake→camel normalization.
+Editor (data-queries API) returns these as camelCase, but public/released/preview-for-version
+paths return them as snake_case. We only normalize keys here — REST/TooljetDB/gRPC editors
+rely on snake_case for their own option keys (query_timeout, retry_network_errors,
+where_filters, proto_files, etc.) and must NOT be touched.
+*/
+
+const QUERY_OPTION_KEYS_TO_NORMALIZE = [
+  'enableTransformation',
+  'transformationLanguage',
+  'runOnPageLoad',
+  'runOnDependencyChange',
+  'requestConfirmation',
+  'showSuccessNotification',
+  'successMessage',
+  'notificationDuration',
+];
+
+const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
+
 export const normalizeQueryTransformationOptions = (query) => {
-  if (!query?.options || typeof query.options !== 'object') return query;
-  query.options = mapKeys(query.options, (_v, key) => camelCase(key));
+  if (!query?.options) return query;
+  QUERY_OPTION_KEYS_TO_NORMALIZE.forEach((camelKey) => {
+    const snakeKey = snakeCase(camelKey);
+    if (query.options[snakeKey] !== undefined) {
+      const value = query.options[snakeKey];
+      delete query.options[snakeKey];
+      if (query.options[camelKey] === undefined) {
+        query.options[camelKey] = value;
+      }
+    }
+  });
   return query;
 };
 
