@@ -447,24 +447,55 @@ export class AppImportExportService {
         }
       }
 
+      // The parent app is exported branch-scoped (search_params.version_id is set
+      // by the push caller), so appVersions is filtered to a single row whose
+      // branchId is the branch being pushed. Use that to pick a single, branch-local
+      // module row when the consumer's ModuleViewer is unpinned — without this, an
+      // empty pin falls through to the "no version_id" branch in this.export() and
+      // every row of the module's app_versions ends up in modules/<m>/versions/,
+      // which both violates the one-version-per-branch git contract and triggers
+      // a Date.now() name collision in the pull-side hydrate rename loop.
+      const parentBranchId = appVersions[0]?.branchId;
+
       const moduleApps = [];
-      //call the export function for each moduleAppiDs
       await Promise.all(
         moduleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
-          // versionIdentifier is a module_reference_id (uuid). Single lookup; if absent,
-          // empty, or unresolvable, this.export() will pick the default editing version.
+
           let versionDbId: string | undefined;
           if (moduleAppId.versionIdentifier && resolvedId) {
+            // PINNED: explicit module_reference_id from the ModuleViewer.
             const byRefId = await manager.findOne(AppVersion, {
               where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
             });
             versionDbId = byRefId?.id;
+          } else if (resolvedId && parentBranchId) {
+            // UNPINNED: prefer the module's branch-local row (matches the parent app's
+            // branch). Falls back to the default-branch row to mirror resolveModuleRef's
+            // runtime behavior so unpinned exports stay portable when the parent's
+            // branch lacks a module row (e.g. module added after the branch was created).
+            const branchRow = await manager.findOne(AppVersion, {
+              where: { appId: resolvedId, branchId: parentBranchId, isStub: false },
+              order: { createdAt: 'DESC' },
+            });
+            if (branchRow) {
+              versionDbId = branchRow.id;
+            } else {
+              const defaultBranch = await manager.findOne(WorkspaceBranch, {
+                where: { organizationId: appToExport.organizationId, isDefault: true },
+              });
+              if (defaultBranch) {
+                const defaultRow = await manager.findOne(AppVersion, {
+                  where: { appId: resolvedId, branchId: defaultBranch.id, isStub: false },
+                  order: { createdAt: 'DESC' },
+                });
+                versionDbId = defaultRow?.id;
+              }
+            }
           }
+
           moduleApps.push(
-            await this.export(user, resolvedId, {
-              version_id: versionDbId,
-            })
+            await this.export(user, resolvedId, { version_id: versionDbId })
           );
         })
       );
