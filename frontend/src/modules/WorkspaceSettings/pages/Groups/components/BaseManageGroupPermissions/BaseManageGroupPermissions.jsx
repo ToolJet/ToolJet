@@ -444,6 +444,7 @@ class BaseManageGroupPermissions extends React.Component {
       addPermission,
       addApps,
       addUsers,
+      addGroupAdmins,
       addDataSource = null,
       addWorkflows = null,
       addFolders = null,
@@ -496,8 +497,31 @@ class BaseManageGroupPermissions extends React.Component {
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text " data-cy="users-label">
+                    <div className="tj-text" data-cy="users-label">
                       Users
+                    </div>
+                  </div>
+                </div>
+                <div className="row check-row">
+                  <div className="col-1 ">
+                    <input
+                      class="form-check-input"
+                      checked={addGroupAdmins}
+                      type="checkbox"
+                      onChange={() => {
+                        this.setState((prevState) => ({
+                          groupDuplicateOption: {
+                            ...prevState.groupDuplicateOption,
+                            addGroupAdmins: !prevState.groupDuplicateOption.addGroupAdmins,
+                          },
+                        }));
+                      }}
+                      data-cy="group-admins-check-input"
+                    />
+                  </div>
+                  <div className="col-11">
+                    <div className="tj-text" data-cy="group-admins-label">
+                      Group Admins
                     </div>
                   </div>
                 </div>
