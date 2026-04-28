@@ -35,8 +35,7 @@ export interface IAppEnvironmentUtilService {
     dataSourceId: string,
     organizationId: string,
     environmentId?: string,
-    branchId?: string,
-    appVersionId?: string
+    branchId?: string
   ): Promise<DataSourceVersionOptions>;
   init(
     editorVersion: Partial<AppVersion>,

@@ -25,7 +25,6 @@ type DataSourceVersionSummary = {
   isDefault: boolean;
   isActive: boolean;
   branchId: string | null;
-  appVersionId: string | null;
   createdAt: Date;
 };
 type DataSourceSummary = {
@@ -174,7 +173,7 @@ export class WorkspaceContextService {
 
     const versions = await this.dataSourcesRepository.manager.find(DataSourceVersion, {
       where: { dataSourceId: In(dataSources.map((ds) => ds.id)) },
-      select: ['id', 'name', 'isDefault', 'isActive', 'branchId', 'appVersionId', 'createdAt', 'dataSourceId'],
+      select: ['id', 'name', 'isDefault', 'isActive', 'branchId', 'createdAt', 'dataSourceId'],
       order: { isDefault: 'DESC', createdAt: 'ASC' },
     });
 
@@ -187,7 +186,6 @@ export class WorkspaceContextService {
         isDefault: v.isDefault,
         isActive: v.isActive,
         branchId: v.branchId ?? null,
-        appVersionId: v.appVersionId ?? null,
         createdAt: v.createdAt,
       });
       versionsByDs.set(v.dataSourceId, list);
