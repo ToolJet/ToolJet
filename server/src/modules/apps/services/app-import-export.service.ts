@@ -2604,6 +2604,10 @@ export class AppImportExportService {
       where: { organizationId: user?.organizationId },
     });
     const isGitSyncConfigured = !!orgGitSync;
+    // Workflows are branch-agnostic — they are not synced to git and must not be
+    // scoped to a branch or use the BRANCH version type, otherwise the versions
+    // list (which filters by default branch / VERSION type) will hide them.
+    const isWorkflow = importedApp.type === APP_TYPES.WORKFLOW;
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
@@ -2611,7 +2615,7 @@ export class AppImportExportService {
     // so versions remain visible in the version manager UI.
     let isSubBranch = false;
     let targetBranchName: string | null = null;
-    if (branchId && useBranchVersionType) {
+    if (!isWorkflow && branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
         select: ['id', 'isDefault', 'name'],
@@ -2692,7 +2696,7 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          branchId,
+          branchId: isWorkflow ? null : branchId,
         });
       }
       if (isNormalizedAppDefinitionSchema) {

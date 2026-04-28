@@ -182,7 +182,7 @@ export class VersionRepository extends Repository<AppVersion> {
     return dbTransactionWrap((manager: EntityManager) => {
       const where = branchId
         ? { appId, branchId, isStub: false }
-        : { appId, isStub: false };
+        : { appId };
 
       return manager.find(AppVersion, {
         where,
