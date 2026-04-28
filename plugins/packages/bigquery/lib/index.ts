@@ -25,10 +25,6 @@ export default class Bigquery implements QueryService {
     return option;
   }
 
-  /* ────────────────────────────────────────────
-   *  OAuth helpers
-   * ──────────────────────────────────────────── */
-
   authUrl(source_options: SourceOptions): string {
     const getSourceOptionValue = (key: string) => {
       const option = Array.isArray(source_options)
