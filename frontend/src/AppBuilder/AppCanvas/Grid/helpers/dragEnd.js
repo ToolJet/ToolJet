@@ -360,7 +360,12 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
  */
 export const isTargetModuleContainer = (targetSlotId, isModuleEditor) => {
   if (isModuleEditor) return false;
-  return document.getElementById(`canvas-${targetSlotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+  let el = document.getElementById(`canvas-${targetSlotId}`);
+  while (el) {
+    if (el.getAttribute && el.getAttribute('component-type') === 'ModuleContainer') return true;
+    el = el.parentElement;
+  }
+  return false;
 };
 
 /**
