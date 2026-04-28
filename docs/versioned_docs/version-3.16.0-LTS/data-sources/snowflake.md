@@ -177,6 +177,52 @@ ALLOWED_IP_LIST = ('0.0.0.0/0');
 ```sql
 select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
 ```
+## Querying in GUI Mode
+
+1. Create a new query and select the Snowflake data source.
+2. Select the GUI mode from the dropdown.
+3. Select the operation you want to perform.
+4. Fetch and select the **Table name**.
+5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+### List Rows
+Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
+
+#### Required Parameter
+- **Table**: Select the table from which rows need to be retrieved.
+
+#### Optional Parameters
+- **Filter**: Applies conditions to return only rows that match the specified criteria.
+- **Sort**: Orders the returned rows based on one or more selected columns.
+- **Aggregate**: Performs calculations such as count, sum, or average on selected columns.
+- **Group by**: Groups rows that have the same values in specified columns to enable aggregation.
+- **Limit**: Restricts the number of rows returned in the result.
+- **Offset**: Skips a specified number of rows before starting to return results.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/list-rows-gui.png" alt="Snowflake list rows gui" />
+
+### Create Rows
+Insert a new row into the selected table by providing values for the required columns.
+
+In the editor, ensure the **Columns** input is provided in `string` format.
+
+#### Optional Parameter
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/create-rows-gui.png" alt="Snowflake create rows gui" />
+
+### Update Rows
+Modify existing row values in the selected table based on the specified conditions or identifiers.
+
+In the editor, ensure the **Columns** input is provided in `string` format.
+
+#### Required Parameters
+- **Columns**: Specify the column names and values to be updated in the selected row(s).
+
+#### Optional Parameters
+- **Filter**: Apply conditions to identify which row(s) should be updated.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/update-rows-gui.png" alt="Snowflake update rows gui" />
 
 :::tip
 Query results can be transformed using transformations. Read our [transformations](/docs/app-builder/custom-code/transform-data) documentation to learn more.
