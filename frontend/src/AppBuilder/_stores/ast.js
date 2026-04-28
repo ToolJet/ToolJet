@@ -379,11 +379,7 @@ function createReferenceObject(entityType, path, uuidMappings, componentIdNameMa
 
   if (entityType === 'components' || entityType === 'queries') {
     entityNameOrId = path[1];
-    // Skip numeric index segments so refs like components.textinput1[0].value
-    // register against components.textinput1.value (matches emit shape inside list views).
-    let keyIdx = 2;
-    while (keyIdx < path.length - 1 && /^\d+$/.test(path[keyIdx])) keyIdx++;
-    entityKey = path[keyIdx];
+    entityKey = path[2];
 
     if (entityNameOrId.startsWith('__UUID_PLACEHOLDER_')) {
       entityNameOrId = uuidMappings[entityNameOrId];
