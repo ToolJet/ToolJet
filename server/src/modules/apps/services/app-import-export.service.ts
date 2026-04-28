@@ -614,8 +614,7 @@ export class AppImportExportService {
       for (const importedModule of appParams.modules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
         const existingModule =
-          (importedModule?.appV2?.co_relation_id &&
-            existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
+          (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
           existingByName.get(importedModule?.appV2?.name);
 
         if (existingModule) {
@@ -1720,6 +1719,7 @@ export class AppImportExportService {
           const newFolder = manager.create(DataQueryFolder, {
             name: folder.name,
             appVersionId: newAppVersionId,
+            co_relation_id: folder.id,
           });
           const savedFolder = await manager.save(DataQueryFolder, newFolder);
           savedId = savedFolder.id;
@@ -1758,6 +1758,7 @@ export class AppImportExportService {
           childId: newChildId,
           childType: mapping.childType,
           index: mapping.index,
+          co_relation_id: mapping.id,
         });
         await manager.save(DataQueryFolderMapping, newMapping);
       }
