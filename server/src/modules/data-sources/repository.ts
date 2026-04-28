@@ -19,7 +19,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
     organizationId: string,
     queryVars: GetQueryVariables
   ): Promise<DataSource[]> {
-    const { appVersionId, environmentId, types, branchId } = queryVars;
+    const { environmentId, types, branchId } = queryVars;
+    // appVersionId removed from queryVars: released versions now use is_default DSV
     // Data source options are attached only if selectedEnvironmentId is passed
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
@@ -93,31 +94,14 @@ export class DataSourcesRepository extends Repository<DataSource> {
         );
         query.addSelect(['dsv.id', 'dsv.name']);
       } else if (environmentId) {
-        // Join through data_source_versions → data_source_version_options
-        // Prefer version-specific DSV (by appVersionId), fall back to default DSV
-        if (appVersionId) {
-          query.leftJoin(
-            'data_source_versions',
-            'dsv',
-            `dsv.data_source_id = data_source.id AND (
-              dsv.app_version_id = :appVersionId
-              OR (
-                dsv.is_default = true
-                AND NOT EXISTS (
-                  SELECT 1 FROM data_source_versions dsv2
-                  WHERE dsv2.data_source_id = data_source.id AND dsv2.app_version_id = :appVersionId
-                )
-              )
-            )`,
-            { appVersionId }
-          );
-        } else {
-          query.leftJoin(
-            'data_source_versions',
-            'dsv',
-            'dsv.data_source_id = data_source.id AND dsv.is_default = true'
-          );
-        }
+        // Released versions now read from the main-branch default DSV (is_default = true).
+        // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
+        // if (appVersionId) { ... dsv.app_version_id = :appVersionId ... }
+        query.leftJoin(
+          'data_source_versions',
+          'dsv',
+          'dsv.data_source_id = data_source.id AND dsv.is_default = true'
+        );
         query.leftJoin(
           'data_source_version_options',
           'dsvo',
@@ -140,10 +124,11 @@ export class DataSourcesRepository extends Repository<DataSource> {
                   ...dataSourcePermissions.configurableDataSourceId,
                 ],
               });
-              if (appVersionId) {
-                query.leftJoin('data_source.dataQueries', 'data_queries');
-                qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
-              }
+              // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
+              // if (appVersionId) {
+              //   query.leftJoin('data_source.dataQueries', 'data_queries');
+              //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+              // }
             })
           );
         }

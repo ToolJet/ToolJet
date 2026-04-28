@@ -16,6 +16,7 @@ import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -291,7 +292,16 @@ export default function AppCard({
                     canDeleteApp={canDeleteApp(app)}
                     canUpdateApp={canUpdateApp(app)}
                     deleteApp={() => deleteApp(app)}
-                    exportApp={() => exportApp(app)}
+                    exportApp={() => {
+                      if (isStub) {
+                        toast.error(
+                          'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                          { position: 'top-center' }
+                        );
+                        return;
+                      }
+                      exportApp(app);
+                    }}
                     isMenuOpen={setMenuOpen}
                     popoverVisible={popoverVisible}
                     setMenuOpen={setMenuOpen}

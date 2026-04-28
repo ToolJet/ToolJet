@@ -1,7 +1,13 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import { getActiveBranch, setActiveBranch, cleanupStaleBranchKeys } from '@/_helpers/active-branch';
+import {
+  getActiveBranch,
+  setActiveBranch,
+  cleanupStaleBranchKeys,
+  registerBranchFocusSync,
+  unregisterBranchFocusSync,
+} from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -48,17 +54,18 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
-            // Prefer localStorage branch over server-returned activeBranchId
+            // Prefer sessionStorage branch over server-returned activeBranchId
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
-            // Persist resolved branch to localStorage
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,
@@ -76,7 +83,7 @@ export const useWorkspaceBranchesStore = create(
           try {
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
-            // Prefer localStorage branch over server default
+            // Prefer sessionStorage branch over server default
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
@@ -150,6 +157,7 @@ export const useWorkspaceBranchesStore = create(
         },
 
         reset() {
+          unregisterBranchFocusSync();
           set(initialState);
         },
 
@@ -167,10 +175,12 @@ export const useWorkspaceBranchesStore = create(
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,

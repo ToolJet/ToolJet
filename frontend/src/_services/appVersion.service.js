@@ -5,6 +5,7 @@ export const appVersionService = {
   getAll,
   getOne,
   getAppVersionData,
+  getModuleVersionData,
   create,
   del,
   save,
@@ -44,6 +45,14 @@ function getAppVersionData(appId, versionId, mode) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
     handleResponse
   );
+}
+
+function getModuleVersionData(coRelationId, versionName, mode) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/versions/by-name/${versionName}?mode=${mode}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {

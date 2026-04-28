@@ -9,8 +9,42 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
+import { appsService } from '@/_services';
 
 const BUFFER_OFFSET = 15;
+
+/**
+ * Fetch every module in the workspace scoped to the active branch (header injected
+ * by authHeader). Used to refresh the modules store after hydrating a stub on drop
+ * so that module_container / input_items / defaultSize reflect real data instead
+ * of an empty stub placeholder.
+ */
+const fetchAllModulesPaged = async () => {
+  const all = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  while (currentPage <= totalPages) {
+    const data = await appsService.getAll(currentPage, '', '', 'module');
+    all.push(...(data?.apps || []));
+    const pageCount = Number(data?.meta?.total_pages);
+    totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+    currentPage += 1;
+  }
+  return all;
+};
+
+/**
+ * Mirror ModuleManager's version-priority so both surfaces reference the same
+ * version after hydration: prefer a promoted main-branch version, fall back to
+ * any main-branch version, then to the first returned version.
+ */
+const pickDefaultVersion = (appVersions = []) => {
+  return (
+    appVersions.find((v) => v.version_type === 'version' && !v.branch_id && v.status !== 'DRAFT') ??
+    appVersions.find((v) => v.version_type === 'version' && !v.branch_id) ??
+    appVersions[0]
+  );
+};
 
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
@@ -21,6 +55,7 @@ export const useCanvasDropHandler = () => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+  const setModulesList = useStore((state) => state.setModulesList, shallow) || noop;
 
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
@@ -50,12 +85,55 @@ export const useCanvasDropHandler = () => {
     setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
     setRightSidebarOpen(true);
 
-    const moduleInfo = component?.moduleId
+    // If the dragged module is a git-pulled stub (no real version imported yet),
+    // hydrate it server-side BEFORE building moduleInfo. Otherwise the stub's
+    // UUID version name would be persisted into properties.moduleVersionId.value
+    // and the by-correlation/by-name endpoint would fail on any workspace that
+    // later pulls the parent app. GET /apps/:id with the active branchId header
+    // triggers AppsService.getOne → hydrateStubApp server-side. After hydration
+    // we re-fetch the modules list so module_container / input_items are real.
+    let dropComponent = component;
+    if (dropComponent?.moduleId && dropComponent?.isStub && dropComponent?.appId) {
+      const toastId = toast.loading('Loading module from git…');
+      try {
+        await appsService.getApp(dropComponent.appId);
+        const refreshed = await fetchAllModulesPaged();
+        setModulesList(refreshed);
+        const hydrated = refreshed.find((m) => m.id === dropComponent.appId);
+        if (!hydrated) {
+          toast.error('Module could not be hydrated', { id: toastId });
+          return;
+        }
+        const hydratedVersion = pickDefaultVersion(hydrated.app_versions);
+        if (!hydratedVersion || hydratedVersion.is_stub) {
+          toast.error('Module is still not ready. Please try again.', { id: toastId });
+          return;
+        }
+        dropComponent = {
+          ...dropComponent,
+          isStub: false,
+          versionId: hydratedVersion.name,
+          environmentId: hydratedVersion.current_environment_id,
+          moduleContainer: hydrated.module_container,
+          defaultSize: {
+            width: hydrated.module_container?.layouts?.[currentLayout]?.width ?? dropComponent.defaultSize?.width,
+            height: hydrated.module_container?.layouts?.[currentLayout]?.height ?? dropComponent.defaultSize?.height,
+          },
+        };
+        toast.dismiss(toastId);
+      } catch (err) {
+        console.error('[useCanvasDropHandler] hydrate module failed', err);
+        toast.error('Failed to load module from git', { id: toastId });
+        return;
+      }
+    }
+
+    const moduleInfo = dropComponent?.moduleId
       ? {
-          moduleId: component.moduleId,
-          versionId: component.versionId,
-          moduleName: component.displayName,
-          moduleContainer: component.moduleContainer,
+          moduleId: dropComponent.moduleId,
+          versionId: dropComponent.versionId,
+          moduleName: dropComponent.displayName,
+          moduleContainer: dropComponent.moduleContainer,
         }
       : undefined;
 

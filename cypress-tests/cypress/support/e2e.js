@@ -28,6 +28,8 @@ import '../commands/platform/platformApiCommands';
 import '../commands/marketplace/marketplaceAPICommands';
 import '../commands/marketplace/marketplaceCommands';
 
+import '../commands/gitSyncCommands';
+
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
