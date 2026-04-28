@@ -32,16 +32,24 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
     await queryRunner.query(`
       ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS module_reference_id uuid;
     `);
+    // Partial index — only module versions ever have non-NULL module_reference_id,
+    // so we skip the dead non-module rows entirely.
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS idx_app_versions_module_ref_branch
-        ON app_versions (module_reference_id, branch_id);
+        ON app_versions (module_reference_id, branch_id)
+        WHERE module_reference_id IS NOT NULL;
     `);
 
-    // Backfill: every existing row gets a fresh UUID.
+    // Backfill: only module-type versions get a UUID. Non-module versions never
+    // need module_reference_id — the resolver only queries it for module apps,
+    // so populating others would be dead data.
     await queryRunner.query(`
-      UPDATE app_versions
+      UPDATE app_versions av
       SET module_reference_id = gen_random_uuid()
-      WHERE module_reference_id IS NULL;
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type = 'module'
+        AND av.module_reference_id IS NULL;
     `);
 
     // Update moduleVersionId.value from DB UUID → module_reference_id so GitSync

@@ -719,6 +719,8 @@ export class AppImportExportService {
       });
       const alreadyOnBranch = new Set(existingRows.map((r) => r.appId));
 
+      // moduleAppIdsForStub holds module app ids only — moduleReferenceId is safe
+      // to set unconditionally here.
       for (const appId of uniqueAppIds) {
         if (alreadyOnBranch.has(appId)) continue;
         const stub = manager.create(AppVersion, {
@@ -2867,8 +2869,10 @@ export class AppImportExportService {
           co_relation_id: appVersion.id || null,
           branchId: isWorkflow ? null : branchId,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
-          // Generate fresh for legacy payloads predating the column.
-          moduleReferenceId: appVersion.moduleReferenceId || uuid(),
+          // Generate fresh for legacy payloads predating the column. Module-only.
+          ...(importedApp.type === APP_TYPES.MODULE && {
+            moduleReferenceId: appVersion.moduleReferenceId || uuid(),
+          }),
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -3081,7 +3085,7 @@ export class AppImportExportService {
       currentEnvironmentId,
       createdAt: new Date(),
       updatedAt: new Date(),
-      moduleReferenceId: uuid(),
+      ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
     });
     await manager.save(version);
 

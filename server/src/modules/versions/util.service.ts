@@ -21,6 +21,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -201,7 +202,7 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
-          moduleReferenceId: uuid(),
+          ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
         })
       );
