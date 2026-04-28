@@ -36,7 +36,6 @@ export interface IAppEnvironmentUtilService {
     organizationId: string,
     environmentId?: string,
     branchId?: string
-    // appVersionId removed: released versions now use is_default DSV
   ): Promise<DataSourceVersionOptions>;
   init(
     editorVersion: Partial<AppVersion>,

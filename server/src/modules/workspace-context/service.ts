@@ -25,7 +25,6 @@ type DataSourceVersionSummary = {
   isDefault: boolean;
   isActive: boolean;
   branchId: string | null;
-  // appVersionId removed: app_version_id dropped from data_source_versions
   createdAt: Date;
 };
 type DataSourceSummary = {
@@ -187,7 +186,6 @@ export class WorkspaceContextService {
         isDefault: v.isDefault,
         isActive: v.isActive,
         branchId: v.branchId ?? null,
-        // appVersionId removed: app_version_id dropped from data_source_versions
         createdAt: v.createdAt,
       });
       versionsByDs.set(v.dataSourceId, list);

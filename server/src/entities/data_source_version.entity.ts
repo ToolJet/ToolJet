@@ -12,7 +12,6 @@ import {
 import { DataSource } from './data_source.entity';
 import { WorkspaceBranch } from './workspace_branch.entity';
 import { DataSourceVersionOptions } from './data_source_version_options.entity';
-// import { AppVersion } from './app_version.entity'; // removed: app_version_id dropped from data_source_versions
 
 @Entity({ name: 'data_source_versions' })
 @Unique(['dataSourceId', 'branchId'])
@@ -35,8 +34,6 @@ export class DataSourceVersion {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  // @Column({ name: 'app_version_id', nullable: true })
-  // appVersionId: string; // removed: released versions now use main-branch (isDefault) DSV
 
   @Column({ name: 'meta_timestamp', type: 'numeric', precision: 15, nullable: true, default: null })
   metaTimestamp: number;
@@ -61,9 +58,6 @@ export class DataSourceVersion {
   @JoinColumn({ name: 'version_from_id' })
   versionFrom: DataSourceVersion;
 
-  // @ManyToOne(() => AppVersion, (av) => av.id, { onDelete: 'CASCADE', nullable: true })
-  // @JoinColumn({ name: 'app_version_id' })
-  // appVersion: AppVersion; // removed: app_version_id dropped from data_source_versions
 
   @ManyToOne(() => WorkspaceBranch, (wb) => wb.id, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'branch_id' })

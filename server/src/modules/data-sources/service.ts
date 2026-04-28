@@ -24,7 +24,6 @@ import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
-// import { AppVersion } from '@entities/app_version.entity'; // removed: no longer needed after dropping appVersionId DSV path
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
