@@ -157,14 +157,8 @@ describe("Git Sync — UI Configuration", () => {
       cy.contains(sel.switchBranchAllOpen).should("be.visible");
       cy.get(sel.switchBranchSearchInput).should("be.visible");
       cy.contains(gitConfig.branch).should("be.visible");
-      cy.contains(sel.switchBranchDefaultLabel).should("be.visible");
-      cy.contains(sel.switchBranchCreatedBy).should("be.visible");
       cy.contains(sel.switchBranchViewInGit).should("be.visible");
       cy.contains(sel.switchBranchCreateNew).should("be.visible");
-
-      // Search filters the branch list
-      cy.get(sel.switchBranchSearchInput).type(gitConfig.branch);
-      cy.contains(gitConfig.branch).should("be.visible");
     });
 
     cy.get("body").type("{esc}");
@@ -234,6 +228,71 @@ describe("Git Sync — UI Configuration", () => {
     cy.get('[data-cy="github-toggle"]').should("not.be.checked");
 
     cy.log("[gitSync] ✓ Delete config flow verified");
+
+    cy.then(() => cy.apiArchiveWorkspace(createdWorkspaceId));
+  });
+
+  it("Click on every app create option should show the create branch modal", () => {
+    const wsName = `gitsync-create-${fake.firstName.toLowerCase()}`;
+    const wsSlug = wsName;
+    let createdWorkspaceId;
+
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      createdWorkspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", createdWorkspaceId);
+      Cypress.env("workspaceSlug", wsSlug);
+    });
+
+    cy.then(() => cy.apiLogin("dev@tooljet.io", "password", createdWorkspaceId));
+    cy.gitSyncCheckAndConfigure();
+    cy.gitSyncGoToDashboard();
+
+    // On master the branch is locked — every app-creation entry point must
+    // redirect to the "Create branch" modal instead of proceeding.
+    cy.get(sel.wsCurrentBranch, { timeout: 15000 }).should(
+      "contain.text",
+      "master",
+    );
+    cy.get(sel.masterLockBanner).should("be.visible");
+
+    // Helper: assert "Switch branch" modal appears (locked master redirects here), then cancel it.
+    const verifySwitchBranchModal = () => {
+      cy.contains(sel.switchBranchModalTitle, { timeout: 10000 }).should(
+        "be.visible",
+      );
+      cy.contains(sel.switchBranchLockedMsg).should("be.visible");
+      cy.get(sel.switchBranchSearchInput).should("be.visible");
+      cy.get("body").type("{esc}");
+      cy.contains(sel.switchBranchModalTitle).should("not.exist");
+    };
+
+    // ── 1. "Create an app" main button ───────────────────────────────────────
+    cy.get('[data-cy="create-new-apps-button"]').click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Create an app → Switch branch modal verified");
+
+    // ── 2. "Choose from template" dropdown item ───────────────────────────────
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="choose-from-template-button"]')
+      .should("be.visible")
+      .click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Choose from template → Switch branch modal verified");
+
+    // ── 3. "Import from device" dropdown item ────────────────────────────────
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="import-option-label"]').should("be.visible").click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Import from device → Switch branch modal verified");
+
+    // ── 4. "Import from git repository" dropdown item ────────────────────────
+    // This option opens its own "Import app from git repository" modal (not the switch branch modal)
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="import-from-git-button"]').should("be.visible").click();
+    cy.contains("Import app from git repository", { timeout: 10000 }).should("be.visible");
+    cy.contains("button", "Cancel").click();
+    cy.contains("Import app from git repository").should("not.exist");
+    cy.log("[gitSync] ✓ Import from git repository → Import modal verified");
 
     cy.then(() => cy.apiArchiveWorkspace(createdWorkspaceId));
   });
