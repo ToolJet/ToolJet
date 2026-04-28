@@ -361,6 +361,16 @@ export const createGridSlice = (set, get) => ({
         return accumulator;
       }, {});
 
+      // Per-sibling collapseWhenHidden flag. Used by buildReflowPatch to gate
+      // the placeholder-height correction in canonicalGap math — only widgets
+      // that opted into collapse-on-hide can have been authored against the
+      // HIDDEN_COMPONENT_HEIGHT placeholder, so the correction is scoped here.
+      const collapseWhenHiddenMap = siblingIds.reduce((accumulator, siblingId) => {
+        const siblingResolved = getResolvedComponent(siblingId, contextIndices);
+        accumulator[siblingId] = siblingResolved?.properties?.collapseWhenHidden === true;
+        return accumulator;
+      }, {});
+
       // resolvedHeights[sibling] = the sibling's CURRENT height. Prefer any
       // existing temp-layout height (siblings that previously grew via their
       // own dynamic-height pass), so a reflow triggered by a different widget
@@ -398,6 +408,7 @@ export const createGridSlice = (set, get) => ({
         contextIndices,
         inFlowMap,
         resolvedHeights,
+        collapseWhenHiddenMap,
       });
 
       if (Object.keys(temporaryLayoutPatch).length === 0) {

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useListItemManager } from '../../shared/hooks';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { DEFAULT_SELECT_COLUMN_OPTIONS } from '../utils';
 
 /**
  * Hook for managing Table columns
@@ -18,18 +19,28 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
   }, []);
 
   // Handle column-specific property changes
-  const handlePropertyChange = useCallback((column, property, value) => {
+  const handlePropertyChange = (column, property, value) => {
     let modifiedColumn = { ...column };
-
-    // Handle select/multiselect default options
-    if (property === 'columnType' && (value === 'select' || value === 'newMultiSelect')) {
+    // Handle select/multiselect/tags — seed defaults like datepicker init
+    if (property === 'columnType' && (value === 'select' || value === 'newMultiSelect' || value === 'tagsV2')) {
       if (modifiedColumn.options?.length > 0) {
         modifiedColumn.options = modifiedColumn.options.map((opt) => {
           const { makeDefaultOption, ...rest } = opt;
           return rest;
         });
+      } else {
+        modifiedColumn.options = DEFAULT_SELECT_COLUMN_OPTIONS.map((opt) => ({ ...opt }));
       }
       modifiedColumn.defaultOptionsList = [];
+    }
+
+    if (property === 'columnType' && value === 'tagsV2') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        sortTags: 'none',
+        allowMultipleSelection: true,
+        autoAssignColors: true,
+      };
     }
 
     // Handle datepicker initialization
@@ -49,12 +60,13 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         ...modifiedColumn,
         columnVisibility: true,
         horizontalAlignment: 'left',
+        pinPosition: modifiedColumn.pinPosition ?? 'unpinned',
         buttons: [],
       };
     }
 
     return modifiedColumn;
-  }, []);
+  }
 
   // Handle column removal (deletion history + event cleanup)
   const handleRemove = useCallback(
@@ -97,6 +109,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       namePrefix: 'new_column',
       defaultItemProps: {
         includeKey: true,
+        pinPosition: 'unpinned',
       },
       onPropertyChange: handlePropertyChange,
       onRemove: handleRemove,
