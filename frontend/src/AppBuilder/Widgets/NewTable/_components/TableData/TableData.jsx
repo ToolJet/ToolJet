@@ -226,6 +226,7 @@ export const TableData = ({
                 rowStyles={rowStyles}
                 measureElement={rowVirtualizer.measureElement}
                 componentName={componentName}
+                table={table}
               />
             );
           })}

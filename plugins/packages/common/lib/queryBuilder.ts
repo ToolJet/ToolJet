@@ -441,7 +441,7 @@ export class QueryBuilder {
     const { schema, primary_key_columns: rawPrimaryKeyColumns, columns } = upsertRowsData;
     const primary_key_columns = this._normalizePrimaryKey(rawPrimaryKeyColumns);
 
-    if (primary_key_columns.length === 0) {
+    if (primary_key_columns.length === 0 && !(this._dialect instanceof MSSQLDialect)) {
       throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
@@ -671,7 +671,7 @@ export class QueryBuilder {
 
     const { schema, primary_key: rawPrimaryKey, row_upsert } = bulkUpsert;
     const primary_key = this._normalizePrimaryKey(rawPrimaryKey);
-    if (primary_key.length === 0) {
+    if (primary_key.length === 0 && !(this._dialect instanceof MSSQLDialect)) {
       throw new QueryBuilderError('Bulk upsert requires at least one primary key column', {
         operation: 'bulk_upsert_with_primary_key',
       });
@@ -685,8 +685,18 @@ export class QueryBuilder {
     const primaryKeySet = new Set(primary_key);
     const table = this._buildTableRef(tableName, schema);
 
-    const queries = row_upsert.map((row) => {
+    const queries = row_upsert.map((row, rowIndex) => {
       this._reset();
+
+      if (!(this._dialect instanceof MSSQLDialect)) {
+        for (const primaryKey of primary_key) {
+          if (!(primaryKey in row)) {
+            throw new QueryBuilderError(`Row ${rowIndex + 1} is missing primary key column "${primaryKey}"`, {
+              operation: 'bulk_upsert_with_primary_key',
+            });
+          }
+        }
+      }
 
       const allCols = Object.keys(row);
       const updateCols = allCols.filter((col) => !primaryKeySet.has(col));
@@ -793,25 +803,69 @@ export class QueryBuilder {
     updateCols: string[],
     row: Record<string, unknown>
   ): QueryResult {
-    const quotedCols = allCols.map((c) => this._dialect.quote(c));
-    const placeholders = allCols.map((col) => this._addParam(row[col]));
-    const onClause = primaryKey
-      .map((pk) => `[_target].${this._dialect.quote(pk)} = [_source].${this._dialect.quote(pk)}`)
-      .join(' AND ');
+    const pkSet = new Set(primaryKey);
 
-    let query = `MERGE INTO ${table} WITH (HOLDLOCK) AS [_target]`;
-    query += ` USING (VALUES (${placeholders.join(', ')})) AS [_source] (${quotedCols.join(', ')})`;
-    query += ` ON ${onClause}`;
-
-    if (updateCols.length > 0) {
-      const setClauses = updateCols.map(
-        (col) => `[_target].${this._dialect.quote(col)} = [_source].${this._dialect.quote(col)}`
-      );
-      query += ` WHEN MATCHED THEN UPDATE SET ${setClauses.join(', ')}`;
+    // ── 1. No PK columns defined → plain INSERT (DB assigns PK via IDENTITY) ──
+    if (primaryKey.length === 0) {
+      const quotedCols = allCols.map((c) => this._dialect.quote(c));
+      const placeholders = allCols.map((col) => this._addParam(row[col]));
+      return {
+        query: `INSERT INTO ${table} (${quotedCols.join(', ')}) VALUES (${placeholders.join(', ')})`,
+        params: [...this._params],
+      };
     }
 
-    const insertValues = allCols.map((c) => `[_source].${this._dialect.quote(c)}`).join(', ');
-    query += ` WHEN NOT MATCHED THEN INSERT (${quotedCols.join(', ')}) VALUES (${insertValues});`;
+    // ── 2. All PK values absent/null → IDENTITY auto-gen → INSERT without PK ─
+    const allPkEmpty = primaryKey.every((pk) => {
+      const val = row[pk];
+      return val === null || val === undefined || val === '';
+    });
+
+    if (allPkEmpty) {
+      const insertCols = allCols.filter((col) => !pkSet.has(col));
+      if (insertCols.length === 0) {
+        return { query: `INSERT INTO ${table} DEFAULT VALUES`, params: [] };
+      }
+      const quotedCols = insertCols.map((c) => this._dialect.quote(c));
+      const placeholders = insertCols.map((col) => this._addParam(row[col]));
+      return {
+        query: `INSERT INTO ${table} (${quotedCols.join(', ')}) VALUES (${placeholders.join(', ')})`,
+        params: [...this._params],
+      };
+    }
+
+    // ── 3. PK values provided → IF EXISTS ... UPDATE ... ELSE ... INSERT ─────
+    // Using IF EXISTS instead of MERGE avoids IDENTITY-column restrictions and
+    // the well-known MSSQL MERGE concurrency edge-cases.
+    // OUTPUT INSERTED.* is embedded directly in each branch so the caller's
+    // injectMssqlOutput() step is bypassed for this query shape.
+    const existsWhere = primaryKey.map((pk) => `${this._dialect.quote(pk)} = ${this._addParam(row[pk])}`).join(' AND ');
+
+    if (updateCols.length > 0) {
+      const setClauses = updateCols.map((col) => `${this._dialect.quote(col)} = ${this._addParam(row[col])}`);
+      const updateWhere = primaryKey
+        .map((pk) => `${this._dialect.quote(pk)} = ${this._addParam(row[pk])}`)
+        .join(' AND ');
+      const insertQuoted = allCols.map((c) => this._dialect.quote(c));
+      const insertPlaceholders = allCols.map((col) => this._addParam(row[col]));
+
+      const query =
+        `IF EXISTS (SELECT 1 FROM ${table} WHERE ${existsWhere})` +
+        ` UPDATE ${table} SET ${setClauses.join(', ')} OUTPUT INSERTED.* WHERE ${updateWhere}` +
+        ` ELSE INSERT INTO ${table} (${insertQuoted.join(', ')}) OUTPUT INSERTED.* VALUES (${insertPlaceholders.join(
+          ', '
+        )})`;
+
+      return { query, params: [...this._params] };
+    }
+
+    // Only PK columns present, nothing to update → INSERT if not exists
+    const insertQuoted = allCols.map((c) => this._dialect.quote(c));
+    const insertPlaceholders = allCols.map((col) => this._addParam(row[col]));
+
+    const query =
+      `IF NOT EXISTS (SELECT 1 FROM ${table} WHERE ${existsWhere})` +
+      ` INSERT INTO ${table} (${insertQuoted.join(', ')}) OUTPUT INSERTED.* VALUES (${insertPlaceholders.join(', ')})`;
 
     return { query, params: [...this._params] };
   }
