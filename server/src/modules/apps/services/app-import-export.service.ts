@@ -1089,7 +1089,7 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       createNewVersion,
       branchId,
-      isGitApp || cloning
+      isGitApp || cloning || !!branchId
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2610,12 +2610,14 @@ export class AppImportExportService {
     // Only applies to git-sync or clone operations — plain imports always use VERSION type
     // so versions remain visible in the version manager UI.
     let isSubBranch = false;
+    let targetBranchName: string | null = null;
     if (branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
-        select: ['id', 'isDefault'],
+        select: ['id', 'isDefault', 'name'],
       });
       isSubBranch = !!targetBranch && !targetBranch.isDefault;
+      if (isSubBranch) targetBranchName = targetBranch.name;
     }
 
     // Find the latest draft version
@@ -2677,10 +2679,11 @@ export class AppImportExportService {
           versionStatus = appVersion.status || AppVersionStatus.DRAFT;
         }
 
+        const isLastVersion = appVersion === appVersions[appVersions.length - 1];
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
-          name: appVersion.name,
+          name: isSubBranch && isLastVersion && targetBranchName ? targetBranchName : appVersion.name,
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
