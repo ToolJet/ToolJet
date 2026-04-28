@@ -48,10 +48,19 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
-  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
-  const parentId = componentDefinition?.component?.parent;
-  const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
-  const baseCustomVariables = customResolvables?.[parentId]?.[0] || {};
+  const baseCustomVariables = useStore((state) => {
+    if (!componentId) return {};
+    const componentDef = state.getComponentDefinition(componentId, moduleId);
+    const parentId = componentDef?.component?.parent;
+    if (!parentId) return {};
+    // Walk up the ancestor chain to find the nearest ListView/Kanban, since
+    // customResolvables is keyed by the subcontainer's UUID — not by intermediate
+    // containers (e.g., text → Container → ListView needs to find the ListView).
+    const nearestAncestorId = state.findNearestSubcontainerAncestor(parentId, moduleId);
+    if (!nearestAncestorId) return {};
+    const customResolvables = state.resolvedStore.modules[moduleId]?.customResolvables || {};
+    return customResolvables[nearestAncestorId]?.[0] || {};
+  }, shallow);
 
   // Table column context: inject cellValue/rowData for preview resolution
   const tableColumnContext = useContext(TableColumnContext);
