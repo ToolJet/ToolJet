@@ -1,4 +1,5 @@
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { NestFactory } from '@nestjs/core';
 import { MigrationProgress } from '@helpers/migration.helper';
 import { AppModule } from '@modules/app/module';
@@ -207,6 +208,10 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
       parentVersionId: sourceVersion.id,
       currentEnvironmentId: devEnv?.id ?? sourceVersion.currentEnvironmentId,
       isStub: false,
+      // Module-only migration (caller filters type=='module'); stamp a fresh
+      // module_reference_id so pinning + cross-instance resolve work for these
+      // seeded branch-versions. setupNewVersion below just saves the entity as-is.
+      moduleReferenceId: randomUUID(),
     });
 
     await versionsCreate.setupNewVersion(newVersion, sourceVersion, organizationId, em);
