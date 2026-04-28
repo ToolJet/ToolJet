@@ -168,7 +168,7 @@ export default class Bigquery implements QueryService {
     if (currentUserToken && currentUserToken['refresh_token']) {
       refreshToken = currentUserToken['refresh_token'];
     } else {
-      throw new QueryError(
+      throw new OAuthUnauthorizedClientError(
         'could not connect to BigQuery',
         'Refresh token not found. Please re-authenticate to continue.',
         {}
@@ -298,7 +298,7 @@ export default class Bigquery implements QueryService {
     if (isMultiAuthEnabled) {
       const userToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
       if (!userToken) {
-        throw new QueryError(
+        throw new OAuthUnauthorizedClientError(
           'Authentication required',
           'Access token not found for current user. Please authenticate via OAuth first.',
           {}
@@ -312,7 +312,7 @@ export default class Bigquery implements QueryService {
     }
 
     if (!accessToken) {
-      throw new QueryError(
+      throw new OAuthUnauthorizedClientError(
         'Authentication required',
         'BigQuery access token not found. Please authenticate first.',
         {}
