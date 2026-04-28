@@ -14,6 +14,7 @@ import {
   ComboboxSeparator,
 } from './Combobox';
 import { Field, FieldLabel, FieldDescription, FieldError } from '../Field/Field';
+import { TruncatingText } from '../TruncatingText/TruncatingText';
 import { ChevronDown } from 'lucide-react';
 
 const frameworks = ['React', 'Vue', 'Angular', 'Svelte', 'Solid', 'Qwik'];
@@ -408,5 +409,102 @@ export const AllStates = {
       </div>
     );
   },
+  parameters: { layout: 'padded' },
+};
+
+// ── Long Option Names — opt-in TruncatingText pattern ────────────────────
+//
+// Documents the "Truncating long values" pattern from Combobox.spec.md.
+//
+// Each row's label is wrapped in TruncatingText. When the row label
+// overflows the dropdown width, TruncatingText sets the native `title`
+// attribute and the OS tooltip appears on hover after ~500ms. Short rows
+// show no tooltip.
+//
+// The selected-value-in-input case is intentionally not covered here —
+// inputs scroll horizontally instead of clipping with ellipsis, so they
+// need a different mechanism (tracked separately).
+
+const longQueries = [
+  'getProducts',
+  'getProductsByCategory',
+  'getProductsThatIsReallyLongToFitInaDropdownAndWillDefinitelyOverflow',
+  'getOrders',
+  'updateUserShippingAddressForCheckoutFlowWithLongName',
+];
+
+export const LongOptionNames = {
+  render: () => (
+    <div className="tw-w-[240px] tw-p-4">
+      <Combobox items={longQueries}>
+        <ComboboxInput placeholder="Search query..." />
+        <ComboboxContent>
+          <ComboboxList>
+            {(item) => (
+              <ComboboxItem key={item} value={item}>
+                <TruncatingText>{item}</TruncatingText>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+          <ComboboxEmpty>No results found.</ComboboxEmpty>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Bounded inside a host (consumer-side pattern) ────────────────────────
+//
+// Pattern for narrow hosts (e.g. an inspector panel) where:
+//   - the trigger is smaller than the host
+//   - the trigger is right-aligned within the host
+//   - the dropdown should grow to fit long row labels but stay inside the host
+//
+// No Rocket changes needed — just three things at the consumer site:
+//   1. `align="end"` on ComboboxContent — anchors the popover's right edge to
+//      the trigger's right edge, so it grows leftward as it expands.
+//   2. `!tw-w-max` — overrides shadcn's default `w-[var(--anchor-width)]` so
+//      the popover sizes to its longest row instead of matching trigger width.
+//      (`tw-w-max` is the Tailwind utility for `width: max-content`.)
+//   3. `!tw-max-w-[<inner-width>px]` — caps the popover at the host's INNER
+//      content width (outer width minus padding), so the popover's left edge
+//      stops at the same boundary as the trigger area.
+//
+// The `!` (Tailwind important prefix) is needed because shadcn already sets
+// `tw-w-[var(--anchor-width)]` and `tw-max-w-[var(--available-width)]` on the
+// Popup element with normal specificity — overriding those requires `!`.
+//
+// Mirrors the Inspector panel layout: 300px outer host with 12px padding, so
+// inner usable width is 276px. The 160px trigger is right-aligned within the
+// 276px inner area. Cap is 276px so the popover, growing leftward via
+// `align="end"`, never extends past the inner left edge.
+
+export const BoundedInHost = {
+  render: () => (
+    <div className="tw-w-[300px] tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-p-3">
+      <div className="tw-mb-2 tw-text-xs tw-text-text-placeholder">
+        300px outer • 12px padding • 276px inner • 160px right-aligned trigger
+      </div>
+      <div className="tw-flex tw-h-8 tw-items-center tw-justify-between">
+        <span className="tw-text-sm tw-text-text-default">Query</span>
+        <div className="tw-w-[160px]">
+          <Combobox items={longQueries}>
+            <ComboboxInput placeholder="Pick query..." />
+            <ComboboxContent align="end" className="!tw-w-max !tw-max-w-[276px]">
+              <ComboboxList>
+                {(item) => (
+                  <ComboboxItem key={item} value={item}>
+                    {item}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+              <ComboboxEmpty>No results.</ComboboxEmpty>
+            </ComboboxContent>
+          </Combobox>
+        </div>
+      </div>
+    </div>
+  ),
   parameters: { layout: 'padded' },
 };

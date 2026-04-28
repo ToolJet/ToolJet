@@ -38,6 +38,13 @@ export const modalV2Config = {
         defaultValue: true,
       },
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledTrigger: {
       type: 'toggle',
       displayName: 'Disable modal trigger',
@@ -399,6 +406,8 @@ export const modalV2Config = {
       loadingState: { value: `{{false}}` },
       dynamicHeight: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },
