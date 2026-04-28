@@ -18,6 +18,7 @@ import {
   ComboboxGroup,
   ComboboxCollection,
 } from '@/components/ui/Rocket/shadcn/combobox';
+import { useInputOverflowTitle } from '@/components/ui/Rocket/TruncatingText/useInputOverflowTitle';
 
 // ── Anchor context ────────────────────────────────────────────────────────
 // Base UI Positioner anchors to the Trigger (chevron button, ~28px).
@@ -47,6 +48,11 @@ const comboboxInputVariants = cva(
     // ── Text (descendant selectors into inner <input>) ───────────────────
     '[&_input]:tw-text-text-default',
     '[&_input]:placeholder:tw-text-text-placeholder',
+    // Show ellipsis on overflowing input text. Visible only when the input
+    // is blurred — focused inputs scroll horizontally per browser default.
+    // Hover-tooltip via `title` attribute is tracked separately as a
+    // follow-up (input-overflow detection hook).
+    '[&_input]:tw-truncate',
 
     // ── Chevron icon colour + rotation animation ─────────────────────────
     '[&_[data-slot=combobox-trigger-icon]]:tw-text-icon-default',
@@ -93,6 +99,11 @@ const ComboboxInput = forwardRef(function ComboboxInput(
   ref
 ) {
   const anchorRef = useContext(ComboboxAnchorContext);
+
+  // Show full input value as a native browser tooltip when it overflows.
+  // Pairs with the `[&_input]:tw-truncate` ellipsis above — without this hook,
+  // long values clip silently with no way to read them.
+  useInputOverflowTitle(anchorRef);
 
   const handleClick = (e) => {
     // Don't steal focus from button clicks (trigger, clear)

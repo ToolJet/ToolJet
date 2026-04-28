@@ -628,6 +628,14 @@ export const createDataQuerySlice = (set, get) => ({
           });
 
           state.dataQuery.queries.modules[moduleId] = updatedQueriesValue;
+
+          const currentSelectedQueryId = state.queryPanel.selectedQuery?.id;
+          if (currentSelectedQueryId && queriesToUpdate.has(currentSelectedQueryId)) {
+            const updatedSelectedQuery = updatedQueriesValue.find((q) => q.id === currentSelectedQueryId);
+            if (updatedSelectedQuery) {
+              state.queryPanel.selectedQuery = updatedSelectedQuery;
+            }
+          }
         },
         false,
         'performDeletionUpdationAndCreationOfQuery'
