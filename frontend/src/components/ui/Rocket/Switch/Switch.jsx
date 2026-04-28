@@ -29,8 +29,8 @@ const switchThumbClasses = [
   'tw-bg-switch-tab',
   'tw-shadow-elevation-100 tw-ring-0',
   'tw-transition-transform',
-  'data-[state=unchecked]:-tw-translate-x-[5px]',
-  'data-[state=checked]:tw-translate-x-[5px]',
+  'data-[state=unchecked]:-tw-translate-x-1.5',
+  'data-[state=checked]:tw-translate-x-1.5',
 ];
 
 // ── Switch ───────────────────────────────────────────────────────────────
