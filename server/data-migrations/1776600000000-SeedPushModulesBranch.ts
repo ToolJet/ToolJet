@@ -127,6 +127,15 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
     // migration's purpose (module-pin reconciliation across branches).
     const appsWithModuleViewers = await this.findAppsWithModuleViewers(em, defaultBranch.organizationId);
     for (const app of appsWithModuleViewers) {
+      // Lock the source version ONCE per app, before the per-branch loop. Without
+      // this, after iter 1 creates a BRANCH version, the per-branch helper's
+      // "latest by created_at" fallback in cloneVersionToBranch would pick up that
+      // fresh BRANCH row as the source — and its already-remapped pin (a DRAFT
+      // module_reference_id on the new branch row) would cause iter 2's remap to
+      // fall into the defensive "DRAFT → unpin" path. Net effect: only iter 1's
+      // clone keeps a correct pin; iter 2+ end up empty, and the empty value
+      // propagates to subsequent iterations as the source updates each loop.
+      const lockedSource = await this.findStableAppSource(em, app, defaultBranch.id);
       for (const targetBranch of nonDefaultBranches) {
         const newAppVersion = await this.cloneVersionToBranch(
           em,
@@ -134,13 +143,60 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
           app,
           targetBranch,
           defaultBranch.organizationId,
-          /* stampModuleReferenceId */ false
+          /* stampModuleReferenceId */ false,
+          lockedSource
         );
         if (newAppVersion) {
           await this.remapModuleViewerPins(em, newAppVersion.id, targetBranch.id, defaultBranch.organizationId);
         }
       }
     }
+  }
+
+  /**
+   * Resolve the source version to clone from, locked to a stable choice that won't
+   * shift across loop iterations even as new BRANCH rows are created.
+   *
+   * Order:
+   *   1. Default-branch VERSION-type row (status irrelevant — even DRAFT is correct)
+   *   2. App.currentVersionId, if set (normally points at the released VERSION row)
+   *   3. OLDEST version on the app — never "latest", because the loop creates new
+   *      BRANCH rows each iteration; picking "latest" would bind the next clone
+   *      to the freshly-created BRANCH row whose pin has already been mutated
+   *      by remapModuleViewerPins.
+   *
+   * Returns null if the app has no version at all (skip cloning entirely).
+   */
+  private async findStableAppSource(
+    em: EntityManager,
+    app: App,
+    defaultBranchId: string
+  ): Promise<AppVersion | null> {
+    const defaultBranchVersion = await em.findOne(AppVersion, {
+      where: {
+        appId: app.id,
+        branchId: defaultBranchId,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+      order: { createdAt: 'DESC' },
+      relations: ['dataSources'],
+    });
+    if (defaultBranchVersion) return defaultBranchVersion;
+
+    if (app.currentVersionId) {
+      const byCurrent = await em.findOne(AppVersion, {
+        where: { id: app.currentVersionId },
+        relations: ['dataSources'],
+      });
+      if (byCurrent) return byCurrent;
+    }
+
+    return em.findOne(AppVersion, {
+      where: { appId: app.id, isStub: false },
+      order: { createdAt: 'ASC' },
+      relations: ['dataSources'],
+    });
   }
 
   /**
@@ -152,6 +208,11 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
    * stampModuleReferenceId: stamp a fresh UUID on the new row's module_reference_id.
    * True for type='module' apps so cross-instance pin resolution works; false for
    * regular apps (the column only carries meaning for module versions).
+   *
+   * presetSourceVersion: when supplied, use this row as the clone source instead of
+   * resolving via currentVersionId / latest-by-created_at. Step 2 (apps loop) passes
+   * a stable, default-branch-locked source so subsequent loop iterations don't pick
+   * up the freshly-created BRANCH rows we're emitting.
    */
   private async cloneVersionToBranch(
     em: EntityManager,
@@ -159,7 +220,8 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
     sourceApp: App,
     targetBranch: WorkspaceBranch,
     organizationId: string,
-    stampModuleReferenceId: boolean
+    stampModuleReferenceId: boolean,
+    presetSourceVersion?: AppVersion | null
   ): Promise<AppVersion | null> {
     const existing = await em.findOne(AppVersion, {
       where: {
@@ -178,16 +240,18 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
       isStub: true,
     });
 
-    const sourceVersion = sourceApp.currentVersionId
-      ? await em.findOne(AppVersion, {
-          where: { id: sourceApp.currentVersionId },
-          relations: ['dataSources'],
-        })
-      : await em.findOne(AppVersion, {
-          where: { appId: sourceApp.id },
-          order: { createdAt: 'DESC' },
-          relations: ['dataSources'],
-        });
+    const sourceVersion =
+      presetSourceVersion ??
+      (sourceApp.currentVersionId
+        ? await em.findOne(AppVersion, {
+            where: { id: sourceApp.currentVersionId },
+            relations: ['dataSources'],
+          })
+        : await em.findOne(AppVersion, {
+            where: { appId: sourceApp.id },
+            order: { createdAt: 'DESC' },
+            relations: ['dataSources'],
+          }));
     if (!sourceVersion) return null;
 
     const existingWithBranchName = await em.findOne(AppVersion, {
