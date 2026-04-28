@@ -123,7 +123,8 @@ export class VersionService implements IVersionService {
     // No-op in CE, EE overrides to capture history
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
-    const result = await this.versionRepository.getVersionsInApp(app.id, branchId);
+    const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
+    const result = await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
