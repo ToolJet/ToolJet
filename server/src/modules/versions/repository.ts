@@ -8,6 +8,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, IsNull, Not, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
+import { v4 as uuid } from 'uuid';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class VersionRepository extends Repository<AppVersion> {
@@ -24,6 +26,9 @@ export class VersionRepository extends Repository<AppVersion> {
     branchId?: string
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      // moduleReferenceId is module-only; look up parent app type once and gate.
+      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type'] });
+      const isModule = parentApp?.type === APP_TYPES.MODULE;
       return catchDbException(() => {
         return manager.save(
           AppVersion,
@@ -35,6 +40,7 @@ export class VersionRepository extends Repository<AppVersion> {
             status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
+            ...(isModule && { moduleReferenceId: uuid() }),
             ...(branchId && { branchId }),
           })
         );
@@ -180,9 +186,7 @@ export class VersionRepository extends Repository<AppVersion> {
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap((manager: EntityManager) => {
-      const where = branchId
-        ? { appId, branchId, isStub: false }
-        : { appId, isStub: false };
+      const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
 
       return manager.find(AppVersion, {
         where,

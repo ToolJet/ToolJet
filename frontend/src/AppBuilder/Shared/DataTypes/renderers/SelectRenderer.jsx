@@ -9,7 +9,7 @@ import { isArray } from 'lodash';
 
 const { MenuList } = components;
 
-const COLORS = [
+export const COLORS = [
   '#40474D33',
   '#CE276133',
   '#6745E233',
@@ -144,9 +144,9 @@ const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) 
   );
 };
 
-const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
+export const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
 
-const CustomMultiValueContainer = ({ children }) => (
+export const CustomMultiValueContainer = ({ children }) => (
   <div
     style={{
       display: 'flex',
@@ -158,7 +158,7 @@ const CustomMultiValueContainer = ({ children }) => (
   </div>
 );
 
-const DropdownIndicator = ({ selectProps }) => {
+export const DropdownIndicator = ({ selectProps }) => {
   return (
     <div
       className="cell-icon-display"
@@ -188,7 +188,7 @@ const DropdownIndicator = ({ selectProps }) => {
   );
 };
 
-const getOverlay = (value, containerWidth, darkMode) => {
+export const getOverlay = (value, containerWidth, darkMode) => {
   if (!isArray(value)) return <div />;
 
   return (

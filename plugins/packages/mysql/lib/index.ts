@@ -75,6 +75,8 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
 
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;
+  // MySQL max parameter count is 65,535 per query; use 64,000 as a safe working threshold
+  private static readonly PARAM_THRESHOLD = 64_000;
   private STATEMENT_TIMEOUT;
 
   constructor() {
@@ -208,7 +210,7 @@ export default class MysqlQueryService implements QueryService {
       }
 
       case 'update_rows': {
-        const { allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { columns, where_filters } = queryOptions.update_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
         if (!hasAtLeastOneFilter) {
@@ -222,15 +224,15 @@ export default class MysqlQueryService implements QueryService {
           where_filters,
         }) as { query: string; params: unknown[] };
         const rows = await this.executeWriteQuery(knexInstance, query, params, selectQuery, selectParams, {
-          allow_multiple_updates,
-          zero_records_as_success,
+          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+          zero_records_as_success: this._normalizeBool(zero_records_as_success),
           operationLabel: 'updated',
         });
         return { status: 'ok', data: rows };
       }
 
       case 'upsert_rows': {
-        const { primary_key_columns, allow_multiple_updates, zero_records_as_success } = queryOptions;
+        const { primary_key_columns, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
         const { query, params } = queryBuilder.upsertRows(table, { primary_key_columns, columns }) as {
           query: string;
@@ -255,15 +257,15 @@ export default class MysqlQueryService implements QueryService {
           where_filters: whereFiltersForSelect,
         }) as { query: string; params: unknown[] };
         const rows = await this.executeWriteQuery(knexInstance, query, params, selectQuery, selectParams, {
-          allow_multiple_updates,
-          zero_records_as_success,
+          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+          zero_records_as_success: this._normalizeBool(zero_records_as_success),
           operationLabel: 'upserted',
         });
         return { status: 'ok', data: rows };
       }
 
       case 'delete_rows': {
-        const { limit, zero_records_as_success } = queryOptions;
+        const { limit, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
         const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
         const hasLimit = limit != null && limit !== '';
@@ -276,43 +278,71 @@ export default class MysqlQueryService implements QueryService {
           query: string;
           params: unknown[];
         };
-        const [okPacket] = await knexInstance.raw(query, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        const deletedRecords = okPacket.affectedRows || 0;
 
-        if (zero_records_as_success === false && deletedRecords === 0) {
-          throw new Error('No rows were deleted.');
-        }
+        const normalizedAllowMultipleUpdates = this._normalizeBool(allow_multiple_updates);
+        const normalizedZeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
+
+        let deletedRecords = 0;
+
+        await knexInstance.transaction(async (transaction) => {
+          const [okPacket] = await transaction.raw(query, params as any[]);
+          deletedRecords = okPacket.affectedRows || 0;
+
+          if (normalizedAllowMultipleUpdates === false && deletedRecords > 1) {
+            throw new Error(
+              'Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.'
+            );
+          }
+
+          if (normalizedZeroRecordsAsSuccess === false && deletedRecords === 0) {
+            throw new Error('No rows were deleted.');
+          }
+        });
 
         return { status: 'ok', data: { deletedRecords } };
       }
 
       case 'bulk_insert': {
         const { records } = queryOptions;
-        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
-          query: string;
-          params: unknown[];
-        };
-        const [okPacket] = await knexInstance.raw(query, params as any[]).timeout(this.STATEMENT_TIMEOUT);
-        return { status: 'ok', data: okPacket };
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const batchInsertQueries: { query: string; params: unknown[] }[] = recordBatches.map((batchRecords) => {
+          const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: batchRecords }) as {
+            query: string;
+            params: unknown[];
+          };
+          return { query, params };
+        });
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, batchInsertQueries);
+        return { status: 'ok', data };
       }
 
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-          primary_key: primary_key_columns,
-          rows_update: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpdateQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            rows_update: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpdateQueries.push(...queries);
+        }
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpdateQueries);
         return { status: 'ok', data, bulk_update_status: 'success' } as unknown as QueryResult;
       }
 
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
-        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-          primary_key: primary_key_columns,
-          row_upsert: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
-        const data = await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpsertQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            row_upsert: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpsertQueries.push(...queries);
+        }
+        const data = await this.executeBulkQueriesInTransaction(knexInstance, allUpsertQueries);
         return { status: 'ok', data, bulk_upsert_status: 'success' } as unknown as QueryResult;
       }
 
@@ -419,6 +449,30 @@ export default class MysqlQueryService implements QueryService {
       }
     });
     return allResults;
+  }
+
+  private _normalizeBool(value: unknown): boolean | undefined {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return undefined;
+  }
+
+  private computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const SAMPLE_SIZE = 500;
+    const sample =
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+    const numberOfColumns = Math.max(...sample.map((record) => Object.keys(record).length));
+    if (numberOfColumns === 0) return 1000;
+    return Math.max(1, Math.floor(MysqlQueryService.PARAM_THRESHOLD / numberOfColumns));
+  }
+
+  private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
+    const batches: RecordType[][] = [];
+    for (let startIndex = 0; startIndex < records.length; startIndex += batchSize) {
+      batches.push(records.slice(startIndex, startIndex + batchSize));
+    }
+    return batches;
   }
 
   private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {

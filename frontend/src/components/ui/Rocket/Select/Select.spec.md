@@ -44,7 +44,7 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 | border | hover | `--border-strong` | `hover:tw-border-border-strong` |
 | text | default | `--text-default` | `tw-text-text-default` |
 | placeholder | default | `--text-placeholder` | `data-[placeholder]:tw-text-text-placeholder` |
-| shadow | default | `--elevation-000` | `tw-shadow-elevation-000` |
+| shadow | default | none | `tw-shadow-none` |
 | focus ring | focus | `--interactive-focus-outline` | `focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-1` |
 | chevron icon | default | `--icon-default` | `tw-text-icon-default` |
 | border | error | `--border-danger-strong` | `aria-[invalid=true]:tw-border-border-danger-strong` |
@@ -112,3 +112,39 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 - Leading visual on trigger (icon before placeholder) from Figma — supported via children composition inside SelectTrigger.
 - Leading/trailing visuals on items — supported via custom content inside SelectItem children.
 - Disabled state uses `--background-surface-layer-02` bg token (consistent with Input).
+
+## Truncating long values (opt-in pattern)
+
+Select itself does not auto-truncate selected values or option rows. Long content already clips visually because shadcn's `SelectTrigger` carries `[&>span]:tw-line-clamp-1` on direct child spans. To get a hover tooltip showing the full string, opt in by composing with [`TruncatingText`](../TruncatingText/TruncatingText.spec.md). TruncatingText uses the browser's native `title` attribute, so no provider or extra wiring is needed.
+
+### Selected value (in the trigger)
+
+The shadcn line-clamp targets the trigger's direct child spans. Wrap inside a `<div>` to take that selector out of the picture, then apply `TruncatingText`. The selected value text is rendered by Radix from context, so pass it explicitly via the `title` prop:
+
+```jsx
+<SelectTrigger>
+  <div className="tw-min-w-0 tw-flex-1">
+    <TruncatingText title={selectedLabel}>
+      <SelectValue placeholder="Select query" />
+    </TruncatingText>
+  </div>
+</SelectTrigger>
+```
+
+The div is a flex item of the trigger (which is `display: flex`); `tw-min-w-0` lets it shrink below its content width, `tw-flex-1` lets it claim the available space so the chevron sits flush right.
+
+If the consumer doesn't already track the selected label as state, pass `text={selectedLabel}` instead of children — but the SelectValue child form is the cleanest fit for most callsites because Radix handles the placeholder fallback automatically.
+
+### Option rows (in the dropdown)
+
+`SelectItem` children render as text inside `Select.ItemText`. Wrap the label children in `TruncatingText` per row — string children make auto-detection work without the manual `title` prop:
+
+```jsx
+<SelectItem value={item.value}>
+  <TruncatingText>{item.name}</TruncatingText>
+</SelectItem>
+```
+
+### Why opt-in, not built-in
+
+Truncation is a layout decision, not a primitive concern. Most callsites either size the trigger generously enough to never overflow, or actively want clipped text without a tooltip. Forcing TruncatingText into `SelectValue` would also collide with the shadcn line-clamp selector on the trigger — fixing that cleanly would require modifying the primitive itself. The opt-in pattern keeps the primitive untouched and gives consumers control where the truncation actually matters.

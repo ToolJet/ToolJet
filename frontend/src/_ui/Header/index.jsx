@@ -178,7 +178,7 @@ function Header({
                 isGitSupportedPage && (
                   <>
                     <WorkspaceBranchDropdown />
-                    <WorkspaceGitCTA />
+                    <WorkspaceGitCTA showCommit={pathname === 'Data sources'} />
                   </>
                 )}
               {Object.keys(featureAccess).length > 0 && (

@@ -47,5 +47,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_KEY_SETTINGS]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.AUTO_SORT_QUERIES]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };

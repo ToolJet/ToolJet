@@ -8,7 +8,7 @@ export interface IVersionControllerV2 {
   getModuleVersionByStableIds(
     user: UserEntity,
     coRelationId: string,
-    versionName: string,
+    ref?: string,
     mode?: string,
     branchId?: string
   ): Promise<any>;

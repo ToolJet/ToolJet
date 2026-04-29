@@ -29,28 +29,39 @@ import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
-/**
- * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
- * This will get redundanted once api response for appdata is made uniform across all the endpoints.
- **/
-export const normalizeQueryTransformationOptions = (query) => {
-  if (query?.options) {
-    if (query.options.enable_transformation) {
-      const enableTransformation = query.options.enable_transformation;
-      delete query.options.enable_transformation;
-      if (!query.options.enableTransformation) {
-        query.options.enableTransformation = enableTransformation;
-      }
-    }
+/* 
+Whitelist of cross-cutting query option keys that need snake→camel normalization.
+Editor (data-queries API) returns these as camelCase, but public/released/preview-for-version
+paths return them as snake_case. We only normalize keys here — REST/TooljetDB/gRPC editors
+rely on snake_case for their own option keys (query_timeout, retry_network_errors,
+where_filters, proto_files, etc.) and must NOT be touched.
+*/
 
-    if (query.options.transformation_language) {
-      const transformationLanguage = query.options.transformation_language;
-      delete query.options.transformation_language;
-      if (!query.options.transformationLanguage) {
-        query.options.transformationLanguage = transformationLanguage;
+const QUERY_OPTION_KEYS_TO_NORMALIZE = [
+  'enableTransformation',
+  'transformationLanguage',
+  'runOnPageLoad',
+  'runOnDependencyChange',
+  'requestConfirmation',
+  'showSuccessNotification',
+  'successMessage',
+  'notificationDuration',
+];
+
+const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
+
+export const normalizeQueryTransformationOptions = (query) => {
+  if (!query?.options) return query;
+  QUERY_OPTION_KEYS_TO_NORMALIZE.forEach((camelKey) => {
+    const snakeKey = snakeCase(camelKey);
+    if (query.options[snakeKey] !== undefined) {
+      const value = query.options[snakeKey];
+      delete query.options[snakeKey];
+      if (query.options[camelKey] === undefined) {
+        query.options[camelKey] = value;
       }
     }
-  }
+  });
   return query;
 };
 
@@ -126,6 +137,13 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+  // Subscribe to THIS module's cached definition so the child useAppData effect
+  // re-fires when the parent's pull/version-switch refreshes the cache. Without
+  // this, the effect's deps don't change on pull (versionId stays '' for unpinned)
+  // and the ModuleViewer keeps showing pre-pull content.
+  const cachedModuleDefinitionForApp = useStore((state) =>
+    moduleMode ? state?.modulesStore?.moduleDefinition?.[appId] : null
+  );
 
   const fetchAllModules = useCallback(async () => {
     const allModules = [];
@@ -283,19 +301,24 @@ const useAppData = (
         if (moduleDefinition) {
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
-        } else if (versionId) {
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         } else {
-          appDataPromise = appService.fetchApp(appId);
+          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
+          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
+        // Pinned: call the by-correlation endpoint with the module_reference_id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
+        // Unpinned: prefer the parent app's cached module definition (already loaded
+        // for the parent's branch context — matches "follow my branch" semantics).
+        // Fall back to the by-correlation endpoint with no ref → server resolver
+        // returns the latest non-stub on the consumer's branch.
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
         } else {
-          appDataPromise = appService.fetchApp(appId);
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       }
     } else {
@@ -633,7 +656,7 @@ const useAppData = (
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setApp, setEditorLoading, currentSession, mode, versionId]);
+  }, [setApp, setEditorLoading, currentSession, mode, versionId, cachedModuleDefinitionForApp]);
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
@@ -773,6 +796,13 @@ const useAppData = (
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
+
+        // Refresh the module-definition cache so unpinned ModuleViewers pick up
+        // post-pull / post-version-switch content without a full page refresh.
+        // Mirrors the initial-load population at the !moduleMode branch above.
+        if (!moduleMode && appData.modules) {
+          setModuleDefinition(appData.modules);
+        }
         // const queryData = await dataqueryService.getAll(currentVersionId);
 
         if (isEnvChanged) {
@@ -795,6 +825,11 @@ const useAppData = (
           setSecrets(orgSecrets);
         } else if (isVersionChanged) {
           // Re-fetch datasources on version/branch switch (branch may have different active datasources)
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
+        } else if (isAppHistoryChanged) {
+          // Re-fetch datasources after app-editor git pull (dummy → real DS swap, or freshly
+          // pulled DSes). Without this, queries point to new DS ids but the cached dataSources
+          // slice still has stale rows, so the query setup panel shows an empty Source.
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
