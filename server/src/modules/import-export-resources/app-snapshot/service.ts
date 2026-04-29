@@ -1,6 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { v4 as uuid } from 'uuid';
+import { App } from '@entities/app.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { DataSource } from '@entities/data_source.entity';
 import { FkReferenceMap } from './fk-reference-map';
+
+const CHILD_FOLDERS = [
+  'components',
+  'pages',
+  'queries',
+  'events',
+  'layouts',
+  'dataQueryFolders',
+  'dataQueryFolderMappings',
+] as const;
 
 /**
  * AppData = the in-memory shape used by export/import/git flows
@@ -139,9 +153,31 @@ export class AppSnapshot {
    * the resolved local id, returns the resolved tree. The caller is
    * responsible for the actual INSERT/UPDATE.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async restore(_snapshot: Snapshot, _options: RestoreOptions): Promise<AppData> {
-    throw new Error('AppSnapshot.restore not implemented yet');
+  async restore(snapshot: Snapshot, options: RestoreOptions): Promise<AppData> {
+    const { manager, context, policy } = options;
+    const result = clone(snapshot) as AppData;
+    const corToLocal = new Map<string, string>();
+
+    // Roots first: their resolved local ids feed downstream lookups (versions
+    // are app-scoped, queries reference app-scoped data sources, …).
+    await resolveAppRows(result, 'apps', manager, context.organizationId, policy.apps, corToLocal);
+    await resolveAppRows(result, 'modules', manager, context.organizationId, policy.modules, corToLocal);
+    await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
+    await resolveAppVersions(result, manager, policy.appVersions, corToLocal);
+
+    // Children always get fresh local ids in V1. Parent-scoped match-by-cor_id
+    // (so a matched app reuses its existing component rows) is a follow-up;
+    // today's import flow creates fresh children too, so this preserves parity.
+    assignFreshIdsToChildren(result, corToLocal);
+
+    // Two-step rewrite: first put the local id back on each record (and
+    // restore co_relation_id), then sweep all strings for any other UUIDs
+    // that point at a known cor_id (FK columns, embedded refs in JSON,
+    // template strings).
+    applyResolutionToRecords(result, corToLocal);
+    rewriteUuidsInAllStrings(result, corToLocal);
+
+    return result;
   }
 }
 
@@ -184,6 +220,9 @@ function rewriteUuidsInAllStrings(obj: unknown, localToCor: Map<string, string>)
   for (const key of Object.keys(record)) {
     // slug is a URL identifier, not a UUID reference — never swap it.
     if (key === 'slug') continue;
+    // co_relation_id is the portable id we just stored; rewriting it would
+    // collapse it back to the local id we're trying to associate with it.
+    if (key === 'co_relation_id') continue;
     const v = record[key];
     if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor);
     else rewriteUuidsInAllStrings(v, localToCor);
@@ -233,4 +272,138 @@ function visit(node: unknown, fn: (record: Record<string, unknown>) => void): vo
   const record = node as Record<string, unknown>;
   fn(record);
   for (const v of Object.values(record)) visit(v, fn);
+}
+
+function toArray(value: unknown): Record<string, unknown>[] {
+  if (Array.isArray(value)) return value as Record<string, unknown>[];
+  if (value && typeof value === 'object') return [value as Record<string, unknown>];
+  return [];
+}
+
+function collectCorIds(items: Record<string, unknown>[]): string[] {
+  const out: string[] = [];
+  for (const item of items) {
+    if (typeof item.id === 'string') out.push(item.id);
+  }
+  return out;
+}
+
+async function resolveAppRows(
+  tree: AppData,
+  folder: 'apps' | 'modules',
+  manager: EntityManager,
+  organizationId: string,
+  policy: Policy,
+  corToLocal: Map<string, string>,
+): Promise<void> {
+  const items = toArray(tree[folder]);
+  if (items.length === 0) return;
+
+  const corIds = collectCorIds(items);
+  const existing =
+    policy === 'matchOrCreate' && corIds.length > 0
+      ? await manager.find(App, { where: { co_relation_id: In(corIds), organizationId } })
+      : [];
+  const existingByCor = indexByCorId(existing);
+
+  for (const corId of corIds) {
+    if (corToLocal.has(corId)) continue;
+    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+  }
+}
+
+async function resolveAppVersions(
+  tree: AppData,
+  manager: EntityManager,
+  policy: Policy,
+  corToLocal: Map<string, string>,
+): Promise<void> {
+  const items = toArray(tree.versions);
+  if (items.length === 0) return;
+
+  // Versions are app-scoped (UNIQUE on (app_id, co_relation_id)), not
+  // org-scoped — so we have to translate each version's parent appId from
+  // its cor_id to the local id resolved by resolveAppRows before we can
+  // scope the lookup.
+  const localAppIds = new Set<string>();
+  for (const v of items) {
+    const appCorId = v.appId;
+    if (typeof appCorId === 'string') {
+      const localAppId = corToLocal.get(appCorId);
+      if (localAppId) localAppIds.add(localAppId);
+    }
+  }
+
+  const corIds = collectCorIds(items);
+  const existing =
+    policy === 'matchOrCreate' && corIds.length > 0 && localAppIds.size > 0
+      ? await manager.find(AppVersion, {
+          where: { co_relation_id: In(corIds), appId: In([...localAppIds]) },
+        })
+      : [];
+  const existingByCor = indexByCorId(existing);
+
+  for (const corId of corIds) {
+    if (corToLocal.has(corId)) continue;
+    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+  }
+}
+
+async function resolveDataSources(
+  tree: AppData,
+  manager: EntityManager,
+  organizationId: string,
+  policy: Policy,
+  corToLocal: Map<string, string>,
+): Promise<void> {
+  const items = toArray(tree.dataSources);
+  if (items.length === 0) return;
+
+  const corIds = collectCorIds(items);
+  const existing =
+    policy === 'matchOrCreate' && corIds.length > 0
+      ? await manager.find(DataSource, { where: { co_relation_id: In(corIds), organizationId } })
+      : [];
+  const existingByCor = indexByCorId(existing);
+
+  for (const corId of corIds) {
+    if (corToLocal.has(corId)) continue;
+    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+  }
+}
+
+function assignFreshIdsToChildren(tree: AppData, corToLocal: Map<string, string>): void {
+  for (const folder of CHILD_FOLDERS) {
+    for (const item of toArray(tree[folder])) {
+      if (typeof item.id === 'string' && !corToLocal.has(item.id)) {
+        corToLocal.set(item.id, uuid());
+      }
+    }
+  }
+  // Layouts live nested under each component; sweep them too.
+  for (const component of toArray(tree.components)) {
+    for (const layout of toArray(component.layouts)) {
+      if (typeof layout.id === 'string' && !corToLocal.has(layout.id)) {
+        corToLocal.set(layout.id, uuid());
+      }
+    }
+  }
+}
+
+function applyResolutionToRecords(tree: unknown, corToLocal: Map<string, string>): void {
+  visit(tree, (record) => {
+    const id = record.id;
+    if (typeof id === 'string' && corToLocal.has(id)) {
+      record.co_relation_id = id;
+      record.id = corToLocal.get(id);
+    }
+  });
+}
+
+function indexByCorId(rows: { id: string; co_relation_id: string }[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    if (row.co_relation_id) map.set(row.co_relation_id, row.id);
+  }
+  return map;
 }
