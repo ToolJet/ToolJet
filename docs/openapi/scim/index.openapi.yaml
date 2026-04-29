@@ -5,12 +5,17 @@ info:
   description: >
     ToolJet supports SCIM 2.0 for automated user and group provisioning.
     All standard SCIM endpoints are supported — including `/Schemas`, `/ResourceTypes`, `/Users`, and `/Groups`.
+    When SCIM is enabled, configure either Basic auth or a header token before starting the server.
 
 servers:
   - url: https://app.tooljet.com/api/scim/v2
     description: Production server
   - url: http://localhost:3000/api/scim/v2
     description: Local development server
+
+security:
+  - basicAuth: []
+  - bearerAuth: []
 
 paths:
 
@@ -207,6 +212,18 @@ paths:
           description: Group deleted
 
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Authenticate with SCIM_BASIC_AUTH_USER and SCIM_BASIC_AUTH_PASS.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: >
+        Authenticate with Authorization: Bearer <token>. ToolJet also accepts the raw token in the
+        Authorization header when it exactly matches SCIM_HEADER_AUTH_TOKEN.
   schemas:
 
     SCIMUserRequest:

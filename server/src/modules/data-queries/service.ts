@@ -212,6 +212,11 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, options, response, environmentId, undefined, app);
   }
 
+  // Compatibility shim for older tests that called through the service layer directly.
+  async parseQueryOptions(queryOptions: any, options: any, organizationId?: string, environmentId?: string, user?: User) {
+    return this.dataQueryUtilService.parseQueryOptions(queryOptions, options, organizationId, environmentId, user);
+  }
+
   protected async runAndGetResult(
     user: User,
     dataQuery: DataQuery,

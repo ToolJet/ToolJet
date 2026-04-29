@@ -13,6 +13,8 @@ export class ScimModule extends SubModule {
       ScimUsersService,
       ScimGroupsController,
       ScimGroupsService,
+      ScimAuthGuard,
+      ScimConfigValidationService,
     } = await this.getProviders(configs, 'scim', [
       'controller',
       'service',
@@ -20,12 +22,21 @@ export class ScimModule extends SubModule {
       'services/scim-users.service',
       'controllers/scim-groups.controller',
       'services/scim-groups.service',
+      'guards/scim-auth.guard',
+      'services/scim-config-validation.service',
     ]);
 
     return {
       module: ScimModule,
       imports: [await ExternalApiModule.register(configs), await GroupPermissionsModule.register(configs)],
-      providers: [FeatureAbilityFactory, ScimService, ScimUsersService, ScimGroupsService],
+      providers: [
+        FeatureAbilityFactory,
+        ScimService,
+        ScimUsersService,
+        ScimGroupsService,
+        ScimAuthGuard,
+        ScimConfigValidationService,
+      ],
       controllers: isMainImport ? [ScimController, ScimUsersController, ScimGroupsController] : [],
     };
   }

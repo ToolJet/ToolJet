@@ -1,6 +1,8 @@
 import LicenseBase from './configs/LicenseBase';
 import { LICENSE_FIELD, LICENSE_LIMIT } from './constants';
 
+export { LICENSE_FIELD };
+
 export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
   return totalCount !== LICENSE_LIMIT.UNLIMITED
     ? {

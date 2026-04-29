@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ToolJet Security Audit Report</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+  :root { color-scheme: light; --text: #1f2933; --muted: #5b6776; --line: #d7dee8; --soft: #f4f6f8; --accent: #0f5e8c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: #fff; }
+  main, body > div, body > section { max-width: 1040px; margin: 0 auto; }
+  h1 { margin: 0 0 24px; padding-bottom: 14px; border-bottom: 3px solid var(--accent); font-size: 30px; line-height: 1.2; }
+  h2 { margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 22px; line-height: 1.3; color: #17324d; }
+  h3 { margin: 28px 0 10px; font-size: 17px; line-height: 1.35; color: #20384f; }
+  p { margin: 0 0 12px; }
+  a { color: var(--accent); text-decoration: none; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; background: var(--soft); padding: 0.1em 0.25em; border-radius: 3px; }
+  pre { overflow-x: auto; background: #101820; color: #f7fafc; padding: 14px 16px; border-radius: 6px; font-size: 12px; line-height: 1.45; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; overflow-wrap: anywhere; }
+  th { background: #edf2f7; text-align: left; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  strong { font-weight: 700; }
+  nav#TOC { border: 1px solid var(--line); background: var(--soft); padding: 14px 18px; margin: 0 0 24px; border-radius: 6px; }
+  nav#TOC ul { margin: 0; }
+  @media print {
+    body { padding: 22mm 16mm; font-size: 11px; }
+    h1 { font-size: 24px; }
+    h2 { break-after: avoid; page-break-after: avoid; font-size: 17px; }
+    h3 { break-after: avoid; page-break-after: avoid; font-size: 13px; }
+    table, pre { break-inside: avoid; page-break-inside: avoid; }
+    a { color: inherit; }
+  }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">ToolJet Security Audit Report</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tooljet-security-audit-report">ToolJet Security Audit Report</a>
+<ul>
+<li><a href="#1-executive-summary">1. Executive Summary</a></li>
+<li><a href="#2-methodology">2. Methodology</a></li>
+<li><a href="#3-findings">3. Findings</a></li>
+<li><a href="#4-dependency-security">4. Dependency Security</a></li>
+<li><a href="#5-remediation-roadmap">5. Remediation Roadmap</a></li>
+<li><a href="#6-disclosure-and-issue-filing-plan">6. Disclosure and Issue Filing Plan</a></li>
+<li><a href="#7-appendices">7. Appendices</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tooljet-security-audit-report">ToolJet Security Audit Report</h1>
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<p><strong>Project:</strong> ToolJet</p>
+<p><strong>Repository:</strong> <code>https://github.com/ToolJet/ToolJet</code></p>
+<p><strong>Audited commit:</strong> <code>8ce1dcca884601405c26f4e049cda27e68dfb5d0</code></p>
+<p><strong>Branch and release line:</strong> <code>develop</code>; root <code>package.json</code> declares ToolJet <code>1.18.0</code>, Node <code>22.15.1</code>, and npm <code>10.9.2</code>.</p>
+<p><strong>Scope:</strong> Community Edition source present in this checkout. <code>server/ee/</code> is empty, so EE-only SAML/OIDC/LDAP, SCIM extensions, workflow webhook implementation details, AI/agent features, instance settings, white-labelling, and external API implementations were not fully reviewable. Marketplace plugins were treated as out-of-tree unless they were directly relevant to installed dependency risk.</p>
+<p><strong>Allowed testing boundary:</strong> Static analysis, lockfile inspection, local source review, and local-only reproduction reasoning against this clone. No probing was performed against <code>tooljet.com</code>, customer-hosted instances, cloud metadata services, GitHub, npm, AWS, or any third-party service configured as a datasource.</p>
+<p><strong>Audit depth:</strong> Standard. The audit combined repository reconnaissance, dependency review, Semgrep SAST, targeted grep sweeps, manual code review, validation, and final triage.</p>
+<p><strong>Result:</strong> 30 customer-facing findings were retained from 107 candidates. Retained findings are only those marked <code>Confirmed</code> or <code>Likely</code> after validation and deduplication by root cause.</p>
+<h3 id="severity-counts">Severity Counts</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Severity</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Critical</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td>High</td>
+<td style="text-align: right;">16</td>
+</tr>
+<tr class="odd">
+<td>Medium</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="even">
+<td>Low</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td>Info</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>30</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="status-counts">Status Counts</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Status</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Confirmed</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td>Likely</td>
+<td style="text-align: right;">12</td>
+</tr>
+</tbody>
+</table>
+<h3 id="highest-risk-themes">Highest-Risk Themes</h3>
+<p>The three Critical findings are an authentication bypass in SCIM when its bearer secret is unset, host-level code execution through arbitrary marketplace plugin installation, and a password-verification bypass in the invitation login path. High-risk follow-on areas include tenant-boundary failures, connector SSRF and injection, session fixation via REST cookie bridging, stored XSS, file UUID access without tenant scope, vulnerable rendered-surface dependencies, and weak reset/invite token handling.</p>
+<h2 id="2-methodology">2. Methodology</h2>
+<h3 id="dependency-audit">Dependency Audit</h3>
+<p>The dependency review used lockfile-only <code>npm audit --json --package-lock-only</code> across the root, <code>server/</code>, <code>frontend/</code>, <code>plugins/</code>, <code>cli/</code>, <code>marketplace/</code>, and <code>cypress-tests/</code> workspaces. No package installation or network package installation was performed. Lockfiles were inspected for vulnerable direct and transitive packages, install scripts, deprecated packages, non-registry sources, and runtime reachability through import/callsite review.</p>
+<p>Reachability was prioritized over raw scanner severity. For example, unused CE dependencies such as direct <code>simple-git</code> and direct <code>fast-xml-parser</code> were not retained as customer-facing runtime vulnerabilities, while vulnerable frontend rendering packages and server/plugin outbound dependency chains were retained where callsites and request-adjacent paths exist.</p>
+<h3 id="sast">SAST</h3>
+<p>Semgrep <code>1.161.0</code> was run against <code>server/</code> and <code>plugins/</code> using OWASP, TypeScript, JavaScript, NodeJS, and security-audit rulesets. The scan covered 1,996 files and produced 76 raw findings with no rule errors. Targeted ripgrep sweeps supplemented Semgrep for raw SQL, child processes, eval and VM usage, outbound HTTP, URL construction, sensitive logging, filesystem access, archives, crypto/session usage, cookies, frontend <code>dangerouslySetInnerHTML</code>, and public/JWT guard patterns.</p>
+<h3 id="manual-review">Manual Review</h3>
+<p>Manual review walked the NestJS guard/controller/service call chains and connector execution paths most likely to produce scanner misses: cross-tenant authorization, public-app trust boundaries, plugin loading, query construction, secrets and audit logging, OAuth/SSO, workflow webhooks, files, imports, and deployment defaults.</p>
+<h3 id="validation">Validation</h3>
+<p>Validation combined source-level proof, lockfile inspection, local grep/Node checks, and reasoning over guard/controller/service paths. The validation pass categorized 107 candidates as Confirmed, Likely, Unlikely, or False Positive. Findings were retained only when exploitability was confirmed in code or remained likely based on reachable call paths and realistic deployment conditions.</p>
+<h3 id="triage">Triage</h3>
+<p>Final triage collapsed duplicate candidates by root cause and assigned customer-facing IDs <code>TJ-001</code> through <code>TJ-030</code>. Severity, status, CWE, affected code, impact, reproduction summary, recommendation, and fix complexity were reconciled against <code>TRIAGE.md</code> and <code>FINDINGS.json</code>.</p>
+<h3 id="limitations">Limitations</h3>
+<p>This was not a live DAST engagement. No customer instances, ToolJet production services, third-party APIs, or cloud metadata services were probed. EE source was not available in this checkout. Several likely findings require customer configuration confirmation, seeded multi-tenant data, browser PoCs, or a running local instance to fully demonstrate impact.</p>
+<h2 id="3-findings">3. Findings</h2>
+<h3 id="tj-001---scim-bearer-auth-bypass-when-token-secret-is-unset">TJ-001 - SCIM bearer auth bypass when token secret is unset</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Critical</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authentication / CWE-287</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/scim/guards/scim-auth.guard.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> When SCIM is enabled but <code>SCIM_HEADER_AUTH_TOKEN</code> is unset, an <code>Authorization: Bearer</code> header can satisfy the guard because the parsed token and configured token are both <code>undefined</code>. This bypasses SCIM route authentication.</p>
+<p><strong>Reproduction summary:</strong> Inspect the guard token extraction and comparison. With SCIM enabled and the header token unset, send a SCIM request with <code>Authorization: Bearer</code>.</p>
+<p><strong>Recommended fix:</strong> Fail startup when SCIM is enabled without exactly one valid auth secret, reject empty bearer values, and compare configured secrets with <code>crypto.timingSafeEqual</code>.</p>
+<h3 id="tj-002---marketplace-plugin-install-executes-attacker-controlled-code-with-host-privileges">TJ-002 - Marketplace plugin install executes attacker-controlled code with host privileges</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Critical</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Code Execution / CWE-94</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/plugins/controller.ts:32</code>; <code>server/src/modules/plugins/service.ts:24</code>; <code>server/src/modules/plugins/util.service.ts:79</code>; <code>server/src/modules/data-sources/services/plugin-selector.service.ts:39</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Large</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> A builder or admin can install a plugin from an attacker-controlled GitHub repository. The plugin is later executed with Node host primitives including <code>require</code>, <code>process</code>, <code>global</code>, <code>Buffer</code>, and filesystem/network access, resulting in host RCE and broad secret extraction.</p>
+<p><strong>Reproduction summary:</strong> Install a plugin whose bundled JavaScript reads <code>process.env</code> or executes <code>child_process.execSync</code>, then configure a datasource that loads the plugin.</p>
+<p><strong>Recommended fix:</strong> Disable arbitrary <code>repo</code> plugin installation in production, require signed marketplace packages, run plugins out of process behind a narrow RPC API, and never expose host <code>require</code> or <code>process</code> to plugin code.</p>
+<h3 id="tj-003---invitation-login-path-can-skip-password-verification">TJ-003 - Invitation login path can skip password verification</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Critical</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authentication / CWE-287</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/auth/service.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> <code>redirectTo</code> values beginning with invitation paths route login through an invite branch that fetches an invited user by email without normal password verification. This creates a passwordless login path for invited accounts.</p>
+<p><strong>Reproduction summary:</strong> Use the login endpoint with an invited user's email and an invitation-style <code>redirectTo</code> value, then observe the invite branch bypassing the normal password check.</p>
+<p><strong>Recommended fix:</strong> Always verify the password for credential login, or require a signed, single-use invite session proof that is bound to the invitation token and expires quickly.</p>
+<h3 id="tj-004---cross-tenant-data-source-actions-via-unscoped-datasourceid-lookup">TJ-004 - Cross-tenant data-source actions via unscoped <code>dataSourceId</code> lookup</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authorization / CWE-639</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/data-queries/guards/validate-query-source.guard.ts:43</code>; <code>server/src/modules/data-sources/repository.ts:125</code>; <code>server/src/modules/data-queries/ability/data-source/index.ts</code>; <code>server/src/modules/ability/util.service.ts:99</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Data-source lookup by UUID is not scoped to the request organization. A user with all-data-source permissions in their current workspace can potentially list or create queries against a foreign workspace datasource if they know the UUID.</p>
+<p><strong>Reproduction summary:</strong> Seed two organizations, capture a datasource UUID from one, and call list-tables or data-query creation from another workspace where the user has <code>isAllUsable</code>.</p>
+<p><strong>Recommended fix:</strong> Require <code>organizationId</code> on all datasource lookups used by guards and reject requests when the datasource organization differs from the authenticated workspace.</p>
+<h3 id="tj-005---public-app-authorization-and-workspace-stamping-trust-global-slugs">TJ-005 - Public-app authorization and workspace stamping trust global slugs</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authorization / CWE-284</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/apps/guards/app-auth.guard.ts:33</code>; <code>server/src/modules/app/guards/ability.guard.ts:111</code>; <code>server/src/modules/app/constants/module-info.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Large</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Public app guards look up slugs globally and stamp <code>tj-workspace-id</code> from the app's organization. The ability guard then skips authorization for public apps unless a feature opts out, which can expose routes through a public-app trust boundary.</p>
+<p><strong>Reproduction summary:</strong> Use a public app slug and anonymously exercise routes whose feature metadata does not set <code>shouldNotSkipPublicApp</code>.</p>
+<p><strong>Recommended fix:</strong> Make public access route-allowlist based, never mutate workspace headers as if they came from an authenticated user, and enforce resource-specific organization checks on every public route.</p>
+<h3 id="tj-006---oauth-lacks-state-binding-and-git-sso-host-is-workspace-configurable">TJ-006 - OAuth lacks state binding and Git SSO host is workspace-configurable</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authentication / CWE-352</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/auth/oauth/service.ts:64</code>; <code>server/src/modules/auth/oauth/util-services/git-oauth.service.ts:11</code>; <code>server/src/modules/login-configs/util.service.ts:99</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> OAuth callbacks accept <code>state</code> without server-side validation. Git SSO token and userinfo URLs are derived from workspace configuration, allowing a malicious SSO host to return attacker-controlled identities when an attacker can configure login settings.</p>
+<p><strong>Reproduction summary:</strong> Mutate an OAuth callback state and observe acceptance, then configure a Git SSO host that returns chosen userinfo.</p>
+<p><strong>Recommended fix:</strong> Store and validate OAuth state and PKCE bindings, restrict custom Git hosts to explicit allowlists, and document or gate self-hosted Git SSO as a trusted-admin feature.</p>
+<h3 id="tj-007---unsafe-connector-query-construction-enables-sql-and-nosql-injection">TJ-007 - Unsafe connector query construction enables SQL and NoSQL injection</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Injection / CWE-89</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>plugins/packages/*/lib/index.ts</code>; <code>server/src/modules/data-queries/util.service.ts</code>; <code>server/lib/utils.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Large</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> GUI query builders and template substitution paths concatenate table names, column names, values, BigQuery conditions, Mongo filters, and SAP HANA raw queries. End users can become attackers when unsafe template variables are exposed in published apps.</p>
+<p><strong>Reproduction summary:</strong> Configure SQL, BigQuery, MongoDB, or SAP HANA queries with templated user input and observe the generated driver query text or filter object containing untrusted data.</p>
+<p><strong>Recommended fix:</strong> Use driver-native parameters in GUI modes, quote identifiers with connector helpers, make raw SQL interpolation explicit, and reject unsafe string substitution in GUI builders.</p>
+<h3 id="tj-008---query-time-host-and-connection-target-rewriting-can-redirect-stored-credentials">TJ-008 - Query-time host and connection target rewriting can redirect stored credentials</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>SSRF / CWE-918</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>plugins/packages/openapi/lib/index.ts</code>; <code>plugins/packages/mongodb/lib/index.ts</code>; <code>plugins/packages/*/lib/index.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> OpenAPI path and host overrides, SQL dynamic connection parameters, and MongoDB URI construction allow query options to change outbound targets or connection hosts while using stored credentials.</p>
+<p><strong>Reproduction summary:</strong> Supply OpenAPI path parameters or query host options that alter the resolved URL, or supply dynamic database connection options that rewrite host/database before connection.</p>
+<p><strong>Recommended fix:</strong> URL-encode path segments, remove query-time host overrides or gate them behind a distinct permission, build database URLs with structured URL APIs, and validate outbound hosts against allowlists.</p>
+<h3 id="tj-009---outbound-connectors-allow-ssrf-to-internal-resources">TJ-009 - Outbound connectors allow SSRF to internal resources</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>SSRF / CWE-918</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>plugins/packages/restapi/lib/index.ts</code>; <code>plugins/packages/graphql/lib/index.ts</code>; <code>plugins/packages/openapi/lib/index.ts</code>; <code>plugins/packages/grpcv2/lib/operations.ts</code>; <code>plugins/packages/*/lib/index.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Large</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> REST, OpenAPI, GraphQL, InfluxDB, CouchDB, n8n, and gRPC proto URL flows pass user-controlled or builder-controlled URLs to outbound HTTP clients without scheme, DNS, or IP range restrictions. This can reach internal services and cloud metadata endpoints.</p>
+<p><strong>Reproduction summary:</strong> Configure or trigger a connector URL targeting loopback, link-local, private network, or metadata endpoints and observe the server making the request.</p>
+<p><strong>Recommended fix:</strong> Centralize outbound HTTP, allow only approved schemes, block loopback/link-local/private IPs after DNS resolution, pin DNS per request, and provide connector-level allowlists.</p>
+<h3 id="tj-010---rest-connector-cookie-bridging-allows-session-fixation">TJ-010 - REST connector cookie bridging allows session fixation</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Session Management / CWE-384</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/data-queries/util.service.ts:130</code>; <code>server/src/modules/data-queries/util.service.ts:440</code>; <code>server/src/modules/session/util.service.ts:106</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Upstream REST responses can set arbitrary cookie names on the ToolJet origin, including <code>tj_auth_token</code>. If cookie forwarding is enabled, client cookies can also be sent to arbitrary upstreams with only a narrow prefix filter.</p>
+<p><strong>Reproduction summary:</strong> Point a REST datasource at an attacker endpoint that returns <code>Set-Cookie: tj_auth_token=...</code> and inspect ToolJet's response cookie.</p>
+<p><strong>Recommended fix:</strong> Do not forward browser cookies to arbitrary datasource hosts by default, block every ToolJet-reserved cookie name in both directions, and allow cookie bridging only for explicitly trusted same-site hosts.</p>
+<h3 id="tj-011---stored-comment-mention-rendering-xss">TJ-011 - Stored comment mention rendering XSS</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>XSS / CWE-79</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>frontend/src</code>, comment mention rendering helpers, notification rendering components</td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Comment text is stored user input. Mention highlighting returns HTML that is rendered with <code>dangerouslySetInnerHTML</code> without final escaping or sanitization, allowing stored XSS against workspace users.</p>
+<p><strong>Reproduction summary:</strong> Create a comment containing HTML or script-bearing payload around mention syntax and view the comment, comment notification, or notification center.</p>
+<p><strong>Recommended fix:</strong> Render mentions as React nodes instead of HTML strings, or sanitize after all mention highlighting transformations.</p>
+<h3 id="tj-012---table-and-highlighted-cell-rendering-can-inject-unsanitized-html">TJ-012 - Table and highlighted-cell rendering can inject unsanitized HTML</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>XSS / CWE-79</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>frontend/src</code>, table string column and highlighted-cell renderers</td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Editable string cells and highlighted-cell paths can pass datasource values through <code>dangerouslySetInnerHTML</code> without sanitizing after transformations. Query results or editable table values can become XSS payloads.</p>
+<p><strong>Reproduction summary:</strong> Return HTML from a datasource into an editable string column or highlighted table cell and observe browser rendering behavior.</p>
+<p><strong>Recommended fix:</strong> Prefer text nodes for string columns and sanitize every value after all highlighting or formatting steps, immediately before HTML insertion.</p>
+<h3 id="tj-013---credentialed-cors-reflection-and-embed-cookies-enable-cross-origin-authenticated-access">TJ-013 - Credentialed CORS reflection and embed cookies enable cross-origin authenticated access</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>CORS / CSRF / CWE-942</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/helpers/bootstrap.helper.ts:222</code>; <code>server/src/modules/session/util.service.ts:106</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> <code>ENABLE_CORS=true</code> reflects arbitrary origins while allowing credentials. Private app embed mode sets auth cookies to <code>SameSite=None</code>, and no general CSRF token layer was found. Hostile origins can issue credentialed requests and, with reflected CORS, read responses.</p>
+<p><strong>Reproduction summary:</strong> Enable CORS reflection, then from a separate origin issue <code>fetch()</code> with <code>credentials: "include"</code> to a ToolJet API endpoint and inspect the CORS response.</p>
+<p><strong>Recommended fix:</strong> Replace reflected CORS with an explicit origin allowlist, enforce CSRF tokens or strict origin checks for cookie-authenticated mutations, and scope embed mode narrowly.</p>
+<h3 id="tj-014---file-uuid-lookup-lacks-tenant-or-ownership-scope">TJ-014 - File UUID lookup lacks tenant or ownership scope</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authorization / CWE-639</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/files/repository.ts:21</code>; <code>server/src/modules/files/service.ts:10</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Authenticated users can fetch a file by UUID without an organization or ownership predicate. If a UUID leaks through app definitions, exports, logs, or references, file bytes can be read across tenant boundaries.</p>
+<p><strong>Reproduction summary:</strong> Authenticate as a user in one organization and request a known file UUID from another organization.</p>
+<p><strong>Recommended fix:</strong> Add ownership and organization metadata to file records or authorize through the resource that references the file before serving bytes.</p>
+<h3 id="tj-015---grpc-proto-directory-validation-warns-but-still-reads-outside-allowed-roots">TJ-015 - gRPC proto directory validation warns but still reads outside allowed roots</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>File Access / CWE-22</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>plugins/packages/grpcv2/lib/operations.ts</code>, gRPC datasource filesystem validation helpers</td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> A builder-controlled gRPC datasource directory can point outside expected project or home roots. The server warns but continues scanning and reading proto files from readable filesystem paths.</p>
+<p><strong>Reproduction summary:</strong> Configure a gRPC datasource with an absolute or outside-root proto directory and observe the warning followed by file scanning.</p>
+<p><strong>Recommended fix:</strong> Reject absolute or outside-root paths, enforce an allowlisted proto root, and avoid returning or logging sensitive filesystem details.</p>
+<h3 id="tj-016---editors-can-publish-apps-and-change-public-slugs">TJ-016 - Editors can publish apps and change public slugs</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authorization / CWE-862</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/apps/ability/app.ability.ts:81</code>; <code>server/src/modules/apps/controller.ts</code>; <code>server/src/entities/app.entity.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Users who can edit an app can toggle public access and alter the globally unique slug. This can expose apps anonymously and allow slug squatting.</p>
+<p><strong>Reproduction summary:</strong> Assign an editor role, call the public-app update endpoint, and verify the app is reachable without authentication.</p>
+<p><strong>Recommended fix:</strong> Split publish and slug management into separate admin-controlled permissions and add audit events for public exposure changes.</p>
+<h3 id="tj-017---frontend-sanitizer-pdf-and-editor-dependencies-remain-vulnerable-in-rendered-surfaces">TJ-017 - Frontend sanitizer, PDF, and editor dependencies remain vulnerable in rendered surfaces</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Vulnerable Dependency / CWE-1104</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>frontend/package.json</code>; <code>frontend/package-lock.json</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Vulnerable versions of DOMPurify, jsPDF, jspdf-autotable, Draft.js, and immutable are used in user-rendered HTML, rich text, and PDF export surfaces. Exploitation depends on browser payloads but would be amplified by the permissive CSP.</p>
+<p><strong>Reproduction summary:</strong> Review the frontend lockfile and callsites for DOMPurify, PDF export, and Draft.js editor rendering.</p>
+<p><strong>Recommended fix:</strong> Upgrade DOMPurify, jsPDF, jspdf-autotable, and immutable; plan a Draft.js replacement or isolation; add rendering and export regression tests.</p>
+<h3 id="tj-018---server-and-plugin-outbound-dependencies-expose-ssrf-xml-and-command-injection-risk">TJ-018 - Server and plugin outbound dependencies expose SSRF, XML, and command-injection risk</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Vulnerable Dependency / CWE-1104</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/package.json</code>; <code>server/package-lock.json</code>; <code>plugins/package-lock.json</code>; <code>marketplace/package-lock.json</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Vulnerable versions of plugin-side axios, AWS SDK XML builder chains, and the pinned <code>systeminformation</code> override can affect server-side outbound connectors and OpenTelemetry host metrics. Risks include SSRF/metadata exposure, XML parser issues, and conditional command injection.</p>
+<p><strong>Reproduction summary:</strong> Inspect lockfiles and reachable imports for plugin axios, AWS SDK clients, and <code>nestjs-otel</code> host metrics with <code>systeminformation</code>.</p>
+<p><strong>Recommended fix:</strong> Add axios and AWS SDK overrides or lockfile upgrades, update or remove the <code>systeminformation</code> override, and test connector and OTel smoke paths.</p>
+<h3 id="tj-019---reset-and-invitation-tokens-are-plaintext-unexpired-and-weakly-throttled">TJ-019 - Reset and invitation tokens are plaintext, unexpired, and weakly throttled</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Token Management / CWE-256</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/auth/service.ts:215</code>; <code>server/src/modules/onboarding/service.ts:398</code>; <code>server/src/modules/auth/controller.ts</code>; <code>server/src/entities/user.entity.ts</code>; <code>server/src/entities/organization_user.entity.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Password reset and invitation tokens are stored in plaintext with no expiry enforcement. A database snapshot or log exposure can yield working reset and invite links indefinitely, and pending invites can survive inviter demotion.</p>
+<p><strong>Reproduction summary:</strong> Issue a reset or invite token, inspect storage, wait beyond a normal expiry window, and redeem the token.</p>
+<p><strong>Recommended fix:</strong> Store only token hashes, add expiry columns and checks, rate-limit issuance and redemption, and revalidate inviter authority at invite acceptance.</p>
+<h3 id="tj-020---workflow-webhook-tokens-are-plaintext-and-replayable">TJ-020 - Workflow webhook tokens are plaintext and replayable</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Token Management / CWE-256</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/entities/app.entity.ts</code>; <code>server/src/modules/licensing/guards/webhook.guard.ts:27</code>; <code>server/src/modules/licensing/guards/webhook.guard.ts:113</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Workflow API tokens are stored plaintext and compared directly. Captured requests can be replayed because there is no nonce, timestamp, HMAC, or replay cache.</p>
+<p><strong>Reproduction summary:</strong> Capture a valid workflow trigger request and replay it, or inspect the <code>apps.workflow_api_token</code> column and guard comparison.</p>
+<p><strong>Recommended fix:</strong> Hash workflow tokens at rest, compare fixed-length hashes with <code>timingSafeEqual</code>, add rotation, and support HMAC timestamp and nonce replay protection.</p>
+<h3 id="tj-021---folder-update-is-not-scoped-by-organization">TJ-021 - Folder update is not scoped by organization</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Authorization / CWE-639</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/folders/service.ts:37</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Folder update filters by ID only, unlike deletion which includes <code>organizationId</code>. A user with folder update permission and a foreign folder UUID can rename another tenant's folder.</p>
+<p><strong>Reproduction summary:</strong> Seed two organizations, learn a folder UUID from one, and call the update route from the other.</p>
+<p><strong>Recommended fix:</strong> Add <code>organizationId</code> to the update predicate and add a regression test comparing update and delete scoping.</p>
+<h3 id="tj-022---data-source-update-audit-metadata-can-retain-plaintext-credentials">TJ-022 - Data-source update audit metadata can retain plaintext credentials</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Sensitive Data Exposure / CWE-532</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/data-sources/service.ts:140</code>; <code>server/src/entities/audit_log.entity.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Datasource update audit metadata can include the plaintext update DTO before sensitive options are encrypted for storage. Audit-log readers or exports can receive datasource credentials.</p>
+<p><strong>Reproduction summary:</strong> Update a datasource password, then inspect the corresponding audit log metadata for the submitted value.</p>
+<p><strong>Recommended fix:</strong> Redact sensitive option keys before setting audit metadata and add tests for credential updates.</p>
+<h3 id="tj-023---telemetry-and-http-error-logging-can-expose-pii-or-upstream-secrets">TJ-023 - Telemetry and HTTP error logging can expose PII or upstream secrets</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Logging / CWE-532</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src</code>, Sentry initialization, REST and OpenAPI connector error handlers</td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Sentry is configured with default PII and full tracing, custom spans can include request bodies, and REST/OpenAPI error handlers log upstream bodies or full error objects. Secrets can leak into logs and third-party telemetry.</p>
+<p><strong>Reproduction summary:</strong> Trigger REST/OpenAPI upstream errors containing sensitive response bodies and inspect application logs and telemetry configuration.</p>
+<p><strong>Recommended fix:</strong> Disable default PII, redact request and response bodies, avoid logging full error objects, and log structured metadata only.</p>
+<h3 id="tj-024---reachable-upload-email-and-route-parsing-dependencies-allow-moderate-dos">TJ-024 - Reachable upload, email, and route parsing dependencies allow moderate DoS</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Denial of Service / CWE-400</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/package.json</code>; <code>server/package-lock.json</code>; <code>server/src/modules/profile/controller.ts</code>; <code>server/src/modules/tooljet-db/controller.ts</code>; <code>server/src/modules/organization-users/controller.ts</code>; <code>server/src/modules/email/util.service.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Vulnerable versions of multer, nodemailer, path-to-regexp, and Nest core sit on reachable upload, email, and route parsing paths. The likely practical impact is request-driven resource exhaustion.</p>
+<p><strong>Reproduction summary:</strong> Review lockfile versions and reachable <code>FileInterceptor</code>, <code>sendMail</code>, and parameterized Nest route callsites.</p>
+<p><strong>Recommended fix:</strong> Upgrade Nest packages and multer, move nodemailer to a fixed major version after API review, and add route or endpoint-level throttles.</p>
+<h3 id="tj-025---global-request-body-and-parameter-limits-are-overly-large">TJ-025 - Global request body and parameter limits are overly large</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Denial of Service / CWE-400</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/helpers/bootstrap.helper.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> The server accepts large JSON bodies and a very high URL-encoded parameter count. Public or unauthenticated endpoints can be used for moderate resource exhaustion.</p>
+<p><strong>Reproduction summary:</strong> Inspect global body parser limits and drive large JSON or URL-encoded requests at public endpoints.</p>
+<p><strong>Recommended fix:</strong> Lower global limits, set endpoint-specific upload limits, and throttle public auth, import, and upload routes.</p>
+<h3 id="tj-026---constants-and-secrets-regex-can-overmatch-server-side-substitutions">TJ-026 - Constants and secrets regex can overmatch server-side substitutions</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Information Disclosure / CWE-200</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/modules/data-sources/util.service.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> The constants/secrets/globals regex has incorrect alternation precedence and can trigger broader server-side resolution than intended, potentially exposing tenant-scoped constants or secrets in connector execution.</p>
+<p><strong>Reproduction summary:</strong> Review the matcher and test template values that include <code>constants</code>, <code>secrets</code>, or <code>globals.server</code> variants.</p>
+<p><strong>Recommended fix:</strong> Replace the matcher with a grouped expression such as <code>/{{(?:constants|secrets|globals\\.server)\\.[^}]+}}/g</code> and add unit tests for non-matching variants.</p>
+<h3 id="tj-027---deployment-defaults-and-missing-secret-validation-can-expose-self-hosted-instances">TJ-027 - Deployment defaults and missing secret validation can expose self-hosted instances</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Configuration / CWE-798</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>.env.example</code>; <code>server/src/modules/app/module.ts</code>; server startup configuration</td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Example and runtime configuration allow weak or missing secrets such as an all-zero <code>LOCKBOX_MASTER_KEY</code>, empty <code>PGRST_JWT_SECRET</code>, and missing queue dashboard password. Self-hosted deployments that copy defaults can expose credentials or job payloads.</p>
+<p><strong>Reproduction summary:</strong> Start from example configuration with weak or unset secrets and inspect application startup, credential encryption, PostgREST signing, and <code>/jobs</code> dashboard behavior.</p>
+<p><strong>Recommended fix:</strong> Fail startup on missing or known-default secrets, generate install-time secrets, and disable privileged dashboards unless a strong password is configured.</p>
+<h3 id="tj-028---auth-cookie-secure-flag-depends-on-tooljet_host-string-parsing">TJ-028 - Auth cookie <code>Secure</code> flag depends on <code>TOOLJET_HOST</code> string parsing</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Cookie Hardening / CWE-614</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/helpers/utils.helper.ts</code>; <code>server/src/modules/session/util.service.ts:113</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> TLS-terminating proxy deployments can accidentally issue non-secure auth cookies if <code>TOOLJET_HOST</code> is set to an internal HTTP URL.</p>
+<p><strong>Reproduction summary:</strong> Run behind a TLS proxy with <code>TOOLJET_HOST=http://...</code> and inspect <code>Set-Cookie</code> attributes.</p>
+<p><strong>Recommended fix:</strong> Add explicit <code>COOKIE_SECURE=true</code> and trusted proxy configuration rather than deriving cookie security solely from public host string parsing.</p>
+<h3 id="tj-029---permissive-csp-weakens-xss-containment">TJ-029 - Permissive CSP weakens XSS containment</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Confirmed</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Hardening / CWE-693</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/src/helpers/bootstrap.helper.ts</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> CSP allows inline script, eval, broad connections, and broad frames. This does not create XSS by itself but substantially weakens containment for confirmed and likely XSS issues.</p>
+<p><strong>Reproduction summary:</strong> Inspect the CSP directives configured at server bootstrap.</p>
+<p><strong>Recommended fix:</strong> Remove <code>unsafe-inline</code> and <code>unsafe-eval</code>, add nonces or hashes where needed, narrow <code>connect-src</code>, and set <code>frame-ancestors</code> from explicit embed settings.</p>
+<h3 id="tj-030---build-time-supply-chain-and-eol-dependency-hygiene-risk-remains">TJ-030 - Build-time supply-chain and EOL dependency hygiene risk remains</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Severity</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Likely</td>
+</tr>
+<tr class="odd">
+<td>Type / CWE</td>
+<td>Supply Chain / CWE-1104</td>
+</tr>
+<tr class="even">
+<td>Affected code</td>
+<td><code>server/package.json</code>; <code>server/package-lock.json</code>; <code>frontend/package-lock.json</code>; <code>plugins/package-lock.json</code>; <code>marketplace/package-lock.json</code></td>
+</tr>
+<tr class="odd">
+<td>Fix complexity</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Build-time and deprecated dependency chains such as bcrypt/node-pre-gyp, abandoned frontend libraries, older Lerna/Nx chains, and other EOL packages increase maintenance and supply-chain risk, especially for self-hosted builds that run installs on production hosts.</p>
+<p><strong>Reproduction summary:</strong> Review dependency audit output, deprecated package metadata, and install-script inventory.</p>
+<p><strong>Recommended fix:</strong> Upgrade bcrypt, replace abandoned libraries, remove unused direct dependencies, and fail CI on newly introduced critical or high runtime advisories.</p>
+<h2 id="4-dependency-security">4. Dependency Security</h2>
+<h3 id="actionable-runtime-fixes">Actionable Runtime Fixes</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Area</th>
+<th>Action</th>
+<th>Reachability note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Frontend rendered surfaces</td>
+<td>Upgrade DOMPurify, jsPDF, jspdf-autotable, immutable, and plan Draft.js replacement or isolation.</td>
+<td>Likely reachable through rendered HTML, rich-text, and PDF export paths. Impact is amplified by permissive CSP.</td>
+</tr>
+<tr class="even">
+<td>Server/plugin outbound paths</td>
+<td>Upgrade or override plugin-side axios, AWS SDK v3 chains, and remove or update the pinned <code>systeminformation</code> override.</td>
+<td>Relevant to outbound connectors, AWS-backed plugin operations, and OTel host metrics when enabled.</td>
+</tr>
+<tr class="odd">
+<td>Upload/email/routing DoS</td>
+<td>Upgrade Nest packages, <code>path-to-regexp</code>, <code>multer</code>, and review the nodemailer major upgrade path.</td>
+<td>Upload interceptors, unauthenticated email flows, and broad parameterized routes are request-adjacent.</td>
+</tr>
+<tr class="even">
+<td>Deployment and build supply chain</td>
+<td>Upgrade bcrypt, replace abandoned libraries, remove unused direct dependencies, and modernize Lerna/Nx chains.</td>
+<td>Primarily build-time/self-hosted install exposure, not a live request-path issue.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reachability-notes-and-lower-priority-scanner-output">Reachability Notes and Lower-Priority Scanner Output</h3>
+<p>The audit deliberately did not preserve every raw critical scanner finding as a customer-facing vulnerability. <code>simple-git</code> was present but had no CE callsite. <code>protobuf.parse()</code> was reachable only on server-side proto files, not request-supplied proto text in the validated CE paths. Handlebars templates were server-controlled. SAML-related <code>node-forge</code> and <code>xmldom</code> advisories were not reachable in the CE source because the relevant EE/SAML paths are absent or not implemented. These items remain useful cleanup targets, but they were not counted in the 30 retained findings.</p>
+<h2 id="5-remediation-roadmap">5. Remediation Roadmap</h2>
+<h3 id="immediate-0-7-days">Immediate: 0-7 Days</h3>
+<p>Fix <code>TJ-001</code> through <code>TJ-003</code>. Require valid SCIM secrets at startup and strict bearer parsing, remove or disable arbitrary GitHub <code>repo</code> plugin installation in production while designing signed/out-of-process plugin execution, and require password verification or a signed expiring invite proof in the invitation login branch.</p>
+<h3 id="next-sprint-1-3-weeks">Next Sprint: 1-3 Weeks</h3>
+<p>Fix <code>TJ-004</code> through <code>TJ-019</code>. Prioritize tenant scoping on datasource and file lookups, public-app authorization allowlists, OAuth state validation, connector SSRF and injection controls, REST cookie bridging restrictions, comment/table XSS fixes, high-impact dependency upgrades, reset/invite token storage, and app publishing permission separation.</p>
+<h3 id="hardening-backlog-30-60-days-and-ongoing">Hardening Backlog: 30-60 Days and Ongoing</h3>
+<p>Fix <code>TJ-020</code> through <code>TJ-030</code>. Hash and rotate workflow webhook tokens, redact audit metadata and telemetry/log output, lower parser limits, correct constants/secrets matching, enforce strong deployment secret validation, add explicit secure-cookie configuration, tighten CSP, and reduce build-time/EOL dependency exposure.</p>
+<h2 id="6-disclosure-and-issue-filing-plan">6. Disclosure and Issue Filing Plan</h2>
+<p>The configured severity threshold in <code>FINDINGS.json</code> is <code>high</code>. Findings meeting that threshold are all Critical and High retained findings:</p>
+<p><code>TJ-001</code>, <code>TJ-002</code>, <code>TJ-003</code>, <code>TJ-004</code>, <code>TJ-005</code>, <code>TJ-006</code>, <code>TJ-007</code>, <code>TJ-008</code>, <code>TJ-009</code>, <code>TJ-010</code>, <code>TJ-011</code>, <code>TJ-012</code>, <code>TJ-013</code>, <code>TJ-014</code>, <code>TJ-015</code>, <code>TJ-016</code>, <code>TJ-017</code>, <code>TJ-018</code>, and <code>TJ-019</code>.</p>
+<p>Recommended filing order:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Filing group</th>
+<th>Findings</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Critical security issues</td>
+<td><code>TJ-001</code> to <code>TJ-003</code></td>
+<td>Direct authentication bypass or host code execution. File and patch immediately.</td>
+</tr>
+<tr class="even">
+<td>Tenant and network boundary issues</td>
+<td><code>TJ-004</code>, <code>TJ-005</code>, <code>TJ-008</code>, <code>TJ-009</code>, <code>TJ-014</code>, <code>TJ-015</code></td>
+<td>Cross-tenant, SSRF, credential-target redirection, and filesystem/file access risks.</td>
+</tr>
+<tr class="odd">
+<td>Browser/session compromise</td>
+<td><code>TJ-010</code>, <code>TJ-011</code>, <code>TJ-012</code>, <code>TJ-013</code>, <code>TJ-029</code></td>
+<td>Session fixation, stored XSS, cross-origin credentialed access, and CSP containment weakness.</td>
+</tr>
+<tr class="even">
+<td>Auth and token hygiene</td>
+<td><code>TJ-006</code>, <code>TJ-019</code>, plus <code>TJ-020</code> as follow-up</td>
+<td>OAuth state, reset/invite token storage, and webhook token replay.</td>
+</tr>
+<tr class="odd">
+<td>Dependency remediation</td>
+<td><code>TJ-017</code>, <code>TJ-018</code>, <code>TJ-024</code>, <code>TJ-030</code></td>
+<td>Track as security upgrade epics with regression tests and lockfile PRs.</td>
+</tr>
+</tbody>
+</table>
+<p>No issue or PR URLs were present in <code>VALIDATION.md</code>, <code>DEP_AUDIT.md</code>, <code>CODE_REVIEW.md</code>, or <code>FINDINGS.json</code>; <code>issue_url</code> and <code>pr_url</code> are blank for all findings.</p>
+<h2 id="7-appendices">7. Appendices</h2>
+<h3 id="appendix-a---commands-run">Appendix A - Commands Run</h3>
+<p>Representative commands and tools recorded in the source artifacts:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ex">npm</span> audit --json --package-lock-only</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="ex">jq</span> <span class="st">&#39;.metadata.vulnerabilities&#39;</span> <span class="op">&lt;</span>audit-json<span class="op">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="ex">jq</span> <span class="st">&#39;.packages[] | select(.deprecated)&#39;</span> package-lock.json</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="ex">jq</span> <span class="st">&#39;.packages[] | select(.hasInstallScript)&#39;</span> package-lock.json</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="ex">semgrep</span> scan <span class="kw">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>  <span class="ex">--config</span>=p/owasp-top-ten --config=p/typescript --config=p/javascript <span class="kw">\</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>  <span class="ex">--config</span>=p/nodejsscan --config=p/security-audit <span class="kw">\</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>  <span class="ex">--json</span> --output=sast-raw.json --metrics=off --no-git-ignore --quiet <span class="kw">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>  <span class="ex">--exclude</span>=<span class="st">&#39;node_modules&#39;</span> --exclude=<span class="st">&#39;*.test.ts&#39;</span> --exclude=<span class="st">&#39;*.spec.ts&#39;</span> <span class="kw">\</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>  <span class="ex">--exclude</span>=<span class="st">&#39;cypress-tests&#39;</span> --exclude=<span class="st">&#39;dist&#39;</span> --exclude=<span class="st">&#39;build&#39;</span> --exclude=<span class="st">&#39;.git&#39;</span> <span class="kw">\</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>  <span class="ex">--exclude</span>=<span class="st">&#39;frontend/build&#39;</span> --exclude=<span class="st">&#39;**/migrations/**&#39;</span> <span class="kw">\</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>  <span class="ex">server</span> plugins</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="ex">rg</span> <span class="st">&#39;knex.raw|sequelize|\.query\(`&#39;</span> server plugins</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="ex">rg</span> <span class="st">&#39;child_process|execSync|spawn&#39;</span> server plugins</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="ex">rg</span> <span class="st">&#39;eval\(|new Function\(|vm.run|isolated-vm&#39;</span> server plugins frontend/src</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a><span class="ex">rg</span> <span class="st">&#39;got\(|axios|http.request|fetch\(&#39;</span> server plugins</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a><span class="ex">rg</span> <span class="st">&#39;dangerouslySetInnerHTML|innerHTML =|\.html\(&#39;</span> frontend/src</span></code></pre></div>
+<p>This deliverable also re-read <code>FINDINGS.json</code> and compared its severity/status counts with <code>TRIAGE.md</code> before finalization.</p>
+<h3 id="appendix-b---artifacts-produced-or-reviewed">Appendix B - Artifacts Produced or Reviewed</h3>
+<p>Reviewed artifacts:</p>
+<ul>
+<li><code>RECON.md</code></li>
+<li><code>DEP_AUDIT.md</code></li>
+<li><code>SAST.md</code></li>
+<li><code>CODE_REVIEW.md</code></li>
+<li><code>VALIDATION.md</code></li>
+<li><code>TRIAGE.md</code></li>
+<li><code>EXECUTIVE_SUMMARY.md</code></li>
+<li><code>FINDINGS.json</code></li>
+<li><code>sast-raw.json</code></li>
+<li><code>semgrep-stderr.log</code></li>
+</ul>
+<p>Produced artifacts:</p>
+<ul>
+<li><code>REPORT.md</code></li>
+<li><code>REPORT.html</code></li>
+<li><code>REPORT.pdf</code> if local PDF tooling succeeds</li>
+</ul>
+<h3 id="appendix-c---false-positive-handling">Appendix C - False-Positive Handling</h3>
+<p>False positives and unlikely items were excluded when the vulnerable package or pattern had no CE callsite, was limited to operator-only scripts, was mitigated by framework behavior, or depended on absent EE source. Examples include unused direct <code>simple-git</code>, unused direct <code>fast-xml-parser</code>, SAML-only XML/PKI dependency paths in CE, test-only credentials, operator-controlled log paths, and the <code>eval()</code> log-rotation candidate where request-controlled strings did not produce a practical escape.</p>
+<p>Dependency findings were retained only when the vulnerable package sat on a rendered user surface, request-adjacent server path, outbound connector path, OTel host metrics path, or self-hosted build/install path with realistic operator exposure.</p>
+<h3 id="appendix-d---assumptions">Appendix D - Assumptions</h3>
+<ul>
+<li>CE source in this checkout is representative of the audited target at commit <code>8ce1dcca884601405c26f4e049cda27e68dfb5d0</code>.</li>
+<li>EE-only code absent from <code>server/ee/</code> requires separate review before claims are extended to EE/Cloud behavior.</li>
+<li>Workspace builders and admins may not be fully trusted in self-hosted multi-tenant deployments; if the customer treats them as host operators, the severity of plugin-install RCE changes.</li>
+<li>Public apps may be reachable by unauthenticated users and may execute configured datasource queries.</li>
+<li>Outbound egress restrictions, CORS/embed settings, REST cookie forwarding, audit-log reader roles, and deployment secret generation vary by customer deployment and can materially change exploitability.</li>
+<li>Severity and counts are sourced from <code>TRIAGE.md</code> and <code>FINDINGS.json</code>; the final retained set is 30 findings, with 3 Critical, 16 High, 8 Medium, and 3 Low.</li>
+</ul>
+</body>
+</html>

@@ -70,6 +70,14 @@ https://<your-domain>/api/scim/v2
 
 ToolJet supports Basic Authentication as well as Header Token Authentication.
 
+When `SCIM_ENABLED=true`, you must configure at least one complete auth mode.
+
+ToolJet will refuse to start if:
+
+- neither SCIM auth mode is configured
+- only one of `SCIM_BASIC_AUTH_USER` or `SCIM_BASIC_AUTH_PASS` is set
+- any configured SCIM auth secret is blank or whitespace-only
+
 Add the following environment variables in your ToolJet backend `.env` file:
 
 ```js
@@ -81,6 +89,13 @@ SCIM_ENABLED=true
 :::warning IMPORTANT
 Make sure `SCIM_ENABLED` is set to **true** — otherwise SCIM endpoints will not be active.
 :::
+
+Send the `Authorization` header in one of these formats:
+
+- Basic auth: `Authorization: Basic <base64(username:password)>`
+- Header token auth: `Authorization: Bearer <token>`
+
+For backward compatibility, ToolJet also accepts `Authorization: <token>` when the entire header value exactly matches `SCIM_HEADER_AUTH_TOKEN`.
 
 ### Verify the Connection
 
@@ -177,4 +192,3 @@ This ensures complete compatibility with standard-compliant IdPs such as Okta, A
 
 ## Supported SCIM APIs
 For a complete list of ToolJet SCIM API endpoints and specifications, refer to [SCIM References](/api/scim).
-

@@ -6,11 +6,13 @@ const config: Config.InitialOptions = {
   rootDir: '.',
   testEnvironment: 'node',
   testRegex: '.spec.ts$',
+  testPathIgnorePatterns: ['\\.e2e-spec\\.ts$'],
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
       {
         tsconfig: 'tsconfig.json',
+        diagnostics: false,
       },
     ],
   },
@@ -18,6 +20,7 @@ const config: Config.InitialOptions = {
     '^ormconfig$': '<rootDir>/ormconfig.ts',
     '^src/(.*)': '<rootDir>/src/$1',
     '^scripts/(.*)': '<rootDir>/scripts/$1',
+    '^lib/utils$': '<rootDir>/lib/utils.ts',
     '^lib/(.*)': '<rootDir>/lib/$1',
     '@dto/(.*)': '<rootDir>/src/dto/$1',
     '@plugins/(.*)': '<rootDir>/plugins/$1',
@@ -33,6 +36,7 @@ const config: Config.InitialOptions = {
   },
   runner: 'groups',
   testTimeout: 30000,
+  setupFilesAfterEnv: ['<rootDir>/test/jest-compat.setup.ts'],
   transformIgnorePatterns: [
     'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
   ],

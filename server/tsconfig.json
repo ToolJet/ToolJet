@@ -32,12 +32,21 @@
       "@modules/*": [
         "src/modules/*"
       ],
+      "@services/*": [
+        "src/services/*"
+      ],
       "@helpers/*": [
         "src/helpers/*"
       ],
       "@otel/*": [
         "src/otel/*"
       ],
+      "lib/*": [
+        "lib/*"
+      ],
+      "scripts/*": [
+        "scripts/*"
+      ]
     },
   },
   "exclude": [
