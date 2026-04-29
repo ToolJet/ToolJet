@@ -47,10 +47,13 @@ function getAppVersionData(appId, versionId, mode) {
   );
 }
 
-function getModuleVersionData(coRelationId, versionName, mode) {
+function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+  // server resolver returns the latest non-stub on the consumer's branch.
+  const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
   return fetch(
-    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/versions/by-name/${versionName}?mode=${mode}`,
+    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`,
     requestOptions
   ).then(handleResponse);
 }

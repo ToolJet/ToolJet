@@ -121,6 +121,7 @@ export class AppsUtilService implements IAppsUtilService {
             pageSettings: {},
             createdAt: new Date(),
             updatedAt: new Date(),
+            ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
           })
         );
 

@@ -19,7 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
-import { classifyModuleRef, listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { listModuleVersions, resolveModuleRef } from './module-ref.util';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -257,7 +257,7 @@ export class VersionService implements IVersionService {
 
   async getVersionByStableIds(
     coRelationId: string,
-    versionName: string,
+    moduleReferenceId: string | undefined,
     user: User,
     mode?: string,
     branchId?: string
@@ -271,16 +271,10 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
-    const ref = await classifyModuleRef(
-      this.versionRepository.manager,
-      moduleApp,
-      versionName,
-      user.organizationId
-    );
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
-      ref,
+      moduleReferenceId,
       branchId,
       user.organizationId
     );
@@ -297,38 +291,12 @@ export class VersionService implements IVersionService {
 
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
-      const oldStatus = appVersion.status;
 
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
 
       await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
-
-      // When a module's default-branch version transitions DRAFT → saved, rewrite unpinned
-      // consumer refs to the saved name so the consumer's draft-check clears.
-      // Re-read post-update: rename-only DTOs omit `status` but the row may still have flipped.
-      const postUpdate = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
-      if (
-        app.type === APP_TYPES.MODULE &&
-        oldStatus === AppVersionStatus.DRAFT &&
-        postUpdate.status !== AppVersionStatus.DRAFT &&
-        postUpdate.versionType === AppVersionType.VERSION
-      ) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
-        });
-        // Only pin when this save is happening on the default-branch version row.
-        // Accept null branchId for legacy rows predating branch assignment.
-        if (defaultBranch && (postUpdate.branchId == null || postUpdate.branchId === defaultBranch.id)) {
-          await this.versionsUtilService.pinUnpinnedModuleViewerRefs(
-            manager,
-            app,
-            postUpdate.name,
-            user.organizationId
-          );
-        }
-      }
 
       return appVersion;
     });
