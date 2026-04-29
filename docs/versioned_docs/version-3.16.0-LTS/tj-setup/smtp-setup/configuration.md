@@ -1,7 +1,6 @@
 ---
 id: configuration
 title: Setting Up Outgoing Emails (SMTP)
-sidebar_label: Configuration
 ---
 
 <div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
