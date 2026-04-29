@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { FkReferenceMap } from './fk-reference-map';
 
 const CHILD_FOLDERS = [
@@ -152,6 +153,12 @@ export class AppSnapshot {
    * a cor_id → local_id map as it goes, rewrites every reference to
    * the resolved local id, returns the resolved tree. The caller is
    * responsible for the actual INSERT/UPDATE.
+   *
+   * Caller responsibilities for fields stripped on take() (see
+   * STRIP_FIELDS): branchId, currentEnvironmentId, createdBy,
+   * parentVersionId, pulledAt — these are instance-local and the snapshot
+   * intentionally drops them; the caller has to inject the right values
+   * for its target instance/branch before persisting.
    */
   async restore(snapshot: Snapshot, options: RestoreOptions): Promise<AppData> {
     const { manager, context, policy } = options;
@@ -159,9 +166,12 @@ export class AppSnapshot {
     const corToLocal = new Map<string, string>();
 
     // Roots first: their resolved local ids feed downstream lookups (versions
-    // are app-scoped, queries reference app-scoped data sources, …).
-    await resolveAppRows(result, 'apps', manager, context.organizationId, policy.apps, corToLocal);
-    await resolveAppRows(result, 'modules', manager, context.organizationId, policy.modules, corToLocal);
+    // are app-scoped, queries reference app-scoped data sources, …). Apps
+    // and modules share the App table; the type filter prevents a cor_id
+    // collision (e.g., a branched module's cor_id) from being reused as a
+    // FRONT_END app, or vice versa.
+    await resolveAppRows(result, 'apps', APP_TYPES.FRONT_END, manager, context.organizationId, policy.apps, corToLocal);
+    await resolveAppRows(result, 'modules', APP_TYPES.MODULE, manager, context.organizationId, policy.modules, corToLocal);
     await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
     await resolveAppVersions(result, manager, policy.appVersions, corToLocal);
 
@@ -291,6 +301,7 @@ function collectCorIds(items: Record<string, unknown>[]): string[] {
 async function resolveAppRows(
   tree: AppData,
   folder: 'apps' | 'modules',
+  type: APP_TYPES,
   manager: EntityManager,
   organizationId: string,
   policy: Policy,
@@ -302,7 +313,7 @@ async function resolveAppRows(
   const corIds = collectCorIds(items);
   const existing =
     policy === 'matchOrCreate' && corIds.length > 0
-      ? await manager.find(App, { where: { co_relation_id: In(corIds), organizationId } })
+      ? await manager.find(App, { where: { co_relation_id: In(corIds), organizationId, type } })
       : [];
   const existingByCor = indexByCorId(existing);
 
@@ -393,10 +404,16 @@ function assignFreshIdsToChildren(tree: AppData, corToLocal: Map<string, string>
 function applyResolutionToRecords(tree: unknown, corToLocal: Map<string, string>): void {
   visit(tree, (record) => {
     const id = record.id;
-    if (typeof id === 'string' && corToLocal.has(id)) {
+    if (typeof id !== 'string' || !corToLocal.has(id)) return;
+    // Preserve any pre-existing co_relation_id rather than clobbering it
+    // with the value of `id`. take()-produced snapshots delete the field
+    // before this runs so the assignment branch fires; non-take() inputs
+    // (e.g., a JSON bundle that already has both fields) keep their
+    // canonical cor_id intact.
+    if (typeof record.co_relation_id !== 'string') {
       record.co_relation_id = id;
-      record.id = corToLocal.get(id);
     }
+    record.id = corToLocal.get(id);
   });
 }
 
