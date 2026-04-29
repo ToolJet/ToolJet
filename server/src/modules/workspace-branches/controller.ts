@@ -51,6 +51,14 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
     return { success: true };
   }
 
+  @InitFeature(FEATURE_KEY.DELETE_BRANCH)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Delete(':id/delete-branch')
+  async deleteWorkspaceBranch(@User() user, @Param('id') branchId: string) {
+    await this.workspaceBranchService.deleteWorkspaceBranch(user.organizationId, branchId, user);
+    return { success: true };
+  }
+
   @InitFeature(FEATURE_KEY.PUSH_WORKSPACE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('push')

@@ -6,6 +6,7 @@ export const workspaceBranchesService = {
   create,
   switchBranch,
   deleteBranch,
+  deleteWorkspaceBranch,
   pushWorkspace,
   pullWorkspace,
   ensureAppDraft,
@@ -46,6 +47,11 @@ function switchBranch(branchId, appId) {
 function deleteBranch(branchId) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/${branchId}`, requestOptions).then(handleResponse);
+}
+
+function deleteWorkspaceBranch(branchId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workspace-branches/${branchId}/delete-branch`, requestOptions).then(handleResponse);
 }
 
 function pushWorkspace(commitMessage, targetBranch, branchId) {

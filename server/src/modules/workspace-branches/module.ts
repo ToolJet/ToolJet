@@ -6,6 +6,7 @@ import { AppGitModule } from '@modules/app-git/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
+import { VersionModule } from '@modules/versions/module';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -29,6 +30,7 @@ export class WorkspaceBranchesModule extends SubModule {
         await FolderAppsModule.register(configs),
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await VersionModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
       providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService],
