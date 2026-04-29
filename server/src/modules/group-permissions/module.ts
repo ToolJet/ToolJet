@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -7,13 +6,13 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
-import { GroupAdmin } from '@entities/group_admin.entity';
+import { GroupPermissionsUtilService as GroupPermissionsUtilServiceBase } from './util.service';
 
 export class GroupPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       GroupPermissionsService,
-      GroupPermissionsUtilService,
+      GroupPermissionsUtilService: LoadedGroupPermissionsUtilService,
       GroupPermissionsControllerV2,
       GranularPermissionsService,
       GranularPermissionsUtilService,
@@ -22,7 +21,6 @@ export class GroupPermissionsModule extends SubModule {
       GranularPermissionsController,
       GroupAdminService,
       GroupAdminController,
-      FeatureAbilityFactory: LoadedAbilityFactory,
     } = await this.getProviders(configs, 'group-permissions', [
       'service',
       'util.service',
@@ -34,18 +32,20 @@ export class GroupPermissionsModule extends SubModule {
       'controllers/granular-permissions.controller',
       'services/group-admin.service',
       'controllers/group-admin.controller',
-      'ability/index',
     ]);
 
     return {
       module: GroupPermissionsModule,
-      imports: [TypeOrmModule.forFeature([GroupAdmin]), await RolesModule.register(configs)],
-      controllers: isMainImport ? [GranularPermissionsController, GroupPermissionsControllerV2, GroupAdminController] : [],
+      imports: [await RolesModule.register(configs)],
+      controllers: isMainImport
+        ? [GranularPermissionsController, GroupPermissionsControllerV2, GroupAdminController]
+        : [],
       providers: [
         GranularPermissionsService,
         GroupPermissionsService,
         GroupPermissionsDuplicateService,
-        GroupPermissionsUtilService,
+        LoadedGroupPermissionsUtilService,
+        { provide: GroupPermissionsUtilServiceBase, useExisting: LoadedGroupPermissionsUtilService },
         GranularPermissionsUtilService,
         GroupPermissionLicenseUtilService,
         GroupAdminService,
@@ -53,9 +53,9 @@ export class GroupPermissionsModule extends SubModule {
         RolesRepository,
         UserRepository,
         GroupPermissionsRepository,
-        { provide: FeatureAbilityFactory, useClass: LoadedAbilityFactory },
+        FeatureAbilityFactory,
       ],
-      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
+      exports: [LoadedGroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
     };
   }
-}
+}         

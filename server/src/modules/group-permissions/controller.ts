@@ -2,7 +2,7 @@ import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, Updat
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { GroupPermissionsService } from './service';
-import { GroupExistenceGuard } from './guards/group-existance.guard';
+import { GroupExistenceGuard } from '@modules/group-permissions/guards/group-existance.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -22,12 +22,13 @@ import { UserPermissions } from '@modules/ability/types';
   version: '2',
 })
 @InitModule(MODULES.GROUP_PERMISSIONS)
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseGuards(JwtAuthGuard)
 export class GroupPermissionsControllerV2 implements IGroupPermissionsControllerV2 {
   constructor(protected groupPermissionsService: GroupPermissionsService) {}
 
   // Should move this to EE, since different behavior for EE and CE
   @InitFeature(FEATURE_KEY.CREATE)
+  @UseGuards(FeatureAbilityGuard)
   @Post()
   async create(
     @User() user: UserEntity,
@@ -37,7 +38,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.GET_ONE)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get(':id')
   async get(
     @User() user: UserEntity,
@@ -47,6 +48,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.GET_ALL)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get()
   async getAll(
     @User() user: UserEntity,
@@ -62,7 +64,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(FeatureAbilityGuard)
   @Put(':id')
   // Update a custom group
   async update(@User() user: UserEntity, @Param('id') id: string, @Body() updateGroupDto: UpdateGroupPermissionDto) {
@@ -76,14 +78,14 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(FeatureAbilityGuard)
   @Delete(':id')
   async delete(@User() user: UserEntity, @Param('id') id: string) {
     return await this.groupPermissionsService.deleteGroup(id, user);
   }
 
   @InitFeature(FEATURE_KEY.DUPLICATE)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(FeatureAbilityGuard)
   @Post(':id/duplicate')
   async duplicateGroup(
     @User() user: UserEntity,
@@ -94,7 +96,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.ADD_GROUP_USER)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Post(':id/users')
   async createGroupUsers(
     @User() user: UserEntity,
@@ -108,7 +110,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
 
   // Used for Roles and Groups
   @InitFeature(FEATURE_KEY.GET_ALL_GROUP_USER)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(JwtAuthGuard, GroupExistenceGuard, FeatureAbilityGuard)
   @Get(':id/users')
   async getAllGroupUser(
     @User() user: UserEntity,
@@ -119,13 +121,14 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   }
 
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Delete('users/:id')
   async deleteGroupUser(@User() user: UserEntity, @Param('id') id: string) {
     await this.groupPermissionsService.deleteGroupUser(id, user);
   }
 
   @InitFeature(FEATURE_KEY.GET_ADDABLE_USERS)
-  @UseGuards(GroupExistenceGuard)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get(':id/users/addable-users')
   async getAddableGroupUser(
     @User() user: UserEntity,

@@ -32,6 +32,8 @@ import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
  *   PUT  /api/organization-users/:orgUserId              | downgrade to end-user triggers revocation
  */
 
+const email = (label: string) => `${label}-${Date.now().toString(36)}@tooljet.io`;
+
 /** @group platform */
 describe('GroupAdminController', () => {
   let nestApp: INestApplication;
@@ -89,8 +91,8 @@ describe('GroupAdminController', () => {
 
     describe('POST /api/v2/group-permissions/:id/admins | Assign group admin', () => {
       it('workspace admin can assign a builder as group admin → 201 + row in group_admins', async () => {
-        const admin = await createAdmin(nestApp, 'admin-assign@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-target@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-assign'));
+        const builder = await createBuilder(nestApp, email('builder-target'), {
           workspace: admin.workspace,
         });
 
@@ -109,8 +111,8 @@ describe('GroupAdminController', () => {
       });
 
       it('returns 400 when assigning an end-user as group admin', async () => {
-        const admin = await createAdmin(nestApp, 'admin-endusercheck@tooljet.io');
-        const endUser = await createEndUser(nestApp, 'enduser-target@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-endusercheck'));
+        const endUser = await createEndUser(nestApp, email('enduser-target'), {
           workspace: admin.workspace,
         });
 
@@ -125,8 +127,8 @@ describe('GroupAdminController', () => {
       });
 
       it('is idempotent — assigning the same user twice returns existing row (no duplicate)', async () => {
-        const admin = await createAdmin(nestApp, 'admin-idempotent@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-idempotent@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-idempotent'));
+        const builder = await createBuilder(nestApp, email('builder-idempotent'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -143,11 +145,11 @@ describe('GroupAdminController', () => {
       });
 
       it('returns 403 when a non-admin builder tries to assign a group admin', async () => {
-        const admin = await createAdmin(nestApp, 'admin-forassign@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-actor@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-forassign'));
+        const builder = await createBuilder(nestApp, email('builder-actor'), {
           workspace: admin.workspace,
         });
-        const anotherBuilder = await createBuilder(nestApp, 'builder-target2@tooljet.io', {
+        const anotherBuilder = await createBuilder(nestApp, email('builder-target2'), {
           workspace: admin.workspace,
         });
 
@@ -166,8 +168,8 @@ describe('GroupAdminController', () => {
 
     describe('GET /api/v2/group-permissions | Scoped list for group-admin builder', () => {
       it('group-admin builder can GET group list (sees administered groups)', async () => {
-        const admin = await createAdmin(nestApp, 'admin-scopedlist@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-scopedlist@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-scopedlist'));
+        const builder = await createBuilder(nestApp, email('builder-scopedlist'), {
           workspace: admin.workspace,
         });
 
@@ -194,8 +196,8 @@ describe('GroupAdminController', () => {
       });
 
       it('builder with no group-admin assignments gets 403 on GET group list', async () => {
-        const admin = await createAdmin(nestApp, 'admin-noscope@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-noscope@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-noscope'));
+        const builder = await createBuilder(nestApp, email('builder-noscope'), {
           workspace: admin.workspace,
         });
 
@@ -214,11 +216,11 @@ describe('GroupAdminController', () => {
 
     describe('POST /api/v2/group-permissions/:id/users | Scoped add-user for group-admin', () => {
       it('group-admin builder can add users to their administered group → 201', async () => {
-        const admin = await createAdmin(nestApp, 'admin-adduser@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-adduser@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-adduser'));
+        const builder = await createBuilder(nestApp, email('builder-adduser'), {
           workspace: admin.workspace,
         });
-        const targetUser = await createEndUser(nestApp, 'enduser-adduser@tooljet.io', {
+        const targetUser = await createEndUser(nestApp, email('enduser-adduser'), {
           workspace: admin.workspace,
         });
 
@@ -241,11 +243,11 @@ describe('GroupAdminController', () => {
       });
 
       it('group-admin builder cannot add users to a group they do NOT administer → 403', async () => {
-        const admin = await createAdmin(nestApp, 'admin-noadduser@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-noadduser@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-noadduser'));
+        const builder = await createBuilder(nestApp, email('builder-noadduser'), {
           workspace: admin.workspace,
         });
-        const targetUser = await createEndUser(nestApp, 'enduser-noadduser@tooljet.io', {
+        const targetUser = await createEndUser(nestApp, email('enduser-noadduser'), {
           workspace: admin.workspace,
         });
 
@@ -276,11 +278,11 @@ describe('GroupAdminController', () => {
 
     describe('DELETE /api/v2/group-permissions/users/:id | Scoped remove-user for group-admin', () => {
       it('group-admin builder can remove a user from their administered group → 200', async () => {
-        const admin = await createAdmin(nestApp, 'admin-rmuser@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-rmuser@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-rmuser'));
+        const builder = await createBuilder(nestApp, email('builder-rmuser'), {
           workspace: admin.workspace,
         });
-        const targetUser = await createEndUser(nestApp, 'enduser-rmuser@tooljet.io', {
+        const targetUser = await createEndUser(nestApp, email('enduser-rmuser'), {
           workspace: admin.workspace,
         });
 
@@ -307,11 +309,11 @@ describe('GroupAdminController', () => {
       });
 
       it('group-admin builder cannot remove a user from a group they do NOT administer → 403', async () => {
-        const admin = await createAdmin(nestApp, 'admin-nrmuser@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-nrmuser@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-nrmuser'));
+        const builder = await createBuilder(nestApp, email('builder-nrmuser'), {
           workspace: admin.workspace,
         });
-        const targetUser = await createEndUser(nestApp, 'enduser-nrmuser@tooljet.io', {
+        const targetUser = await createEndUser(nestApp, email('enduser-nrmuser'), {
           workspace: admin.workspace,
         });
 
@@ -343,8 +345,8 @@ describe('GroupAdminController', () => {
 
     describe('POST /api/organization-users/:id/archive | Group admin revoked on archive', () => {
       it('group-admin row is deleted when the user is archived', async () => {
-        const admin = await createAdmin(nestApp, 'admin-archive@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-archive@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-archive'));
+        const builder = await createBuilder(nestApp, email('builder-archive'), {
           workspace: admin.workspace,
         });
 
@@ -376,8 +378,8 @@ describe('GroupAdminController', () => {
 
     describe('PUT /api/organization-users/:id | Group admin revoked on downgrade to end-user', () => {
       it('group-admin row is deleted when builder is downgraded to end-user', async () => {
-        const admin = await createAdmin(nestApp, 'admin-downgrade@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-downgrade@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-downgrade'));
+        const builder = await createBuilder(nestApp, email('builder-downgrade'), {
           workspace: admin.workspace,
         });
 
@@ -410,8 +412,8 @@ describe('GroupAdminController', () => {
 
     describe('GET /api/v2/group-permissions/:id/admins | List admins for group', () => {
       it('workspace admin gets 200 and sees assigned group admins', async () => {
-        const admin = await createAdmin(nestApp, 'admin-listadmins@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-listadmins@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-listadmins'));
+        const builder = await createBuilder(nestApp, email('builder-listadmins'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -433,8 +435,8 @@ describe('GroupAdminController', () => {
       });
 
       it('group-admin builder can list admins for their own group → 200', async () => {
-        const admin = await createAdmin(nestApp, 'admin-listadmins-builder@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-listadmins-builder@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-listadmins-builder'));
+        const builder = await createBuilder(nestApp, email('builder-listadmins-builder'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -455,8 +457,8 @@ describe('GroupAdminController', () => {
       });
 
       it('plain builder (no group-admin assignment) gets 403', async () => {
-        const admin = await createAdmin(nestApp, 'admin-listadmins-403@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-listadmins-403@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-listadmins-403'));
+        const builder = await createBuilder(nestApp, email('builder-listadmins-403'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -476,11 +478,11 @@ describe('GroupAdminController', () => {
 
     describe('GET /api/v2/group-permissions/:id/admins/addable | Addable admins', () => {
       it('workspace admin gets 200 — builders and admins appear, end-users do not', async () => {
-        const admin = await createAdmin(nestApp, 'admin-addable@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-addable@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-addable'));
+        const builder = await createBuilder(nestApp, email('builder-addable'), {
           workspace: admin.workspace,
         });
-        const endUser = await createEndUser(nestApp, 'enduser-addable@tooljet.io', {
+        const endUser = await createEndUser(nestApp, email('enduser-addable'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -500,8 +502,8 @@ describe('GroupAdminController', () => {
       it('end-user who is also in a custom group is still excluded from addable list', async () => {
         // Regression: the old query joined group_users without restricting to
         // the default group, so an end-user in any custom group appeared eligible.
-        const admin = await createAdmin(nestApp, 'admin-addable-regression@tooljet.io');
-        const endUser = await createEndUser(nestApp, 'enduser-customgroup@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-addable-regression'));
+        const endUser = await createEndUser(nestApp, email('enduser-customgroup'), {
           workspace: admin.workspace,
         });
 
@@ -522,8 +524,8 @@ describe('GroupAdminController', () => {
       });
 
       it('already-assigned group admin is excluded from addable list', async () => {
-        const admin = await createAdmin(nestApp, 'admin-addable-exclude@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-addable-exclude@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-addable-exclude'));
+        const builder = await createBuilder(nestApp, email('builder-addable-exclude'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -547,8 +549,8 @@ describe('GroupAdminController', () => {
       it('group-admin builder cannot access addable admins → 403', async () => {
         // GET_ADDABLE_ADMINS is explicitly withheld from group-admin builders in
         // the ability factory (comment: "Builders NEVER get: GET_ADDABLE_ADMINS").
-        const admin = await createAdmin(nestApp, 'admin-addable-builder403@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-addable-builder403@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-addable-builder403'));
+        const builder = await createBuilder(nestApp, email('builder-addable-builder403'), {
           workspace: admin.workspace,
         });
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
@@ -574,8 +576,8 @@ describe('GroupAdminController', () => {
 
     describe('DELETE /api/v2/group-permissions/:id/admins/:adminId | Revoke group admin', () => {
       it('workspace admin can revoke a group admin assignment', async () => {
-        const admin = await createAdmin(nestApp, 'admin-revoke@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-revoke@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-revoke'));
+        const builder = await createBuilder(nestApp, email('builder-revoke'), {
           workspace: admin.workspace,
         });
 
@@ -596,8 +598,8 @@ describe('GroupAdminController', () => {
       });
 
       it('returns 403 when a plain builder tries to revoke a group admin', async () => {
-        const admin = await createAdmin(nestApp, 'admin-revoke-403@tooljet.io');
-        const builder = await createBuilder(nestApp, 'builder-revoke-403@tooljet.io', {
+        const admin = await createAdmin(nestApp, email('admin-revoke-403'));
+        const builder = await createBuilder(nestApp, email('builder-revoke-403'), {
           workspace: admin.workspace,
         });
 
@@ -610,7 +612,7 @@ describe('GroupAdminController', () => {
         });
 
         // Another builder (plain, no group-admin) tries to revoke
-        const anotherBuilder = await createBuilder(nestApp, 'builder-plain-revoke@tooljet.io', {
+        const anotherBuilder = await createBuilder(nestApp, email('builder-plain-revoke'), {
           workspace: admin.workspace,
         });
 
