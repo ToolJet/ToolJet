@@ -68,3 +68,10 @@
     }
 }
 
+.tooljet-range-picker {
+  .react-daterange-picker__inputGroup__input--hasLeadingZero,
+  .react-datetimerange-picker__inputGroup__input--hasLeadingZero {
+     margin-left: -0.54em;
+     padding-left: calc(1px + 0.54em); 
+  }
+}
