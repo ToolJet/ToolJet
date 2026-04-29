@@ -6,13 +6,12 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
-import { GroupPermissionsUtilService as GroupPermissionsUtilServiceBase } from './util.service';
 
 export class GroupPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       GroupPermissionsService,
-      GroupPermissionsUtilService: LoadedGroupPermissionsUtilService,
+      GroupPermissionsUtilService,
       GroupPermissionsControllerV2,
       GranularPermissionsService,
       GranularPermissionsUtilService,
@@ -44,8 +43,7 @@ export class GroupPermissionsModule extends SubModule {
         GranularPermissionsService,
         GroupPermissionsService,
         GroupPermissionsDuplicateService,
-        LoadedGroupPermissionsUtilService,
-        { provide: GroupPermissionsUtilServiceBase, useExisting: LoadedGroupPermissionsUtilService },
+        GroupPermissionsUtilService,
         GranularPermissionsUtilService,
         GroupPermissionLicenseUtilService,
         GroupAdminService,
@@ -55,7 +53,7 @@ export class GroupPermissionsModule extends SubModule {
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [LoadedGroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
+      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
     };
   }
 }         
