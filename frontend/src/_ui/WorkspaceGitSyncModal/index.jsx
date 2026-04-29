@@ -94,6 +94,19 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBranch]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Enter' || isPushing || isPulling) return;
+      if (activeTab === 'push' && commitMessage.trim()) {
+        handlePush();
+      } else if (activeTab === 'pull' && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && !actionChoiceMode) {
+        handlePull();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, commitMessage, isPushing, isPulling, checkingForUpdate, actionChoiceMode]);
+
   const checkForUpdates = () => {
     setCheckingForUpdate({
       visible: true,
