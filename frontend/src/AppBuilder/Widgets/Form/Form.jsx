@@ -287,7 +287,10 @@ const FormComponent = (props) => {
   };
 
   useEffect(() => {
-    if (mounted) resetComponent();
+    if (mounted) {
+      setSubmitAttemptCount(0);
+      resetComponent();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
 
@@ -467,7 +470,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormValidationContext.Provider value={useMemo(() => ({ submitAttemptCount }), [submitAttemptCount])}>
+            <FormValidationContext.Provider value={submitAttemptCount}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
