@@ -467,7 +467,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormValidationContext.Provider value={{ submitAttemptCount }}>
+            <FormValidationContext.Provider value={useMemo(() => ({ submitAttemptCount }), [submitAttemptCount])}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
