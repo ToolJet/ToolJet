@@ -815,6 +815,11 @@ const useAppData = (
         } else if (isVersionChanged) {
           // Re-fetch datasources on version/branch switch (branch may have different active datasources)
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
+        } else if (isAppHistoryChanged) {
+          // Re-fetch datasources after app-editor git pull (dummy → real DS swap, or freshly
+          // pulled DSes). Without this, queries point to new DS ids but the cached dataSources
+          // slice still has stale rows, so the query setup panel shows an empty Source.
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);

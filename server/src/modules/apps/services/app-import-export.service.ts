@@ -332,6 +332,17 @@ export class AppImportExportService {
           .orderBy('data_queries.created_at', 'ASC')
           .getMany();
 
+        // Backfill `kind` on each query from its DS. The query above does NOT
+        // join data_query.dataSource so the @AfterLoad hook leaves `kind`
+        // undefined — meaning git-pushed queries.json had no kind, and
+        // git-pulled apps couldn't recover the right plugin/kind for dummy
+        // DSes when their root data-sources file was missing. This explicit
+        // backfill ensures every exported query carries `kind`.
+        const dsKindById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.kind] as [string, string]));
+        for (const dq of dataQueries) {
+          if (!dq.kind) dq.kind = dsKindById.get(dq.dataSourceId);
+        }
+
         const rawAndEntities = await manager
           .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
           .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
@@ -1636,7 +1647,8 @@ export class AppImportExportService {
           manager,
           importingDataSource,
           user,
-          isGitApp
+          isGitApp,
+          branchId
         );
 
         appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
@@ -1701,7 +1713,11 @@ export class AppImportExportService {
         }
 
         const isDefaultDatasource = DefaultDataSourceNames.includes(importingDataSource.name as DefaultDataSourceName);
-        if (!isDefaultDatasource) {
+        // Skip per-app DSO backfill for git apps — workspace-level pull
+        // (deserializeDataSources) and ensureDummyDataSources already create
+        // the DSV + per-env DSVO rows. Running this here with empty
+        // importingDataSourceOptions would crash on `defaultEnvDsOption.options`.
+        if (!isDefaultDatasource && !isGitApp) {
           await this.createDataSourceOptionsForExistingAppEnvs(
             manager,
             importingAppVersion,
@@ -2334,7 +2350,8 @@ export class AppImportExportService {
     manager: EntityManager,
     dataSource: DataSource,
     user: User,
-    isGitApp = false
+    isGitApp = false,
+    branchId?: string
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
@@ -2366,12 +2383,17 @@ export class AppImportExportService {
     // Git exports replace id with co_relation_id, so the imported dataSource.id
     // is actually the source's co_relation_id. Look up by co_relation_id to
     // find existing DS that were previously imported or created locally.
+    // Filter out dummies — if both a dummy and a real DS share the same
+    // co_relation_id (e.g. a previous pull created a dummy and a later pull
+    // created the real one), always pick the real one. Reconciliation runs
+    // separately to clean up the orphaned dummy.
     const globalDataSourceByCoRelationId = async (dataSource: DataSource) => {
       return await manager.findOne(DataSource, {
         where: {
           co_relation_id: dataSource.id,
           scope: DataSourceScopes.GLOBAL,
           organizationId: user.organizationId,
+          is_dummy: false,
         },
       });
     };
@@ -2391,13 +2413,66 @@ export class AppImportExportService {
       (await globalDataSourceByCoRelationId(dataSource)) ||
       (await globalDataSourceWithSameNameExists(dataSource));
 
-    if (existingDatasource) return existingDatasource;
+    // For git imports on a specific branch, a real DS that exists in the
+    // workspace but has no DSV on this branch is effectively not-yet-pulled
+    // here (e.g. user created the DS on another branch and only pushed the
+    // app, not the workspace data sources). Treat it as missing so we fall
+    // through to dummy creation; queries get bound to the dummy until a later
+    // workspace pull brings the DS file into git, creates a branch DSV, and
+    // reconcileDummyDataSources retargets the queries to the real DS.
+    let useExisting = !!existingDatasource;
+    if (existingDatasource && isGitApp && branchId) {
+      const branchDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId: existingDatasource.id, branchId, isActive: true },
+      });
+      if (!branchDsv) {
+        useExisting = false;
+      }
+    }
+    if (useExisting && existingDatasource) return existingDatasource;
 
     if (isGitApp) {
-      throw new BadRequestException(
-        `The connected branch doesn't have the data source "${dataSource.name}" available. ` +
-          `Make sure it's committed to the data-sources/ folder in your branch.`
-      );
+      // Per-app dataSources are no longer pushed to git. When a query
+      // references a co_relation_id that doesn't resolve to any global DS
+      // in this workspace (and no root data-sources/{coRelId}.json exists
+      // either), we create a dummy placeholder so the app still imports.
+      // - Name: `<original>_dummy` (or `unresolved_<full-co_relation_id>_dummy` if unknown)
+      // - Kind: from git file if known, else 'restapi' (safe generic)
+      // - co_relation_id: preserved so a later pull can swap in the real DS
+      const baseName = (dataSource.name || `unresolved_${dataSource.id || ''}`).replace(/_dummy$/, '');
+      const dummyName = `${baseName}_dummy`;
+      const dummyKind = dataSource.kind || 'restapi';
+      let pluginId: string | null = null;
+      if (dataSource.pluginId) {
+        const plugin = await manager.findOne(Plugin, { where: { id: dataSource.pluginId } });
+        if (plugin) pluginId = plugin.id;
+      }
+      // Reuse an existing dummy with the same co_relation_id if one was
+      // already created for another query in this app (or another app in the
+      // same org).
+      const existingDummy = await manager.findOne(DataSource, {
+        where: {
+          co_relation_id: dataSource.id,
+          organizationId: user.organizationId,
+          is_dummy: true,
+          scope: DataSourceScopes.GLOBAL,
+        },
+      });
+      if (existingDummy) return existingDummy;
+
+      const dummy = manager.create(DataSource, {
+        organizationId: user?.organizationId,
+        name: dummyName,
+        kind: dummyKind,
+        type: DataSourceTypes.DEFAULT,
+        scope: DataSourceScopes.GLOBAL,
+        pluginId,
+        is_dummy: true,
+      });
+      await manager.save(dummy);
+      dummy.co_relation_id = dataSource.id || (null as any);
+      await manager.update(DataSource, { id: dummy.id }, { co_relation_id: dummy.co_relation_id });
+      return dummy;
     }
 
     const createDsFromPluginInstalled = async (ds: DataSource): Promise<DataSource> => {
