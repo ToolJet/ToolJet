@@ -21,31 +21,38 @@ export default class S3QueryService implements QueryService {
     const client = await this.getConnection(sourceOptions);
     let result = {};
 
+    const allowDynamicConnectionParameters =
+      this._normalizeBool(sourceOptions.allow_dynamic_connection_parameters) ?? true;
+    const resolvedQueryOptions: QueryOptions = {
+      ...queryOptions,
+      bucket: allowDynamicConnectionParameters ? queryOptions.bucket : sourceOptions.bucket_name,
+    };
+
     try {
       switch (operation) {
         case Operation.CreateBucket:
-          result = await createBucket(client, queryOptions);
+          result = await createBucket(client, resolvedQueryOptions);
           break;
         case Operation.ListBuckets:
           result = await listBuckets(client, {});
           break;
         case Operation.ListObjects:
-          result = await listObjects(client, queryOptions);
+          result = await listObjects(client, resolvedQueryOptions);
           break;
         case Operation.GetObject:
-          result = await getObject(client, queryOptions);
+          result = await getObject(client, resolvedQueryOptions);
           break;
         case Operation.UploadObject:
-          result = await uploadObject(client, queryOptions);
+          result = await uploadObject(client, resolvedQueryOptions);
           break;
         case Operation.SignedUrlForGet:
-          result = await signedUrlForGet(client, queryOptions);
+          result = await signedUrlForGet(client, resolvedQueryOptions);
           break;
         case Operation.SignedUrlForPut:
-          result = await signedUrlForPut(client, queryOptions);
+          result = await signedUrlForPut(client, resolvedQueryOptions);
           break;
         case Operation.RemoveObject:
-          result = await removeObject(client, queryOptions);
+          result = await removeObject(client, resolvedQueryOptions);
           break;
       }
     } catch (error) {
@@ -135,5 +142,11 @@ export default class S3QueryService implements QueryService {
 
       return new S3Client({ region, credentials, ...endpointOptions });
     }
+  }
+
+  private _normalizeBool(val: unknown): boolean | undefined {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return undefined;
   }
 }

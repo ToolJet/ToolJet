@@ -24,6 +24,12 @@
       },
       "endpoint": {
         "type": "string"
+      },
+      "bucket_name": {
+        "type": "string"
+      },
+      "allow_dynamic_connection_parameters": {
+        "type": "boolean"
       }
     }
   },
@@ -45,6 +51,12 @@
     },
     "instance_metadata_credentials": {
       "value": "iam_access_keys"
+    },
+    "bucket_name": {
+      "value": ""
+    },
+    "allow_dynamic_connection_parameters": {
+      "value": true
     }
   },
   "properties": {
@@ -183,6 +195,18 @@
               "value": "us-gov-west-1"
             }
           ]
+        },
+        "bucket_name": {
+          "label": "Bucket",
+          "key": "bucket_name",
+          "type": "text",
+          "description": "Enter bucket name"
+        },
+        "allow_dynamic_connection_parameters": {
+          "label": "Allow dynamic connection parameters",
+          "key": "allow_dynamic_connection_parameters",
+          "type": "toggle",
+          "description": "Toggle to allow bucket name to be set per query. When enabled, bucket name is read from query options; when disabled, it is read from the configuration below."
         }
       }
      
