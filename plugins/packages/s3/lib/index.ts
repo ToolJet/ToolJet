@@ -25,7 +25,9 @@ export default class S3QueryService implements QueryService {
       this._normalizeBool(sourceOptions.allow_dynamic_connection_parameters) ?? true;
     const resolvedQueryOptions: QueryOptions = {
       ...queryOptions,
-      bucket: allowDynamicConnectionParameters ? queryOptions.bucket : sourceOptions.bucket_name,
+      bucket: allowDynamicConnectionParameters
+        ? queryOptions.bucket || sourceOptions.bucket_name
+        : sourceOptions.bucket_name,
     };
 
     try {
