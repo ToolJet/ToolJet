@@ -237,8 +237,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     dataSourceId: string,
     organizationId: string,
     environmentId?: string,
-    branchId?: string,
-    appVersionId?: string
+    branchId?: string
   ): Promise<DataSourceVersionOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
@@ -281,29 +280,9 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         }
       }
 
-      // Saved/tagged version path: read from data_source_version_options via appVersionId
-      if (appVersionId) {
-        const dsv = await manager.findOne(DataSourceVersion, {
-          where: { dataSourceId, appVersionId, isActive: true },
-        });
-        if (dsv) {
-          const dsvo = await manager.findOne(DataSourceVersionOptions, {
-            where: { dataSourceVersionId: dsv.id, environmentId: envId },
-          });
-          if (dsvo) {
-            const result = {
-              id: dsvo.id,
-              options: dsvo.options,
-              environmentId: envId,
-              dataSourceId,
-              createdAt: dsvo.createdAt,
-              updatedAt: dsvo.updatedAt,
-              environmentName: envName,
-            } as any;
-            return result;
-          }
-        }
-      }
+      // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
+      // Released versions now fall through to the default DSV path below.
+      // if (appVersionId) { ... where: { dataSourceId, appVersionId, isActive: true } ... }
 
       // Default version path: read from data_source_version_options via default DSV
       const defaultDsv = await manager.findOne(DataSourceVersion, {

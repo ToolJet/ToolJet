@@ -1745,6 +1745,7 @@ export class AppImportExportService {
           const newFolder = manager.create(DataQueryFolder, {
             name: folder.name,
             appVersionId: newAppVersionId,
+            co_relation_id: folder.id,
           });
           const savedFolder = await manager.save(DataQueryFolder, newFolder);
           savedId = savedFolder.id;
@@ -1783,6 +1784,7 @@ export class AppImportExportService {
           childId: newChildId,
           childType: mapping.childType,
           index: mapping.index,
+          co_relation_id: mapping.id,
         });
         await manager.save(DataQueryFolderMapping, newMapping);
       }
