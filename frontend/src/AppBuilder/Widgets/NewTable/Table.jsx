@@ -357,6 +357,7 @@ const Table = memo(
           '--cc-table-striped-row-bg-color': stripedBackgroundColor,
           '--cc-table-striped-row-hover': stripedHoverColor,
           '--cc-table-striped-editable-column-hover': stripedEditableColumnColor,
+          '--cc-table-pinned-column-bg': containerBackgroundColor,
           '--cc-table-selected-row-bg': selectedRowColor,
         }}
       >
