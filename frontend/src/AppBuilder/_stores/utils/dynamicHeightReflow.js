@@ -1,6 +1,7 @@
 import {
   BOX_PADDING,
   CONTAINER_FORM_CANVAS_PADDING,
+  HIDDEN_COMPONENT_HEIGHT,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
@@ -802,6 +803,7 @@ export const buildReflowPatch = ({
   contextIndices,
   inFlowMap,
   resolvedHeights,
+  collapseWhenHiddenMap,
 }) => {
   const sortedComponentIds = sortByCanonicalPosition(componentIds, currentLayout, currentPageComponents);
   const connectedIds = getConnectedLaneComponentIds(
@@ -949,7 +951,21 @@ export const buildReflowPatch = ({
         const v = blockers[vi];
         if (!v.isInFlow) continue;
         hasInFlowBlocker = true;
-        const vCanonicalBottom = (v.canonicalLayout?.top ?? 0) + (v.canonicalLayout?.height ?? 0);
+        const vCanonicalTop = v.canonicalLayout?.top ?? 0;
+        const vCanonicalBottom = vCanonicalTop + (v.canonicalLayout?.height ?? 0);
+        // Canonical-overlap correction (scoped to collapse-on-hide blockers
+        // only — the dynamic-height grow/shrink path keeps its original
+        // canonical math). When V opted into collapseWhenHidden AND target's
+        // canonical top sits above V's canonical bottom, the only way the
+        // author could draw that overlap is by placing T below V's
+        // HIDDEN_COMPONENT_HEIGHT placeholder. Without this, canonicalGap
+        // goes negative on V's show transition and pins T inside V; with it,
+        // the gap reflects what the user actually drew against the placeholder.
+        const blockerOptedIntoCollapse = collapseWhenHiddenMap?.[v.id] === true;
+        const vCanonicalBottomForGap =
+          blockerOptedIntoCollapse && targetTopCanonical < vCanonicalBottom
+            ? vCanonicalTop + HIDDEN_COMPONENT_HEIGHT
+            : vCanonicalBottom;
         let subtraction = 0;
         for (const [uid, slot] of slotSize) {
           const uTop = outOfFlowTopsById.get(uid) ?? 0;
@@ -985,7 +1001,7 @@ export const buildReflowPatch = ({
           const wCanonicalHeight = w.canonicalLayout?.height ?? 0;
           inFlowDelta += wCurrentHeight - wCanonicalHeight;
         }
-        const canonicalGap = targetTopCanonical - vCanonicalBottom - subtraction;
+        const canonicalGap = targetTopCanonical - vCanonicalBottomForGap - subtraction;
         const constraint = v.currentBottom + canonicalGap + inFlowDelta;
         if (constraint > otherMax) otherMax = constraint;
       }

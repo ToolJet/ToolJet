@@ -958,10 +958,20 @@ class DataSourceManagerComponent extends React.Component {
       ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
+    // For old-schema datasources (restapi, grpcv, etc.), DynamicForm.useLayoutEffect fills
+    // missing defaults into state.options but not into selectedDataSource.options (DB value).
+    // Normalize the baseline so those auto-filled defaults don't register as unsaved changes.
+    const dsDefaults = dataSourceMeta?.defaults ?? {};
+    const normalizedSavedOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...(selectedDataSource?.options ?? {}) }
+    );
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
