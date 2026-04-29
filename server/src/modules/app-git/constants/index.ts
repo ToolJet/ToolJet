@@ -13,4 +13,5 @@ export enum FEATURE_KEY {
   CREATE_BRANCH = 'create_branch',
   FETCH_PULL_REQUESTS = 'fetch_pull_requests',
   CREATE_GIT_TAG = 'CREATE_GIT_TAG',
+  DELETE_BRANCH = 'delete_branch',
 }

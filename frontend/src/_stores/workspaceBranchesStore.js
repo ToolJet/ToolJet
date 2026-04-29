@@ -19,6 +19,8 @@ const initialState = {
   isPushing: false,
   isPulling: false,
   remoteBranches: [],
+  isDeletingBranch: false,
+  deleteBranchError: null,
 };
 
 // Helper to resolve current branch from branches list + active ID
@@ -110,9 +112,15 @@ export const useWorkspaceBranchesStore = create(
           set({ activeBranchId: branchId, currentBranch });
         },
 
-        async deleteBranch(branchId) {
-          await workspaceBranchesService.deleteBranch(branchId);
-          await get().actions.fetchBranches();
+        async deleteBranch(organizationId, branchId) {
+          set({ isDeletingBranch: true, deleteBranchError: null });
+          try {
+            await gitSyncService.deleteBranch(organizationId, branchId);
+            set({ isDeletingBranch: false });
+          } catch (err) {
+            const message = err?.error || err?.message || 'Failed to delete branch';
+            set({ isDeletingBranch: false, deleteBranchError: message });
+          }
         },
 
         async pushWorkspace(commitMessage, targetBranch) {
@@ -154,6 +162,10 @@ export const useWorkspaceBranchesStore = create(
 
         async checkForUpdates(branch) {
           return await workspaceBranchesService.checkForUpdates(branch);
+        },
+
+        resetDeleteState() {
+          set({ isDeletingBranch: false, deleteBranchError: null });
         },
 
         reset() {

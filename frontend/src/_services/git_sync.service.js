@@ -31,6 +31,7 @@ export const gitSyncService = {
   checkTagExists,
   updateEnvConfigs,
   testProviderConnection,
+  deleteBranch,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -413,4 +414,13 @@ function checkTagExists(appId, versionName) {
     handleResponse
   );
 }
+function deleteBranch(organizationId, branchId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/branches/${branchId}`, requestOptions).then(handleResponse);
+}
+
 // Remove all app-git api's to separate service from here.

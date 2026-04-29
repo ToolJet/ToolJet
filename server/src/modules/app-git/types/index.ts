@@ -16,6 +16,7 @@ interface Features {
   [FEATURE_KEY.GET_ALL_BRANCHES]: FeatureConfig;
   [FEATURE_KEY.CREATE_BRANCH]: FeatureConfig;
   [FEATURE_KEY.FETCH_PULL_REQUESTS]: FeatureConfig;
+  [FEATURE_KEY.DELETE_BRANCH]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

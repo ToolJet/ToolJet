@@ -57,6 +57,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.FETCH_PULL_REQUESTS]: {
       license: LICENSE_FIELD.GIT_SYNC,
     },
+    [FEATURE_KEY.DELETE_BRANCH]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
   },
 };
 
