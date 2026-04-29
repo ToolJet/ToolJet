@@ -127,8 +127,9 @@ describe("Bulk User Upload", () => {
   beforeEach(() => {
     const firstName = fake.firstName;
     const workspaceName = firstName.toLowerCase();
-    cy.mhDeleteAll();
+    
     cy.apiLogin();
+    cy.mhDeleteAll();
     cy.apiCreateWorkspace(firstName, workspaceName);
     cy.visit(`${workspaceName}`);
     common.navigateToManageUsers();
@@ -160,7 +161,7 @@ describe("Bulk User Upload", () => {
 
   it("Should successfully upload valid users", () => {
     const file = getFile(TEST_FILES.VALID_USERS);
-    cy.mhDeleteAll();
+    
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
