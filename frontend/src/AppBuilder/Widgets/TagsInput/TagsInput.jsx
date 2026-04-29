@@ -18,6 +18,7 @@ import TagsInputMenuList from './TagsInputMenuList';
 import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 const TagsInput = ({
   id,
@@ -90,6 +91,7 @@ const TagsInput = ({
   const [isTagsDisabled, setIsTagsDisabled] = useState(properties.disabledState);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
