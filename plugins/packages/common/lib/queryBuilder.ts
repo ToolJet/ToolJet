@@ -41,6 +41,9 @@ const VALID_ORDER_DIRECTIONS = new Set(['ASC', 'DESC']);
 
 abstract class BaseDialect {
   abstract quote(id: string): string;
+  maxBindParams(): number {
+    return 65535;
+  }
   limitOffset(_limit: number | string | null | undefined, _offset: number | string | null | undefined): string {
     return '';
   }
@@ -77,6 +80,29 @@ class MySQLDialect extends BaseDialect {
   limitOffset(limit: number | string | null | undefined, offset: number | string | null | undefined): string {
     if (limit == null) return '';
     let s = ` LIMIT ${toPositiveInt(limit)}`;
+    if (offset != null) s += ` OFFSET ${toPositiveInt(offset)}`;
+    return s;
+  }
+}
+
+class SnowflakeDialect extends BaseDialect {
+  get name() {
+    return 'snowflake';
+  }
+  quote(id: string): string {
+    // Snowflake uses double-quote identifiers (case-sensitive when quoted)
+    return `"${String(id).replace(/"/g, '""')}"`;
+  }
+  maxBindParams(): number {
+    return 16384;
+  }
+  supportsIlike(): boolean {
+    // Snowflake natively supports ILIKE
+    return true;
+  }
+  limitOffset(limit: number | string | null | undefined, offset: number | string | null | undefined): string {
+    let s = '';
+    if (limit != null) s += ` LIMIT ${toPositiveInt(limit)}`;
     if (offset != null) s += ` OFFSET ${toPositiveInt(offset)}`;
     return s;
   }
@@ -121,6 +147,8 @@ function getDialect(name: string): BaseDialect {
     case 'mssql':
     case 'sqlserver':
       return new MSSQLDialect();
+    case 'snowflake':
+      return new SnowflakeDialect();
     default:
       throw new QueryBuilderError(`Unsupported dialect: "${name}"`);
   }
@@ -358,11 +386,12 @@ export class QueryBuilder {
     const entries = Object.values(columns || {}).filter((entry) => {
       const hasColumn = !!(entry.column && String(entry.column).trim());
       const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
-      if (!hasColumn && isValueEmpty) return false; // skip fully empty
-      if (!hasColumn) throw new QueryBuilderError('A column entry has a value but no column name specified');
+      if (!hasColumn && isValueEmpty) return false; // skip if both key and value is empty
+      if (!hasColumn) throw new QueryBuilderError('A column entry has a value but no column name specified'); // Throw error if column name is missing but value is provided
       return true;
     });
 
+    // If no valid columns are provided, generate an INSERT with DEFAULT VALUES
     if (entries.length === 0) {
       const query = `INSERT INTO ${table} DEFAULT VALUES`;
       return { query, params: [] };
@@ -381,6 +410,7 @@ export class QueryBuilder {
 
     const { schema, columns, where_filters } = updateRows;
 
+    // Emtpy filter values are ignored, but column names are required if a value is provided
     const validColumnEntries = Object.values(columns || {}).filter((col) => {
       const hasColumn = !!(col.column && String(col.column).trim());
       const isValueEmpty = col.value === undefined || col.value === null || col.value === '';
@@ -415,6 +445,7 @@ export class QueryBuilder {
       throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
+    // Empty or fully empty column entries are not allowed for upsert, since we need to know which columns to update on conflict.
     const columnEntries = Object.values(columns || {}).filter((entry) => {
       const hasColumn = !!(entry.column && String(entry.column).trim());
       const isValueEmpty = entry.value === undefined || entry.value === null || entry.value === '';
@@ -437,6 +468,8 @@ export class QueryBuilder {
       return this._pgUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else if (this._dialect instanceof MySQLDialect) {
       return this._mysqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
+    } else if (this._dialect instanceof SnowflakeDialect) {
+      return this._snowflakeUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     } else {
       return this._mssqlUpsert(table, primary_key_columns, allColumnNames, updateColumnNames, row);
     }
@@ -470,6 +503,10 @@ export class QueryBuilder {
       query = `DELETE FROM ${table}`;
       query += this._whereClause(where_filters);
       if (limit != null) query += ` LIMIT ${toPositiveInt(limit)}`;
+    } else if (this._dialect instanceof SnowflakeDialect) {
+      // Snowflake does not support DELETE with LIMIT; limit is silently ignored
+      query = `DELETE FROM ${table}`;
+      query += this._whereClause(where_filters);
     } else if (this._dialect instanceof MSSQLDialect) {
       const top = limit != null ? `TOP(${toPositiveInt(limit)}) ` : '';
       query = `DELETE ${top}FROM ${table}`;
@@ -668,6 +705,8 @@ export class QueryBuilder {
         return this._pgUpsert(table, primary_key, allCols, updateCols, row);
       } else if (this._dialect instanceof MySQLDialect) {
         return this._mysqlUpsert(table, primary_key, allCols, updateCols, row);
+      } else if (this._dialect instanceof SnowflakeDialect) {
+        return this._snowflakeUpsert(table, primary_key, allCols, updateCols, row);
       } else {
         return this._mssqlUpsert(table, primary_key, allCols, updateCols, row);
       }
@@ -827,6 +866,65 @@ export class QueryBuilder {
     const query =
       `IF NOT EXISTS (SELECT 1 FROM ${table} WHERE ${existsWhere})` +
       ` INSERT INTO ${table} (${insertQuoted.join(', ')}) OUTPUT INSERTED.* VALUES (${insertPlaceholders.join(', ')})`;
+
+    return { query, params: [...this._params] };
+  }
+
+  private _buildInsertQuery(table: string, columnNames: string[], row: Record<string, unknown>): QueryResult {
+    this._reset();
+    const quotedColumns = columnNames.map((col) => this._dialect.quote(col));
+    const placeholders = columnNames.map((col) => this._addParam(row[col]));
+    const query = `INSERT INTO ${table} (${quotedColumns.join(', ')}) VALUES (${placeholders.join(', ')})`;
+    return { query, params: [...this._params] };
+  }
+
+  private _snowflakeUpsert(
+    table: string,
+    primaryKey: string[],
+    allCols: string[],
+    updateCols: string[],
+    row: Record<string, unknown>
+  ): QueryResult {
+    this._reset();
+
+    const primaryKeySet = new Set(primaryKey);
+    const allPkValuesAbsent = primaryKey.every((pk) => {
+      const value = row[pk];
+      return value === undefined || value === null || value === '';
+    });
+
+    // Rule 3: PK column values not provided in input → INSERT the records
+    if (allPkValuesAbsent) {
+      const nonPrimaryKeyColumnNames = allCols.filter((col) => !primaryKeySet.has(col));
+      if (nonPrimaryKeyColumnNames.length === 0) {
+        throw new QueryBuilderError('No non-primary-key columns provided to insert');
+      }
+      return this._buildInsertQuery(table, nonPrimaryKeyColumnNames, row);
+    }
+
+    // Rules 1, 2 & 4: PK values provided → Snowflake MERGE USING (SELECT ? AS col, ...) AS _source
+    const sourceColumns = allCols.map((col) => `${this._addParam(row[col])} AS ${this._dialect.quote(col)}`).join(', ');
+    const onClause = primaryKey
+      .map((pk) => `_target.${this._dialect.quote(pk)} = _source.${this._dialect.quote(pk)}`)
+      .join(' AND ');
+
+    let query = `MERGE INTO ${table} AS _target`;
+    query += ` USING (SELECT ${sourceColumns}) AS _source`;
+    query += ` ON ${onClause}`;
+
+    // Rule 1: PK exists in DB → UPDATE only the columns given as input (updateCols), not the entire row
+    // Rule 4: Only PK columns given as input → no WHEN MATCHED clause, just detect existence
+    if (updateCols.length > 0) {
+      const setClauses = updateCols.map(
+        (col) => `_target.${this._dialect.quote(col)} = _source.${this._dialect.quote(col)}`
+      );
+      query += ` WHEN MATCHED THEN UPDATE SET ${setClauses.join(', ')}`;
+    }
+
+    // Rule 2: PK not found in DB → INSERT the records
+    const quotedCols = allCols.map((col) => this._dialect.quote(col));
+    const sourceRefs = allCols.map((col) => `_source.${this._dialect.quote(col)}`);
+    query += ` WHEN NOT MATCHED THEN INSERT (${quotedCols.join(', ')}) VALUES (${sourceRefs.join(', ')})`;
 
     return { query, params: [...this._params] };
   }
