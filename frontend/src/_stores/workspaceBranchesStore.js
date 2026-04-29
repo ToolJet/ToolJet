@@ -120,11 +120,13 @@ export const useWorkspaceBranchesStore = create(
         async deleteWorkspaceBranch(branchId) {
           set({ isDeletingBranch: true, deleteBranchError: null });
           try {
-            await workspaceBranchesService.deleteWorkspaceBranch(branchId);
+            await workspaceBranchesService.deleteBranch(branchId);
             set({ isDeletingBranch: false });
+            return { success: true };
           } catch (err) {
             const message = err?.error || err?.message || 'Failed to delete branch';
             set({ isDeletingBranch: false, deleteBranchError: message });
+            throw err;
           }
         },
 

@@ -26,7 +26,7 @@ export interface IWorkspaceBranchService {
     appId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }>;
   deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
-  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
+  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }>;
   pushWorkspace(organizationId: string, dto: WorkspacePushDto, user?: User): Promise<{ success: boolean }>;
   pullWorkspace(
     organizationId: string,
