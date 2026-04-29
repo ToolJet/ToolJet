@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { EntityFolder, FkReferenceMap, FolderRefConfig } from './fk-reference-map';
+import { FkReferenceMap } from './fk-reference-map';
 
 /**
- * AppData = the in-memory shape used by export/import/git flows. Today's
- * legacy export tree (apps, components, pages, queries, …); we keep it
- * untyped here because nominal typing for that whole tree is out of scope.
+ * AppData = the in-memory shape used by export/import/git flows
+ * (apps, components, pages, queries, …). Untyped here — nominal typing
+ * for the whole legacy export tree is out of scope.
  */
 export type AppData = Record<string, unknown>;
 
 /**
  * Snapshot = the portable form. Local DB ids replaced with co_relation_ids,
- * instance-scoped fields stripped. Safe to write to a file tree, send over
- * the wire, or hand to another instance.
+ * instance-scoped fields stripped. Safe to write to a file tree, send
+ * over the wire, or hand to another instance.
  */
 export type Snapshot = Record<string, unknown>;
 
@@ -20,13 +20,12 @@ const UUID_V4_REGEX_GLOBAL =
   /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/g;
 
 /**
- * Fields that exist locally but must not appear in a snapshot: timestamps
- * that drift across instances, FK columns to instance-scoped tables
- * (workspace_branch, environment, user), and bookkeeping like pulledAt.
+ * Per-folder fields that exist locally but must not appear in a snapshot:
+ * timestamps that drift across instances, FK columns to instance-scoped
+ * tables (workspace_branch, environment, user), and bookkeeping fields
+ * like pulledAt.
  */
-const STRIP_FIELDS: Partial<
-  Record<EntityFolder, { fields?: string[]; nested?: Record<string, { fields: string[] }> }>
-> = {
+const STRIP_FIELDS: Record<string, { fields?: string[]; nested?: Record<string, { fields: string[] }> }> = {
   versions: {
     fields: ['parentVersionId', 'createdBy', 'currentEnvironmentId', 'branchId', 'pulledAt'],
   },
@@ -43,64 +42,48 @@ const STRIP_FIELDS: Partial<
 /**
  * Take and restore portable snapshots of an app.
  *
- * Every flow that crosses an instance boundary — git push, git pull, JSON
- * export, JSON import, branch-create — calls this service instead of
- * holding its own rewrite map. That's what guarantees the §0 invariant:
- * a manual JSON export/import on instance B produces the same DB state as
+ * Every flow that crosses an instance boundary — git push, git pull,
+ * JSON export, JSON import, branch-create — calls this service instead
+ * of holding its own rewrite map. The shared boundary is what makes a
+ * manual JSON export/import on instance B produce the same DB state as
  * a git push/pull from A to B.
  */
 @Injectable()
 export class AppSnapshot {
+  // FkReferenceMap is needed by restore() (lookup-by-cor-id requires
+  // knowing which fields are FKs and their target tables). take() doesn't
+  // need it — the regex sweep handles every UUID, structural or not.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(private readonly fkMap: FkReferenceMap) {}
 
   /**
-   * DB → wire. Walks the entity tree, replaces every local-id reference
-   * with its co_relation_id. The result is safe to persist outside this
-   * instance.
+   * DB → wire. Walks the input tree, replaces every local-id reference
+   * with its co_relation_id, strips instance-local fields. The result
+   * is safe to persist outside this instance.
    *
-   * `extraIds` lets callers seed the local→cor map for entities not in
-   * the tree (e.g. workspace-scoped data sources referenced by query
-   * dataSourceId).
+   * The input must contain every entity referenced by an FK in the tree.
+   * If a query references a workspace-scoped data source, that data
+   * source row needs to be in the AppData (with its co_relation_id) for
+   * the FK rewrite to find a mapping.
    */
-  take(appData: AppData, extraIds?: Map<string, string>): Snapshot {
+  take(appData: AppData): Snapshot {
     const snapshot = clone(appData) as Snapshot;
     const localToCor = collectLocalToCor(snapshot);
-    if (extraIds) for (const [k, v] of extraIds) if (!localToCor.has(k)) localToCor.set(k, v);
-
-    // Build the local→cor map first (needs co_relation_id present), then
-    // swap id ← co_relation_id everywhere so the wire shape carries only
-    // portable identity. Order matters: the swap erases co_relation_id.
     swapIdToCorRecursive(snapshot);
-
-    for (const [folderName, content] of Object.entries(snapshot)) {
-      const folder = this.fkMap.resolveFolder(folderName);
-      if (!folder) continue;
-      const items = Array.isArray(content) ? content : content ? [content] : [];
-      for (const item of items) {
-        if (!item || typeof item !== 'object') continue;
-        const record = item as Record<string, unknown>;
-        rewriteFkFields(record, this.folderConfig(folder), localToCor);
-        rewriteUuidsInAllStrings(record, localToCor);
-        applyStripList(record, folder);
-      }
-    }
-
+    rewriteUuidsInAllStrings(snapshot, localToCor);
+    stripInstanceLocalFields(snapshot);
     return snapshot;
   }
 
   /**
-   * Wire → DB. Walks the snapshot in dependency order, looks up the local
-   * row for each co_relation_id (reusing existing local ids when matched,
-   * generating new ones when not), and rewrites every reference to the
-   * resolved local id before insert/update.
+   * Wire → DB. Walks the snapshot in dependency order, looks up the
+   * local row for each co_relation_id (reusing existing local ids when
+   * matched, generating new ones when not), and rewrites every reference
+   * to the resolved local id before insert/update.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async restore(_snapshot: Snapshot, _manager: EntityManager): Promise<AppData> {
     throw new Error('AppSnapshot.restore not implemented yet');
-  }
-
-  private folderConfig(folder: EntityFolder): FolderRefConfig {
-    return { fields: this.fkMap.fields(folder), nested: this.fkMap.nested(folder) };
   }
 }
 
@@ -129,32 +112,6 @@ function swapIdToCorRecursive(tree: unknown): void {
   });
 }
 
-function rewriteFkFields(
-  record: Record<string, unknown>,
-  config: FolderRefConfig,
-  localToCor: Map<string, string>
-): void {
-  for (const field of config.fields) {
-    const value = record[field];
-    if (typeof value !== 'string') continue;
-    const mapped = rewriteUuidsInString(value, localToCor);
-    if (mapped !== value) record[field] = mapped;
-  }
-  if (!config.nested) return;
-  for (const [key, nestedConfig] of Object.entries(config.nested)) {
-    const nested = record[key];
-    if (Array.isArray(nested)) {
-      for (const child of nested) {
-        if (child && typeof child === 'object') {
-          rewriteFkFields(child as Record<string, unknown>, nestedConfig, localToCor);
-        }
-      }
-    } else if (nested && typeof nested === 'object') {
-      rewriteFkFields(nested as Record<string, unknown>, nestedConfig, localToCor);
-    }
-  }
-}
-
 function rewriteUuidsInAllStrings(obj: unknown, localToCor: Map<string, string>): void {
   if (!obj || typeof obj !== 'object') return;
   if (Array.isArray(obj)) {
@@ -179,21 +136,32 @@ function rewriteUuidsInString(value: string, localToCor: Map<string, string>): s
   return value.replace(UUID_V4_REGEX_GLOBAL, (uuid) => localToCor.get(uuid) ?? uuid);
 }
 
-function applyStripList(record: Record<string, unknown>, folder: EntityFolder): void {
-  const config = STRIP_FIELDS[folder];
-  if (!config) return;
-  for (const f of config.fields ?? []) delete record[f];
-  if (!config.nested) return;
-  for (const [key, nestedConfig] of Object.entries(config.nested)) {
-    const nested = record[key];
-    if (Array.isArray(nested)) {
-      for (const child of nested) {
-        if (child && typeof child === 'object') {
-          for (const f of nestedConfig.fields) delete (child as Record<string, unknown>)[f];
+function stripInstanceLocalFields(snapshot: Snapshot): void {
+  for (const [folderName, content] of Object.entries(snapshot)) {
+    const config = STRIP_FIELDS[folderName];
+    if (!config) continue;
+    const items = Array.isArray(content)
+      ? content
+      : content && typeof content === 'object'
+      ? [content]
+      : [];
+    for (const item of items) {
+      if (!item || typeof item !== 'object') continue;
+      const record = item as Record<string, unknown>;
+      for (const f of config.fields ?? []) delete record[f];
+      if (!config.nested) continue;
+      for (const [key, nestedConfig] of Object.entries(config.nested)) {
+        const nested = record[key];
+        if (Array.isArray(nested)) {
+          for (const child of nested) {
+            if (child && typeof child === 'object') {
+              for (const f of nestedConfig.fields) delete (child as Record<string, unknown>)[f];
+            }
+          }
+        } else if (nested && typeof nested === 'object') {
+          for (const f of nestedConfig.fields) delete (nested as Record<string, unknown>)[f];
         }
       }
-    } else if (nested && typeof nested === 'object') {
-      for (const f of nestedConfig.fields) delete (nested as Record<string, unknown>)[f];
     }
   }
 }
