@@ -25,14 +25,21 @@ const CHILD_FOLDERS = [
 export type AppData = Record<string, unknown>;
 
 /**
- * Snapshot = the portable form. Local DB ids replaced with co_relation_ids,
- * instance-scoped fields stripped. Safe to write to a file tree, send
- * over the wire, or hand to another instance.
+ * Snapshot = the portable form. Same shape as AppData with `id` left at
+ * the source instance's local DB id and `co_relation_id` carried alongside
+ * as the stable cross-instance key. Instance-local fields (timestamps,
+ * branch FKs, environment FKs, …) are stripped. Safe to write to a file
+ * tree, send over the wire, or hand to another instance.
+ *
+ * The receiving end uses `co_relation_id` to either match an existing
+ * local row (matchOrCreate) or generate a fresh local id (alwaysCreate),
+ * then rewrites every UUID reference in the tree from source-local →
+ * cor → target-local.
  */
 export type Snapshot = Record<string, unknown>;
 
 /**
- * Per-root-entity policy that drives restore()'s decision when the
+ * Per-root-entity policy that drives import()'s decision when the
  * snapshot mentions a co_relation_id that already exists locally:
  *
  * - 'matchOrCreate': look up the existing row by co_relation_id; reuse
@@ -55,14 +62,14 @@ export interface ResourcePolicy {
   dataSources: Policy;
 }
 
-export interface RestoreContext {
+export interface ImportContext {
   /** Organization scope for cor_id lookups (apps, data sources are workspace-scoped). */
   organizationId: string;
 }
 
-export interface RestoreOptions {
+export interface ImportOptions {
   manager: EntityManager;
-  context: RestoreContext;
+  context: ImportContext;
   policy: ResourcePolicy;
 }
 
@@ -109,7 +116,7 @@ const STRIP_FIELDS: Record<string, { fields?: string[]; nested?: Record<string, 
 };
 
 /**
- * Take and restore portable snapshots of an app.
+ * Export and import portable snapshots of an app.
  *
  * Every flow that crosses an instance boundary — git push, git pull,
  * JSON export, JSON import, branch-create — calls this service instead
@@ -119,27 +126,27 @@ const STRIP_FIELDS: Record<string, { fields?: string[]; nested?: Record<string, 
  */
 @Injectable()
 export class AppSnapshot {
-  // FkReferenceMap is needed by restore() (lookup-by-cor-id requires
-  // knowing which fields are FKs and their target tables). take() doesn't
-  // need it — the regex sweep handles every UUID, structural or not.
+  // FkReferenceMap is reserved for future parent-scoped child matching
+  // (look up children by (parent_id, co_relation_id) instead of always
+  // generating fresh ids). Today neither export() nor import() consults
+  // it — the regex sweep handles every UUID reference, structural or not.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(private readonly fkMap: FkReferenceMap) {}
 
   /**
-   * DB → wire. Walks the input tree, replaces every local-id reference
-   * with its co_relation_id, strips instance-local fields. The result
-   * is safe to persist outside this instance.
+   * DB → wire. Clones the input tree and strips instance-local fields
+   * that wouldn't make sense on another instance (timestamps, branch
+   * FKs, environment FKs, pulledAt). The `id` field stays at the
+   * source instance's local DB id; `co_relation_id` rides alongside as
+   * the stable cross-instance key.
    *
-   * The input must contain every entity referenced by an FK in the tree.
-   * If a query references a workspace-scoped data source, that data
-   * source row needs to be in the AppData (with its co_relation_id) for
-   * the FK rewrite to find a mapping.
+   * Caller responsibility: every record in the tree must already have
+   * a `co_relation_id` populated. Schema-level NOT NULL constraints
+   * (apps, app_versions) make this easy; for tables where cor_id is
+   * still nullable, the caller should backfill before exporting.
    */
-  take(appData: AppData): Snapshot {
+  export(appData: AppData): Snapshot {
     const snapshot = clone(appData) as Snapshot;
-    const localToCor = collectLocalToCor(snapshot);
-    swapIdToCorRecursive(snapshot);
-    rewriteUuidsInAllStrings(snapshot, localToCor);
     stripInstanceLocalFields(snapshot);
     return snapshot;
   }
@@ -150,42 +157,44 @@ export class AppSnapshot {
    * `policy` decides whether to look up an existing row by
    * co_relation_id and reuse its local id, or always create a fresh
    * one. Child entities follow whichever path their parent took. Builds
-   * a cor_id → local_id map as it goes, rewrites every reference to
-   * the resolved local id, returns the resolved tree. The caller is
-   * responsible for the actual INSERT/UPDATE.
+   * a (source-local-id → target-local-id) translation by chaining
+   * (source-local → cor) from the snapshot's records with (cor →
+   * target-local) from the DB lookup, then sweeps every UUID string in
+   * the tree. The caller is responsible for the actual INSERT/UPDATE.
    *
-   * Caller responsibilities for fields stripped on take() (see
+   * Caller responsibilities for fields stripped on export() (see
    * STRIP_FIELDS): branchId, currentEnvironmentId, createdBy,
-   * parentVersionId, pulledAt — these are instance-local and the snapshot
-   * intentionally drops them; the caller has to inject the right values
-   * for its target instance/branch before persisting.
+   * parentVersionId, pulledAt — these are instance-local and the
+   * snapshot intentionally drops them; the caller injects the right
+   * values for its target instance/branch before persisting.
    */
-  async restore(snapshot: Snapshot, options: RestoreOptions): Promise<AppData> {
+  async import(snapshot: Snapshot, options: ImportOptions): Promise<AppData> {
     const { manager, context, policy } = options;
     const result = clone(snapshot) as AppData;
-    const corToLocal = new Map<string, string>();
 
-    // Roots first: their resolved local ids feed downstream lookups (versions
-    // are app-scoped, queries reference app-scoped data sources, …). Apps
-    // and modules share the App table; the type filter prevents a cor_id
-    // collision (e.g., a branched module's cor_id) from being reused as a
-    // FRONT_END app, or vice versa.
+    // Source-local id → cor lookup, built from the records the snapshot
+    // ships with. Every persisted row has both fields (schema-enforced
+    // for apps + app_versions; the rest are caller-backfilled), so the
+    // map covers every entity that could be referenced inside the tree.
+    const localToCor = collectLocalToCor(result);
+
+    // Cor → target-local lookup. matchOrCreate roots get DB-resolved
+    // local ids; alwaysCreate roots and every child entity get a fresh
+    // uuid. Apps and modules share the App table — type-filter so a
+    // cor_id collision (e.g., a branched module's cor_id) can't be
+    // reused as a FRONT_END app or vice versa.
+    const corToLocal = new Map<string, string>();
     await resolveAppRows(result, 'apps', APP_TYPES.FRONT_END, manager, context.organizationId, policy.apps, corToLocal);
     await resolveAppRows(result, 'modules', APP_TYPES.MODULE, manager, context.organizationId, policy.modules, corToLocal);
     await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
-    await resolveAppVersions(result, manager, policy.appVersions, corToLocal);
-
-    // Children always get fresh local ids in V1. Parent-scoped match-by-cor_id
-    // (so a matched app reuses its existing component rows) is a follow-up;
-    // today's import flow creates fresh children too, so this preserves parity.
+    await resolveAppVersions(result, manager, policy.appVersions, corToLocal, localToCor);
     assignFreshIdsToChildren(result, corToLocal);
 
-    // Two-step rewrite: first put the local id back on each record (and
-    // restore co_relation_id), then sweep all strings for any other UUIDs
-    // that point at a known cor_id (FK columns, embedded refs in JSON,
-    // template strings).
-    applyResolutionToRecords(result, corToLocal);
-    rewriteUuidsInAllStrings(result, corToLocal);
+    // Sweep every UUID string. Each lookup is local→cor→target-local;
+    // either step may be a no-op (an embedded ref might already be a
+    // cor_id rather than a local source id), and unrecognized UUIDs
+    // pass through unchanged.
+    rewriteUuidsInAllStrings(result, localToCor, corToLocal);
 
     return result;
   }
@@ -207,22 +216,17 @@ function collectLocalToCor(tree: unknown): Map<string, string> {
   return out;
 }
 
-function swapIdToCorRecursive(tree: unknown): void {
-  visit(tree, (record) => {
-    if (typeof record.id === 'string' && typeof record.co_relation_id === 'string') {
-      record.id = record.co_relation_id;
-      delete record.co_relation_id;
-    }
-  });
-}
-
-function rewriteUuidsInAllStrings(obj: unknown, localToCor: Map<string, string>): void {
+function rewriteUuidsInAllStrings(
+  obj: unknown,
+  localToCor: Map<string, string>,
+  corToLocal: Map<string, string>,
+): void {
   if (!obj || typeof obj !== 'object') return;
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
       const v = obj[i];
-      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, localToCor);
-      else rewriteUuidsInAllStrings(v, localToCor);
+      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, localToCor, corToLocal);
+      else rewriteUuidsInAllStrings(v, localToCor, corToLocal);
     }
     return;
   }
@@ -230,17 +234,27 @@ function rewriteUuidsInAllStrings(obj: unknown, localToCor: Map<string, string>)
   for (const key of Object.keys(record)) {
     // slug is a URL identifier, not a UUID reference — never swap it.
     if (key === 'slug') continue;
-    // co_relation_id is the portable id we just stored; rewriting it would
-    // collapse it back to the local id we're trying to associate with it.
+    // co_relation_id rides through unchanged — it's the stable cor key,
+    // not a reference to translate.
     if (key === 'co_relation_id') continue;
     const v = record[key];
-    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor);
-    else rewriteUuidsInAllStrings(v, localToCor);
+    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor, corToLocal);
+    else rewriteUuidsInAllStrings(v, localToCor, corToLocal);
   }
 }
 
-function rewriteUuidsInString(value: string, localToCor: Map<string, string>): string {
-  return value.replace(UUID_V4_REGEX_GLOBAL, (uuid) => localToCor.get(uuid) ?? uuid);
+function rewriteUuidsInString(
+  value: string,
+  localToCor: Map<string, string>,
+  corToLocal: Map<string, string>,
+): string {
+  return value.replace(UUID_V4_REGEX_GLOBAL, (match) => {
+    // Two-step lookup: source-local → cor → target-local. Either step
+    // may miss; embedded refs are often cor_ids directly (skip step 1),
+    // unknown UUIDs pass through (skip step 2).
+    const cor = localToCor.get(match) ?? match;
+    return corToLocal.get(cor) ?? match;
+  });
 }
 
 function stripInstanceLocalFields(snapshot: Snapshot): void {
@@ -293,7 +307,7 @@ function toArray(value: unknown): Record<string, unknown>[] {
 function collectCorIds(items: Record<string, unknown>[]): string[] {
   const out: string[] = [];
   for (const item of items) {
-    if (typeof item.id === 'string') out.push(item.id);
+    if (typeof item.co_relation_id === 'string') out.push(item.co_relation_id);
   }
   return out;
 }
@@ -328,21 +342,23 @@ async function resolveAppVersions(
   manager: EntityManager,
   policy: Policy,
   corToLocal: Map<string, string>,
+  localToCor: Map<string, string>,
 ): Promise<void> {
   const items = toArray(tree.versions);
   if (items.length === 0) return;
 
   // Versions are app-scoped (UNIQUE on (app_id, co_relation_id)), not
-  // org-scoped — so we have to translate each version's parent appId from
-  // its cor_id to the local id resolved by resolveAppRows before we can
-  // scope the lookup.
+  // org-scoped — so we have to translate each version's parent appId
+  // (a source-local id) through localToCor → corToLocal to get the
+  // target-local id before we can scope the lookup.
   const localAppIds = new Set<string>();
   for (const v of items) {
-    const appCorId = v.appId;
-    if (typeof appCorId === 'string') {
-      const localAppId = corToLocal.get(appCorId);
-      if (localAppId) localAppIds.add(localAppId);
-    }
+    const sourceAppId = v.appId;
+    if (typeof sourceAppId !== 'string') continue;
+    const appCor = localToCor.get(sourceAppId);
+    if (!appCor) continue;
+    const targetAppId = corToLocal.get(appCor);
+    if (targetAppId) localAppIds.add(targetAppId);
   }
 
   const corIds = collectCorIds(items);
@@ -386,35 +402,21 @@ async function resolveDataSources(
 function assignFreshIdsToChildren(tree: AppData, corToLocal: Map<string, string>): void {
   for (const folder of CHILD_FOLDERS) {
     for (const item of toArray(tree[folder])) {
-      if (typeof item.id === 'string' && !corToLocal.has(item.id)) {
-        corToLocal.set(item.id, uuid());
+      const cor = item.co_relation_id;
+      if (typeof cor === 'string' && !corToLocal.has(cor)) {
+        corToLocal.set(cor, uuid());
       }
     }
   }
   // Layouts live nested under each component; sweep them too.
   for (const component of toArray(tree.components)) {
     for (const layout of toArray(component.layouts)) {
-      if (typeof layout.id === 'string' && !corToLocal.has(layout.id)) {
-        corToLocal.set(layout.id, uuid());
+      const cor = layout.co_relation_id;
+      if (typeof cor === 'string' && !corToLocal.has(cor)) {
+        corToLocal.set(cor, uuid());
       }
     }
   }
-}
-
-function applyResolutionToRecords(tree: unknown, corToLocal: Map<string, string>): void {
-  visit(tree, (record) => {
-    const id = record.id;
-    if (typeof id !== 'string' || !corToLocal.has(id)) return;
-    // Preserve any pre-existing co_relation_id rather than clobbering it
-    // with the value of `id`. take()-produced snapshots delete the field
-    // before this runs so the assignment branch fires; non-take() inputs
-    // (e.g., a JSON bundle that already has both fields) keep their
-    // canonical cor_id intact.
-    if (typeof record.co_relation_id !== 'string') {
-      record.co_relation_id = id;
-    }
-    record.id = corToLocal.get(id);
-  });
 }
 
 function indexByCorId(rows: { id: string; co_relation_id: string }[]): Map<string, string> {
