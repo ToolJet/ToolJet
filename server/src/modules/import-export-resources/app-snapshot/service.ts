@@ -16,6 +16,60 @@ export type AppData = Record<string, unknown>;
  */
 export type Snapshot = Record<string, unknown>;
 
+/**
+ * Per-root-entity policy that drives restore()'s decision when the
+ * snapshot mentions a co_relation_id that already exists locally:
+ *
+ * - 'matchOrCreate': look up the existing row by co_relation_id; reuse
+ *   its local id. If no match, create a new row with a fresh local id
+ *   (the snapshot's co_relation_id is preserved on the new row).
+ * - 'alwaysCreate': skip the lookup; always create a new row with a
+ *   fresh local id.
+ *
+ * Child entities (components, pages, queries, events, layouts) do not
+ * carry a policy: their lookup is naturally scoped to the resolved
+ * parent. New parent → no matches → new children. Matched parent →
+ * scope-matched children get reused.
+ */
+export type Policy = 'matchOrCreate' | 'alwaysCreate';
+
+export interface ResourcePolicy {
+  apps: Policy;
+  appVersions: Policy;
+  modules: Policy;
+  dataSources: Policy;
+}
+
+export interface RestoreContext {
+  /** Organization scope for cor_id lookups (apps, data sources are workspace-scoped). */
+  organizationId: string;
+}
+
+export interface RestoreOptions {
+  manager: EntityManager;
+  context: RestoreContext;
+  policy: ResourcePolicy;
+}
+
+// Default policy for callers that want today's git-pull semantics: match
+// existing rows by cor_id where possible, create where not.
+export const GIT_PULL_POLICY: ResourcePolicy = {
+  apps: 'matchOrCreate',
+  appVersions: 'matchOrCreate',
+  modules: 'matchOrCreate',
+  dataSources: 'matchOrCreate',
+};
+
+// Default policy for JSON-bundle import: always create a fresh app and
+// versions (so re-uploading a bundle produces a duplicate, not an
+// overwrite); link to existing workspace resources by cor_id.
+export const JSON_IMPORT_POLICY: ResourcePolicy = {
+  apps: 'alwaysCreate',
+  appVersions: 'alwaysCreate',
+  modules: 'matchOrCreate',
+  dataSources: 'matchOrCreate',
+};
+
 const UUID_V4_REGEX_GLOBAL =
   /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/g;
 
@@ -76,13 +130,17 @@ export class AppSnapshot {
   }
 
   /**
-   * Wire → DB. Walks the snapshot in dependency order, looks up the
-   * local row for each co_relation_id (reusing existing local ids when
-   * matched, generating new ones when not), and rewrites every reference
-   * to the resolved local id before insert/update.
+   * Wire → DB. Walks the snapshot in dependency order. For each root
+   * entity (apps, appVersions, modules, dataSources) the caller-supplied
+   * `policy` decides whether to look up an existing row by
+   * co_relation_id and reuse its local id, or always create a fresh
+   * one. Child entities follow whichever path their parent took. Builds
+   * a cor_id → local_id map as it goes, rewrites every reference to
+   * the resolved local id, returns the resolved tree. The caller is
+   * responsible for the actual INSERT/UPDATE.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async restore(_snapshot: Snapshot, _manager: EntityManager): Promise<AppData> {
+  async restore(_snapshot: Snapshot, _options: RestoreOptions): Promise<AppData> {
     throw new Error('AppSnapshot.restore not implemented yet');
   }
 }
