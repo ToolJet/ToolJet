@@ -266,58 +266,26 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
       }
 
-      // Create version-specific DSVs for global data sources
-      for (const globalDs of globalDataSources) {
-        const dsvName = globalDs.name || 'v1';
-
-        // The idx_unique_active_name_branch constraint enforces one active non-default
-        // DSV per (name, branch_id). DSVs are branch-scoped, not app-version-scoped,
-        // so skip creation if one already exists for this datasource+name+branch.
-        const existingDsv = await manager.findOne(DataSourceVersion, {
-          where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
-        });
-        if (existingDsv) {
-          continue;
-        }
-
-        let sourceDsv = await manager.findOne(DataSourceVersion, {
-          where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
-        });
-        if (!sourceDsv) {
-          sourceDsv = await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId: globalDs.id, isDefault: true },
-          });
-        }
-
-        const newDsv = await manager.save(
-          manager.create(DataSourceVersion, {
-            dataSourceId: globalDs.id,
-            name: dsvName,
-            isDefault: false,
-            isActive: true,
-            appVersionId: appVersion.id,
-            branchId: null,
-            versionFromId: sourceDsv?.id || null,
-          })
-        );
-
-        if (sourceDsv) {
-          const sourceDsvos = await manager.find(DataSourceVersionOptions, {
-            where: { dataSourceVersionId: sourceDsv.id },
-          });
-          for (const dsvo of sourceDsvos) {
-            const newDsvo = await manager.save(
-              manager.create(DataSourceVersionOptions, {
-                dataSourceVersionId: newDsv.id,
-                environmentId: dsvo.environmentId,
-                options: dsvo.options,
-              })
-            );
-            // Copy token data from source DSVO to new DSVO
-            await this.duplicateTokenData(dsvo.id, newDsvo.id, manager);
-          }
-        }
-      }
+      // Removed: version-specific DSVs (app_version_id) are no longer created.
+      // Released versions now read from the main-branch default DSV (is_default = true).
+      // for (const globalDs of globalDataSources) {
+      //   const dsvName = globalDs.name || 'v1';
+      //   const existingDsv = await manager.findOne(DataSourceVersion, {
+      //     where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
+      //   });
+      //   if (existingDsv) { continue; }
+      //   let sourceDsv = await manager.findOne(DataSourceVersion, {
+      //     where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
+      //   });
+      //   if (!sourceDsv) {
+      //     sourceDsv = await manager.findOne(DataSourceVersion, { where: { dataSourceId: globalDs.id, isDefault: true } });
+      //   }
+      //   const newDsv = await manager.save(manager.create(DataSourceVersion, {
+      //     dataSourceId: globalDs.id, name: dsvName, isDefault: false, isActive: true,
+      //     appVersionId: appVersion.id, branchId: null, versionFromId: sourceDsv?.id || null,
+      //   }));
+      //   ... copy DsvOptions ...
+      // }
     }
 
     return oldDataQueryToNewMapping;

@@ -90,6 +90,8 @@ export class PageHelperService implements IPageHelperService {
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
+    page.disabled = false;
+    page.hidden = false;
     page.pageHeader = {
       showOnDesktop: false,
       showOnMobile: false,

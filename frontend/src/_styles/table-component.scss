@@ -626,6 +626,12 @@
           padding: 0 !important;
           overflow: visible !important;
         }
+
+        &:has(.table-expansion-toggle) {
+          border: none;
+          background-color: transparent !important;
+          box-shadow: none;
+        }
       }
 
       .table-column-type-div-element,

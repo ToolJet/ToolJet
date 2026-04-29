@@ -91,7 +91,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : appToUse.organizationId;
 
-      // Lazy-load appVersion if relation not loaded but appVersionId is available
+      // Lazy-load appVersion to determine branchId (for BRANCH-type versions only)
       if (!dataQuery.appVersion && dataQuery.appVersionId) {
         dataQuery.appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
           return manager.findOne(AppVersion, {
@@ -104,16 +104,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       // Branch-aware: resolve branchId from appVersion when version type is 'branch'
       const branchId =
         dataQuery?.appVersion?.versionType === AppVersionType.BRANCH ? dataQuery.appVersion.branchId : undefined;
-      // Saved/tagged version: resolve appVersionId for non-branch versions
-      const appVersionId =
-        dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
+      // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.
+      // const appVersionId = dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
         dataSource.id,
         organizationId,
         envId,
-        branchId,
-        appVersionId
+        branchId
       );
       const environmentId = dataSourceOptions.environmentId;
       const dataSourceOptionId = dataSourceOptions.id;

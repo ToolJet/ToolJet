@@ -8,6 +8,7 @@ import {
     releaseApp,
 } from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -268,11 +269,9 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(
             dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase()),
         ).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
     //Verify the released app
@@ -302,6 +301,7 @@ describe("Custom Group Granular Access", () => {
         };
 
         cy.defaultWorkspaceLogin();
+        cleanAllUsers();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -463,7 +463,6 @@ describe("Custom Group Granular Access", () => {
         let appId1, appId2, groupId1;
 
         cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
-
         loginAsAdmin();
         createAndReleaseApp(data.appName, {
             componentValue: `{{globals.environment.name}}`,
@@ -937,7 +936,7 @@ describe("Custom Group Granular Access", () => {
                 cy.visit(previewUrl);
                 signup(user1, email1);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
-            });
+        });
     });
 });
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
@@ -7,6 +7,7 @@ import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
 import { isEmpty } from 'lodash';
 import { Tooltip } from 'react-tooltip';
+import { Virtuoso } from 'react-virtuoso';
 import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
@@ -21,7 +22,7 @@ function DataSourcePicker({ darkMode }) {
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
-    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC
+    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
   );
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
@@ -88,12 +89,66 @@ function DataSourcePicker({ darkMode }) {
     });
   };
 
-  // Group user-defined data sources by kind
-  const groupedSources = filteredUserDefinedDataSources.reduce((acc, source) => {
-    if (!acc[source.kind]) acc[source.kind] = { sources: [], representative: source };
-    acc[source.kind].sources.push(source);
-    return acc;
-  }, {});
+  const flatItems = useMemo(() => {
+    const groupedSources = filteredUserDefinedDataSources.reduce((acc, source) => {
+      if (!acc[source.kind]) acc[source.kind] = { sources: [], representative: source };
+      acc[source.kind].sources.push(source);
+      return acc;
+    }, {});
+
+    const items = [];
+    Object.entries(groupedSources).forEach(([kind, { sources, representative }]) => {
+      const isCollapsed = collapsedGroups.has(kind);
+      items.push({ type: 'group-header', kind, representative, isCollapsed });
+      if (!isCollapsed) {
+        sources.forEach((source, idx) => {
+          items.push({ type: 'group-item', source, isLastInGroup: idx === sources.length - 1 });
+        });
+      }
+    });
+    return items;
+  }, [filteredUserDefinedDataSources, collapsedGroups]);
+
+  const renderItem = (item) => {
+    if (item.type === 'group-header') {
+      return (
+        <div style={{ borderBottom: item.isCollapsed ? '1px solid var(--border-weak)' : 'none' }}>
+          <button
+            className="d-flex align-items-center justify-content-between w-100 datasource-picker-group-btn"
+            onClick={() => toggleGroup(item.kind)}
+            data-cy={`ds-group-${item.kind}`}
+          >
+            <div className="d-flex align-items-center datasource-picker-group-label">
+              <DataSourceIcon source={item.representative} height={16} />
+              <span className="datasource-picker-group-name">
+                {item.kind.charAt(0).toUpperCase() + item.kind.slice(1)}
+              </span>
+            </div>
+            <SolidIcon name={item.isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          padding: item.isLastInGroup ? '0 8px 8px' : '0 8px 0',
+          borderBottom: item.isLastInGroup ? '1px solid var(--border-weak)' : 'none',
+        }}
+      >
+        <button
+          className="d-flex align-items-center w-100 query-datasource-quick-action"
+          onClick={() => handleChangeDataSource(item.source)}
+          data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
+          data-tooltip-content={decodeEntities(item.source.name)}
+          data-cy={`${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
+        >
+          <span className="ds-source-label">{decodeEntities(item.source.name)}</span>
+        </button>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -182,43 +237,15 @@ function DataSourcePicker({ darkMode }) {
       {isEmpty(allUserDefinedSources) ? (
         <EmptyDataSourceBanner />
       ) : (
-        <div className="d-flex flex-column">
-          {Object.entries(groupedSources).map(([kind, { sources, representative }]) => {
-            const isCollapsed = collapsedGroups.has(kind);
-            return (
-              <div key={kind} className="datasource-picker-group">
-                <button
-                  className="d-flex align-items-center justify-content-between w-100 datasource-picker-group-btn"
-                  onClick={() => toggleGroup(kind)}
-                  data-cy={`ds-group-${kind}`}
-                >
-                  <div className="d-flex align-items-center datasource-picker-group-label">
-                    <DataSourceIcon source={representative} height={16} />
-                    <span className="datasource-picker-group-name">{kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
-                  </div>
-                  <SolidIcon name={isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
-                </button>
-                {!isCollapsed && (
-                  <div className="datasource-picker-sources-list">
-                    {sources.map((source) => (
-                      <button
-                        key={source.id}
-                        className="d-flex align-items-center w-100 query-datasource-quick-action"
-                        onClick={() => handleChangeDataSource(source)}
-                        data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
-                        data-tooltip-content={decodeEntities(source.name)}
-                        data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
-                      >
-                        <span className="ds-source-label">{decodeEntities(source.name)}</span>
-                        <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <>
+          <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
+          <Virtuoso
+            style={{ height: 'calc(100vh - 420px)', minHeight: 200 }}
+            data={flatItems}
+            itemKey={(_, item) => (item.type === 'group-item' ? item.source.id : `${item.type}-${item.kind}`)}
+            itemContent={(_, item) => renderItem(item)}
+          />
+        </>
       )}
     </>
   );

@@ -14,6 +14,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { EncryptionModule } from '@modules/encryption/module';
 
 export class VersionModule extends SubModule {
@@ -77,6 +78,7 @@ export class VersionModule extends SubModule {
         VersionUtilService,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
+        ValidModuleByCorrelationGuard,
       ],
       exports: [VersionUtilService],
     };

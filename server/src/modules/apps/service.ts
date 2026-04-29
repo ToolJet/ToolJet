@@ -193,8 +193,8 @@ export class AppsService implements IAppsService {
 
       // Validate environment access for all users (both builders and viewers)
       // Skip validation only for released environment (everyone with view access can see released)
-      // Also skip validation for module apps - they don't have environment restrictions
-      if (environment && app.type !== APP_TYPES.MODULE) {
+      // Also skip validation for modules and workflows
+      if (environment && app.type === APP_TYPES.FRONT_END) {
         const envName = environment.name.toLowerCase();
 
         // Always allow access to released environment for all users who can view the app
@@ -582,20 +582,19 @@ export class AppsService implements IAppsService {
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
 
-      // Modules are common across all branches — git sync freeze does not apply
-      if (app.type !== APP_TYPES.MODULE) {
-        let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-        // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-        if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-          appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-        }
-        if (appGit && !isDraft) {
-          // Only apply git-based freezing for non-draft versions
-          response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
-        }
+      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
+      // AppGitSync may be keyed by app.id (legacy) or co_relation_id (platform git sync).
+      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
+      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
+        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
+      }
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
+        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
 
-      // Modules skip the git sync block above — apply version-status freeze separately
+      // Modules also freeze when the editing version is non-draft, regardless of git state
       if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {
         response['should_freeze_editor'] = true;
       }

@@ -123,6 +123,7 @@ class HomePageComponent extends React.Component {
       featuresLoaded: false,
       showCreateAppModal: false,
       showSwitchBranchForCreate: false,
+      showSwitchBranchForDelete: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -422,6 +423,10 @@ class HomePageComponent extends React.Component {
   };
 
   deleteApp = (app) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ appToBeDeleted: app, showSwitchBranchForDelete: true });
+      return;
+    }
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
@@ -807,8 +812,10 @@ class HomePageComponent extends React.Component {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
 
+    // Branching affects folder mutations for front-end apps and modules.
+    // Workflows are not branch-scoped, so folder operations there remain unrestricted.
     const isBranchingEnabled =
-      this.props.appType === 'front-end' // Branching is enabled only for front-end apps as of now
+      this.props.appType === 'front-end' || this.props.appType === 'module'
         ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
         : false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
@@ -1181,6 +1188,10 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppFromTemplateModal = async (template) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ showSwitchBranchForCreate: true });
+      return;
+    }
     try {
       const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
         (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
@@ -1617,6 +1628,14 @@ class HomePageComponent extends React.Component {
             onBranchSwitch={() => {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForCreate: false, showCreateAppModal: true });
+            }}
+          />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForDelete}
+            onClose={() => this.setState({ showSwitchBranchForDelete: false, appToBeDeleted: null })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForDelete: false, showAppDeletionConfirmation: true });
             }}
           />
           <AppActionModal
@@ -2105,7 +2124,15 @@ class HomePageComponent extends React.Component {
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
                           showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                            this.props.appType !== 'module'
+                              ? () => {
+                                  if (this.isWorkspaceBranchLocked()) {
+                                    this.setState({ showSwitchBranchForCreate: true });
+                                    return;
+                                  }
+                                  this.showTemplateLibraryModal();
+                                }
+                              : undefined
                           }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
@@ -2113,6 +2140,12 @@ class HomePageComponent extends React.Component {
                             this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
                           }
                           readAndImport={this.readAndImport}
+                          onImportFromDeviceClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                              return false;
+                            }
+                          }}
                           appType={this.props.appType}
                         />
                       </Dropdown>
@@ -2169,9 +2202,8 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
-              {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
-                <WorkspaceLockedBanner pageContext="apps" />
+              {this.props.appType !== 'workflow' && (
+                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
               )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
@@ -2236,6 +2268,12 @@ class HomePageComponent extends React.Component {
                       isLoading={true}
                       createApp={this.createApp}
                       readAndImport={this.readAndImport}
+                      onImportFromDeviceClick={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                          return false;
+                        }
+                      }}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
@@ -2288,7 +2326,13 @@ class HomePageComponent extends React.Component {
                         disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
-                        onClick={this.openCreateAppModal}
+                        onClick={() => {
+                          if (this.isWorkspaceBranchLocked()) {
+                            this.setState({ showSwitchBranchForCreate: true });
+                            return;
+                          }
+                          this.openCreateAppModal();
+                        }}
                         data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
