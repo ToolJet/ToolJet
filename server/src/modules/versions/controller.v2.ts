@@ -26,15 +26,17 @@ export class VersionControllerV2 implements IVersionControllerV2 {
 
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidModuleByCorrelationGuard, FeatureAbilityGuard)
-  @Get('module/by-correlation/:coRelationId/versions/by-name/:versionName')
+  @Get('module/by-correlation/:coRelationId/version')
   getModuleVersionByStableIds(
     @User() user: UserEntity,
     @Param('coRelationId') coRelationId: string,
-    @Param('versionName') versionName: string,
+    @Query('ref') ref?: string,
     @Query('mode') mode?: string,
     @Headers('x-branch-id') branchId?: string
   ) {
-    return this.versionService.getVersionByStableIds(coRelationId, versionName, user, mode, branchId);
+    // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+    // resolver returns the latest non-stub version on the consumer's branch.
+    return this.versionService.getVersionByStableIds(coRelationId, ref, user, mode, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_ONE)

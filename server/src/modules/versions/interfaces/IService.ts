@@ -33,7 +33,7 @@ export interface IVersionService {
 
   getVersionByStableIds(
     coRelationId: string,
-    versionName: string,
+    moduleReferenceId: string | undefined,
     user: User,
     mode?: string,
     branchId?: string
