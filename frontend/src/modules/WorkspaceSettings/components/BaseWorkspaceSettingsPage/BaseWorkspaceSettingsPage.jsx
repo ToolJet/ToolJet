@@ -90,7 +90,10 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
       if (availableLinks.length > 0) {
         let target = availableLinks[0];
 
-        if (!admin && conditionObj.isBuilder) {
+        if (conditionObj.isGroupAdmin) {
+          const groupsLink = availableLinks.find((l) => l.id === 'groups');
+          if (groupsLink) target = groupsLink;
+        } else if (!admin && conditionObj.isBuilder) {
           const themesLink = availableLinks.find((l) => l.id === 'themes');
           if (themesLink) target = themesLink;
         }

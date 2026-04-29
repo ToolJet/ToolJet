@@ -43,7 +43,7 @@ function BaseSettingsMenu({
     try {
       new URL(url);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -62,12 +62,15 @@ function BaseSettingsMenu({
         }
         sessionService.logout();
       })
-      .catch((error) => {
+      .catch(() => {
         sessionService.logout();
       });
   }
 
   const getWorkspaceSettingsRoute = () => {
+    if (isBuilder && currentUserValue?.is_group_admin) {
+      return getPrivateRoute('workspace_settings_groups');
+    }
     if (isBuilder && isEEorCloud) {
       return getPrivateRoute('workspace_settings_builder');
     }

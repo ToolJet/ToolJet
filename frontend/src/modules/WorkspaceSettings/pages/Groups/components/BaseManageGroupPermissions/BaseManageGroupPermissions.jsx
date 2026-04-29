@@ -252,31 +252,38 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   changeNewGroupName = (value) => {
+    // Truncate if over 50 chars
     if (value.length > 50) {
-      this.setState({
-        newGroupName: value?.slice(0, 50).trim(),
-        isSaveBtnDisabled: false,
-      });
-      return;
+      value = value.slice(0, 50).trim();
     }
-    if (value && /[^a-zA-Z0-9_-]/.test(value)) {
-      this.setState({
-        newGroupName: value,
-        isSaveBtnDisabled: true,
-        groupNameMessage: 'Group name can only contain letters, numbers, underscores and hyphens',
-      });
-      return;
+
+    // Determine validation state
+    const isEmpty = !value;
+    const isValidFormat = /^[a-zA-Z0-9_ -]+$/.test(value);
+    const isSameAsExisting = this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value;
+
+    let isSaveBtnDisabled = true;
+    let groupNameMessage = '';
+
+    if (isEmpty) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name must be unique and max 50 characters';
+    } else if (!isValidFormat) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name can only contain letters, numbers, underscores, hyphens and spaces';
+    } else if (isSameAsExisting) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name must be unique and max 50 characters';
+    } else {
+      isSaveBtnDisabled = false;
+      groupNameMessage = '';
     }
+
     this.setState({
       newGroupName: value,
-      isSaveBtnDisabled: false,
-      groupNameMessage: 'Group name must be unique and max 50 characters',
+      isSaveBtnDisabled,
+      groupNameMessage,
     });
-    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value) || !value) {
-      this.setState({
-        isSaveBtnDisabled: true,
-      });
-    }
   };
 
   humanizeifDefaultGroupName = (groupName) => {
@@ -293,9 +300,9 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   createGroup = () => {
-    const regex = /^[a-zA-Z0-9_-]+$/;
+    const regex = /^[a-zA-Z0-9_ -]+$/;
     if (!regex.test(this.state.newGroupName)) {
-      toast.error('Group name can only contain letters, numbers, underscores and hyphens');
+      toast.error('Group name can only contain letters, numbers, underscores, hyphens and spaces');
       return;
     }
     this.setState({ creatingGroup: true });
@@ -382,9 +389,9 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   executeGroupUpdation = () => {
-    const regex = /^[a-zA-Z0-9_-]+$/;
+    const regex = /^[a-zA-Z0-9_ -]+$/;
     if (!regex.test(this.state.newGroupName)) {
-      toast.error('Group name can only contain letters, numbers, underscores and hyphens');
+      toast.error('Group name can only contain letters, numbers, underscores, hyphens and spaces');
       return;
     }
     this.setState({ isUpdatingGroupName: true });
@@ -521,7 +528,7 @@ class BaseManageGroupPermissions extends React.Component {
                   </div>
                   <div className="col-11">
                     <div className="tj-text" data-cy="group-admins-label">
-                      Group Admins
+                      Group admins
                     </div>
                   </div>
                 </div>
@@ -740,7 +747,7 @@ class BaseManageGroupPermissions extends React.Component {
                     </div>
                   </div>
                 </div>
-                <div className="form-footer d-flex create-group-modal-footer">
+                <div className="form-footer d-flex create-group-modal-footer tw-px-0">
                   <ButtonSolid
                     onClick={() =>
                       this.setState({

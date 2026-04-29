@@ -934,12 +934,12 @@ class BaseManageGroupPermissionResources extends React.Component {
                     data-cy="group-admins-link"
                   >
                     <SolidIcon
-                      name="usergroup"
+                      name="userstar"
                       fill={currentTab === 'groupAdmins' ? '#3E63DD' : '#C1C8CD'}
                       className="manage-group-tab-icons"
                       width="16"
                     />
-                    Group Admins
+                    Group admins
                   </a>
                 )}
                 <a
@@ -1390,66 +1390,68 @@ class BaseManageGroupPermissionResources extends React.Component {
 
                       return (
                         <div className="tab-pane active show group-admins-tab">
-                          {/* Add admin row — visible to all, button disabled for non-workspace-admins */}
-                          <div className="row">
-                            <div className="col" data-cy="admin-multi-select-search">
-                              <MultiSelectUser
-                                className={{
-                                  container: searchSelectClass,
-                                  value: `${searchSelectClass}__value`,
-                                  input: `${searchSelectClass}__input`,
-                                  select: `${searchSelectClass}__select`,
-                                  options: `${searchSelectClass}__options`,
-                                  row: `${searchSelectClass}__row`,
-                                  option: `${searchSelectClass}__option`,
-                                  group: `${searchSelectClass}__group`,
-                                  'group-header': `${searchSelectClass}__group-header`,
-                                  'is-selected': 'is-selected',
-                                  'is-highlighted': 'is-highlighted',
-                                  'is-loading': 'is-loading',
-                                  'is-multiple': 'is-multiple',
-                                  'has-focus': 'has-focus',
-                                  'not-found': `${searchSelectClass}__not-found`,
-                                }}
-                                onSelect={(val) => this.setState({ selectedAdminUsers: val })}
-                                onSearch={this.searchAddableAdmins}
-                                selectedValues={selectedAdminUsers}
-                                onReset={() => this.setState({ selectedAdminUsers: [] })}
-                                placeholder="Select builders to add as group admins"
-                                searchLabel="Enter name or email"
-                              />
-                            </div>
-                            <div className="col-auto">
-                              <ButtonSolid
-                                onClick={this.addSelectedAdminsToGroup}
-                                disabled={selectedAdminUsers.length === 0 || !isAdmin}
-                                leftIcon="plus"
-                                fill={
-                                  selectedAdminUsers.length !== 0 && isAdmin
-                                    ? '#ffffff'
-                                    : this.props.darkMode
-                                    ? '#131620'
-                                    : '#C1C8CD'
-                                }
-                                iconWidth="16"
-                                className="add-users-button"
-                                data-cy="group-admin-add-button"
-                                style={{
-                                  width: 'fit-content',
-                                }}
-                              >
-                                Assign group admin
-                              </ButtonSolid>
-                            </div>
-                            {selectedAdminUsers.length > 0 && (
-                              <div className="row mt-2">
-                                <div className="selected-section">
-                                  <div className="selected-text">Selected Users :</div>
-                                  {this.generateAdminSelection(selectedAdminUsers)}
-                                </div>
+                          {/* Add admin row — only visible to workspace admins */}
+                          {isAdmin && (
+                            <div className="row">
+                              <div className="col" data-cy="admin-multi-select-search">
+                                <MultiSelectUser
+                                  className={{
+                                    container: searchSelectClass,
+                                    value: `${searchSelectClass}__value`,
+                                    input: `${searchSelectClass}__input`,
+                                    select: `${searchSelectClass}__select`,
+                                    options: `${searchSelectClass}__options`,
+                                    row: `${searchSelectClass}__row`,
+                                    option: `${searchSelectClass}__option`,
+                                    group: `${searchSelectClass}__group`,
+                                    'group-header': `${searchSelectClass}__group-header`,
+                                    'is-selected': 'is-selected',
+                                    'is-highlighted': 'is-highlighted',
+                                    'is-loading': 'is-loading',
+                                    'is-multiple': 'is-multiple',
+                                    'has-focus': 'has-focus',
+                                    'not-found': `${searchSelectClass}__not-found`,
+                                  }}
+                                  onSelect={(val) => this.setState({ selectedAdminUsers: val })}
+                                  onSearch={this.searchAddableAdmins}
+                                  selectedValues={selectedAdminUsers}
+                                  onReset={() => this.setState({ selectedAdminUsers: [] })}
+                                  placeholder="Select users to assign as group admins"
+                                  searchLabel="Enter name or email"
+                                />
                               </div>
-                            )}
-                          </div>
+                              <div className="col-auto">
+                                <ButtonSolid
+                                  onClick={this.addSelectedAdminsToGroup}
+                                  disabled={selectedAdminUsers.length === 0}
+                                  leftIcon="plus"
+                                  fill={
+                                    selectedAdminUsers.length !== 0
+                                      ? '#ffffff'
+                                      : this.props.darkMode
+                                      ? '#131620'
+                                      : '#C1C8CD'
+                                  }
+                                  iconWidth="16"
+                                  className="add-users-button"
+                                  data-cy="group-admin-add-button"
+                                  style={{
+                                    width: 'fit-content',
+                                  }}
+                                >
+                                  Assign group admin
+                                </ButtonSolid>
+                              </div>
+                              {selectedAdminUsers.length > 0 && (
+                                <div className="row mt-2">
+                                  <div className="selected-section">
+                                    <div className="selected-text">Selected Users :</div>
+                                    {this.generateAdminSelection(selectedAdminUsers)}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <br />
 
                           {/* Search toggle + list */}
