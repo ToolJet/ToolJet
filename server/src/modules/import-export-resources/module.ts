@@ -15,13 +15,11 @@ import { AppHistoryModule } from '@modules/app-history/module';
 
 export class ImportExportResourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
-    const { ImportExportResourcesService, ImportExportResourcesController, FkReferenceMap, AppSnapshot } =
-      await this.getProviders(configs, 'import-export-resources', [
-        'service',
-        'controller',
-        'app-snapshot/fk-reference-map',
-        'app-snapshot/service',
-      ]);
+    const { ImportExportResourcesService, ImportExportResourcesController, AppSnapshot } = await this.getProviders(
+      configs,
+      'import-export-resources',
+      ['service', 'controller', 'app-snapshot/service']
+    );
 
     const { AppImportExportService, ComponentsService, EventsService } = await this.getProviders(configs, 'apps', [
       'services/app-import-export.service',
@@ -51,10 +49,9 @@ export class ImportExportResourcesModule extends SubModule {
         DataSourceFeatureAbility,
         ComponentsService,
         EventsService,
-        FkReferenceMap,
         AppSnapshot,
       ],
-      exports: [ImportExportResourcesService, AppImportExportService, FkReferenceMap, AppSnapshot],
+      exports: [ImportExportResourcesService, AppImportExportService, AppSnapshot],
     };
   }
 }

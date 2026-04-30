@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { APP_TYPES } from '@modules/apps/constants';
-import { FkReferenceMap } from './fk-reference-map';
 
 const CHILD_FOLDERS = [
   'components',
@@ -134,12 +133,13 @@ const STRIP_FIELDS: Record<string, { fields?: string[]; nested?: Record<string, 
  */
 @Injectable()
 export class AppSnapshot {
-  // FkReferenceMap is reserved for future parent-scoped child matching
-  // (look up children by (parent_id, co_relation_id) instead of always
-  // generating fresh ids). Today neither export() nor import() consults
-  // it — the regex sweep handles every UUID reference, structural or not.
-
-  constructor(private readonly fkMap: FkReferenceMap) {}
+  // No constructor dependencies. The translator is a pure transformation
+  // over the snapshot tree: export() = clone + strip; import() = chained
+  // localToCor → corToLocal lookup with per-root-entity ResourcePolicy
+  // applied via DB findOne. The earlier scaffolding included an
+  // FkReferenceMap injectable for parent-scoped child matching; the regex
+  // sweep handles every UUID reference (structural or embedded) via the
+  // local→cor→local chain, and the FK catalogue ended up unused.
 
   /**
    * DB → wire. Clones the input tree and strips instance-local fields
@@ -214,11 +214,29 @@ export class AppSnapshot {
     // either step may be a no-op (an embedded ref might already be a
     // cor_id rather than a local source id), and unrecognized UUIDs
     // pass through unchanged.
-    rewriteUuidsInAllStrings(result, localToCor, corToLocal);
+    //
+    // The sweep tracks UUIDs that matched neither map — these are
+    // either content-embedded UUIDs (legitimate, e.g. user-typed code
+    // referencing a string that happens to look like a UUID) or
+    // genuinely-orphan source-local ids (referential drift). We can't
+    // distinguish the two without per-field type info, so we log a
+    // sample for observability rather than fail.
+    const unmappedSample = new Set<string>();
+    rewriteUuidsInAllStrings(result, localToCor, corToLocal, unmappedSample);
+    if (unmappedSample.size > 0) {
+      const sample = Array.from(unmappedSample).slice(0, 10);
+      logger.warn(
+        `AppSnapshot.import: ${unmappedSample.size} UUID(s) passed through without translation ` +
+          `(neither in localToCor nor corToLocal). Sample: ${sample.join(', ')}` +
+          (unmappedSample.size > sample.length ? ` (+${unmappedSample.size - sample.length} more)` : '')
+      );
+    }
 
     return result;
   }
 }
+
+const logger = new Logger('AppSnapshot');
 
 // ---------- pure helpers (no `this`, easy to unit-test in isolation) ----------
 
@@ -239,14 +257,15 @@ function collectLocalToCor(tree: unknown): Map<string, string> {
 function rewriteUuidsInAllStrings(
   obj: unknown,
   localToCor: Map<string, string>,
-  corToLocal: Map<string, string>
+  corToLocal: Map<string, string>,
+  unmapped: Set<string>
 ): void {
   if (!obj || typeof obj !== 'object') return;
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
       const v = obj[i];
-      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, localToCor, corToLocal);
-      else rewriteUuidsInAllStrings(v, localToCor, corToLocal);
+      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, localToCor, corToLocal, unmapped);
+      else rewriteUuidsInAllStrings(v, localToCor, corToLocal, unmapped);
     }
     return;
   }
@@ -258,18 +277,30 @@ function rewriteUuidsInAllStrings(
     // not a reference to translate.
     if (key === 'co_relation_id') continue;
     const v = record[key];
-    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor, corToLocal);
-    else rewriteUuidsInAllStrings(v, localToCor, corToLocal);
+    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor, corToLocal, unmapped);
+    else rewriteUuidsInAllStrings(v, localToCor, corToLocal, unmapped);
   }
 }
 
-function rewriteUuidsInString(value: string, localToCor: Map<string, string>, corToLocal: Map<string, string>): string {
+function rewriteUuidsInString(
+  value: string,
+  localToCor: Map<string, string>,
+  corToLocal: Map<string, string>,
+  unmapped: Set<string>
+): string {
   return value.replace(UUID_V4_REGEX_GLOBAL, (match) => {
     // Two-step lookup: source-local → cor → target-local. Either step
     // may miss; embedded refs are often cor_ids directly (skip step 1),
     // unknown UUIDs pass through (skip step 2).
     const cor = localToCor.get(match) ?? match;
-    return corToLocal.get(cor) ?? match;
+    const target = corToLocal.get(cor);
+    if (target !== undefined) return target;
+    // Neither step produced a translation. Track for observability —
+    // this is the "passes through unchanged" path that can mask
+    // referential drift (a source-local id with no matching record on
+    // the target). Caller decides what to do with the sample.
+    unmapped.add(match);
+    return match;
   });
 }
 

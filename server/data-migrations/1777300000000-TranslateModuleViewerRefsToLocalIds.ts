@@ -24,6 +24,7 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.translateModuleAppId(queryRunner);
     await this.translateModuleVersionId(queryRunner);
+    await this.reportOrphans(queryRunner);
   }
 
   /**
@@ -76,6 +77,55 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
         AND target_version.app_id::text =
             (c.properties::jsonb -> 'moduleAppId' ->> 'value')
     `);
+  }
+
+  /**
+   * Count and log how many ModuleViewer values still don't match a local row
+   * after translation. These are orphans — values that pre-migration pointed
+   * at a co_relation_id (apps) or module_reference_id (app_versions) that has
+   * no local row in this DB. Resolver fallback handles them at runtime; the
+   * count is purely diagnostic so an operator running migrations against a
+   * real DB has a number to cross-check against expectations.
+   */
+  private async reportOrphans(queryRunner: QueryRunner): Promise<void> {
+    const [moduleAppOrphans] = await queryRunner.query(`
+      SELECT COUNT(*)::int AS count
+      FROM components c
+      WHERE c.type = 'ModuleViewer'
+        AND (c.properties::jsonb -> 'moduleAppId' ->> 'value') IS NOT NULL
+        AND (c.properties::jsonb -> 'moduleAppId' ->> 'value') <> ''
+        AND NOT EXISTS (
+          SELECT 1 FROM apps a
+          WHERE a.id::text = (c.properties::jsonb -> 'moduleAppId' ->> 'value')
+        )
+    `);
+    const [moduleVersionOrphans] = await queryRunner.query(`
+      SELECT COUNT(*)::int AS count
+      FROM components c
+      WHERE c.type = 'ModuleViewer'
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') IS NOT NULL
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') <> ''
+        AND NOT EXISTS (
+          SELECT 1 FROM app_versions av
+          WHERE av.id::text = (c.properties::jsonb -> 'moduleVersionId' ->> 'value')
+        )
+    `);
+    const appOrphans = moduleAppOrphans?.count ?? 0;
+    const versionOrphans = moduleVersionOrphans?.count ?? 0;
+    if (appOrphans > 0 || versionOrphans > 0) {
+      console.log(
+        `[TranslateModuleViewerRefsToLocalIds1777300000000] Post-migration orphans: ` +
+          `${appOrphans} ModuleViewer.moduleAppId.value(s) and ${versionOrphans} ` +
+          `moduleVersionId.value(s) point to no local row. Resolver fallback will ` +
+          `render "latest on branch" for these consumers; investigate if the count ` +
+          `is unexpectedly high.`
+      );
+    } else {
+      console.log(
+        `[TranslateModuleViewerRefsToLocalIds1777300000000] Post-migration: all ` +
+          `ModuleViewer pin references resolve to local rows.`
+      );
+    }
   }
 
   public async down(_queryRunner: QueryRunner): Promise<void> {

@@ -9,7 +9,6 @@ import { App } from '../../../../src/entities/app.entity';
 import { AppVersion } from '../../../../src/entities/app_version.entity';
 import { DataSource } from '../../../../src/entities/data_source.entity';
 import { APP_TYPES } from '../../../../src/modules/apps/constants';
-import { FkReferenceMap } from '../../../../src/modules/import-export-resources/app-snapshot/fk-reference-map';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -120,8 +119,7 @@ function makeManager(canned: { App?: App[]; AppVersion?: AppVersion[]; DataSourc
 }
 
 function makeService(): AppSnapshot {
-  const fkMapStub = {} as unknown as FkReferenceMap;
-  return new AppSnapshot(fkMapStub);
+  return new AppSnapshot();
 }
 
 describe('AppSnapshot.export', () => {

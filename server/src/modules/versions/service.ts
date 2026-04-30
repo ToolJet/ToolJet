@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
@@ -37,6 +37,8 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
+  private readonly logger = new Logger(VersionService.name);
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
@@ -269,21 +271,51 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
-    // Resolve the ModuleViewer pin to an AppVersion row.
-    //   Pinned    moduleVersionId is a UUID + matches a row's id → return it.
-    //   Unpinned  moduleVersionId absent → latest non-stub on consumer's branch
-    //                                      (or default if no branch context).
-    //   Orphaned  moduleVersionId UUID but no row matches → fall back to the
-    //                                                       unpinned path.
-    // The UUID guard prevents `where: { id: <non-uuid> }` from crashing the
-    // postgres uuid-typed lookup on stale legacy values.
+    // Resolve the ModuleViewer pin to an AppVersion row, classifying the
+    // outcome so the response surfaces *why* the consumer is seeing what
+    // it's seeing. Without this label, "pinned to a deleted version" and
+    // "user pulled a feature branch where the module is still hydrating"
+    // both render identically and the user can't tell why the module
+    // looks different from what they pinned.
+    //
+    //   pinned         moduleVersionId is a UUID + matches a non-stub row.
+    //   unpinned       moduleVersionId absent (empty/undefined). Returned
+    //                  the latest non-stub on the consumer's branch.
+    //   orphan         moduleVersionId is a UUID but no row matches. Fell
+    //                  back to the unpinned path; the pinned target was
+    //                  likely deleted upstream.
+    //   pending-stub   moduleVersionId is a UUID with a *stub* match
+    //                  (module is being hydrated). Returned the latest
+    //                  non-stub on the branch as a temporary view.
+    //
+    // The UUID guard prevents `where: { id: <non-uuid> }` from crashing
+    // the postgres uuid-typed lookup on stale legacy values; non-UUID
+    // values are treated as "unpinned" since they cannot match an id.
+    type PinResolution = 'pinned' | 'unpinned' | 'orphan' | 'pending-stub';
+    let pinResolution: PinResolution;
     let version: AppVersion | null = null;
-    if (moduleVersionId && MODULE_VERSION_UUID_RE.test(moduleVersionId)) {
+    const isUuidPin = !!moduleVersionId && MODULE_VERSION_UUID_RE.test(moduleVersionId);
+
+    if (isUuidPin) {
       version = await manager.findOne(AppVersion, {
         where: { id: moduleVersionId, appId: moduleApp.id, isStub: false },
       });
     }
-    if (!version) {
+
+    if (version) {
+      pinResolution = 'pinned';
+    } else {
+      // Distinguish orphan (pin was supplied but missing) vs pending-stub
+      // (pin was supplied but only a stub matches → module is still
+      // hydrating) vs unpinned (no pin supplied at all).
+      let pinningPending = false;
+      if (isUuidPin) {
+        const stub = await manager.findOne(AppVersion, {
+          where: { id: moduleVersionId, appId: moduleApp.id, isStub: true },
+        });
+        pinningPending = !!stub;
+      }
+
       const targetBranchId =
         branchId ??
         (
@@ -297,6 +329,18 @@ export class VersionService implements IVersionService {
           order: { createdAt: 'DESC' },
         });
       }
+
+      if (pinningPending) {
+        pinResolution = 'pending-stub';
+      } else if (isUuidPin) {
+        pinResolution = 'orphan';
+        this.logger.warn(
+          `Module pin orphan: moduleAppId=${moduleAppId} moduleVersionId=${moduleVersionId} — ` +
+            `pinned version not found on instance, falling back to latest on branch.`
+        );
+      } else {
+        pinResolution = 'unpinned';
+      }
     }
 
     if (!version) {
@@ -304,7 +348,8 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module version not found');
     }
     moduleApp.appVersions = [version];
-    return this.getVersion(moduleApp, user, mode);
+    const response = await this.getVersion(moduleApp, user, mode);
+    return { ...response, pinResolution };
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {

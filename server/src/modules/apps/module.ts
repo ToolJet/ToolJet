@@ -58,10 +58,7 @@ export class AppsModule extends SubModule {
     // AppImportExportService now depends on AppSnapshot (boundary translator
     // shared with git push/pull and the JSON import/export bundle flow).
     // Pull both providers in here so DI in AppsModule scope can resolve them.
-    const { AppSnapshot, FkReferenceMap } = await this.getProviders(configs, 'import-export-resources', [
-      'app-snapshot/service',
-      'app-snapshot/fk-reference-map',
-    ]);
+    const { AppSnapshot } = await this.getProviders(configs, 'import-export-resources', ['app-snapshot/service']);
 
     return {
       module: AppsModule,
@@ -97,7 +94,6 @@ export class AppsModule extends SubModule {
         DataSourcesRepository,
         AppImportExportService,
         AppSnapshot,
-        FkReferenceMap,
         RolesRepository,
         UserSessionRepository,
         UserRepository,

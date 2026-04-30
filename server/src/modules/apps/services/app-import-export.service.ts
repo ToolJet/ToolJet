@@ -915,9 +915,11 @@ export class AppImportExportService {
       }
     }
 
-    // AppVersion.co_relation_id is intentionally NOT updated here.
-    // It is set at creation time from appVersion.id in the imported JSON —
-    // in git, id IS the co_relation_id (ids are swapped with co_relation_ids on push).
+    // AppVersion.co_relation_id is intentionally NOT updated here. It is
+    // set at creation time from the imported JSON's co_relation_id (or
+    // appVersion.id for legacy bundles where it wasn't carried). Under the
+    // boundary-only model AppSnapshot exports preserve both id and
+    // co_relation_id; this update path runs after the row already exists.
   }
 
   async updateEntityReferencesForImportedApp(
@@ -2898,8 +2900,10 @@ export class AppImportExportService {
           createdById: user.id,
           co_relation_id: appVersion.co_relation_id ?? appVersion.id ?? null,
           branchId: isWorkflow ? null : branchId,
-          // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
-          // Generate fresh for legacy payloads predating the column. Module-only.
+          // module_reference_id is @deprecated under the boundary-only model —
+          // cross-instance identity now lives on co_relation_id (set above).
+          // Preserved here for the transition release cycle so older deployments
+          // still see a populated column; Phase 4 drops it. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
@@ -3460,12 +3464,13 @@ export class AppImportExportService {
 
     const moduleAppId = properties.moduleAppId.value;
     try {
-      // moduleAppId stores co_relation_id after migration — look up by co_relation_id.
-      // Scope to module type (and organization when provided) so a colliding coRelId on
-      // an app row, or a module in another workspace sharing the same DB, can't be matched.
+      // moduleAppId.value holds the module's local apps.id since the boundary-only
+      // refactor — AppSnapshot translates cor_id ↔ local at every push/pull/import/
+      // export, so runtime lookups are by primary key. Scope to module type (and
+      // organization when provided) for defence in depth.
       const moduleApp = (await manager.findOne(App, {
         where: {
-          co_relation_id: moduleAppId,
+          id: moduleAppId,
           type: APP_TYPES.MODULE,
           ...(organizationId ? { organizationId } : {}),
         },

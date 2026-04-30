@@ -232,7 +232,11 @@ export class VersionUtilService implements IVersionUtilService {
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
-      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
+      // moduleVersionId.value stores the local app_versions.id (UUID) under the
+      // boundary-only model; AppSnapshot translates to/from co_relation_id at
+      // every push/pull/import/export. Some legacy rows may still hold a
+      // version-name string from pre-rename YAML imports — the OR-EXISTS
+      // sub-query handles that fallback.
       const results = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -264,12 +268,16 @@ export class VersionUtilService implements IVersionUtilService {
 
   async checkDraftModulesInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
-      // moduleVersionId.value stores one of:
-      //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
-      //      TODO: migrate existing rows to version names so this case can be dropped.
-      //   2. version name — pinned; scoped to version_type='version' + module's local apps.id.
-      //   3. branch name — unpinned; resolved to the module's default-branch version row.
-      // A DRAFT resolved row means the module needs saving before the parent can save/promote.
+      // moduleVersionId.value stores one of (canonical first, legacy paths
+      // retained for transitional data):
+      //   1. Local app_versions.id (UUID) — canonical post-Phase-3c. AppSnapshot
+      //      translates to/from co_relation_id at the boundary.
+      //   2. Version name (string) — legacy from pre-rename YAML imports;
+      //      scoped to version_type='version' + module's local apps.id.
+      //   3. Branch name (string) — legacy unpinned; resolved to the module's
+      //      default-branch version row.
+      // A DRAFT resolved row means the module needs saving before the parent
+      // can save/promote.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')

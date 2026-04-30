@@ -335,6 +335,21 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // The modules endpoint returns `pinResolution` indicating how the
+        // ModuleViewer's pin was resolved server-side. `pinned` and `unpinned`
+        // are normal; `orphan` (pin pointed at a deleted version) and
+        // `pending-stub` (module is still hydrating) are transient/diagnostic
+        // states the user may want to know about. Surface to console for now;
+        // a visible banner in the ModuleViewer is a follow-up UI change.
+        if (moduleMode && result?.pinResolution && !['pinned', 'unpinned'].includes(result.pinResolution)) {
+          console.warn(
+            `[ModuleViewer] pin resolution: ${result.pinResolution} ` +
+              `(moduleAppId=${appId}, moduleVersionId=${versionId || '<unpinned>'}). ` +
+              (result.pinResolution === 'orphan'
+                ? 'Pinned version not found on this instance — rendering latest on branch instead.'
+                : 'Module is still hydrating — rendering latest available content.')
+          );
+        }
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
