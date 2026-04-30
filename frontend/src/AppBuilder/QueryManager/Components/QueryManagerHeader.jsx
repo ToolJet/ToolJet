@@ -150,6 +150,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
               onClick={previewButtonOnClick}
               buttonLoadingState={buttonLoadingState}
             />
+            <AbortButton />
           </>
         )}
       </div>
@@ -380,6 +381,37 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         data-cy={'query-preview-button'}
       >
         Preview
+      </ButtonComponent>
+    </ToolTip>
+  );
+};
+
+const AbortButton = () => {
+  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const abortQuery = useStore((state) => state.queryPanel.abortQuery);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
+
+  return (
+    <ToolTip
+      message="Stop waiting for the response (server keeps processing)"
+      placement="bottom"
+      trigger={['hover']}
+      show={true}
+      tooltipClassName=""
+    >
+      <ButtonComponent
+        size="medium"
+        variant="outline"
+        onClick={() => abortQuery(selectedQuery?.id)}
+        disabled={!isActive}
+        leadingIcon="x"
+        data-cy="query-abort-button"
+      >
+        Abort
       </ButtonComponent>
     </ToolTip>
   );

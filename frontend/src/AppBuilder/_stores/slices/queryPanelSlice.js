@@ -12,6 +12,12 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
+// Module-level map of queryId -> AbortController for in-flight runs and previews.
+// Kept outside Zustand state because AbortController is a class instance and
+// Immer's structural cloning would break it.
+const queryAbortControllers = new Map();
+const isAbortError = (e) => e?.name === 'AbortError' || e?.error?.name === 'AbortError';
+
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
@@ -596,6 +602,10 @@ export const createQueryPanelSlice = (set, get) => ({
           moduleId
         );
 
+        // Create AbortController for this run so abortQuery can cancel the in-flight fetch
+        const abortController = new AbortController();
+        queryAbortControllers.set(queryId, abortController);
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
@@ -630,7 +640,8 @@ export const createQueryPanelSlice = (set, get) => ({
               }
               return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
             })(),
-            modeStore.modules.canvas.currentMode
+            modeStore.modules.canvas.currentMode,
+            abortController.signal
           );
         }
 
@@ -745,6 +756,21 @@ export const createQueryPanelSlice = (set, get) => ({
             }
           })
           .catch((e) => {
+            // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
+            if (isAbortError(e)) {
+              setResolvedQuery(queryId, { isLoading: false }, moduleId);
+              get().debugger.log({
+                logLevel: 'warning',
+                type: 'query',
+                kind: query.kind,
+                key: query.name,
+                message: 'Query aborted by user',
+                isQuerySuccessLog: false,
+                errorTarget: 'Queries',
+              });
+              resolve({ status: 'aborted' });
+              return;
+            }
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
@@ -755,8 +781,31 @@ export const createQueryPanelSlice = (set, get) => ({
               description: errorMessage,
             });
             resolve({ status: 'failed', message: errorMessage });
+          })
+          .finally(() => {
+            queryAbortControllers.delete(queryId);
           });
       });
+    },
+
+    /**
+     * Aborts an in-flight query (run or preview) on the client.
+     * Cancels the pending fetch via AbortController. The server keeps processing —
+     * this only stops the client from waiting for the response.
+     */
+    abortQuery: (queryId, moduleId = 'canvas') => {
+      const controller = queryAbortControllers.get(queryId);
+      if (controller) {
+        controller.abort();
+        queryAbortControllers.delete(queryId);
+      }
+      // Always clear loading states — covers both the run path and the preview path,
+      // and recovers any stuck state even if the controller was already cleaned up.
+      const setResolvedQuery = get().setResolvedQuery;
+      if (queryId && setResolvedQuery) setResolvedQuery(queryId, { isLoading: false }, moduleId);
+      get().queryPanel.setIsPreviewQueryLoading(false);
+      get().queryPanel.setPreviewLoading(false);
+      return !!controller;
     },
 
     previewQuery: (
@@ -828,6 +877,10 @@ export const createQueryPanelSlice = (set, get) => ({
       });
 
       return new Promise(function (resolve, reject) {
+        // Create AbortController for this preview so abortQuery can cancel the in-flight fetch
+        const abortController = new AbortController();
+        queryAbortControllers.set(query?.id, abortController);
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
@@ -844,7 +897,13 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options?.workflowVersionId
           );
         } else {
-          queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
+          queryExecutionPromise = dataqueryService.preview(
+            query,
+            options,
+            currentVersionId,
+            currentAppEnvironmentId,
+            abortController.signal
+          );
         }
 
         queryExecutionPromise
@@ -1060,6 +1119,22 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: data.status, data: finalData });
           })
           .catch((err) => {
+            // User-initiated abort — silent unwind, log to debugger, do not toast
+            if (isAbortError(err)) {
+              setPreviewLoading(false);
+              setIsPreviewQueryLoading(false);
+              get().debugger.log({
+                logLevel: 'warning',
+                type: 'query',
+                kind: query.kind,
+                key: query.name,
+                message: 'Query aborted by user',
+                isQuerySuccessLog: false,
+                errorTarget: 'Queries',
+              });
+              resolve({ status: 'aborted' });
+              return;
+            }
             const { error, data } = err;
             console.log(err, error, data);
             setPreviewLoading(false);
@@ -1067,6 +1142,9 @@ export const createQueryPanelSlice = (set, get) => ({
             setPreviewData(data);
             toast.error(error);
             reject({ error, data });
+          })
+          .finally(() => {
+            queryAbortControllers.delete(query?.id);
           });
       });
     },
@@ -1136,6 +1214,10 @@ export const createQueryPanelSlice = (set, get) => ({
               reset: () => {
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.resetQuery(query.name);
+              },
+              abort: () => {
+                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+                return actions.abortQuery(query.name, moduleId);
               },
               getData: () => {
                 const resolvedState = get().getResolvedState(moduleId);
@@ -1527,6 +1609,10 @@ export const createQueryPanelSlice = (set, get) => ({
           reset: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
+          },
+          abort: () => {
+            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            return actions.abortQuery(query.name, moduleId);
           },
           getData: () => {
             const resolvedState = get().getResolvedState(moduleId);
