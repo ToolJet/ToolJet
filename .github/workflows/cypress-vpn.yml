@@ -63,7 +63,7 @@ jobs:
               with:
                   ref: ${{ github.event.pull_request.head.ref }}
 
-            # ← VPN: Connect before any step that needs private resource
+            # ← VPN: Connect before any step that needs private resources
             - name: Connect to VPN
               uses: adishM98/auth-vpn@v2.1.4
               with:
