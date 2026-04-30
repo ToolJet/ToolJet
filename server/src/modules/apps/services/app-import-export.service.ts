@@ -851,14 +851,16 @@ export class AppImportExportService {
       // makes recursive imports (mapModulesForAppImport's `this.import()`
       // for unmatched modules) resolve the same cor to the same local id
       // at every nesting level.
-      const corToLocal: Map<string, string> =
-        externalResourceMappings?.corToLocal ?? new Map<string, string>();
-      const policy: ResourcePolicy = externalResourceMappings?.policy ?? JSON_IMPORT_POLICY;
+      const externalRefs = externalResourceMappings as
+        | { corToLocal?: Map<string, string>; policy?: ResourcePolicy }
+        | undefined;
+      const corToLocal: Map<string, string> = externalRefs?.corToLocal ?? new Map<string, string>();
+      const policy: ResourcePolicy = externalRefs?.policy ?? JSON_IMPORT_POLICY;
       await this.translateBundleViaAppSnapshot(appParams, manager, user.organizationId, policy, corToLocal);
       // Carry the (now-extended) map forward so the recursive import
       // chain inherits this call's resolutions.
-      if (externalResourceMappings && typeof externalResourceMappings === 'object') {
-        externalResourceMappings.corToLocal = corToLocal;
+      if (externalRefs) {
+        externalRefs.corToLocal = corToLocal;
       }
 
       const moduleResourceMappings = await this.mapModulesForAppImport(
@@ -2005,20 +2007,12 @@ export class AppImportExportService {
             newComponent.validation = validation;
             newComponent.parent = component.parent ? parentId : null;
 
-            if (component.type === 'ModuleViewer' && moduleResourceMappings) {
-              // ModuleViewer.moduleAppId.value is a stable cross-instance key
-              // (module App.co_relation_id). When the source's cor_id differs
-              // from the matched local module's cor_id (e.g., name-based match
-              // across diverged lineages), we must rewrite to the local key the
-              // resolver actually queries. moduleVersionId.value is a portable
-              // module_reference_id and never needs rewrite.
-              if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
-                const oldAppId = properties.moduleAppId.value;
-                if (moduleResourceMappings.moduleApps[oldAppId]) {
-                  properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
-                }
-              }
-            }
+            // ModuleViewer.moduleAppId.value is now translated by
+            // AppSnapshot.import() at the entry of import() — it sweeps
+            // every UUID string in the bundle (including embedded refs in
+            // component property JSON) and rewrites cor → target-local.
+            // moduleVersionId.value is a portable module_reference_id and
+            // never needed rewrite.
             newComponent.properties = properties || {};
 
             newComponent.page = pageCreated;
@@ -4236,18 +4230,9 @@ function transformComponentData(
       transformedComponent.displayPreferences = componentData.definition.others || {};
       transformedComponent.parent = component.parent ? parentId : null;
 
-      if (componentData.component === 'ModuleViewer' && moduleResourceMappings) {
-        // moduleVersionId.value is a portable module_reference_id — no rewrite needed.
-        // moduleAppId.value rewrite is universal: source's cor_id may differ from
-        // the matched local module's cor_id (name-based match), and the resolver
-        // queries by the local cor_id.
-        if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
-          const oldAppId = properties.moduleAppId.value;
-          if (moduleResourceMappings.moduleApps[oldAppId]) {
-            properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
-          }
-        }
-      }
+      // moduleAppId.value translation is now handled by AppSnapshot.import()
+      // at the entry of import() (universal UUID sweep includes embedded
+      // refs in component property JSON).
       transformedComponent.properties = properties || {};
       transformedComponents.push(transformedComponent);
 
