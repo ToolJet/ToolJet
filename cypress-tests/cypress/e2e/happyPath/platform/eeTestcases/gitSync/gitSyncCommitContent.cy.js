@@ -259,15 +259,9 @@ describe(
               cy.log(`[log] versionId_b2: ${versionId_b2}`);
 
               // ── Rename app ────────────────────────────────────────────────
-              // apiRenameApp triggers the app-rename-commit event which fires
-              // the pushAppRename listener — auto-commits the folder rename to git
+              // Rename updates gitAppName in DB only — no auto-commit.
+              // The next editor push handles directory rename + appMeta.json update.
               cy.apiRenameApp(appId_b2, renamedAppName, versionId_b2);
-              cy.gitHubWaitForCommitMessage(branchName2, renamedAppName);
-
-              // Old folder gone, new folder present, meta updated
-              cy.gitHubAssertAppFolderGone(branchName2, appName);
-              cy.gitHubAssertAppFolderExists(branchName2, renamedAppName);
-              cy.gitHubAssertAppMeta(branchName2, renamedAppName);
 
               // ── Layout update + editor push ───────────────────────────────
               cy.apiUpdateComponentLayout(
@@ -287,6 +281,11 @@ describe(
                 renamedAppName,
               );
               cy.gitHubWaitForCommitMessage(branchName2, renamedAppName);
+
+              // Rename reflected in git after editor push — old folder gone, new present
+              cy.gitHubAssertAppFolderGone(branchName2, appName);
+              cy.gitHubAssertAppFolderExists(branchName2, renamedAppName);
+              cy.gitHubAssertAppMeta(branchName2, renamedAppName);
 
               // Table component layout reflected in git
               cy.gitHubAssertComponentLayout(
@@ -387,6 +386,39 @@ describe(
                   "original app name absent from master listing",
                 ).to.not.include(appName);
               });
+
+              // ── Folder: create folder, move app, rename → git captures folder-scoped path
+              const folderBranch = `test-folder-${testId}`;
+              const folderName = `tf-${testId}`;
+              const origAppName = `app-folder-${testId}`;
+              const renamedInFolder = `app-folder-renamed-${testId}`;
+
+              cy.gitSyncCreateBranchViaApi(folderBranch);
+              cy.gitSyncGetBranchId(folderBranch).then((folderBranchId) => {
+                cy.apiCreateAppOnBranch(origAppName, folderBranchId).then((fApp) => {
+                  const fAppId = fApp.id;
+
+                  cy.apiGetEditingVersionId(fAppId, folderBranchId).then((fVersionId) => {
+                    const initMsg = `feat: initial commit ${origAppName}`;
+                    cy.apiEditorPush(fAppId, fVersionId, initMsg, folderBranch, origAppName);
+                    cy.gitHubWaitForCommitMessage(folderBranch, origAppName);
+                    cy.gitHubAssertAppFolderExists(folderBranch, origAppName);
+
+                    cy.apiCreateFolder(folderName).then((folder) => {
+                      cy.apiAddAppToFolder(folder.id, fAppId);
+                      cy.apiRenameApp(fAppId, renamedInFolder, fVersionId);
+
+                      const pushMsg = `feat: move to folder and rename ${renamedInFolder}`;
+                      cy.apiEditorPush(fAppId, fVersionId, pushMsg, folderBranch, renamedInFolder);
+                      cy.gitHubWaitForCommitMessage(folderBranch, renamedInFolder);
+
+                      cy.gitHubAssertAppFolderGone(folderBranch, origAppName);
+                      cy.gitHubAssertAppInFolder(folderBranch, folderName, renamedInFolder);
+                      cy.gitHubAssertAppMetaPath(folderBranch, `apps/${folderName}/${renamedInFolder}`);
+                    });
+                  });
+                });
+              });
             });
           });
         });
@@ -397,13 +429,7 @@ describe(
     //           (M1, M2, M3 from MISSING_CASES.md Priority 1)
     // =========================================================================
 
-    // ── M1: Branch isolation ─────────────────────────────────────────────────
-    // What: create two independent branches, create a different app on each.
-    //       Verify that listing apps on branchA excludes appB and vice-versa —
-    //       no app leaks across branches before any merge.
-    // Why:  confirms ToolJet scopes its app listing to the active branch.
-    //       Regression guard against query bugs that ignore branch_id.
-    it("branch isolation — app on branchA not visible on branchB before any merge", () => {
+it("branch isolation — app on branchA not visible on branchB before any merge", () => {
       const branchA = `test-isolate-a-${testId}`;
       const branchB = `test-isolate-b-${testId}`;
       const appA = `app-isolate-a-${testId}`;
@@ -418,8 +444,8 @@ describe(
       cy.gitSyncGetBranchId(branchB).then((id) => { branchBId = id; });
 
       cy.then(() => {
-        cy.apiCreateApp(appA, branchAId);
-        cy.apiCreateApp(appB, branchBId);
+        cy.apiCreateAppOnBranch(appA, branchAId);
+        cy.apiCreateAppOnBranch(appB, branchBId);
       });
 
       // branchA: sees appA, does NOT see appB
