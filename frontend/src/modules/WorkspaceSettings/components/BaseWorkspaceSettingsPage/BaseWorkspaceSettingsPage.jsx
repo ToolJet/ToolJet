@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import Layout from '@/_ui/Layout';
-import { authenticationService, licenseService } from '@/_services';
+import { authenticationService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
@@ -22,18 +22,6 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
 
   // null = not yet fetched; {} = fetch failed (fail open — show Groups tab)
-  const [featureAccess, setFeatureAccess] = useState(null);
-
-  useEffect(() => {
-    licenseService
-      .getFeatureAccess()
-      .then(setFeatureAccess)
-      .catch(() => setFeatureAccess({}));
-  }, []);
-
-  const hasCustomGroupsLicense =
-    featureAccess === null ||
-    (featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false);
 
   const [conditionObj, setConditionObj] = useState(() => {
     const current = authenticationService.currentSessionValue || {};
@@ -55,7 +43,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     workspaceSettingsLinks.filter((item) => {
       const effectiveConditionObj = {
         ...conditionObj,
-        canManageGroups: conditionObj.admin || (conditionObj.isGroupAdmin && hasCustomGroupsLicense),
+        canManageGroups: conditionObj.admin || conditionObj.isGroupAdmin,
       };
       return checkConditionsForRoute(item.conditions, effectiveConditionObj);
     });
@@ -83,10 +71,9 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
 
     const pathParts = location.pathname.split('/').filter(Boolean);
     const selectedTabFromRoute = pathParts.pop();
+    const availableLinks = filteredLinks();
 
     if (selectedTabFromRoute === 'workspace-settings') {
-      const availableLinks = filteredLinks();
-
       if (availableLinks.length > 0) {
         let target = availableLinks[0];
 
@@ -106,13 +93,13 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
       if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
         redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
       }
-      const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
+      const selectedWorkspaceSetting = availableLinks?.find((m) => m.id === selectedTabFromRoute);
       updateSidebarNAV(selectedWorkspaceSetting?.name || '');
-      setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
+      setSelectedTab(getMenuFromRoute(selectedWorkspaceSetting)?.id);
     }
 
     return () => subscription.unsubscribe();
-  }, [admin, location.pathname, conditionObj.isBuilder]);
+  }, [admin, location.pathname, conditionObj.isBuilder, conditionObj.isGroupAdmin]);
 
   const handleClick = (data) => {
     setSelectedTab(data.id);

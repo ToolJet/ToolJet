@@ -111,6 +111,7 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   renderPopoverContent = (props, compoParam) => {
+    const isAdmin = authenticationService.currentSessionValue?.admin;
     const { groupName, id, isFeatureEnabled } = compoParam;
     const deleteGroup = () => {
       this.deleteGroup(id);
@@ -144,7 +145,7 @@ class BaseManageGroupPermissions extends React.Component {
                 leftViewBox="0  0 20 20"
                 text={'Duplicate group'}
                 onClick={duplicateGroup}
-                buttonDisable={!isFeatureEnabled}
+                buttonDisable={!isFeatureEnabled || !isAdmin}
               />
               <Field
                 customClass={this.props.darkMode ? 'dark-theme' : ''}
