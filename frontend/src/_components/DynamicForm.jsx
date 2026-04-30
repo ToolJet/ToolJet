@@ -35,6 +35,7 @@ import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers'
 import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
 import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
 
 const DynamicForm = ({
   schema,
@@ -71,6 +72,24 @@ const DynamicForm = ({
     if (!isEditMode || isEmpty(options)) {
       typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
       optionsChanged(schema?.defaults ?? {});
+    } else {
+      // Ensure existing datasources get newly added default properties.
+      let hasMissingDefaults = false;
+      const mergedOptions = { ...options };
+
+      if (schema?.defaults) {
+        Object.keys(schema.defaults).forEach((key) => {
+          // If the key doesn't exist in the old options, fill it with the schema's default
+          if (mergedOptions[key] === undefined) {
+            mergedOptions[key] = schema.defaults[key];
+            hasMissingDefaults = true;
+          }
+        });
+      }
+
+      if (hasMissingDefaults && typeof optionsChanged === 'function') {
+        optionsChanged(mergedOptions);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,6 +241,8 @@ const DynamicForm = ({
         return GoogleSheets;
       case 'react-component-slack':
         return Slack;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
       case 'codehinter':
         return CodeHinter;
       case 'react-component-openapi-validator':
@@ -403,6 +424,13 @@ const DynamicForm = ({
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
           tabs: tabs || [],
+        };
+      }
+      case 'react-component-oracle-wallet': {
+        return {
+          value: options?.[key]?.value ?? schema?.defaults?.[key]?.value ?? '',
+          onChange: (val) => optionchanged(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(), // Respects Tooljet's read-only modes
         };
       }
       case 'react-component-sort': {

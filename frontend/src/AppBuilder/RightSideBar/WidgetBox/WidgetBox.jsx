@@ -33,6 +33,7 @@ const NEW_WIDGETS = [
   'Navigation',
   'ButtonGroupV2',
   'KeyValuePair',
+  'ColorPicker',
   'FileButton',
 ];
 

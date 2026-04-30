@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
+import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import {
   resetDB,
@@ -330,6 +331,105 @@ describe('OnboardingController', () => {
         where: { userId: newUser.id, organizationId: adminUser.defaultOrganizationId },
       });
       expect(orgUser).toBeDefined();
+    });
+  });
+
+  describe('POST /api/onboarding/activate-account-with-token | Invite token handling', () => {
+    it('should preserve org-user invitationToken when invited org equals default org', async () => {
+      const { user: admin, organization: orgA } = await createUser(app, {
+        email: 'admin-token-preserve@tooljet.com',
+        status: 'active',
+      });
+      const adminSession = await login(app, admin.email);
+
+      await request(app.getHttpServer())
+        .post('/api/organization-users')
+        .send({ email: 'invited-token-preserve@tooljet.com', firstName: 'Token', lastName: 'Test', role: 'end-user' })
+        .set('tj-workspace-id', admin.defaultOrganizationId)
+        .set('Cookie', adminSession.tokenCookie)
+        .expect(201);
+
+      const invitedUserRecord = await userRepository.findOneOrFail({
+        where: { email: 'invited-token-preserve@tooljet.com' },
+      });
+      const orgUserBefore = await orgUserRepository.findOneOrFail({
+        where: { userId: invitedUserRecord.id, organizationId: orgA.id },
+      });
+      const orgInviteToken = orgUserBefore.invitationToken;
+      expect(orgInviteToken).not.toBeNull();
+
+      await request(app.getHttpServer())
+        .post('/api/onboarding/activate-account-with-token')
+        .send({
+          email: 'invited-token-preserve@tooljet.com',
+          password: 'Password@123',
+          organizationToken: orgInviteToken,
+        })
+        .expect(201);
+
+      const orgUserAfter = await orgUserRepository.findOneOrFail({
+        where: { userId: invitedUserRecord.id, organizationId: orgA.id },
+      });
+      expect(orgUserAfter.invitationToken).toBe(orgInviteToken);
+
+      // verify-organization-token is what the accept-invite page calls after redirect
+      const verifyResponse = await request(app.getHttpServer()).get(
+        `/api/onboarding/verify-organization-token?token=${orgInviteToken}`
+      );
+      expect(verifyResponse.status).toBe(200);
+      expect(verifyResponse.body.email).toBe('invited-token-preserve@tooljet.com');
+    });
+
+    it('should activate default-org user and preserve invited-org token when orgs differ', async () => {
+      const { organization: orgA } = await createUser(app, {
+        email: 'orgA-admin-crossorg@tooljet.com',
+        status: 'active',
+      });
+
+      const { user: crossUser } = await createUser(app, {
+        email: 'cross-org-user@tooljet.com',
+        status: 'invited',
+        organization: orgA,
+      });
+
+      const { organization: orgB } = await createUser(app, {
+        email: 'orgB-admin-crossorg@tooljet.com',
+        status: 'active',
+      });
+
+      // Direct seed: simulates super-admin inviting crossUser to a different org than their defaultOrg
+      const orgBInviteToken = uuidv4();
+      await orgUserRepository.save(
+        orgUserRepository.create({
+          user: crossUser,
+          organization: orgB,
+          invitationToken: orgBInviteToken,
+          status: 'invited',
+          role: 'all_users',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+
+      await request(app.getHttpServer())
+        .post('/api/onboarding/activate-account-with-token')
+        .send({
+          email: 'cross-org-user@tooljet.com',
+          password: 'Password@123',
+          organizationToken: orgBInviteToken,
+        })
+        .expect(201);
+
+      const orgAUserAfter = await orgUserRepository.findOneOrFail({
+        where: { userId: crossUser.id, organizationId: orgA.id },
+      });
+      expect(orgAUserAfter.status).toBe('active');
+      expect(orgAUserAfter.invitationToken).toBeNull();
+
+      const orgBUserAfter = await orgUserRepository.findOneOrFail({
+        where: { userId: crossUser.id, organizationId: orgB.id },
+      });
+      expect(orgBUserAfter.invitationToken).toBe(orgBInviteToken);
     });
   });
 

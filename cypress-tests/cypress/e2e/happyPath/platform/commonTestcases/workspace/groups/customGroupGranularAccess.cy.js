@@ -1,20 +1,39 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { createVersionFromDraft, appPromote, promoteEnv, releaseApp, launchApp } from "Support/utils/platform/multiEnv";
+import {
+    createVersionFromDraft,
+    appPromote,
+    promoteEnv,
+    releaseApp,
+} from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
     apiAddUserToGroup,
-    apiCreateGroup
+    apiCreateGroup,
 } from "Support/utils/manageGroups";
-import { getGroupPermissionInput, verifyEnvironmentTagsInGranularUI, verifyEnvironmentAccess, verifyPreviewURLAccess } from "Support/utils/userPermissions";
+import {
+    getGroupPermissionInput,
+    verifyEnvironmentTagsInGranularUI,
+    verifyEnvironmentAccess,
+    signup,
+} from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
+import {
+  openVersionSwitcher,
+  createDraftVersion,
+} from "Support/utils/version";
 
-
-const createAndReleaseApp = (appName, componentDetails = {}, appSlug, workspaceSlug) => {
+const createAndReleaseApp = (
+    appName,
+    componentDetails = {},
+    appSlug,
+    workspaceSlug,
+) => {
     const {
         componentName = "text1",
         layoutConfig = {},
@@ -25,17 +44,33 @@ const createAndReleaseApp = (appName, componentDetails = {}, appSlug, workspaceS
     cy.apiCreateApp(appName);
 
     if (componentValue === undefined) {
-        cy.apiAddComponentToApp(appName, componentName, layoutConfig, componentType);
+        cy.apiAddComponentToApp(
+            appName,
+            componentName,
+            layoutConfig,
+            componentType,
+        );
     } else {
-        cy.apiAddComponentToApp(appName, componentName, layoutConfig, componentType, componentValue);
+        cy.apiAddComponentToApp(
+            appName,
+            componentName,
+            layoutConfig,
+            componentType,
+            componentValue,
+        );
     }
 
     cy.apiGetAppIdByName(appName).then((appId) => {
         const slugToUse = workspaceSlug || "my-workspace";
-        cy.openApp(slugToUse, Cypress.env("workspaceId"), appId, '[data-cy="draggable-widget-text1"]');
+        cy.openApp(
+            slugToUse,
+            Cypress.env("workspaceId"),
+            appId,
+            '[data-cy="draggable-widget-text1"]',
+        );
     });
 
-    cy.apiPublishDraftVersion('v1')
+    cy.apiPublishDraftVersion("v1");
     cy.apiPromoteAppVersion().then(() => {
         const stagingId = Cypress.env("stagingEnvId");
         cy.apiPromoteAppVersion(stagingId);
@@ -62,7 +97,7 @@ const createWorkspaceOnboardUser = ({
         data.workspaceSlug,
         data.firstName,
         data.email,
-        "builder"
+        "builder",
     );
 
     cy.apiLogin();
@@ -71,7 +106,7 @@ const createWorkspaceOnboardUser = ({
     //Remove builder permissions and delete granular access
     cy.apiUpdateGroupPermission(
         "builder",
-        getGroupPermissionInput(isEnterprise, false)
+        getGroupPermissionInput(isEnterprise, false),
     );
     cy.apiDeleteGranularPermission("builder", []);
 
@@ -101,11 +136,13 @@ const configureAppGranularPermissions = (groupName, apps) => {
 
         cy.clearAndType(groupsSelector.permissionNameInput, app);
         cy.get(groupsSelector.customRadio).check();
-        cy.get(groupsSelector.granularPermissionResourceContainer).click({ force: true }).type(`${app}{enter}`);
+        cy.get(groupsSelector.granularPermissionResourceContainer)
+            .click({ force: true })
+            .type(`${app}{enter}`);
         cy.get(groupsSelector.confimButton).click({ force: true });
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            groupsText.createPermissionToast
+            groupsText.createPermissionToast,
         );
     });
 
@@ -129,13 +166,13 @@ const configureEnterpriseGranularPermissions = ({
             cy.apiCreateWorkflow(workflow);
         });
 
-        //Create datasource 
+        //Create datasource
         datasourceNames.forEach((datasource) => {
             cy.apiCreateDataSource(
                 `${Cypress.env("server_host")}/api/data-sources`,
                 datasource,
                 "restapi",
-                [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
+                [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }],
             );
         });
 
@@ -156,7 +193,7 @@ const configureEnterpriseGranularPermissions = ({
             cy.get(groupsSelector.confimButton).click({ force: true });
             cy.verifyToastMessage(
                 commonSelectors.toastMessage,
-                groupsText.createPermissionToast
+                groupsText.createPermissionToast,
             );
         });
 
@@ -176,7 +213,7 @@ const configureEnterpriseGranularPermissions = ({
             cy.get(groupsSelector.confimButton).click({ force: true });
             cy.verifyToastMessage(
                 commonSelectors.toastMessage,
-                groupsText.createPermissionToast
+                groupsText.createPermissionToast,
             );
         });
 
@@ -198,17 +235,16 @@ const verifyBuilderAccessAsPerTheConfig = ({
     cy.apiLogin(email);
     cy.visit(workspaceSlug);
 
-
     //Verify app edit button number
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).should("not.exist");
     cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
         "have.lengthOf",
-        1
+        1,
     );
     cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
         "have.lengthOf",
-        2
+        2,
     );
 
     cy.ifEnv("Enterprise", () => {
@@ -217,21 +253,21 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get('[data-cy="create-new-workflows-button"]').should("not.exist");
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
             "have.lengthOf",
-            1
+            1,
         );
         cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
             "have.lengthOf",
-            2
+            2,
         );
 
         //Verify datasource access
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(
-            dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase())
+            dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase()),
         ).click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.enabled");
         cy.get(
-            dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())
+            dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase()),
         ).click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
@@ -265,11 +301,11 @@ describe("Custom Group Granular Access", () => {
         };
 
         cy.defaultWorkspaceLogin();
+        cleanAllUsers();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
     });
-
 
     it("Should verify the granular permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
@@ -290,7 +326,11 @@ describe("Custom Group Granular Access", () => {
             isEnterprise,
         });
 
-        configureAppGranularPermissions(groupName, [data.appName, appName2, appName3]);
+        configureAppGranularPermissions(groupName, [
+            data.appName,
+            appName2,
+            appName3,
+        ]);
 
         configureEnterpriseGranularPermissions({
             groupName,
@@ -312,39 +352,54 @@ describe("Custom Group Granular Access", () => {
         const environments = [
             { name: "development", hasAccess: true },
             { name: "staging", hasAccess: true },
-            { name: "production", hasAccess: true }
+            { name: "production", hasAccess: true },
         ];
         let appId1;
 
         // Verify all environments are selected by default for admin group
         verifyEnvironmentTagsInGranularUI("Admin", envTags);
-        createAndReleaseApp(data.appName, { componentValue: `{{globals.environment.name}}` });
-        cy.apiGetAppIdByName(data.appName).then((appId) => {
-            appId1 = appId;
-        }).then(() => {
-            openAppAsBuilder(appId1);
-            verifyEnvironmentAccess(environments, { appName: data.appName, canEdit: true, appId: appId1 });
-            cy.visit(`/applications/${appId1}`);
-            cy.get(commonWidgetSelector.draggableWidget("text1")).should("contain", "production");
-
-        })
+        createAndReleaseApp(data.appName, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+        cy.apiGetAppIdByName(data.appName)
+            .then((appId) => {
+                appId1 = appId;
+            })
+            .then(() => {
+                openAppAsBuilder(appId1);
+                verifyEnvironmentAccess(environments, {
+                    appName: data.appName,
+                    canEdit: true,
+                    appId: appId1,
+                });
+                cy.visit(`/applications/${appId1}`);
+                cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                    "contain",
+                    "production",
+                );
+            });
     });
 
     it("Should verify all environment promotion, preview and release access for Builder", () => {
-
         const builderEnvTags = ["Development", "Staging", "Released app"];
         const environments = [
             { name: "development", hasAccess: true },
             { name: "staging", hasAccess: true },
-            { name: "production", hasAccess: false }
+            { name: "production", hasAccess: false },
         ];
         let appId1;
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         cy.apiCreateApp(data.appName)
             .then((res) => {
                 appId1 = res.body.id;
-                cy.apiAddComponentToApp(data.appName, "text1", {}, "Text", `{{globals.environment.name}}`);
+                cy.apiAddComponentToApp(
+                    data.appName,
+                    "text1",
+                    {},
+                    "Text",
+                    `{{globals.environment.name}}`,
+                );
             })
             .then(() => {
                 cy.apiCreateGranularPermission(
@@ -359,11 +414,9 @@ describe("Custom Group Granular Access", () => {
                         canAccessProduction: false,
                         canAccessReleased: true,
                     },
-                    [appId1]
                 );
 
-                // Scenario A: Baseline builder tags + promote dev->staging and verify access
-                openBuilderGranularPermissions("Builder");
+                // Scenario A: Verify default environment tags and Promote dev->staging and verify access for given environment access
                 verifyEnvironmentTagsInGranularUI("builder", builderEnvTags);
 
                 cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
@@ -371,44 +424,52 @@ describe("Custom Group Granular Access", () => {
                 createVersionFromDraft("v1");
                 appPromote("development", "staging");
                 promoteEnv("staging");
-                verifyEnvironmentAccess(environments, { appName: data.appName, canEdit: true, appId: appId1 });
+                verifyEnvironmentAccess(environments, {
+                    appName: data.appName,
+                    canEdit: true,
+                    appId: appId1,
+                });
 
                 // Scenario B: Allow production preview by editing granular env selection, then release + verify production access
 
                 loginAsAdmin();
-                // remove production access if exists for builder
-                cy.apiUpdateEnvironmentPermission("builder", {
-                    actions: {
-                        canAccessProduction: false,
-                    }
-                });
-
-                openBuilderGranularPermissions("builder");
+                
+                openGranularPermissions("builder");
                 cy.get(groupsSelector.granularAccessPermission).trigger("mouseover");
                 cy.get(groupsSelector.editGranularPermissionAccess).click();
-                cy.get('[data-cy="environment-label"]').should("be.visible").and("have.text", "Environment");
+                
                 validateAndEditEnvironmentsInEditModal(builderEnvTags, "Production");
 
-                loginAsBuilder(data.email);
+                loginAsUser(data.email);
                 openAppAsBuilder(appId1);
                 releaseApp();
-                verifyEnvironmentAccess([{ name: "production", hasAccess: true }], { appName: data.appName, canEdit: true, appId: appId1 });
-                loginAsBuilder(data.email);
+                verifyEnvironmentAccess([{ name: "production", hasAccess: true }], {
+                    appName: data.appName,
+                    canEdit: true,
+                    appId: appId1,
+                });
+                loginAsUser(data.email);
                 cy.visit(`/applications/${appId1}`);
-                cy.get(commonWidgetSelector.draggableWidget("text1")).should("contain", "production");
-            })
-    })
+                cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                    "contain",
+                    "production",
+                );
+            });
+    });
 
     it("Should verify edit and view permissions with specific environment access for Builder", () => {
         const appName2 = fake.companyName;
         const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
         let appId1, appId2, groupId1;
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
-
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
         loginAsAdmin();
-        createAndReleaseApp(data.appName, { componentValue: `{{globals.environment.name}}` });
-        createAndReleaseApp(appName2, { componentValue: `{{globals.environment.name}}` });
+        createAndReleaseApp(data.appName, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+        createAndReleaseApp(appName2, {
+            componentValue: `{{globals.environment.name}}`,
+        });
         cy.apiGetAppIdByName(data.appName).then((appId) => {
             appId1 = appId;
         });
@@ -416,7 +477,7 @@ describe("Custom Group Granular Access", () => {
             appId2 = appId;
         });
 
-        cy.apiDeleteGranularPermission("builder", ["app"]);
+        cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
             apiAddUserToGroup(groupId1, data.email);
@@ -433,7 +494,7 @@ describe("Custom Group Granular Access", () => {
                     canAccessReleased: false,
                 },
                 [appId1],
-                false
+                false,
             );
 
             cy.apiCreateGranularPermission(
@@ -449,69 +510,71 @@ describe("Custom Group Granular Access", () => {
                     canAccessReleased: false,
                 },
                 [appId2],
-                false
+                false,
             );
 
             // Scenario C: Edit + staging only (no released) -> dev & stag allowed + launch should be restricted
-            loginAsBuilder(data.email);
+            loginAsUser(data.email);
             openAppAsBuilder(appId1);
-            verifyEnvironmentAccess([{ name: "development", hasAccess: true }], { appName: data.appName, canEdit: true, appId: appId1 });
+            verifyEnvironmentAccess([{ name: "development", hasAccess: true }], {
+                appName: data.appName,
+                canEdit: true,
+                appId: appId1,
+            });
             cy.visit(`/applications/${appId1}`);
             expectRestrictedModal();
 
-            // Scenario D: Edit + no environment flags -> editor still shows dev, launch released app still works (as per your current assertions)
+            // Scenario D: Edit + no environment flags -> editor still shows dev, launch released app still works
 
-            loginAsBuilder(data.email);
+            loginAsUser(data.email);
             openAppAsBuilder(appId2);
-            verifyEnvironmentAccess([{ name: "development", hasAccess: true }], { appName: appName2, canEdit: true, appId: appId2 });
+            verifyEnvironmentAccess([{ name: "development", hasAccess: true }], {
+                appName: appName2,
+                canEdit: true,
+                appId: appId2,
+            });
             cy.visit(`/applications/${appId2}`);
-            cy.get(commonWidgetSelector.draggableWidget("text1")).should("contain", "production");
+            cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                "contain",
+                "production",
+            );
 
             // Scenario E: View-only + staging -> staging preview allowed, dev blocked; preview CTA visible
 
             loginAsAdmin();
-            cy.apiUpdateEnvironmentPermission(groupName1, {
-                name: "Apps",
-                isAll: false,
-                actions: {
-                    canEdit: false,
-                    canView: true,
-                    canAccessDevelopment: false,
-                    canAccessStaging: true,
-                    canAccessProduction: false,
-                    canAccessReleased: false,
+            cy.apiUpdateEnvironmentPermission(
+                groupName1,
+                {
+                    name: "Apps",
+                    isAll: false,
+                    actions: {
+                        canEdit: false,
+                        canView: true,
+                        canAccessDevelopment: false,
+                        canAccessStaging: true,
+                        canAccessProduction: false,
+                        canAccessReleased: false,
+                    },
                 },
-            }, "Apps");
-            cy.apiUpdateEnvironmentPermission(groupName1, {
-                name: "Apps1",
-                isAll: false,
-                actions: {
-                    canEdit: false,
-                    canView: true,
-                    canAccessDevelopment: false,
-                    canAccessStaging: false,
-                    canAccessProduction: false,
-                    canAccessReleased: false,
-                },
-            }, "Apps1");
+                "Apps",
+            );
 
-            loginAsBuilder(data.email);
+            loginAsUser(data.email);
             verifyEnvironmentAccess(
                 [
                     { name: "development", hasAccess: false },
                     { name: "staging", hasAccess: true },
                 ],
-                { appName: data.appName, canEdit: false, appId: appId1 }
+                { appName: data.appName, canEdit: false, appId: appId1 },
             );
-            loginAsBuilder(data.email);
-            cy.get(commonSelectors.appCard(data.appName)).within(() => {
-                cy.get(commonSelectors.appPreviewButton).should("exist").and("be.enabled");
-                cy.get(commonSelectors.applaunchButton).should("exist").and("be.disabled");
-            });
+            loginAsUser(data.email);
+            validateAppCardCTAs(data.appName, false, true, true, false);
+           
             cy.visit(`/applications/${appId1}`);
             expectRestrictedModal();
-        })
-    })
+        });
+        });
+    });
 
     it("Should verify builder own app dev access and invalid environment preview handling", () => {
         const appName1 = fake.companyName;
@@ -519,12 +582,14 @@ describe("Custom Group Granular Access", () => {
         const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
         let appId1, appId2, groupId1;
 
-        createAndReleaseApp(appName1, { componentValue: `{{globals.environment.name}}` });
+        createAndReleaseApp(appName1, {
+            componentValue: `{{globals.environment.name}}`,
+        });
         cy.apiGetAppIdByName(appName1).then((appId) => {
             appId1 = appId;
         });
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
 
         loginAsAdmin();
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
@@ -545,28 +610,27 @@ describe("Custom Group Granular Access", () => {
                     canAccessReleased: false,
                 },
                 [appId1],
-                false
+                false,
             );
 
             // Scenario F: View-only + no environment -> all previews restricted, have released app access
-            loginAsBuilder(data.email);
+            loginAsUser(data.email);
             cy.visit("/");
-            verifyEnvironmentAccess(
-                [
-                    { name: "development", hasAccess: false },
-                    { name: "staging", hasAccess: false },
-                ],
-                { appName: appName1, canEdit: false, appId: appId1, canAllView: false }
-            );
-
-            cy.visit("/");
-            cy.get(commonSelectors.appCard(appName1)).within(() => {
-                cy.get(commonSelectors.appPreviewButton).should("not.exist");
-                cy.get(commonSelectors.applaunchButton).should("exist").and("be.enabled");
+            verifyEnvironmentAccess([{ name: "development", hasAccess: false }], {
+                appName: appName1,
+                canEdit: false,
+                appId: appId1,
+                canAllView: false,
             });
 
+            cy.visit("/");
+            validateAppCardCTAs(appName1, false, false, true);
+            
             cy.visit(`/applications/${appId1}`);
-            cy.get(commonWidgetSelector.draggableWidget("text1")).should("contain", "production");
+            cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                "contain",
+                "production",
+            );
         });
 
         // Scenario G: View + create + staging environment -> can open own app in dev
@@ -583,51 +647,313 @@ describe("Custom Group Granular Access", () => {
                 canAccessStaging: true,
                 canAccessProduction: false,
                 canAccessReleased: false,
-            }, "Apps");
+            },
+            "Apps",
+        );
 
-        loginAsBuilder(data.email);
+        loginAsUser(data.email);
 
-        cy.apiCreateApp(appName2)
-            .then((res) => {
-                appId2 = res.body.id;
-                cy.apiAddComponentToApp(appName2, "text1", {}, "Text", `{{globals.environment.name}}`);
-                cy.visit("/");
-                cy.get(commonSelectors.appCard(appName2)).within(() => {
-                    cy.get(commonSelectors.appEditButton).should("exist").and("be.enabled");
-                    cy.get(commonSelectors.applaunchButton).should("exist").and("be.disabled");
-                });
+        cy.apiCreateApp(appName2).then((res) => {
+            appId2 = res.body.id;
+            cy.apiAddComponentToApp(
+                appName2,
+                "text1",
+                {},
+                "Text",
+                `{{globals.environment.name}}`,
+            );
 
-                openAppAsBuilder(appId2);
+            cy.visit("/");
+
+            validateAppCardCTAs(appName2, true, false, true, false);
+            
+            openAppAsBuilder(appId2);
+            verifyEnvironmentAccess([{ name: "development", hasAccess: true }], {
+                appName: appName2,
+                canEdit: true,
+                appId: appId2,
+            });
+
+            //If environment is not exist for that app
+            const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId2}/home?env=staging&version=v1`;
+
+            cy.visit(previewUrl);
+            cy.url().should("match", /\/error\/invalid-link?/);
+        });
+        });
+    });
+
+    it("Should verify preview and released app access for End-user", () => {
+        let appId1;
+        const enduserEnvTags = ["Released app"];
+
+        cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
+
+        cy.apiCreateGranularPermission("end-user", "Apps", "app", {
+            canEdit: false,
+            canView: true,
+            canAccessDevelopment: false,
+            canAccessStaging: false,
+            canAccessProduction: false,
+            canAccessReleased: true,
+        });
+
+        verifyEnvironmentTagsInGranularUI("End-user", enduserEnvTags);
+        createAndReleaseApp(data.appName, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+
+        cy.apiGetAppIdByName(data.appName)
+            .then((appId) => {
+                appId1 = appId;
+            })
+            .then(() => {
+                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
+
+                //Scenario A : Can acces only released app and Preview button not visible
                 verifyEnvironmentAccess(
                     [
-                        { name: "development", hasAccess: true },
+                        { name: "development", hasAccess: false },
+                        { name: "staging", hasAccess: false },
+                        { name: "production", hasAccess: false },
                     ],
-                    { appName: appName2, canEdit: true, appId: appId2 }
+                    {
+                        appName: data.appName,
+                        canEdit: false,
+                        appId: appId1,
+                        canAllView: false,
+                    },
                 );
 
-                //If environment is not exist for that app
-                const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId2}/home?env=staging&version=v1`;
+                cy.visit("/");
+                validateAppCardCTAs(data.appName, false, false, true);
+                
+                cy.visit(`/applications/${appId1}`);
+                cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                    "contain",
+                    "production",
+                );
 
-                cy.visit(previewUrl);
-                cy.url().should("match", /\/error\/invalid-link?/);
+                //Scenario B : Can access dev preview and released app
+                loginAsAdmin();
+                openGranularPermissions("end-user");
+                cy.get(groupsSelector.granularAccessPermission).trigger("mouseover");
+                cy.get(groupsSelector.editGranularPermissionAccess).click();
+                cy.get('[data-cy="environment-label"]')
+                    .should("be.visible")
+                    .and("have.text", "Environment");
+                validateAndEditEnvironmentsInEditModal(enduserEnvTags, "Development");
+
+                loginAsUser(data.email);
+                verifyEnvironmentAccess([{ name: "development", hasAccess: true }], {
+                    appName: data.appName,
+                    canEdit: false,
+                    appId: appId1,
+                    allowedEnvironment: "development",
+                });
+                cy.visit("/");
+                validateAppCardCTAs(data.appName, false, true, true);
+                
+                cy.visit(`/applications/${appId1}`);
+                cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                    "contain",
+                    "production",
+                );
             });
-    })
-})
+        });
+    });
+
+    it("Should verify preview and released app access for custom group End-user", () => {
+        const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
+        const appName2 = fake.companyName;
+        let appId1, appId2, groupId1;
+
+        createAndReleaseApp(data.appName, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+        createAndReleaseApp(appName2, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+        cy.apiGetAppIdByName(data.appName).then((appId) => {
+            appId1 = appId;
+        });
+        cy.apiGetAppIdByName(appName2).then((appId) => {
+            appId2 = appId;
+        });
+
+        cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
+
+        loginAsAdmin();
+        cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
+        apiCreateGroup(groupName1).then((groupId) => {
+            groupId1 = groupId;
+            apiAddUserToGroup(groupId1, data.email);
+            cy.apiCreateGranularPermission(
+                groupName1,
+                "Apps",
+                "app",
+                {
+                    canEdit: false,
+                    canView: true,
+                    canAccessDevelopment: true,
+                    canAccessStaging: false,
+                    canAccessProduction: false,
+                    canAccessReleased: false,
+                },
+                [appId1],
+                false,
+            );
+
+            cy.apiCreateGranularPermission(
+                groupName1,
+                "Apps1",
+                "app",
+                {
+                    canEdit: false,
+                    canView: true,
+                    canAccessDevelopment: false,
+                    canAccessStaging: false,
+                    canAccessProduction: false,
+                    canAccessReleased: false,
+                },
+                [appId2],
+                false,
+            );
+
+            //Scenario C : Only have development environment access still can access released app
+            loginAsUser(data.email);
+            validateAppCardCTAs(data.appName, false, true, true);
+            
+            cy.visit(`/applications/${appId1}`);
+            cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                "contain",
+                "production",
+            );
+
+            //Scenario D : No environment permission is given still can access released app
+           cy.visit("/");
+            validateAppCardCTAs(appName2, false, false, true);
+           
+            cy.visit(`/applications/${appId2}`);
+            cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                "contain",
+                "production",
+            );
+
+            //Scenario E : All environment access is given
+           loginAsAdmin();
+            cy.apiUpdateEnvironmentPermission(
+                groupName1,
+                {
+                    name: "Apps",
+                    isAll: false,
+                    actions: {
+                        canEdit: false,
+                        canView: true,
+                        canAccessDevelopment: true,
+                        canAccessStaging: true,
+                        canAccessProduction: true,
+                        canAccessReleased: true,
+                    },
+                },
+                "Apps",
+            );
+
+           loginAsUser(data.email);
+            verifyEnvironmentAccess(
+                [
+                    { name: "development", hasAccess: true },
+                    { name: "staging", hasAccess: true },
+                    { name: "production", hasAccess: true },
+                ],
+                { appName: data.appName, canEdit: false, appId: appId1 },
+            );
+
+            cy.visit(`/applications/${appId1}`);
+            cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                "contain",
+                "production",
+            );
+            
+            loginAsAdmin();
+            openAppAsBuilder(appId1);
+            openVersionSwitcher();
+            createDraftVersion("v2", "v1");
+
+            //Scenario F : If accessing non existing version in that env then show invalid link
+            loginAsUser(data.email);
+            const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=staging&version=v2`;
+            cy.visit(previewUrl);
+            cy.url().should("match", /\/error\/invalid-link?/);
+        });
+        });
+    });
+
+    it("Should verify preview and released app access for Signed-up End-user", () => {
+        const user1 = fake.firstName;
+        const email1 = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+        let appId1;
+
+        createAndReleaseApp(data.appName, {
+            componentValue: `{{globals.environment.name}}`,
+        });
+
+        cy.apiGetAppIdByName(data.appName)
+            .then((appId) => {
+                appId1 = appId;
+            })
+            .then(() => {
+                cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
+                cy.apiCreateGranularPermission("end-user", "Apps", "app", {
+                    canEdit: false,
+                    canView: true,
+                    canAccessDevelopment: true,
+                    canAccessStaging: false,
+                    canAccessProduction: false,
+                    canAccessReleased: false,
+                });
+                cy.apiUpdateAllowSignUp(true, "organization");
+                cy.apiLogout();
+
+                //Scenario G : Signing-up with app preview link and should land on app preview
+
+                const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
+                cy.visit(previewUrl);
+                signup(data.firstName, data.email);
+                cy.get(commonWidgetSelector.draggableWidget("text1")).should(
+                    "contain",
+                    "development",
+                    { timeout: 10000 },
+                );
+
+                //Scenario H : Signing-up with app preview link without access, app preview should be restricted
+                loginAsAdmin();
+                cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
+
+                cy.apiLogout();
+                cy.visit(previewUrl);
+                signup(user1, email1);
+                cy.url().should("match", /\/error\/restricted(-preview)?/);
+        });
+    });
+});
 
 const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
-    cy.get('.css-uzxezq-multiValue').each(($el, index) => {
-        cy.wrap($el).should('contain', envTags[index]);
-    })
-    cy.get('.css-1wy0on6').click();
+    cy.get(".css-uzxezq-multiValue").each(($el, index) => {
+        cy.wrap($el).should("contain", envTags[index]);
+    });
+    cy.get(".css-1wy0on6").click();
     cy.get(`[data-cy="environment-check-canAccess${envOption}"]`).check();
-    cy.get('.css-1wy0on6').click();
-    cy.get('[data-cy="confirm-button"]').should('be.enabled').click();
-    cy.verifyToastMessage(commonSelectors.toastMessage,
-        "Permission updated successfully");
-    cy.get('[data-cy="environment-tags"]').should('contain', envOption);
-}
+    cy.get(".css-1wy0on6").click();
+    cy.get('[data-cy="confirm-button"]').should("be.enabled").click();
+    cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "Permission updated successfully",
+    );
+    cy.get('[data-cy="environment-tags"]').should("contain", envOption);
+};
 
-const openBuilderGranularPermissions = (groupName) => {
+const openGranularPermissions = (groupName) => {
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.permissionsLink).click();
@@ -640,7 +966,7 @@ const loginAsAdmin = () => {
     cy.visit("/");
 };
 
-const loginAsBuilder = (email) => {
+const loginAsUser = (email) => {
     cy.apiLogout();
     cy.apiLogin(email);
     cy.visit("/");
@@ -651,7 +977,7 @@ const openAppAsBuilder = (appId) => {
         "my-workspace",
         Cypress.env("workspaceId"),
         appId,
-        '[data-cy="draggable-widget-text1"]'
+        '[data-cy="draggable-widget-text1"]',
     );
 };
 
@@ -661,3 +987,20 @@ const expectRestrictedModal = () => {
         .should("be.visible")
         .and("contain.text", "Restricted access");
 };
+
+const validateAppCardCTAs = (appName, edit, preview, launch, launchEnabled = true) => {
+    cy.get(commonSelectors.appCard(appName)).within(() => {
+        if (edit)
+            cy.get(commonSelectors.appEditButton).should("exist").and("be.enabled");
+        else
+            cy.get(commonSelectors.appPreviewButton)
+                .should(preview ? "exist" : "not.exist")
+                .and(preview ? "be.enabled" : "not.exist");
+
+        cy.get(commonSelectors.applaunchButton)
+            .should(launch ? "exist" : "not.exist")
+            .and(launch ? (launchEnabled ? "be.enabled" : "be.disabled") : "not.exist");
+    });
+};
+
+

@@ -109,7 +109,8 @@ export const createInspectorSlice = (set, get) => ({
     const data = Object.entries(componentIdNameMapping)
       .filter(([key]) => {
         const component = getComponentDefinition(key, moduleId);
-        return !component?.component?.parent;
+        const parent = component?.component?.parent;
+        return !parent || parent === 'canvas-header' || parent === 'canvas-footer';
       })
       .map(([key, name]) => {
         const component = getComponentDefinition(key, moduleId);

@@ -33,6 +33,10 @@ export class CreateDataQueryDto {
   @IsObject()
   @IsOptional()
   resolvedOptions: object;
+
+  @IsUUID()
+  @IsOptional()
+  folder_id: string;
 }
 
 export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
@@ -61,6 +65,10 @@ export class ListTablesDto {
   @IsOptional()
   schema?: string;
 
+  @IsString()
+  @IsOptional()
+  datasetId?: string;
+  
   @IsString()
   @IsOptional()
   search?: string;

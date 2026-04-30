@@ -148,3 +148,65 @@ export {
   tabsContentClasses,
 } from './Tabs/Tabs';
 export { Switch, switchClasses } from './Switch/Switch';
+export {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  alertDialogContentVariants,
+  AlertDialogOverlay,
+  AlertDialogMedia,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from './AlertDialog/AlertDialog';
+export {
+  Collapsible,
+  collapsibleVariants,
+  CollapsibleTrigger,
+  collapsibleTriggerVariants,
+  CollapsibleIcon,
+  CollapsibleContent,
+  collapsibleContentVariants,
+} from './Collapsible/Collapsible';
+export { Toaster, toast } from './Sonner/Sonner';
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetPortal,
+  SheetOverlay,
+  SheetContent,
+  sheetContentVariants,
+  SheetHeader,
+  SheetBody,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from './Sheet/Sheet';
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from './Table/Table';
+export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
+export { TruncatingText } from './TruncatingText/TruncatingText';
+export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
+export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
+export { Textarea, textareaVariants } from './Textarea/Textarea';
+export { Spinner, spinnerVariants } from './Spinner/Spinner';
+export {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverDescription,
+  PopoverTrigger,
+} from './Popover/Popover';

@@ -1,19 +1,45 @@
 import React, { useState, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-// import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
-//TODO: Remove this
-import { Confirm } from '@/AppBuilder/Viewer/Confirm';
-// TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { Modal } from 'react-bootstrap';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+import { EllipsisVerticalIcon } from 'lucide-react';
+
+const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
+  <Modal
+    show={show}
+    onHide={onCancel}
+    animation={false}
+    centered
+    contentClassName={`query-folder-delete-modal ${darkMode ? 'dark-theme' : ''}`}
+    dialogClassName="query-folder-delete-modal-dialog"
+    backdropClassName="query-delete-modal-backdrop"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <Modal.Header>
+      <Modal.Title>Delete {decodeEntities(queryName)}?</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>Are you sure you want to delete this query? This action is irreversible.</Modal.Body>
+    <Modal.Footer>
+      <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="cancel-delete-query">
+        Cancel
+      </ButtonSolid>
+      <ButtonSolid size="sm" variant="dangerPrimary" onClick={onDelete} data-cy="confirm-delete-query">
+        <SolidIcon name="trash" width="14" fill="#fff" />
+        Delete
+      </ButtonSolid>
+    </Modal.Footer>
+  </Modal>
+);
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const queryNameEleRef = useRef(null);
@@ -22,7 +48,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
-  const isDeletingQueryInProcess = useStore((state) => state.dataQuery.isDeletingQueryInProcess);
+  const hasQueryFolders = useStore((state) => Boolean(state.queryFolders));
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
@@ -101,7 +127,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   return (
     <>
       <div
-        className={`row query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
+        className={
+          `query-row pe-2 ${hasQueryFolders ? 'mb-0' : 'mb-1'} ${darkMode && 'dark-theme'}` +
+          (isQuerySelected ? ' query-row-selected' : '')
+        }
         key={dataQuery.id}
         onClick={(e) => {
           if (isQuerySelected) return;
@@ -120,71 +149,89 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         }}
         role="button"
       >
-        <div className="col-auto query-icon d-flex">
-          <DataSourceIcon source={dataQuery} height={16} />
-        </div>
-        <div className="col query-row-query-name">
-          {isRenaming ? (
-            <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
-          ) : (
-            <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-              <ToolTip
-                message={decodeEntities(dataQuery.name)}
-                show={queryNameEleRef.current?.offsetWidth > 150}
-                tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
-              >
-                <span ref={queryNameEleRef} className="text-truncate">
-                  {decodeEntities(dataQuery.name)}
-                </span>
-              </ToolTip>
-              <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
-                <div className="d-flex align-items-center" style={{ marginLeft: '8px', marginRight: 'auto' }}>
-                  {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
-                </div>
-              </ToolTip>{' '}
-              {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
-              {localDs && (
-                <>
-                  <a
+        <div className="query-card-leading">
+          <div className="query-icon d-flex">
+            <DataSourceIcon source={dataQuery} height={16} />
+          </div>
+          <div className="query-row-query-name">
+            {isRenaming ? (
+              <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
+            ) : (
+              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+                <ToolTip
+                  message={decodeEntities(dataQuery.name)}
+                  show={queryNameEleRef.current?.offsetWidth > 150}
+                  tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
+                >
+                  <span
+                    ref={queryNameEleRef}
                     className="text-truncate"
-                    data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
-                    target="_blank"
-                    rel="noreferrer"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                    }}
                   >
-                    <img src={`assets/images/icons/warning.svg`} style={{ height: '20px' }} alt="Warning" />
-                  </a>{' '}
-                  <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
-                    Important <br />
-                    Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
-                  </Tooltip>
-                </>
-              )}
-            </div>
-          )}
+                    {decodeEntities(dataQuery.name)}
+                  </span>
+                </ToolTip>
+                <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+                  <div className="d-flex align-items-center query-card-lock-wrapper">
+                    {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                  </div>
+                </ToolTip>{' '}
+                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+                {localDs && (
+                  <>
+                    <a
+                      className="text-truncate"
+                      data-tooltip-id="query-card-local-ds-info"
+                      href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <img src={`assets/images/icons/warning.svg`} className="query-card-local-ds-icon" alt="Warning" />
+                    </a>{' '}
+                    <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
+                      Important <br />
+                      Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         {!shouldFreeze && hasPermissions && (
-          <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
+          <div
+            className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <ButtonComponent
               iconOnly
-              leadingIcon="morevertical01"
-              onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+              onClick={(e) => {
+                if (!isQuerySelected) {
+                  setSelectedQuery(dataQuery?.id);
+                  setPreviewData(null);
+                }
+                toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
+              }}
               size="small"
               variant="outline"
               className=""
               id={`query-handler-menu-${dataQuery?.id}`}
               data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
-            />
+            >
+              <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
+            </ButtonComponent>
           </div>
         )}
       </div>
-      <Confirm
+      <DeleteQueryModal
         show={isDeleting}
-        message={'Do you really want to delete this query?'}
-        confirmButtonLoading={isDeletingQueryInProcess}
-        onConfirm={executeDataQueryDeletion}
-        onCancel={() => deleteDataQuery(null)}
+        queryName={dataQuery.name}
         darkMode={darkMode}
+        onCancel={() => deleteDataQuery(null)}
+        onDelete={executeDataQueryDeletion}
       />
     </>
   );

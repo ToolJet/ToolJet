@@ -27,6 +27,7 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'TextArea',
   'StarRating',
   'TagsInput',
+  'ColorPicker',
   'ButtonGroupV2',
 ];
 

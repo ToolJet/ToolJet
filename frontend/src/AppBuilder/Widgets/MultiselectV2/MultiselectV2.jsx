@@ -17,6 +17,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const MultiselectV2 = ({
   id,
@@ -84,6 +85,7 @@ export const MultiselectV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
@@ -109,6 +111,7 @@ export const MultiselectV2 = ({
             ...data,
             label: getSafeRenderableValue(data?.label),
             value: data?.value,
+            caption: data?.caption ?? null,
             isDisabled: data?.disable ?? false,
           }))
       : [];
@@ -203,7 +206,8 @@ export const MultiselectV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable(
       'options',
-      Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selectOptions) &&
+        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
@@ -265,8 +269,12 @@ export const MultiselectV2 = ({
       isDisabled: disabledState,
       isMandatory: isMandatory,
       isValid: isValid,
-      selectedOptions: Array.isArray(defaultItems) && defaultItems?.map(({ label, value }) => ({ label, value })),
-      options: Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value })),
+      selectedOptions:
+        Array.isArray(defaultItems) &&
+        defaultItems?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+      options:
+        Array.isArray(selectOptions) &&
+        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -349,7 +357,9 @@ export const MultiselectV2 = ({
     setSelected(values);
     setExposedVariables({
       values: values.map((item) => item.value),
-      selectedOptions: Array.isArray(values) && values?.map(({ label, value }) => ({ label, value })),
+      selectedOptions:
+        Array.isArray(values) &&
+        values?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
     });
     const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
     setValidationStatus(validationStatus);
@@ -526,6 +536,13 @@ export const MultiselectV2 = ({
             value={selectOptions?.length === selected?.length ? modifiedSelectOptions : selected}
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
+            filterOption={(option, input) => {
+              if (!input) return true;
+              const needle = input.toLowerCase();
+              const label = String(option?.label ?? '').toLowerCase();
+              const caption = String(option?.data?.caption ?? '').toLowerCase();
+              return label.includes(needle) || caption.includes(needle);
+            }}
             styles={customStyles}
             aria-hidden={!visibility}
             aria-disabled={isMultiSelectDisabled}

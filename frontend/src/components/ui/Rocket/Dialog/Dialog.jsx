@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { createContext, forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cva } from 'class-variance-authority';
@@ -12,6 +12,10 @@ import {
   DialogClose,
   DialogPortal,
 } from '@/components/ui/Rocket/shadcn/dialog';
+
+// ── Overflow context (DialogBody → DialogFooter) ────────────────────────────
+
+const DialogOverflowContext = createContext({ overflowing: false, setOverflowing: () => {} });
 
 // ── DialogOverlay ────────────────────────────────────────────────────────────
 
@@ -61,6 +65,12 @@ const DialogContent = forwardRef(function DialogContent(
   { className, children, size, showCloseButton = true, preventClose = false, ...props },
   ref
 ) {
+  const [bodyOverflowing, setBodyOverflowing] = useState(false);
+  const overflowCtx = useMemo(
+    () => ({ overflowing: bodyOverflowing, setOverflowing: setBodyOverflowing }),
+    [bodyOverflowing]
+  );
+
   const handleInteractOutside = (e) => {
     if (preventClose) e.preventDefault();
     props.onInteractOutside?.(e);
@@ -87,7 +97,7 @@ const DialogContent = forwardRef(function DialogContent(
         )}
         {...props}
       >
-        {children}
+        <DialogOverflowContext.Provider value={overflowCtx}>{children}</DialogOverflowContext.Provider>
         {showCloseButton && (
           <DialogClose asChild>
             <Button
@@ -140,13 +150,37 @@ const DialogBody = forwardRef(function DialogBody(
   { className, noPadding = false, scrollable = false, children, ...props },
   ref
 ) {
+  const innerRef = useRef(null);
+  const { setOverflowing } = useContext(DialogOverflowContext);
+
+  const mergedRef = useCallback(
+    (node) => {
+      innerRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref]
+  );
+
+  useEffect(() => {
+    const node = innerRef.current;
+    if (!node) return;
+
+    const check = () => setOverflowing(node.scrollHeight > node.clientHeight);
+    const observer = new ResizeObserver(check);
+    observer.observe(node);
+    check();
+
+    return () => observer.disconnect();
+  }, [setOverflowing]);
+
   return (
     <div
-      ref={ref}
+      ref={mergedRef}
       data-slot="dialog-body"
       className={cn(
         'tw-flex-1 tw-min-h-0',
-        !noPadding && 'tw-p-6',
+        !noPadding && 'tw-px-6 tw-py-4',
         scrollable && 'tw-overflow-y-auto tw-max-h-[85vh]',
         className
       )}
@@ -167,13 +201,16 @@ DialogBody.propTypes = {
 // ── DialogFooter ─────────────────────────────────────────────────────────────
 
 function DialogFooter({ className, ...props }) {
+  const { overflowing } = useContext(DialogOverflowContext);
+
   return (
     <div
       data-slot="dialog-footer"
       className={cn(
         'tw-px-6 tw-py-4',
         'tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-2',
-        'tw-border-solid tw-border-0 tw-border-t tw-border-border-weak',
+        'tw-border-solid tw-border-0 tw-border-t',
+        overflowing ? 'tw-border-border-weak' : 'tw-border-transparent',
         className
       )}
       {...props}

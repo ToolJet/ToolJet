@@ -220,6 +220,62 @@ export const Scrollable = {
   ),
 };
 
+// ── Overflow Border ─────────────────────────────────────────────────────────
+// Footer border only appears when body content overflows.
+
+export const OverflowBorder = {
+  render: () => (
+    <div className="tw-flex tw-gap-3">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Short Content</Button>
+        </DialogTrigger>
+        <DialogContent size="small">
+          <DialogHeader>
+            <DialogTitle>Short Content</DialogTitle>
+          </DialogHeader>
+          <DialogBody scrollable>
+            <p className="tw-text-sm tw-text-text-default">This content fits — no footer border.</p>
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="primary">Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Long Content</Button>
+        </DialogTrigger>
+        <DialogContent size="small">
+          <DialogHeader>
+            <DialogTitle>Long Content</DialogTitle>
+          </DialogHeader>
+          <DialogBody scrollable>
+            <div className="tw-flex tw-flex-col tw-gap-4 tw-text-sm tw-text-text-default">
+              {Array.from({ length: 15 }, (_, i) => (
+                <p key={i}>
+                  Paragraph {i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua.
+                </p>
+              ))}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="primary">Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  ),
+};
+
 // ── No Padding ───────────────────────────────────────────────────────────────
 
 export const NoPadding = {

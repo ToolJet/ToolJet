@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
@@ -75,6 +76,7 @@ export const useFilePicker = ({
   const [dropzoneRejections, setDropzoneRejections] = useState([]);
   const [uiErrorMessage, setUiErrorMessage] = useState('');
   const [isTouched, setIsTouched] = useState(false);
+  useShowValidationOnFormSubmit(setIsTouched);
 
   // Calculate total file size
   const totalFileSize = useMemo(() => {

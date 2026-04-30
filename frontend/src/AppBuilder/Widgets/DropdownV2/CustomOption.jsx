@@ -5,6 +5,9 @@ import './dropdownV2.scss';
 import { highlightText } from './utils';
 
 const CustomOption = (props) => {
+  const caption = props.data?.caption;
+  const hasCaption = caption !== null && caption !== undefined && caption !== '';
+  const captionText = hasCaption ? String(caption) : '';
   return (
     <components.Option
       {...props}
@@ -18,9 +21,16 @@ const CustomOption = (props) => {
             <CheckMark width={'20'} fill={'var(--cc-primary-brand)'} />
           </span>
         )}
-        <span className="tw-min-w-0 tw-flex-1 tw-truncate" style={{ color: 'unset' }} title={props.label?.toString()}>
-          {highlightText(props.label?.toString(), props.selectProps.inputValue)}
-        </span>
+        <div className="tw-min-w-0 tw-flex-1 tw-flex tw-flex-col">
+          <span className="tw-truncate" style={{ color: 'unset' }} title={props.label?.toString()}>
+            {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+          </span>
+          {hasCaption && (
+            <span className="dropdownV2-option-caption tw-truncate" title={captionText}>
+              {highlightText(captionText, props.selectProps.inputValue)}
+            </span>
+          )}
+        </div>
       </div>
     </components.Option>
   );

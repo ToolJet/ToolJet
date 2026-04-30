@@ -361,6 +361,12 @@
           "className": "codehinter-plugins",
           "placeholder": "Enter limit"
         },
+        "allow_multiple_updates": {
+          "label": "Allow this query to delete multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can delete multiple rows at once"
+        },
         "zero_records_as_success": {
           "label": "Consider query that deletes zero records as success",
           "key": "zero_records_as_success",
@@ -497,6 +503,37 @@
           "key": "records",
           "type": "codehinter",
           "description": "Array of row objects to insert or update. Each row must include all primary key column values.",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_upsert_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "primary_key_column": {
+          "label": "Primary key column",
+          "key": "primary_key_column",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update",
           "height": "150px",
           "editorType": "extendedSingleLine",
           "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"

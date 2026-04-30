@@ -8,7 +8,7 @@ export interface IAuthService {
   login(response: Response, appAuthDto: AppAuthenticationDto, organizationId?: string, user?: User): Promise<any>;
   authorizeOrganization(user: User): Promise<any>;
   switchOrganization(response: Response, organizationId: string, user: User): Promise<any>;
-  forgotPassword(email: string): Promise<void>;
+  forgotPassword(email: string, redirectTo?: string): Promise<void>;
   resetPassword(token: string, password: string): Promise<void>;
 }
 

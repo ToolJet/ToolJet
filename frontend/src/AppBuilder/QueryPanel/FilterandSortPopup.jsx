@@ -103,10 +103,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div
-            className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup"
-            style={{ height: '315px', overflowY: 'auto' }}
-          >
+          <div className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup query-editor-sort-filter-body">
             <div className="color-slate9 px-3 pb-2 w-100">
               <small data-cy="label-filter-by">Filter By</small>
             </div>
@@ -130,10 +127,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                 ''
               )}
             </div>
-            <div class="border-bottom mt-1"></div>
+            <div className="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small data-cy="label-sort-by">Sort By</small>
             </div>
+            <MenuButton id="custom" text="Custom order" callback={handleSort} active={sortBy === 'custom'} />
             <MenuButton
               id="name"
               order="asc"
@@ -209,7 +207,6 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             className={cx('position-relative  btn-query-panel-header', {
               active: showMenu,
             })}
-            style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
             data-cy={`query-filter-button`}
           >
             <ListFilter color="var(--icons-strong)" size={14} />
@@ -266,7 +263,7 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar py-2" style={{ height: '281px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar py-2 query-ds-filter-list">
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1')}

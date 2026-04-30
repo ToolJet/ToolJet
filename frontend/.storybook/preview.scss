@@ -14,3 +14,8 @@ body {
 .sb-show-main {
   background-color: var(--background-surface-layer-01) !important;
 }
+
+.sb-show-main.sb-main-centered #storybook-root {
+  width: 100%;
+  height: stretch;
+}

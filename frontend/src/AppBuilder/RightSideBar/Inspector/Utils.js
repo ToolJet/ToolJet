@@ -76,7 +76,8 @@ export function renderCustomStyles(
     componentConfig.component == 'TreeSelect' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'ColorPicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

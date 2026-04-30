@@ -141,7 +141,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
           queryName={queryName}
           label="Column"
           darkMode={darkMode}
-          sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
+          sizeStyles={{ width: '100%', height: '30px', borderRadius: '4px 0 0 4px' }}
         />
       </div>
 

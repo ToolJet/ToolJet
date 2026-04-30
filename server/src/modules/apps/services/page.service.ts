@@ -29,7 +29,7 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService
-  ) {}
+  ) { }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -220,6 +220,8 @@ export class PageService implements IPageService {
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
+      newPage.pageHeader = pageToClone.pageHeader;
+      newPage.pageFooter = pageToClone.pageFooter;
 
       clonedPage = await manager.save(newPage);
 
@@ -421,19 +423,23 @@ export class PageService implements IPageService {
         let parentId = originalComponent.parent ? originalComponent.parent : null;
 
         if (parentId) {
-          const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
 
-          if (isParentIdSuffixed) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = componentsIdMap[originalBaseParentId];
+            if (isParentIdSuffixed) {
+              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = componentsIdMap[originalBaseParentId];
 
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              } else {
+                parentId = null;
+              }
             } else {
-              parentId = null;
+              parentId = componentsIdMap[parentId];
             }
-          } else {
-            parentId = componentsIdMap[parentId];
           }
         }
         component.parent = parentId;

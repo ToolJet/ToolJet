@@ -22,5 +22,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.RELEASE]: {
       auditLogsKey: 'APP_RELEASE',
     },
+    [FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG]: {},
   },
 };

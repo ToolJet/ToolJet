@@ -9,7 +9,12 @@ export const onInvitedUserSignUpSuccess = (response, navigate) => {
     noWorkspaceAttachedInTheSession: currentUser?.current_organization_id ? false : true,
     currentUser,
   });
-  navigate(organizationInviteUrl);
+  if (organizationInviteUrl) {
+    navigate(organizationInviteUrl);
+  } else {
+    // User was directly activated into the workspace (no pending org invite step)
+    navigate(currentUser?.current_organization_slug ? `/${currentUser.current_organization_slug}` : '/');
+  }
 };
 
 export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {

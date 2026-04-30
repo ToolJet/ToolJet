@@ -33,6 +33,16 @@ export const navigationConfig = {
       ],
       accordian: 'Menu',
     },
+    navItemSize: {
+      type: 'switch',
+      displayName: 'Nav item size',
+      validation: { schema: { type: 'string' }, defaultValue: 'equalWidth' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Equal width', value: 'equalWidth' },
+      ],
+      accordian: 'Menu',
+    },
     horizontalAlignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -189,6 +199,7 @@ export const navigationConfig = {
     properties: {
       orientation: { value: 'horizontal' },
       displayStyle: { value: 'textAndIcon' },
+      navItemSize: { value: 'equalWidth' },
       horizontalAlignment: { value: 'left' },
       verticalAlignment: { value: 'center' },
       menuItems: {

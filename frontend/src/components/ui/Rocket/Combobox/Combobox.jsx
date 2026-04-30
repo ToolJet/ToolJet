@@ -18,6 +18,7 @@ import {
   ComboboxGroup,
   ComboboxCollection,
 } from '@/components/ui/Rocket/shadcn/combobox';
+import { useInputOverflowTitle } from '@/components/ui/Rocket/TruncatingText/useInputOverflowTitle';
 
 // ── Anchor context ────────────────────────────────────────────────────────
 // Base UI Positioner anchors to the Trigger (chevron button, ~28px).
@@ -47,6 +48,11 @@ const comboboxInputVariants = cva(
     // ── Text (descendant selectors into inner <input>) ───────────────────
     '[&_input]:tw-text-text-default',
     '[&_input]:placeholder:tw-text-text-placeholder',
+    // Show ellipsis on overflowing input text. Visible only when the input
+    // is blurred — focused inputs scroll horizontally per browser default.
+    // Hover-tooltip via `title` attribute is tracked separately as a
+    // follow-up (input-overflow detection hook).
+    '[&_input]:tw-truncate',
 
     // ── Chevron icon colour + rotation animation ─────────────────────────
     '[&_[data-slot=combobox-trigger-icon]]:tw-text-icon-default',
@@ -94,6 +100,11 @@ const ComboboxInput = forwardRef(function ComboboxInput(
 ) {
   const anchorRef = useContext(ComboboxAnchorContext);
 
+  // Show full input value as a native browser tooltip when it overflows.
+  // Pairs with the `[&_input]:tw-truncate` ellipsis above — without this hook,
+  // long values clip silently with no way to read them.
+  useInputOverflowTitle(anchorRef);
+
   const handleClick = (e) => {
     // Don't steal focus from button clicks (trigger, clear)
     if (e.target.closest('button')) return;
@@ -139,14 +150,18 @@ ComboboxInput.propTypes = {
 
 // ── ComboboxContent ───────────────────────────────────────────────────────
 
-const ComboboxContent = forwardRef(function ComboboxContent({ className, ...props }, ref) {
+const ComboboxContent = forwardRef(function ComboboxContent({ anchor, className, ...props }, ref) {
   const anchorRef = useContext(ComboboxAnchorContext);
+  // Use custom anchor prop if provided. Default to the context ref (full-width input wrapper).
+  // Pass `anchor={false}` to skip the custom anchor and let Base UI anchor to the trigger element
+  // (useful when using ComboboxTrigger with a custom render button).
+  const resolvedAnchor = anchor !== undefined ? anchor || undefined : anchorRef;
   return (
     <ShadcnComboboxContent
       ref={ref}
-      anchor={anchorRef}
+      anchor={resolvedAnchor}
       className={cn(
-        'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-[10px] tw-shadow-elevation-300 tw-p-2',
+        'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-lg tw-shadow-elevation-300 tw-p-2',
         className
       )}
       {...props}

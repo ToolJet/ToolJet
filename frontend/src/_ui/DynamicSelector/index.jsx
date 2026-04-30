@@ -717,6 +717,9 @@ const DynamicSelector = ({
                   if (pagination) debouncedSearchRef.current(val);
                 }}
                 filterOption={pagination ? () => true : undefined}
+                width={sizeStyles.width ?? '100%'}
+                height={sizeStyles.height}
+                borderRadius={sizeStyles.borderRadius}
               />
             </div>
           )}
