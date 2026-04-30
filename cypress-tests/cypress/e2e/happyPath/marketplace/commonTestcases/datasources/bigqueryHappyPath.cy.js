@@ -33,6 +33,8 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
+        cy.get('[data-cy="authentication-type-select-dropdown"]').click();
+        cy.get('.react-select__menu').should('be.visible').contains('Service Account').click();
         verifyConnectionFormUI(bigqueryUIConfig.defaultFields);
     });
 
@@ -48,6 +50,8 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
+        cy.get('[data-cy="authentication-type-select-dropdown"]').click();
+        cy.get('.react-select__menu').should('be.visible').contains('Service Account').click();
 
         fillDSConnectionForm(bigqueryFormConfig, []);
 
@@ -66,6 +70,8 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
+        cy.get('[data-cy="authentication-type-select-dropdown"]').click();
+        cy.get('.react-select__menu').should('be.visible').contains('Service Account').click();
 
         verifyConnectionFormUI(bigqueryUIConfig.defaultFields);
 
