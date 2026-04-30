@@ -273,6 +273,8 @@ export class VersionUtilService implements IVersionUtilService {
       //      TODO: migrate existing rows to version names so this case can be dropped.
       //   2. version name — pinned; scoped to version_type='version' + module's co_relation_id.
       //   3. branch name — unpinned; resolved to the module's default-branch version row.
+      //   4. module_reference_id — stable UUID stored by the frontend since commit 4e8c6ada30
+      //      (replaced version name as the pinned identifier for cross-instance portability).
       // A DRAFT resolved row means the module needs saving before the parent can save/promote.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
@@ -307,6 +309,10 @@ export class VersionUtilService implements IVersionUtilService {
                  AND type = 'module'
                  AND organization_id = :orgId
              )
+           )
+           OR (
+             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+             AND mod_ver.version_type = 'version'
            )`,
           { orgId: organizationId }
         )
@@ -349,7 +355,7 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // 3-case moduleVersionId resolution — see checkDraftModulesInApp for the cases.
+      // 4-case moduleVersionId resolution — see checkDraftModulesInApp for the cases.
       // LEFT JOIN on app_environments so a module version with no current_environment_id
       // (rare, legacy) also blocks promote — null priority is treated as "below target".
       const unpromotedModules = await manager
@@ -385,6 +391,10 @@ export class VersionUtilService implements IVersionUtilService {
                  AND type = 'module'
                  AND organization_id = :orgId
              )
+           )
+           OR (
+             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+             AND mod_ver.version_type = 'version'
            )`,
           { orgId: organizationId }
         )
