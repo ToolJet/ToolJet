@@ -3,22 +3,8 @@ id: tj-ai-enterprise
 title: ToolJet AI Enterprise
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
-
-<div className="badge badge--self-hosted heading-badge" >   
- <span>Self Hosted</span>
-</div>
-
-</div>
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
 
 ToolJet AI Enterprise is designed for organizations that require complete control over where their data is processed. Rather than routing AI requests through ToolJet AI Cloud, you deploy a ToolJet-provided server image within your own environment. All AI workloads execute on your servers, using your own LLM API key, no data is transmitted to or processed by ToolJet at any point.
 

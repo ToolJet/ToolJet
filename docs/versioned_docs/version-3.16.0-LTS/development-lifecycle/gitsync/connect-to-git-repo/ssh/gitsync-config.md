@@ -2,15 +2,8 @@
 id: gitsync-config
 title: Configure GitSync
 ---
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+
+<PlanBadge type="enterprise" />
 
 In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **main** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
 

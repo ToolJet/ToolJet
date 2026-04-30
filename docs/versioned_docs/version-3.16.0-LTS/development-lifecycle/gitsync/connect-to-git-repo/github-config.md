@@ -3,15 +3,8 @@ id: github-config
 title: GitHub Configuration
 sidebar_label: GitHub Configuration
 ---
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+
+<PlanBadge type="enterprise" />
 
 The GitHub Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. It works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
 

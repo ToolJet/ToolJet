@@ -3,11 +3,7 @@ id: configuration
 title: Setting Up Outgoing Emails (SMTP)
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--self-hosted heading-badge" >   
- <span>Self Hosted</span>
-</div>
-</div>
+<PlanBadge type="self-hosted" />
 
 Configuring an SMTP server lets your self-hosted ToolJet instance send outgoing emails automatically. Without this setup, the following email-based flows will not work:
 

@@ -3,6 +3,8 @@ id: version-control
 title: Version Control
 ---
 
+<PlanBadge type="pro" />
+
 Version Control in ToolJet helps you to maintain multiple versions of the application, do iterative development, and deploy updates systematically. It ensures stability, and allows seamless rollout of new features or fixes.
 
 For example, to experiment a new feature, you can create a new draft version of the application and try it out, without disturbing the released application. And after through testing, you can release this version. This minimizes downtime, and allows developers to experiment and debug the new feature without disrupting users.

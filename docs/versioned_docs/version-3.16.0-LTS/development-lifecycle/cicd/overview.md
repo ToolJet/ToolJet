@@ -3,15 +3,8 @@ id: overview
 title: GitSync CI/CD Overview
 sidebar_label: Overview
 ---
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+
+<PlanBadge type="enterprise" />
 
 ToolJet’s git sync CI/CD feature enables organizations to integrate ToolJet applications into their existing CI/CD pipelines using industry-standard tools such as Jenkins, GitHub Actions, CircleCI, and GitLab CI. This feature brings the power of git sync to your automation workflows through a set of ToolJet APIs, allowing your development teams to automate Git operations without relying on manual UI interactions.
 

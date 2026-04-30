@@ -3,15 +3,7 @@ id: environments
 title: Multi-Environment
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
+<PlanBadge type="enterprise" />
 
 Environments for Workflows help manage different stages of workflow development, ensuring smooth transitions between development, testing, and production. They keep changes isolated so that testing and debugging can happen without affecting live workflow executions.
 
