@@ -37,7 +37,7 @@ export interface ImportOptions {
   context: ImportContext;
   policy: ResourcePolicy;
   /** Recursive imports share this map so the same cor resolves to the same local id at every nesting level. */
-  corToLocal?: Map<string, string>;
+  targetIdByCor?: Map<string, string>;
 }
 
 export const GIT_PULL_POLICY: ResourcePolicy = {
@@ -90,12 +90,20 @@ export class AppSnapshot {
     const { manager, context, policy } = options;
     const result = clone(snapshot) as AppData;
 
-    const localToCor = collectLocalToCor(result);
-    const corToLocal = options.corToLocal ?? new Map<string, string>();
+    const corBySourceId = collectCorBySourceId(result);
+    const targetIdByCor = options.targetIdByCor ?? new Map<string, string>();
 
     // Apps and modules share the App table — type-filter so a cor_id collision
     // can't reuse a FRONT_END row as a MODULE or vice versa.
-    await resolveAppRows(result, 'apps', APP_TYPES.FRONT_END, manager, context.organizationId, policy.apps, corToLocal);
+    await resolveAppRows(
+      result,
+      'apps',
+      APP_TYPES.FRONT_END,
+      manager,
+      context.organizationId,
+      policy.apps,
+      targetIdByCor
+    );
     await resolveAppRows(
       result,
       'modules',
@@ -103,14 +111,14 @@ export class AppSnapshot {
       manager,
       context.organizationId,
       policy.modules,
-      corToLocal
+      targetIdByCor
     );
-    await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
-    await resolveAppVersions(result, manager, policy.appVersions, corToLocal, localToCor);
-    assignFreshIdsToChildren(result, corToLocal);
+    await resolveDataSources(result, manager, context.organizationId, policy.dataSources, targetIdByCor);
+    await resolveAppVersions(result, manager, policy.appVersions, targetIdByCor, corBySourceId);
+    assignFreshIdsToChildren(result, targetIdByCor);
 
     const unmapped = new Set<string>();
-    rewriteUuidsInAllStrings(result, localToCor, corToLocal, unmapped);
+    rewriteUuidsInAllStrings(result, corBySourceId, targetIdByCor, unmapped);
     if (unmapped.size > 0) {
       // Could be content-embedded UUIDs (user-typed strings that happen to look
       // like UUIDs) OR genuine referential drift. We can't tell apart without
@@ -132,7 +140,7 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function collectLocalToCor(tree: unknown): Map<string, string> {
+function collectCorBySourceId(tree: unknown): Map<string, string> {
   const out = new Map<string, string>();
   visit(tree, (record) => {
     const id = record.id;
@@ -144,16 +152,16 @@ function collectLocalToCor(tree: unknown): Map<string, string> {
 
 function rewriteUuidsInAllStrings(
   obj: unknown,
-  localToCor: Map<string, string>,
-  corToLocal: Map<string, string>,
+  corBySourceId: Map<string, string>,
+  targetIdByCor: Map<string, string>,
   unmapped: Set<string>
 ): void {
   if (!obj || typeof obj !== 'object') return;
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
       const v = obj[i];
-      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, localToCor, corToLocal, unmapped);
-      else rewriteUuidsInAllStrings(v, localToCor, corToLocal, unmapped);
+      if (typeof v === 'string') obj[i] = rewriteUuidsInString(v, corBySourceId, targetIdByCor, unmapped);
+      else rewriteUuidsInAllStrings(v, corBySourceId, targetIdByCor, unmapped);
     }
     return;
   }
@@ -163,22 +171,22 @@ function rewriteUuidsInAllStrings(
     // stable cor key itself, not a translatable reference.
     if (key === 'slug' || key === 'co_relation_id') continue;
     const v = record[key];
-    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, localToCor, corToLocal, unmapped);
-    else rewriteUuidsInAllStrings(v, localToCor, corToLocal, unmapped);
+    if (typeof v === 'string') record[key] = rewriteUuidsInString(v, corBySourceId, targetIdByCor, unmapped);
+    else rewriteUuidsInAllStrings(v, corBySourceId, targetIdByCor, unmapped);
   }
 }
 
 function rewriteUuidsInString(
   value: string,
-  localToCor: Map<string, string>,
-  corToLocal: Map<string, string>,
+  corBySourceId: Map<string, string>,
+  targetIdByCor: Map<string, string>,
   unmapped: Set<string>
 ): string {
   return value.replace(UUID_V4_REGEX_GLOBAL, (match) => {
     // Chained lookup: source-local → cor → target-local. Either step may miss
     // (embedded refs are often cor_ids directly; unknown UUIDs pass through).
-    const cor = localToCor.get(match) ?? match;
-    const target = corToLocal.get(cor);
+    const cor = corBySourceId.get(match) ?? match;
+    const target = targetIdByCor.get(cor);
     if (target !== undefined) return target;
     unmapped.add(match);
     return match;
@@ -243,7 +251,7 @@ async function resolveAppRows(
   manager: EntityManager,
   organizationId: string,
   policy: Policy,
-  corToLocal: Map<string, string>
+  targetIdByCor: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree[folder]);
   if (items.length === 0) return;
@@ -256,8 +264,8 @@ async function resolveAppRows(
   const existingByCor = indexByCorId(existing);
 
   for (const corId of corIds) {
-    if (corToLocal.has(corId)) continue;
-    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+    if (targetIdByCor.has(corId)) continue;
+    targetIdByCor.set(corId, existingByCor.get(corId) ?? uuid());
   }
 }
 
@@ -265,8 +273,8 @@ async function resolveAppVersions(
   tree: AppData,
   manager: EntityManager,
   policy: Policy,
-  corToLocal: Map<string, string>,
-  localToCor: Map<string, string>
+  targetIdByCor: Map<string, string>,
+  corBySourceId: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree.versions);
   if (items.length === 0) return;
@@ -277,9 +285,9 @@ async function resolveAppVersions(
   for (const v of items) {
     const sourceAppId = v.appId;
     if (typeof sourceAppId !== 'string') continue;
-    const appCor = localToCor.get(sourceAppId);
+    const appCor = corBySourceId.get(sourceAppId);
     if (!appCor) continue;
-    const targetAppId = corToLocal.get(appCor);
+    const targetAppId = targetIdByCor.get(appCor);
     if (targetAppId) localAppIds.add(targetAppId);
   }
 
@@ -293,8 +301,8 @@ async function resolveAppVersions(
   const existingByCor = indexByCorId(existing);
 
   for (const corId of corIds) {
-    if (corToLocal.has(corId)) continue;
-    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+    if (targetIdByCor.has(corId)) continue;
+    targetIdByCor.set(corId, existingByCor.get(corId) ?? uuid());
   }
 }
 
@@ -303,7 +311,7 @@ async function resolveDataSources(
   manager: EntityManager,
   organizationId: string,
   policy: Policy,
-  corToLocal: Map<string, string>
+  targetIdByCor: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree.dataSources);
   if (items.length === 0) return;
@@ -316,15 +324,15 @@ async function resolveDataSources(
   const existingByCor = indexByCorId(existing);
 
   for (const corId of corIds) {
-    if (corToLocal.has(corId)) continue;
-    corToLocal.set(corId, existingByCor.get(corId) ?? uuid());
+    if (targetIdByCor.has(corId)) continue;
+    targetIdByCor.set(corId, existingByCor.get(corId) ?? uuid());
   }
 }
 
-function assignFreshIdsToChildren(tree: AppData, corToLocal: Map<string, string>): void {
+function assignFreshIdsToChildren(tree: AppData, targetIdByCor: Map<string, string>): void {
   const assign = (item: Record<string, unknown>) => {
     const cor = item.co_relation_id;
-    if (typeof cor === 'string' && !corToLocal.has(cor)) corToLocal.set(cor, uuid());
+    if (typeof cor === 'string' && !targetIdByCor.has(cor)) targetIdByCor.set(cor, uuid());
   };
   for (const folder of CHILD_FOLDERS) {
     for (const item of toArray(tree[folder])) assign(item);

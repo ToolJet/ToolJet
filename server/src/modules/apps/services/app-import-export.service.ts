@@ -719,15 +719,15 @@ export class AppImportExportService {
       }
 
       // Run the bundle through AppSnapshot.import — every UUID reference
-      // is translated before any save runs. Shared corToLocal lets recursive
+      // is translated before any save runs. Shared targetIdByCor lets recursive
       // module imports below resolve the same cor to the same local id.
       const externalRefs = externalResourceMappings as
-        | { corToLocal?: Map<string, string>; policy?: ResourcePolicy }
+        | { targetIdByCor?: Map<string, string>; policy?: ResourcePolicy }
         | undefined;
-      const corToLocal: Map<string, string> = externalRefs?.corToLocal ?? new Map<string, string>();
+      const targetIdByCor: Map<string, string> = externalRefs?.targetIdByCor ?? new Map<string, string>();
       const policy: ResourcePolicy = externalRefs?.policy ?? JSON_IMPORT_POLICY;
-      await this.translateBundleViaAppSnapshot(appParams, manager, user.organizationId, policy, corToLocal);
-      if (externalRefs) externalRefs.corToLocal = corToLocal;
+      await this.translateBundleViaAppSnapshot(appParams, manager, user.organizationId, policy, targetIdByCor);
+      if (externalRefs) externalRefs.targetIdByCor = targetIdByCor;
 
       const moduleResourceMappings = await this.mapModulesForAppImport(
         manager,
@@ -1058,7 +1058,7 @@ export class AppImportExportService {
    * matchOrCreate against the workspace by cor_id; data sources and module
    * apps that aren't in the workspace get fresh local ids per policy.
    *
-   * The corToLocal map is shared across recursive imports so a module
+   * The targetIdByCor map is shared across recursive imports so a module
    * cor_id appearing both in an outer bundle and as a top-level entity in
    * a recursive import resolves to the same local id at every nesting
    * level.
@@ -1068,14 +1068,14 @@ export class AppImportExportService {
     manager: EntityManager,
     organizationId: string,
     policy: ResourcePolicy,
-    corToLocal: Map<string, string>
+    targetIdByCor: Map<string, string>
   ): Promise<void> {
     const snapshot = appBundleToSnapshotShape(appParams);
     const resolved = await this.appSnapshot.import(snapshot, {
       manager,
       context: { organizationId },
       policy,
-      corToLocal,
+      targetIdByCor,
     });
     applyResolvedSnapshotToAppBundle(appParams, resolved);
   }
@@ -4180,7 +4180,7 @@ const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds:
  * Modules are flattened to their top-level App row only; their inner
  * content (versions, components, queries) is translated when
  * `mapModulesForAppImport` recursively invokes `this.import()` on each
- * module. The shared corToLocal map carries resolutions across nesting.
+ * module. The shared targetIdByCor map carries resolutions across nesting.
  */
 function appBundleToSnapshotShape(appParams: any): Record<string, unknown> {
   const {
