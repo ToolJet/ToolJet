@@ -790,6 +790,7 @@ export class AppImportExportService {
         if (alreadyOnBranch.has(appId)) continue;
         const stub = manager.create(AppVersion, {
           name: uuid(),
+          co_relation_id: uuid(),
           appId,
           versionType: AppVersionType.BRANCH,
           branchId: stubBranchId,
@@ -1437,6 +1438,8 @@ export class AppImportExportService {
             const componentLayouts = [];
 
             const newPage = manager.create(Page, {
+              id: page.id,
+              co_relation_id: page.co_relation_id ?? page.id,
               name: page.name,
               handle: page.handle,
               appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
@@ -1845,9 +1848,10 @@ export class AppImportExportService {
         let savedId = nameToSavedFolderId[folder.name];
         if (!savedId) {
           const newFolder = manager.create(DataQueryFolder, {
+            id: folder.id,
             name: folder.name,
             appVersionId: newAppVersionId,
-            co_relation_id: folder.id,
+            co_relation_id: folder.co_relation_id ?? folder.id,
           });
           const savedFolder = await manager.save(DataQueryFolder, newFolder);
           savedId = savedFolder.id;
@@ -1882,11 +1886,12 @@ export class AppImportExportService {
         insertedMappingChildKeys.add(childKey);
 
         const newMapping = manager.create(DataQueryFolderMapping, {
+          id: mapping.id,
           parentId: newParentId,
           childId: newChildId,
           childType: mapping.childType,
           index: mapping.index,
-          co_relation_id: mapping.id,
+          co_relation_id: mapping.co_relation_id ?? mapping.id,
         });
         await manager.save(DataQueryFolderMapping, newMapping);
       }
@@ -1897,6 +1902,8 @@ export class AppImportExportService {
 
       for (const page of pagesOfAppVersion) {
         const newPage = manager.create(Page, {
+          id: page.id,
+          co_relation_id: page.co_relation_id ?? page.id,
           name: page.name,
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
@@ -1942,53 +1949,32 @@ export class AppImportExportService {
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
-        const newComponentIdsMap = {};
-        for (const component of pageComponents) {
-          newComponentIdsMap[component.id] = uuid();
-        }
+        // AppSnapshot.import() (run at the entry of import()) has already
+        // assigned target-local ids to every component and rewritten every
+        // UUID reference (parent refs in `<uuid>-suffix` strings, embedded
+        // refs like buttonToSubmit/moduleAppId in property JSON). The loop
+        // below just persists what it's given.
+        //
+        // Skip-orphan defense: a component whose parent's UUID isn't in
+        // pageComponents is a malformed bundle (the parent doesn't exist).
+        // AppSnapshot didn't materialize it; we shouldn't either.
+        const validParentUuids = new Set(pageComponents.map((c: any) => c.id));
 
         for (const component of pageComponents) {
           let skipComponent = false;
           const newComponent = new Component();
 
-          let parentId = component.parent ? component.parent : null;
-          if (component?.properties?.buttonToSubmit) {
-            const newButtonToSubmitValue = newComponentIdsMap[component?.properties?.buttonToSubmit?.value];
-            if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
-          }
-
-          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
-          // These are not UUID-based and should not be remapped
-          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
-            const isParentHeaderOrFooter =
-              component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
-
-            if (isParentTabOrCalendar) {
-              const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
-
-              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-              const mappedParentId = newComponentIdsMap[_parentId];
-
-              parentId = `${mappedParentId}-${childTabId}`;
-            } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-              const mappedParentId = newComponentIdsMap[_parentId];
-
-              parentId = `${mappedParentId}-modal`;
-            } else if (isParentHeaderOrFooter) {
-              const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-              const mappedParentId = newComponentIdsMap[_parentId];
-              const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
-              parentId = `${mappedParentId}-${headerOrFooter}`;
-            } else {
-              if (component.parent && !newComponentIdsMap[parentId]) {
-                skipComponent = true;
-              }
-
-              parentId = newComponentIdsMap[parentId];
+          if (
+            component.parent &&
+            component.parent !== 'canvas-header' &&
+            component.parent !== 'canvas-footer'
+          ) {
+            const parentUuid = component.parent.match(/^[a-fA-F0-9-]{36}/)?.[0];
+            if (parentUuid && !validParentUuids.has(parentUuid)) {
+              skipComponent = true;
             }
           }
+
           if (!skipComponent) {
             const { properties, styles, general, validation, generalStyles } = migrateProperties(
               component.type as NewRevampedComponent,
@@ -1996,7 +1982,7 @@ export class AppImportExportService {
               NewRevampedComponents,
               tooljetVersion
             );
-            newComponent.id = newComponentIdsMap[component.id];
+            newComponent.id = component.id;
             newComponent.name = component.name;
             newComponent.type = component.type;
             newComponent.properties = properties;
@@ -2005,7 +1991,7 @@ export class AppImportExportService {
             newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = validation;
-            newComponent.parent = component.parent ? parentId : null;
+            newComponent.parent = component.parent ?? null;
 
             // ModuleViewer.moduleAppId.value is now translated by
             // AppSnapshot.import() at the entry of import() — it sweeps
@@ -2037,6 +2023,9 @@ export class AppImportExportService {
             await Promise.all(
               componentLayout.map(async (layout) => {
                 const newLayout = new Layout();
+                // Use AppSnapshot's resolved id; fall back to layout.id for
+                // legacy bundles that didn't carry a cor.
+                newLayout.id = layout.id;
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
                 newLayout.left =
@@ -2047,7 +2036,7 @@ export class AppImportExportService {
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
                 newLayout.component = savedComponent;
-                newLayout.co_relation_id = layout.id;
+                newLayout.co_relation_id = layout.co_relation_id ?? layout.id;
 
                 await manager.save(newLayout);
               })
@@ -2066,13 +2055,14 @@ export class AppImportExportService {
               await Promise.all(
                 componentEvents.map(async (componentEvent) => {
                   const newEvent = await manager.create(EventHandler, {
+                    id: componentEvent.id,
                     name: componentEvent.name,
                     sourceId: savedComponent.id,
                     target: componentEvent.target,
                     event: componentEvent.event,
                     index: componentEvent.index,
                     appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                    co_relation_id: componentEvent.id || undefined,
+                    co_relation_id: componentEvent.co_relation_id ?? componentEvent.id ?? undefined,
                   });
 
                   await manager.save(EventHandler, newEvent);
@@ -2088,13 +2078,14 @@ export class AppImportExportService {
           await Promise.all(
             pageEvents.map(async (pageEvent) => {
               const newEvent = await manager.create(EventHandler, {
+                id: pageEvent.id,
                 name: pageEvent.name,
                 sourceId: pageCreated.id,
                 target: pageEvent.target,
                 event: pageEvent.event,
                 index: pageEvent.index,
                 appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                co_relation_id: pageEvent.id || undefined,
+                co_relation_id: pageEvent.co_relation_id ?? pageEvent.id ?? undefined,
               });
 
               await manager.save(EventHandler, newEvent);
@@ -2131,13 +2122,14 @@ export class AppImportExportService {
           await Promise.all(
             importingQueryEvents.map(async (dataQueryEvent) => {
               const newEvent = await manager.create(EventHandler, {
+                id: dataQueryEvent.id,
                 name: dataQueryEvent.name,
                 sourceId: mappedNewDataQuery.id,
                 target: dataQueryEvent.target,
                 event: dataQueryEvent.event,
                 index: dataQueryEvent.index,
                 appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                co_relation_id: dataQueryEvent.id || undefined,
+                co_relation_id: dataQueryEvent.co_relation_id ?? dataQueryEvent.id ?? undefined,
               });
 
               await manager.save(EventHandler, newEvent);
@@ -2309,6 +2301,8 @@ export class AppImportExportService {
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
+        id: importingQuery.id,
+        co_relation_id: importingQuery.co_relation_id ?? importingQuery.id,
         name: importingQuery.name,
         options,
         dataSourceId: dataSourceForAppVersion.id,
@@ -3032,6 +3026,7 @@ export class AppImportExportService {
 
         const isLastVersion = appVersion === appVersions[appVersions.length - 1];
         version = await manager.create(AppVersion, {
+          id: appVersion.id,
           appId: importedApp.id,
           definition: appVersion.definition,
           name: isSubBranch && isLastVersion && targetBranchName ? targetBranchName : appVersion.name,
@@ -3042,7 +3037,7 @@ export class AppImportExportService {
           versionType: isSubBranch ? AppVersionType.BRANCH : AppVersionType.VERSION,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: appVersion.id || null,
+          co_relation_id: appVersion.co_relation_id ?? appVersion.id ?? null,
           branchId: isWorkflow ? null : branchId,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
@@ -3256,6 +3251,7 @@ export class AppImportExportService {
 
     const version = manager.create(AppVersion, {
       appId: importedApp.id,
+      co_relation_id: uuid(),
       definition: appParams.definition,
       name: 'v1',
       currentEnvironmentId,
@@ -3357,6 +3353,8 @@ export class AppImportExportService {
     for (const query of dataQueries) {
       const dataSourceId = dataSourceMapping[query.dataSourceId];
       const newQuery = manager.create(DataQuery, {
+        id: query.id,
+        co_relation_id: query.co_relation_id ?? query.id,
         name: query.name,
         dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
         appVersionId: query.appVersionId,
