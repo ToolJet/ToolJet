@@ -177,7 +177,9 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                       'align-items-center flex-column': cell.column.columnDef.meta?.columnType === 'selector',
                       'selector-column':
                         cell.column.columnDef.meta?.columnType === 'selector' && cell.column.id === 'selection',
-                      'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(cell.column.columnDef.meta?.columnType),
+                      'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(
+                        cell.column.columnDef.meta?.columnType
+                      ),
                       isEditable: true,
                     })}
                     style={{ width: cell.column.getSize() }}

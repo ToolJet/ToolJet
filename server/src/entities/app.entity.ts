@@ -105,6 +105,7 @@ export class App extends BaseEntity {
     threadId?: string | null;
     chatMessages?: any[];
     interrupt?: boolean;
+    moduleDescription?: string;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

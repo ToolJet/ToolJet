@@ -66,7 +66,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     }
 
     return modifiedColumn;
-  }
+  };
 
   // Handle column removal (deletion history + event cleanup)
   const handleRemove = useCallback(
