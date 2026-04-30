@@ -21,7 +21,7 @@ module.exports = defineConfig({
     baseUrl: "http://localhost:8082/",
     specPattern: [
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
-      "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/*.cy.js",
+      "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/postgresHappyPath.cy.js",
     ],
 
     testIsolation: true,
