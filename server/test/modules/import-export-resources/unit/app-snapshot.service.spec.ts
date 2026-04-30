@@ -342,6 +342,34 @@ describe('AppSnapshot.import', () => {
     expect(restored.components[0].properties.moduleAppId.value).toBe(srcModuleM);
   });
 
+  it('threads an external corToLocal map across calls (recursive imports share resolutions)', async () => {
+    const service = makeService();
+    const portable = service.export(buildAppData());
+    const { manager } = makeManager({});
+
+    // Caller's map starts populated with one resolution (e.g. an outer
+    // import already resolved this module to a target-local id). The
+    // import() call must reuse it instead of generating a fresh uuid.
+    const sharedMap = new Map<string, string>([[corModuleM, tgtModuleM]]);
+
+    const restored = (await service.import(portable, {
+      manager,
+      context: { organizationId: ORG },
+      policy: { ...JSON_IMPORT_POLICY, modules: 'alwaysCreate' } as ResourcePolicy,
+      corToLocal: sharedMap,
+    })) as ReturnType<typeof buildAppData>;
+
+    // The pre-seeded resolution wins over alwaysCreate's fresh-uuid path.
+    expect(restored.modules.id).toBe(tgtModuleM);
+    expect(restored.components[0].properties.moduleAppId.value).toBe(tgtModuleM);
+
+    // The map is mutated in place — the caller observes new resolutions
+    // (e.g. the apps[0] cor → fresh-uuid mapping) afterwards, so a
+    // subsequent recursive call can reuse them.
+    expect(sharedMap.has(corAppA)).toBe(true);
+    expect(sharedMap.has(corVersionA)).toBe(true);
+  });
+
   it('embedded ref already-cor passes through cor → target-local step alone', async () => {
     // Build a snapshot whose component property is a cor (the convention),
     // not a source-local id. The chained rewrite has nothing to do at

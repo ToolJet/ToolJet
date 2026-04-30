@@ -71,6 +71,15 @@ export interface ImportOptions {
   manager: EntityManager;
   context: ImportContext;
   policy: ResourcePolicy;
+  /**
+   * Optional pre-existing cor → target-local map. Recursive imports
+   * (e.g., `mapModulesForAppImport` in app-import-export which calls
+   * `this.import()` for unmatched modules) pass the outer call's map
+   * here so the same cor_id resolves to the same local id at every
+   * nesting level. Mutated in-place; the caller observes the additions
+   * after import() returns.
+   */
+  corToLocal?: Map<string, string>;
 }
 
 // Default policy for callers that want today's git-pull semantics: match
@@ -183,7 +192,11 @@ export class AppSnapshot {
     // uuid. Apps and modules share the App table — type-filter so a
     // cor_id collision (e.g., a branched module's cor_id) can't be
     // reused as a FRONT_END app or vice versa.
-    const corToLocal = new Map<string, string>();
+    //
+    // Caller may pass an existing map (recursive imports share it so
+    // the same cor resolves to the same local id at every nesting
+    // level); mutated in-place, no copy.
+    const corToLocal = options.corToLocal ?? new Map<string, string>();
     await resolveAppRows(result, 'apps', APP_TYPES.FRONT_END, manager, context.organizationId, policy.apps, corToLocal);
     await resolveAppRows(result, 'modules', APP_TYPES.MODULE, manager, context.organizationId, policy.modules, corToLocal);
     await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
