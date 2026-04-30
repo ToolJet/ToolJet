@@ -8,25 +8,27 @@ import { APP_TYPES } from '@modules/apps/constants';
  * Module version resolution.
  *
  * A ModuleViewer stores two strings in its component properties:
- *   moduleAppId       — the module's co_relation_id; stable across branches
- *                       and git-cloned workspaces.
- *   moduleVersionId   — the version's module_reference_id (uuid). Stable across
- *                       branches and across instances; round-trips through
- *                       git push/pull and zip export/import via JSON. Empty
+ *   moduleAppId       — the module's apps.id (local DB id).
+ *   moduleVersionId   — the version's app_versions.id (local DB id). Empty
  *                       string signals "unpinned" (follow the consumer's
  *                       current branch).
  *
+ * Cross-instance stability comes from AppSnapshot at every boundary
+ * (push, pull, JSON export/import, branch-create), which translates these
+ * local ids to/from co_relation_id. At runtime — after a pull or import
+ * lands rows on this instance — the values held in component JSON are
+ * always *this instance's* local ids.
+ *
  * Resolution rules:
  *
- *   value present + matches a row's module_reference_id  → pinned, prefer
- *                                                          consumer's branch row
- *                                                          else default-branch row
- *   value absent (null/empty)                            → unpinned, latest
- *                                                          non-stub on consumer
- *                                                          branch (or default)
- *   value present but no row matches                     → orphaned, fall back
- *                                                          to latest saved on
- *                                                          default
+ *   value present + matches a row's id          → pinned, prefer consumer's
+ *                                                  branch row else default-
+ *                                                  branch row
+ *   value absent (null/empty)                   → unpinned, latest non-stub
+ *                                                  on consumer branch (or
+ *                                                  default)
+ *   value present but no row matches            → orphaned, fall back to
+ *                                                  latest saved on default
  *
  * Resolution is always scoped to the consumer's branchId (from the
  * x-branch-id header). When the request has no branchId — a public-share
@@ -87,30 +89,34 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
  *
- *   moduleReferenceId is a valid UUID + matches → pinned. Prefer the consumer-branch
- *                                                copy (post git pull); fall back to
- *                                                the default-branch copy.
- *   moduleReferenceId absent / not a UUID       → unpinned. Latest non-stub on the
- *                                                consumer's branch (or default).
- *   moduleReferenceId is a UUID, no match       → orphaned. Fall back to latest saved
- *                                                on the default branch.
+ *   moduleVersionId is a valid UUID + matches a row's id → pinned. Prefer the
+ *                                                          consumer-branch copy
+ *                                                          (post git pull); fall
+ *                                                          back to the default-
+ *                                                          branch copy.
+ *   moduleVersionId absent / not a UUID                  → unpinned. Latest non-
+ *                                                          stub on the consumer's
+ *                                                          branch (or default).
+ *   moduleVersionId is a UUID, no match                  → orphaned. Fall back to
+ *                                                          latest saved on the
+ *                                                          default branch.
  *
- * The UUID guard prevents `where: { moduleReferenceId: <non-uuid> }` from crashing
- * the postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
+ * The UUID guard prevents `where: { id: <non-uuid> }` from crashing the
+ * postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
  */
 export async function resolveModuleRef(
   manager: EntityManager,
   moduleApp: App,
-  moduleReferenceId: string | null | undefined,
+  moduleVersionId: string | null | undefined,
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
-  if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
+  if (moduleVersionId && UUID_RE.test(moduleVersionId)) {
     if (consumerBranchId) {
       const local = await manager.findOne(AppVersion, {
         where: {
+          id: moduleVersionId,
           appId: moduleApp.id,
-          moduleReferenceId,
           branchId: consumerBranchId,
           isStub: false,
         },
@@ -121,8 +127,8 @@ export async function resolveModuleRef(
     if (defaultBranch) {
       const onDefault = await manager.findOne(AppVersion, {
         where: {
+          id: moduleVersionId,
           appId: moduleApp.id,
-          moduleReferenceId,
           branchId: defaultBranch.id,
           isStub: false,
         },
@@ -133,8 +139,7 @@ export async function resolveModuleRef(
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  const targetBranchId =
-    consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
+  const targetBranchId = consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
   if (!targetBranchId) return null;
   return manager.findOne(AppVersion, {
     where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
@@ -215,10 +220,11 @@ export async function reconcileModuleViewerPinsFromDefault(
     if (!def?.moduleVersionId) continue; // nothing to inherit
     if (feat.moduleVersionId === def.moduleVersionId) continue; // already matches
 
+    // moduleAppId.value holds the module's local apps.id; org scope lives
+    // on the App row directly, no co_relation_id resolution needed.
     const moduleApp = def.moduleAppId
       ? await manager.findOne(App, {
-          where: { co_relation_id: def.moduleAppId, type: APP_TYPES.MODULE, organizationId },
-          order: { createdAt: 'ASC' },
+          where: { id: def.moduleAppId, type: APP_TYPES.MODULE, organizationId },
         })
       : null;
     if (!moduleApp) continue;

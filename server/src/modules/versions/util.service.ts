@@ -262,16 +262,12 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  async checkDraftModulesInApp(
-    versionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<void> {
+  async checkDraftModulesInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // moduleVersionId.value stores one of:
       //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
       //      TODO: migrate existing rows to version names so this case can be dropped.
-      //   2. version name — pinned; scoped to version_type='version' + module's co_relation_id.
+      //   2. version name — pinned; scoped to version_type='version' + module's local apps.id.
       //   3. branch name — unpinned; resolved to the module's default-branch version row.
       // A DRAFT resolved row means the module needs saving before the parent can save/promote.
       const draftModules = await manager
@@ -287,7 +283,7 @@ export class VersionUtilService implements IVersionUtilService {
              AND mod_ver.version_type = 'version'
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )
@@ -303,7 +299,7 @@ export class VersionUtilService implements IVersionUtilService {
              )
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )
@@ -365,7 +361,7 @@ export class VersionUtilService implements IVersionUtilService {
              AND mod_ver.version_type = 'version'
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )
@@ -381,7 +377,7 @@ export class VersionUtilService implements IVersionUtilService {
              )
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )

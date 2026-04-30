@@ -807,7 +807,7 @@ export class AppsUtilService implements IAppsUtilService {
         moduleAppIds.length > 0
           ? await manager
               .createQueryBuilder(App, 'app')
-              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
               .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
               .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
               .distinct(true)
@@ -934,10 +934,10 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
-    if (!moduleApp?.co_relation_id) return;
+    if (!moduleApp?.id) return;
     try {
-      // co_relation_id = stable module identity across branches. Self-ref excluded so a
-      // module can reference itself without blocking its own deletion.
+      // moduleAppId.value holds the module's local apps.id. Self-ref excluded
+      // so a module can reference itself without blocking its own deletion.
       const consumingApps = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -945,8 +945,8 @@ export class AppsUtilService implements IAppsUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :coRel`, {
-          coRel: moduleApp.co_relation_id,
+        .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :moduleId`, {
+          moduleId: moduleApp.id,
         })
         .andWhere('app.id != :selfId', { selfId: moduleApp.id })
         .getRawMany();
@@ -962,11 +962,7 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  async checkModulesReleasedInApp(
-    versionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<void> {
+  async checkModulesReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // 3-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
       // for the cases. Predicate: the module's apps.current_version_id (released version)
@@ -984,7 +980,7 @@ export class AppsUtilService implements IAppsUtilService {
              AND mod_ver.version_type = 'version'
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )
@@ -1000,7 +996,7 @@ export class AppsUtilService implements IAppsUtilService {
              )
              AND mod_ver.app_id IN (
                SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+               WHERE id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
                  AND type = 'module'
                  AND organization_id = :orgId
              )
