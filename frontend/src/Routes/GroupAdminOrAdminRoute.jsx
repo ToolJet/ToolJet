@@ -26,16 +26,27 @@ export const GroupAdminOrAdminRoute = ({ children }) => {
 
     const isAdmin = !!session.admin;
     const isGroupAdmin = !!session.is_group_admin;
-    const canAccessGroups = isAdmin || isGroupAdmin;
 
-    if (canAccessGroups) {
+    if (isAdmin) {
       setLoading(false);
       return;
+    }
+    if (!isGroupAdmin) {
+      return navigate({ pathname: '/', state: { from: location } }, { replace: true });
+    }
+
+    // Group admin — wait for license fetch to settle before deciding
+    if (featureAccess === null) return;
+
+    const hasCustomGroupsLicense =
+      featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
+
+    if (!hasCustomGroupsLicense) {
+      return navigate({ pathname: '/', state: { from: location } }, { replace: true });
     }
 
     //Redirect users with no access
     setLoading(false);
-    return navigate({ pathname: '/', state: { from: location } }, { replace: true });
   }, [isValidSession, session?.admin, session?.is_group_admin, featureAccess]);
 
   return <RouteLoader isLoading={isLoading}>{children}</RouteLoader>;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService, appService, sessionService } from '@/_services';
@@ -66,9 +66,13 @@ function BaseSettingsMenu({
         sessionService.logout();
       });
   }
+  const hasCustomGroupsLicense = useMemo(() => {
+    if (!featureAccess) return false;
+    return featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
+  }, [featureAccess]);
 
   const getWorkspaceSettingsRoute = () => {
-    if (isBuilder && currentUserValue?.is_group_admin) {
+    if (isBuilder && currentUserValue?.is_group_admin && hasCustomGroupsLicense) {
       return getPrivateRoute('workspace_settings_groups');
     }
     if (isBuilder && isEEorCloud) {

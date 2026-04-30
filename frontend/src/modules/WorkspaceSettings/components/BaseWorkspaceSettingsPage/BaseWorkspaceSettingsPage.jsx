@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import Layout from '@/_ui/Layout';
-import { authenticationService } from '@/_services';
+import { authenticationService, licenseService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
@@ -20,6 +20,19 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const navigate = useNavigate();
   const edition = fetchEdition();
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
+  const [featureAccess, setFeatureAccess] = useState(null);
+
+  useEffect(() => {
+    licenseService
+      .getFeatureAccess()
+      .then(setFeatureAccess)
+      .catch(() => setFeatureAccess({}));
+  }, []);
+
+  const hasCustomGroupsLicense =
+    featureAccess !== null &&
+    featureAccess.customGroups === true &&
+    featureAccess.licenseStatus?.isLicenseValid !== false;
 
   // null = not yet fetched; {} = fetch failed (fail open — show Groups tab)
 
@@ -34,7 +47,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
       isGroupAdmin,
       wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
       canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
-      canManageGroups: isAdmin || isGroupAdmin,
+      canManageGroups: isAdmin || (isGroupAdmin && hasCustomGroupsLicense),
     };
   });
 
@@ -43,7 +56,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     workspaceSettingsLinks.filter((item) => {
       const effectiveConditionObj = {
         ...conditionObj,
-        canManageGroups: conditionObj.admin || conditionObj.isGroupAdmin,
+        canManageGroups: conditionObj.admin || (conditionObj.isGroupAdmin && hasCustomGroupsLicense),
       };
       return checkConditionsForRoute(item.conditions, effectiveConditionObj);
     });
@@ -65,7 +78,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
         isGroupAdmin,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
         canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
-        canManageGroups: isAdmin || isGroupAdmin,
+        canManageGroups: isAdmin || (isGroupAdmin && hasCustomGroupsLicense),
       });
     });
 
@@ -94,12 +107,13 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
         redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
       }
       const selectedWorkspaceSetting = availableLinks?.find((m) => m.id === selectedTabFromRoute);
+      console.log(selectedWorkspaceSetting, 'selectedWorkspaceSetting');
       updateSidebarNAV(selectedWorkspaceSetting?.name || '');
       setSelectedTab(getMenuFromRoute(selectedWorkspaceSetting)?.id);
     }
 
     return () => subscription.unsubscribe();
-  }, [admin, location.pathname, conditionObj.isBuilder, conditionObj.isGroupAdmin]);
+  }, [admin, location.pathname, conditionObj.isBuilder, conditionObj.isGroupAdmin, featureAccess]);
 
   const handleClick = (data) => {
     setSelectedTab(data.id);
