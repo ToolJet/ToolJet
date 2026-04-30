@@ -340,7 +340,7 @@ describe('AppSnapshot.import', () => {
     expect(restored.components[0].properties.moduleAppId.value).toBe(srcModuleM);
   });
 
-  it('threads an external targetIdByCor map across calls (recursive imports share resolutions)', async () => {
+  it('threads an external localDbIds map across calls (recursive imports share resolutions)', async () => {
     const service = makeService();
     const portable = service.export(buildAppData());
     const { manager } = makeManager({});
@@ -354,7 +354,7 @@ describe('AppSnapshot.import', () => {
       manager,
       context: { organizationId: ORG },
       policy: { ...JSON_IMPORT_POLICY, modules: 'alwaysCreate' } as ResourcePolicy,
-      targetIdByCor: sharedMap,
+      localDbIds: sharedMap,
     })) as ReturnType<typeof buildAppData>;
 
     // The pre-seeded resolution wins over alwaysCreate's fresh-uuid path.
@@ -371,7 +371,7 @@ describe('AppSnapshot.import', () => {
   it('embedded ref already-cor passes through cor → target-local step alone', async () => {
     // Build a snapshot whose component property is a cor (the convention),
     // not a source-local id. The chained rewrite has nothing to do at
-    // step 1 (corBySourceId lookup misses), then translates at step 2.
+    // step 1 (coRelationIds lookup misses), then translates at step 2.
     const service = makeService();
     const portable = service.export(buildAppData());
     const { manager } = makeManager({
