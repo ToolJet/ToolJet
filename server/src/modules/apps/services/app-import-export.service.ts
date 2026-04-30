@@ -608,24 +608,11 @@ export class AppImportExportService {
     tooljetVersion: string,
     branchId?: string
   ) {
-    // ModuleViewer components store STABLE keys in their properties:
-    //   properties.moduleAppId.value     = module App.co_relation_id
-    //   properties.moduleVersionId.value = AppVersion.name
-    // Legacy pre-migration rows may still hold a raw DB id / UUID.
-    // The ModuleViewer rewrite sites look up these maps by the stored value,
-    // so keys must be STABLE keys. We write dual entries (passport/name
-    // primary, raw id legacy fallback) and always store the target's stable
-    // key as the value — that's what the resolver's findOne(App, { co_relation_id })
-    // expects.
-    const moduleAppNames: string[] = [];
-    const moduleAppCoRelIds: string[] = [];
-
-    if (appParams?.modules?.length > 0 && appParams?.type === APP_TYPES.FRONT_END) {
-      for (const module of appParams.modules) {
-        if (module?.appV2?.name) moduleAppNames.push(module.appV2.name);
-        if (module?.appV2?.co_relation_id) moduleAppCoRelIds.push(module.appV2.co_relation_id);
-      }
-    }
+    // moduleResourceMappings is kept as a return shape for backwards
+    // compatibility with callers, but both maps inside are now empty —
+    // AppSnapshot.import() (called at the entry of import()) translates
+    // every ModuleViewer.moduleAppId.value reference universally, so
+    // there are no consumers left.
     const moduleResourceMappings: {
       moduleApps: Record<string, string>;
       moduleVersions: Record<string, string>;
@@ -634,34 +621,13 @@ export class AppImportExportService {
       moduleVersions: {},
     };
 
-    const existingModules =
-      moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
-        ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
-            .andWhere(
-              new Brackets((qb: any) => {
-                if (moduleAppNames.length > 0) {
-                  qb.where('app.name IN (:...moduleAppNames)', { moduleAppNames });
-                }
-                if (moduleAppCoRelIds.length > 0) {
-                  qb.orWhere('app.co_relation_id IN (:...moduleAppCoRelIds)', { moduleAppCoRelIds });
-                }
-              })
-            )
-            .distinct(true)
-            .getMany()
-        : [];
+    if (!appParams?.modules?.length || appParams?.type !== APP_TYPES.FRONT_END) {
+      return moduleResourceMappings;
+    }
 
-    // Index existing modules by passport first, name as fallback.
-    const existingByCoRel = new Map<string, App>(
-      existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
-    );
-    const existingByName = new Map<string, App>(existingModules.map((m) => [m.name, m]));
-
-    // If consumer is on a non-default branch, we'll need to hydrate a BRANCH-type
-    // stub row for each module on that branch so the module appears in the branch's
-    // Modules tab (dashboard filters by branch_id). Resolve branch once.
+    // If consumer is on a non-default branch, we'll need to hydrate a
+    // BRANCH-type stub row for each module on that branch so the module
+    // appears in the branch's Modules tab (dashboard filters by branch_id).
     const targetBranch =
       branchId !== undefined
         ? await manager.findOne(WorkspaceBranch, {
@@ -670,103 +636,33 @@ export class AppImportExportService {
           })
         : null;
     const shouldHydrateBranchStub = !!targetBranch && !targetBranch.isDefault;
-
-    // Collect the target App ids that need a stub row on the consumer's branch.
     const moduleAppIdsForStub: string[] = [];
 
-    // Process each module from the import data
-    if (appParams?.modules?.length > 0) {
-      for (const importedModule of appParams.modules) {
-        // Prefer passport match (survives renames and cross-lineage name collisions).
-        const existingModule =
-          (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
-          existingByName.get(importedModule?.appV2?.name);
+    for (const importedModule of appParams.modules) {
+      const moduleId = importedModule?.appV2?.id;
+      if (!moduleId) continue;
 
-        if (existingModule) {
-          // Existing module on target — map imported refs to the target's stable keys.
-          const targetAppKey = existingModule.co_relation_id ?? existingModule.id;
-          if (importedModule?.appV2?.co_relation_id) {
-            moduleResourceMappings.moduleApps[importedModule.appV2.co_relation_id] = targetAppKey;
-          }
-          // Legacy: components that pre-date the passport migration may still
-          // hold the source App.id in moduleAppId.value.
-          if (importedModule?.appV2?.id) {
-            moduleResourceMappings.moduleApps[importedModule.appV2.id] = targetAppKey;
-          }
-          if (shouldHydrateBranchStub) moduleAppIdsForStub.push(existingModule.id);
+      // AppSnapshot.import() resolved module.appV2.id to a target-local
+      // id. If a row exists at that id, the module is already in the
+      // workspace (matchOrCreate hit). Otherwise we recursively import
+      // the module's content (alwaysCreate / not-yet-created path).
+      const existingModule = await manager.findOne(App, { where: { id: moduleId } });
 
-          // Fetch existing module's versions to map by name
-          const existingVersions = await manager.find(AppVersion, {
-            where: { appId: existingModule.id },
-            order: { createdAt: 'DESC' },
-          });
-
-          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
-          const fallbackVersionName = existingVersions[0]?.name;
-
-          for (const importedVersion of importedModuleVersions) {
-            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
-            const targetVersionName = matchingVersion?.name ?? fallbackVersionName;
-            if (!targetVersionName) continue;
-
-            // Name key — matches post-migration components that store a version name.
-            if (importedVersion.name) {
-              moduleResourceMappings.moduleVersions[importedVersion.name] = targetVersionName;
-            }
-            // UUID key — matches legacy YAML where moduleVersionId.value is a DB UUID.
-            if (importedVersion.id) {
-              moduleResourceMappings.moduleVersions[importedVersion.id] = targetVersionName;
-            }
-          }
-
-          // Also map the editingVersion if not already mapped
-          const editingVersion = importedModule?.appV2?.editingVersion;
-          if (editingVersion && fallbackVersionName) {
-            if (editingVersion.name && !moduleResourceMappings.moduleVersions[editingVersion.name]) {
-              moduleResourceMappings.moduleVersions[editingVersion.name] = fallbackVersionName;
-            }
-            if (editingVersion.id && !moduleResourceMappings.moduleVersions[editingVersion.id]) {
-              moduleResourceMappings.moduleVersions[editingVersion.id] = fallbackVersionName;
-            }
-          }
-        } else {
-          // Module doesn't exist — import it fresh.
-
-          const { newApp, resourceMapping } = await this.import(
-            user,
-            importedModule,
-            importedModule?.appV2?.name,
-            externalResourceMappings,
-            isGitApp,
-            tooljetVersion,
-            false,
-            manager,
-            branchId
-          );
-
-          // createImportedAppForUser sets new.co_relation_id = source.id. Use
-          // the target's co_relation_id as the stable key so consumer
-          // components resolve via findOne by co_relation_id.
-          const targetAppKey = newApp.co_relation_id ?? newApp.id;
-          if (importedModule?.appV2?.co_relation_id) {
-            moduleResourceMappings.moduleApps[importedModule.appV2.co_relation_id] = targetAppKey;
-          }
-          if (importedModule?.appV2?.id) {
-            moduleResourceMappings.moduleApps[importedModule.appV2.id] = targetAppKey;
-          }
-          if (shouldHydrateBranchStub) moduleAppIdsForStub.push(newApp.id);
-
-          // Names are preserved during import, so the target version's name
-          // equals the source's name. Write dual keys (name + legacy UUID).
-          const importedModuleVersions = importedModule?.appV2?.appVersions || [];
-          for (const importedVersion of importedModuleVersions) {
-            if (!importedVersion.name) continue;
-            if (resourceMapping.appVersionMapping[importedVersion.id]) {
-              moduleResourceMappings.moduleVersions[importedVersion.name] = importedVersion.name;
-              moduleResourceMappings.moduleVersions[importedVersion.id] = importedVersion.name;
-            }
-          }
-        }
+      if (existingModule) {
+        if (shouldHydrateBranchStub) moduleAppIdsForStub.push(existingModule.id);
+      } else {
+        const { newApp } = await this.import(
+          user,
+          importedModule,
+          importedModule?.appV2?.name,
+          externalResourceMappings,
+          isGitApp,
+          tooljetVersion,
+          false,
+          manager,
+          branchId
+        );
+        if (shouldHydrateBranchStub) moduleAppIdsForStub.push(newApp.id);
       }
     }
 
@@ -2434,6 +2330,12 @@ export class AppImportExportService {
       return createdDefaultDatasource;
     }
 
+    // AppSnapshot.import() (run at the entry of import()) resolved the
+    // imported dataSource.id to a target-local id under matchOrCreate
+    // policy: if the workspace already had a DS with this co_relation_id,
+    // dataSource.id IS that existing row's id; otherwise it's a fresh
+    // uuid. The id lookup below covers the match case directly. The
+    // explicit cor-id lookup that used to live here is redundant.
     const globalDataSourceWithSameIdExists = async (dataSource: DataSource) => {
       return await manager.findOne(DataSource, {
         where: {
@@ -2442,23 +2344,6 @@ export class AppImportExportService {
           type: DataSourceTypes.DEFAULT,
           scope: DataSourceScopes.GLOBAL,
           organizationId: user.organizationId,
-        },
-      });
-    };
-    // Git exports replace id with co_relation_id, so the imported dataSource.id
-    // is actually the source's co_relation_id. Look up by co_relation_id to
-    // find existing DS that were previously imported or created locally.
-    // Filter out dummies — if both a dummy and a real DS share the same
-    // co_relation_id (e.g. a previous pull created a dummy and a later pull
-    // created the real one), always pick the real one. Reconciliation runs
-    // separately to clean up the orphaned dummy.
-    const globalDataSourceByCoRelationId = async (dataSource: DataSource) => {
-      return await manager.findOne(DataSource, {
-        where: {
-          co_relation_id: dataSource.id,
-          scope: DataSourceScopes.GLOBAL,
-          organizationId: user.organizationId,
-          is_dummy: false,
         },
       });
     };
@@ -2475,7 +2360,6 @@ export class AppImportExportService {
     };
     const existingDatasource =
       (await globalDataSourceWithSameIdExists(dataSource)) ||
-      (await globalDataSourceByCoRelationId(dataSource)) ||
       (await globalDataSourceWithSameNameExists(dataSource));
 
     // For git imports on a specific branch, a real DS that exists in the
@@ -2526,6 +2410,8 @@ export class AppImportExportService {
       if (existingDummy) return existingDummy;
 
       const dummy = manager.create(DataSource, {
+        id: dataSource.id,
+        co_relation_id: dataSource.co_relation_id ?? dataSource.id ?? (null as any),
         organizationId: user?.organizationId,
         name: dummyName,
         kind: dummyKind,
@@ -2535,8 +2421,6 @@ export class AppImportExportService {
         is_dummy: true,
       });
       await manager.save(dummy);
-      dummy.co_relation_id = dataSource.id || (null as any);
-      await manager.update(DataSource, { id: dummy.id }, { co_relation_id: dummy.co_relation_id });
       return dummy;
     }
 
@@ -2549,6 +2433,8 @@ export class AppImportExportService {
 
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
+          id: dataSource.id,
+          co_relation_id: dataSource.co_relation_id ?? dataSource.id ?? (null as any),
           organizationId: user?.organizationId,
           name: dataSource.name,
           kind: dataSource.kind,
@@ -2557,18 +2443,14 @@ export class AppImportExportService {
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
-
-        // Set co_relation_id so workspace git sync can identify this DS.
-        // Use the imported id (source's co_relation_id) to maintain identity across branches.
-        newDataSource.co_relation_id = dataSource.id || (null as any);
-        await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
-
         return newDataSource;
       }
     };
 
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
+        id: dataSource.id,
+        co_relation_id: dataSource.co_relation_id ?? dataSource.id ?? (null as any),
         organizationId: user?.organizationId,
         name: dataSource.name,
         kind: dataSource.kind,
@@ -2577,12 +2459,6 @@ export class AppImportExportService {
         pluginId: null,
       });
       await manager.save(newDataSource);
-
-      // Set co_relation_id so workspace git sync can identify this DS.
-      // Use the imported id (source's co_relation_id) to maintain identity across branches.
-      newDataSource.co_relation_id = dataSource.id || (null as any);
-      await manager.update(DataSource, { id: newDataSource.id }, { co_relation_id: newDataSource.co_relation_id });
-
       return newDataSource;
     };
 
