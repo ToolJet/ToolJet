@@ -62,6 +62,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
+            # ← VPN: Connect before any step that needs private resource
+      - name: Connect to VPN
+        uses: adishM98/auth-vpn@v2.1.4
+        with:
+          server: ${{ secrets.VPN_SERVER }}
+          api-key: ${{ secrets.VPN_API_KEY }}
+
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
 
@@ -409,6 +416,11 @@ jobs:
         with:
           name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
+
+       # ← VPN: Disconnect — always runs even if earlier steps fail
+      - name: Disconnect VPN
+        if: always()
+        uses: adishM98/auth-vpn/disconnect@v2.1.4
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
