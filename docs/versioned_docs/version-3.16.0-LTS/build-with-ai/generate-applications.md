@@ -34,6 +34,16 @@ ToolJet AI supports generating queries with [RunJS](/docs/data-sources/run-js) a
 - [MongoDB](/docs/data-sources/mongodb)
 - [OpenAPI](/docs/data-sources/openapi)
 
+## Creating Modules
+
+ToolJet AI can be used to quickly generate Modules, which can then be reused across multiple applications. To generate a module using ToolJet AI, open the Module Builder and enter your prompt describing the UI you want to create.
+
+<img className="screenshot-full img-full" src="/img/tooljet-ai/modules/generate.png" alt="tooljet generate modules" />
+
+### Limitation
+
+Currently, AI-generated modules focus only on UI generation. Data sources, queries, and input/output configurations are not included in the AI generation flow and must be configured manually.
+
 ## Generating Code
 
 ToolJet lets you generate JavaScript, Python, or SQL code directly using AI.
