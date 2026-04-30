@@ -968,7 +968,7 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // 3-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
+      // 4-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
       // for the cases. Predicate: the module's apps.current_version_id (released version)
       // must equal the resolved mod_ver.id. Null current_version_id means never released.
       const unreleasedModules = await manager
@@ -1004,6 +1004,10 @@ export class AppsUtilService implements IAppsUtilService {
                  AND type = 'module'
                  AND organization_id = :orgId
              )
+           )
+           OR (
+             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+             AND mod_ver.version_type = 'version'
            )`,
           { orgId: organizationId }
         )
