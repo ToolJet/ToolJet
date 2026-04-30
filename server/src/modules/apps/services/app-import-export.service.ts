@@ -595,6 +595,13 @@ export class AppImportExportService {
         }
       });
       delete (appToExport as any).updatedAt;
+      // Run the bundle through AppSnapshot.export() so the strip step
+      // (instance-local field removal: branchId, currentEnvironmentId,
+      // pulledAt, …) is shared with git push. Symmetric to import()'s
+      // entry wiring through AppSnapshot.import().
+      const exportSnapshot = appBundleToSnapshotShape(appToExport);
+      const portable = this.appSnapshot.export(exportSnapshot);
+      applyResolvedSnapshotToAppBundle(appToExport, portable);
       return { appV2: appToExport };
     });
   }
