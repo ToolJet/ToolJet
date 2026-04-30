@@ -293,7 +293,7 @@ export default function AppCard({
                     canUpdateApp={canUpdateApp(app)}
                     deleteApp={() => deleteApp(app)}
                     exportApp={() => {
-                      if (isStub) {
+                      if (isStub && appType !== 'workflow') {
                         toast.error(
                           'App contents are still syncing from Git. Open the app to finish loading, then try again.',
                           { position: 'top-center' }

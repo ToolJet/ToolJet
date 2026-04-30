@@ -52,16 +52,31 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
         AND av.module_reference_id IS NULL;
     `);
 
-    // Update moduleVersionId.value from DB UUID → module_reference_id so GitSync
-    // can resolve the reference portably across environments. Components configured
-    // by the user pin a specific app_version row by its DB id; we rewrite that to
-    // the row's module_reference_id which is preserved across push/pull.
-    //
-    // Split by version status: DRAFT pins are auto-pins from drop time (the drop
-    // handler used to write the editing draft's id), NOT deliberate user pins —
-    // the new inspector would render those as "pinned to v1 (Draft)" which
-    // misrepresents user intent. Convert DRAFT-pointing refs to '' (unpinned).
-    // Non-DRAFT pins are explicit user choices and survive as module_reference_id.
+    // Normalize module VERSION-type rows onto the org's default branch. Older
+    // create paths inserted version-type rows with branch_id = active feature
+    // branch (a categorical violation: VERSION rows belong on default, BRANCH
+    // rows belong on a feature branch). The pin-promotion step below joins
+    // against `default_b.is_default = true AND released.branch_id = default_b.id`
+    // — anomalous rows on feature branches would silently fail that join and
+    // their consumers' DRAFT pins would fall through to the collapse path
+    // instead of being promoted to the released mref. Move them first.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET branch_id = wb.id
+      FROM apps a
+      JOIN organization_git_sync_branches wb
+        ON wb.organization_id = a.organization_id AND wb.is_default = true
+      WHERE av.app_id = a.id
+        AND a.type = 'module'
+        AND av.version_type = 'version'
+        AND av.branch_id IS DISTINCT FROM wb.id
+        AND COALESCE(av.is_stub, false) = false;
+    `);
+
+    // Rewrite moduleVersionId.value on non-DRAFT-source pins: components pin a
+    // specific app_version row by its DB id; we rewrite that to the row's
+    // module_reference_id, which is preserved across push/pull and cross-instance
+    // sync. Non-DRAFT pins are deliberate user choices — preserved exactly.
     await queryRunner.query(`
       UPDATE components c
       SET properties = jsonb_set(
@@ -76,6 +91,42 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
         AND av.status <> 'DRAFT';
     `);
 
+    // Promote DRAFT-source pins to the module's released mref where one exists.
+    // DRAFT pins were typically auto-pins from drop time, not deliberate user
+    // choices — the consumer's intent is "embed this module," and we satisfy
+    // that by pointing at the canonical released VERSION row on the default
+    // branch. The default-branch mref is stable across instances, so this pin
+    // survives cross-workspace pulls. Modules with no released version yet
+    // are handled by the collapse step below.
+    await queryRunner.query(`
+      UPDATE components c
+      SET properties = jsonb_set(
+        c.properties::jsonb,
+        '{moduleVersionId,value}',
+        to_jsonb(released.module_reference_id::text)
+      )::json
+      FROM app_versions av
+      JOIN apps mod_app ON mod_app.id = av.app_id AND mod_app.type = 'module'
+      JOIN organization_git_sync_branches default_b
+        ON default_b.organization_id = mod_app.organization_id
+       AND default_b.is_default = true
+      JOIN app_versions released
+        ON released.app_id = mod_app.id
+       AND released.branch_id = default_b.id
+       AND released.version_type = 'version'
+       AND released.status <> 'DRAFT'
+       AND COALESCE(released.is_stub, false) = false
+      WHERE c.type = 'ModuleViewer'
+        AND (c.properties::jsonb -> 'moduleVersionId') IS NOT NULL
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.id::text
+        AND av.status = 'DRAFT'
+        AND released.module_reference_id IS NOT NULL;
+    `);
+
+    // Collapse remaining DRAFT-source pins to '' (unpinned). Only fires for
+    // modules that have no released VERSION row anywhere — the promotion step
+    // above already handled every module with a release. The unpinned state
+    // tells the resolver to pick "latest non-stub on consumer's branch."
     await queryRunner.query(`
       UPDATE components c
       SET properties = jsonb_set(

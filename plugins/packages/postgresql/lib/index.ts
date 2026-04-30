@@ -601,7 +601,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       case 'delete_rows': {
-        const { limit, zero_records_as_success = false } = queryOptions;
+        const { limit, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
         const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
         const hasLimit = limit != null && limit !== '';
@@ -614,12 +614,27 @@ export default class PostgresqlQueryService implements QueryService {
           query: string;
           params: unknown[];
         };
-        const deletedRows = await this.executeParameterizedQuery(knexInstance, `${query} RETURNING *`, params);
-        const deletedRecords = deletedRows.length;
 
-        if (this._normalizeBool(zero_records_as_success) === false && deletedRecords === 0) {
-          throw new Error('No rows were deleted.');
-        }
+        const normalizedAllowMultipleUpdates = this._normalizeBool(allow_multiple_updates);
+        const normalizedZeroRecordsAsSuccess = this._normalizeBool(zero_records_as_success);
+
+        let deletedRows: unknown[] = [];
+
+        await knexInstance.transaction(async (transaction) => {
+          const { rows } = await transaction.raw(`${query} RETURNING *`, params as any[]);
+          deletedRows = rows;
+          const deletedRecords = deletedRows.length;
+
+          if (normalizedAllowMultipleUpdates === false && deletedRecords > 1) {
+            throw new Error(
+              'Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.'
+            );
+          }
+
+          if (normalizedZeroRecordsAsSuccess === false && deletedRecords === 0) {
+            throw new Error('No rows were deleted.');
+          }
+        });
 
         return { status: 'ok', data: deletedRows };
       }

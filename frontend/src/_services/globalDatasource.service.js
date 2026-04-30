@@ -25,7 +25,9 @@ function getForApp(organizationId, appVersionId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
   return fetch(
-    `${config.apiUrl}/data-sources/${organizationId}/environments/${environmentId}/versions/${appVersionId}`,
+    appendBranchId(
+      `${config.apiUrl}/data-sources/${organizationId}/environments/${environmentId}/versions/${appVersionId}`
+    ),
     requestOptions
   ).then(handleResponse);
 }

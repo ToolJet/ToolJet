@@ -226,6 +226,25 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
+  'Accordion',
+  'CodeEditor',
+  'Container',
+  'Form',
+  'JSONEditor',
+  'JSONExplorer',
+  'KeyValuePair',
+  'Listview',
+  'ModalV2',
+  'RichTextEditor',
+  'Table',
+  'Tabs',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TreeSelect',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
 @Injectable()
@@ -505,9 +524,7 @@ export class AppImportExportService {
             }
           }
 
-          moduleApps.push(
-            await this.export(user, resolvedId, { version_id: versionDbId })
-          );
+          moduleApps.push(await this.export(user, resolvedId, { version_id: versionDbId }));
         })
       );
 
@@ -2880,7 +2897,6 @@ export class AppImportExportService {
       where: { organizationId: user?.organizationId },
     });
     const isGitSyncConfigured = !!orgGitSync;
-
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
     // list (which filters by default branch / VERSION type) will hide them.
@@ -3638,6 +3654,11 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
+    properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
