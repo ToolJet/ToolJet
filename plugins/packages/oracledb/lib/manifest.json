@@ -79,7 +79,7 @@
       "default": "no",
       "list": [
         {
-          "name": "Basic Connection (No TNS/Wallet)",
+          "name": "Basic Connection",
           "value": "no"
         },
         {

@@ -476,6 +476,7 @@ export class ComponentsService implements IComponentsService {
                   'TagsInput',
                   'Navigation',
                   'TreeSelect',
+                  'ButtonGroupV2',
                 ].includes(componentData.type) &&
                 _.isArray(objValue)
               ) {

@@ -31,6 +31,7 @@ export const Footer = memo(
   }) => {
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
     const containerBackgroundColor = useTableStore(
       (state) => state.getTableStyles(id)?.containerBackgroundColor,
@@ -49,7 +50,7 @@ export const Footer = memo(
     if (!isFooterVisible) return null;
 
     // Loading state for footer
-    if (loadingState) {
+    if (loadingState || isRefreshing) {
       return <LoadingFooter />;
     }
 

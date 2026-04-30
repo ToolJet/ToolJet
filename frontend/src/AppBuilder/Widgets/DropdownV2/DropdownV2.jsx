@@ -22,6 +22,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -116,6 +117,7 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
@@ -143,6 +145,7 @@ export const DropdownV2 = ({
           ...data,
           label: getSafeRenderableValue(data?.label),
           value: data?.value,
+          caption: data?.caption ?? null,
           isDisabled: data?.disable ?? false,
         }));
 
@@ -173,7 +176,9 @@ export const DropdownV2 = ({
     const _selectedOption = selectOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
-      selectedOption: pick(_selectedOption, ['label', 'value']),
+      selectedOption: _selectedOption
+        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
+        : null,
     });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
@@ -234,7 +239,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     setExposedVariable('options', _options);
 
     setExposedVariable('selectOption', async function (value) {
@@ -288,7 +293,7 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
@@ -558,6 +563,13 @@ export const DropdownV2 = ({
               setUserInteracted(true);
             }}
             options={selectOptions}
+            filterOption={(option, input) => {
+              if (!input) return true;
+              const needle = input.toLowerCase();
+              const label = String(option?.label ?? '').toLowerCase();
+              const caption = String(option?.data?.caption ?? '').toLowerCase();
+              return label.includes(needle) || caption.includes(needle);
+            }}
             styles={customStyles}
             aria-hidden={!visibility}
             aria-disabled={isDropdownDisabled}

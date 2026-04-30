@@ -3,6 +3,7 @@ import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import cx from 'classnames';
 import { IconX } from '@tabler/icons-react';
 
@@ -36,6 +37,7 @@ export const Datepicker = function Datepicker({
   const [date, setDate] = useState(defaultValue);
   const [excludedDates, setExcludedDates] = useState([]);
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 

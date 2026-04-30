@@ -33,6 +33,10 @@ export class CreateDataQueryDto {
   @IsObject()
   @IsOptional()
   resolvedOptions: object;
+
+  @IsUUID()
+  @IsOptional()
+  folder_id: string;
 }
 
 export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}

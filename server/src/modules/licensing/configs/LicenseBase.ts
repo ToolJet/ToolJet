@@ -54,6 +54,7 @@ export default class LicenseBase {
   private _isGithub: boolean;
   private _isObservability: object;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
+  private _appComponents: Record<string, boolean> = {};
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -121,6 +122,9 @@ export default class LicenseBase {
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
+    this._appComponents = this._app?.components
+      ? Object.fromEntries(Object.entries(this._app.components).map(([k, v]) => [k, v ?? false]))
+      : {};
     this._isCustomGroups = this.getPermissionValue('customGroups');
     this._isObservability = licenseData?.observability;
 
@@ -431,6 +435,17 @@ export default class LicenseBase {
     return this._isGitSync;
   }
 
+  public get queryFolders(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
+    }
+
+    if (this._features?.['queryFolders'] === undefined) {
+      return false;
+    }
+    return !!this._features?.['queryFolders'];
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -580,7 +595,12 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      appJsLibraries: this.appJsLibraries,
+      queryFolders: this.queryFolders,
       aiPlan: this.aiPlan,
+      ...Object.fromEntries(
+        Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
+      ),
     };
   }
 
@@ -617,6 +637,7 @@ export default class LicenseBase {
       workflows: this.workflows,
       startDate: this.startDate,
       appHistoryEnabled: this.appHistory,
+      appJsLibrariesEnabled: this.appJsLibraries,
     };
   }
 
@@ -674,5 +695,23 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get appComponents(): Record<string, boolean> {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.components ?? {};
+    }
+    return this._appComponents;
+  }
+
+  public get appJsLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.jsLibraries;
+    }
+
+    if (this._app?.features?.jsLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.jsLibraries;
   }
 }

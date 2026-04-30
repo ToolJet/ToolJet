@@ -7,6 +7,7 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
   getCachedConnection,
+  createQueryBuilder,
   User,
   App,
 } from '@tooljet-plugins/common';
@@ -83,6 +84,8 @@ function createSSHTunnel(sourceOptions: SourceOptions): Promise<SSHTunnel> {
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
+  // MSSQL hard limit is 2100 parameters per batch; use 2000 as a safe threshold
+  private static readonly MSSQL_PARAM_THRESHOLD = 2000;
   private STATEMENT_TIMEOUT;
 
   constructor() {
@@ -116,6 +119,7 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     let knexInstance: Knex | undefined;
+    let checkCache: boolean;
 
     // Dynamic connection parameters
     if (sourceOptions.allow_dynamic_connection_parameters) {
@@ -127,7 +131,8 @@ export default class MssqlQueryService implements QueryService {
         if (queryOptions['database']) sourceOptions.database = queryOptions['database'];
       }
     }
-    const checkCache = sourceOptions.allow_dynamic_connection_parameters ? false : true;
+    // eslint-disable-next-line prefer-const
+    checkCache = sourceOptions.allow_dynamic_connection_parameters ? false : true;
     try {
       knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       switch (queryOptions.mode) {
@@ -157,13 +162,298 @@ export default class MssqlQueryService implements QueryService {
     }
   }
 
-  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
-    if (queryOptions.operation !== 'bulk_update_pkey') {
-      return { rows: [] };
+  /** Coerces UI-supplied values (boolean or string) to a proper boolean. */
+  private _normalizeBool(val: unknown): boolean | undefined {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return undefined;
+  }
+
+  /** Normalises the result from knex.raw() for MSSQL so that both SELECT-like
+   *  results (plain array) and DML-with-OUTPUT results (object with .recordset)
+   *  are returned as a consistent array of rows. */
+  private _extractRecordset(result: any): unknown[] {
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.recordset)) return result.recordset;
+    return [];
+  }
+
+  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { operation, table, schema } = queryOptions;
+    const queryBuilder = createQueryBuilder('mssql');
+
+    switch (operation) {
+      case 'list_rows': {
+        const { list_rows, limit, offset } = queryOptions;
+        const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+        const { query, params } = queryBuilder.listRows(table, {
+          schema,
+          where_filters,
+          order_filters,
+          aggregates,
+          group_by,
+          limit,
+          offset,
+        }) as { query: string; params: unknown[] };
+        const result = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: result };
+      }
+
+      case 'create_row': {
+        const { columns } = queryOptions.create_row || {};
+        const { query, params } = queryBuilder.createRow(table, schema, columns) as {
+          query: string;
+          params: unknown[];
+        };
+        const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
+        const result = await knexInstance.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+        return { status: 'ok', data: this._extractRecordset(result) };
+      }
+
+      case 'update_rows': {
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
+        const { columns, where_filters } = queryOptions.update_rows || {};
+        const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        if (allow_multiple_updates !== true && !hasAtLeastOneFilter)
+          throw new Error('At least one filter condition is required.');
+
+        const { query, params } = queryBuilder.updateRows(table, { schema, columns, where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeWriteQuery(knexInstance, query, params, {
+          allow_multiple_updates,
+          zero_records_as_success,
+          operationLabel: 'updated',
+        });
+        return { status: 'ok', data: rows };
+      }
+
+      case 'upsert_rows': {
+        const { primary_key_columns } = queryOptions;
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
+        const { columns } = queryOptions.upsert_rows || {};
+        const { query, params } = queryBuilder.upsertRows(table, { schema, primary_key_columns, columns }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeWriteQuery(knexInstance, query, params, {
+          allow_multiple_updates,
+          zero_records_as_success,
+          operationLabel: 'upserted',
+        });
+        return { status: 'ok', data: rows };
+      }
+
+      case 'delete_rows': {
+        const { limit } = queryOptions;
+        const allow_multiple_updates = this._normalizeBool(queryOptions.allow_multiple_updates ?? false);
+        const zero_records_as_success = this._normalizeBool(queryOptions.zero_records_as_success ?? false);
+        const { where_filters } = queryOptions.delete_rows || {};
+        const hasAtLeastOneFilter = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        const hasLimit = limit != null && limit !== '';
+        if (!hasAtLeastOneFilter && !hasLimit) {
+          throw new Error(
+            'Delete requires at least one filter condition or a limit to prevent deleting all rows unintentionally.'
+          );
+        }
+        const { query, params } = queryBuilder.deleteRows(table, { schema, where_filters, limit }) as {
+          query: string;
+          params: unknown[];
+        };
+        const queryWithOutput = this.injectMssqlOutput(query, 'DELETED');
+
+        const deletedRecords = await knexInstance.transaction(async (trx) => {
+          const result = await trx.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+          const deletedRows = this._extractRecordset(result);
+
+          if (allow_multiple_updates === false && deletedRows.length > 1) {
+            throw new Error(
+              'Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.'
+            );
+          }
+
+          if (zero_records_as_success === false && deletedRows.length === 0) {
+            throw new Error('No rows were deleted.');
+          }
+
+          return deletedRows.length;
+        });
+
+        return { status: 'ok', data: { deletedRecords } };
+      }
+
+      case 'bulk_insert': {
+        const { records } = queryOptions;
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const batchInsertQueries: { query: string; params: unknown[] }[] = recordBatches.map((batchRecords) => {
+          const { query, params } = queryBuilder.bulkInsert(table, { schema, rows_insert: batchRecords }) as {
+            query: string;
+            params: unknown[];
+          };
+          return { query, params };
+        });
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, batchInsertQueries);
+        return { status: 'ok', data: { affectedRows } };
+      }
+
+      case 'bulk_update_pkey': {
+        const { primary_key_column: primary_key_columns, records } = queryOptions;
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpdateQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            rows_update: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpdateQueries.push(...queries);
+        }
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, allUpdateQueries);
+        return { status: 'ok', data: { affectedRows }, bulk_update_status: 'success' } as unknown as QueryResult;
+      }
+
+      case 'bulk_upsert_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        const recordBatches = this.splitIntoBatches(records, this.computeBatchSize(records));
+        const allUpsertQueries: { query: string; params: unknown[] }[] = [];
+        for (const batchRecords of recordBatches) {
+          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+            schema,
+            primary_key: primary_key_columns,
+            row_upsert: batchRecords,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          allUpsertQueries.push(...queries);
+        }
+        const affectedRows = await this.executeBulkQueriesAndCountAffected(knexInstance, allUpsertQueries);
+        return { status: 'ok', data: { affectedRows }, bulk_upsert_status: 'success' } as unknown as QueryResult;
+      }
+
+      default:
+        throw new Error(`Unsupported GUI operation: "${operation}"`);
+    }
+  }
+
+  /**
+   * Injects an MSSQL OUTPUT clause into a generated SQL statement so that
+   * affected rows are returned.
+   *
+   * - INSERT:  OUTPUT INSERTED.* is placed before the VALUES keyword.
+   * - MERGE:   OUTPUT INSERTED.* is placed before the trailing semicolon.
+   * - UPDATE / DELETE: OUTPUT clause is placed before the WHERE clause
+   *   (or appended when there is no WHERE).
+   */
+  private injectMssqlOutput(query: string, outputType: 'INSERTED' | 'DELETED'): string {
+    const outputClause = `OUTPUT ${outputType}.*`;
+
+    const trimmedQuery = query.trimEnd();
+
+    // IF EXISTS / IF NOT EXISTS — OUTPUT clauses are already embedded in each branch
+    if (/^IF\s+(?:NOT\s+)?EXISTS\b/i.test(trimmedQuery)) {
+      return trimmedQuery;
     }
 
-    const query = this.buildBulkUpdateQuery(queryOptions);
-    return await this.executeQuery(knexInstance, query);
+    // MERGE statement — inject OUTPUT before the trailing semicolon
+    if (trimmedQuery.toUpperCase().startsWith('MERGE')) {
+      const base = trimmedQuery.endsWith(';') ? trimmedQuery.slice(0, -1) : trimmedQuery;
+      return `${base} ${outputClause};`;
+    }
+
+    // INSERT with DEFAULT VALUES — inject OUTPUT before the DEFAULT VALUES clause
+    const defaultValuesMatch = /\bDEFAULT\s+VALUES\b/i;
+    if (defaultValuesMatch.test(trimmedQuery)) {
+      return trimmedQuery.replace(defaultValuesMatch, `${outputClause} DEFAULT VALUES`);
+    }
+
+    // INSERT statement — inject OUTPUT before the VALUES keyword
+    const valuesIndex = query.indexOf(' VALUES ');
+    if (valuesIndex !== -1) {
+      return `${query.slice(0, valuesIndex)} ${outputClause}${query.slice(valuesIndex)}`;
+    }
+
+    // UPDATE / DELETE — inject OUTPUT before the WHERE clause
+    const whereIndex = query.lastIndexOf(' WHERE ');
+    if (whereIndex !== -1) {
+      return `${query.slice(0, whereIndex)} ${outputClause}${query.slice(whereIndex)}`;
+    }
+
+    // No WHERE clause — append at end
+    return `${query} ${outputClause}`;
+  }
+
+  /**
+   * Executes a write query (UPDATE / MERGE) with OUTPUT INSERTED.* to surface
+   * affected rows. Wraps in a transaction when constraint checks are active so
+   * that any thrown error automatically rolls back the write.
+   */
+  private async executeWriteQuery(
+    knexInstance: Knex,
+    query: string,
+    params: unknown[],
+    options: { allow_multiple_updates?: boolean; zero_records_as_success?: boolean; operationLabel: string }
+  ): Promise<unknown[]> {
+    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+    const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
+
+    // Wrap in a transaction so any thrown error automatically rolls back the write
+    return knexInstance.transaction(async (trx) => {
+      const result = await trx.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+      const affectedRows: unknown[] = this._extractRecordset(result);
+
+      if (allow_multiple_updates === false && affectedRows.length > 1) {
+        throw new Error(
+          'Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.'
+        );
+      }
+
+      if (zero_records_as_success === false && affectedRows.length === 0) {
+        throw new Error(`No rows were ${operationLabel}.`);
+      }
+
+      return affectedRows;
+    });
+  }
+
+  private async executeParameterizedQuery(knexInstance: Knex, query: string, params: unknown[]): Promise<unknown> {
+    const result = await knexInstance.raw(query, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+    return result;
+  }
+
+  private async executeBulkQueriesAndCountAffected(
+    knexInstance: Knex,
+    queries: { query: string; params: unknown[] }[]
+  ): Promise<number> {
+    let totalAffectedRows = 0;
+    await knexInstance.transaction(async (transaction) => {
+      for (const { query, params } of queries) {
+        // upsert queries already embed OUTPUT INSERTED.* in each IF/ELSE branch;
+        // injectMssqlOutput leaves them unchanged and adds it to plain INSERT/UPDATE.
+        const queryWithOutput = this.injectMssqlOutput(query, 'INSERTED');
+        const result = await transaction.raw(queryWithOutput, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+        totalAffectedRows += this._extractRecordset(result).length;
+      }
+    });
+    return totalAffectedRows;
+  }
+
+  private computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const SAMPLE_SIZE = 500;
+    const sample =
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+    const numberOfColumns = Math.max(...sample.map((record) => Object.keys(record).length));
+    if (numberOfColumns === 0) return 1000;
+    return Math.max(1, Math.floor(MssqlQueryService.MSSQL_PARAM_THRESHOLD / numberOfColumns));
+  }
+
+  private splitIntoBatches<RecordType>(records: RecordType[], batchSize: number): RecordType[][] {
+    const batches: RecordType[][] = [];
+    for (let startIndex = 0; startIndex < records.length; startIndex += batchSize) {
+      batches.push(records.slice(startIndex, startIndex + batchSize));
+    }
+    return batches;
   }
 
   private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -189,9 +479,8 @@ export default class MssqlQueryService implements QueryService {
       await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
       try {
         await knexInstance.destroy();
-      } catch (_) {
-        /* no-op */
-      }
+        // eslint-disable-next-line no-empty
+      } catch (_) {}
       return {
         status: 'ok',
       };
@@ -227,9 +516,8 @@ export default class MssqlQueryService implements QueryService {
       if (knexInstance) {
         try {
           await knexInstance.destroy();
-        } catch (_) {
-          /* no-op */
-        }
+          // eslint-disable-next-line no-empty
+        } catch (_) {}
       }
     }
   }
@@ -406,30 +694,6 @@ export default class MssqlQueryService implements QueryService {
     }
   }
 
-  buildBulkUpdateQuery(queryOptions: QueryOptions): string {
-    let queryText = '';
-
-    const { table, primary_key_column, records } = queryOptions;
-
-    for (const record of records) {
-      const primaryKeyValue =
-        typeof record[primary_key_column] === 'string' ? `'${record[primary_key_column]}'` : record[primary_key_column];
-
-      queryText = `${queryText} UPDATE ${table} SET`;
-
-      for (const key of Object.keys(record)) {
-        if (key !== primary_key_column) {
-          queryText = ` ${queryText} ${key} = '${record[key]}',`;
-        }
-      }
-
-      queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primary_key_column} = ${primaryKeyValue};`;
-    }
-
-    return queryText.trim();
-  }
-
   async listTables(
     sourceOptions: SourceOptions,
     queryOptions?: { search?: string; page?: number; limit?: number }
@@ -485,9 +749,86 @@ export default class MssqlQueryService implements QueryService {
       const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       throw new QueryError('Could not fetch tables', errorMessage, {});
     } finally {
-      if (knexInstance) {
-        await knexInstance.destroy();
-      }
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchSchemas(sourceOptions: SourceOptions): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT SCHEMA_NAME
+           FROM INFORMATION_SCHEMA.SCHEMATA
+           WHERE SCHEMA_NAME NOT IN ('sys', 'INFORMATION_SCHEMA', 'guest', 'db_owner', 'db_accessadmin',
+             'db_securityadmin', 'db_ddladmin', 'db_backupoperator', 'db_datareader', 'db_datawriter',
+             'db_denydatareader', 'db_denydatawriter')
+           ORDER BY SCHEMA_NAME`
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.SCHEMA_NAME, label: row.SCHEMA_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch schemas', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchTablesForSchema(
+    sourceOptions: SourceOptions,
+    schema: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT TABLE_NAME
+           FROM INFORMATION_SCHEMA.TABLES
+           WHERE TABLE_TYPE = 'BASE TABLE'
+           AND TABLE_CATALOG = ?
+           AND TABLE_SCHEMA = ?
+           AND OBJECTPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), 'IsMSShipped') = 0
+           ORDER BY TABLE_NAME`,
+          [sourceOptions.database, schema]
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.TABLE_NAME, label: row.TABLE_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
+    }
+  }
+
+  private async _fetchColumnsForTable(
+    sourceOptions: SourceOptions,
+    schema: string,
+    table: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      const result = await knexInstance
+        .raw(
+          `SELECT COLUMN_NAME
+           FROM INFORMATION_SCHEMA.COLUMNS
+           WHERE TABLE_CATALOG = ?
+           AND TABLE_SCHEMA = ?
+           AND TABLE_NAME = ?
+           ORDER BY ORDINAL_POSITION`,
+          [sourceOptions.database, schema, table]
+        )
+        .timeout(this.STATEMENT_TIMEOUT);
+      return result.map((row: any) => ({ value: row.COLUMN_NAME, label: row.COLUMN_NAME }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch columns', errorMessage, {});
+    } finally {
+      if (knexInstance) await knexInstance.destroy();
     }
   }
 
@@ -516,8 +857,29 @@ export default class MssqlQueryService implements QueryService {
 
         return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
       }
+
+      if (methodName === 'listSchemas') {
+        const schemas = await this._fetchSchemas(sourceOptions);
+        return { status: 'ok', data: schemas };
+      }
+
+      if (methodName === 'listTables') {
+        const schema = args?.values?.schema || '';
+        if (!schema) return { status: 'ok', data: [] };
+        const tables = await this._fetchTablesForSchema(sourceOptions, schema);
+        return { status: 'ok', data: tables };
+      }
+
+      if (methodName === 'listColumns') {
+        const schema = args?.values?.schema || '';
+        const table = args?.values?.table || '';
+        if (!schema || !table) return { status: 'ok', data: [] };
+        const columns = await this._fetchColumnsForTable(sourceOptions, schema, table);
+        return { status: 'ok', data: columns };
+      }
+
       throw new QueryError('Method not found', `Method ${methodName} is not supported for MSSQL plugin`, {
-        availableMethods: ['getTables'],
+        availableMethods: ['getTables', 'listSchemas', 'listTables', 'listColumns'],
       });
     } catch (err) {
       if (err instanceof QueryError) {

@@ -11,6 +11,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 
 export class DataQueriesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -38,6 +39,7 @@ export class DataQueriesModule extends SubModule {
         DataQueriesUtilService,
         AppFeatureAbilityFactory,
         DataSourceFeatureAbilityFactory,
+        DataQueryFolderMappingRepository,
       ],
       exports: [DataQueriesUtilService],
       controllers: isMainImport ? [DataQueriesController] : [],

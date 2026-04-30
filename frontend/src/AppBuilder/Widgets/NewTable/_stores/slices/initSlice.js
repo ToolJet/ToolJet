@@ -1,6 +1,7 @@
 import { has } from 'lodash';
 import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) => {
@@ -28,6 +29,9 @@ export const createInitSlice = (set, get) => ({
               columnProperties: [],
               transformations: [],
             },
+            isRefreshing: false,
+            expandedRows: {},
+            lastExpandedRowIndex: null,
           };
         }
       },
@@ -46,6 +50,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
+        state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
         state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
@@ -66,6 +71,8 @@ export const createInitSlice = (set, get) => ({
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? false;
+        state.components[id].properties.enableExpandableRows = properties?.enableExpandableRows ?? false;
+        state.components[id].properties.expansionHeight = properties?.expansionHeight ?? DEFAULT_EXPANSION_HEIGHT;
         state.components[id].properties.disableRowDeselection = properties?.disableRowDeselection ?? false;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
@@ -113,6 +120,7 @@ export const createInitSlice = (set, get) => ({
           containerBackgroundColor = '#fff',
           columnTitleColor = '#6A727C',
           columnBackgroundColor = '#F6F8FA',
+          padding = 'default',
           selectedRowColor = 'var(--cc-surface2-surface)',
         } = styles;
 
@@ -131,6 +139,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.containerBackgroundColor = containerBackgroundColor;
         state.components[id].styles.columnTitleColor = columnTitleColor;
         state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
+        state.components[id].styles.containerPadding = padding;
         state.components[id].styles.selectedRowColor = selectedRowColor;
       },
       false,
@@ -203,6 +212,17 @@ export const createInitSlice = (set, get) => ({
   getLoadingState: (id) => {
     return get().components[id] ? get().components[id].loadingState : false;
   },
+  getIsRefreshing: (id) => {
+    return get().components[id] ? !!get().components[id].isRefreshing : false;
+  },
+  setIsRefreshing: (id, value) =>
+    set(
+      (state) => {
+        if (state.components[id]) state.components[id].isRefreshing = !!value;
+      },
+      false,
+      { type: 'setIsRefreshing', payload: { id, value } }
+    ),
   getHeaderVisibility: (id) => {
     return get().components[id]
       ? get().components[id].properties.showFilterButton || get().components[id].properties.displaySearchBox
@@ -212,7 +232,9 @@ export const createInitSlice = (set, get) => ({
     return get().components[id]
       ? get().components[id].properties.enablePagination ||
           get().components[id].properties.showAddNewRowButton ||
-          get().components[id].properties.showDownloadButton
+          get().components[id].properties.showDownloadButton ||
+          get().components[id].properties.showRefreshButton ||
+          !get().components[id].properties.hideColumnSelectorButton
       : false;
   },
   getMaxRowHeightValue: (id) => {
@@ -288,4 +310,32 @@ export const createInitSlice = (set, get) => ({
   getHasDownloadEvent: (id) => {
     return get().components[id]?.events?.hasDownloadEvent || false;
   },
+
+  getEnableExpandableRows: (id) => get().components[id]?.properties?.enableExpandableRows ?? false,
+  getExpandedRows: (id) => get().components[id]?.expandedRows ?? {},
+
+  toggleRowExpansion: (id, rowId, rowIndex) =>
+    set(
+      (state) => {
+        if (!state.components[id]) return;
+        if (rowId in state.components[id].expandedRows) {
+          delete state.components[id].expandedRows[rowId];
+        } else {
+          state.components[id].expandedRows[rowId] = rowIndex;
+          state.components[id].lastExpandedRowIndex = rowIndex;
+        }
+      },
+      false,
+      { type: 'toggleRowExpansion', payload: { id, rowId, rowIndex } }
+    ),
+
+  collapseAllRows: (id) =>
+    set(
+      (state) => {
+        if (!state.components[id]) return;
+        state.components[id].expandedRows = {};
+      },
+      false,
+      { type: 'collapseAllRows', payload: { id } }
+    ),
 });

@@ -79,3 +79,303 @@
     }
   }
 }
+
+.query-folder-delete-modal-dialog {
+  width: 440px !important;
+  max-width: 440px !important;
+  margin: auto !important;
+}
+
+.query-folder-delete-modal {
+  background: var(--base, #fff);
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0px 8px 16px 0px rgba(48, 50, 51, 0.1), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+
+  // Kill Bootstrap's default dividers
+  .modal-header,
+  .modal-footer {
+    border: none !important;
+  }
+
+  &.dark-theme {
+    background: var(--base);
+    color: var(--slate12);
+  }
+}
+
+// Override the datasource-picker width constraint for the new full-width layout
+.datasource-picker {
+  width: 100% !important;
+  max-width: 600px;
+  padding: 0 16px !important;
+}
+
+// Fix search-box to show full border instead of bottom-only, and pin height to 32px
+.datasource-picker .search-box-wrapper {
+  height: 32px;
+
+  .input-icon {
+    height: 32px;
+  }
+
+  input {
+    height: 32px !important;
+    border: 1px solid var(--border-default, #ccd1d5) !important;
+    border-radius: 6px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+
+    &:focus {
+      border: 1px solid var(--border-accent-strong, #4368e3) !important;
+      outline: none !important;
+      box-shadow: none !important;
+      background-color: var(--surfaces-surface-01) !important;
+    }
+  }
+}
+
+// Add datasource button — white bg, brand-weak blue border
+.query-add-datasource-btn {
+  border: 1px solid var(--Border-brand-weak, #97aefc) !important;
+  background: var(--surfaces-surface-01, #fff) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0px 1px 1px 0px rgba(48, 50, 51, 0.1), 0px 0px 1px 0px rgba(48, 50, 51, 0.05) !important;
+  height: 32px !important;
+  flex-shrink: 0;
+}
+
+// Double-class specificity to beat tj-tertiary-btn's !important hover
+.query-add-datasource-btn.tj-tertiary-btn:hover {
+  border: 1px solid var(--border-accent-strong, #4368e3) !important;
+  background: var(--indigo3, #e6edfe) !important;
+  color: var(--text-primary) !important;
+}
+
+.query-datasource-quick-action {
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  // Default width for the top quick-action grid (w-100 on accordion items overrides this)
+  width: calc(50% - 4px);
+
+  &:hover {
+    background-color: var(--surfaces-app-bg, #f1f3f5) !important;
+  }
+
+  &:active {
+    background-color: var(--interactive-default, #e8eaed) !important;
+  }
+}
+
+.theme-dark {
+  .query-datasource-quick-action {
+    &:hover {
+      background-color: var(--surfaces-app-bg, #2c2e33) !important;
+    }
+
+    &:active {
+      background-color: var(--interactive-default, #3a3c42) !important;
+    }
+  }
+}
+
+.ds-select-search-input::placeholder {
+  color: var(--text-placeholder, #6a727c);
+}
+
+.ds-select-popover {
+  // Strip all Bootstrap popover chrome
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  max-width: none !important;
+
+  // Hide the directional arrow caret
+  > .arrow,
+  > .popover-arrow {
+    display: none !important;
+  }
+
+  .popover-body {
+    padding: 0 !important;
+  }
+}
+
+.ds-select-item {
+  &:hover {
+    background-color: var(--surfaces-app-bg, #f1f3f5) !important;
+  }
+}
+
+.ds-add-source-btn {
+  &:hover {
+    background-color: var(--surfaces-app-bg, #f1f3f5) !important;
+  }
+}
+
+.theme-dark,
+.dark-theme {
+  .ds-select-item {
+    &:hover {
+      background-color: var(--surfaces-app-bg, #2c2e33) !important;
+    }
+  }
+
+  .ds-add-source-btn {
+    &:hover {
+      background-color: var(--surfaces-app-bg, #2c2e33) !important;
+    }
+  }
+}
+
+.folder-menu-item {
+  &:hover {
+    background-color: var(--surfaces-app-bg, #f1f3f5) !important;
+  }
+}
+
+.dark-theme {
+  .folder-menu-item {
+    &:hover {
+      background-color: var(--surfaces-app-bg, #2c2e33) !important;
+    }
+  }
+}
+
+.move-to-folder-modal-dialog {
+  width: 380px !important;
+  max-width: 380px !important;
+  margin: auto !important;
+}
+
+.move-to-folder-modal {
+  background: var(--base, #fff);
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05), 0px 8px 16px 0px rgba(48, 50, 51, 0.1);
+
+  .modal-header,
+  .modal-footer {
+    border: none !important;
+  }
+
+  &.dark-theme {
+    background: var(--base);
+    color: var(--slate12);
+
+    .move-to-folder-search {
+      color: var(--slate12) !important;
+    }
+  }
+}
+
+.move-to-folder-search::placeholder {
+  color: var(--text-placeholder, #6a727c);
+}
+
+.move-to-folder-item {
+  &:hover {
+    background-color: var(--surfaces-app-bg, #f1f3f5) !important;
+  }
+}
+
+.dark-theme {
+  .move-to-folder-item {
+    &:hover {
+      background-color: var(--surfaces-app-bg, #2c2e33) !important;
+    }
+  }
+}
+
+// ─── DataSourcePicker ─────────────────────────────────────────────────────────
+
+// Header: "Start building queries" title block
+.datasource-picker-header {
+  gap: 4px;
+}
+
+.datasource-picker-title {
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.datasource-picker-subtitle {
+  color: var(--text-placeholder);
+  font-size: 12px;
+  max-width: 400px;
+  margin-bottom: 0;
+}
+
+// Quick actions 2-column grid
+.datasource-picker-quick-actions {
+  gap: 8px;
+}
+
+// Label span inside quick-action buttons and accordion source rows
+.ds-source-label {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+// "Available data sources" divider row
+.datasource-picker-divider {
+  gap: 6px;
+}
+
+.datasource-picker-divider-hr {
+  flex: 1;
+  margin: 0;
+  border-color: var(--border-weak);
+}
+
+.datasource-picker-section-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-placeholder);
+  white-space: nowrap;
+}
+
+// Search + Add button row
+.datasource-picker-search-row {
+  gap: 8px;
+}
+
+.datasource-picker-search-wrap {
+  flex: 1;
+}
+
+// Grouped datasource accordion
+.datasource-picker-group {
+  border-bottom: 1px solid var(--border-weak);
+}
+
+.datasource-picker-group-btn {
+  height: 40px;
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.datasource-picker-group-label {
+  gap: 12px;
+}
+
+.datasource-picker-group-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.datasource-picker-sources-list {
+  padding: 0 8px 8px;
+}
+
+// Empty state banner
+.datasource-picker-empty-banner {
+  border-radius: 6px;
+}

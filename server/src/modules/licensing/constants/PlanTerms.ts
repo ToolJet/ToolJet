@@ -26,6 +26,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
     customThemes: false,
     serverSideGlobalResolve: false,
+    queryFolders: false,
     scim: false,
     observability: false,
   },
@@ -66,6 +67,10 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       promote: false,
       release: false,
       history: false,
+      jsLibraries: false,
+    },
+    components: {
+      navigation: false,
     },
   },
   modules: {
