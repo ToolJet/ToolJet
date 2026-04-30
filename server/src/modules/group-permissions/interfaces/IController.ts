@@ -5,11 +5,12 @@ import { User as UserEntity } from '@entities/user.entity';
 import { GetUsersResponse } from '../types';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
+import { UserPermissions } from '@modules/ability/types';
 
 export interface IGroupPermissionsControllerV2 {
   create(user: UserEntity, createGroupPermissionDto: CreateGroupPermissionDto): Promise<GroupPermissions>;
   get(user: UserEntity, id: string): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }>;
-  getAll(user: UserEntity): Promise<GetUsersResponse>;
+  getAll(user: UserEntity, userPermissions: UserPermissions): Promise<GetUsersResponse>;
   update(user: UserEntity, id: string, updateGroupDto: UpdateGroupPermissionDto): Promise<GroupPermissions>;
   delete(user: UserEntity, id: string): Promise<void>;
   duplicateGroup(user: UserEntity, groupId: string, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;

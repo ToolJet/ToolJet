@@ -20,6 +20,11 @@ export const groupPermissionV2Service = {
   updateGranularPermission,
   duplicate,
   fetchAddableDs,
+  getGroupAdmins,
+  getAddableAdmins,
+  assignGroupAdmin,
+  revokeGroupAdmin,
+  getUserAdminGroups,
 };
 
 function create(name) {
@@ -239,6 +244,66 @@ function duplicate(groupPermissionId, body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getGroupAdmins(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getAddableAdmins(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins/addable`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function assignGroupAdmin(groupPermissionId, userId) {
+  const body = {
+    userId,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function revokeGroupAdmin(groupPermissionId, adminId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins/${adminId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getUserAdminGroups(userId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/users/${userId}/admin-groups`, requestOptions).then(
     handleResponse
   );
 }
