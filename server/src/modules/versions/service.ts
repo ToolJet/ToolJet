@@ -2,8 +2,7 @@ import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
-import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -252,16 +251,17 @@ export class VersionService implements IVersionService {
   }
 
   async getVersionByStableIds(
-    coRelationId: string,
-    moduleReferenceId: string | undefined,
+    moduleAppId: string,
+    moduleVersionId: string | undefined,
     user: User,
     mode?: string,
     branchId?: string
   ): Promise<any> {
-    // co_relation_id is only unique per-org — multiple orgs can share one after a git-origin clone.
+    // Both ids are local DB primary keys — AppSnapshot has already translated
+    // cor_id ↔ local at every boundary, so what the frontend sends here is
+    // this instance's apps.id and app_versions.id.
     const moduleApp = await this.versionRepository.manager.findOne(App, {
-      where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
-      order: { createdAt: 'ASC' },
+      where: { id: moduleAppId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
     });
     if (!moduleApp) {
       throw new NotFoundException('Module not found');
@@ -270,7 +270,7 @@ export class VersionService implements IVersionService {
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
-      moduleReferenceId,
+      moduleVersionId,
       branchId,
       user.organizationId
     );

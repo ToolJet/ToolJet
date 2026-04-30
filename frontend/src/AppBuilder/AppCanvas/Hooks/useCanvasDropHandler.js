@@ -88,8 +88,8 @@ export const useCanvasDropHandler = () => {
     // If the dragged module is a git-pulled stub (no real version imported yet),
     // hydrate it server-side BEFORE building moduleInfo. Otherwise the stub's
     // UUID version name would be persisted into properties.moduleVersionId.value
-    // and the by-correlation/by-name endpoint would fail on any workspace that
-    // later pulls the parent app. GET /apps/:id with the active branchId header
+    // and the modules endpoint would fail on any workspace that later pulls the
+    // parent app. GET /apps/:id with the active branchId header
     // triggers AppsService.getOne → hydrateStubApp server-side. After hydration
     // we re-fetch the modules list so module_container / input_items are real.
     let dropComponent = component;

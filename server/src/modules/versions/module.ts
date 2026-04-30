@@ -14,7 +14,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
-import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
+import { ValidModuleByIdGuard } from './guards/valid-module-by-id.guard';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -76,7 +76,7 @@ export class VersionModule extends SubModule {
         VersionUtilService,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
-        ValidModuleByCorrelationGuard,
+        ValidModuleByIdGuard,
       ],
       exports: [VersionUtilService],
     };

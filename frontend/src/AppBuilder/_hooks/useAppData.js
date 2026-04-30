@@ -302,18 +302,18 @@ const useAppData = (
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
-          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
+          // versionId is the version's local app_versions.id when pinned, '' when unpinned.
           // The server resolver handles either; the URL builder omits the `ref` param when empty.
           appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
-        // Pinned: call the by-correlation endpoint with the module_reference_id ref.
+        // Pinned: call the modules endpoint with the local app_versions.id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
         // Unpinned: prefer the parent app's cached module definition (already loaded
         // for the parent's branch context — matches "follow my branch" semantics).
-        // Fall back to the by-correlation endpoint with no ref → server resolver
-        // returns the latest non-stub on the consumer's branch.
+        // Fall back to the modules endpoint with no ref → server resolver returns
+        // the latest non-stub on the consumer's branch.
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));

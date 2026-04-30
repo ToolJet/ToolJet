@@ -7,7 +7,7 @@ import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { FeatureAbilityGuard } from './ability/guard';
-import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
+import { ValidModuleByIdGuard } from './guards/valid-module-by-id.guard';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
 import { App as AppEntity } from '@entities/app.entity';
@@ -25,18 +25,20 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   constructor(protected readonly versionService: VersionService) {}
 
   @InitFeature(FEATURE_KEY.GET_ONE)
-  @UseGuards(JwtAuthGuard, ValidModuleByCorrelationGuard, FeatureAbilityGuard)
-  @Get('module/by-correlation/:coRelationId/version')
-  getModuleVersionByStableIds(
+  @UseGuards(JwtAuthGuard, ValidModuleByIdGuard, FeatureAbilityGuard)
+  @Get('modules/:moduleAppId/version')
+  getModuleVersion(
     @User() user: UserEntity,
-    @Param('coRelationId') coRelationId: string,
+    @Param('moduleAppId') moduleAppId: string,
     @Query('ref') ref?: string,
     @Query('mode') mode?: string,
     @Headers('x-branch-id') branchId?: string
   ) {
-    // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+    // Path param is the module's local apps.id; `ref` is the pinned version's
+    // local app_versions.id. Both are local primary keys at runtime — AppSnapshot
+    // translates cor_id ↔ local at every boundary. Empty/missing `ref` → unpinned;
     // resolver returns the latest non-stub version on the consumer's branch.
-    return this.versionService.getVersionByStableIds(coRelationId, ref, user, mode, branchId);
+    return this.versionService.getVersionByStableIds(moduleAppId, ref, user, mode, branchId);
   }
 
   @InitFeature(FEATURE_KEY.GET_ONE)

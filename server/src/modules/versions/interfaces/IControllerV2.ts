@@ -5,9 +5,9 @@ import { PromoteVersionDto } from '../dto';
 
 export interface IVersionControllerV2 {
   getVersion(user: UserEntity, app: AppEntity, mode?: string): Promise<any>;
-  getModuleVersionByStableIds(
+  getModuleVersion(
     user: UserEntity,
-    coRelationId: string,
+    moduleAppId: string,
     ref?: string,
     mode?: string,
     branchId?: string

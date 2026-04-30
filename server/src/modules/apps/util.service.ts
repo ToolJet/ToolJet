@@ -259,8 +259,10 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
-      // Modules always get co_relation_id regardless of workspace type:
-      // ModuleViewer components reference modules by co_relation_id for stable cross-env resolution.
+      // Modules always get co_relation_id regardless of workspace type so that
+      // git push/pull (and any other boundary translator) can identify them
+      // across instances. ModuleViewer pin values reference modules by local
+      // apps.id at rest — co_relation_id only crosses the export/import boundary.
       if (branchId || type === APP_TYPES.MODULE) {
         const coRelationId = uuidv4();
         await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
