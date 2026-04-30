@@ -149,7 +149,15 @@ const ViewerApp = () => {
             <Route
               path="/:slug/login"
               element={
-                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
                   <AppLoginPage />
                 </Suspense>
               }
@@ -157,7 +165,15 @@ const ViewerApp = () => {
             <Route
               path="/:slug/signup"
               element={
-                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
                   <AppSignupPage />
                 </Suspense>
               }
@@ -165,7 +181,15 @@ const ViewerApp = () => {
             <Route
               path="/:slug/forgot-password"
               element={
-                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
                   <AppForgotPasswordPage />
                 </Suspense>
               }
@@ -173,7 +197,15 @@ const ViewerApp = () => {
             <Route
               path="/:slug/reset-password/:token"
               element={
-                <Suspense fallback={<div className="load" style={{ display: 'flex' }}><div className="one"></div><div className="two"></div><div className="three"></div></div>}>
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
                   <AppResetPasswordPage />
                 </Suspense>
               }

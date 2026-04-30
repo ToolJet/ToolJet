@@ -14,6 +14,7 @@ export const aiService = {
   listConversations,
   createConversation,
   getConversation,
+  autoSort,
 };
 
 function handleAITextResponse(response) {
@@ -147,4 +148,14 @@ async function createConversation(appId, conversationType = 'generate') {
 async function getConversation(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
+}
+
+async function autoSort(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/ai/autosort`, requestOptions).then(handleAITextResponse);
 }

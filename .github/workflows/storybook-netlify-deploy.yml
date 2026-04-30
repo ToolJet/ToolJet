@@ -1,8 +1,7 @@
 name: Deploy Storybook to Netlify
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - lts-3.16
   workflow_dispatch:
@@ -14,7 +13,6 @@ on:
 
 jobs:
   deploy-storybook:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -28,11 +26,11 @@ jobs:
         with:
           node-version: "22.15.1"
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: frontend/package.json
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install
 
       - name: Build Storybook
         working-directory: frontend
@@ -43,7 +41,7 @@ jobs:
         with:
           publish-dir: frontend/storybook-static
           production-branch: lts-3.16
-          production-deploy: ${{ github.event_name == 'pull_request' || inputs.branch == 'lts-3.16' }}
+          production-deploy: ${{ github.event_name == 'push' || inputs.branch == 'lts-3.16' }}
           deploy-message: |
             Storybook deploy from ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }} @ ${{ github.sha }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

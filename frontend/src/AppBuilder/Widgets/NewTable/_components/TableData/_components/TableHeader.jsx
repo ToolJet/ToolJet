@@ -13,8 +13,9 @@ import { shallow } from 'zustand/shallow';
 import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { getPinnedStyles } from '../pinColumnsUtils';
 
-const DraggableHeader = ({ header, darkMode, id }) => {
+const DraggableHeader = ({ header, darkMode, id, table }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
@@ -38,6 +39,15 @@ const DraggableHeader = ({ header, darkMode, id }) => {
   };
 
   const isDataColumn = column.columnType !== 'selector';
+  const {
+    pinnedPosition,
+    isPinnedBoundary,
+    style: pinnedStyles,
+  } = getPinnedStyles({
+    column: header.column,
+    table,
+    isHeader: true,
+  });
 
   const style = {
     opacity: isDragging ? 0.8 : 1,
@@ -46,7 +56,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     transition: 'width transform 0.2s ease-in-out',
     whiteSpace: 'nowrap',
     width: header.column.getSize(),
-    zIndex: isDragging ? 1 : 0,
+    flex: '0 0 auto',
+    zIndex: isDragging ? 15 : pinnedStyles.zIndex ?? 0,
     backgroundColor: columnBackgroundColor,
     color: columnTitleColor,
     '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),
@@ -62,11 +73,16 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         'has-actions': header.column.columnDef.header === 'Actions',
         'selector-header': header.column.columnDef.type === 'selector',
         'dark-theme': darkMode,
+        'pinned-column': !!pinnedPosition,
+        'pinned-column-left': pinnedPosition === 'left',
+        'pinned-column-right': pinnedPosition === 'right',
+        'pinned-column-boundary-left': pinnedPosition === 'left' && isPinnedBoundary,
+        'pinned-column-boundary-right': pinnedPosition === 'right' && isPinnedBoundary,
       })}
       style={{
         width: header.getSize(),
-        position: 'relative',
         ...style,
+        ...pinnedStyles,
       }}
     >
       <div
@@ -162,8 +178,9 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 };
 
 export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }) => {
-  const { getLoadingState } = useTableStore();
+  const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
+  const isRefreshing = getIsRefreshing(id);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -185,7 +202,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
     });
   };
 
-  if (loadingState) {
+  if (loadingState || isRefreshing) {
     return (
       <div className="w-100">
         <Loader height={28} />
@@ -200,7 +217,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>
             <tr className="tr" style={{ display: 'flex' }}>
               {headerGroup.headers.map((header) => (
-                <DraggableHeader key={header.id} header={header} darkMode={darkMode} id={id} />
+                <DraggableHeader key={header.id} header={header} darkMode={darkMode} id={id} table={table} />
               ))}
             </tr>
           </SortableContext>

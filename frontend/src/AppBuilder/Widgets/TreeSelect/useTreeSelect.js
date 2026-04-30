@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
@@ -26,6 +27,7 @@ export function useTreeSelect({
     validate?.(checkedData) ?? { isValid: true, validationError: null }
   );
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
 

@@ -6,7 +6,6 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { debounce } from 'lodash';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
@@ -32,13 +31,11 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Rename',
       value: 'rename',
       icon: <Edit width={16} />,
-      showTooltip: false,
     },
     {
       label: 'Duplicate',
       value: 'duplicate',
       icon: <Copy width={16} />,
-      showTooltip: false,
     },
     {
       label: 'Query permission',
@@ -57,11 +54,9 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Delete',
       value: 'delete',
       icon: <Trash width={16} fill={'#E54D2E'} />,
-      showTooltip: false,
     },
   ];
 
-  // To prevent user clicking from continuous clicks
   const debouncedDuplicateQuery = useCallback(
     debounce((queryId, appId) => {
       duplicateQuery(queryId, appId);
@@ -102,6 +97,7 @@ const QueryCardMenu = ({ darkMode }) => {
       target={targetElement}
       show={showQueryHandlerMenu}
       rootClose
+      transition={false}
       onHide={() => toggleQueryHandlerMenu(false)}
       popperConfig={{
         strategy: 'absolute',
@@ -117,28 +113,10 @@ const QueryCardMenu = ({ darkMode }) => {
           {
             name: 'preventOverflow',
             enabled: true,
-            options: {
-              boundary: 'viewport',
-              rootBoundary: 'viewport',
-              padding: 8,
-              altAxis: true,
-              altBoundary: true,
-            },
+            options: { boundary: 'viewport', rootBoundary: 'viewport', padding: 8, altAxis: true, altBoundary: true },
           },
-          {
-            name: 'shift',
-            enabled: true,
-            options: {
-              boundary: 'viewport',
-              padding: 8,
-            },
-          },
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 3],
-            },
-          },
+          { name: 'shift', enabled: true, options: { boundary: 'viewport', padding: 8 } },
+          { name: 'offset', options: { offset: [0, 3] } },
         ],
       }}
     >
@@ -165,10 +143,7 @@ const QueryCardMenu = ({ darkMode }) => {
                   >
                     {option?.label}
                   </div>
-                  {option.value === 'permission' &&
-                    !hasAppPermissionQuery &&
-                    option.trailingIcon &&
-                    option.trailingIcon}
+                  {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
                 </div>
               );
 

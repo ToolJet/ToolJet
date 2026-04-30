@@ -22,6 +22,8 @@ import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
+import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
+import AppLibraries from './AppLibraries';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -115,6 +117,8 @@ export const BaseLeftSidebar = ({
         return renderAIChat({ darkMode });
       case 'apphistory':
         return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
+      case 'libraries':
+        return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'settings':
@@ -169,7 +173,17 @@ export const BaseLeftSidebar = ({
 
   const renderLeftSidebarItems = () => {
     if (isModuleEditor) {
-      return renderCommonItems();
+      return (
+        <>
+          {renderAISideBarTrigger({
+            darkMode,
+            setSideBarBtnRefs,
+            selectedSidebarItem,
+            handleSelectedSidebarItem,
+          })}
+          {renderCommonItems()}
+        </>
+      );
     }
     return (
       <>
@@ -183,6 +197,14 @@ export const BaseLeftSidebar = ({
         {renderCommonItems()}
         {featureAccess?.appHistory && (
           <AppHistoryIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
+        {featureAccess?.appJsLibraries && (
+          <AppLibrariesIcon
             darkMode={darkMode}
             selectedSidebarItem={selectedSidebarItem}
             handleSelectedSidebarItem={handleSelectedSidebarItem}
@@ -218,7 +240,7 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings'].includes(selectedSidebarItem)) return;
+          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

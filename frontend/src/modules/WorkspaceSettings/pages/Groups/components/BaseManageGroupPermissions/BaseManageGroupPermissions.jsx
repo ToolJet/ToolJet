@@ -205,7 +205,8 @@ class BaseManageGroupPermissions extends React.Component {
             ? defaultGroups[0].id
             : type == 'current'
             ? this.findCurrentGroupDetails(groupPermissions)
-            : groupPermissions.at(-1).id;
+            : groupPermissions.find((group) => group.name === this.state.selectedGroup)?.id ??
+              groupPermissions.at(-1).id;
         this.setState(
           {
             groups: groupPermissions.filter((group) => group.type === 'custom'),

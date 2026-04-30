@@ -589,6 +589,8 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Navigation',
+                'ButtonGroupV2',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {

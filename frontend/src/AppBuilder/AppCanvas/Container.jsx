@@ -15,6 +15,7 @@ import {
   GRID_HEIGHT,
   HOVER_CLICK_OUTLINE_BORDER,
   PAGE_CANVAS_HEADER_FOOTER_PADDING,
+  ROW_SCOPED_WIDGET_TYPES,
 } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
@@ -83,7 +84,7 @@ const Container = React.memo(
     }, [id, isDragging, deactivateMoveableGhost]);
 
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
+      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);

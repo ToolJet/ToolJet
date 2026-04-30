@@ -19,12 +19,12 @@ import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
 import { SuspenseCountProvider } from './SuspenseTracker';
+import { MobileLayout } from './MobileLayout';
+import { DesktopLayout } from './DesktopLayout';
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
 const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
-const MobileLayout = lazy(() => import('./MobileLayout').then((m) => ({ default: m.MobileLayout })));
-const DesktopLayout = lazy(() => import('./DesktopLayout').then((m) => ({ default: m.DesktopLayout })));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 import useCanvasResizing from './Hooks/useCanvasResizing';
@@ -264,50 +264,48 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
-                      <Suspense fallback={null}>
-                        {isMobileLayout ? (
-                          <MobileLayout
-                            pageKey={pageKey}
-                            showCanvasHeader={showCanvasHeader}
-                            showCanvasFooter={showCanvasFooter}
-                            isMobileLayout={isMobileLayout}
-                            currentMode={currentMode}
-                            appType={appType}
-                            currentPageId={currentPageId}
-                            homePageId={homePageId}
-                            switchDarkMode={switchDarkMode}
-                            darkMode={darkMode}
-                            canvasMaxWidth={canvasMaxWidth}
-                            isAppDarkMode={isAppDarkMode}
-                            mainCanvasContainer={mainCanvasContainer}
-                            canvasHeaderHeight={canvasHeaderHeight}
-                          />
-                        ) : (
-                          <DesktopLayout
-                            pageKey={pageKey}
-                            isModuleMode={isModuleMode}
-                            isMobileLayout={isMobileLayout}
-                            showCanvasHeader={showCanvasHeader}
-                            showCanvasFooter={showCanvasFooter}
-                            position={position}
-                            isPagesSidebarHidden={isPagesSidebarHidden}
-                            appType={appType}
-                            sideBarVisibleHeight={sideBarVisibleHeight}
-                            currentPageId={currentPageId}
-                            homePageId={homePageId}
-                            switchDarkMode={switchDarkMode}
-                            isViewerSidebarPinned={isViewerSidebarPinned}
-                            setIsSidebarPinned={setIsSidebarPinned}
-                            darkMode={darkMode}
-                            canvasMaxWidth={canvasMaxWidth}
-                            canvasContentRef={canvasContentRef}
-                            currentMode={currentMode}
-                            isAppDarkMode={isAppDarkMode}
-                            mainCanvasContainer={mainCanvasContainer}
-                            canvasHeaderHeight={canvasHeaderHeight}
-                          />
-                        )}
-                      </Suspense>
+                      {isMobileLayout ? (
+                        <MobileLayout
+                          pageKey={pageKey}
+                          showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
+                          isMobileLayout={isMobileLayout}
+                          currentMode={currentMode}
+                          appType={appType}
+                          currentPageId={currentPageId}
+                          homePageId={homePageId}
+                          switchDarkMode={switchDarkMode}
+                          darkMode={darkMode}
+                          canvasMaxWidth={canvasMaxWidth}
+                          isAppDarkMode={isAppDarkMode}
+                          mainCanvasContainer={mainCanvasContainer}
+                          canvasHeaderHeight={canvasHeaderHeight}
+                        />
+                      ) : (
+                        <DesktopLayout
+                          pageKey={pageKey}
+                          isModuleMode={isModuleMode}
+                          isMobileLayout={isMobileLayout}
+                          showCanvasHeader={showCanvasHeader}
+                          showCanvasFooter={showCanvasFooter}
+                          position={position}
+                          isPagesSidebarHidden={isPagesSidebarHidden}
+                          appType={appType}
+                          sideBarVisibleHeight={sideBarVisibleHeight}
+                          currentPageId={currentPageId}
+                          homePageId={homePageId}
+                          switchDarkMode={switchDarkMode}
+                          isViewerSidebarPinned={isViewerSidebarPinned}
+                          setIsSidebarPinned={setIsSidebarPinned}
+                          darkMode={darkMode}
+                          canvasMaxWidth={canvasMaxWidth}
+                          canvasContentRef={canvasContentRef}
+                          currentMode={currentMode}
+                          isAppDarkMode={isAppDarkMode}
+                          mainCanvasContainer={mainCanvasContainer}
+                          canvasHeaderHeight={canvasHeaderHeight}
+                        />
+                      )}
                     </SuspenseCountProvider>
                   )}
 
