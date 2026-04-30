@@ -2,7 +2,7 @@ import React, { useLayoutEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
-import { resetAllStores as resetAppBuilderStore } from '@//AppBuilder/_stores/utils.js';
+import { resetAllStores as resetAppBuilderStore } from '@/AppBuilder/_stores/utils';
 import RenderWorkflow from '@/modules/RenderWorkflow';
 import RenderAppBuilder from './RenderAppBuilder';
 
