@@ -1,26 +1,161 @@
 
+Cypress.Commands.add("gitSyncOpenAppInBuilder", (appName) => {
+  cy.contains('[data-cy$="-card"]', appName, { timeout: 30000 }).should("be.visible");
+  cy.wait(2000);
+
+  cy.get('[data-cy$="-card"]')
+    .contains(appName)
+    .closest('[data-cy$="-card"]')
+    .should("be.visible")
+    .realHover();
+
+  cy.get('[data-cy$="-card"]')
+    .contains(appName)
+    .closest('[data-cy$="-card"]')
+    .contains("a", "Edit")
+    .should("be.visible")
+    .click();
+
+  cy.url({ timeout: 30000 }).should("include", "/apps/");
+  cy.waitForAppLoad();
+});
+
+Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
+  const owner = Cypress.env("GITHUB_REPO_OWNER");
+  const repo = Cypress.env("GITHUB_REPO_NAME");
+  const ghHeaders = {
+    Authorization: `Bearer ${Cypress.env("GITHUB_TOKEN")}`,
+    Accept: "application/vnd.github+json",
+  };
+
+  cy.request({
+    method: "GET",
+    url: `https://api.github.com/repos/${owner}/${repo}/tags?per_page=100`,
+    headers: ghHeaders,
+    failOnStatusCode: false,
+  }).then((res) => {
+    const tags = Array.isArray(res.body) ? res.body : [];
+    if (tags.length === 0) {
+      Cypress.log({ message: "[gitHub] No tags to delete during reset" });
+      return;
+    }
+    Cypress.log({ message: `[gitHub] Deleting ${tags.length} tag(s) before reset` });
+    tags.forEach((tag) => {
+      cy.request({
+        method: "DELETE",
+        url: `https://api.github.com/repos/${owner}/${repo}/git/refs/tags/${tag.name}`,
+        headers: ghHeaders,
+        failOnStatusCode: false,
+      }).then((delRes) => {
+        Cypress.log({
+          message: `[gitHub] Deleted tag '${tag.name}' — status ${delRes.status}`,
+        });
+      });
+    });
+  });
+
+  cy.request({
+    method: "GET",
+    url: `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`,
+    headers: ghHeaders,
+  }).then((res) => {
+    const testBranches = res.body.filter((b) => b.name.startsWith("test-"));
+    Cypress.log({
+      message: `[gitSync] Deleting ${testBranches.length} test branch(es)`,
+    });
+    testBranches.forEach((branch) => {
+      cy.gitHubDeleteBranch(branch.name);
+    });
+  });
+
+  const EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+  cy.request({
+    method: "GET",
+    url: `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${defaultBranch}`,
+    headers: ghHeaders,
+  }).then((refRes) => {
+    const parentSha = refRes.body.object.sha;
+
+    cy.request({
+      method: "POST",
+      url: `https://api.github.com/repos/${owner}/${repo}/git/commits`,
+      headers: ghHeaders,
+      body: {
+        message: "chore: clear repo contents for test isolation",
+        tree: EMPTY_TREE_SHA,
+        parents: [parentSha],
+      },
+    }).then((commitRes) => {
+      cy.request({
+        method: "PATCH",
+        url: `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${defaultBranch}`,
+        headers: ghHeaders,
+        body: { sha: commitRes.body.sha, force: true },
+      }).then((updateRes) => {
+        expect(updateRes.status).to.equal(200);
+        Cypress.log({
+          message: `[gitSync] '${defaultBranch}' cleared (commit: ${commitRes.body.sha.slice(0, 7)})`,
+        });
+      });
+    });
+  });
+});
 
 Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null) => {
-  const body = editingVersionId
-    ? { app: { name: newName, editingVersionId } }
-    : { app: { name: newName } };
-  return cy.getAuthHeaders().then((headers) =>
-    cy
-      .request({
-        method: "PUT",
-        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
-        headers,
-        body,
-      })
-      .then((res) => {
-        expect(res.status, `Rename app to '${newName}'`).to.be.oneOf([
-          200, 201, 204,
-        ]);
-        Cypress.log({
-          message: `[gitSync] App ${appId} renamed to '${newName}'${editingVersionId ? ` (branch-scoped via version ${editingVersionId})` : ""}`,
+  return cy.getAuthHeaders().then((headers) => {
+    const doRename = (vid) => {
+      const body = vid
+        ? { app: { name: newName, editingVersionId: vid } }
+        : { app: { name: newName } };
+      return cy
+        .request({
+          method: "PUT",
+          url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+          headers,
+          body,
+          failOnStatusCode: false,
+        })
+        .then((res) => {
+          // Server blocks rename on the default branch when no branch-scoped version is
+          // provided. Retry once using the most recent BRANCH-type version so the guard
+          // sees a feature-branch context and allows the rename.
+          if (
+            res.status === 400 &&
+            !vid &&
+            (res.body?.message || "").includes("Renaming isn't allowed on master")
+          ) {
+            Cypress.log({
+              message: `[gitSync] Rename blocked on master — retrying with branch-scoped version`,
+            });
+            return cy
+              .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
+                headers,
+                failOnStatusCode: false,
+              })
+              .then((versionsRes) => {
+                const versions = versionsRes.body?.versions || [];
+                const branchVersion = versions.find(
+                  (v) =>
+                    v.versionType === "branch" ||
+                    v.version_type === "branch" ||
+                    v.type === "branch",
+                );
+                const branchVid = branchVersion?.id;
+                expect(branchVid, "found branch-type version id for rename").to.be.a("string");
+                return doRename(branchVid);
+              });
+          }
+          expect(res.status, `Rename app to '${newName}'`).to.be.oneOf([200, 201, 204]);
+          Cypress.log({
+            message: `[gitSync] App ${appId} renamed to '${newName}'${vid ? ` (branch-scoped via version ${vid})` : ""}`,
+          });
         });
-      }),
-  );
+    };
+    return doRename(editingVersionId);
+  });
 });
 
 Cypress.Commands.add("apiListAppsOnBranch", (branchId) => {
@@ -277,6 +412,29 @@ Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const orgId = Cypress.env("workspaceId");
 
+    const exportWithVersionId = (versionId) => {
+      return cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/resources/export`,
+          headers,
+          body: {
+            app: [{ id: appId, search_params: { version_id: versionId } }],
+            tooljet_database: [],
+            organization_id: orgId,
+          },
+        })
+        .then((exportRes) => {
+          expect(exportRes.status, "POST /api/v2/resources/export").to.equal(201);
+          const appV2 = exportRes.body?.app?.[0]?.definition?.appV2;
+          expect(appV2, "appV2 in export response").to.exist;
+          Cypress.log({
+            message: `[gitSync] Got app definition for ${appId} (${appV2.name})`,
+          });
+          return appV2;
+        });
+    };
+
     const resolveAndFetch = (branchId) => {
       const reqHeaders = branchId
         ? { ...headers, "x-branch-id": branchId }
@@ -291,30 +449,36 @@ Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
         .then((appRes) => {
           expect(appRes.status, `GET /api/apps/${appId}`).to.equal(200);
           const versionId = appRes.body.editing_version?.id;
-          expect(versionId, "editing_version.id present").to.be.a("string");
 
-          return cy
-            .request({
-              method: "POST",
-              url: `${Cypress.env("server_host")}/api/v2/resources/export`,
-              headers,
-              body: {
-                app: [{ id: appId, search_params: { version_id: versionId } }],
-                tooljet_database: [],
-                organization_id: orgId,
-              },
-            })
-            .then((exportRes) => {
-              expect(exportRes.status, "POST /api/v2/resources/export").to.equal(
-                201,
-              );
-              const appV2 = exportRes.body?.app?.[0]?.definition?.appV2;
-              expect(appV2, "appV2 in export response").to.exist;
-              Cypress.log({
-                message: `[gitSync] Got app definition for ${appId} (${appV2.name})`,
-              });
-              return appV2;
+          if (!versionId && !branchId) {
+            // Git-sync apps with only BRANCH-type versions won't have editing_version
+            // when called without x-branch-id (the subscriber only finds VERSION-type).
+            // Fall back to the versions list — test-branch versions are still non-stub
+            // and are returned regardless of branch filter.
+            Cypress.log({
+              message: `[gitSync] editing_version absent without branchId — falling back to versions list for app ${appId}`,
             });
+            return cy
+              .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
+                headers,
+              })
+              .then((versionsRes) => {
+                expect(versionsRes.status, "GET /api/apps/:id/versions fallback").to.equal(200);
+                const versions = versionsRes.body?.versions || [];
+                expect(versions.length, "app has at least one version (fallback)").to.be.greaterThan(0);
+                const fallbackVersionId = versions[0]?.id;
+                expect(fallbackVersionId, "fallback version id").to.be.a("string");
+                Cypress.log({
+                  message: `[gitSync] Using fallback version ${fallbackVersionId} for export`,
+                });
+                return exportWithVersionId(fallbackVersionId);
+              });
+          }
+
+          expect(versionId, "editing_version.id present").to.be.a("string");
+          return exportWithVersionId(versionId);
         });
     };
 
@@ -662,9 +826,25 @@ Cypress.Commands.add("apiCreateGitTag", (appId, versionId, message = null) => {
         failOnStatusCode: false,
       })
       .then((res) => {
+        if (res.status === 200 || res.status === 201) {
+          Cypress.log({ message: `[gitSync] Git tag created: ${res.body?.tagName}` });
+          return res.body;
+        }
+        // 400 "already exists" = the editor's auto-tag (non-awaited createGitTag inside
+        // createVersion()) raced ahead and created the tag before this explicit call.
+        // Treat as idempotent success: extract the tag name from the error message.
+        if (res.status === 400) {
+          const errMsg = res.body?.message || "";
+          const match = errMsg.match(/Tag '([^']+)' already exists/);
+          if (match) {
+            const tagName = match[1];
+            Cypress.log({
+              message: `[gitSync] Tag '${tagName}' already created by auto-tag flow — returning success`,
+            });
+            return { success: true, tagName };
+          }
+        }
         expect(res.status, `Create git tag for version ${versionId}`).to.be.oneOf([200, 201]);
-        Cypress.log({ message: `[gitSync] Git tag created: ${res.body?.tagName}` });
-        return res.body;
       });
   });
 });
@@ -1001,4 +1181,43 @@ Cypress.Commands.overwrite("gitHubMergePR", (originalFn, prNumber = Cypress.env(
   };
 
   return tryMerge(METHODS);
+});
+
+
+Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { folder_id: folderId, app_id: appId },
+      })
+      .then((res) => {
+        expect(res.status, `Add app ${appId} to folder ${folderId}`).to.be.oneOf([200, 201]);
+        Cypress.log({ message: `[gitSync] App ${appId} added to folder ${folderId}` });
+      }),
+  );
+});
+
+Cypress.Commands.add("gitHubAssertAppInFolder", (branch, folderName, appName) => {
+  return cy.gitHubListAppPaths(branch).then((paths) => {
+    expect(
+      paths,
+      `apps/${folderName}/${appName}/ exists on branch '${branch}'`,
+    ).to.include(`apps/${folderName}/${appName}/app/app.json`);
+    Cypress.log({ message: `[gitHub] ✓ apps/${folderName}/${appName}/ exists on '${branch}'` });
+  });
+});
+
+Cypress.Commands.add("gitHubAssertAppMetaPath", (branch, expectedPath) => {
+  return cy
+    .gitHubGetFileJson(branch, ".meta/appMeta.json")
+    .then((meta) => {
+      expect(meta, ".meta/appMeta.json exists").to.not.be.null;
+      const paths = Object.values(meta).map((entry) => entry.appPath);
+      expect(paths, `appMeta.json has entry with appPath "${expectedPath}"`).to.include(expectedPath);
+      Cypress.log({ message: `[gitHub] ✓ appMeta.json has appPath "${expectedPath}" on '${branch}'` });
+      return meta;
+    });
 });

@@ -230,23 +230,6 @@ Cypress.Commands.add("gitSyncDashboardPush", (message) => {
   cy.log(`[gitSync] Dashboard commit pushed: "${message}"`);
 });
 
-Cypress.Commands.add("gitSyncOpenAppInBuilder", (appName) => {
-cy.get(GS.appCard)
-    .contains(appName)
-    .closest(GS.appCard)
-    .should("be.visible")
-    .realHover();
-
-  cy.get(GS.appCard)
-    .contains(appName)
-    .closest(GS.appCard)
-    .contains("a", "Edit")
-    .should("be.visible")
-    .click();
-
-  cy.url({ timeout: 30000 }).should("include", "/apps/");
-  cy.waitForAppLoad();
-});
 
 Cypress.Commands.add(
   "gitHubWaitForCommitsAhead",
@@ -356,61 +339,6 @@ Cypress.Commands.add("gitHubDeleteBranch", (branchName) => {
     });
 });
 
-Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
-  const owner = Cypress.env("GITHUB_REPO_OWNER");
-  const repo = Cypress.env("GITHUB_REPO_NAME");
-  const ghHeaders = {
-    Authorization: `Bearer ${Cypress.env("GITHUB_TOKEN")}`,
-    Accept: "application/vnd.github+json",
-  };
-
-  cy.request({
-    method: "GET",
-    url: `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`,
-    headers: ghHeaders,
-  }).then((res) => {
-    const testBranches = res.body.filter((b) => b.name.startsWith("test-"));
-    Cypress.log({
-      message: `[gitSync] Deleting ${testBranches.length} test branch(es)`,
-    });
-    testBranches.forEach((branch) => {
-      cy.gitHubDeleteBranch(branch.name);
-    });
-  });
-
-  const EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
-
-  cy.request({
-    method: "GET",
-    url: `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${defaultBranch}`,
-    headers: ghHeaders,
-  }).then((refRes) => {
-    const parentSha = refRes.body.object.sha;
-
-    cy.request({
-      method: "POST",
-      url: `https://api.github.com/repos/${owner}/${repo}/git/commits`,
-      headers: ghHeaders,
-      body: {
-        message: "chore: clear repo contents for test isolation",
-        tree: EMPTY_TREE_SHA,
-        parents: [parentSha],
-      },
-    }).then((commitRes) => {
-      cy.request({
-        method: "PATCH",
-        url: `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${defaultBranch}`,
-        headers: ghHeaders,
-        body: { sha: commitRes.body.sha, force: true },
-      }).then((updateRes) => {
-        expect(updateRes.status).to.equal(200);
-        Cypress.log({
-          message: `[gitSync] '${defaultBranch}' cleared (commit: ${commitRes.body.sha.slice(0, 7)})`,
-        });
-      });
-    });
-  });
-});
 
 Cypress.Commands.add("gitSyncGoToDashboard", () => {
   const workspace = Cypress.env("workspaceSlug") || "";
