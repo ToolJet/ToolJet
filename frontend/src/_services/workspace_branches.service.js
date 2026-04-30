@@ -28,7 +28,6 @@ function create(name, sourceBranchId, commitSha) {
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(120000),
   };
   return fetch(`${config.apiUrl}/workspace-branches`, requestOptions).then(handleResponse);
 }
