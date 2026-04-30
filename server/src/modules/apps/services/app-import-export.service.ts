@@ -351,15 +351,19 @@ export class AppImportExportService {
           .orderBy('data_queries.created_at', 'ASC')
           .getMany();
 
-        // Backfill `kind` on each query from its DS. The query above does NOT
-        // join data_query.dataSource so the @AfterLoad hook leaves `kind`
-        // undefined — meaning git-pushed queries.json had no kind, and
-        // git-pulled apps couldn't recover the right plugin/kind for dummy
-        // DSes when their root data-sources file was missing. This explicit
-        // backfill ensures every exported query carries `kind`.
+        // Backfill `kind` and `dataSourceType` on each query from its DS. The query above
+        // does NOT join data_query.dataSource so @AfterLoad leaves these undefined.
+        // `kind` lets a git-pulled app recover the right plugin/kind for dummies when the
+        // root data-sources file is missing. `dataSourceType` is the static-vs-default
+        // disambiguator: an app-only push (no workspace push) leaves no stub file at
+        // data-sources/<coRelId>.json, so import-time can't otherwise tell whether a
+        // missing file is a source-static reference (route to workspace static) or a
+        // custom DS that wasn't pushed (create dummy).
         const dsKindById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.kind] as [string, string]));
+        const dsTypeById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.type] as [string, string]));
         for (const dq of dataQueries) {
           if (!dq.kind) dq.kind = dsKindById.get(dq.dataSourceId);
+          if (!(dq as any).dataSourceType) (dq as any).dataSourceType = dsTypeById.get(dq.dataSourceId);
         }
 
         const rawAndEntities = await manager
