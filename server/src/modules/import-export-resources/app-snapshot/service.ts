@@ -101,8 +101,7 @@ export const JSON_IMPORT_POLICY: ResourcePolicy = {
   dataSources: 'matchOrCreate',
 };
 
-const UUID_V4_REGEX_GLOBAL =
-  /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/g;
+const UUID_V4_REGEX_GLOBAL = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/g;
 
 /**
  * Per-folder fields that exist locally but must not appear in a snapshot:
@@ -139,7 +138,7 @@ export class AppSnapshot {
   // (look up children by (parent_id, co_relation_id) instead of always
   // generating fresh ids). Today neither export() nor import() consults
   // it — the regex sweep handles every UUID reference, structural or not.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   constructor(private readonly fkMap: FkReferenceMap) {}
 
   /**
@@ -198,7 +197,15 @@ export class AppSnapshot {
     // level); mutated in-place, no copy.
     const corToLocal = options.corToLocal ?? new Map<string, string>();
     await resolveAppRows(result, 'apps', APP_TYPES.FRONT_END, manager, context.organizationId, policy.apps, corToLocal);
-    await resolveAppRows(result, 'modules', APP_TYPES.MODULE, manager, context.organizationId, policy.modules, corToLocal);
+    await resolveAppRows(
+      result,
+      'modules',
+      APP_TYPES.MODULE,
+      manager,
+      context.organizationId,
+      policy.modules,
+      corToLocal
+    );
     await resolveDataSources(result, manager, context.organizationId, policy.dataSources, corToLocal);
     await resolveAppVersions(result, manager, policy.appVersions, corToLocal, localToCor);
     assignFreshIdsToChildren(result, corToLocal);
@@ -232,7 +239,7 @@ function collectLocalToCor(tree: unknown): Map<string, string> {
 function rewriteUuidsInAllStrings(
   obj: unknown,
   localToCor: Map<string, string>,
-  corToLocal: Map<string, string>,
+  corToLocal: Map<string, string>
 ): void {
   if (!obj || typeof obj !== 'object') return;
   if (Array.isArray(obj)) {
@@ -256,11 +263,7 @@ function rewriteUuidsInAllStrings(
   }
 }
 
-function rewriteUuidsInString(
-  value: string,
-  localToCor: Map<string, string>,
-  corToLocal: Map<string, string>,
-): string {
+function rewriteUuidsInString(value: string, localToCor: Map<string, string>, corToLocal: Map<string, string>): string {
   return value.replace(UUID_V4_REGEX_GLOBAL, (match) => {
     // Two-step lookup: source-local → cor → target-local. Either step
     // may miss; embedded refs are often cor_ids directly (skip step 1),
@@ -274,11 +277,7 @@ function stripInstanceLocalFields(snapshot: Snapshot): void {
   for (const [folderName, content] of Object.entries(snapshot)) {
     const config = STRIP_FIELDS[folderName];
     if (!config) continue;
-    const items = Array.isArray(content)
-      ? content
-      : content && typeof content === 'object'
-      ? [content]
-      : [];
+    const items = Array.isArray(content) ? content : content && typeof content === 'object' ? [content] : [];
     for (const item of items) {
       if (!item || typeof item !== 'object') continue;
       const record = item as Record<string, unknown>;
@@ -332,7 +331,7 @@ async function resolveAppRows(
   manager: EntityManager,
   organizationId: string,
   policy: Policy,
-  corToLocal: Map<string, string>,
+  corToLocal: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree[folder]);
   if (items.length === 0) return;
@@ -355,7 +354,7 @@ async function resolveAppVersions(
   manager: EntityManager,
   policy: Policy,
   corToLocal: Map<string, string>,
-  localToCor: Map<string, string>,
+  localToCor: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree.versions);
   if (items.length === 0) return;
@@ -394,7 +393,7 @@ async function resolveDataSources(
   manager: EntityManager,
   organizationId: string,
   policy: Policy,
-  corToLocal: Map<string, string>,
+  corToLocal: Map<string, string>
 ): Promise<void> {
   const items = toArray(tree.dataSources);
   if (items.length === 0) return;

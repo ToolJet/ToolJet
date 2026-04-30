@@ -67,6 +67,9 @@ module.exports = defineConfig([{
     "@typescript-eslint/no-unused-vars": ["error", {
       vars: "all",
       args: "none",
+      varsIgnorePattern: "^_",
+      destructuredArrayIgnorePattern: "^_",
+      caughtErrorsIgnorePattern: "^_",
     }],
 
     "@typescript-eslint/no-var-requires": "off",

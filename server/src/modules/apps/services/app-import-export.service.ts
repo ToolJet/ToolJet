@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { isEmpty, set } from 'lodash';
+import { isEmpty } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
@@ -9,7 +9,7 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Credential } from '@entities/credential.entity';
 import { User } from 'src/entities/user.entity';
-import { Brackets, EntityManager, In, DeepPartial } from 'typeorm';
+import { EntityManager, In, DeepPartial } from 'typeorm';
 import {
   defaultAppEnvironments,
   catchDbException,
@@ -50,11 +50,7 @@ import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import {
-  AppSnapshot,
-  JSON_IMPORT_POLICY,
-  ResourcePolicy,
-} from '@modules/import-export-resources/app-snapshot/service';
+import { AppSnapshot, JSON_IMPORT_POLICY, ResourcePolicy } from '@modules/import-export-resources/app-snapshot/service';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -1108,7 +1104,7 @@ export class AppImportExportService {
     manager: EntityManager,
     organizationId: string,
     policy: ResourcePolicy,
-    corToLocal: Map<string, string>,
+    corToLocal: Map<string, string>
   ): Promise<void> {
     const snapshot = appBundleToSnapshotShape(appParams);
     const resolved = await this.appSnapshot.import(snapshot, {
@@ -1867,11 +1863,7 @@ export class AppImportExportService {
           let skipComponent = false;
           const newComponent = new Component();
 
-          if (
-            component.parent &&
-            component.parent !== 'canvas-header' &&
-            component.parent !== 'canvas-footer'
-          ) {
+          if (component.parent && component.parent !== 'canvas-header' && component.parent !== 'canvas-footer') {
             const parentUuid = component.parent.match(/^[a-fA-F0-9-]{36}/)?.[0];
             if (parentUuid && !validParentUuids.has(parentUuid)) {
               skipComponent = true;
@@ -2366,8 +2358,7 @@ export class AppImportExportService {
       });
     };
     const existingDatasource =
-      (await globalDataSourceWithSameIdExists(dataSource)) ||
-      (await globalDataSourceWithSameNameExists(dataSource));
+      (await globalDataSourceWithSameIdExists(dataSource)) || (await globalDataSourceWithSameNameExists(dataSource));
 
     // For git imports on a specific branch, a real DS that exists in the
     // workspace but has no DSV on this branch is effectively not-yet-pulled
