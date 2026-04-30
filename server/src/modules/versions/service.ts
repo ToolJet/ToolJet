@@ -260,9 +260,6 @@ export class VersionService implements IVersionService {
     mode?: string,
     branchId?: string
   ): Promise<any> {
-    // Both ids are local DB primary keys — AppSnapshot has already translated
-    // cor_id ↔ local at every boundary, so what the frontend sends here is
-    // this instance's apps.id and app_versions.id.
     const manager = this.versionRepository.manager;
     const moduleApp = await manager.findOne(App, {
       where: { id: moduleAppId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
@@ -271,26 +268,9 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
-    // Resolve the ModuleViewer pin to an AppVersion row, classifying the
-    // outcome so the response surfaces *why* the consumer is seeing what
-    // it's seeing. Without this label, "pinned to a deleted version" and
-    // "user pulled a feature branch where the module is still hydrating"
-    // both render identically and the user can't tell why the module
-    // looks different from what they pinned.
-    //
-    //   pinned         moduleVersionId is a UUID + matches a non-stub row.
-    //   unpinned       moduleVersionId absent (empty/undefined). Returned
-    //                  the latest non-stub on the consumer's branch.
-    //   orphan         moduleVersionId is a UUID but no row matches. Fell
-    //                  back to the unpinned path; the pinned target was
-    //                  likely deleted upstream.
-    //   pending-stub   moduleVersionId is a UUID with a *stub* match
-    //                  (module is being hydrated). Returned the latest
-    //                  non-stub on the branch as a temporary view.
-    //
-    // The UUID guard prevents `where: { id: <non-uuid> }` from crashing
-    // the postgres uuid-typed lookup on stale legacy values; non-UUID
-    // values are treated as "unpinned" since they cannot match an id.
+    // pinResolution distinguishes the four reasons the consumer sees the
+    // version it sees, so a pin pointing at a deleted version (orphan) and a
+    // pin waiting on stub hydration (pending-stub) don't render identically.
     type PinResolution = 'pinned' | 'unpinned' | 'orphan' | 'pending-stub';
     let pinResolution: PinResolution;
     let version: AppVersion | null = null;
@@ -305,9 +285,6 @@ export class VersionService implements IVersionService {
     if (version) {
       pinResolution = 'pinned';
     } else {
-      // Distinguish orphan (pin was supplied but missing) vs pending-stub
-      // (pin was supplied but only a stub matches → module is still
-      // hydrating) vs unpinned (no pin supplied at all).
       let pinningPending = false;
       if (isUuidPin) {
         const stub = await manager.findOne(AppVersion, {
@@ -334,17 +311,13 @@ export class VersionService implements IVersionService {
         pinResolution = 'pending-stub';
       } else if (isUuidPin) {
         pinResolution = 'orphan';
-        this.logger.warn(
-          `Module pin orphan: moduleAppId=${moduleAppId} moduleVersionId=${moduleVersionId} — ` +
-            `pinned version not found on instance, falling back to latest on branch.`
-        );
+        this.logger.warn(`Module pin orphan: moduleAppId=${moduleAppId} moduleVersionId=${moduleVersionId}`);
       } else {
         pinResolution = 'unpinned';
       }
     }
 
     if (!version) {
-      // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
       throw new NotFoundException('Module version not found');
     }
     moduleApp.appVersions = [version];

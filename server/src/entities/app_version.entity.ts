@@ -113,14 +113,9 @@ export class AppVersion extends BaseEntity {
   branch: WorkspaceBranch;
 
   /**
-   * @deprecated Redundant with `co_relation_id` since the boundary-only refactor
-   * (Phase 1 RationalizeAppVersionCoRelationId migration: `co_relation_id` is now
-   * per-version unique within an app and was populated from `module_reference_id`
-   * where set). Runtime ModuleViewer pin resolution looks up by local `id`;
-   * cross-instance translation at every boundary uses `co_relation_id`. This
-   * column is preserved during the transition release cycle so consumer code on
-   * mixed-version deployments doesn't break; Phase 4 drops it. Do NOT introduce
-   * new reads or writes.
+   * @deprecated Redundant with `co_relation_id` (see RationalizeAppVersionCoRelationId migration).
+   * TODO(remove): drop the column + every write site once consumer code on
+   * older deployments has been upgraded. Do NOT introduce new reads or writes.
    */
   @Column({ name: 'module_reference_id', type: 'uuid', nullable: true })
   moduleReferenceId: string;

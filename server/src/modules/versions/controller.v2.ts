@@ -34,10 +34,7 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     @Query('mode') mode?: string,
     @Headers('x-branch-id') branchId?: string
   ) {
-    // Path param is the module's local apps.id; `ref` is the pinned version's
-    // local app_versions.id. Both are local primary keys at runtime — AppSnapshot
-    // translates cor_id ↔ local at every boundary. Empty/missing `ref` → unpinned;
-    // resolver returns the latest non-stub version on the consumer's branch.
+    // moduleAppId = apps.id; ref = app_versions.id. Empty ref → unpinned.
     return this.versionService.getVersionByStableIds(moduleAppId, ref, user, mode, branchId);
   }
 

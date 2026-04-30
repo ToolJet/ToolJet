@@ -302,18 +302,15 @@ const useAppData = (
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
-          // versionId is the version's local app_versions.id when pinned, '' when unpinned.
-          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          // Public access: no auth, no version-specific lookup; the empty
+          // versionId becomes a no-ref request and the server returns latest.
           appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
-        // Pinned: call the modules endpoint with the local app_versions.id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        // Unpinned: prefer the parent app's cached module definition (already loaded
-        // for the parent's branch context — matches "follow my branch" semantics).
-        // Fall back to the modules endpoint with no ref → server resolver returns
-        // the latest non-stub on the consumer's branch.
+        // Unpinned: prefer the cached module definition for the parent's branch
+        // ("follow my branch"). Fall back to the modules endpoint otherwise.
         const cachedDefinition = getModuleDefinition(appId);
         if (cachedDefinition) {
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
@@ -335,20 +332,14 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
-        // The modules endpoint returns `pinResolution` indicating how the
-        // ModuleViewer's pin was resolved server-side. `pinned` and `unpinned`
-        // are normal; `orphan` (pin pointed at a deleted version) and
-        // `pending-stub` (module is still hydrating) are transient/diagnostic
-        // states the user may want to know about. Surface to console for now;
-        // a visible banner in the ModuleViewer is a follow-up UI change.
+        // TODO(pin-resolution-banner): render orphan/pending-stub states in
+        // the ModuleViewer UI; today the user only sees a console hint.
         if (moduleMode && result?.pinResolution && !['pinned', 'unpinned'].includes(result.pinResolution)) {
-          console.warn(
-            `[ModuleViewer] pin resolution: ${result.pinResolution} ` +
-              `(moduleAppId=${appId}, moduleVersionId=${versionId || '<unpinned>'}). ` +
-              (result.pinResolution === 'orphan'
-                ? 'Pinned version not found on this instance — rendering latest on branch instead.'
-                : 'Module is still hydrating — rendering latest available content.')
-          );
+          const detail =
+            result.pinResolution === 'orphan'
+              ? 'pinned version not found — rendering latest on branch'
+              : 'module still hydrating — rendering latest available content';
+          console.warn(`[ModuleViewer] ${result.pinResolution}: ${detail}`);
         }
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`

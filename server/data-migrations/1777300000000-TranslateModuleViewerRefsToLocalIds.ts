@@ -1,24 +1,12 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Translate ModuleViewer pin refs from cross-instance keys to local DB ids.
- *
- * Until now, two ModuleViewer property fields stored cross-instance keys:
- *   - properties.moduleAppId.value     held apps.co_relation_id
- *   - properties.moduleVersionId.value held app_versions.module_reference_id
- *
- * Under the boundary-only model these fields hold local DB ids, with the
- * cross-instance translation done by AppSnapshot at every push/pull/import/
- * export. This migration rewrites existing rows so the resolver — which is
- * about to flip from `where: { co_relation_id }` to `where: { id }` — keeps
- * resolving the same target row.
- *
- * Naturally idempotent: re-running joins against co_relation_id, but
- * post-translation the field holds apps.id, so the join misses and no row
- * is touched. Same logic for moduleVersionId.
- *
- * Orphans (cor_id with no matching local row) are left intact. The resolver's
- * orphan fallback ("latest saved on default branch") still handles them.
+ * ModuleViewer pin fields used to hold cross-instance keys
+ * (`properties.moduleAppId.value` = `apps.co_relation_id`,
+ *  `properties.moduleVersionId.value` = `app_versions.module_reference_id`).
+ * Boundary-only model holds local DB ids instead; AppSnapshot translates at
+ * every boundary. Idempotent — re-running joins against now-absent keys.
+ * Orphans left intact for the resolver's fallback to handle.
  */
 export class TranslateModuleViewerRefsToLocalIds1777300000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -27,10 +15,8 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
     await this.reportOrphans(queryRunner);
   }
 
-  /**
-   * properties.moduleAppId.value: apps.co_relation_id → apps.id, scoped to
-   * the parent app's organization so cross-org cor_id collisions can't bleed.
-   */
+  // Scoped to the parent app's organization to keep cross-org cor_id
+  // collisions from bleeding into each other.
   private async translateModuleAppId(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       UPDATE components AS c
@@ -53,13 +39,8 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
     `);
   }
 
-  /**
-   * properties.moduleVersionId.value: app_versions.module_reference_id → app_versions.id.
-   * Scoped to the same module_app the ModuleViewer points at, so a stray
-   * cross-app collision (very unlikely with UUIDs) can't redirect the pin.
-   * The moduleAppId translation above must run first — by the time we get
-   * here, properties.moduleAppId.value already holds the local apps.id.
-   */
+  // Must run AFTER translateModuleAppId — scopes to the same module the
+  // ModuleViewer points at (which has been translated to local apps.id).
   private async translateModuleVersionId(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       UPDATE components AS c
@@ -79,14 +60,9 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
     `);
   }
 
-  /**
-   * Count and log how many ModuleViewer values still don't match a local row
-   * after translation. These are orphans — values that pre-migration pointed
-   * at a co_relation_id (apps) or module_reference_id (app_versions) that has
-   * no local row in this DB. Resolver fallback handles them at runtime; the
-   * count is purely diagnostic so an operator running migrations against a
-   * real DB has a number to cross-check against expectations.
-   */
+  // Diagnostic count of values that didn't translate (no local row matched
+  // the pre-migration cross-instance key). Resolver fallback still handles
+  // these at runtime; the log gives operators a cross-check number.
   private async reportOrphans(queryRunner: QueryRunner): Promise<void> {
     const [moduleAppOrphans] = await queryRunner.query(`
       SELECT COUNT(*)::int AS count
@@ -112,25 +88,15 @@ export class TranslateModuleViewerRefsToLocalIds1777300000000 implements Migrati
     `);
     const appOrphans = moduleAppOrphans?.count ?? 0;
     const versionOrphans = moduleVersionOrphans?.count ?? 0;
+    const tag = '[TranslateModuleViewerRefsToLocalIds1777300000000]';
     if (appOrphans > 0 || versionOrphans > 0) {
-      console.log(
-        `[TranslateModuleViewerRefsToLocalIds1777300000000] Post-migration orphans: ` +
-          `${appOrphans} ModuleViewer.moduleAppId.value(s) and ${versionOrphans} ` +
-          `moduleVersionId.value(s) point to no local row. Resolver fallback will ` +
-          `render "latest on branch" for these consumers; investigate if the count ` +
-          `is unexpectedly high.`
-      );
+      console.log(`${tag} ${appOrphans} moduleAppId + ${versionOrphans} moduleVersionId orphan(s).`);
     } else {
-      console.log(
-        `[TranslateModuleViewerRefsToLocalIds1777300000000] Post-migration: all ` +
-          `ModuleViewer pin references resolve to local rows.`
-      );
+      console.log(`${tag} all pin references resolve to local rows.`);
     }
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {
-    // Original cor_ids cannot be reconstructed from local ids alone — the
-    // mapping is lossy in this direction. A revert would require snapshotting
-    // every (component_id, original_value) before up(), which isn't worth it.
-  }
+  // down() is intentionally empty — original cor_ids can't be reconstructed
+  // from local ids; reverting would require snapshotting before up().
+  public async down(_queryRunner: QueryRunner): Promise<void> {}
 }

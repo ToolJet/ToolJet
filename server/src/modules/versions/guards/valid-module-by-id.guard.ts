@@ -10,20 +10,9 @@ import { User } from '@entities/user.entity';
 import { AppsRepository } from '@modules/apps/repository';
 import { APP_TYPES } from '@modules/apps/constants';
 
-/**
- * Resolve the module App from the `:moduleAppId` path param and attach it to
- * the request for downstream guards (specifically FeatureAbilityGuard, whose
- * resource-type switch reads `request.tj_app.type`).
- *
- * Without this guard, getModuleVersion hits FeatureAbilityGuard with no tj_app
- * on the request → getResource() returns null → createVersionAbility throws
- * "Unsupported resource type: null" before the service method runs.
- *
- * The path param carries the module's local `apps.id` —
- * `properties.moduleAppId.value` stores local DB ids since the boundary-only
- * refactor (AppSnapshot translates cor_id ↔ local id at every push/pull/import
- * /export). Org scope is enforced for defence in depth.
- */
+// Loads the module App and attaches it to the request so FeatureAbilityGuard's
+// resource-type switch can read `request.tj_app.type`. Without this, that
+// guard throws "Unsupported resource type: null" before the controller runs.
 @Injectable()
 export class ValidModuleByIdGuard implements CanActivate {
   constructor(private readonly appsRepository: AppsRepository) {}

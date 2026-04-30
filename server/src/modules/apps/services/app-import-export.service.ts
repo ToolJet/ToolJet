@@ -455,11 +455,8 @@ export class AppImportExportService {
               .getMany()
           : [];
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
-      // moduleAppId.value and moduleVersionId.value hold local DB ids (apps.id
-      // and app_versions.id respectively) since the boundary-only refactor.
-      // AppSnapshot.export() translates them to co_relation_id at the wire
-      // boundary; the recursive this.export() below runs through that same
-      // translator, so we only need to pass DB ids here.
+      // moduleAppId.value / moduleVersionId.value hold local DB ids; the
+      // recursive this.export() below runs them through AppSnapshot.export().
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
         versionId: moduleComponent.properties?.moduleVersionId?.value,
@@ -578,10 +575,7 @@ export class AppImportExportService {
         }
       });
       delete (appToExport as any).updatedAt;
-      // Run the bundle through AppSnapshot.export() so the strip step
-      // (instance-local field removal: branchId, currentEnvironmentId,
-      // pulledAt, …) is shared with git push. Symmetric to import()'s
-      // entry wiring through AppSnapshot.import().
+      // Same export translator as git push, symmetric to import()'s entry.
       const exportSnapshot = appBundleToSnapshotShape(appToExport);
       const portable = this.appSnapshot.export(exportSnapshot);
       applyResolvedSnapshotToAppBundle(appToExport, portable);
@@ -598,18 +592,13 @@ export class AppImportExportService {
     tooljetVersion: string,
     branchId?: string
   ) {
-    // moduleResourceMappings is kept as a return shape for backwards
-    // compatibility with callers, but both maps inside are now empty —
-    // AppSnapshot.import() (called at the entry of import()) translates
-    // every ModuleViewer.moduleAppId.value reference universally, so
-    // there are no consumers left.
+    // Empty shape kept for caller compat — AppSnapshot.import() at the entry
+    // of import() now does the work these maps used to carry. TODO: drop the
+    // return type once callers no longer destructure it.
     const moduleResourceMappings: {
       moduleApps: Record<string, string>;
       moduleVersions: Record<string, string>;
-    } = {
-      moduleApps: {},
-      moduleVersions: {},
-    };
+    } = { moduleApps: {}, moduleVersions: {} };
 
     if (!appParams?.modules?.length || appParams?.type !== APP_TYPES.FRONT_END) {
       return moduleResourceMappings;
@@ -632,10 +621,8 @@ export class AppImportExportService {
       const moduleId = importedModule?.appV2?.id;
       if (!moduleId) continue;
 
-      // AppSnapshot.import() resolved module.appV2.id to a target-local
-      // id. If a row exists at that id, the module is already in the
-      // workspace (matchOrCreate hit). Otherwise we recursively import
-      // the module's content (alwaysCreate / not-yet-created path).
+      // AppSnapshot.import already resolved appV2.id to a target-local id.
+      // Row exists → matchOrCreate hit; missing → recursive import below.
       const existingModule = await manager.findOne(App, { where: { id: moduleId } });
 
       if (existingModule) {
@@ -731,24 +718,16 @@ export class AppImportExportService {
         throw new BadRequestException('Invalid params for app import');
       }
 
-      // AppSnapshot owns every cor↔local translation. It runs at the
-      // entry of import() and produces a tree where id positions hold
-      // target-local ids and every UUID reference is translated. The
-      // shared corToLocal carried via externalResourceMappings is what
-      // makes recursive imports (mapModulesForAppImport's `this.import()`
-      // for unmatched modules) resolve the same cor to the same local id
-      // at every nesting level.
+      // Run the bundle through AppSnapshot.import — every UUID reference
+      // is translated before any save runs. Shared corToLocal lets recursive
+      // module imports below resolve the same cor to the same local id.
       const externalRefs = externalResourceMappings as
         | { corToLocal?: Map<string, string>; policy?: ResourcePolicy }
         | undefined;
       const corToLocal: Map<string, string> = externalRefs?.corToLocal ?? new Map<string, string>();
       const policy: ResourcePolicy = externalRefs?.policy ?? JSON_IMPORT_POLICY;
       await this.translateBundleViaAppSnapshot(appParams, manager, user.organizationId, policy, corToLocal);
-      // Carry the (now-extended) map forward so the recursive import
-      // chain inherits this call's resolutions.
-      if (externalRefs) {
-        externalRefs.corToLocal = corToLocal;
-      }
+      if (externalRefs) externalRefs.corToLocal = corToLocal;
 
       const moduleResourceMappings = await this.mapModulesForAppImport(
         manager,
@@ -915,11 +894,7 @@ export class AppImportExportService {
       }
     }
 
-    // AppVersion.co_relation_id is intentionally NOT updated here. It is
-    // set at creation time from the imported JSON's co_relation_id (or
-    // appVersion.id for legacy bundles where it wasn't carried). Under the
-    // boundary-only model AppSnapshot exports preserve both id and
-    // co_relation_id; this update path runs after the row already exists.
+    // co_relation_id is set at creation, not updated here.
   }
 
   async updateEntityReferencesForImportedApp(
@@ -2900,10 +2875,9 @@ export class AppImportExportService {
           createdById: user.id,
           co_relation_id: appVersion.co_relation_id ?? appVersion.id ?? null,
           branchId: isWorkflow ? null : branchId,
-          // module_reference_id is @deprecated under the boundary-only model —
-          // cross-instance identity now lives on co_relation_id (set above).
-          // Preserved here for the transition release cycle so older deployments
-          // still see a populated column; Phase 4 drops it. Module-only.
+          // TODO(remove moduleReferenceId): drop this write once consumer
+          // code on older deployments has been upgraded. Cross-instance
+          // identity lives on co_relation_id (set above). Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
@@ -3464,10 +3438,6 @@ export class AppImportExportService {
 
     const moduleAppId = properties.moduleAppId.value;
     try {
-      // moduleAppId.value holds the module's local apps.id since the boundary-only
-      // refactor — AppSnapshot translates cor_id ↔ local at every push/pull/import/
-      // export, so runtime lookups are by primary key. Scope to module type (and
-      // organization when provided) for defence in depth.
       const moduleApp = (await manager.findOne(App, {
         where: {
           id: moduleAppId,

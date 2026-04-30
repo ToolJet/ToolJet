@@ -4,27 +4,8 @@ import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
-/**
- * Module version helpers.
- *
- * A ModuleViewer stores two strings in its component properties:
- *   moduleAppId       — the module's apps.id (local DB id).
- *   moduleVersionId   — the version's app_versions.id (local DB id). Empty
- *                       string signals "unpinned" (follow the consumer's
- *                       current branch).
- *
- * Cross-instance stability comes from AppSnapshot at every boundary
- * (push, pull, JSON export/import, branch-create), which translates these
- * local ids to/from co_relation_id. At runtime — after a pull or import
- * lands rows on this instance — the values held in component JSON are
- * always *this instance's* local ids.
- */
-
-/**
- * UUID guard for ModuleViewer pin values. Used by the runtime resolver to
- * skip Postgres uuid-typed lookups on stale legacy values (version names
- * from pre-rename YAML imports).
- */
+// Guards Postgres uuid-typed lookups against stale legacy non-UUID values
+// (e.g. version names from pre-rename YAML imports).
 export const MODULE_VERSION_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function findDefaultBranch(manager: EntityManager, organizationId: string) {
@@ -51,10 +32,8 @@ async function listSavedVersionsOnDefaultBranch(
   });
 }
 
-/**
- * Consumer-branch draft (if any) plus saved versions on the default branch.
- * A pure branchId filter would drop saved versions on feature branches.
- */
+// Returns consumer-branch draft (if any) plus saved versions on the default
+// branch. A pure branchId filter would drop saved versions on feature branches.
 export async function listModuleVersions(
   manager: EntityManager,
   moduleApp: App,
@@ -75,20 +54,10 @@ export async function listModuleVersions(
   return [branchDraft, ...savedVersions].filter((v): v is AppVersion => !!v);
 }
 
-/**
- * After hydrating a feature-branch AppVersion, inherit pinned moduleVersionId
- * values from the matching component on the default branch. The component JSON
- * committed to git can be stale (the component might still hold an older ref
- * from when the branch was first created), so without this pass the feature
- * branch lands with whatever was last pushed.
- *
- * Match key: component.co_relation_id (matches across the two app_version rows).
- *
- * Policy:
- *   - Only copy when default's value is set (a pinned id) AND differs from feature's.
- *   - A feature-branch component that already has the same id is left alone.
- *   - Empty/missing values on default are skipped (nothing to inherit).
- */
+// After hydrating a feature-branch AppVersion, copy default's current pin onto
+// the matching feature component (matched by component.co_relation_id) — git
+// content is whatever was last pushed and can lag default's intent. Default
+// always wins; feature-branch users don't get sticky pin overrides.
 export async function reconcileModuleViewerPinsFromDefault(
   manager: EntityManager,
   featureBranchVersionId: string,
@@ -145,11 +114,9 @@ export async function reconcileModuleViewerPinsFromDefault(
   for (const feat of featureViewers) {
     if (!feat.co_relation_id) continue;
     const def = defaultByCoRel.get(feat.co_relation_id);
-    if (!def?.moduleVersionId) continue; // nothing to inherit
-    if (feat.moduleVersionId === def.moduleVersionId) continue; // already matches
+    if (!def?.moduleVersionId) continue;
+    if (feat.moduleVersionId === def.moduleVersionId) continue;
 
-    // moduleAppId.value holds the module's local apps.id; org scope lives
-    // on the App row directly, no co_relation_id resolution needed.
     const moduleApp = def.moduleAppId
       ? await manager.findOne(App, {
           where: { id: def.moduleAppId, type: APP_TYPES.MODULE, organizationId },

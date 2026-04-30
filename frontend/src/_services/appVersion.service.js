@@ -49,8 +49,7 @@ function getAppVersionData(appId, versionId, mode) {
 
 function getModuleVersionData(moduleAppId, moduleVersionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  // `ref` is the version's local app_versions.id. Empty/missing → unpinned;
-  // server resolver returns the latest non-stub on the consumer's branch.
+  // Empty/missing ref → unpinned; resolver returns latest non-stub on branch.
   const refParam = moduleVersionId ? `&ref=${encodeURIComponent(moduleVersionId)}` : '';
   return fetch(`${config.apiUrl}/v2/apps/modules/${moduleAppId}/version?mode=${mode}${refParam}`, requestOptions).then(
     handleResponse
