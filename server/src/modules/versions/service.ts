@@ -18,7 +18,8 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
-import { listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { listModuleVersions, MODULE_VERSION_UUID_RE } from './module-ref.util';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -260,20 +261,44 @@ export class VersionService implements IVersionService {
     // Both ids are local DB primary keys — AppSnapshot has already translated
     // cor_id ↔ local at every boundary, so what the frontend sends here is
     // this instance's apps.id and app_versions.id.
-    const moduleApp = await this.versionRepository.manager.findOne(App, {
+    const manager = this.versionRepository.manager;
+    const moduleApp = await manager.findOne(App, {
       where: { id: moduleAppId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
     });
     if (!moduleApp) {
       throw new NotFoundException('Module not found');
     }
 
-    const version = await resolveModuleRef(
-      this.versionRepository.manager,
-      moduleApp,
-      moduleVersionId,
-      branchId,
-      user.organizationId
-    );
+    // Resolve the ModuleViewer pin to an AppVersion row.
+    //   Pinned    moduleVersionId is a UUID + matches a row's id → return it.
+    //   Unpinned  moduleVersionId absent → latest non-stub on consumer's branch
+    //                                      (or default if no branch context).
+    //   Orphaned  moduleVersionId UUID but no row matches → fall back to the
+    //                                                       unpinned path.
+    // The UUID guard prevents `where: { id: <non-uuid> }` from crashing the
+    // postgres uuid-typed lookup on stale legacy values.
+    let version: AppVersion | null = null;
+    if (moduleVersionId && MODULE_VERSION_UUID_RE.test(moduleVersionId)) {
+      version = await manager.findOne(AppVersion, {
+        where: { id: moduleVersionId, appId: moduleApp.id, isStub: false },
+      });
+    }
+    if (!version) {
+      const targetBranchId =
+        branchId ??
+        (
+          await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+          })
+        )?.id;
+      if (targetBranchId) {
+        version = await manager.findOne(AppVersion, {
+          where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
+          order: { createdAt: 'DESC' },
+        });
+      }
+    }
+
     if (!version) {
       // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
       throw new NotFoundException('Module version not found');

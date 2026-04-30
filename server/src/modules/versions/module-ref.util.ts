@@ -5,7 +5,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
 /**
- * Module version resolution.
+ * Module version helpers.
  *
  * A ModuleViewer stores two strings in its component properties:
  *   moduleAppId       — the module's apps.id (local DB id).
@@ -18,23 +18,14 @@ import { APP_TYPES } from '@modules/apps/constants';
  * local ids to/from co_relation_id. At runtime — after a pull or import
  * lands rows on this instance — the values held in component JSON are
  * always *this instance's* local ids.
- *
- * Resolution rules:
- *
- *   value present + matches a row's id          → pinned, prefer consumer's
- *                                                  branch row else default-
- *                                                  branch row
- *   value absent (null/empty)                   → unpinned, latest non-stub
- *                                                  on consumer branch (or
- *                                                  default)
- *   value present but no row matches            → orphaned, fall back to
- *                                                  latest saved on default
- *
- * Resolution is always scoped to the consumer's branchId (from the
- * x-branch-id header). When the request has no branchId — a public-share
- * URL or an embedded viewer without an auth session — the resolver falls
- * back to the default branch.
  */
+
+/**
+ * UUID guard for ModuleViewer pin values. Used by the runtime resolver to
+ * skip Postgres uuid-typed lookups on stale legacy values (version names
+ * from pre-rename YAML imports).
+ */
+export const MODULE_VERSION_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function findDefaultBranch(manager: EntityManager, organizationId: string) {
   return manager.findOne(WorkspaceBranch, {
@@ -82,69 +73,6 @@ export async function listModuleVersions(
       })
     : null;
   return [branchDraft, ...savedVersions].filter((v): v is AppVersion => !!v);
-}
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/**
- * Resolve a ModuleViewer reference to an actual AppVersion row.
- *
- *   moduleVersionId is a valid UUID + matches a row's id → pinned. Prefer the
- *                                                          consumer-branch copy
- *                                                          (post git pull); fall
- *                                                          back to the default-
- *                                                          branch copy.
- *   moduleVersionId absent / not a UUID                  → unpinned. Latest non-
- *                                                          stub on the consumer's
- *                                                          branch (or default).
- *   moduleVersionId is a UUID, no match                  → orphaned. Fall back to
- *                                                          latest saved on the
- *                                                          default branch.
- *
- * The UUID guard prevents `where: { id: <non-uuid> }` from crashing the
- * postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
- */
-export async function resolveModuleRef(
-  manager: EntityManager,
-  moduleApp: App,
-  moduleVersionId: string | null | undefined,
-  consumerBranchId: string | undefined,
-  organizationId: string
-): Promise<AppVersion | null> {
-  if (moduleVersionId && UUID_RE.test(moduleVersionId)) {
-    if (consumerBranchId) {
-      const local = await manager.findOne(AppVersion, {
-        where: {
-          id: moduleVersionId,
-          appId: moduleApp.id,
-          branchId: consumerBranchId,
-          isStub: false,
-        },
-      });
-      if (local) return local;
-    }
-    const defaultBranch = await findDefaultBranch(manager, organizationId);
-    if (defaultBranch) {
-      const onDefault = await manager.findOne(AppVersion, {
-        where: {
-          id: moduleVersionId,
-          appId: moduleApp.id,
-          branchId: defaultBranch.id,
-          isStub: false,
-        },
-      });
-      if (onDefault) return onDefault;
-    }
-    // id present but neither branch had a match — orphan fallback below.
-  }
-
-  // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  const targetBranchId = consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
-  if (!targetBranchId) return null;
-  return manager.findOne(AppVersion, {
-    where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
-    order: { createdAt: 'DESC' },
-  });
 }
 
 /**

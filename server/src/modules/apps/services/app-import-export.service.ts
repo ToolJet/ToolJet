@@ -455,29 +455,15 @@ export class AppImportExportService {
               .getMany()
           : [];
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
+      // moduleAppId.value and moduleVersionId.value hold local DB ids (apps.id
+      // and app_versions.id respectively) since the boundary-only refactor.
+      // AppSnapshot.export() translates them to co_relation_id at the wire
+      // boundary; the recursive this.export() below runs through that same
+      // translator, so we only need to pass DB ids here.
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
-        // moduleVersionId.value holds the version's module_reference_id (uuid),
-        // stable across instances. Empty string signals an unpinned ref.
-        versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
+        versionId: moduleComponent.properties?.moduleVersionId?.value,
       }));
-
-      // moduleAppId.value stores co_relation_id after migration — resolve to real DB ids
-      // so this.export() can fetch the module app correctly.
-      const coRelationIds = moduleAppIds.map((m) => m.moduleId).filter(Boolean);
-      const moduleAppsById: Record<string, string> = {};
-      if (coRelationIds.length > 0) {
-        const resolvedModules = await manager
-          .createQueryBuilder(App, 'app')
-          .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
-          .andWhere('app.organization_id = :organizationId', { organizationId: appToExport.organizationId })
-          .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-          .select(['app.id', 'app.co_relation_id'])
-          .getMany();
-        for (const mod of resolvedModules) {
-          moduleAppsById[mod.co_relation_id] = mod.id;
-        }
-      }
 
       // The parent app is exported branch-scoped (search_params.version_id is set
       // by the push caller), so appVersions is filtered to a single row whose
@@ -491,23 +477,24 @@ export class AppImportExportService {
 
       const moduleApps = [];
       await Promise.all(
-        moduleAppIds.map(async (moduleAppId) => {
-          const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
+        moduleAppIds.map(async (moduleAppRef) => {
+          const moduleAppDbId = moduleAppRef.moduleId;
+          if (!moduleAppDbId) return;
 
           let versionDbId: string | undefined;
-          if (moduleAppId.versionIdentifier && resolvedId) {
-            // PINNED: explicit module_reference_id from the ModuleViewer.
-            const byRefId = await manager.findOne(AppVersion, {
-              where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
+          if (moduleAppRef.versionId) {
+            // PINNED: moduleVersionId.value is a local app_versions.id.
+            const pinned = await manager.findOne(AppVersion, {
+              where: { id: moduleAppRef.versionId, appId: moduleAppDbId },
             });
-            versionDbId = byRefId?.id;
-          } else if (resolvedId && parentBranchId) {
-            // UNPINNED: prefer the module's branch-local row (matches the parent app's
-            // branch). Falls back to the default-branch row to mirror resolveModuleRef's
-            // runtime behavior so unpinned exports stay portable when the parent's
-            // branch lacks a module row (e.g. module added after the branch was created).
+            versionDbId = pinned?.id;
+          } else if (parentBranchId) {
+            // UNPINNED: prefer the module's branch-local row (matches the parent
+            // app's branch). Falls back to the default-branch row so unpinned
+            // exports stay portable when the parent's branch lacks a module row
+            // (e.g. module added after the branch was created).
             const branchRow = await manager.findOne(AppVersion, {
-              where: { appId: resolvedId, branchId: parentBranchId, isStub: false },
+              where: { appId: moduleAppDbId, branchId: parentBranchId, isStub: false },
               order: { createdAt: 'DESC' },
             });
             if (branchRow) {
@@ -518,7 +505,7 @@ export class AppImportExportService {
               });
               if (defaultBranch) {
                 const defaultRow = await manager.findOne(AppVersion, {
-                  where: { appId: resolvedId, branchId: defaultBranch.id, isStub: false },
+                  where: { appId: moduleAppDbId, branchId: defaultBranch.id, isStub: false },
                   order: { createdAt: 'DESC' },
                 });
                 versionDbId = defaultRow?.id;
@@ -526,7 +513,7 @@ export class AppImportExportService {
             }
           }
 
-          moduleApps.push(await this.export(user, resolvedId, { version_id: versionDbId }));
+          moduleApps.push(await this.export(user, moduleAppDbId, { version_id: versionDbId }));
         })
       );
 
@@ -1888,12 +1875,10 @@ export class AppImportExportService {
             newComponent.validation = validation;
             newComponent.parent = component.parent ?? null;
 
-            // ModuleViewer.moduleAppId.value is now translated by
-            // AppSnapshot.import() at the entry of import() — it sweeps
-            // every UUID string in the bundle (including embedded refs in
-            // component property JSON) and rewrites cor → target-local.
-            // moduleVersionId.value is a portable module_reference_id and
-            // never needed rewrite.
+            // ModuleViewer.moduleAppId.value and moduleVersionId.value are
+            // translated by AppSnapshot.import() at the entry of import() — it
+            // sweeps every UUID string in the bundle (including embedded refs
+            // in component property JSON) and rewrites cor → target-local.
             newComponent.properties = properties || {};
 
             newComponent.page = pageCreated;
