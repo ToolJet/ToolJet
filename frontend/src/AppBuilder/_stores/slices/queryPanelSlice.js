@@ -8,6 +8,7 @@ import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
+import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -1560,6 +1561,12 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
+          'setTimeout',
+          'setInterval',
+          'clearTimeout',
+          'clearInterval',
+          'requestAnimationFrame',
+          'cancelAnimationFrame',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
           ...Object.keys(libraryRegistry),
@@ -1578,6 +1585,12 @@ export const createQueryPanelSlice = (set, get) => ({
           deepClone(resolvedState.variables),
           actions,
           resolvedState?.constants,
+          timerRegistry.trackedSetTimeout.bind(timerRegistry),
+          timerRegistry.trackedSetInterval.bind(timerRegistry),
+          timerRegistry.trackedClearTimeout.bind(timerRegistry),
+          timerRegistry.trackedClearInterval.bind(timerRegistry),
+          timerRegistry.trackedRequestAnimationFrame.bind(timerRegistry),
+          timerRegistry.trackedCancelAnimationFrame.bind(timerRegistry),
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
           ...Object.values(libraryRegistry),
