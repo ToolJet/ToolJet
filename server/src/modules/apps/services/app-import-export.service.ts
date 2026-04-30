@@ -50,7 +50,11 @@ import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { AppSnapshot } from '@modules/import-export-resources/app-snapshot/service';
+import {
+  AppSnapshot,
+  JSON_IMPORT_POLICY,
+  ResourcePolicy,
+} from '@modules/import-export-resources/app-snapshot/service';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -840,6 +844,23 @@ export class AppImportExportService {
         throw new BadRequestException('Invalid params for app import');
       }
 
+      // AppSnapshot owns every cor↔local translation. It runs at the
+      // entry of import() and produces a tree where id positions hold
+      // target-local ids and every UUID reference is translated. The
+      // shared corToLocal carried via externalResourceMappings is what
+      // makes recursive imports (mapModulesForAppImport's `this.import()`
+      // for unmatched modules) resolve the same cor to the same local id
+      // at every nesting level.
+      const corToLocal: Map<string, string> =
+        externalResourceMappings?.corToLocal ?? new Map<string, string>();
+      const policy: ResourcePolicy = externalResourceMappings?.policy ?? JSON_IMPORT_POLICY;
+      await this.translateBundleViaAppSnapshot(appParams, manager, user.organizationId, policy, corToLocal);
+      // Carry the (now-extended) map forward so the recursive import
+      // chain inherits this call's resolutions.
+      if (externalResourceMappings && typeof externalResourceMappings === 'object') {
+        externalResourceMappings.corToLocal = corToLocal;
+      }
+
       const moduleResourceMappings = await this.mapModulesForAppImport(
         manager,
         appParams,
@@ -1130,18 +1151,27 @@ export class AppImportExportService {
     isGitApp = false,
     existingAppId?
   ): Promise<App> {
+    if (existingAppId) {
+      const existingApp = await manager.findOne(App, { where: { id: existingAppId } });
+      if (existingApp) return existingApp;
+    }
     return await catchDbException(async () => {
+      // co_relation_id source under the new snapshot shape: prefer the
+      // dedicated co_relation_id field on appParams (populated by
+      // AppSnapshot.import() / pre-existing on rationalize-migrated rows);
+      // fall back to appParams.id only for legacy bundles where the source
+      // local id was the de-facto cor_id.
       const importedApp = manager.create(App, {
         name: appParams.name,
         type: appParams.type || APP_TYPES.FRONT_END,
         isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
-        userId: user.id, //fetch super admin user id for EE
+        userId: user.id,
         slug: null,
         icon: appParams.icon,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
-        co_relation_id: appParams?.id,
+        co_relation_id: appParams?.co_relation_id ?? appParams?.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -1154,6 +1184,34 @@ export class AppImportExportService {
         message: 'This app name is already taken.',
       },
     ]);
+  }
+
+  /**
+   * Translates every cor_id reference in `appParams` to a target-local id
+   * via AppSnapshot, mutating the tree in place. Apps and modules get
+   * matchOrCreate against the workspace by cor_id; data sources and module
+   * apps that aren't in the workspace get fresh local ids per policy.
+   *
+   * The corToLocal map is shared across recursive imports so a module
+   * cor_id appearing both in an outer bundle and as a top-level entity in
+   * a recursive import resolves to the same local id at every nesting
+   * level.
+   */
+  private async translateBundleViaAppSnapshot(
+    appParams: any,
+    manager: EntityManager,
+    organizationId: string,
+    policy: ResourcePolicy,
+    corToLocal: Map<string, string>,
+  ): Promise<void> {
+    const snapshot = appBundleToSnapshotShape(appParams);
+    const resolved = await this.appSnapshot.import(snapshot, {
+      manager,
+      context: { organizationId },
+      policy,
+      corToLocal,
+    });
+    applyResolvedSnapshotToAppBundle(appParams, resolved);
   }
 
   extractImportDataFromAppParams(appParams: Record<string, any>): {
@@ -4292,3 +4350,97 @@ const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds:
     );
   }
 };
+
+// ---------- bundle ↔ AppSnapshot reshape helpers (module-level, pure) ----------
+
+/**
+ * Today's app-import-export bundle has a recursive shape: `appV2` carries
+ * `appVersions[]`, `pages[]`, `components[]`, `dataQueries[]`, etc. as
+ * sibling fields, plus `modules[]` as an array of nested
+ * `{ appV2: {...} }` bundles. AppSnapshot.import() expects a flat
+ * folder-tree. This converts.
+ *
+ * Modules are flattened to their top-level App row only; their inner
+ * content (versions, components, queries) is translated when
+ * `mapModulesForAppImport` recursively invokes `this.import()` on each
+ * module. The shared corToLocal map carries resolutions across nesting.
+ */
+function appBundleToSnapshotShape(appParams: any): Record<string, unknown> {
+  const {
+    appVersions,
+    pages,
+    components,
+    dataQueries,
+    dataSources,
+    modules,
+    events,
+    dataQueryFolders,
+    dataQueryFolderMappings,
+    ...appFields
+  } = appParams ?? {};
+
+  return {
+    apps: appFields,
+    modules: (modules ?? []).map((m: any) => extractAppFields(m?.appV2 ?? m)),
+    versions: appVersions ?? [],
+    pages: pages ?? [],
+    components: components ?? [],
+    queries: dataQueries ?? [],
+    events: events ?? [],
+    dataQueryFolders: dataQueryFolders ?? [],
+    dataQueryFolderMappings: dataQueryFolderMappings ?? [],
+    dataSources: dataSources ?? [],
+  };
+}
+
+/** Mirror of `appBundleToSnapshotShape`'s extraction for nested module bundles. */
+function extractAppFields(appV2: any): any {
+  if (!appV2 || typeof appV2 !== 'object') return {};
+  const {
+    appVersions: _v,
+    pages: _p,
+    components: _c,
+    dataQueries: _dq,
+    dataSources: _ds,
+    modules: _m,
+    events: _e,
+    dataQueryFolders: _dqf,
+    dataQueryFolderMappings: _dqfm,
+    ...rest
+  } = appV2;
+  return rest;
+}
+
+/**
+ * Mutates `appParams` in place with the resolved values from
+ * AppSnapshot.import(). The translation already rewrote every UUID
+ * reference (FK fields, embedded refs, template strings) to target-local
+ * ids; the mutation just propagates the resolved tree back to the bundle
+ * shape downstream code consumes.
+ */
+function applyResolvedSnapshotToAppBundle(appParams: any, resolved: Record<string, unknown>): void {
+  if (!appParams || !resolved) return;
+  Object.assign(appParams, resolved.apps ?? {});
+  appParams.appVersions = resolved.versions ?? [];
+  appParams.pages = resolved.pages ?? [];
+  appParams.components = resolved.components ?? [];
+  appParams.dataQueries = resolved.queries ?? [];
+  appParams.events = resolved.events ?? [];
+  appParams.dataQueryFolders = resolved.dataQueryFolders ?? [];
+  appParams.dataQueryFolderMappings = resolved.dataQueryFolderMappings ?? [];
+  appParams.dataSources = resolved.dataSources ?? [];
+
+  // Modules: only their top-level App row was translated (the
+  // outer call's `policy.modules` lookup). Each module's inner content
+  // (versions, components, …) gets translated when `mapModulesForAppImport`
+  // recursively invokes `this.import()` on the module bundle.
+  const resolvedModules = (resolved.modules ?? []) as any[];
+  if (Array.isArray(appParams.modules) && resolvedModules.length === appParams.modules.length) {
+    for (let i = 0; i < appParams.modules.length; i++) {
+      const moduleBundle = appParams.modules[i];
+      if (moduleBundle?.appV2) {
+        Object.assign(moduleBundle.appV2, resolvedModules[i]);
+      }
+    }
+  }
+}
