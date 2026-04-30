@@ -15,10 +15,11 @@ To establish a connection with the Snowflake data source, you can either click o
 
 Authenticates to Snowflake using a username and password to establish a direct connection with the specified account, role, and warehouse.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth.png" alt="ToolJet - Snowflake connection" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth-dynamic-conn.png" alt="ToolJet - Snowflake connection" />
 
 :::info
-Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+- ToolJet also allows you to dynamically override connection values (like database, schema, role, etc.) at runtime instead of using fixed configurations.
+- Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 
 You can find snowflake docs on network policies **[here](https://docs.snowflake.com/en/user-guide/network-policies.html)**.
 :::
@@ -216,13 +217,93 @@ Modify existing row values in the selected table based on the specified conditio
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Required Parameters
+#### Required Parameter
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
-#### Optional Parameters
+#### Optional Parameter
 - **Filter**: Apply conditions to identify which row(s) should be updated.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/update-rows-gui.png" alt="Snowflake update rows gui" />
+
+### Delete Rows
+Removes either all rows from the table or that match the specified filter conditions.
+
+#### Optional Parameter
+- **Filter**: Specifies conditions to determine which rows should be deleted from the table.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/delete-rows-gui.png" alt="Snowflake delete rows gui" />
+
+### Upsert Rows
+Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
+
+#### Required Parameters
+- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/upsert-rows-gui.png" alt="Snowflake upsert rows gui" />
+
+### Bulk Insert
+Inserts multiple rows into the table in a single operation using an array of records.
+
+#### Required Parameter
+- **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  { "id": 101, "firstname": "John", "email": "john.doe@example.com", "age": 28 },
+  { "id": 102, "firstname": "Alice", "email": "alice.smith@example.com", "age": 32 },
+  { "id": 103, "firstname": "Bob", "email": "bob.johnson@example.com", "age": 25 },
+  { "id": 104, "firstname": "Emma", "email": "emma.brown@example.com", "age": 30 }
+]
+```
+</details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-insert-gui.png" alt="Snowflake bulk insert gui" />
+
+### Bulk Update using Primary Key
+Updates multiple rows at once by matching each record with its corresponding primary key.
+
+#### Required Parameters
+- **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
+- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  { "id": 101, "firstname": "John Doe", "age": 29 },
+  { "id": 102, "firstname": "Alice Smith", "age": 33 },
+  { "id": 103, "firstname": "Bob Johnson", "age": 26 },
+  { "id": 104, "firstname": "Emma Brow", "age": 30 }
+]  
+```
+</details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-update-gui.png" alt="Snowflake bulk update gui" />
+
+### Bulk Upsert using Primary Key
+Inserts new rows or updates existing rows in bulk based on matching primary key values.
+
+#### Required Parameters
+- **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
+- **Records to Upsert**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+
+This basically means If the row exists then update, if not do insert. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  { "id": 101, "firstname": "John Michael", "age": 30 },
+  { "id": 105, "firstname": "Taylor", "email": ""taylor@example.com, "age": 27 },
+  { "id": 106, "firstname": "Wilson", "email": ""wilson@example.com, "age": 35 }
+]
+```
+</details>
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-upsert-gui.png" alt="Snowflake bulk update gui" />
 
 :::tip
 Query results can be transformed using transformations. Read our [transformations](/docs/app-builder/custom-code/transform-data) documentation to learn more.
