@@ -21,7 +21,7 @@ jobs:
         runs-on: ubuntu-22.04
 
         if: contains(github.event.pull_request.labels.*.name,
-            'run-cypress-marketplace-ee')
+            'run-cypress-marketplace-ee-vpn')
 
         strategy:
             fail-fast: false
