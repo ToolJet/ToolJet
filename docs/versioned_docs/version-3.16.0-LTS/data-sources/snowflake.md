@@ -297,8 +297,8 @@ This basically means If the row exists then update, if not do insert.
 ```json
 [
   { "id": 101, "firstname": "John Michael", "age": 30 },
-  { "id": 105, "firstname": "Taylor", "email": ""taylor@example.com, "age": 27 },
-  { "id": 106, "firstname": "Wilson", "email": ""wilson@example.com, "age": 35 }
+  { "id": 105, "firstname": "Taylor", "email": "taylor@example.com", "age": 27 },
+  { "id": 106, "firstname": "Wilson", "email": "wilson@example.com", "age": 35 }
 ]
 ```
 </details>
