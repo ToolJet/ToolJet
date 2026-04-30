@@ -34,7 +34,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -293,19 +292,7 @@ export class VersionService implements IVersionService {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
 
-      // Module save-as-version (DRAFT → PUBLISHED): mint a fresh module_reference_id
-      // so the saved version owns its own logical identity, distinct from any feature-
-      // branch BRANCH rows that share mref via the source draft's lineage.
-      const isModuleSaveAsVersion =
-        app.type === APP_TYPES.MODULE &&
-        appVersion.status === AppVersionStatus.DRAFT &&
-        appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED;
-
       await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
-
-      if (isModuleSaveAsVersion) {
-        await manager.update(AppVersion, { id: appVersion.id }, { moduleReferenceId: uuid() });
-      }
 
       return appVersion;
     });
