@@ -1,6 +1,7 @@
 import {
   BOX_PADDING,
   CONTAINER_FORM_CANVAS_PADDING,
+  HIDDEN_COMPONENT_HEIGHT,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
@@ -441,8 +442,14 @@ export const resolveContainerHeight = ({
   //
   // Listview row-context retains `rowHeight` (set above) as its floor so the
   // non-dynamic row still matches the configured row size.
+  //
+  // Accordion is excluded: its expand/collapse pull-up must not depend on
+  // the dynamicHeight toggle. The non-dynamic expanded path is still honored
+  // downstream via skipContentHeightCalculation in getExtraContainerHeight,
+  // and the collapsed path (header height only) needs to run for siblings to
+  // pull up.
   const gatedComponent = getResolvedComponent(componentId, context);
-  if (gatedComponent?.properties?.dynamicHeight === false) {
+  if (gatedComponent?.properties?.dynamicHeight === false && componentType !== 'Accordion') {
     return containerHeight;
   }
 
@@ -739,10 +746,20 @@ export const getBlockers = ({
     // keep the canonical floor as a safety net; dropping it universally
     // destabilized nested Listview contexts where template widgets at
     // non-native contexts legitimately report different heights.
-    const measuredHeight =
-      candidateId === changedComponentId
-        ? Math.max(candidateLayout?.height ?? 0, resolvedHeights?.[candidateId] ?? 0)
-        : Math.max(candidateLayout?.height ?? 0, candidateCanonical?.height ?? 0, resolvedHeights?.[candidateId] ?? 0);
+    //
+    // Accordion blockers (whether or not they're the current pass's
+    // changed widget) also skip the canonical floor — a previously-
+    // collapsed accordion has temp height = headerHeight, well below
+    // canonical, and flooring at canonical would re-inflate it, pushing
+    // downstream siblings past their correct collapsed position when
+    // an unrelated widget triggers reflow. Accordion's own
+    // resolveContainerHeight already floors at canonical when expanded,
+    // so trusting the temp here only takes effect for collapsed state.
+    const candidateComponentType = currentPageComponents?.[candidateId]?.component?.component;
+    const skipCanonicalFloor = candidateId === changedComponentId || candidateComponentType === 'Accordion';
+    const measuredHeight = skipCanonicalFloor
+      ? Math.max(candidateLayout?.height ?? 0, resolvedHeights?.[candidateId] ?? 0)
+      : Math.max(candidateLayout?.height ?? 0, candidateCanonical?.height ?? 0, resolvedHeights?.[candidateId] ?? 0);
     const currentTop = candidateLayout?.top ?? candidateCanonical?.top ?? 0;
     const currentFlowHeight = isInFlow ? measuredHeight : 0;
 
@@ -802,6 +819,7 @@ export const buildReflowPatch = ({
   contextIndices,
   inFlowMap,
   resolvedHeights,
+  collapseWhenHiddenMap,
 }) => {
   const sortedComponentIds = sortByCanonicalPosition(componentIds, currentLayout, currentPageComponents);
   const connectedIds = getConnectedLaneComponentIds(
@@ -891,10 +909,31 @@ export const buildReflowPatch = ({
     }
     const totalOutOfFlowSlot = Array.from(slotSize.values()).reduce((sum, s) => sum + s, 0);
 
+    // Sum of Accordion shrinkage (canonical − current) for in-flow Accordion
+    // blockers above target. An Accordion can legitimately render below its
+    // authored height when collapsed; without this, the `collapsedCanonical`
+    // floor below would inflate T's resting position back to its canonical
+    // top, ignoring the collapsed accordion(s) above it. Restricted to
+    // Accordion to keep Listview-row template heights (which can also drift
+    // from canonical in nested contexts) from accidentally compressing the
+    // floor.
+    const totalAccordionShrinkage = blockers.reduce((sum, blocker) => {
+      if (!blocker.isInFlow) return sum;
+      const blockerComponentType = currentPageComponents?.[blocker.id]?.component?.component;
+      if (blockerComponentType !== 'Accordion') return sum;
+      const currentHeight = blocker.currentBottom - blocker.currentTop;
+      const canonicalHeight = blocker.canonicalLayout?.height ?? 0;
+      const shrinkage = canonicalHeight - currentHeight;
+      return shrinkage > 0 ? sum + shrinkage : sum;
+    }, 0);
+
     // Collapsed canonical: where T would sit at rest, with out-of-flow widgets
-    // above it taking zero space. This is the baseline we use when T has no
-    // prior temp layout (e.g., initial mount with an already-hidden blocker).
-    const collapsedCanonical = Math.max(0, targetTopCanonical - totalOutOfFlowSlot);
+    // above it taking zero space AND in-flow collapsed Accordions contributing
+    // only their current (header-only) height. This is the baseline we use
+    // when T has no prior temp layout (e.g., initial mount with an already-
+    // hidden blocker), and it's also the floor for `otherMax` so the in-flow
+    // blocker loop doesn't inflate T past its true resting position.
+    const collapsedCanonical = Math.max(0, targetTopCanonical - totalOutOfFlowSlot - totalAccordionShrinkage);
 
     // Baseline for delta propagation: existing temp if present (captures any
     // prior push/pull), otherwise the collapsed canonical (captures hide-
@@ -949,7 +988,21 @@ export const buildReflowPatch = ({
         const v = blockers[vi];
         if (!v.isInFlow) continue;
         hasInFlowBlocker = true;
-        const vCanonicalBottom = (v.canonicalLayout?.top ?? 0) + (v.canonicalLayout?.height ?? 0);
+        const vCanonicalTop = v.canonicalLayout?.top ?? 0;
+        const vCanonicalBottom = vCanonicalTop + (v.canonicalLayout?.height ?? 0);
+        // Canonical-overlap correction (scoped to collapse-on-hide blockers
+        // only — the dynamic-height grow/shrink path keeps its original
+        // canonical math). When V opted into collapseWhenHidden AND target's
+        // canonical top sits above V's canonical bottom, the only way the
+        // author could draw that overlap is by placing T below V's
+        // HIDDEN_COMPONENT_HEIGHT placeholder. Without this, canonicalGap
+        // goes negative on V's show transition and pins T inside V; with it,
+        // the gap reflects what the user actually drew against the placeholder.
+        const blockerOptedIntoCollapse = collapseWhenHiddenMap?.[v.id] === true;
+        const vCanonicalBottomForGap =
+          blockerOptedIntoCollapse && targetTopCanonical < vCanonicalBottom
+            ? vCanonicalTop + HIDDEN_COMPONENT_HEIGHT
+            : vCanonicalBottom;
         let subtraction = 0;
         for (const [uid, slot] of slotSize) {
           const uTop = outOfFlowTopsById.get(uid) ?? 0;
@@ -957,15 +1010,18 @@ export const buildReflowPatch = ({
             subtraction += slot;
           }
         }
-        // In-flow delta: the CHANGED widget's current-vs-canonical height
-        // delta, if it's canonically between V and T. Accounts for the case
-        // where an upstream blocker V (like a Title) pins T at its authored
-        // position even though the changed widget W between them shrunk
-        // (e.g., Accordion collapsed) — subtract W's shrinkage from V's
-        // effective gap to T. Kept narrow (only the changed widget) to
+        // In-flow delta: subtract any in-flow Accordion (or the current pass's
+        // changed widget) sitting canonically between V and T whose current
+        // rendered height differs from canonical. Accounts for the case where
+        // an upstream blocker V (like a Title) would pin T at its authored
+        // position even though a widget W between them shrunk (e.g., an
+        // Accordion that's collapsed in temp from a prior pass). Without this,
+        // V's canonical gap to T overstates the real gap once W has shrunk.
+        //
+        // Restricted to (a) the changed widget and (b) Accordion blockers to
         // avoid affecting blocker math for unrelated widgets whose temp
-        // heights might legitimately differ from canonical in nested
-        // contexts (e.g., Listview row templates).
+        // heights legitimately differ from canonical in nested contexts (e.g.,
+        // Listview row templates).
         //
         // The vertical-sandwich check (wTop >= vCanonicalBottom &&
         // wTop < targetTopCanonical) mirrors the out-of-flow slot
@@ -978,14 +1034,16 @@ export const buildReflowPatch = ({
         for (let wi = vi + 1; wi < blockers.length; wi++) {
           const w = blockers[wi];
           if (!w.isInFlow) continue;
-          if (w.id !== changedComponentId) continue;
+          const wComponentType = currentPageComponents?.[w.id]?.component?.component;
+          const isShrinkableBlocker = w.id === changedComponentId || wComponentType === 'Accordion';
+          if (!isShrinkableBlocker) continue;
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
           const wCurrentHeight = w.currentBottom - w.currentTop;
           const wCanonicalHeight = w.canonicalLayout?.height ?? 0;
           inFlowDelta += wCurrentHeight - wCanonicalHeight;
         }
-        const canonicalGap = targetTopCanonical - vCanonicalBottom - subtraction;
+        const canonicalGap = targetTopCanonical - vCanonicalBottomForGap - subtraction;
         const constraint = v.currentBottom + canonicalGap + inFlowDelta;
         if (constraint > otherMax) otherMax = constraint;
       }

@@ -12,6 +12,7 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -102,6 +103,7 @@ export const ButtonGroupV2 = (props) => {
   const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
