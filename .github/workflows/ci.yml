@@ -32,8 +32,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      # On push events, paths-filter compares HEAD~1 (needs fetch-depth: 2).
-      # On pull_request events, it compares against the PR base branch.
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -48,12 +46,17 @@ jobs:
               - 'marketplace/**'
 
   # ---------------------------------------------------------------------------
-  # 2. Lint jobs — parallel, no build dependency
+  # 2. Build-check jobs — lint + build per folder
+  #    Plugins runs first (produces artifact), then server + frontend in parallel
   # ---------------------------------------------------------------------------
-  lint-server:
+  build-plugins:
+    name: 'Lint & Build · plugins'
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.server == 'true'
+    if: >-
+      needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.plugins == 'true'
+      || needs.detect-changes.outputs.frontend == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
@@ -61,37 +64,6 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'server/package-lock.json'
-      - run: npm ci --prefix server
-      - run: npm run --prefix server lint
-
-  lint-frontend:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: |
-            frontend/package-lock.json
-            plugins/package-lock.json
-      - run: npm ci --prefix plugins
-      - run: npm ci --prefix frontend
-      - run: npm run --prefix frontend lint
-
-  lint-plugins:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.plugins == 'true'
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -99,43 +71,6 @@ jobs:
           cache-dependency-path: 'plugins/package-lock.json'
       - run: npm ci --prefix plugins
       - run: npm run --prefix plugins lint
-
-  lint-marketplace:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.marketplace == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'marketplace/package-lock.json'
-      - run: npm ci --prefix marketplace
-      - run: npm run --prefix marketplace lint
-
-  # ---------------------------------------------------------------------------
-  # 3. Build plugins — when server/ or plugins/ changed (needed for migrations)
-  # ---------------------------------------------------------------------------
-  build-plugins:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: >-
-      needs.detect-changes.outputs.server == 'true'
-      || needs.detect-changes.outputs.plugins == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Checkout EE submodules
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          git submodule update --init --recursive
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'plugins/package-lock.json'
-      - run: npm ci --prefix plugins
       - run: npm run --prefix plugins build
       - uses: actions/upload-artifact@v4
         with:
@@ -150,15 +85,86 @@ jobs:
           compression-level: 1
           retention-days: 1
 
+  build-server:
+    name: 'Lint & Build · server'
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-plugins, build-marketplace]
+    if: needs.detect-changes.outputs.server == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
+      - run: npm ci --prefix server
+      - run: npm run --prefix server lint
+      - run: npm run --prefix server build
+
+  build-frontend:
+    name: 'Lint & Build · frontend'
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-plugins, build-marketplace]
+    if: needs.detect-changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci --prefix frontend
+      - run: npm run --prefix frontend lint
+      - run: npm run --prefix frontend build
+
+  build-marketplace:
+    name: 'Lint & Build · marketplace'
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.marketplace == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'marketplace/package-lock.json'
+      - run: npm ci --prefix marketplace
+      - run: ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint
+      - run: npm run --prefix marketplace build
+
   # ---------------------------------------------------------------------------
-  # 4. Test jobs
+  # 3. Test jobs — need plugins build artifact
   # ---------------------------------------------------------------------------
   test-server-unit:
+    name: 'Test Suite · server-unit'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [detect-changes, build-plugins]
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
     if: needs.detect-changes.outputs.server == 'true'
-    # Keep container image version in sync with .nvmrc
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -167,6 +173,13 @@ jobs:
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 3s
           --health-timeout 3s
           --health-retries 5
@@ -186,6 +199,8 @@ jobs:
       TOOLJET_DB_HOST: postgres
       TOOLJET_DB_PORT: 5432
       TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     steps:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
@@ -205,18 +220,21 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
-      # db:create and db:migrate need NODE_ENV unset — ormconfig disables
-      # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - run: npm run --prefix server test
 
   test-server-e2e:
+    name: 'Test Suite · server-e2e'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [detect-changes, build-plugins]
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
     if: needs.detect-changes.outputs.server == 'true'
-    # Keep container image version in sync with .nvmrc
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -225,6 +243,13 @@ jobs:
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 3s
           --health-timeout 3s
           --health-retries 5
@@ -244,6 +269,11 @@ jobs:
       TOOLJET_DB_HOST: postgres
       TOOLJET_DB_PORT: 5432
       TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
@@ -260,60 +290,73 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
-      # db:create and db:migrate need NODE_ENV unset — ormconfig disables
-      # schema migrations when NODE_ENV=test. Tests set NODE_ENV themselves.
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
-      - run: npm run --prefix server test:e2e -- --ci --testTimeout=20000
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: |
-            frontend/package-lock.json
-            plugins/package-lock.json
-      - run: npm ci --prefix plugins
-      - run: npm ci --prefix frontend
-      - run: npm run --prefix frontend test -- --ci --passWithNoTests
+      - run: npm run --prefix server test:e2e -- --testTimeout=60000
 
   # ---------------------------------------------------------------------------
-  # 5. Gate — single required status check, removes label, posts PR comment
+  # 4. Cypress E2E — reusable workflows, run after server tests pass
+  # ---------------------------------------------------------------------------
+  cypress-platform:
+    name: 'Test Suite · cypress-platform'
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/cypress-platform.yml
+    with:
+      edition: 'ee'
+    secrets: inherit
+
+  cypress-marketplace:
+    name: 'Test Suite · cypress-marketplace'
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-server
+      - build-frontend
+      - build-marketplace
+    if: needs.detect-changes.outputs.marketplace == 'true'
+    uses: ./.github/workflows/cypress-marketplace.yml
+    with:
+      edition: 'ee'
+    secrets: inherit
+
+  # ---------------------------------------------------------------------------
+  # 5. Gate — aggregates results, posts PR comment, removes label
   # ---------------------------------------------------------------------------
   ci-gate:
+    name: 'Gate'
     runs-on: ubuntu-latest
     if: always()
     needs:
       - detect-changes
-      - lint-server
-      - lint-frontend
-      - lint-plugins
-      - lint-marketplace
+      - build-server
+      - build-frontend
       - build-plugins
+      - build-marketplace
       - test-server-unit
       - test-server-e2e
-      - test-frontend
+      - cypress-platform
+      - cypress-marketplace
     steps:
       - name: Evaluate results
         id: eval
         run: |
-          # If detect-changes was skipped (no run-ci label on PR), gate passes
           if [[ "${{ needs.detect-changes.result }}" == "skipped" ]]; then
             echo "CI was not triggered (no run-ci label). Gate passes."
             echo "verdict=skip" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # If detect-changes itself failed, gate must fail
           if [[ "${{ needs.detect-changes.result }}" == "failure" ]]; then
             echo "::error::detect-changes failed — CI infrastructure broken"
             echo "verdict=fail" >> "$GITHUB_OUTPUT"
@@ -322,14 +365,14 @@ jobs:
 
           failed=false
           results=(
-            "lint-server:${{ needs.lint-server.result }}"
-            "lint-frontend:${{ needs.lint-frontend.result }}"
-            "lint-plugins:${{ needs.lint-plugins.result }}"
-            "lint-marketplace:${{ needs.lint-marketplace.result }}"
+            "build-server:${{ needs.build-server.result }}"
+            "build-frontend:${{ needs.build-frontend.result }}"
             "build-plugins:${{ needs.build-plugins.result }}"
+            "build-marketplace:${{ needs.build-marketplace.result }}"
             "test-server-unit:${{ needs.test-server-unit.result }}"
             "test-server-e2e:${{ needs.test-server-e2e.result }}"
-            "test-frontend:${{ needs.test-frontend.result }}"
+            "cypress-platform:${{ needs.cypress-platform.result }}"
+            "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
           )
 
           for entry in "${results[@]}"; do
@@ -360,16 +403,7 @@ jobs:
             }
 
             const sha = (context.payload.pull_request?.head?.sha || context.sha || '').slice(0, 7);
-            const jobs = [
-              { name: 'lint-server',       result: '${{ needs.lint-server.result }}' },
-              { name: 'lint-frontend',     result: '${{ needs.lint-frontend.result }}' },
-              { name: 'lint-plugins',      result: '${{ needs.lint-plugins.result }}' },
-              { name: 'lint-marketplace',  result: '${{ needs.lint-marketplace.result }}' },
-              { name: 'build-plugins',     result: '${{ needs.build-plugins.result }}' },
-              { name: 'test-server-unit',  result: '${{ needs.test-server-unit.result }}' },
-              { name: 'test-server-e2e',   result: '${{ needs.test-server-e2e.result }}' },
-              { name: 'test-frontend',     result: '${{ needs.test-frontend.result }}' },
-            ];
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const icon = (r) => {
               if (r === 'success')   return ':white_check_mark:';
@@ -379,24 +413,42 @@ jobs:
               return ':grey_question:';
             };
 
-            const rows = jobs.map(j => `| ${j.name} | ${icon(j.result)} ${j.result} |`).join('\n');
+            // Lint & Build row — combine all build-* results inline
+            const checks = [
+              { name: 'server',      result: '${{ needs.build-server.result }}' },
+              { name: 'plugins',     result: '${{ needs.build-plugins.result }}' },
+              { name: 'frontend',    result: '${{ needs.build-frontend.result }}' },
+              { name: 'marketplace', result: '${{ needs.build-marketplace.result }}' },
+            ];
+            const checkStatus = checks.map(c => `${icon(c.result)} ${c.name}`).join(' · ');
+
+            // Test rows
+            const unitResult = '${{ needs.test-server-unit.result }}';
+            const e2eResult = '${{ needs.test-server-e2e.result }}';
+
+            // Cypress rows
+            const cypressPlatformResult = '${{ needs.cypress-platform.result }}';
+            const cypressMarketplaceResult = '${{ needs.cypress-marketplace.result }}';
+
             const verdict = '${{ steps.eval.outputs.verdict }}';
             const verdictLine = verdict === 'pass'
               ? ':white_check_mark: **All checks passed**'
               : ':x: **Failed** — fix issues and re-add `run-ci` label';
 
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
-              `## CI Results — [\`${sha}\`](${runUrl})`,
+              `### CI — [\`${sha}\`](${runUrl})`,
               '',
-              '| Job | Status |',
-              '|-----|--------|',
-              rows,
+              '| Step | Status |',
+              '|------|--------|',
+              `| **Lint & Build** | ${checkStatus} |`,
+              `| **Unit Tests** | ${icon(unitResult)} ${unitResult} |`,
+              `| **E2E Tests** | ${icon(e2eResult)} ${e2eResult} |`,
+              `| **Cypress — Platform** | ${icon(cypressPlatformResult)} ${cypressPlatformResult} |`,
+              `| **Cypress — Marketplace** | ${icon(cypressMarketplaceResult)} ${cypressMarketplaceResult} |`,
               '',
               verdictLine,
             ].join('\n');
 
-            // Upsert: find existing CI comment and update it, or create new
             const marker = '<!-- ci-gate-comment -->';
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,

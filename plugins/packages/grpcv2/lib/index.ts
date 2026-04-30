@@ -77,7 +77,10 @@ export default class Grpcv2QueryService implements QueryService {
           break;
 
         case 'import_proto_file': {
-          const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
+          if (!sourceOptions.proto_file_url) {
+            throw new GrpcOperationError('Proto file URL is required when proto_files is set to import_proto_file.');
+          }
+          const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url);
           const grpcObject = grpc.loadPackageDefinition(packageDefinition);
           services = extractServicesFromGrpcPackage(grpcObject);
           break;

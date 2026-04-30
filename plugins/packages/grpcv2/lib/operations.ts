@@ -117,7 +117,11 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
 
 export const buildProtoFileClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
+    if (!sourceOptions.proto_file_url) {
+      throw new GrpcOperationError('Proto file URL is required to build a proto-file gRPC client.');
+    }
+
+    const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url);
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
 
     const service = findServiceInPackage(grpcObject, serviceName);

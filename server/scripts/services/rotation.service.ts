@@ -135,7 +135,7 @@ export class DualKeyEncryptionService {
     aesgcm.setAuthTag(auth_tag);
 
     // Decrypt
-    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    const plainText = aesgcm.update(ciphertext).toString() + aesgcm.final().toString();
 
     return plainText;
   }

@@ -1,6 +1,12 @@
 name: Cypress Marketplace
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
   workflow_run:
     workflows: ["CI"]
     types: [completed]
@@ -23,7 +29,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     if: >-
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+      inputs.edition
+      || contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
       || (github.event_name == 'workflow_run'
         && github.event.workflow_run.conclusion == 'success'
         && github.event.workflow_run.event == 'pull_request'

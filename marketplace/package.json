@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start:watch": "lerna run watch --stream --parallel",
-    "build": "npm run build --workspaces",
+    "build": "lerna run build",
     "start:dev": "npm run build && npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint .  '**/*.ts'",

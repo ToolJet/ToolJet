@@ -37,7 +37,7 @@ export class EncryptionService implements IEncryptionService {
 
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);
-    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    const plainText = aesgcm.update(ciphertext).toString() + aesgcm.final().toString();
 
     return plainText;
   }
