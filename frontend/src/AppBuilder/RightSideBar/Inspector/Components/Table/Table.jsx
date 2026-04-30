@@ -44,6 +44,7 @@ const getColumnTypeDisplayText = (columnType) => {
     boolean: 'Boolean',
     select: 'Select',
     newMultiSelect: 'Multiselect',
+    tagsV2: 'Tags',
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
@@ -443,6 +444,7 @@ export const Table = (props) => {
     'loadingState',
     'showBulkUpdateActions',
     'visibility',
+    'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
   ];

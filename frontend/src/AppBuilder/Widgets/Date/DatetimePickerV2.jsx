@@ -57,6 +57,7 @@ import {
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const DatetimePickerV2 = ({
   height,
@@ -137,6 +138,7 @@ export const DatetimePickerV2 = ({
   );
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(

@@ -21,7 +21,7 @@ const selectTriggerVariants = cva(
     // Resets (preflight is off — browser adds outset border on buttons)
     'tw-appearance-none tw-outline-none tw-border-solid',
     // Base tokens (mirrors Input)
-    'tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-elevation-000',
+    'tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-none',
     'data-[placeholder]:tw-text-text-placeholder',
     // Chevron icon colour
     '[&>svg]:tw-text-icon-default [&>svg]:tw-opacity-100',
@@ -83,6 +83,10 @@ const SelectItem = forwardRef(function SelectItem({ className, ...props }, ref) 
         // Move check indicator from right → left
         '[&>span:first-child]:tw-left-2 [&>span:first-child]:tw-right-auto',
         '[&>span:first-child_svg]:tw-text-text-brand',
+        // Allow Radix's ItemText (the second span child) to shrink below its
+        // intrinsic content width — flex children otherwise default to
+        // min-width: auto, blocking truncation primitives inside.
+        '[&>span:nth-child(2)]:tw-min-w-0',
         className
       )}
       {...props}

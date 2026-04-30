@@ -62,7 +62,13 @@ export const buildTableColumn = (
       accessorKey: 'selection',
       enableSorting: false,
       enableResizing: false,
-      meta: { columnType: 'selector', skipExport: true, skipFilter: true, skipAddNewRow: true },
+      meta: {
+        columnType: 'selector',
+        skipExport: true,
+        skipFilter: true,
+        skipAddNewRow: true,
+        pinPosition: 'unpinned',
+      },
       size: 40,
       header: ({ table }) =>
         showBulkSelector ? (
