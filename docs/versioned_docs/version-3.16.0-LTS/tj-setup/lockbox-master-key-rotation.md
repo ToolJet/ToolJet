@@ -3,10 +3,7 @@ id: lockbox-master-key-rotation
 title: Lockbox Master Key Rotation
 ---
 
-<div className="badge badge--self-hosted">
-  <span>Self Hosted</span>
-</div>
-
+<PlanBadge type="self-hosted" />
 
 This guide explains how to securely rotate the `LOCKBOX_MASTER_KEY` in your self-hosted ToolJet deployment.
 

@@ -3,9 +3,7 @@ id: whitelist-cdn-domains
 title: Whitelist CDN Domains
 ---
 
-<div className="badge badge--self-hosted">   
- <span>Self Hosted</span>
-</div>
+<PlanBadge type="self-hosted" />
 
 You can import an external library in of your preference to extend your app's functionality. ToolJet supports [jsDelivr](https://www.jsdelivr.com/) and [Skypack](https://www.skypack.dev/) by default but you can load any other library by simply whitelisting the CDN URL. Learn how to import libraries using CDNs by following our [Importing External Libraries](/docs/how-to/use-axios-in-runjs) guide.
 
