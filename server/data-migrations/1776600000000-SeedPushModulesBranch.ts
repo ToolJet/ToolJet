@@ -58,6 +58,11 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
         }
         progress.show();
       }
+
+      // 1776470400000 created this staging table to pass module origin
+      // branch_ids across the migration boundary. Drop it now that all orgs
+      // have been processed.
+      await em.query(`DROP TABLE IF EXISTS module_origin_branch_staging`);
     } finally {
       await nestApp.close();
     }
@@ -112,6 +117,34 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
         /* stampModuleReferenceId */ true
       );
       if (orgGit) await this.ensureAppGitSyncRow(em, moduleApp, orgGit.id);
+    }
+
+    // Step 1b: restore module BRANCH presence on each module's origin feature
+    // branch. 1776470400000 captured these origins before normalizing the
+    // VERSION-row branch_id to default. Cloning here means users who created
+    // a module on a feature branch still see it when opening that branch.
+    // cloneVersionToBranch is idempotent — if a BRANCH row already exists on
+    // the origin branch, this is a no-op.
+    const originRows: Array<{ app_id: string; origin_branch_id: string }> = await em.query(
+      `SELECT mobs.app_id, mobs.origin_branch_id
+       FROM module_origin_branch_staging mobs
+       JOIN apps a ON a.id = mobs.app_id
+       WHERE a.organization_id = $1`,
+      [defaultBranch.organizationId]
+    );
+    for (const { app_id, origin_branch_id } of originRows) {
+      const moduleApp = modules.find((m) => m.id === app_id);
+      if (!moduleApp) continue;
+      const originBranch = await em.findOne(WorkspaceBranch, { where: { id: origin_branch_id } });
+      if (!originBranch) continue;
+      await this.cloneVersionToBranch(
+        em,
+        versionsCreate,
+        moduleApp,
+        originBranch,
+        defaultBranch.organizationId,
+        /* stampModuleReferenceId */ true
+      );
     }
 
     // Step 2: seed a push-modules BRANCH version for non-module apps that contain
