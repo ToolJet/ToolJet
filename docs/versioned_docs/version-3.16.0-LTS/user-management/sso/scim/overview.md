@@ -3,17 +3,7 @@ id: overview
 title: Overview
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
-</div>
+<PlanBadge type="enterprise" />
 
 System for Cross-domain Identity Management (**SCIM**) enables automated user and group provisioning for enterprise customers. With SCIM, identity providers (IdPs) like Okta can automatically create, update, deactivate, and sync users in ToolJet, removing the need for manual user management.
 

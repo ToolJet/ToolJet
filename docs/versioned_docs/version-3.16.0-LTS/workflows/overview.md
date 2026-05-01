@@ -3,13 +3,7 @@ id: overview
 title: Overview
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-
-<div className="badge badge--self-hosted heading-badge" >   
- <span>Self Hosted</span>
-</div>
-
-</div>
+<PlanBadge type="self-hosted" />
 
 ToolJet Workflows enable users to create complex, data-centric automations using a visual, node-based interface. They are designed to streamline repetitive tasks, organize multi-step operations, and make internal tools smarter and more efficient.
 

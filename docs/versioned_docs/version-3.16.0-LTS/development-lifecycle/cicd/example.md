@@ -3,15 +3,7 @@ id: example
 title: Enable CI/CD with Jenkins
 ---
 
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+<PlanBadge type="enterprise" />
 
 In modern software development, teams often rely on CI/CD tools like **GitHub Actions**, **Jenkins**, **GitLab CI**, and **CircleCI** to automate application testing, version control, and deployments. These tools help enforce consistency across instances, reduce manual overhead, and improve release cycles by introducing automation at every stage of the software delivery process.
 
