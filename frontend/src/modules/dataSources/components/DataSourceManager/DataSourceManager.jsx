@@ -415,6 +415,9 @@ class DataSourceManagerComponent extends React.Component {
       case 'googlesheetsv2': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'bigquery': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
       default:
         return true;
     }

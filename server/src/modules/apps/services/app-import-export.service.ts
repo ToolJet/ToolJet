@@ -228,24 +228,46 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
 
 const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
+  'Button',
+  'ButtonGroupV2',
+  'Checkbox',
   'CodeEditor',
+  'ColorPicker',
   'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'DropdownV2',
+  'EmailInput',
   'Form',
+  'Image',
   'JSONEditor',
   'JSONExplorer',
   'KeyValuePair',
   'Listview',
   'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'RadioButtonV2',
   'RichTextEditor',
+  'StarRating',
   'Table',
   'Tabs',
   'TagsInput',
   'Text',
   'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
   'TreeSelect',
 ];
 
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+
+const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -3370,6 +3392,10 @@ function migrateProperties(
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
+    properties.maxLimit = { value: '' };
   }
 
   if (!tooljetVersion) {

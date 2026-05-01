@@ -9,6 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import './colorpicker.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import { SketchPicker } from 'react-color';
 import { getTinyColorInstance, getExposedColorState } from './utils';
 
@@ -76,6 +77,7 @@ export const ColorPicker = (props) => {
   );
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   const updateValidationState = (selectedColorHex) => {
     const nextValidationStatus = validate(selectedColorHex || null);

@@ -13,6 +13,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 
 import './styles.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const DatePickerV2 = ({
   height,
@@ -54,6 +55,7 @@ export const DatePickerV2 = ({
     defaultValue ? getSelectedTimestampFromUnixTimestamp(unixTimestamp) : null
   );
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
