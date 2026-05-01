@@ -25,7 +25,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
     const dataSourcePermissions = userPermissions[MODULES.GLOBAL_DATA_SOURCE];
-    const isAllUsableConfigurable = dataSourcePermissions?.isAllConfigurable || dataSourcePermissions?.isAllUsable;
+    const isAllUsableConfigurable = dataSourcePermissions.isAllConfigurable || dataSourcePermissions.isAllUsable;
+    const canPerformCreateOrDelete = userPermissions.dataSourceCreate || userPermissions.dataSourceDelete;
     const isSuperAdmin = userPermissions.isSuperAdmin;
     const isAdmin = userPermissions.isAdmin;
 
@@ -112,19 +113,25 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
 
-      const canSeeAll = isSuperAdmin || isAdmin || isAllUsableConfigurable || userPermissions.dataSourceDelete;
-      if (!canSeeAll) {
-        query.andWhere(
-          new Brackets((qb) => {
-            qb.where('data_source.id IN (:...dsIds)', {
-              dsIds: [
-                null,
-                ...dataSourcePermissions.usableDataSourcesId,
-                ...dataSourcePermissions.configurableDataSourceId,
-              ],
-            });
-          })
-        );
+      if ((!isSuperAdmin || !isAdmin) && !isAllUsableConfigurable) {
+        if (!canPerformCreateOrDelete) {
+          query.andWhere(
+            new Brackets((qb) => {
+              qb.where('data_source.id IN (:...dsIds)', {
+                dsIds: [
+                  null,
+                  ...dataSourcePermissions.usableDataSourcesId,
+                  ...dataSourcePermissions.configurableDataSourceId,
+                ],
+              });
+              // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
+              // if (appVersionId) {
+              //   query.leftJoin('data_source.dataQueries', 'data_queries');
+              //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+              // }
+            })
+          );
+        }
       }
 
       query
@@ -140,10 +147,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       }
       if (useBranchPath || branchId) {
         // Filter: DS must have at least a DSV (branch-specific or default fallback)
-        // Static data sources don't have DSV entries, so always allow them through                                                                                                              
-         query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {                                                                                                               
-           staticType: DataSourceTypes.STATIC,                                                                                                                                                    
-         }); 
+        // Static data sources don't have DSV entries, so always allow them through
+        query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
+          staticType: DataSourceTypes.STATIC,
+        });
       }
       let result: DataSource[];
       let rawResults: any[] = [];
