@@ -112,7 +112,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
 
-      if (!isSuperAdmin && !isAdmin && !isAllUsableConfigurable) {
+      const canSeeAll = isSuperAdmin || isAdmin || isAllUsableConfigurable || userPermissions.dataSourceDelete;
+      if (!canSeeAll) {
         query.andWhere(
           new Brackets((qb) => {
             qb.where('data_source.id IN (:...dsIds)', {
