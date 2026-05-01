@@ -49,7 +49,12 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/dock
 mv .env.internal.example .env && ./internal.sh
 ```
 
-`internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for postgreSQL database.
+`internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for PostgreSQL database.
+
+:::note
+- Only modify the `.env` file if needed.
+- Do NOT edit `.env.internal.example` as it is only a reference template.
+:::
 
 3. To start the docker container, use the following command:
 
@@ -57,9 +62,42 @@ mv .env.internal.example .env && ./internal.sh
 docker-compose up -d
 ```
 
+:::note
+You do NOT need to run `docker compose build` when using prebuilt images.
+
+If you see `No services to build`, this is expected and not an error.
+:::
+
+### Common issue: PostgreSQL password authentication failed
+
+If you encounter the following error:
+
+```
+FATAL: password authentication failed for user "postgres"
+```
+
+This usually happens because Docker volumes persist old database credentials.
+
+Ensure that the PostgreSQL password used by the container and the application match.
+
+For example:
+- `POSTGRES_PASSWORD` (used by PostgreSQL container)
+- `PG_PASS` / `TOOLJET_DB_PASS` (used by ToolJet)
+
+These values should be the same in the `.env` file.
+
+To fix this issue, reset the containers and volumes:
+
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+This will recreate the PostgreSQL database with the updated credentials from the `.env` file.
+
 4. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
-Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
+Also, for setting up additional environment variables in the `.env` file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
@@ -74,6 +112,14 @@ ii. Setup docker to run without root privileges by following the instructions wr
 
 iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
 `sudo docker-compose up -d`
+
+iv. If you are using Windows, ensure that the `.env` file uses LF (Line Feed) line endings instead of CRLF.
+
+In VS Code:
+- Open `.env`
+- Click `CRLF` in bottom-right corner
+- Change it to `LF`
+- Save the file
 :::
 
 ### Docker Backup (Only For In-Built PostgreSQL)
@@ -124,6 +170,12 @@ mv .env.external.example .env && ./external.sh
 ```
 
 4. To start the docker container, use the following command:
+
+:::info
+Make sure you run this command **in the same directory where your `docker-compose.yaml` file exists**.
+
+You can open a terminal in that folder (for example using VS Code terminal).
+:::
 
 ```bash
 docker-compose up -d
