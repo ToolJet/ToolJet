@@ -25,10 +25,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
     const dataSourcePermissions = userPermissions[MODULES.GLOBAL_DATA_SOURCE];
-    const isAllUsableConfigurable = dataSourcePermissions.isAllConfigurable || dataSourcePermissions.isAllUsable;
-    const canPerformCreateOrDelete = userPermissions.dataSourceCreate || userPermissions.dataSourceDelete;
+    const isAllUsableConfigurable = dataSourcePermissions?.isAllConfigurable || dataSourcePermissions?.isAllUsable;
     const isSuperAdmin = userPermissions.isSuperAdmin;
-    const isAdmin = userPermissions.isSuperAdmin;
+    const isAdmin = userPermissions.isAdmin;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
@@ -113,25 +112,18 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
 
-      if ((!isSuperAdmin || !isAdmin) && !isAllUsableConfigurable) {
-        if (!canPerformCreateOrDelete) {
-          query.andWhere(
-            new Brackets((qb) => {
-              qb.where('data_source.id IN (:...dsIds)', {
-                dsIds: [
-                  null,
-                  ...dataSourcePermissions.usableDataSourcesId,
-                  ...dataSourcePermissions.configurableDataSourceId,
-                ],
-              });
-              // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
-              // if (appVersionId) {
-              //   query.leftJoin('data_source.dataQueries', 'data_queries');
-              //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
-              // }
-            })
-          );
-        }
+      if (!isSuperAdmin && !isAdmin && !isAllUsableConfigurable) {
+        query.andWhere(
+          new Brackets((qb) => {
+            qb.where('data_source.id IN (:...dsIds)', {
+              dsIds: [
+                null,
+                ...dataSourcePermissions.usableDataSourcesId,
+                ...dataSourcePermissions.configurableDataSourceId,
+              ],
+            });
+          })
+        );
       }
 
       query
