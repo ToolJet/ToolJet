@@ -20,6 +20,8 @@ import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { v4 as uuid } from 'uuid';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -64,7 +66,7 @@ export class VersionUtilService implements IVersionUtilService {
     return obj && typeof obj === 'object';
   }
 
-  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
+  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
     const editableParams = {};
 
     const { globalSettings, homePageId, pageSettings, name } = appVersion;
@@ -105,7 +107,11 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
-    await this.versionRepository.update(appVersion.id, editableParams);
+    if (manager) {
+      await manager.update(AppVersion, { id: appVersion.id }, editableParams);
+    } else {
+      await this.versionRepository.update(appVersion.id, editableParams);
+    }
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -196,6 +202,7 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
+          ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
         })
       );
@@ -225,6 +232,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
+      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
       const results = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -232,14 +240,20 @@ export class VersionUtilService implements IVersionUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = :versionId", { versionId })
+        .andWhere(
+          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') = :versionId
+           OR EXISTS (
+             SELECT 1 FROM app_versions av
+             WHERE av.id::text = :versionId
+               AND (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.name
+           )`,
+          { versionId }
+        )
         .getRawMany();
 
       const appNames = results.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
-        throw new BadRequestException(
-          `Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`
-        );
+        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`);
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -248,36 +262,198 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
+  async checkDraftModulesInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
     try {
+      // Unpinned ModuleViewers (empty moduleVersionId.value) drift to whatever's latest on the
+      // module's branch — never a stable target — so block before the resolution JOIN runs.
+      const unpinnedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'apps',
+          'mod_app',
+          `mod_app.co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+           AND mod_app.type = 'module'
+           AND mod_app.organization_id = :orgId`,
+          { orgId: organizationId }
+        )
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere(`COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '') = ''`)
+        .getRawMany();
+
+      if (unpinnedModules.length > 0) {
+        const formatUnpinned = (m: { moduleName: string }) =>
+          `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`;
+        const unpinnedList = unpinnedModules.map(formatUnpinned).join(' ');
+        const unpinnedMessage =
+          unpinnedModules.length === 1
+            ? `Save blocked - ${formatUnpinned(unpinnedModules[0])}`
+            : `Save blocked - ${unpinnedModules.length} modules need saving. ${unpinnedList}`;
+        throw new BadRequestException({
+          message: { error: unpinnedMessage, details: unpinnedList },
+        });
+      }
+
+      // moduleVersionId.value stores one of:
+      //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
+      //      TODO: migrate existing rows to version names so this case can be dropped.
+      //   2. version name — pinned; scoped to version_type='version' + module's co_relation_id.
+      //   3. branch name — unpinned; resolved to the module's default-branch version row.
+      //   4. module_reference_id — stable UUID stored by the frontend since commit 4e8c6ada30
+      //      (replaced version name as the pinned identifier for cross-instance portability).
+      // A DRAFT resolved row means the module needs saving before the parent can save/promote.
       const draftModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
         .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin('app_versions', 'mod_ver',
-          "mod_ver.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+                 AND organization_id = :orgId
+             )
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+                 AND organization_id = :orgId
+             )
+           )
+           OR (
+             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+             AND mod_ver.version_type = 'version'
+           )`,
+          { orgId: organizationId }
+        )
         .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
         .select('DISTINCT mod_app.name', 'moduleName')
         .addSelect('mod_ver.name', 'versionName')
+        .addSelect(`component.properties::jsonb -> 'moduleVersionId' ->> 'value'`, 'rawRef')
         .where('component.type = :type', { type: 'ModuleViewer' })
         .andWhere('appVersion.id = :versionId', { versionId })
         .andWhere('mod_ver.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT })
         .getRawMany();
 
       if (draftModules.length > 0) {
-        const moduleList = draftModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        // Unpinned refs get "save on main" guidance; matching refs are pinned-to-draft.
+        const formatEntry = (m: { moduleName: string; versionName: string; rawRef: string }) =>
+          m.rawRef !== m.versionName
+            ? `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`
+            : `Module "${m.moduleName}" version "${m.versionName}" is still in draft. Save the module first.`;
+        const moduleList = draftModules.map(formatEntry).join(' ');
         const message =
           draftModules.length === 1
-            ? `Save blocked - Module "${draftModules[0].moduleName} (${draftModules[0].versionName})" is still in draft. Save the module first.`
-            : `Save blocked - ${draftModules.length} modules are still in draft. Save them first.`;
+            ? `Save blocked - ${formatEntry(draftModules[0])}`
+            : `Save blocked - ${draftModules.length} modules need saving. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Draft modules: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check draft modules in app', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions');
+    }
+  }
+
+  async checkModulesPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      // 4-case moduleVersionId resolution — see checkDraftModulesInApp for the cases.
+      // LEFT JOIN on app_environments so a module version with no current_environment_id
+      // (rare, legacy) also blocks promote — null priority is treated as "below target".
+      const unpromotedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'app_versions',
+          'mod_ver',
+          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+                 AND organization_id = :orgId
+             )
+           )
+           OR (
+             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
+             )
+             AND mod_ver.version_type = 'version'
+             AND mod_ver.branch_id = (
+               SELECT id FROM organization_git_sync_branches
+               WHERE is_default = true AND organization_id = :orgId
+             )
+             AND mod_ver.app_id IN (
+               SELECT id FROM apps
+               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+                 AND type = 'module'
+                 AND organization_id = :orgId
+             )
+           )
+           OR (
+             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
+             AND mod_ver.version_type = 'version'
+           )`,
+          { orgId: organizationId }
+        )
+        .leftJoin('app_environments', 'mod_env', 'mod_env.id = mod_ver.current_environment_id')
+        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .addSelect('mod_ver.name', 'versionName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere('(mod_env.priority IS NULL OR mod_env.priority < :targetPriority)', { targetPriority })
+        .getRawMany();
+
+      if (unpromotedModules.length > 0) {
+        const moduleList = unpromotedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+        const message =
+          unpromotedModules.length === 1
+            ? `Promotion blocked - Module "${unpromotedModules[0].moduleName} (${unpromotedModules[0].versionName})" hasn't been promoted to ${targetEnvironmentName} yet.`
+            : `Promotion blocked - ${unpromotedModules.length} dependent modules haven't been promoted to ${targetEnvironmentName} yet.`;
+        throw new BadRequestException({
+          message: { error: message, details: `Modules not promoted to ${targetEnvironmentName}: ${moduleList}` },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check module environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions for promote');
     }
   }
 
