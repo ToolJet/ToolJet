@@ -5,6 +5,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { toast } from 'react-hot-toast';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -14,25 +15,22 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
  * - Feature Branch: "Commit" - Opens git sync modal to commit changes
  */
 const LifecycleCTAButton = () => {
-  const { moduleId, isModuleEditor } = useModuleContext();
+  const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed, isGitSyncConfigured } =
-    useStore(
-      (state) => ({
-        selectedVersion: state.selectedVersion,
-        toggleGitSyncModal: state.toggleGitSyncModal,
-        creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
-        featureAccess: state?.license?.featureAccess,
-        isEditorFreezed: state.isEditorFreezed,
-        isGitSyncConfigured: state.isGitSyncConfigured,
-      }),
-      shallow
-    );
+  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isGitSyncConfigured } = useStore(
+    (state) => ({
+      selectedVersion: state.selectedVersion,
+      toggleGitSyncModal: state.toggleGitSyncModal,
+      creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
+      featureAccess: state?.license?.featureAccess,
+      isGitSyncConfigured: state.isGitSyncConfigured,
+    }),
+    shallow
+  );
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
-  // Git sync banners not applicable for modules
-  if (!isGitSyncEnabled || isModuleEditor) {
+  if (!isGitSyncEnabled) {
     return null;
   }
 
@@ -41,6 +39,8 @@ const LifecycleCTAButton = () => {
   // For per-app branching: fall back to versionType check
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const wsActions = useWorkspaceBranchesStore((state) => state.actions);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
@@ -82,8 +82,17 @@ const LifecycleCTAButton = () => {
   };
 
   const config = getButtonConfig();
-  const handleClick = () => {
-    // Open the git sync modal (which has pull/push tabs)
+  const handleClick = async () => {
+    // Guard Commit button on feature branches — check remote branch still exists
+    if (!isOnDefaultBranch && isGitSyncConfigured && workspaceActiveBranch?.name) {
+      const existsOnRemote = await wsActions.checkBranchExistsOnRemote(workspaceActiveBranch.name);
+      if (!existsOnRemote) {
+        toast.error(
+          'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+        );
+        return;
+      }
+    }
     toggleGitSyncModal(creationMode);
   };
 

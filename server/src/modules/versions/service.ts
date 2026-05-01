@@ -1,7 +1,9 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -17,6 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
+import { listModuleVersions, resolveModuleRef } from './module-ref.util';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -124,7 +127,10 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    const result = await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+    const result =
+      app.type === APP_TYPES.MODULE
+        ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
+        : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
@@ -220,8 +226,8 @@ export class VersionService implements IVersionService {
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
         appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
       }
-      // Modules are common across all branches — git sync freeze does not apply
-      if (appGit && app.type !== 'module') {
+      // Modules are branch-scoped like apps — same git-sync freeze applies.
+      if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
@@ -242,21 +248,55 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
-    // need to add freeze version logic here
-    // need to add freeze version logic here
     return response;
+  }
+
+  async getVersionByStableIds(
+    coRelationId: string,
+    moduleReferenceId: string | undefined,
+    user: User,
+    mode?: string,
+    branchId?: string
+  ): Promise<any> {
+    // co_relation_id is only unique per-org — multiple orgs can share one after a git-origin clone.
+    const moduleApp = await this.versionRepository.manager.findOne(App, {
+      where: { co_relation_id: coRelationId, type: APP_TYPES.MODULE, organizationId: user.organizationId },
+      order: { createdAt: 'ASC' },
+    });
+    if (!moduleApp) {
+      throw new NotFoundException('Module not found');
+    }
+
+    const version = await resolveModuleRef(
+      this.versionRepository.manager,
+      moduleApp,
+      moduleReferenceId,
+      branchId,
+      user.organizationId
+    );
+    if (!version) {
+      // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
+      throw new NotFoundException('Module version not found');
+    }
+    moduleApp.appVersions = [version];
+    return this.getVersion(moduleApp, user, mode);
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
-    const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
+    const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
 
-    if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
-      await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, this.versionRepository.manager);
-    }
+      if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
+        await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+      }
 
-    await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+      await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);
+
+      return appVersion;
+    });
+
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     } else if (

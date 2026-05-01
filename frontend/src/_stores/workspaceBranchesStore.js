@@ -1,7 +1,13 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import { getActiveBranch, setActiveBranch, cleanupStaleBranchKeys } from '@/_helpers/active-branch';
+import {
+  getActiveBranch,
+  setActiveBranch,
+  cleanupStaleBranchKeys,
+  registerBranchFocusSync,
+  unregisterBranchFocusSync,
+} from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -13,6 +19,8 @@ const initialState = {
   isPushing: false,
   isPulling: false,
   remoteBranches: [],
+  isDeletingBranch: false,
+  deleteBranchError: null,
 };
 
 // Helper to resolve current branch from branches list + active ID
@@ -48,17 +56,18 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
-            // Prefer localStorage branch over server-returned activeBranchId
+            // Prefer sessionStorage branch over server-returned activeBranchId
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
-            // Persist resolved branch to localStorage
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,
@@ -76,7 +85,7 @@ export const useWorkspaceBranchesStore = create(
           try {
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
-            // Prefer localStorage branch over server default
+            // Prefer sessionStorage branch over server default
             const storedBranch = getActiveBranch();
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
@@ -106,6 +115,19 @@ export const useWorkspaceBranchesStore = create(
         async deleteBranch(branchId) {
           await workspaceBranchesService.deleteBranch(branchId);
           await get().actions.fetchBranches();
+        },
+
+        async deleteWorkspaceBranch(branchId) {
+          set({ isDeletingBranch: true, deleteBranchError: null });
+          try {
+            await workspaceBranchesService.deleteBranch(branchId);
+            set({ isDeletingBranch: false });
+            return { success: true };
+          } catch (err) {
+            const message = err?.error || err?.message || 'Failed to delete branch';
+            set({ isDeletingBranch: false, deleteBranchError: message });
+            throw err;
+          }
         },
 
         async pushWorkspace(commitMessage, targetBranch) {
@@ -149,7 +171,17 @@ export const useWorkspaceBranchesStore = create(
           return await workspaceBranchesService.checkForUpdates(branch);
         },
 
+        async checkBranchExistsOnRemote(branchName) {
+          const remoteBranches = await workspaceBranchesService.listRemoteBranches();
+          return (remoteBranches || []).some((b) => b.name === branchName);
+        },
+
+        resetDeleteState() {
+          set({ isDeletingBranch: false, deleteBranchError: null });
+        },
+
         reset() {
+          unregisterBranchFocusSync();
           set(initialState);
         },
 
@@ -167,10 +199,12 @@ export const useWorkspaceBranchesStore = create(
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
 
+            // Persist resolved branch to sessionStorage
             if (currentBranch) {
               setActiveBranch(currentBranch);
             }
 
+            registerBranchFocusSync();
             set({
               branches,
               activeBranchId: currentBranch?.id || effectiveActiveBranchId,

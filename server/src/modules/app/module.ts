@@ -77,6 +77,7 @@ import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { WorkspaceContextModule } from '@modules/workspace-context/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -156,6 +157,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
       await BackgroundProcessorModule.register(configs, true),
+      await WorkspaceContextModule.register(configs, true),
     ];
 
     const conditionalImports = [];
