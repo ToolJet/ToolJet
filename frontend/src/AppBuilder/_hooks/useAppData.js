@@ -402,7 +402,7 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (setConversation && setDocsConversation) {
+        if (!moduleMode && setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
@@ -451,16 +451,17 @@ const useAppData = (
           moduleId
         );
 
+        const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (
-          !moduleMode &&
           state?.prompt &&
           !promptSentRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
+          (conversation?.aiConversationMessages || []).length === 0 &&
+          (liveMessages || []).length === 0
         ) {
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          sendMessage(state.prompt);
+          sendMessage(state.prompt, {}, {}, moduleId);
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
           const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
