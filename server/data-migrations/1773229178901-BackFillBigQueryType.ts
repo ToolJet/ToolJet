@@ -5,16 +5,17 @@ export class BackFillBigQueryType1773229178901 implements MigrationInterface {
     // All existing BigQuery datasources used service_account auth (the only
     // option before OAuth was introduced). Backfill the authentication_type
     // so the plugin can branch correctly without fallback.
-    await queryRunner.query(`
-      UPDATE data_source_options
-      SET "options" = (
-        "options"::jsonb || '{"authentication_type": {"value": "service_account", "encrypted": false}}'::jsonb
-      )::json
-      FROM data_sources ds
-      WHERE ds.id = data_source_id
-        AND ds.kind = 'bigquery'
-        AND NOT ("options"::jsonb ? 'authentication_type')
-    `);
+    // Uncomment on next release
+    // await queryRunner.query(`
+    //   UPDATE data_source_options
+    //   SET "options" = (
+    //     "options"::jsonb || '{"authentication_type": {"value": "service_account", "encrypted": false}}'::jsonb
+    //   )::json
+    //   FROM data_sources ds
+    //   WHERE ds.id = data_source_id
+    //     AND ds.kind = 'bigquery'
+    //     AND NOT ("options"::jsonb ? 'authentication_type')
+    // `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
