@@ -351,16 +351,19 @@ export default class RestapiQueryService implements QueryService {
     }
 
     if (process.env.NODE_EXTRA_CA_CERTS) {
-      'https' in httpsParams
-        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
-            ...tls.rootCertificates,
-            readFileSync(process.env.NODE_EXTRA_CA_CERTS),
-          ]))
-        : (httpsParams = {
-            https: {
-              certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
-            },
-          });
+      if ('https' in httpsParams) {
+        const existingCAs: string[] = httpsParams.https?.certificateAuthority ?? [];
+        httpsParams.https.certificateAuthority = existingCAs.concat([
+          ...tls.rootCertificates,
+          readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+        ]);
+      } else {
+        httpsParams = {
+          https: {
+            certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+          },
+        };
+      }
     }
 
     return httpsParams;
