@@ -60,11 +60,12 @@ export class AppsUtilService implements IAppsUtilService {
     branchId?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const isWorkflow = type === APP_TYPES.WORKFLOW;
       const app = await catchDbException(() => {
         return manager.save(
           manager.create(App, {
             type,
-            name,
+            name: isWorkflow ? name : null,
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
@@ -278,10 +279,10 @@ export class AppsUtilService implements IAppsUtilService {
       app = await this.appRepository.findById(slug, organizationId);
       if (!app) {
         /* UUID could also be a slug, try slug lookup as fallback */
-        app = await this.appRepository.findBySlug(slug, organizationId);
+        app = await this.appRepository.findBySlug(slug, organizationId, undefined, branchId);
       }
     } else {
-      app = await this.appRepository.findBySlug(slug, organizationId);
+      app = await this.appRepository.findBySlug(slug, organizationId, undefined, branchId);
     }
 
     if (!app) {
@@ -341,22 +342,39 @@ export class AppsUtilService implements IAppsUtilService {
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
+    const branchId = appUpdateDto.branch_id;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
-    const updatableParams = {
-      name,
-      slug,
-      isPublic,
+    const isWorkflow = app.type === 'workflow';
+
+    // Version-level fields (for non-workflows, written to app_versions)
+    const versionParams: Record<string, any> = {};
+    if (!isWorkflow) {
+      if (slug !== undefined) versionParams.slug = slug;
+      if (name !== undefined) versionParams.appName = name;
+      if (icon !== undefined) versionParams.icon = icon;
+      if (isPublic !== undefined) versionParams.isPublic = isPublic;
+    }
+
+    // App-level fields (always written to apps table)
+    const appParams: Record<string, any> = {
       isMaintenanceOn,
       currentVersionId,
-      icon,
       appBuilderMode,
     };
+    // For workflows, all fields stay on apps table
+    if (isWorkflow) {
+      appParams.name = name;
+      appParams.slug = slug;
+      appParams.isPublic = isPublic;
+      appParams.icon = icon;
+    }
 
-    // removing keys with undefined values
-    cleanObject(updatableParams);
+    cleanObject(appParams);
+    cleanObject(versionParams);
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (updatableParams.currentVersionId) {
+      if (appParams.currentVersionId) {
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
@@ -365,10 +383,10 @@ export class AppsUtilService implements IAppsUtilService {
           organizationId
         );
 
-        /* 
-        Allow version release only if the environment is on 
-        production with a valid license or 
-        expired license and development environment (priority no.1) (CE rollback) 
+        /*
+        Allow version release only if the environment is on
+        production with a valid license or
+        expired license and development environment (priority no.1) (CE rollback)
         */
 
         if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
@@ -409,18 +427,50 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      if (updatableParams.slug) {
+      // Slug conflict check — query app_versions for non-workflows
+      if (versionParams.slug && !isWorkflow) {
+        const conflictingVersion = await manager.findOne(AppVersion, {
+          where: {
+            slug: versionParams.slug,
+            branchId: branchId || undefined,
+            appId: Not(appId),
+          },
+        });
+        if (conflictingVersion) {
+          throw new BadRequestException('This slug is already taken on this branch.');
+        }
+      } else if (isWorkflow && appParams.slug) {
         const conflictingApp = await manager.findOne(App, {
-          where: { slug: updatableParams.slug, organizationId, id: Not(appId) },
+          where: { slug: appParams.slug, organizationId, id: Not(appId) },
         });
         if (conflictingApp) {
           await manager.update(App, conflictingApp.id, { slug: conflictingApp.id });
         }
       }
 
-      return await catchDbException(async () => {
-        return await manager.update(App, appId, updatableParams);
-      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+      // Write version-level fields to app_versions for non-workflows
+      if (Object.keys(versionParams).length > 0 && !isWorkflow) {
+        const versionCondition: Record<string, any> = { appId };
+        if (branchId) {
+          versionCondition.branchId = branchId;
+        } else {
+          versionCondition.versionType = Not(AppVersionType.BRANCH);
+        }
+
+        await catchDbException(async () => {
+          await manager.update(AppVersion, versionCondition, versionParams);
+        }, [
+          { dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE, message: 'This app name is already taken.' },
+          { dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE, message: 'This slug is already taken.' },
+        ]);
+      }
+
+      // Write app-level fields to apps table
+      if (Object.keys(appParams).length > 0) {
+        return await catchDbException(async () => {
+          return await manager.update(App, appId, appParams);
+        }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+      }
     }, manager);
   }
 

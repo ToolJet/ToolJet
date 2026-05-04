@@ -146,11 +146,14 @@ function importApp(app, name) {
 }
 
 function changeIcon(icon, appId) {
+  const body = { icon };
+  const branchId = getActiveBranchId();
+  if (branchId) body.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ icon }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
 }
@@ -175,6 +178,8 @@ function getAppByVersion(appId, versionId) {
 }
 
 function saveApp(id, attributes, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) attributes.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
@@ -192,11 +197,14 @@ function getAppUsers(id) {
 }
 
 function setVisibility(appId, visibility) {
+  const body = { app: { is_public: visibility } };
+  const branchId = getActiveBranchId();
+  if (branchId) body.app.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ app: { is_public: visibility } }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/public`, requestOptions).then(handleResponse);
 }
@@ -212,11 +220,14 @@ function setMaintenance(appId, value) {
 }
 
 function setSlug(appId, slug) {
+  const body = { app: { slug: slug } };
+  const branchId = getActiveBranchId();
+  if (branchId) body.app.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ app: { slug: slug } }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }

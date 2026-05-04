@@ -46,10 +46,21 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
     query.leftJoin('folder_apps.app', 'app');
 
+    if (branchId) {
+      query.leftJoin('app_versions', 'av_search', 'av_search.app_id = app.id AND av_search.branch_id = :searchBranchId', { searchBranchId: branchId });
+    }
+
     if (searchKey) {
-      query.andWhere('LOWER(app.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-      });
+      if (branchId) {
+        query.andWhere('(LOWER(av_search.app_name) LIKE :searchKey OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))', {
+          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+          workflowType: APP_TYPES.WORKFLOW,
+        });
+      } else {
+        query.andWhere('LOWER(app.name) like :searchKey', {
+          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+        });
+      }
     }
 
     query
@@ -139,9 +150,16 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }
 
     if (searchKey) {
-      query.andWhere('LOWER(apps.name) LIKE :searchKey', {
-        searchKey: `%${searchKey.toLowerCase()}%`,
-      });
+      if (branchId) {
+        query.andWhere('(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))', {
+          searchKey: `%${searchKey.toLowerCase()}%`,
+          workflowType: APP_TYPES.WORKFLOW,
+        });
+      } else {
+        query.andWhere('LOWER(apps.name) LIKE :searchKey', {
+          searchKey: `%${searchKey.toLowerCase()}%`,
+        });
+      }
     }
 
     return query;
@@ -164,7 +182,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
           id: folder.id,
         })
-        .where('LOWER(app.name) LIKE :name', { name: `%${(searchKey ?? '').toLowerCase()}%` })
+        .leftJoin('app_versions', 'av_folder', 'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId', { folderBranchId: branchId || null })
+        .where(
+          branchId
+            ? '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
+            : 'LOWER(app.name) LIKE :name',
+          { name: `%${(searchKey ?? '').toLowerCase()}%`, ...(branchId ? { workflowType: APP_TYPES.WORKFLOW } : {}) }
+        )
         .getMany();
 
       const userPermission = await this.abilityService.resourceActionsPermission(user, {

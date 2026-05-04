@@ -98,6 +98,7 @@ export class AppsService implements IAppsService {
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
+      if (branchId) appUpdateDto.branch_id = branchId;
       await this.appsUtilService.update(app, appUpdateDto, user.organizationId, manager);
 
       //APP_CREATE audit
@@ -706,6 +707,20 @@ export class AppsService implements IAppsService {
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
+
+      // Validate slug uniqueness against other released apps (non-workflow only)
+      if (app.type !== 'workflow' && releasedVersion?.slug) {
+        const conflictingReleasedApp = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .innerJoin('apps', 'a', 'a.current_version_id = av.id')
+          .where('av.slug = :slug', { slug: releasedVersion.slug })
+          .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
+          .andWhere('a.id != :appId', { appId })
+          .getOne();
+        if (conflictingReleasedApp) {
+          throw new BadRequestException('Cannot release — slug conflicts with another released app.');
+        }
+      }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 

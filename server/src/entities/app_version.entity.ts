@@ -30,7 +30,7 @@ export enum AppVersionType {
   BRANCH = 'branch',
 }
 @Entity({ name: 'app_versions' })
-@Unique(['name', 'appId'])
+@Unique(['name', 'appId', 'branchId'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -120,6 +120,18 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
   sourceTag: string;
+
+  @Column({ name: 'slug', nullable: true })
+  slug: string;
+
+  @Column({ name: 'app_name', nullable: true })
+  appName: string;
+
+  @Column({ name: 'icon', nullable: true })
+  icon: string;
+
+  @Column({ name: 'is_public', default: true, nullable: true })
+  isPublic: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

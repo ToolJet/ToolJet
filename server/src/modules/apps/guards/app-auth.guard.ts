@@ -10,13 +10,16 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { AppVersion } from '@entities/app_version.entity';
+import { DataSource } from 'typeorm';
+
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  // This guard will allow access for unauthenticated user if the app is public
   constructor(
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly appRepository: AppsRepository
+    protected readonly appRepository: AppsRepository,
+    protected readonly dataSource: DataSource
   ) {
     super();
   }
@@ -29,17 +32,31 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    // unauthenticated users should be able to to view public apps
-    const app = await this.appRepository.findOne({
-      where: {
-        slug,
-      },
-    });
+    // Resolve app through released version's slug (app_versions)
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .select('app')
+      .from('apps', 'app')
+      .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
+      .where('av.slug = :slug', { slug })
+      .getRawOne();
+
+    let app;
+    let isPublic: boolean;
+
+    if (result) {
+      app = await this.appRepository.findOne({ where: { id: result.app_id } });
+      isPublic = result.av_is_public;
+    } else {
+      // Fallback for workflows (slug on apps table)
+      app = await this.appRepository.findOne({ where: { slug } });
+      isPublic = app?.isPublic;
+    }
+
     if (!app) throw new NotFoundException('App not found. Invalid app id');
+
     const organization = await this.organizationRepository.findOne({
-      where: {
-        id: app.organizationId,
-      },
+      where: { id: app.organizationId },
     });
     if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
       throw new BadRequestException('Organization is Archived');
@@ -48,13 +65,11 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
-    if (app.isPublic === true) {
-      // No need to do user validation
+    if (isPublic === true) {
       this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;
     }
 
-    // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);
       return authResult;

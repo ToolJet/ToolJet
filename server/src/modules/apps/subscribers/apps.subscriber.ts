@@ -48,5 +48,13 @@ export class AppsSubscriber implements EntitySubscriberInterface {
 
     (app as any).isStub = false;
     (app as any).editingVersion = editingVersion;
+
+    // For non-workflows, overlay version-level metadata onto entity
+    if (app.type !== 'workflow') {
+      if (editingVersion.slug) (app as any).slug = editingVersion.slug;
+      if (editingVersion.appName) (app as any).name = editingVersion.appName;
+      if (editingVersion.icon !== undefined) (app as any).icon = editingVersion.icon;
+      if (editingVersion.isPublic !== undefined) (app as any).isPublic = editingVersion.isPublic;
+    }
   }
 }

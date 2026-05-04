@@ -17,19 +17,34 @@ export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    // unauthenticated users should be able to to view public apps
-    const app = await this._dataSource.manager.findOne(App, {
-      where: {
-        slug,
-      },
-    });
+    // Resolve app through released version's slug (app_versions)
+    const result = await this._dataSource
+      .createQueryBuilder()
+      .select(['app.id AS app_id', 'app.organization_id AS app_organization_id', 'av.is_public AS av_is_public'])
+      .from('apps', 'app')
+      .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
+      .where('av.slug = :slug', { slug })
+      .getRawOne();
+
+    let app;
+    let isPublic: boolean;
+
+    if (result) {
+      app = await this._dataSource.manager.findOne(App, { where: { id: result.app_id } });
+      isPublic = result.av_is_public;
+    } else {
+      // Fallback for workflows (slug on apps table)
+      app = await this._dataSource.manager.findOne(App, { where: { slug } });
+      isPublic = app?.isPublic;
+    }
+
     if (!app) throw new NotFoundException('App not found. Invalid app id');
 
     request.tj_app = app;
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
-    if (app.isPublic === true) {
+    if (isPublic === true) {
       return true;
     }
 
