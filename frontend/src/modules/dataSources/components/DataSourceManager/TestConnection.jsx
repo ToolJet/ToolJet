@@ -55,6 +55,7 @@ export const TestConnection = ({
       ({ error }) => {
         setTestingStatus(false);
         toast.error(t('globals.testConnectionFailed', 'Test connection could not be verified'));
+        onConnectionTestFailed({ message: error || 'Connection test failed', status: 'failed' });
       }
     );
   }
