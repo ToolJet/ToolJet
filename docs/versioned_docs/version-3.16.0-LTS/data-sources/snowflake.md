@@ -15,7 +15,7 @@ To establish a connection with the Snowflake data source, you can either click o
 
 Authenticates to Snowflake using a username and password to establish a direct connection with the specified account, role, and warehouse.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth-dynamic-conn.png" alt="ToolJet - Snowflake connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth-dynamic-conn.png" alt="ToolJet - Snowflake connection" />
 
 :::info
 - ToolJet also allows you to dynamically override connection values (like database, schema, role, etc.) at runtime instead of using fixed configurations.
@@ -128,6 +128,19 @@ This is an authentication method that uses an RSA key pair (public/private) inst
 :::info
 - Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.
 - Also, make sure when you start, open a terminal window and then generate a private key.
+:::
+
+### Bearer Auth
+This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, eliminating the need to pass username and password in requests.
+
+To connect ToolJet to Snowflake using a bearer token, you need to set up **OAuth 2.0 Security Integration**. This allows ToolJet to act as a client that requests a short-lived access token **(bearer token)** to authenticate its requests.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/bearer-auth.png" alt="ToolJet - Snowflake connection" />
+
+:::info
+- After completing the configuration and authorization, Snowflake sends an authorization code to ToolJet, which is automatically exchanged for a Bearer Access Token used for subsequent queries.
+
+- Refer **[here](https://docs.snowflake.com/en/user-guide/data-integration/openflow/controllers/jwtbeareroauth2accesstokenprovider)** on how the Bearer auth token provider works in Snowflake.
 :::
 
 ### How to connect to Snowflake when MFA is enabled
