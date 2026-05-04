@@ -13,9 +13,9 @@ export class RemoveAppVersionIdFromDataSourceVersions1776700000000 implements Mi
     `);
 
     // Drop the column. CASCADE removes the auto-generated FK to app_versions.
-    await queryRunner.query(`
-      ALTER TABLE data_source_versions DROP COLUMN IF EXISTS app_version_id CASCADE
-    `);
+    // await queryRunner.query(`
+    //   ALTER TABLE data_source_versions DROP COLUMN IF EXISTS app_version_id CASCADE
+    // `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
