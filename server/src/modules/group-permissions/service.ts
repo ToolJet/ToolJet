@@ -53,7 +53,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     return this.groupPermissionsUtilService.getGroupWithBuilderLevel(id, organizationId);
   }
 
-  getAllGroup(organizationId: string): Promise<GetUsersResponse> {
+  getAllGroup(organizationId: string, _user?: User): Promise<GetUsersResponse> {
     return this.groupPermissionsUtilService.getAllGroupByOrganization(organizationId);
   }
 

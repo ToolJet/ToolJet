@@ -173,7 +173,17 @@ export const BaseLeftSidebar = ({
 
   const renderLeftSidebarItems = () => {
     if (isModuleEditor) {
-      return renderCommonItems();
+      return (
+        <>
+          {renderAISideBarTrigger({
+            darkMode,
+            setSideBarBtnRefs,
+            selectedSidebarItem,
+            handleSelectedSidebarItem,
+          })}
+          {renderCommonItems()}
+        </>
+      );
     }
     return (
       <>

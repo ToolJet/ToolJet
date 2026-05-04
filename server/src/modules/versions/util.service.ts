@@ -268,6 +268,39 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
+      // Unpinned ModuleViewers (empty moduleVersionId.value) drift to whatever's latest on the
+      // module's branch — never a stable target — so block before the resolution JOIN runs.
+      const unpinnedModules = await manager
+        .createQueryBuilder(Component, 'component')
+        .innerJoin('component.page', 'page')
+        .innerJoin('page.appVersion', 'appVersion')
+        .innerJoin(
+          'apps',
+          'mod_app',
+          `mod_app.co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
+           AND mod_app.type = 'module'
+           AND mod_app.organization_id = :orgId`,
+          { orgId: organizationId }
+        )
+        .select('DISTINCT mod_app.name', 'moduleName')
+        .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.id = :versionId', { versionId })
+        .andWhere(`COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '') = ''`)
+        .getRawMany();
+
+      if (unpinnedModules.length > 0) {
+        const formatUnpinned = (m: { moduleName: string }) =>
+          `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`;
+        const unpinnedList = unpinnedModules.map(formatUnpinned).join(' ');
+        const unpinnedMessage =
+          unpinnedModules.length === 1
+            ? `Save blocked - ${formatUnpinned(unpinnedModules[0])}`
+            : `Save blocked - ${unpinnedModules.length} modules need saving. ${unpinnedList}`;
+        throw new BadRequestException({
+          message: { error: unpinnedMessage, details: unpinnedList },
+        });
+      }
+
       // moduleVersionId.value stores one of:
       //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
       //      TODO: migrate existing rows to version names so this case can be dropped.

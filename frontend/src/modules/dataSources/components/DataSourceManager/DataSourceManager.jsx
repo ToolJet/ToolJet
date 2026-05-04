@@ -26,6 +26,7 @@ import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
@@ -445,6 +446,9 @@ class DataSourceManagerComponent extends React.Component {
       case 'googlesheetsv2': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'bigquery': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
       default:
         return true;
     }
@@ -708,7 +712,22 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
-  createSampleApp = () => {
+  createSampleApp = async () => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch) {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     let _self = this;
     _self.setState({ creatingApp: true });
     libraryAppService

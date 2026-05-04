@@ -121,6 +121,15 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    maxLimit: {
+      type: 'code',
+      displayName: 'Max selection limit',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      },
+      accordian: 'Options',
+      placeholder: '{{2}}',
+    },
     showAllSelectedLabel: {
       type: 'toggle',
       displayName: 'Show "All items are selected"',
@@ -377,6 +386,7 @@ export const multiselectV2Config = {
       values: { value: ['1', '2'] },
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
+      maxLimit: { value: '' },
       optionsLoadingState: { value: '{{false}}' },
       sort: { value: 'none' },
       placeholder: { value: 'Select the options' },

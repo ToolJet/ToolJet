@@ -223,3 +223,32 @@
     transform: rotate(360deg);
   }
 }
+
+// Delete branch action icon in branch list
+.branch-delete-action {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px;
+  visibility: hidden;
+
+  .branch-delete-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 4px;
+    border: 1px solid var(--tomato9);
+
+    &.branch-delete-locked {
+      border-color: var(--slate7);
+      cursor: not-allowed;
+    }
+  }
+}
+
+.branch-list-item:hover .branch-delete-action {
+  visibility: visible;
+}
+

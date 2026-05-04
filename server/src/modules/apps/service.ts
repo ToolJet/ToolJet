@@ -702,6 +702,8 @@ export class AppsService implements IAppsService {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
 
+      await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
 

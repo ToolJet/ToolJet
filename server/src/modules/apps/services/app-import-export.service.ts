@@ -228,24 +228,46 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
 
 const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
+  'Button',
+  'ButtonGroupV2',
+  'Checkbox',
   'CodeEditor',
+  'ColorPicker',
   'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'DropdownV2',
+  'EmailInput',
   'Form',
+  'Image',
   'JSONEditor',
   'JSONExplorer',
   'KeyValuePair',
   'Listview',
   'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'RadioButtonV2',
   'RichTextEditor',
+  'StarRating',
   'Table',
   'Tabs',
   'TagsInput',
   'Text',
   'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
   'TreeSelect',
 ];
 
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+
+const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -351,15 +373,19 @@ export class AppImportExportService {
           .orderBy('data_queries.created_at', 'ASC')
           .getMany();
 
-        // Backfill `kind` on each query from its DS. The query above does NOT
-        // join data_query.dataSource so the @AfterLoad hook leaves `kind`
-        // undefined — meaning git-pushed queries.json had no kind, and
-        // git-pulled apps couldn't recover the right plugin/kind for dummy
-        // DSes when their root data-sources file was missing. This explicit
-        // backfill ensures every exported query carries `kind`.
+        // Backfill `kind` and `dataSourceType` on each query from its DS. The query above
+        // does NOT join data_query.dataSource so @AfterLoad leaves these undefined.
+        // `kind` lets a git-pulled app recover the right plugin/kind for dummies when the
+        // root data-sources file is missing. `dataSourceType` is the static-vs-default
+        // disambiguator: an app-only push (no workspace push) leaves no stub file at
+        // data-sources/<coRelId>.json, so import-time can't otherwise tell whether a
+        // missing file is a source-static reference (route to workspace static) or a
+        // custom DS that wasn't pushed (create dummy).
         const dsKindById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.kind] as [string, string]));
+        const dsTypeById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.type] as [string, string]));
         for (const dq of dataQueries) {
           if (!dq.kind) dq.kind = dsKindById.get(dq.dataSourceId);
+          if (!(dq as any).dataSourceType) (dq as any).dataSourceType = dsTypeById.get(dq.dataSourceId);
         }
 
         const rawAndEntities = await manager
@@ -3657,6 +3683,10 @@ function migrateProperties(
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
+    properties.maxLimit = { value: '' };
   }
 
   if (!tooljetVersion) {

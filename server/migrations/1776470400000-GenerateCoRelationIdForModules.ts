@@ -52,6 +52,36 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
         AND av.module_reference_id IS NULL;
     `);
 
+    // Capture the origin feature-branch_id of anomalous module VERSION rows
+    // BEFORE the normalize step below moves them to default. 1776600000000
+    // reads this staging table to seed a BRANCH-type row on each module's
+    // origin branch, so users opening that branch still see the module they
+    // created there. NULL branch_id rows (legacy pre-branching shape) are
+    // intentionally excluded — there's no feature branch to restore to.
+    // The staging table is dropped at the end of 1776600000000's up().
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS module_origin_branch_staging (
+        app_id           uuid PRIMARY KEY,
+        origin_branch_id uuid NOT NULL,
+        created_at       timestamp NOT NULL DEFAULT now()
+      );
+    `);
+    await queryRunner.query(`
+      INSERT INTO module_origin_branch_staging (app_id, origin_branch_id)
+      SELECT av.app_id, av.branch_id
+      FROM app_versions av
+      JOIN apps a ON a.id = av.app_id
+      JOIN organization_git_sync_branches default_b
+        ON default_b.organization_id = a.organization_id
+       AND default_b.is_default = true
+      WHERE a.type = 'module'
+        AND av.version_type = 'version'
+        AND av.branch_id IS NOT NULL
+        AND av.branch_id <> default_b.id
+        AND COALESCE(av.is_stub, false) = false
+      ON CONFLICT (app_id) DO NOTHING;
+    `);
+
     // Normalize module VERSION-type rows onto the org's default branch. Older
     // create paths inserted version-type rows with branch_id = active feature
     // branch (a categorical violation: VERSION rows belong on default, BRANCH
@@ -160,6 +190,10 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
     // Drop the module_reference_id column + index.
     await queryRunner.query(`DROP INDEX IF EXISTS idx_app_versions_module_ref_branch;`);
     await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS module_reference_id;`);
+
+    // Drop the origin-branch staging table in case 1776600000000 didn't get
+    // a chance to drop it (e.g., partial run).
+    await queryRunner.query(`DROP TABLE IF EXISTS module_origin_branch_staging;`);
 
     // Restore ModuleViewer component properties to use the DB id instead of co_relation_id
     await queryRunner.query(`

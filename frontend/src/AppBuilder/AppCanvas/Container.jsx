@@ -91,7 +91,9 @@ const Container = React.memo(
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
+        if (isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();
 
         const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
