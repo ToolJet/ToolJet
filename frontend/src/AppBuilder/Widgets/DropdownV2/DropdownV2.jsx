@@ -22,6 +22,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -116,6 +117,7 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
