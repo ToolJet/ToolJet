@@ -22,6 +22,7 @@ export class MetadataService implements IMetaService {
       this.configService.get('DISABLE_TOOLJET_TELEMETRY') !== 'true'
     ) {
       void this.metadataUtilService.sendTelemetryData(metadata);
+      void this.metadataUtilService.sendLicensingData(metadata);
     }
 
     return {
