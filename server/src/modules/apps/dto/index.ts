@@ -72,7 +72,7 @@ export class AppUpdateDto {
 
   @IsString()
   @IsOptional()
-  branch_id: string;
+  branch_id?: string;
 
   @IsOptional()
   @IsEnum(AppBuilderMode, { message: 'app_builder_mode must be either "ai" or "visual"' })
