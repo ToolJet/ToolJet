@@ -131,16 +131,20 @@ This is an authentication method that uses an RSA key pair (public/private) inst
 :::
 
 ### Bearer Auth
-This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, eliminating the need to pass username and password in requests.
+This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, eliminating the need to pass username and password in requests. The Bearer tokens authenticate requests to Snowflake REST APIs via the Authorization header.
 
-To connect ToolJet to Snowflake using a bearer token, you need to set up **OAuth 2.0 Security Integration**. This allows ToolJet to act as a client that requests a short-lived access token **(bearer token)** to authenticate its requests.
+**Snowflake supports three types of bearer tokens:**
+
+- Programmatic Access Tokens (PATs)— recommended for automation / service accounts
+- JWT (key-pair)tokens
+- OAuth tokens
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/bearer-auth.png" alt="ToolJet - Snowflake connection" />
 
 :::info
 - After completing the configuration and authorization, Snowflake sends an authorization code to ToolJet, which is automatically exchanged for a Bearer Access Token used for subsequent queries.
 
-- Refer **[here](https://docs.snowflake.com/en/user-guide/data-integration/openflow/controllers/jwtbeareroauth2accesstokenprovider)** on how the Bearer auth token provider works in Snowflake.
+- Refer **[here](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)** for more info on Bearer auth token provider.
 :::
 
 ### How to connect to Snowflake when MFA is enabled
@@ -178,6 +182,12 @@ ALLOWED_IP_LIST = ('0.0.0.0/0');
 - PAT cannot be used as replacement for password when signing in to Snowflake.
 - The IP address in the network policy should be configured based on your system or organization's network setup.
 :::
+
+## Dynamic Connection 
+
+ToolJet allows you to override Snowflake connection parameters such as **Database, Warehouse and Role** directly at **query runtime** when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/dynamic-conn-query-builder.png" alt="ToolJet - Snowflake query connection" />
 
 ## Querying Snowflake
 
