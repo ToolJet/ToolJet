@@ -269,21 +269,15 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
-# Create directories for Let's Encrypt SSL support (nginx + certbot)
-RUN mkdir -p /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
-    /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
-    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
-       /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
-    && chmod -R g=u /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
-       /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi
+# Create directories for inbuilt SSL/TLS support
+RUN mkdir -p /var/www/certbot /etc/letsencrypt \
+    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt \
+    && chmod -R g=u /var/www/certbot /etc/letsencrypt
 
-# Pre-create ACME challenge directory structure (prevents certbot chown errors)
+# Pre-create ACME challenge directory structure
 RUN mkdir -p /var/www/certbot/.well-known/acme-challenge \
     && chown -R appuser:0 /var/www/certbot/.well-known \
     && chmod -R g=u /var/www/certbot/.well-known
-
-# Allow non-root nginx to bind to privileged ports (80, 443)
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx || true
 
 ENV HOME=/home/appuser
 # Switch back to appuser
