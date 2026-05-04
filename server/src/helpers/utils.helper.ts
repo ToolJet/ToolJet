@@ -874,6 +874,8 @@ export const extractDomainFromTooljetHost = (): string | null => {
     return match ? match[1] : null;
   }
 };
+
+/**
  * Resolves workspace constants in an options array for OAuth token exchange.
  * Options come as array of { key: string, value: string, encrypted: boolean }
  */
