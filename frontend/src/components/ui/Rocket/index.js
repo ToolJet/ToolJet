@@ -197,7 +197,16 @@ export {
   TableCaption,
 } from './Table/Table';
 export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
+export { TruncatingText } from './TruncatingText/TruncatingText';
 export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
 export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
 export { Textarea, textareaVariants } from './Textarea/Textarea';
 export { Spinner, spinnerVariants } from './Spinner/Spinner';
+export {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverDescription,
+  PopoverTrigger,
+} from './Popover/Popover';

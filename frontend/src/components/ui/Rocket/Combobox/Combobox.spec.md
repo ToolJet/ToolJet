@@ -181,3 +181,40 @@ Shape C — sizes only (no variant axis). States handled via CSS pseudo-classes 
 - readOnly allows opening the dropdown to see options but prevents typing to filter.
 - Multi-select (chips) support deferred to v2 — shadcn primitive supports it via `ComboboxChips`.
 - Empty state shown when filter query matches no items.
+
+## Truncating long values (opt-in pattern)
+
+Combobox itself does not auto-truncate. To reveal long content on hover, opt in by composing with [`TruncatingText`](../TruncatingText/TruncatingText.spec.md). It uses the browser's native `title` attribute, so no provider or extra wiring is needed.
+
+### Option rows (in the dropdown)
+
+`ComboboxItem` children render as the row label. Wrap them in `TruncatingText` per row — string children make auto-detection work:
+
+```jsx
+<Combobox items={queries}>
+  <ComboboxInput placeholder="Search query..." />
+  <ComboboxContent>
+    <ComboboxList>
+      {(item) => (
+        <ComboboxItem key={item.value} value={item}>
+          <TruncatingText>{item.name}</TruncatingText>
+        </ComboboxItem>
+      )}
+    </ComboboxList>
+    <ComboboxEmpty>No results found.</ComboboxEmpty>
+  </ComboboxContent>
+</Combobox>
+```
+
+### Selected value (in the input) — built in
+
+The Combobox input trigger handles overflow itself, no opt-in required:
+
+- **Visual ellipsis** — `comboboxInputVariants` carries `[&_input]:tw-truncate`, so blurred input values that overflow show `…` at the right edge. Focused inputs scroll horizontally per browser default.
+- **Native hover tooltip** — `ComboboxInput` calls the `useInputOverflowTitle` hook, which detects overflow on the inner input and sets `input.title = input.value` when overflowing (removing it when the value fits). On blur, `input.scrollLeft` is reset to 0 so the ellipsis reappears reliably.
+
+**Limitation:** programmatic writes to `input.value` (Base UI updating the value after a dropdown pick) do not fire `input` events per HTML spec. The title attribute may be momentarily stale after a selection change until the next user interaction (typing, blur, resize). Visually the ellipsis is always correct.
+
+### Why opt-in, not built-in
+
+Same reasoning as [Select](../Select/Select.spec.md#truncating-long-values-opt-in-pattern). Truncation is a layout decision per callsite. Forcing it into the primitive would require modifying the primitive itself and would couple every consumer to that decision.

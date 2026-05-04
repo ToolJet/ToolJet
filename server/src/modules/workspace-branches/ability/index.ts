@@ -34,13 +34,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         WorkspaceBranch
       );
     }
-    // Builders can create branches, commit (push), pull, switch, and view — but not delete
     if (isBuilder) {
       can(
         [
           FEATURE_KEY.LIST_BRANCHES,
           FEATURE_KEY.CREATE_BRANCH,
           FEATURE_KEY.SWITCH_BRANCH,
+          FEATURE_KEY.DELETE_BRANCH,
           FEATURE_KEY.PUSH_WORKSPACE,
           FEATURE_KEY.PULL_WORKSPACE,
           FEATURE_KEY.CHECK_UPDATES,

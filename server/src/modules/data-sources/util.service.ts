@@ -1019,6 +1019,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'microsoft_graph',
         'hubspot',
         'xero',
+        'bigquery',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

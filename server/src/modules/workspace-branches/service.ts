@@ -26,6 +26,10 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
+  async deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }> {
+    throw new NotFoundException();
+  }
+
   async pushWorkspace(organizationId: string, dto: WorkspacePushDto, user?: User): Promise<{ success: boolean }> {
     throw new NotFoundException();
   }

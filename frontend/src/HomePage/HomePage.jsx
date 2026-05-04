@@ -48,6 +48,7 @@ import {
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -356,6 +357,21 @@ class HomePageComponent extends React.Component {
   };
 
   createApp = async (appName, type, prompt) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -585,6 +601,21 @@ class HomePageComponent extends React.Component {
   };
 
   importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
@@ -652,10 +683,24 @@ class HomePageComponent extends React.Component {
 
   deployApp = async (event, appName, selectedApp) => {
     event.preventDefault();
+    const { currentBranch, actions, activeBranchId } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const id = selectedApp.id;
     this.setState({ deploying: true });
     try {
-      const { activeBranchId } = useWorkspaceBranchesStore.getState();
       const data = await libraryAppService.deploy(
         id,
         appName,
@@ -1161,8 +1206,23 @@ class HomePageComponent extends React.Component {
   handleCommitEnableChange = (e) => {
     this.setState({ commitEnabled: e.target.checked });
   };
-  toggleGitRepositoryImportModal = () => {
+  toggleGitRepositoryImportModal = async () => {
     if (!this.state.showGitRepositoryImportModal) {
+      const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+      if (currentBranch) {
+        try {
+          const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+          if (!exists) {
+            toast.error(
+              'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+            );
+            return;
+          }
+        } catch (_err) {
+          /* allow on network error */
+        }
+      }
+
       // Show modal immediately, then fetch branches in the background
       this.setState({
         showGitRepositoryImportModal: true,
@@ -2223,6 +2283,8 @@ class HomePageComponent extends React.Component {
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
+
+                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>

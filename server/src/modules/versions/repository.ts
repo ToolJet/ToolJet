@@ -186,9 +186,7 @@ export class VersionRepository extends Repository<AppVersion> {
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap((manager: EntityManager) => {
-      const where = branchId
-        ? { appId, branchId, isStub: false }
-        : { appId, isStub: false };
+      const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
 
       return manager.find(AppVersion, {
         where,

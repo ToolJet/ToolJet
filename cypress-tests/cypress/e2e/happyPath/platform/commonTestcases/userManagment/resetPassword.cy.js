@@ -2,6 +2,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 import { inviteUser } from "Support/utils/onboarding";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { smtpConfig } from "Constants/constants/whitelabel";
@@ -17,6 +18,8 @@ describe("Password reset functionality", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.apiLogin();
+    cleanAllUsers();
+    cy.mhDeleteAll();
     cy.apiConfigureSmtp(smtpConfig);
   });
 
@@ -60,7 +63,6 @@ describe("Password reset functionality", () => {
     });
 
     // Submit email for password reset
-    cy.mhDeleteAll();
     cy.clearAndType('[data-cy="email-input-field-input"]', data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();
     cy.verifyToastMessage(
@@ -94,7 +96,7 @@ describe("Password reset functionality", () => {
     // });
 
     // Use the correct API for cypress-mh if you have customized endpoints
-    cy.wait(5000);
+    cy.wait(2000);
     cy.mhGetMailsByRecipient(data.email)
       .mhFilterBySubject("Reset your password")
       .then((mails) => {

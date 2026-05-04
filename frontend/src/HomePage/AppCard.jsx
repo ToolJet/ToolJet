@@ -17,6 +17,7 @@ import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_h
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -40,10 +41,40 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
+    wsCurrentBranch: state.currentBranch,
+    wsActions: state.actions,
+  }));
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(true);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const tooltipRef = useRef(null);
+
+  const handleEditClick = async (e) => {
+    // When workspace branching is active, verify current branch still exists on remote
+    if (wsCurrentBranch) {
+      e.preventDefault();
+      try {
+        const existsOnRemote = await wsActions.checkBranchExistsOnRemote(wsCurrentBranch.name);
+        if (!existsOnRemote) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        // check failed (network error, etc.) — allow navigation
+      }
+      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+    }
+    posthogHelper.captureEvent('click_edit_button_on_card', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      app_id: app?.id,
+      folder_id: currentFolder?.id,
+    });
+  };
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -293,7 +324,7 @@ export default function AppCard({
                     canUpdateApp={canUpdateApp(app)}
                     deleteApp={() => deleteApp(app)}
                     exportApp={() => {
-                      if (isStub) {
+                      if (isStub && appType !== 'workflow') {
                         toast.error(
                           'App contents are still syncing from Git. Open the app to finish loading, then try again.',
                           { position: 'top-center' }
@@ -335,15 +366,7 @@ export default function AppCard({
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
-                    onClick={() => {
-                      posthogHelper.captureEvent('click_edit_button_on_card', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                        app_id: app?.id,
-                        folder_id: currentFolder?.id,
-                      });
-                    }}
+                    onClick={handleEditClick}
                   >
                     <button
                       type="button"

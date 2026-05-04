@@ -52,16 +52,61 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
         AND av.module_reference_id IS NULL;
     `);
 
-    // Update moduleVersionId.value from DB UUID → module_reference_id so GitSync
-    // can resolve the reference portably across environments. Components configured
-    // by the user pin a specific app_version row by its DB id; we rewrite that to
-    // the row's module_reference_id which is preserved across push/pull.
-    //
-    // Split by version status: DRAFT pins are auto-pins from drop time (the drop
-    // handler used to write the editing draft's id), NOT deliberate user pins —
-    // the new inspector would render those as "pinned to v1 (Draft)" which
-    // misrepresents user intent. Convert DRAFT-pointing refs to '' (unpinned).
-    // Non-DRAFT pins are explicit user choices and survive as module_reference_id.
+    // Capture the origin feature-branch_id of anomalous module VERSION rows
+    // BEFORE the normalize step below moves them to default. 1776600000000
+    // reads this staging table to seed a BRANCH-type row on each module's
+    // origin branch, so users opening that branch still see the module they
+    // created there. NULL branch_id rows (legacy pre-branching shape) are
+    // intentionally excluded — there's no feature branch to restore to.
+    // The staging table is dropped at the end of 1776600000000's up().
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS module_origin_branch_staging (
+        app_id           uuid PRIMARY KEY,
+        origin_branch_id uuid NOT NULL,
+        created_at       timestamp NOT NULL DEFAULT now()
+      );
+    `);
+    await queryRunner.query(`
+      INSERT INTO module_origin_branch_staging (app_id, origin_branch_id)
+      SELECT av.app_id, av.branch_id
+      FROM app_versions av
+      JOIN apps a ON a.id = av.app_id
+      JOIN organization_git_sync_branches default_b
+        ON default_b.organization_id = a.organization_id
+       AND default_b.is_default = true
+      WHERE a.type = 'module'
+        AND av.version_type = 'version'
+        AND av.branch_id IS NOT NULL
+        AND av.branch_id <> default_b.id
+        AND COALESCE(av.is_stub, false) = false
+      ON CONFLICT (app_id) DO NOTHING;
+    `);
+
+    // Normalize module VERSION-type rows onto the org's default branch. Older
+    // create paths inserted version-type rows with branch_id = active feature
+    // branch (a categorical violation: VERSION rows belong on default, BRANCH
+    // rows belong on a feature branch). The pin-promotion step below joins
+    // against `default_b.is_default = true AND released.branch_id = default_b.id`
+    // — anomalous rows on feature branches would silently fail that join and
+    // their consumers' DRAFT pins would fall through to the collapse path
+    // instead of being promoted to the released mref. Move them first.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET branch_id = wb.id
+      FROM apps a
+      JOIN organization_git_sync_branches wb
+        ON wb.organization_id = a.organization_id AND wb.is_default = true
+      WHERE av.app_id = a.id
+        AND a.type = 'module'
+        AND av.version_type = 'version'
+        AND av.branch_id IS DISTINCT FROM wb.id
+        AND COALESCE(av.is_stub, false) = false;
+    `);
+
+    // Rewrite moduleVersionId.value on non-DRAFT-source pins: components pin a
+    // specific app_version row by its DB id; we rewrite that to the row's
+    // module_reference_id, which is preserved across push/pull and cross-instance
+    // sync. Non-DRAFT pins are deliberate user choices — preserved exactly.
     await queryRunner.query(`
       UPDATE components c
       SET properties = jsonb_set(
@@ -76,6 +121,42 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
         AND av.status <> 'DRAFT';
     `);
 
+    // Promote DRAFT-source pins to the module's released mref where one exists.
+    // DRAFT pins were typically auto-pins from drop time, not deliberate user
+    // choices — the consumer's intent is "embed this module," and we satisfy
+    // that by pointing at the canonical released VERSION row on the default
+    // branch. The default-branch mref is stable across instances, so this pin
+    // survives cross-workspace pulls. Modules with no released version yet
+    // are handled by the collapse step below.
+    await queryRunner.query(`
+      UPDATE components c
+      SET properties = jsonb_set(
+        c.properties::jsonb,
+        '{moduleVersionId,value}',
+        to_jsonb(released.module_reference_id::text)
+      )::json
+      FROM app_versions av
+      JOIN apps mod_app ON mod_app.id = av.app_id AND mod_app.type = 'module'
+      JOIN organization_git_sync_branches default_b
+        ON default_b.organization_id = mod_app.organization_id
+       AND default_b.is_default = true
+      JOIN app_versions released
+        ON released.app_id = mod_app.id
+       AND released.branch_id = default_b.id
+       AND released.version_type = 'version'
+       AND released.status <> 'DRAFT'
+       AND COALESCE(released.is_stub, false) = false
+      WHERE c.type = 'ModuleViewer'
+        AND (c.properties::jsonb -> 'moduleVersionId') IS NOT NULL
+        AND (c.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.id::text
+        AND av.status = 'DRAFT'
+        AND released.module_reference_id IS NOT NULL;
+    `);
+
+    // Collapse remaining DRAFT-source pins to '' (unpinned). Only fires for
+    // modules that have no released VERSION row anywhere — the promotion step
+    // above already handled every module with a release. The unpinned state
+    // tells the resolver to pick "latest non-stub on consumer's branch."
     await queryRunner.query(`
       UPDATE components c
       SET properties = jsonb_set(
@@ -109,6 +190,10 @@ export class GenerateCoRelationIdForModules1776470400000 implements MigrationInt
     // Drop the module_reference_id column + index.
     await queryRunner.query(`DROP INDEX IF EXISTS idx_app_versions_module_ref_branch;`);
     await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS module_reference_id;`);
+
+    // Drop the origin-branch staging table in case 1776600000000 didn't get
+    // a chance to drop it (e.g., partial run).
+    await queryRunner.query(`DROP TABLE IF EXISTS module_origin_branch_staging;`);
 
     // Restore ModuleViewer component properties to use the DB id instead of co_relation_id
     await queryRunner.query(`

@@ -28,7 +28,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isAllUsableConfigurable = dataSourcePermissions.isAllConfigurable || dataSourcePermissions.isAllUsable;
     const canPerformCreateOrDelete = userPermissions.dataSourceCreate || userPermissions.dataSourceDelete;
     const isSuperAdmin = userPermissions.isSuperAdmin;
-    const isAdmin = userPermissions.isSuperAdmin;
+    const isAdmin = userPermissions.isAdmin;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
@@ -147,10 +147,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       }
       if (useBranchPath || branchId) {
         // Filter: DS must have at least a DSV (branch-specific or default fallback)
-        // Static data sources don't have DSV entries, so always allow them through                                                                                                              
-         query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {                                                                                                               
-           staticType: DataSourceTypes.STATIC,                                                                                                                                                    
-         }); 
+        // Static data sources don't have DSV entries, so always allow them through
+        query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
+          staticType: DataSourceTypes.STATIC,
+        });
       }
       let result: DataSource[];
       let rawResults: any[] = [];
