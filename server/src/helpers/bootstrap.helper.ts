@@ -236,6 +236,10 @@ export function validateSslEnvironmentVariables(logger: any) {
     logger.log(`   TOOLJET_HOST: ${tooljetHost} (root domain)`);
     logger.log(`   SUB_PATH: ${subPath} (application routing)`);
     logger.log(`   SSL certificates will be acquired for: ${urlWithoutPort}`);
+  }
+}
+
+/**
  * Fetches active custom domain origins from the database.
  * Returns a Set of allowed origins (e.g., "https://app.company.com").
  *
