@@ -272,7 +272,7 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
       throw new Error('Cannot reload certificates - HTTPS not active');
     }
 
-    this.logger.log('Reloading certificates with zero downtime...');
+    this.logger.log('Reloading TLS certificates...');
 
     const sslConfig = await this.sslConfigService.getConfig();
     const domain = sslConfig.domain || this.extractDomainFromTooljetHost();
@@ -283,40 +283,20 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
     const certPaths = this.getCertificatePaths(domain);
 
-    // Read new certificates asynchronously to avoid blocking the event loop
     const [key, cert] = await Promise.all([
       fs.promises.readFile(certPaths.privkeyPath),
       fs.promises.readFile(certPaths.fullchainPath),
     ]);
-    const httpsOptions = { key, cert };
 
-    // Close old server FIRST to free the port, preventing EADDRINUSE
+    // Bug 2 fix: swap TLS credentials in-place via setSecureContext() instead of
+    // closing and recreating the server, which caused a brief gap in HTTPS availability.
     if (this.httpsServer) {
-      await new Promise<void>((resolve) => {
-        this.httpsServer!.close(() => {
-          this.logger.log('Old HTTPS server closed');
-          resolve();
-        });
-      });
-      this.httpsServer = undefined;
+      this.httpsServer.setSecureContext({ key, cert });
+      this.logger.log('TLS context updated in-place — no server restart needed');
+    } else {
+      await this.startHttpsServer();
     }
 
-    // Create and start new HTTPS server on the now-free port
-    const newHttpsServer = https.createServer(httpsOptions, (this as any).expressApp);
-
-    await new Promise<void>((resolve, reject) => {
-      newHttpsServer.listen(this.httpsPort, this.listenAddr, () => {
-        this.logger.log('New HTTPS server started with updated certificates');
-        resolve();
-      });
-
-      newHttpsServer.on('error', (error) => {
-        this.logger.error(`New HTTPS server error: ${error.message}`);
-        reject(error);
-      });
-    });
-
-    this.httpsServer = newHttpsServer;
     this.logger.log('Certificate reload complete');
   }
 
