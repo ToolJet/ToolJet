@@ -1104,8 +1104,7 @@
           "type": "category",
           "label": "Constants",
           "items": [
-            "security/constants/constants",
-            "security/constants/variables"
+            "security/constants/constants"
           ]
         },
         {
